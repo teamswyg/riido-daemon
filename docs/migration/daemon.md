@@ -623,6 +623,33 @@ private infra/account artifacts, or change the control-plane review account
 runtime seed. The SaaS review account artifact remains owned by
 `riido-control-plane`.
 
+### RIID-4711 — architecture SSOT docs migration
+
+This slice moves the public daemon architecture SSOT into `riido-daemon` after
+the split-repo package migration.
+
+This slice does:
+
+- add `docs/20-domain/context-map.md` for public daemon bounded-context
+  ownership and split-repo dependency direction
+- add `docs/30-architecture/module-decomposition.md` for hexagonal package and
+  import rules
+- add `docs/30-architecture/config-reference.md` for daemon-only Factor 12
+  env/flag ownership
+- add `docs/30-architecture/integration-matrix.md` for optional real provider
+  CLI integration gates
+- add `docs/30-architecture/compatibility-gate.md` and
+  `docs/30-architecture/runtime-upgrade-flow.md` for pre-execute and
+  no-silent-upgrade boundaries
+- add `docs/50-roadmap/open-questions.md` for public daemon unresolved
+  questions referenced by domain SSOT docs
+- add focused public CI for architecture doc presence, stale split-repo
+  wording, config coverage, dependency boundary, and Go tests
+
+This slice does not move `cmd/riido_ai_server`, `internal/riidoaiserver`,
+Terraform/AWS/deploy evidence, private state, `.riido-local`, provider CLI
+binaries, or provider installation automation.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
@@ -632,6 +659,8 @@ go test ./...
 go list -m all
 go test ./tools/storecontract
 go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .
+test -f docs/20-domain/context-map.md
+test -f docs/30-architecture/config-reference.md
 ```
 
 When the migrated files include the old audit tooling, restore the stronger

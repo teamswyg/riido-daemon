@@ -5,7 +5,7 @@
 > - 책임: 무엇이 “허용” 인가, 어느 trust tier 에서 어떤 surface 가 활성 가능한가, 정책 번들의 구조와 진화, 6 security gate 의 위치·검사·실패 동작.
 > - 비책임: 정책 **실행** 은 각 인접 context 가 한다. 본 문서는 **결정** 만 한다. workdir 파일 주입 — [`./workspace.md`](./workspace.md) (C6). validation rule 결과 해석 — [`./validation.md`](./validation.md) (C8). security-compatible runtime 배정 — [`./runtime-scheduling.md`](./runtime-scheduling.md) (C5). provider process 에 flag/env 전달은 C4 Provider Runtime 후속 migration slice 가 소유한다.
 
-이 SSOT 는 **C7 Security / Policy** context 를 채운다. C7 은 cross-cutting 으로 C3·C4·C5·C6·C8 모두에 결정을 공급한다. Context map SSOT 는 후속 architecture-doc migration slice 에서 public repo 로 이동한다.
+이 SSOT 는 **C7 Security / Policy** context 를 채운다. C7 은 cross-cutting 으로 C3·C4·C5·C6·C8 모두에 결정을 공급한다. Context map SSOT 는 [`./context-map.md`](./context-map.md) 가 소유한다.
 
 ## 0. 핵심 invariant (단단히 박는다)
 
@@ -81,7 +81,7 @@ TrustTierPolicy {
 
 - 새 번들은 **항상 새 Version**. 같은 Version 을 덮어쓰지 않는다.
 - 두 번들의 차이가 “더 허용” 이라도 **각 task 는 시작 시점의 번들 버전** 으로 평가된다. silent expand 금지.
-- 진행 중 task 가 새 번들로 “옮겨가려면” runtime upgrade flow 의 T-POLICY 매트릭스를 따른다. 해당 architecture SSOT 는 후속 provider-runtime / architecture-doc migration slice 에서 public repo 로 이동한다.
+- 진행 중 task 가 새 번들로 “옮겨가려면” [`../30-architecture/runtime-upgrade-flow.md`](../30-architecture/runtime-upgrade-flow.md) 의 T-POLICY 흐름을 따른다.
 
 ### 2.3 actor
 
@@ -323,7 +323,7 @@ Secret redaction 세부 결정은 [`./security-redaction.md`](./security-redacti
 
 ## 10. 미결정 / 오픈 이슈
 
-`open-questions.md` 위임.
+[`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 위임.
 
 - `Q-SEC-001`: trust tier 결정의 **외부 신호 우선순위** (wrapper 매니페스트 vs daemon 시작 env vs 호스트 정책 파일).
 - `Q-SEC-003`: scoped token 의 발급 / 회수 메커니즘 (자체 발급 vs Vault / cloud KMS 위임).

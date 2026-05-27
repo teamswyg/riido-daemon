@@ -181,7 +181,7 @@ Required store-review surfaces:
 
 | Surface | Meaning |
 | --- | --- |
-| `demo-review-account` | App Review / Partner Center receives a SaaS account or review mode path that works without provider CLI installation. Control-plane executable artifact: `riido-control-plane/internal/riidoaiserver/review_account_seed.riido.json`; control-plane CI owns seed validation. |
+| `demo-review-account` | App Review / Partner Center receives a SaaS account or review mode path that works without provider CLI installation. The control-plane repository owns the review account seed artifact and its CI validation. |
 | `privacy-metadata-allowlist` | Store metadata and public privacy policy enumerate the allowed SaaS fields and the forbidden path/token/raw environment fields. Daemon executable artifact: `internal/hostintegration/privacy_metadata_allowlist.riido.json`; daemon CI and store distribution contract gate own local validation. |
 | `helper-purpose-review-note` | Mac App Store review notes explain why the helper/login item exists, what user-visible consent enables it, and that provider runtime orchestration stays local-only. |
 | `provider-non-bundling-review-note` | Review notes explicitly say Claude / Codex / OpenClaw / Cursor Agent CLIs are not bundled, redistributed, or silently installed. |
