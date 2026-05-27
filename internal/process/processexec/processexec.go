@@ -42,6 +42,7 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 	c := exec.CommandContext(cmdCtx, cmd.Executable, cmd.Args...)
 	c.Env = mergeEnv(cmd.Env)
 	c.Dir = cmd.Dir
+	c.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
 	stdinPipe, err := c.StdinPipe()
 	if err != nil {
@@ -152,10 +153,12 @@ func (r *execRunning) Kill(_ context.Context) error {
 	r.killOnce.Do(func() {
 		r.cancel()
 		if r.cmd.Process != nil {
-			// Best-effort: SIGTERM the process group on Unix; fall back to
-			// killing the single PID. cmd.Process.Kill() uses SIGKILL which
-			// is what we want for an unresponsive child.
-			_ = r.cmd.Process.Signal(syscall.SIGTERM)
+			// Best-effort: terminate the process group first so child
+			// processes cannot keep stdout/stderr pipes open after the shell
+			// exits. Fall back to killing the single PID.
+			pid := r.cmd.Process.Pid
+			_ = syscall.Kill(-pid, syscall.SIGTERM)
+			_ = syscall.Kill(-pid, syscall.SIGKILL)
 			_ = r.cmd.Process.Kill()
 		}
 	})
