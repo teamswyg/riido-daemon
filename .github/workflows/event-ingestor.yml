@@ -1,0 +1,45 @@
+name: event-ingestor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/event-ingestor.yml"
+      - "internal/ir/ingest/**"
+      - "internal/policy/**"
+      - "internal/workdir/**"
+      - "docs/20-domain/security-redaction.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/event-ingestor.yml"
+      - "internal/ir/ingest/**"
+      - "internal/policy/**"
+      - "internal/workdir/**"
+      - "docs/20-domain/security-redaction.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  secret-redaction-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify EventIngestor redaction/audit gate
+        run: |
+          go test ./internal/policy ./internal/ir/ingest ./internal/workdir -run 'Redact|Secret|Ingest|RunEventSink|AppendEvents' -count=1

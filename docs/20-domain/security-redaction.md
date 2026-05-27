@@ -3,7 +3,7 @@
 > **이 문서가 secret redaction 정책의 SSOT다.**
 >
 > - 책임: C7 secret redaction 금지 패턴 카탈로그, marker 형식, C4/C2 실행 책임, redaction audit event payload, version-affecting change 규칙.
-> - 비책임: provider raw event 를 `ProviderEventDraft` 로 변환하는 adapter ACL 구현은 C4 Provider Runtime 후속 migration slice 가 소유한다. `CanonicalEvent` append authority 와 sink 는 public `riido-contracts/ir` C2 계약 및 후속 EventIngestor migration slice 가 소유한다. `ToolRef.Args` flattening 은 C4 toolargs 후속 migration slice 가 소유한다.
+> - 비책임: provider raw event 를 `ProviderEventDraft` 로 변환하는 adapter ACL 구현은 C4 Provider Runtime 후속 migration slice 가 소유한다. `CanonicalEvent` schema/envelope 는 public `riido-contracts/ir` C2 계약이 소유하고, local daemon append-time completion/redaction implementation 은 public `internal/ir/ingest` 가 소유한다. `ToolRef.Args` flattening 은 C4 toolargs 후속 migration slice 가 소유한다.
 
 이 SSOT 는 [security.md](./security.md) 의 C7 Security / Policy context 안에서 secret exposure target 의 세부 결정을 분리해 소유한다. `security.md` 는 보안 정책 hub 이며, 이 문서의 내용을 재정의하지 않는다.
 
@@ -95,5 +95,5 @@ audit event 는 redacted source event 를 mutate 하지 않는다. append-only c
 
 - `internal/policy` tests 는 C7 pattern catalog 와 marker 형식을 검증한다.
 - C4 toolargs 후속 migration tests 는 ToolRef.Args redaction marker 와 safe value non-redaction 을 검증한다.
-- C2 EventIngestor 후속 migration tests 는 2차 redaction 과 `PolicyViolationDetected` audit append 를 검증한다.
+- `internal/ir/ingest` tests 는 C2 EventIngestor 2차 redaction 과 `PolicyViolationDetected` audit append 를 검증한다.
 - 후속 SSOT drift workflow 는 `security.md` 가 redaction 세부 규칙을 재정의하지 않고 본 문서를 링크하는지 확인한다.
