@@ -1,0 +1,4 @@
+stdout: {"type":"system","subtype":"init","session_id":"sess-prefixed"}
+stdout: {"type":"text","text":"hi"}
+STDOUT: {"type":"text","text":" there"}
+stdout: {"type":"result","subtype":"success","result":"done"}
