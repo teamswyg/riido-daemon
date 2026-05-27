@@ -172,6 +172,23 @@ ToolRef.Args / EventIngestor wiring, concrete sandbox/network/OS adapters, task
 DB/project/mwsd local API packages, packaging artifacts, private infra, secrets,
 or local machine state.
 
+### RIID-4650 — EventIngestor boundary
+
+This slice moves the daemon-side C2 EventIngestor implementation:
+
+- `internal/ir/ingest`
+- `docs/20-domain/security-redaction.md` references to the now-public
+  EventIngestor verification point
+
+The package imports CanonicalEvent and envelope validation types from
+`github.com/teamswyg/riido-contracts/ir v0.1.0`, and imports the local public
+C7 policy redaction catalog from `internal/policy`.
+
+This slice does not move provider adapters, runtime/session/supervisor actors,
+ToolRef.Args flattening, concrete event sink wiring beyond the existing C6
+workdir sink port, task DB/project/mwsd local API packages, packaging
+artifacts, private infra, secrets, or local machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
