@@ -1,0 +1,2 @@
+{"type":"control_request","request_id":"r_1","request":{"subtype":"permission_request","tool_use_id":"tu_1","tool_name":"Bash"}}
+{"type":"result","subtype":"error","error":"boom"}
