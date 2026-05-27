@@ -120,6 +120,14 @@ anti-corruption layer 이고, `project` 는 `riido-workspace-projection.v1` /
 문서 기반 task source 를 public `internal/taskdb` row 로 투영할 뿐, provider process
 execution / runtime session / SaaS transport 를 소유하지 않는다.
 
+RIID-4689 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
+`internal/agentbridge/controlplane/saasplane` 이다. 이 adapter 는
+`github.com/teamswyg/riido-contracts/assignment v0.3.0` 의 shared DTO/state/event
+contract 를 사용해 SaaS assignment poll/heartbeat/event HTTP API 를
+TaskSourcePort/TaskReporterPort 로 번역한다. HTTP handler, store actor, SSE,
+authZ, metrics/health, persistence, Terraform/AWS/deploy evidence 는 여전히
+`riido-control-plane` 또는 `riido-infra` 가 소유한다.
+
 ## 1. 책임 한 줄
 
 > Provider Runtime 은 **provider 의 실행 표면** (process, session, run, raw event stream)을 도메인 안으로 끌어들여 **정규화된 draft** 로 변환한다. 그것이 본 컨텍스트의 시작이고 끝이다.
@@ -456,7 +464,8 @@ ControlPlane root package 의 비책임:
 
 - supervisor polling loop, runtime selection, slot scheduling
 - `runtimeactor` session handoff / process execution
-- `controlplane/saasplane` HTTP polling / event sync adapter
+- `controlplane/saasplane` HTTP polling / event sync adapter. Public
+  `controlplane/saasplane` owns that adapter outside the root package.
 - task DB source/reporter adapters outside the root package. Public
   `controlplane/taskdbplane` owns `riido-task-db.v1`; public `internal/project`
   owns project/mwsd projection sync outside this context.

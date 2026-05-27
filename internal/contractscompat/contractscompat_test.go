@@ -3,12 +3,19 @@ package contractscompat
 import (
 	"testing"
 
+	"github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-contracts/ir"
 	"github.com/teamswyg/riido-contracts/provider/capability"
 	"github.com/teamswyg/riido-contracts/task"
 )
 
 func TestContractsBaseline(t *testing.T) {
+	if assignment.SchemaVersion != "riido-ai-server.v1" {
+		t.Fatalf("assignment SchemaVersion = %q", assignment.SchemaVersion)
+	}
+	if !assignment.CanTransition(assignment.AssignmentQueued, assignment.AssignmentLeased) {
+		t.Fatal("Queued -> Leased assignment transition must remain legal")
+	}
 	if !ir.EventTaskQueued.IsTransition() {
 		t.Fatal("TaskQueued must remain a transition event")
 	}

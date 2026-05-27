@@ -15,7 +15,7 @@ github.com/teamswyg/riido-daemon
 This module consumes shared public contracts from:
 
 ```text
-github.com/teamswyg/riido-contracts v0.1.0
+github.com/teamswyg/riido-contracts v0.3.0
 ```
 
 ## Repository Boundary
