@@ -32,6 +32,7 @@ jobs:
         run: |
           test -f docs/20-domain/context-map.md
           test -f docs/30-architecture/module-decomposition.md
+          test -f docs/30-architecture/cli-surface.md
           test -f docs/30-architecture/config-reference.md
           test -f docs/30-architecture/integration-matrix.md
           test -f docs/30-architecture/compatibility-gate.md

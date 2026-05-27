@@ -1,0 +1,70 @@
+# CLI Surface SSOT
+
+> Riido task: RIID-4714 `[Cli] Architecture SSOT docs migration`
+
+This file owns the public `cmd/riido` command boundary. `cmd/riido` is a
+local-only adapter shell for the customer-PC daemon and local task tooling.
+
+## Role
+
+The CLI may:
+
+- parse args and print usage
+- call local daemon packages in this repository
+- read/write local JSON state through guarded adapters
+- open local IPC transports only
+- emit JSON for shell/operator automation
+
+The CLI must not:
+
+- start a public network listener
+- bundle or install provider CLIs
+- run infrastructure deploy/apply workflows
+- own SaaS server behavior
+- bypass task mutation guards or policy gates
+- redefine contract facts owned by `riido-contracts`
+
+## Command Groups
+
+| Command group | Backing owner | Boundary |
+| --- | --- | --- |
+| `riido mwsd ...` | `internal/mwsdbridge`, `internal/project`, `internal/taskdb` | reads mwsd snapshots and promotes public workspace/task projections |
+| `riido task ...` | `internal/taskdb`, `internal/validation` | local guarded task mutation/evidence/validation over JSON task DB |
+| `riido serve` | `internal/riidoapi` | local IPC server over Unix socket or Windows named pipe |
+| `riido api ...` | `internal/riidoapi` | client for the local IPC API |
+| `riido bridge ...` | provider adapter packages | public provider list/detect smoke surface without executing provider tasks |
+| `riido daemon ...` | `internal/agentbridge/runtimeactor`, `supervisor`, and control-plane adapters | local runtime lifecycle, health, ready, metrics, stop, and logs |
+
+`printUsage()` in `cmd/riido/main.go` is the executable usage matrix. This
+document describes command ownership; it does not replace usage text.
+
+## Local IPC Rule
+
+`riido serve`, `riido api`, and `riido daemon` may use:
+
+- Unix socket
+- Windows named pipe
+
+They must not add TCP/HTTP listeners to the local CLI binary. SaaS HTTP routes
+belong to the public control-plane repository.
+
+## Guarded Mutation Rule
+
+`riido task transition`, `riido task evidence`, `riido task validate`, and their
+`riido api ...` equivalents must go through the same guarded mutation path used
+by the local API. Approval IDs, command IDs, idempotent receipts, replay
+mismatch checks, and deterministic validation evidence remain adapter-invariant.
+
+## Validation
+
+Required black-box checks for CLI docs/adapter changes:
+
+```bash
+go test ./...
+go build -o /tmp/riido ./cmd/riido
+go run ./cmd/riido --help
+go run ./cmd/riido bridge providers
+```
+
+Commands that require a running daemon, mwsd socket, provider CLI, or local app
+state should have explicit skip conditions in tests.
