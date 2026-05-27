@@ -1,40 +1,32 @@
-name: cli
+name: mwsd-project
 
 on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/cli.yml"
+      - ".github/workflows/mwsd-project.yml"
       - "cmd/riido/**"
       - "internal/mwsdbridge/**"
       - "internal/project/**"
       - "internal/taskdb/**"
-      - "internal/riidoapi/**"
-      - "internal/agentbridge/**"
-      - "internal/provider/**"
-      - "internal/validation/**"
       - "docs/migration/cli.md"
       - "docs/migration/daemon.md"
       - "go.mod"
       - "go.sum"
   pull_request:
     paths:
-      - ".github/workflows/cli.yml"
+      - ".github/workflows/mwsd-project.yml"
       - "cmd/riido/**"
       - "internal/mwsdbridge/**"
       - "internal/project/**"
       - "internal/taskdb/**"
-      - "internal/riidoapi/**"
-      - "internal/agentbridge/**"
-      - "internal/provider/**"
-      - "internal/validation/**"
       - "docs/migration/cli.md"
       - "docs/migration/daemon.md"
       - "go.mod"
       - "go.sum"
 
 jobs:
-  cli-gate:
+  mwsd-project-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,23 +42,21 @@ jobs:
             printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
             exit 1
           fi
-      - name: Verify CLI public boundary
+      - name: Verify mwsd/project public boundary
         run: |
-          if grep -R --line-number -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/(riidoaiserver|agentbridge/controlplane/saasplane)' cmd/riido; then
-            echo "cmd/riido must stay inside public daemon boundaries for this slice"
+          if grep -R --line-number -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/(riidoaiserver|agentbridge/controlplane/saasplane)' internal/mwsdbridge internal/project cmd/riido; then
+            echo "mwsd/project migration must not depend on private daemon/server packages"
             exit 1
           fi
-      - name: Verify CLI local-only gate
+      - name: Verify local-only listener gate
         run: |
-          if grep -R --line-number -E 'net\.Listen\("tcp"|http\.ListenAndServe|:8080|0\.0\.0\.0' cmd/riido; then
-            echo "cmd/riido must not open public TCP listeners"
+          if grep -R --line-number -E 'net\.Listen\("tcp"|http\.ListenAndServe|:8080|0\.0\.0\.0' internal/mwsdbridge internal/project cmd/riido; then
+            echo "mwsd/project CLI slice must not open public TCP listeners"
             exit 1
           fi
-      - name: Verify CLI build and behavior
+      - name: Verify mwsd/project behavior
         run: |
-          go test ./cmd/riido ./internal/taskdb ./internal/riidoapi ./internal/validation -count=1
-          go build -o /tmp/riido-cli-check ./cmd/riido
+          go test ./internal/mwsdbridge ./internal/project ./cmd/riido -count=1
+          go build -o /tmp/riido-mwsd-check ./cmd/riido
           go run ./cmd/riido --help >/tmp/riido-help.txt 2>&1
-          grep -q 'riido bridge <providers|detect>' /tmp/riido-help.txt
           grep -q 'riido mwsd <snapshot|projection|sync|orchestration|projects|status>' /tmp/riido-help.txt
-          go run ./cmd/riido bridge providers | grep -q '"name": "codex"'

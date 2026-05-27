@@ -50,8 +50,8 @@ RIID-4657 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 task source 에 runtime registration / heartbeat / claim / cancel-watch 를 요청하고
 task reporter 에 start/event/complete 를 보고하는 provider-neutral port 계약을
 소유한다. `controlplane/saasplane`, `controlplane/taskdbplane`, supervisor polling
-loop, server HTTP/SSE transport, task DB/project/mwsd adapter 는 여전히 후속 migration
-slice 가 맡는다.
+loop, server HTTP/SSE transport, task DB/project/mwsd adapter 는 RIID-4657 당시
+후속 migration slice 가 맡는 것으로 남겼다.
 
 RIID-4658 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/claude` 다. 이 package 는 Claude Code CLI 를 번들하지 않고,
@@ -59,7 +59,7 @@ external executable detection, command construction, stream-json parser, raw eve
 translator, stdin protocol driver, provider input approval frame builder 를 소유한다.
 real Claude CLI execution 은 `AGENTBRIDGE_INTEGRATION=1` 로 opt-in 된 경우에만 검증한다.
 Codex/OpenClaw/Cursor adapter, supervisor polling loop, server/task DB/project/mwsd
-adapter 는 여전히 후속 migration slice 가 맡는다.
+adapter 는 RIID-4658 당시 후속 migration slice 가 맡는 것으로 남겼다.
 
 RIID-4659 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/codex` 다. 이 package 는 Codex CLI 를 번들하지 않고,
@@ -67,8 +67,8 @@ RIID-4659 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 isolation, JSONL parser, raw event translator, JSON-RPC protocol driver, pending
 request actor, approval response path 를 소유한다. real Codex CLI execution 은
 `AGENTBRIDGE_INTEGRATION=1` 로 opt-in 된 경우에만 검증한다. OpenClaw/Cursor
-adapter, supervisor polling loop, server/task DB/project/mwsd adapter 는 여전히 후속
-migration slice 가 맡는다.
+adapter, supervisor polling loop, server/task DB/project/mwsd adapter 는 RIID-4659
+당시 후속 migration slice 가 맡는 것으로 남겼다.
 
 RIID-4660 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/openclaw` 다. 이 package 는 OpenClaw CLI 를 번들하지 않고,
@@ -76,7 +76,8 @@ external executable detection, calendar-version gate, `openclaw agent --local --
 command construction, mandatory session id resolution, JSON/NDJSON parser, raw event
 translator 를 소유한다. real OpenClaw CLI execution 은 `AGENTBRIDGE_INTEGRATION=1` 로
 opt-in 된 경우에만 검증한다. Cursor adapter, supervisor polling loop, server/task
-DB/project/mwsd adapter 는 여전히 후속 migration slice 가 맡는다.
+DB/project/mwsd adapter 는 RIID-4660 당시 후속 migration slice 가 맡는 것으로
+남겼다.
 
 RIID-4661 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/cursor` 다. 이 package 는 Cursor Agent CLI 를 번들하지 않고,
@@ -84,7 +85,7 @@ root-print / agent-subcommand / legacy-chat launch profile selection, `--yolo` u
 bypass policy gate, external executable detection, stream-json parser, raw event
 translator 를 소유한다. real Cursor Agent CLI execution 은 `AGENTBRIDGE_INTEGRATION=1`
 로 opt-in 된 경우에만 검증한다. supervisor polling loop, server/task DB/project/mwsd
-adapter 는 여전히 후속 migration slice 가 맡는다.
+adapter 는 RIID-4661 당시 후속 migration slice 가 맡는 것으로 남겼다.
 
 RIID-4662 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/agentbridge/supervisor` 다. 이 package 는 Daemon tier control loop 로서
@@ -104,6 +105,20 @@ control-plane source/reporter 로 사용하며, runtime registry sidecar, lease 
 fencing token 검증, expired lease handoff 를 같은 C9 file lock 아래에서 수행한다.
 이 slice 는 project/mwsd sync, local API/socket, CLI commands, `saasplane`, server
 HTTP transport, infra/secret/state files 를 이동하지 않는다.
+
+RIID-4684 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
+`internal/riidoapi` local API adapter 다. 이 adapter 는 local IPC envelope 와
+Unix-socket / Windows named-pipe transport 를 소유하고, public `internal/taskdb`
+guarded mutation 과 `internal/validation` 을 호출한다. provider runtime 은 이 local
+API transport 를 소유하지 않는다.
+
+RIID-4686 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
+`internal/mwsdbridge`, `internal/project`, and `riido mwsd ...` 이다.
+`mwsdbridge` 는 macmini-workspace daemon 의 local JSON socket contract 만 읽는
+anti-corruption layer 이고, `project` 는 `riido-workspace-projection.v1` /
+`riido-project-state.v1` 과 project-to-taskdb projection sync 를 소유한다. 이 sync 는
+문서 기반 task source 를 public `internal/taskdb` row 로 투영할 뿐, provider process
+execution / runtime session / SaaS transport 를 소유하지 않는다.
 
 ## 1. 책임 한 줄
 
@@ -443,8 +458,8 @@ ControlPlane root package 의 비책임:
 - `runtimeactor` session handoff / process execution
 - `controlplane/saasplane` HTTP polling / event sync adapter
 - task DB source/reporter adapters outside the root package. Public
-  `controlplane/taskdbplane` owns `riido-task-db.v1`; project/mwsd sync remains
-  outside this context.
+  `controlplane/taskdbplane` owns `riido-task-db.v1`; public `internal/project`
+  owns project/mwsd projection sync outside this context.
 - `riidoaiserver`, local API, project persistence, packaging, infra, secrets
 
 ### 7.9 Supervisor boundary
@@ -472,7 +487,9 @@ Supervisor 의 비책임:
 - `riido-task-db.v1` guarded mutation, local task DB lease sidecars,
   project/mwsd sync, local API, SaaS HTTP/SSE transport, or infra/state/secret
   ownership. Public `internal/taskdb` and `controlplane/taskdbplane` own the
-  first two items; the rest remain separate adapters/repos.
+  task DB pieces, public `internal/project` owns project/mwsd projection sync,
+  public `internal/riidoapi` owns local API, and SaaS/infra remain separate
+  repos or adapters.
 - concrete provider parser/command/protocol implementation.
 - C1/C2/C3 schema ownership. 이 타입들은 public `riido-contracts` 에서 import 한다.
 - persistent lease registry / fencing-token primitive. Public
