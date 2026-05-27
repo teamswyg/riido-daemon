@@ -1,0 +1,48 @@
+{
+  "schema_version": "riido-privacy-metadata-allowlist.v1",
+  "surfaces": [
+    {
+      "id": "c11-server-facing-client-metadata",
+      "owner_context": "C11",
+      "allowed_json_paths": [
+        "distribution_channel",
+        "app_version",
+        "providers",
+        "providers.provider_kind",
+        "providers.provider_available",
+        "providers.provider_login_status",
+        "providers.routing_status"
+      ],
+      "forbidden_json_paths": [
+        "provider_executable_path",
+        "workspace_root_path",
+        "token",
+        "api_key",
+        "raw_environment"
+      ]
+    },
+    {
+      "id": "c10-provider-status-sync-request",
+      "owner_context": "C10",
+      "allowed_json_paths": [
+        "daemon_id",
+        "device_id",
+        "runtime_id",
+        "distribution_channel",
+        "app_version",
+        "providers",
+        "providers.provider_kind",
+        "providers.routing_status"
+      ],
+      "forbidden_json_paths": [
+        "provider_executable_path",
+        "workspace_root_path",
+        "provider_available",
+        "provider_login_status",
+        "token",
+        "api_key",
+        "raw_environment"
+      ]
+    }
+  ]
+}
