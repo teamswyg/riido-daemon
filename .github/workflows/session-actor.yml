@@ -1,0 +1,43 @@
+name: session-actor
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/session-actor.yml"
+      - "internal/agentbridge/**"
+      - "internal/process/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/session-actor.yml"
+      - "internal/agentbridge/**"
+      - "internal/process/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  run-scope-session-actor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify session actor gates
+        run: |
+          go test ./internal/agentbridge/session ./internal/process -run 'Session|ProtocolDriver|Burst|Goroutine|TempFiles|Timeout|Cancellation|ProcessExit|DefaultBuffers|ToolStart|AutoApproval' -count=1
