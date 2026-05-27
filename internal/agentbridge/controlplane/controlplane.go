@@ -11,7 +11,7 @@
 //
 // Not part of this package:
 //   - supervisor polling / runtime selection.
-//   - riido_ai_server HTTP polling and event sync adapters.
+//   - SaaS assignment HTTP polling and event sync adapters.
 //   - task DB / project / mwsd-backed adapters.
 package controlplane
 

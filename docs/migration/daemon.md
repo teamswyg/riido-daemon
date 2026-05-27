@@ -91,9 +91,11 @@ Do not move into `riido-daemon`:
 
 ### RIID-4643 — contracts import gate
 
-`riido-daemon` consumes `github.com/teamswyg/riido-contracts v0.1.0` and keeps
-CI limited to Riido-owned Go module dependencies. This is a compatibility gate
-only; it does not move runtime packages.
+`riido-daemon` started by consuming
+`github.com/teamswyg/riido-contracts v0.1.0` and keeping CI limited to
+Riido-owned Go module dependencies. This was a compatibility gate only; it did
+not move runtime packages. Later slices may bump the module version when a
+newly migrated daemon adapter needs a newer shared contract.
 
 ### RIID-4645 — local process / validation / lock core
 
@@ -119,7 +121,8 @@ This slice moves the pure C5 scheduling domain:
 - `docs/20-domain/runtime-scheduling.md`
 
 The package imports provider capability types from
-`github.com/teamswyg/riido-contracts/provider/capability v0.1.0`.
+`github.com/teamswyg/riido-contracts/provider/capability`; the module version
+is the current `go.mod` contract version.
 
 This slice does not move supervisor/runtimeactor/session/provider adapters,
 task DB/project/mwsd/local API packages, provider process execution, private
@@ -133,8 +136,8 @@ This slice moves the pure C6 workspace / native config domain:
 - `docs/20-domain/workspace.md`
 - native config plan generator support needed by `go generate ./internal/workdir`
 
-The package imports IR types from `github.com/teamswyg/riido-contracts/ir
-v0.1.0`.
+The package imports IR types from `github.com/teamswyg/riido-contracts/ir`; the
+module version is the current `go.mod` contract version.
 
 This slice does not move provider adapters, runtime/session/supervisor actors,
 C7 policy/security implementation, C11 host integration implementation,
@@ -150,7 +153,8 @@ This slice moves the pure C11 distribution / host integration domain:
 - `privacy_metadata_allowlist.riido.json` as C10/C11 privacy-boundary evidence
 
 The package imports provider capability types from
-`github.com/teamswyg/riido-contracts/provider/capability v0.1.0`.
+`github.com/teamswyg/riido-contracts/provider/capability`; the module version
+is the current `go.mod` contract version.
 
 This slice does not move provider adapters, runtime/session/supervisor actors,
 C7 policy/security implementation, concrete OS adapters, task DB/project/mwsd
@@ -182,8 +186,9 @@ This slice moves the daemon-side C2 EventIngestor implementation:
   EventIngestor verification point
 
 The package imports CanonicalEvent and envelope validation types from
-`github.com/teamswyg/riido-contracts/ir v0.1.0`, and imports the local public
-C7 policy redaction catalog from `internal/policy`.
+`github.com/teamswyg/riido-contracts/ir`, and imports the local public C7
+policy redaction catalog from `internal/policy`. The module version is the
+current `go.mod` contract version.
 
 This slice does not move provider adapters, runtime/session/supervisor actors,
 ToolRef.Args flattening, concrete event sink wiring beyond the existing C6
@@ -535,6 +540,34 @@ public TCP listeners, or bundle the mwsd daemon.
 This slice does not move full `riido daemon ...` process lifecycle commands,
 `controlplane/saasplane`, server HTTP transport, packaging artifacts, private
 infra, secrets, or local machine state.
+
+### RIID-4689 — saasplane assignment polling adapter migration
+
+This slice moves the daemon-side SaaS assignment polling/report adapter:
+
+- `internal/agentbridge/controlplane/saasplane`
+- docs updates in provider-runtime, runtime-scheduling, and daemon migration
+  SSOT files
+- focused public CI for assignment poll/start/cancel, heartbeat, progress/event
+  sync, terminal result reporting, bearer auth forwarding, and public boundary
+  import checks
+
+`controlplane/saasplane` adapts the C10 assignment HTTP API into the existing
+`TaskSourcePort` and `TaskReporterPort`. It polls `/v1/agents/{agent_id}/poll`,
+turns `start` responses into `bridge.TaskRequest`, watches `cancel` responses
+for in-flight task cancellation, forwards heartbeat active assignment ids, and
+posts daemon progress/result events to `/v1/agents/{agent_id}/events`.
+
+The adapter imports shared DTO/state/event/poll constants from
+`github.com/teamswyg/riido-contracts/assignment v0.3.0` and does not import
+private `internal/riidoaiserver` packages. The control-plane repository still
+owns HTTP handlers, store actors, SSE fan-out, authZ, metrics/health read
+models, persistence, and production infra.
+
+This slice does not move full `riido daemon ...` process lifecycle CLI wiring,
+server HTTP implementation, SSE transport, Terraform/AWS/deploy evidence,
+packaging artifacts, private infra, secrets, provider CLI bundling, or local
+machine state.
 
 ## Validation Gates
 
