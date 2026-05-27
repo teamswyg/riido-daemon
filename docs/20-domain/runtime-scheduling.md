@@ -82,8 +82,8 @@ C5 의 local eligibility 판정 입력:
 
 이 섹션은 C5 가 다른 daemon runtime package 와 맺는 계약을 설명한다.
 RIID-4646 에서는 `internal/scheduling` 순수 domain package 만 public repo 로
-이동했고, supervisor/runtimeactor/task DB adapter 구현은 후속 migration slice
-에서 이동한다.
+이동했다. RIID-4656 은 `runtimeactor` 를, RIID-4662 는 `supervisor` 를 public
+repo 로 이동했다. task DB adapter 구현은 후속 migration slice 에서 이동한다.
 
 현재 local daemon process 는 provider capability boundary 별 RuntimeActor pool 을 가진다. 기본 daemon 은 `claude`, `codex`, `openclaw`, `cursor` adapter 를 각각 별도 RuntimeActor 로 시작하고, SupervisorActor 가 각 runtime 을 control plane 에 등록한 뒤 runtime id 별로 claim / heartbeat / cancellation 을 dispatch 한다. 같은 process 안에서도 “pool 에서 선택된 runtime 이 claim 하고 실행한다”가 기본 의미다. 여러 daemon 이 같은 task DB 를 source 로 공유하는 경우에도 task DB adapter 는 persisted runtime registry 를 pool snapshot 으로 보고, deterministic selector 가 고른 runtime id 에서만 claim 이 성공한다.
 
@@ -92,8 +92,8 @@ RIID-4646 에서는 `internal/scheduling` 순수 domain package 만 public repo 
 | 코드 | 역할 |
 | --- | --- |
 | `internal/scheduling` | C5 domain model: `RuntimeLease`, required surface enum, eligibility evaluator |
-| `internal/agentbridge/supervisor` | local daemon claim loop. RuntimeActor pool 을 등록/heartbeat 하고, selected runtime status 를 C5 evaluator 입력으로 변환한 뒤 process spawn 전에 gate 적용. 후속 migration slice 대상 |
-| `internal/agentbridge/runtimeactor` | C4 실행 actor. production daemon 에서는 provider별 actor 로 구동된다. provider availability 방어를 유지하지만 scheduling 결정을 소유하지 않음. 후속 migration slice 대상 |
+| `internal/agentbridge/supervisor` | local daemon claim loop. RuntimeActor pool 을 등록/heartbeat 하고, selected runtime status 를 C5 evaluator 입력으로 변환한 뒤 process spawn 전에 gate 적용. public 구현은 RIID-4662 에서 이동됨 |
+| `internal/agentbridge/runtimeactor` | C4 실행 actor. production daemon 에서는 provider별 actor 로 구동된다. provider availability 방어를 유지하지만 scheduling 결정을 소유하지 않음. public 구현은 RIID-4656 에서 이동됨 |
 | `internal/agentbridge/controlplane/taskdbplane` | `riido-task-db.v1` first-class source/reporter adapter. `Queued → Claimed → Preparing → Running → Validating/terminal` 을 guarded mutation 으로 기록. 후속 migration slice 대상 |
 
 순수 pool selector(`internal/scheduling.SelectRuntime`) 는 여러 runtime capability snapshot 을 같은 evaluator 로 평가하고, eligible 후보 중 deterministic 하게 하나를 고른다. 우선순위는 capability summary(`supported` → `degraded` → `experimental`) 다음 slot headroom, `RuntimeID`, `CapabilityFingerprint` 순이다. 이 함수는 lease 를 획득하지 않고 provider process 를 시작하지 않는다. `riido-task-db.v1` adapter 는 선택 결과의 `(RuntimeID, CapabilityFingerprint)` 로 C9 local file lock + lease sidecar 를 잡은 뒤 claim 한다.
