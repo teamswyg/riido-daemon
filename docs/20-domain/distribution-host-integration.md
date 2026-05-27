@@ -11,10 +11,11 @@
 
 1. **Provider CLI 는 번들하지 않는다.** Claude / Codex / OpenClaw / Cursor Agent executable 은 Riido package artifact 안에 들어갈 수 없다. Riido 는 사용자가 설치한 외부 CLI 를 detect / register / verify 할 뿐이다.
 2. **Store app 은 control surface 다.** Riido Store App 은 local helper 상태, provider 연결 상태, workspace grant, privacy/telemetry 설정, review/demo mode 를 보여주는 사용자-facing control surface 다. provider runtime 자체를 앱 안에 숨기지 않는다.
-3. **Background 실행은 사용자 동의가 truth source 다.** helper/login item/startup task/background sync 는 `ConsentLedger` 의 explicit grant 가 없으면 켜지지 않는다.
-4. **Local IPC 는 OS별 adapter 뒤에 둔다.** 도메인은 "local-only IPC" 만 안다. macOS Unix domain socket / app group container path, Windows named pipe / package local data path 는 C11 adapter 가 결정한다.
-5. **Store channel 은 runtime capability 의 사용 가부를 제한한다.** provider 가 어떤 surface 를 지원해도 `mac-app-store` / `msix-store` policy 가 금지하면 C3 compatibility 또는 C4 pre-execute 단계에서 blocked 로 본다.
-6. **Review 환경은 provider CLI 없이도 평가 가능해야 한다.** Store 심사용 demo/offline mode 는 provider 실행 없이 app shell, consent, provider connection status, workspace grant UX 를 검증할 수 있어야 한다.
+3. **Store App GUI adapter 는 C11 계약의 consumer 다.** `riido-daemon` 은 C11 순수 모델, local helper/runtime contract, local IPC API 를 소유한다. 실제 GUI shell, OS entitlement calls, App Store/MSIX project files, file/folder picker, login-item/full-trust registration adapter 는 future desktop/app repository 가 소유할 수 있지만 C11/local API 계약을 우회할 수 없다. 이 결정은 `Q-CTX-005` 를 닫는다.
+4. **Background 실행은 사용자 동의가 truth source 다.** helper/login item/startup task/background sync 는 `ConsentLedger` 의 explicit grant 가 없으면 켜지지 않는다.
+5. **Local IPC 는 OS별 adapter 뒤에 둔다.** 도메인은 "local-only IPC" 만 안다. macOS Unix domain socket / app group container path, Windows named pipe / package local data path 는 C11 adapter 가 결정한다.
+6. **Store channel 은 runtime capability 의 사용 가부를 제한한다.** provider 가 어떤 surface 를 지원해도 `mac-app-store` / `msix-store` policy 가 금지하면 C3 compatibility 또는 C4 pre-execute 단계에서 blocked 로 본다.
+7. **Review 환경은 provider CLI 없이도 평가 가능해야 한다.** Store 심사용 demo/offline mode 는 provider 실행 없이 app shell, consent, provider connection status, workspace grant UX 를 검증할 수 있어야 한다.
 
 ## 1. Distribution channel enum
 
@@ -36,6 +37,29 @@ Channel 은 build artifact identity 다. 같은 daemon binary 라도 channel 이
 | **Local Helper / Broker** | local-only IPC, task claim loop, provider runtime orchestration, status/metrics | 외부 TCP listener, 사용자 동의 없는 autostart |
 | **Provider Connector** | user-selected/env/auto-detected executable provenance, version/login/capability probe | vendor code redistribution, provider license/TOS 대체 |
 | **SaaS Control Plane** | assignment, polling, event stream, policy-aware routing metadata | 고객 PC provider process 실행 |
+
+### 2.1 Store App repository / adapter ownership
+
+`riido-daemon` 은 Store App 이 호출해야 하는 public-safe daemon contract 를 소유한다.
+이 범위는 C11 pure domain model, `ExternalToolRegistry`, `ConsentLedger`,
+`WorkspaceGrantStore`, `AppDataRoot`, `LocalIPCEndpoint`, helper runtime plan,
+store distribution executable contract, and local API request/response envelope 이다.
+
+Store App GUI adapter 는 별도 desktop/app shell 로 분리할 수 있다. 그 adapter 는
+화면, native entitlement API 호출, security-scoped bookmark / Windows folder picker
+token 보관, `SMAppService` / packaged full-trust startup registration, App Store/MSIX
+project files, review note composition 을 소유한다. 단, 다음을 지켜야 한다.
+
+1. provider executable path / login status / workspace grant / consent 상태는 C11
+   records 로 변환한 뒤 local helper API 로 전달한다.
+2. GUI adapter 는 provider process 를 직접 spawn 하지 않는다. provider 실행은
+   local helper (`cmd/riido`) 와 C4 runtime boundary 뒤에 둔다.
+3. GUI adapter 는 provider CLI 를 bundle / download / silently install 하지 않는다.
+4. GUI adapter 가 별도 repository 로 이동해도 C11 domain facts 를 복사하지 않는다.
+   필요한 공유 wire type 이 두 repo 이상에서 필요해지면 `riido-contracts` promotion
+   rule 을 따른다.
+5. signing profiles, real provisioning secrets, App Store Connect / Partner Center
+   credentials, and live submission evidence 는 public daemon repo 에 들어오지 않는다.
 
 ## 3. ExternalToolRegistry
 

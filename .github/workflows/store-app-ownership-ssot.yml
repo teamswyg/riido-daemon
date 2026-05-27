@@ -1,0 +1,42 @@
+name: store-app-ownership-ssot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/store-app-ownership-ssot.yml"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/30-architecture/store-distribution.md"
+      - "docs/30-architecture/module-decomposition.md"
+      - "docs/50-roadmap/open-questions.md"
+      - "docs/migration/daemon.md"
+  pull_request:
+    paths:
+      - ".github/workflows/store-app-ownership-ssot.yml"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/30-architecture/store-distribution.md"
+      - "docs/30-architecture/module-decomposition.md"
+      - "docs/50-roadmap/open-questions.md"
+      - "docs/migration/daemon.md"
+
+jobs:
+  ownership-ssot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Q-CTX-005 is closed in owning SSOT
+        run: |
+          if grep -q "Q-CTX-005" docs/50-roadmap/open-questions.md; then
+            echo "Q-CTX-005 must stay closed in C11/store architecture docs"
+            exit 1
+          fi
+          grep -q "Q-CTX-005" docs/20-domain/distribution-host-integration.md
+          grep -q "Store App repository / adapter ownership" docs/20-domain/distribution-host-integration.md
+          grep -q "future desktop/app repository" docs/30-architecture/store-distribution.md
+          grep -q "Future Store App GUI adapter" docs/30-architecture/module-decomposition.md
+      - name: Verify Store App ownership guardrails
+        run: |
+          grep -q "Store App GUI must remain a client of C11/local API contracts" docs/migration/daemon.md
+          grep -q "provider process 를 직접 spawn 하지 않는다" docs/20-domain/distribution-host-integration.md
+          grep -q "provider CLI 를 bundle / download / silently install 하지 않는다" docs/20-domain/distribution-host-integration.md
+          grep -q "public repositories never store secrets" docs/30-architecture/store-distribution.md

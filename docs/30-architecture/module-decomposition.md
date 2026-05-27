@@ -16,6 +16,10 @@
 5. Domain packages depend inward on contracts and ports. Provider, local IPC,
    filesystem, process, SaaS HTTP, and host/store behavior enter through
    adapters.
+6. Store App GUI code is not a daemon domain package. A future desktop/app
+   repository may own UI and OS entitlement adapters, while `riido-daemon`
+   owns the C11 contracts, helper runtime, local IPC server, and store
+   distribution gates.
 
 ## Package Map
 
@@ -59,6 +63,7 @@ docs.
 | `internal/policy` | stdlib and C11 value types | provider execution, OS adapters, task DB/project, server/deploy code |
 | `internal/riidoapi` | local task/validation adapters and local transports | public TCP listener, SaaS server packages |
 | `cmd/riido` | composition packages in this repository | server binary code, Terraform/AWS/deploy evidence, provider CLI binaries |
+| Future Store App GUI adapter | C11/local API contracts over IPC | daemon internals, provider execution packages, copied C11 domain facts, signing/provisioning secrets |
 
 Production code must keep these rules. Tests may use package-local fakes, but
 must not normalize cross-context imports as production design.

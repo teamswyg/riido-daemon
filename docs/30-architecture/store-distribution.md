@@ -66,9 +66,15 @@
 
 ## 2. Package boundaries
 
+RIID-4570 decision: `riido-daemon` owns the C11 Store App contracts and local
+helper runtime shape. A future desktop/app repository may own the concrete
+Store App GUI adapter and OS entitlement calls, but that adapter must consume
+the C11/local API contracts rather than redefining domain facts.
+
 ```
 Store App
-  -> C11 Host Integration UI adapter
+  -> concrete GUI / OS entitlement adapter (outside daemon domain)
+  -> C11 Host Integration contracts
   -> Local IPC client
   -> ConsentLedger view
   -> ExternalToolRegistry view
@@ -88,6 +94,18 @@ SaaS Control Plane
 ```
 
 `cmd/riido` remains the local helper binary in this repository. A future GUI wrapper may live in another repo, but it must call the C11 contracts rather than bypass them.
+
+### 2.0 Repository ownership
+
+| Surface | Owner | Non-owner |
+| --- | --- | --- |
+| C11 domain facts and pure models | `riido-daemon` | Store App GUI repo must not copy/redefine them |
+| Local helper / broker executable | `riido-daemon` (`cmd/riido`) | Store App GUI must not run provider CLIs directly |
+| Local IPC handler and request envelope | `riido-daemon` | Store App GUI may only be a client |
+| Store distribution executable contract | `riido-daemon` | Private infra must not weaken public review invariants |
+| Store App native UI, entitlement calls, picker/bookmark adapter | future desktop/app repository | `riido-daemon` domain packages do not import GUI frameworks |
+| Signing, provisioning, submission credentials, live evidence | private operator/infra environment | public repositories never store secrets |
+| Shared DTO/schema needed by multiple repos | `riido-contracts` after promotion | no repo may fork the same fact |
 
 ### 2.1 macOS helper / login item strategy
 
