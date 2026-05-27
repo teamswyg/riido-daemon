@@ -1,0 +1,67 @@
+name: cli
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/cli.yml"
+      - "cmd/riido/**"
+      - "internal/taskdb/**"
+      - "internal/riidoapi/**"
+      - "internal/agentbridge/**"
+      - "internal/provider/**"
+      - "internal/validation/**"
+      - "docs/migration/cli.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/cli.yml"
+      - "cmd/riido/**"
+      - "internal/taskdb/**"
+      - "internal/riidoapi/**"
+      - "internal/agentbridge/**"
+      - "internal/provider/**"
+      - "internal/validation/**"
+      - "docs/migration/cli.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  cli-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify CLI public boundary
+        run: |
+          if grep -R --line-number -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/(project|mwsdbridge|riidoaiserver|agentbridge/controlplane/saasplane)' cmd/riido; then
+            echo "cmd/riido must stay inside public daemon boundaries for this slice"
+            exit 1
+          fi
+      - name: Verify CLI local-only gate
+        run: |
+          if grep -R --line-number -E 'net\.Listen\("tcp"|http\.ListenAndServe|:8080|0\.0\.0\.0' cmd/riido; then
+            echo "cmd/riido must not open public TCP listeners"
+            exit 1
+          fi
+      - name: Verify CLI build and behavior
+        run: |
+          go test ./cmd/riido ./internal/taskdb ./internal/riidoapi ./internal/validation -count=1
+          go build -o /tmp/riido-cli-check ./cmd/riido
+          go run ./cmd/riido --help >/tmp/riido-help.txt 2>&1
+          grep -q 'riido bridge <providers|detect>' /tmp/riido-help.txt
+          go run ./cmd/riido bridge providers | grep -q '"name": "codex"'

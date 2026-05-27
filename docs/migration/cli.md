@@ -27,7 +27,7 @@ The initial CLI source is:
 
 ## Target Boundary
 
-Move into the CLI slice:
+Move into the final CLI boundary:
 
 - `riido mwsd ...`
 - `riido task ...`
@@ -37,6 +37,18 @@ Move into the CLI slice:
 - `riido bridge ...`
 - local smoke commands that exercise the CLI as a black box
 - usage/help tests that keep `printUsage()` authoritative
+
+RIID-4685 is a smaller public-safe slice inside that final boundary. It moves
+only the commands whose backing packages are already public:
+
+- `riido task ...` over `internal/taskdb`
+- `riido serve` and `riido api ...` over `internal/riidoapi`
+- `riido bridge providers|detect` over public provider adapters
+
+`riido mwsd ...` remains deferred until `mwsdbridge/project` projection sync is
+split from private workspace state. Full `riido daemon ...` process lifecycle
+commands remain deferred until the daemon runtime wrapper no longer imports the
+private SaaS plane or private projection source.
 
 Do not move into the CLI slice:
 
@@ -54,10 +66,10 @@ SSOT docs.
 | CLI concern | Owner |
 | --- | --- |
 | Argument parsing and usage text | `cmd/riido` |
-| Task FSM legality | daemon domain package after migration |
-| IR event schema | `riido-contracts` only after promotion |
+| Task FSM legality | `riido-contracts/task` through `internal/taskdb` guarded mutation |
+| IR event schema | `riido-contracts/ir` |
 | Provider process execution | daemon runtime packages |
-| Local IPC transport | daemon host integration/local API packages |
+| Local IPC transport | `internal/riidoapi` and `internal/hostintegration` |
 | SaaS HTTP/SSE server | `riido-control-plane` |
 | Deploy/apply behavior | `riido-infra` |
 
@@ -65,9 +77,9 @@ SSOT docs.
 
 1. Move CLI docs and README examples.
 2. Move CLI parser/usage tests that do not need migrated internals.
-3. Move task command wrappers once their backing packages move. The local API
-   backing package moved in RIID-4684 and should be consumed rather than
-   redefined by CLI code.
+3. Move task command wrappers once their backing packages move. RIID-4685 moves
+   the task/API/bridge command wrappers against public `internal/taskdb`,
+   `internal/riidoapi`, and provider adapter ports.
 4. Restore smoke scripts as black-box tests.
 5. Keep real provider CLI tests opt-in and skipped unless executables exist.
 
@@ -78,14 +90,14 @@ Required before a CLI migration PR is mergeable:
 ```bash
 go test ./...
 go list -m all
+go build ./cmd/riido
+go run ./cmd/riido --help
+go run ./cmd/riido bridge providers
 ```
 
 After the full CLI implementation migrates, restore these checks:
 
 ```bash
-go build ./cmd/riido
-go run ./cmd/riido --help
-go run ./cmd/riido bridge providers
 go run ./cmd/riido daemon status --socket /tmp/riido-agentd.sock
 ```
 
