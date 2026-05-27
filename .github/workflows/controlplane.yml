@@ -1,0 +1,53 @@
+name: controlplane
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/controlplane.yml"
+      - "internal/agentbridge/controlplane/**"
+      - "internal/agentbridge/bridge/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/controlplane.yml"
+      - "internal/agentbridge/controlplane/**"
+      - "internal/agentbridge/bridge/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  controlplane-port-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify controlplane root stays provider neutral
+        run: |
+          imports="$(go list -f '{{range .Imports}}{{println .}}{{end}}' ./internal/agentbridge/controlplane)"
+          forbidden="$(printf '%s\n' "$imports" | grep -E 'github.com/teamswyg/riido-daemon/internal/(provider|task|ir|project|riidoapi|riidoaiserver|mwsdbridge|agentbridge/(supervisor|controlplane/(saasplane|taskdbplane)))' || true)"
+          if [ -n "$forbidden" ]; then
+            printf 'Forbidden controlplane imports:\n%s\n' "$forbidden"
+            exit 1
+          fi
+      - name: Verify controlplane port gates
+        run: |
+          go test ./internal/agentbridge/controlplane -run 'TaskReportContext|MemorySource|MemoryReporter|FileReporter|FileQueueSource' -count=1
