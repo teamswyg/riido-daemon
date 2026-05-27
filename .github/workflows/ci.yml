@@ -16,7 +16,11 @@ jobs:
           cache: false
       - name: Verify no non-Riido Go dependencies
         run: |
-          disallowed="$(go list -m all | awk 'NR > 1 && $1 !~ /^github.com\\/teamswyg\\/riido-contracts$/ { print $1 }')"
-          test -z "$disallowed"
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
       - name: Test
         run: go test ./...
