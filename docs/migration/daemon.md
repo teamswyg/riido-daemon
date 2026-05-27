@@ -110,6 +110,20 @@ This slice does not move provider adapters, runtime/session/supervisor actors,
 task DB/project/mwsd/local API packages, CLI commands, private infra, secrets,
 or local machine state.
 
+### RIID-4646 — runtime scheduling domain
+
+This slice moves the pure C5 scheduling domain:
+
+- `internal/scheduling`
+- `docs/20-domain/runtime-scheduling.md`
+
+The package imports provider capability types from
+`github.com/teamswyg/riido-contracts/provider/capability v0.1.0`.
+
+This slice does not move supervisor/runtimeactor/session/provider adapters,
+task DB/project/mwsd/local API packages, provider process execution, private
+infra, secrets, or local machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
