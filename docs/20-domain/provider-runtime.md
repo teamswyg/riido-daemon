@@ -90,9 +90,20 @@ RIID-4662 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/agentbridge/supervisor` 다. 이 package 는 Daemon tier control loop 로서
 RuntimeActor pool registration / heartbeat, task claim, pre-submit C5 eligibility,
 workdir preparation, EventIngestor append delegation, terminal result reporting, and
-shutdown cancellation/archive 를 연결한다. `controlplane/saasplane`,
-`controlplane/taskdbplane`, task DB/project/mwsd/local API, server HTTP transport,
-infra/secret/state files 는 여전히 후속 migration slice 또는 private repo 가 맡는다.
+shutdown cancellation/archive 를 연결한다. RIID-4662 당시에는
+`controlplane/saasplane`, `controlplane/taskdbplane`, task DB/project/mwsd/local API,
+server HTTP transport, infra/secret/state files 를 후속 migration slice 또는 private
+repo 가 맡기로 남겼다.
+
+RIID-4683 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
+`internal/taskdb` 와 `internal/agentbridge/controlplane/taskdbplane` 이다.
+`internal/taskdb` 는 `riido-task-db.v1` schema, guarded transition/evidence
+mutation, command-id idempotent replay, and deterministic validation evidence
+receipt 를 소유한다. `taskdbplane` 은 해당 JSON DB 를 first-class local
+control-plane source/reporter 로 사용하며, runtime registry sidecar, lease sidecar,
+fencing token 검증, expired lease handoff 를 같은 C9 file lock 아래에서 수행한다.
+이 slice 는 project/mwsd sync, local API/socket, CLI commands, `saasplane`, server
+HTTP transport, infra/secret/state files 를 이동하지 않는다.
 
 ## 1. 책임 한 줄
 
@@ -431,7 +442,9 @@ ControlPlane root package 의 비책임:
 - supervisor polling loop, runtime selection, slot scheduling
 - `runtimeactor` session handoff / process execution
 - `controlplane/saasplane` HTTP polling / event sync adapter
-- `controlplane/taskdbplane` task DB/project/mwsd adapter
+- task DB source/reporter adapters outside the root package. Public
+  `controlplane/taskdbplane` owns `riido-task-db.v1`; project/mwsd sync remains
+  outside this context.
 - `riidoaiserver`, local API, project persistence, packaging, infra, secrets
 
 ### 7.9 Supervisor boundary
@@ -456,12 +469,14 @@ Supervisor 의 책임:
 
 Supervisor 의 비책임:
 
-- `riido-task-db.v1` guarded mutation, project/mwsd sync, local API, SaaS HTTP/SSE
-  transport, or infra/state/secret ownership.
+- `riido-task-db.v1` guarded mutation, local task DB lease sidecars,
+  project/mwsd sync, local API, SaaS HTTP/SSE transport, or infra/state/secret
+  ownership. Public `internal/taskdb` and `controlplane/taskdbplane` own the
+  first two items; the rest remain separate adapters/repos.
 - concrete provider parser/command/protocol implementation.
 - C1/C2/C3 schema ownership. 이 타입들은 public `riido-contracts` 에서 import 한다.
-- persistent lease registry / fencing-token primitive. task DB source adapter 가
-  후속 slice 에서 소유한다.
+- persistent lease registry / fencing-token primitive. Public
+  `controlplane/taskdbplane` owns this adapter boundary.
 
 ## 8. provider session 보존 (영속화의 1 차 키)
 

@@ -1,0 +1,63 @@
+name: taskdbplane
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/taskdbplane.yml"
+      - "internal/taskdb/**"
+      - "internal/agentbridge/controlplane/taskdbplane/**"
+      - "internal/agentbridge/controlplane/**"
+      - "internal/agentbridge/bridge/**"
+      - "internal/lock/**"
+      - "internal/scheduling/**"
+      - "docs/20-domain/locking.md"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/runtime-scheduling.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/taskdbplane.yml"
+      - "internal/taskdb/**"
+      - "internal/agentbridge/controlplane/taskdbplane/**"
+      - "internal/agentbridge/controlplane/**"
+      - "internal/agentbridge/bridge/**"
+      - "internal/lock/**"
+      - "internal/scheduling/**"
+      - "docs/20-domain/locking.md"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/runtime-scheduling.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  taskdbplane-local-json-source:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify taskdbplane public boundary
+        run: |
+          imports="$(go list -f '{{range .Imports}}{{println .}}{{end}}{{range .TestImports}}{{println .}}{{end}}{{range .XTestImports}}{{println .}}{{end}}' ./internal/taskdb ./internal/agentbridge/controlplane/taskdbplane)"
+          forbidden="$(printf '%s\n' "$imports" | grep -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/(project|riidoapi|riidoaiserver|mwsdbridge|provider/)' || true)"
+          if [ -n "$forbidden" ]; then
+            printf 'Forbidden taskdbplane imports:\n%s\n' "$forbidden"
+            exit 1
+          fi
+      - name: Verify taskdbplane domain gates
+        run: |
+          go test ./internal/taskdb ./internal/agentbridge/controlplane/taskdbplane -count=1
