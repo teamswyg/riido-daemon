@@ -46,6 +46,21 @@ The public GitHub Actions workflow rejects non-Riido Go dependencies so daemon
 verification can run outside the private repository billing pool while still
 sharing versioned Riido contracts.
 
+Useful local daemon smoke commands:
+
+```bash
+go run ./cmd/riido --help
+go run ./cmd/riido bridge providers
+go run ./cmd/riido daemon start --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid --log-file /tmp/riido-agentd.log
+go run ./cmd/riido daemon status --socket /tmp/riido-agentd.sock
+go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid
+```
+
+`riido daemon ...` chooses its task source through 12-factor environment:
+`RIIDO_TASK_QUEUE_DIR`, `RIIDO_TASK_DB_SOURCE_PATH`, or `RIIDO_SAAS_URL` plus
+`RIIDO_SAAS_AGENTS`. Provider CLIs remain external tools; this repository does
+not bundle or install Claude, Codex, OpenClaw, or Cursor.
+
 ## License
 
 Apache-2.0.

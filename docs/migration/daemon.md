@@ -569,6 +569,36 @@ server HTTP implementation, SSE transport, Terraform/AWS/deploy evidence,
 packaging artifacts, private infra, secrets, provider CLI bundling, or local
 machine state.
 
+### RIID-4690 — full daemon lifecycle CLI wiring migration
+
+This slice restores the public-safe `riido daemon ...` process lifecycle
+adapter:
+
+- `cmd/riido/daemon.go`
+- `cmd/riido/daemon_config.go`
+- `riido daemon start|status|health|ready|metrics|stop|logs`
+- docs updates in provider-runtime, runtime-scheduling, CLI migration, and
+  daemon migration SSOT files
+- focused public CI for foreground/background daemon start, local Unix socket
+  status/health/ready/metrics, cooperative stop, PID fallback, log tailing,
+  12-factor env config loading, control-plane source selection, public
+  boundary import checks, and local-only listener checks
+
+The CLI adapter wires the already public runtimeactor/supervisor/provider
+adapters to the already public control-plane sources: in-memory offline mode,
+file queue, `riido-task-db.v1` via `taskdbplane`, and SaaS assignment HTTP via
+`saasplane`. Source selection is 12-factor env based:
+`RIIDO_TASK_QUEUE_DIR`, `RIIDO_TASK_DB_SOURCE_PATH`, or `RIIDO_SAAS_URL` with
+`RIIDO_SAAS_AGENTS`.
+
+The daemon command imports public daemon packages only and must not import
+private `riido_daemon` paths or `internal/riidoaiserver`. It does not bundle,
+install, or auto-download Claude/Codex/OpenClaw/Cursor CLIs.
+
+This slice does not move server HTTP implementation, SSE transport,
+Terraform/AWS/deploy evidence, packaging artifacts, private infra, secrets,
+provider CLI bundling, App Store/MSIX helper packaging, or local machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
@@ -603,7 +633,6 @@ AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/... -run TestIntegration -
 
 | Follow-up | Repository |
 | --- | --- |
-| Move CLI command surface under the separate CLI task. | `riido-daemon` / RIID-4635 |
 | Promote shared DTO/schema only after two repositories need the same fact. | `riido-contracts` / RIID-4637 |
 | Move SaaS server code separately. | `riido-control-plane` / RIID-4638 |
 | Move Terraform/deploy evidence privately. | `riido-infra` / RIID-4639 |

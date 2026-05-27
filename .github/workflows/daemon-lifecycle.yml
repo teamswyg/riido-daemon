@@ -1,40 +1,48 @@
-name: cli
+name: daemon-lifecycle
 
 on:
   push:
     branches: [main]
     paths:
-      - ".github/workflows/cli.yml"
+      - ".github/workflows/daemon-lifecycle.yml"
       - "cmd/riido/**"
-      - "internal/mwsdbridge/**"
-      - "internal/project/**"
-      - "internal/taskdb/**"
-      - "internal/riidoapi/**"
       - "internal/agentbridge/**"
       - "internal/provider/**"
-      - "internal/validation/**"
+      - "internal/process/**"
+      - "internal/policy/**"
+      - "internal/workdir/**"
+      - "internal/lock/**"
+      - "internal/logging/**"
+      - "internal/taskdb/**"
+      - "internal/hostintegration/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/runtime-scheduling.md"
       - "docs/migration/cli.md"
       - "docs/migration/daemon.md"
       - "go.mod"
       - "go.sum"
   pull_request:
     paths:
-      - ".github/workflows/cli.yml"
+      - ".github/workflows/daemon-lifecycle.yml"
       - "cmd/riido/**"
-      - "internal/mwsdbridge/**"
-      - "internal/project/**"
-      - "internal/taskdb/**"
-      - "internal/riidoapi/**"
       - "internal/agentbridge/**"
       - "internal/provider/**"
-      - "internal/validation/**"
+      - "internal/process/**"
+      - "internal/policy/**"
+      - "internal/workdir/**"
+      - "internal/lock/**"
+      - "internal/logging/**"
+      - "internal/taskdb/**"
+      - "internal/hostintegration/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/runtime-scheduling.md"
       - "docs/migration/cli.md"
       - "docs/migration/daemon.md"
       - "go.mod"
       - "go.sum"
 
 jobs:
-  cli-gate:
+  daemon-lifecycle-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -50,24 +58,22 @@ jobs:
             printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
             exit 1
           fi
-      - name: Verify CLI public boundary
+      - name: Verify daemon lifecycle public boundary
         run: |
           if grep -R --line-number -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/riidoaiserver' cmd/riido; then
-            echo "cmd/riido must stay inside public daemon boundaries"
+            echo "cmd/riido daemon lifecycle must not import private source or server internals"
             exit 1
           fi
-      - name: Verify CLI local-only gate
+      - name: Verify daemon local-only listener boundary
         run: |
           if grep -R --line-number -E 'net\.Listen\("tcp"|http\.ListenAndServe|:8080|0\.0\.0\.0' cmd/riido; then
-            echo "cmd/riido must not open public TCP listeners"
+            echo "daemon lifecycle must not open public TCP listeners"
             exit 1
           fi
-      - name: Verify CLI build and behavior
+      - name: Verify daemon lifecycle black-box/domain gates
         run: |
-          go test ./cmd/riido ./internal/taskdb ./internal/riidoapi ./internal/validation -count=1
-          go build -o /tmp/riido-cli-check ./cmd/riido
+          go test ./cmd/riido -run 'TestDaemon|TestLoadDaemon|TestBuildDaemon|TestForeground|TestDaemonBackground' -count=1
+          go test ./cmd/riido ./internal/agentbridge/supervisor ./internal/agentbridge/controlplane/saasplane ./internal/agentbridge/controlplane/taskdbplane -count=1
+          go build ./cmd/riido
           go run ./cmd/riido --help >/tmp/riido-help.txt 2>&1
-          grep -q 'riido bridge <providers|detect>' /tmp/riido-help.txt
-          grep -q 'riido mwsd <snapshot|projection|sync|orchestration|projects|status>' /tmp/riido-help.txt
           grep -q 'riido daemon start' /tmp/riido-help.txt
-          go run ./cmd/riido bridge providers | grep -q '"name": "codex"'

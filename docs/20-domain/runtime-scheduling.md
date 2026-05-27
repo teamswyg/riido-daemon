@@ -86,7 +86,8 @@ RIID-4646 에서는 `internal/scheduling` 순수 domain package 만 public repo 
 repo 로 이동했다. RIID-4683 은 local `riido-task-db.v1` persistence package 와
 `controlplane/taskdbplane` adapter 를 public repo 로 이동했다. RIID-4689 는
 SaaS assignment source/reporter adapter 인 `controlplane/saasplane` 을 public repo 로
-이동했다.
+이동했다. RIID-4690 은 이 public runtime/source/reporter 조각들을
+`riido daemon ...` process lifecycle CLI 로 연결했다.
 
 현재 local daemon process 는 provider capability boundary 별 RuntimeActor pool 을 가진다. 기본 daemon 은 `claude`, `codex`, `openclaw`, `cursor` adapter 를 각각 별도 RuntimeActor 로 시작하고, SupervisorActor 가 각 runtime 을 control plane 에 등록한 뒤 runtime id 별로 claim / heartbeat / cancellation 을 dispatch 한다. 같은 process 안에서도 “pool 에서 선택된 runtime 이 claim 하고 실행한다”가 기본 의미다. 여러 daemon 이 같은 task DB 를 source 로 공유하는 경우에도 task DB adapter 는 persisted runtime registry 를 pool snapshot 으로 보고, deterministic selector 가 고른 runtime id 에서만 claim 이 성공한다.
 
@@ -100,6 +101,7 @@ SaaS assignment source/reporter adapter 인 `controlplane/saasplane` 을 public 
 | `internal/taskdb` | local `riido-task-db.v1` JSON schema, guarded mutation, command-id idempotent replay, evidence receipt persistence. public 구현은 RIID-4683 에서 이동됨 |
 | `internal/agentbridge/controlplane/taskdbplane` | `riido-task-db.v1` first-class source/reporter adapter. `Queued → Claimed → Preparing → Running → Validating/terminal` 을 guarded mutation 으로 기록. runtime registry / lease sidecar / fencing token 검증을 소유한다. public 구현은 RIID-4683 에서 이동됨 |
 | `internal/agentbridge/controlplane/saasplane` | SaaS assignment first-class source/reporter adapter. `riido-contracts/assignment` DTO 로 poll/start/cancel/heartbeat/event sync 를 수행하며, claim/runtime scheduling decision 은 supervisor/runtimeactor/controlplane port 경계 뒤에 둔다. public 구현은 RIID-4689 에서 이동됨 |
+| `cmd/riido daemon ...` | 12-factor env 와 CLI flags 를 읽어 RuntimeActor pool, SupervisorActor, local Unix socket status surface, and configured TaskSourcePort/TaskReporterPort 를 연결하는 adapter. public 구현은 RIID-4690 에서 이동됨 |
 
 순수 pool selector(`internal/scheduling.SelectRuntime`) 는 여러 runtime capability snapshot 을 같은 evaluator 로 평가하고, eligible 후보 중 deterministic 하게 하나를 고른다. 우선순위는 capability summary(`supported` → `degraded` → `experimental`) 다음 slot headroom, `RuntimeID`, `CapabilityFingerprint` 순이다. 이 함수는 lease 를 획득하지 않고 provider process 를 시작하지 않는다. `riido-task-db.v1` adapter 는 선택 결과의 `(RuntimeID, CapabilityFingerprint)` 로 C9 local file lock + lease sidecar 를 잡은 뒤 claim 한다.
 
