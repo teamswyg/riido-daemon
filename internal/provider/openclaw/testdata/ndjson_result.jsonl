@@ -1,0 +1,5 @@
+{"event":"session","session_id":"sess-2"}
+{"event":"text","text":"chunk1"}
+{"event":"text","text":"chunk2"}
+{"event":"log","message":"hello"}
+{"event":"usage","prompt_tokens":1,"completion_tokens":2}

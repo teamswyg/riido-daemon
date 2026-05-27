@@ -1,0 +1,53 @@
+name: provider-openclaw
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/provider-openclaw.yml"
+      - "internal/provider/openclaw/**"
+      - "internal/agentbridge/**"
+      - "internal/process/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/provider-openclaw.yml"
+      - "internal/provider/openclaw/**"
+      - "internal/agentbridge/**"
+      - "internal/process/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  openclaw-adapter-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify OpenClaw adapter stays daemon-local
+        run: |
+          imports="$(go list -f '{{range .Imports}}{{println .}}{{end}}{{range .TestImports}}{{println .}}{{end}}{{range .XTestImports}}{{println .}}{{end}}' ./internal/provider/openclaw)"
+          forbidden="$(printf '%s\n' "$imports" | grep -E 'github.com/teamswyg/riido-daemon/internal/(task|project|riidoapi|riidoaiserver|mwsdbridge|agentbridge/(supervisor|controlplane))|github.com/teamswyg/riido-daemon/internal/provider/capability' || true)"
+          if [ -n "$forbidden" ]; then
+            printf 'Forbidden OpenClaw adapter imports:\n%s\n' "$forbidden"
+            exit 1
+          fi
+      - name: Verify OpenClaw adapter gates
+        run: |
+          go test ./internal/provider/openclaw -count=1

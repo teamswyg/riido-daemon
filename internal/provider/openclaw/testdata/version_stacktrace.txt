@@ -1,0 +1,10 @@
+/usr/local/lib/node_modules/openclaw/bin/cli.js:42
+  throw new Error('module load failed');
+        ^
+
+Error: module load failed
+    at Object.<anonymous> (/usr/local/lib/node_modules/openclaw/bin/cli.js:42:9)
+    at Module._compile (node:internal/modules/cjs/loader:1234:14)
+    at Module._extensions..js (node:internal/modules/cjs/loader:1294:10)
+
+Node.js v20.10.0
