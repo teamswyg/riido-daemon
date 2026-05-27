@@ -34,6 +34,8 @@ func run(args []string) error {
 		return nil
 	}
 	switch args[0] {
+	case "mwsd":
+		return runMwsd(args[1:])
 	case "task":
 		return runTask(args[1:])
 	case "serve":
@@ -1159,6 +1161,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "  riido api transition <task-id> --to STATE --event EVENT --approval-id ID [--provider PROVIDER] [--decision-llm LLM] [--command-id ID] [--actor ACTOR] [--source SOURCE] [--reason TEXT] [--socket PATH] [--transport unix-socket|windows-named-pipe]")
 	fmt.Fprintln(os.Stderr, "  riido api evidence <task-id> --command COMMAND --approval-id ID [--exit-code N] [--result RESULT] [--provider PROVIDER] [--decision-llm LLM] [--command-id ID] [--validation-gate GATE] [--provider-run-id ID] [--provider-run-result RESULT] [--actor ACTOR] [--source SOURCE] [--summary TEXT] [--socket PATH] [--transport unix-socket|windows-named-pipe]")
 	fmt.Fprintln(os.Stderr, "  riido api validate <task-id> --command COMMAND --approval-id ID [--workdir PATH] [--timeout-seconds N] [--provider PROVIDER] [--decision-llm LLM] [--command-id ID] [--validation-gate GATE] [--actor ACTOR] [--source SOURCE] [--summary TEXT] [--socket PATH] [--transport unix-socket|windows-named-pipe]")
+	fmt.Fprintln(os.Stderr, "  riido mwsd <snapshot|projection|sync|orchestration|projects|status> [--socket PATH] [--state PATH] [--task-db PATH]")
 	fmt.Fprintln(os.Stderr, "  riido task list [--task-db PATH]")
 	fmt.Fprintln(os.Stderr, "  riido task transition <task-id> --to STATE --event EVENT --approval-id ID [--provider PROVIDER] [--decision-llm LLM] [--command-id ID] [--actor ACTOR] [--source SOURCE] [--reason TEXT] [--task-db PATH]")
 	fmt.Fprintln(os.Stderr, "  riido task evidence <task-id> --command COMMAND --approval-id ID [--exit-code N] [--result RESULT] [--provider PROVIDER] [--decision-llm LLM] [--command-id ID] [--validation-gate GATE] [--provider-run-id ID] [--provider-run-result RESULT] [--actor ACTOR] [--source SOURCE] [--summary TEXT] [--task-db PATH]")
