@@ -1,0 +1,49 @@
+name: agentbridge-root
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/agentbridge-root.yml"
+      - "internal/agentbridge/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/agentbridge-root.yml"
+      - "internal/agentbridge/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  provider-neutral-runtime-domain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify agentbridge stays provider neutral
+        run: |
+          imports="$(go list -f '{{range .Imports}}{{println .}}{{end}}' ./internal/agentbridge)"
+          forbidden="$(printf '%s\n' "$imports" | grep -E 'github.com/teamswyg/riido-daemon/internal/(provider|process|task|ir|project|riidoapi|mwsdbridge)' || true)"
+          if [ -n "$forbidden" ]; then
+            printf 'Forbidden agentbridge imports:\n%s\n' "$forbidden"
+            exit 1
+          fi
+      - name: Verify agentbridge root domain
+        run: |
+          go test ./internal/agentbridge -run 'Reduce|Telemetry|FilterBlockedArgs|Semantic|States|Lifecycle' -count=1
