@@ -214,6 +214,45 @@ macOS Store helper plan invariant:
 4. `mac-app-store` 는 App Store-managed updates 를 사용하며 self-updater / direct LaunchAgent / shared-location install / standalone code download / provider CLI bundling 을 허용하지 않는다.
 5. `mac-app-store` workspace grant requirement 는 `security-scoped-bookmark` 다.
 
+### 4.1.1 macOS external Provider CLI entitlement / review strategy
+
+`Q-DIST-001` is resolved here. The Mac App Store target treats Claude / Codex /
+OpenClaw / Cursor CLIs as external user-installed executables, never bundled
+payloads. The Store App may help the user choose and verify a provider path, but
+provider execution remains behind the local helper and C4 runtime boundary.
+
+Policy snapshot: checked Apple App Review Guidelines and App Sandbox entitlement
+documentation on 2026-05-28. The source links stay in
+[`../30-architecture/store-distribution.md`](../30-architecture/store-distribution.md)
+§7. If Apple changes these rules, this section and the executable policy gate
+must change in the same work unit.
+
+Rules:
+
+1. `mac-app-store` must not use a temporary exception entitlement as the default
+   strategy for provider CLI execution. Temporary exceptions require a new SSOT
+   work unit and App Review note update.
+2. Provider CLI path registration must start from a user action such as file
+   picker / open panel, then reduce adapter-specific proof into C11 facts:
+   `ExternalToolRecord{provenance=user-selected}` and
+   `StoreChannelPolicyInput.OSGrantPresent=true`.
+3. A sandbox/security-scoped/user-selected executable grant alone is not enough
+   to execute a provider CLI in the Store channel. `StoreReviewApproved=true`
+   is also required, representing App Review acceptance of the review note for
+   this external-tool execution surface.
+4. If either OS grant or Store review approval is missing, the provider may be
+   shown as detected / login-required / store-blocked, but C4 must not spawn it.
+   Review/demo mode must still work without provider CLI installation.
+5. The review note must explain: provider CLIs are external user-installed
+   tools; Riido does not bundle, download, or silently install them; execution
+   requires explicit `provider-execute:<provider>` consent; the local helper is
+   local-only; workspace access is security-scoped; no root escalation,
+   LaunchAgent install, standalone code download, or shared-location code
+   install is used.
+6. Provider executable paths, security-scoped bookmark bytes, and entitlement
+   proof stay local to the Store App/helper adapter. C10 metadata may receive
+   provider kind and routing status only.
+
 ### 4.2 Windows MSIX runtime / packaging strategy
 
 `msix-sideload` 와 `msix-store` 는 Windows 에서 같은 local runtime 책임을 갖되 심사/업데이트 경계가 다르다.
@@ -276,7 +315,7 @@ subject 규칙:
 | Surface | `developer-id` | `mac-app-store` | `msix-sideload` | `msix-store` |
 | --- | --- | --- | --- | --- |
 | Provider CLI bundling | 금지 | 금지 | 금지 | 금지 |
-| Provider CLI user-selected path | 허용 | 제한 허용: sandbox/security-scoped grant 필요 | 허용 | 허용 |
+| Provider CLI user-selected path | 허용 | 제한 허용: sandbox/security-scoped/user-selected executable grant + Store review approval 필요 | 허용 | 허용 |
 | Silent provider auto-install | 금지 | 금지 | 금지 | 금지 |
 | Background helper | 허용: 명시 동의 | 제한 허용: login item/helper + sandbox 검토 | 허용: 명시 동의 | 제한 허용: full trust / Store policy 검토 |
 | Direct LaunchAgent install | 허용 가능 | 금지 | 해당 없음 | 해당 없음 |
@@ -358,7 +397,7 @@ Store App / helper adapter 가 쓰는 local control surface 는 public `internal
 
 [`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 위임.
 
-- `Q-DIST-001`: `mac-app-store` 에서 외부 provider CLI 실행을 어떤 entitlement / security-scoped bookmark 조합으로 허용 가능한지의 최종 심사 전략.
+- `Q-DIST-001`: RESOLVED by §4.1.1 and §6. `mac-app-store` external provider CLI execution requires a user-selected/sandbox/security-scoped OS grant and Store review approval; otherwise it is store-blocked/demo-only.
 - `Q-DIST-002`: RESOLVED by §4.2. `msix-store` 는 packaged full-trust helper/tray process 를 local runtime broker 로 쓰고 Windows service default install 은 금지한다.
 - `Q-DIST-003`: ConsentLedger 의 저장 substrate 를 local JSON append log 로 둘지, OS secure storage 를 섞을지.
 - `Q-DIST-004`: RESOLVED in the private source open-questions SSOT as `Q-DIST-004` → `Q-CTX-005`. Store App repo ownership 은 C11 context ownership 질문 하나로만 추적한다.

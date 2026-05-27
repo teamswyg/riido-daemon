@@ -87,7 +87,10 @@ func (surface StoreSurface) Valid() bool {
 
 func evaluateProviderCLIUserSelectedPath(input StoreChannelPolicyInput) Decision {
 	if input.Channel == hostintegration.DistributionChannelMacAppStore && !input.OSGrantPresent {
-		return deny("STORE_CHANNEL_REQUIRES_OS_GRANT", "mac-app-store provider CLI path requires a sandbox or security-scoped grant")
+		return deny("STORE_CHANNEL_REQUIRES_OS_GRANT", "mac-app-store provider CLI path requires a sandbox, user-selected executable, or security-scoped grant")
+	}
+	if input.Channel == hostintegration.DistributionChannelMacAppStore && !input.StoreReviewApproved {
+		return deny("STORE_CHANNEL_REQUIRES_STORE_REVIEW_APPROVAL", "mac-app-store provider CLI execution requires App Review approval and review notes")
 	}
 	return allowStoreChannelSurface("user-selected provider CLI path is allowed for this distribution channel")
 }

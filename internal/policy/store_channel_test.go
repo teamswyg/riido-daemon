@@ -37,7 +37,7 @@ func TestStoreChannelPolicyAlwaysDeniesForbiddenSurfaces(t *testing.T) {
 	}
 }
 
-func TestStoreChannelPolicyMacAppStoreProviderPathRequiresOSGrant(t *testing.T) {
+func TestStoreChannelPolicyMacAppStoreProviderPathRequiresOSGrantAndStoreReview(t *testing.T) {
 	withoutGrant := policy.EvaluateStoreChannelPolicy(policy.StoreChannelPolicyInput{
 		Channel: hostintegration.DistributionChannelMacAppStore,
 		Surface: policy.StoreSurfaceProviderCLIUserSelectedPath,
@@ -54,8 +54,18 @@ func TestStoreChannelPolicyMacAppStoreProviderPathRequiresOSGrant(t *testing.T) 
 		Surface:        policy.StoreSurfaceProviderCLIUserSelectedPath,
 		OSGrantPresent: true,
 	})
-	if !withGrant.Allowed {
-		t.Fatalf("mac-app-store provider path with OS grant denied: %s", withGrant.Reason)
+	if withGrant.Allowed || withGrant.Code != "STORE_CHANNEL_REQUIRES_STORE_REVIEW_APPROVAL" {
+		t.Fatalf("mac-app-store provider path without review approval decision = %+v", withGrant)
+	}
+
+	withGrantAndReview := policy.EvaluateStoreChannelPolicy(policy.StoreChannelPolicyInput{
+		Channel:             hostintegration.DistributionChannelMacAppStore,
+		Surface:             policy.StoreSurfaceProviderCLIUserSelectedPath,
+		OSGrantPresent:      true,
+		StoreReviewApproved: true,
+	})
+	if !withGrantAndReview.Allowed {
+		t.Fatalf("mac-app-store provider path with OS grant/review denied: %s", withGrantAndReview.Reason)
 	}
 }
 

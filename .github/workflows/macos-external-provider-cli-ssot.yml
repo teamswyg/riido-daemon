@@ -1,0 +1,44 @@
+name: macos-external-provider-cli-ssot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/macos-external-provider-cli-ssot.yml"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/30-architecture/store-distribution.md"
+      - "docs/migration/daemon.md"
+      - "internal/policy/store_channel.go"
+      - "internal/policy/store_channel_test.go"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/macos-external-provider-cli-ssot.yml"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/30-architecture/store-distribution.md"
+      - "docs/migration/daemon.md"
+      - "internal/policy/store_channel.go"
+      - "internal/policy/store_channel_test.go"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  q-dist-001:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify Q-DIST-001 is resolved in C11 SSOT
+        run: |
+          grep -q "Q-DIST-001.*resolved" docs/20-domain/distribution-host-integration.md
+          grep -q "Q-DIST-001.*RESOLVED" docs/20-domain/distribution-host-integration.md
+          grep -q "user-selected/sandbox/security-scoped OS grant 와 App Review approval" docs/30-architecture/store-distribution.md
+          grep -q "StoreChannelPolicyInput.StoreReviewApproved=true" docs/migration/daemon.md
+      - name: Verify macOS external Provider CLI gate
+        run: |
+          grep -q "mac-app-store provider CLI execution requires App Review approval" internal/policy/store_channel.go
+          go test ./internal/policy -run 'StoreChannelPolicyMacAppStoreProviderPathRequiresOSGrantAndStoreReview' -count=1
