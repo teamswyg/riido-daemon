@@ -1,0 +1,45 @@
+{
+  "schema_version": "riido-native-config-plan.v1",
+  "manifest_schema_version": "riido-native-config-manifest.v1",
+  "default": {
+    "primary_instruction_file": "AGENTS.md",
+    "manifest_file": ".riido/native-config-manifest.json",
+    "hook_mode": "instruction-only"
+  },
+  "providers": [
+    {
+      "provider_kind": "claude",
+      "primary_instruction_file": "CLAUDE.md",
+      "manifest_file": ".riido/native-config-manifest.json",
+      "hook_mode": "claude-command-hooks",
+      "provider_settings_files": [".claude/settings.json"],
+      "hook_files": [".riido/hooks/claude-audit-hook.sh"]
+    },
+    {
+      "provider_kind": "codex",
+      "primary_instruction_file": "AGENTS.md",
+      "manifest_file": ".riido/native-config-manifest.json",
+      "hook_mode": "instruction-only",
+      "config_home_dir": ".codex",
+      "provider_settings_files": [".codex/config.toml"]
+    },
+    {
+      "provider_kind": "cursor",
+      "primary_instruction_file": "AGENTS.md",
+      "manifest_file": ".riido/native-config-manifest.json",
+      "hook_mode": "instruction-only"
+    },
+    {
+      "provider_kind": "gemini",
+      "primary_instruction_file": "GEMINI.md",
+      "manifest_file": ".riido/native-config-manifest.json",
+      "hook_mode": "instruction-only"
+    },
+    {
+      "provider_kind": "openclaw",
+      "primary_instruction_file": "AGENTS.md",
+      "manifest_file": ".riido/native-config-manifest.json",
+      "hook_mode": "instruction-only"
+    }
+  ]
+}
