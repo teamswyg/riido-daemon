@@ -1,0 +1,44 @@
+name: store-distribution-contract
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/store-distribution-contract.yml"
+      - "NOTICE.md"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/30-architecture/store-distribution.md"
+      - "docs/migration/daemon.md"
+      - "internal/hostintegration/**"
+      - "internal/policy/**"
+      - "packaging/store/**"
+      - "tools/storecontract/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/store-distribution-contract.yml"
+      - "NOTICE.md"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/30-architecture/store-distribution.md"
+      - "docs/migration/daemon.md"
+      - "internal/hostintegration/**"
+      - "internal/policy/**"
+      - "packaging/store/**"
+      - "tools/storecontract/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  store-contract-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Test store contract tool
+        run: go test ./tools/storecontract -count=1
+      - name: Verify store distribution contract
+        run: go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .
