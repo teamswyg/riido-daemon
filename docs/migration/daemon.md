@@ -124,6 +124,22 @@ This slice does not move supervisor/runtimeactor/session/provider adapters,
 task DB/project/mwsd/local API packages, provider process execution, private
 infra, secrets, or local machine state.
 
+### RIID-4647 — workspace native config domain
+
+This slice moves the pure C6 workspace / native config domain:
+
+- `internal/workdir`
+- `docs/20-domain/workspace.md`
+- native config plan generator support needed by `go generate ./internal/workdir`
+
+The package imports IR types from `github.com/teamswyg/riido-contracts/ir
+v0.1.0`.
+
+This slice does not move provider adapters, runtime/session/supervisor actors,
+C7 policy/security implementation, C11 host integration implementation,
+task DB/project/mwsd/local API packages, private infra, secrets, or local
+machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
