@@ -1,0 +1,40 @@
+name: approval-timeout-ssot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/approval-timeout-ssot.yml"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/50-roadmap/open-questions.md"
+      - "docs/migration/daemon.md"
+      - "internal/agentbridge/**"
+  pull_request:
+    paths:
+      - ".github/workflows/approval-timeout-ssot.yml"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/50-roadmap/open-questions.md"
+      - "docs/migration/daemon.md"
+      - "internal/agentbridge/**"
+
+jobs:
+  approval-timeout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify Q-RT-003 owner moved out of open questions
+        run: |
+          if grep -q "Q-RT-003" docs/50-roadmap/open-questions.md; then
+            echo "Q-RT-003 must stay closed in provider-runtime.md, not open-questions.md"
+            exit 1
+          fi
+          grep -q "Q-RT-003.*closed" docs/20-domain/provider-runtime.md
+          grep -q "C4 Provider Runtime / Adapter owns approval wait" docs/20-domain/provider-runtime.md
+          grep -q "EventIngestor.*does not own approval" docs/20-domain/provider-runtime.md
+      - name: Test approval timeout semantics
+        run: |
+          go test ./internal/agentbridge ./internal/agentbridge/session -run 'SemanticActivity|Approval|Timeout' -count=1
