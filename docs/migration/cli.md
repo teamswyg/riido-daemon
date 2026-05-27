@@ -50,6 +50,13 @@ is split from private workspace state. Full `riido daemon ...` process
 lifecycle commands remain deferred until the daemon runtime wrapper no longer
 imports the private SaaS plane or private-only runtime source.
 
+RIID-4690 restores `riido daemon ...` after `runtimeactor`, `supervisor`,
+provider adapters, `taskdbplane`, and `saasplane` are public. The command stays
+an adapter: it parses flags/env, starts local RuntimeActor pools, chooses the
+configured TaskSourcePort/TaskReporterPort, opens a local-only Unix socket, and
+prints JSON status/health/ready/metrics. Domain behavior remains in the owning
+packages and docs.
+
 Do not move into the CLI slice:
 
 - SaaS server binary `cmd/riido_ai_server`
@@ -83,8 +90,11 @@ SSOT docs.
 4. Move mwsd command wrappers once their backing projection packages move.
    RIID-4686 restores `riido mwsd ...` against public `internal/mwsdbridge`,
    `internal/project`, and `internal/taskdb`.
-5. Restore smoke scripts as black-box tests.
-6. Keep real provider CLI tests opt-in and skipped unless executables exist.
+5. Restore daemon lifecycle wrappers once their backing runtime packages move.
+   RIID-4690 restores `riido daemon ...` against public runtimeactor,
+   supervisor, taskdbplane, and saasplane packages.
+6. Restore smoke scripts as black-box tests.
+7. Keep real provider CLI tests opt-in and skipped unless executables exist.
 
 ## Validation Gates
 
@@ -102,10 +112,11 @@ RIID-4686 adds an mwsd/project gate with a fake local Unix socket, so it verifie
 `riido mwsd projection` and `riido mwsd sync` without requiring a real mwsd
 daemon in CI.
 
-After the full CLI implementation migrates, restore these checks:
+RIID-4690 restores these checks through the focused daemon lifecycle workflow:
 
 ```bash
-go run ./cmd/riido daemon status --socket /tmp/riido-agentd.sock
+go test ./cmd/riido -run 'TestDaemon|TestLoadDaemon|TestBuildDaemon|TestForeground|TestDaemonBackground' -count=1
+go build ./cmd/riido
 ```
 
 Commands that need a running daemon, mwsd socket, provider CLI, or local app
@@ -123,7 +134,6 @@ state should be black-box smoke tests with explicit skip conditions.
 
 | Follow-up | Repository |
 | --- | --- |
-| Move daemon runtime backing packages. | `riido-daemon` / RIID-4636 |
 | Promote shared DTOs only when needed by multiple repos. | `riido-contracts` / RIID-4637 |
 | Keep SaaS server commands out of the local CLI binary. | `riido-control-plane` / RIID-4638 |
 | Keep deploy/apply commands in private automation. | `riido-infra` / RIID-4639 |

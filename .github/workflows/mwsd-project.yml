@@ -44,8 +44,12 @@ jobs:
           fi
       - name: Verify mwsd/project public boundary
         run: |
-          if grep -R --line-number -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/(riidoaiserver|agentbridge/controlplane/saasplane)' internal/mwsdbridge internal/project cmd/riido; then
+          if grep -R --line-number -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/riidoaiserver' internal/mwsdbridge internal/project cmd/riido; then
             echo "mwsd/project migration must not depend on private daemon/server packages"
+            exit 1
+          fi
+          if grep -R --line-number -E 'github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/saasplane' internal/mwsdbridge internal/project; then
+            echo "mwsd/project packages must not depend on SaaS assignment adapters"
             exit 1
           fi
       - name: Verify local-only listener gate
