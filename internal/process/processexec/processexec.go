@@ -6,16 +6,16 @@
 // writes go through a dedicated channel-backed pipe so the session
 // actor never blocks on a full kernel pipe.
 //
-// Concurrency: a small set of goroutines (stdout reader, stderr reader,
-// stdin writer, exit waiter) is spawned per process. Each owns its
-// channel; the public RunningProcess accessors only return the channels.
+// Concurrency: os/exec owns stdout/stderr copy goroutines for the stream
+// writers, and this package owns the exit waiter. Each stream has a
+// channel-owned writer; the public RunningProcess accessors only return those
+// channels.
 // The public stream contract stays channel-owned. The kill/stdin close paths
 // use small synchronization guards because they cross goroutine boundaries
 // owned by os/exec pipes.
 package processexec
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"io"
@@ -42,24 +42,10 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 	c := exec.CommandContext(cmdCtx, cmd.Executable, cmd.Args...)
 	c.Env = mergeEnv(cmd.Env)
 	c.Dir = cmd.Dir
+	c.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
 
-	stdoutPipe, err := c.StdoutPipe()
-	if err != nil {
-		cancel()
-		return nil, err
-	}
-	stderrPipe, err := c.StderrPipe()
-	if err != nil {
-		cancel()
-		return nil, err
-	}
 	stdinPipe, err := c.StdinPipe()
 	if err != nil {
-		cancel()
-		return nil, err
-	}
-
-	if err := c.Start(); err != nil {
 		cancel()
 		return nil, err
 	}
@@ -72,10 +58,17 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 		exited:  make(chan process.ExitStatus, 1),
 		stdin:   stdinPipe,
 		stdinMu: &sync.Mutex{},
+		done:    make(chan struct{}),
+	}
+	c.Stdout = streamWriter{out: r.stdout}
+	c.Stderr = streamWriter{out: r.stderr}
+
+	if err := c.Start(); err != nil {
+		cancel()
+		return nil, err
 	}
 
-	go r.pumpReader(stdoutPipe, r.stdout)
-	go r.pumpReader(stderrPipe, r.stderr)
+	go r.killOnContext(cmdCtx.Done())
 	go r.waitExit()
 
 	return r, nil
@@ -118,6 +111,18 @@ type execRunning struct {
 	stdinOnce sync.Once
 	stdinMu   *sync.Mutex
 	killOnce  sync.Once
+	done      chan struct{}
+}
+
+type streamWriter struct {
+	out chan<- []byte
+}
+
+func (w streamWriter) Write(p []byte) (int, error) {
+	chunk := make([]byte, len(p))
+	copy(chunk, p)
+	w.out <- chunk
+	return len(p), nil
 }
 
 func (r *execRunning) Stdout() <-chan []byte             { return r.stdout }
@@ -148,38 +153,38 @@ func (r *execRunning) CloseStdin() error {
 }
 
 func (r *execRunning) Kill(_ context.Context) error {
-	r.killOnce.Do(func() {
-		r.cancel()
-		if r.cmd.Process != nil {
-			// Best-effort: SIGTERM the process group on Unix; fall back to
-			// killing the single PID. cmd.Process.Kill() uses SIGKILL which
-			// is what we want for an unresponsive child.
-			_ = r.cmd.Process.Signal(syscall.SIGTERM)
-			_ = r.cmd.Process.Kill()
-		}
-	})
+	r.cancel()
+	r.terminateProcessGroup()
 	return nil
 }
 
-func (r *execRunning) pumpReader(rd io.Reader, out chan<- []byte) {
-	defer close(out)
-	buf := make([]byte, 8192)
-	br := bufio.NewReader(rd)
-	for {
-		n, err := br.Read(buf)
-		if n > 0 {
-			chunk := make([]byte, n)
-			copy(chunk, buf[:n])
-			out <- chunk
-		}
-		if err != nil {
-			return
-		}
+func (r *execRunning) killOnContext(ctxDone <-chan struct{}) {
+	select {
+	case <-ctxDone:
+		r.terminateProcessGroup()
+	case <-r.done:
 	}
+}
+
+func (r *execRunning) terminateProcessGroup() {
+	r.killOnce.Do(func() {
+		if r.cmd.Process != nil {
+			// Best-effort: terminate the process group first so child
+			// processes cannot keep stdout/stderr pipes open after the shell
+			// exits. Fall back to killing the single PID.
+			pid := r.cmd.Process.Pid
+			_ = syscall.Kill(-pid, syscall.SIGTERM)
+			_ = syscall.Kill(-pid, syscall.SIGKILL)
+			_ = r.cmd.Process.Kill()
+		}
+	})
 }
 
 func (r *execRunning) waitExit() {
 	err := r.cmd.Wait()
+	close(r.done)
+	close(r.stdout)
+	close(r.stderr)
 	code := r.cmd.ProcessState.ExitCode()
 	if code < 0 && err != nil {
 		// Negative exit code = killed by signal; preserve err.
