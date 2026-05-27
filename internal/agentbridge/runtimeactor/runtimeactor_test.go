@@ -602,6 +602,22 @@ func TestRuntimeActorDoesNotCreateProviderSpecificFSM(t *testing.T) {
 
 // --- 10. Mailbox backpressure ---
 
+func TestRuntimeActorDefaultMailboxMatchesProviderRuntimeBackpressureSSOT(t *testing.T) {
+	a, err := New(Config{
+		RuntimeID: "rt-mailbox-default",
+		Adapters: []agentbridge.Adapter{
+			&stubAdapter{name: "fake", detected: agentbridge.DetectResult{Available: true}},
+		},
+		Process: newFakeProcess(),
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	if got := cap(a.mailbox); got != DefaultMailboxSize {
+		t.Fatalf("mailbox size = %d, want %d", got, DefaultMailboxSize)
+	}
+}
+
 func TestRuntimeActorMailboxBackpressure(t *testing.T) {
 	a, _ := startActor(t, Config{
 		Adapters: []agentbridge.Adapter{

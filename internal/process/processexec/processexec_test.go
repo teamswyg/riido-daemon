@@ -50,6 +50,29 @@ func TestRealEcho(t *testing.T) {
 	}
 }
 
+func TestRealProcessDefaultBuffersMatchProviderRuntimeBackpressureSSOT(t *testing.T) {
+	p := New()
+	proc, err := p.Start(context.Background(), process.Command{
+		Executable: "/bin/sh",
+		Args:       []string{"-c", "printf ok"},
+	})
+	if err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+	if got := cap(proc.Stdout()); got != process.DefaultStdoutBuffer {
+		t.Fatalf("stdout buffer = %d, want %d", got, process.DefaultStdoutBuffer)
+	}
+	if got := cap(proc.Stderr()); got != process.DefaultStderrBuffer {
+		t.Fatalf("stderr buffer = %d, want %d", got, process.DefaultStderrBuffer)
+	}
+	_ = drainAll(proc.Stdout(), 2*time.Second)
+	select {
+	case <-proc.Exited():
+	case <-time.After(2 * time.Second):
+		t.Fatal("no exit signal")
+	}
+}
+
 func TestRealNonZeroExit(t *testing.T) {
 	p := New()
 	proc, _ := p.Start(context.Background(), process.Command{

@@ -53,8 +53,8 @@ type FakeRunning struct {
 func NewFakeRunning() *FakeRunning {
 	r := &FakeRunning{
 		started: make(chan Command, 1),
-		stdout:  make(chan []byte, 64),
-		stderr:  make(chan []byte, 64),
+		stdout:  make(chan []byte, DefaultStdoutBuffer),
+		stderr:  make(chan []byte, DefaultStderrBuffer),
 		exited:  make(chan ExitStatus, 1),
 		stdin:   make(chan []byte, 64),
 		kill:    make(chan struct{}, 1),

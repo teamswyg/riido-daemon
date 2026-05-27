@@ -53,8 +53,8 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 	r := &execRunning{
 		cmd:     c,
 		cancel:  cancel,
-		stdout:  make(chan []byte, 64),
-		stderr:  make(chan []byte, 64),
+		stdout:  make(chan []byte, process.DefaultStdoutBuffer),
+		stderr:  make(chan []byte, process.DefaultStderrBuffer),
 		exited:  make(chan process.ExitStatus, 1),
 		stdin:   stdinPipe,
 		stdinMu: &sync.Mutex{},
