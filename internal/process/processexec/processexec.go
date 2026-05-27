@@ -6,16 +6,16 @@
 // writes go through a dedicated channel-backed pipe so the session
 // actor never blocks on a full kernel pipe.
 //
-// Concurrency: a small set of goroutines (stdout reader, stderr reader,
-// stdin writer, exit waiter) is spawned per process. Each owns its
-// channel; the public RunningProcess accessors only return the channels.
+// Concurrency: os/exec owns stdout/stderr copy goroutines for the stream
+// writers, and this package owns the exit waiter. Each stream has a
+// channel-owned writer; the public RunningProcess accessors only return those
+// channels.
 // The public stream contract stays channel-owned. The kill/stdin close paths
 // use small synchronization guards because they cross goroutine boundaries
 // owned by os/exec pipes.
 package processexec
 
 import (
-	"bufio"
 	"context"
 	"errors"
 	"io"
@@ -43,23 +43,8 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 	c.Env = mergeEnv(cmd.Env)
 	c.Dir = cmd.Dir
 
-	stdoutPipe, err := c.StdoutPipe()
-	if err != nil {
-		cancel()
-		return nil, err
-	}
-	stderrPipe, err := c.StderrPipe()
-	if err != nil {
-		cancel()
-		return nil, err
-	}
 	stdinPipe, err := c.StdinPipe()
 	if err != nil {
-		cancel()
-		return nil, err
-	}
-
-	if err := c.Start(); err != nil {
 		cancel()
 		return nil, err
 	}
@@ -73,9 +58,14 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 		stdin:   stdinPipe,
 		stdinMu: &sync.Mutex{},
 	}
+	c.Stdout = streamWriter{out: r.stdout}
+	c.Stderr = streamWriter{out: r.stderr}
 
-	go r.pumpReader(stdoutPipe, r.stdout)
-	go r.pumpReader(stderrPipe, r.stderr)
+	if err := c.Start(); err != nil {
+		cancel()
+		return nil, err
+	}
+
 	go r.waitExit()
 
 	return r, nil
@@ -120,6 +110,17 @@ type execRunning struct {
 	killOnce  sync.Once
 }
 
+type streamWriter struct {
+	out chan<- []byte
+}
+
+func (w streamWriter) Write(p []byte) (int, error) {
+	chunk := make([]byte, len(p))
+	copy(chunk, p)
+	w.out <- chunk
+	return len(p), nil
+}
+
 func (r *execRunning) Stdout() <-chan []byte             { return r.stdout }
 func (r *execRunning) Stderr() <-chan []byte             { return r.stderr }
 func (r *execRunning) Exited() <-chan process.ExitStatus { return r.exited }
@@ -161,25 +162,10 @@ func (r *execRunning) Kill(_ context.Context) error {
 	return nil
 }
 
-func (r *execRunning) pumpReader(rd io.Reader, out chan<- []byte) {
-	defer close(out)
-	buf := make([]byte, 8192)
-	br := bufio.NewReader(rd)
-	for {
-		n, err := br.Read(buf)
-		if n > 0 {
-			chunk := make([]byte, n)
-			copy(chunk, buf[:n])
-			out <- chunk
-		}
-		if err != nil {
-			return
-		}
-	}
-}
-
 func (r *execRunning) waitExit() {
 	err := r.cmd.Wait()
+	close(r.stdout)
+	close(r.stderr)
 	code := r.cmd.ProcessState.ExitCode()
 	if code < 0 && err != nil {
 		// Negative exit code = killed by signal; preserve err.
