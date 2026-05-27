@@ -140,6 +140,22 @@ C7 policy/security implementation, C11 host integration implementation,
 task DB/project/mwsd/local API packages, private infra, secrets, or local
 machine state.
 
+### RIID-4648 — distribution host integration domain
+
+This slice moves the pure C11 distribution / host integration domain:
+
+- `internal/hostintegration`
+- `docs/20-domain/distribution-host-integration.md`
+- `privacy_metadata_allowlist.riido.json` as C10/C11 privacy-boundary evidence
+
+The package imports provider capability types from
+`github.com/teamswyg/riido-contracts/provider/capability v0.1.0`.
+
+This slice does not move provider adapters, runtime/session/supervisor actors,
+C7 policy/security implementation, concrete OS adapters, task DB/project/mwsd
+local API packages, packaging artifacts, private infra, secrets, or local
+machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
