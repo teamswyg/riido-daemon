@@ -359,6 +359,27 @@ This slice does not move OpenClaw/Cursor adapters, supervisor polling / runtime
 selection, SaaS control-plane adapters, task DB/project/mwsd local API packages,
 packaging artifacts, private infra, secrets, or local machine state.
 
+### RIID-4660 — OpenClaw provider adapter migration
+
+This slice moves the OpenClaw concrete provider adapter:
+
+- `internal/provider/openclaw`
+- OpenClaw adapter testdata
+- docs updates in provider-runtime and daemon migration SSOT files
+- focused public CI for OpenClaw command construction, mandatory session id
+  resolution, executable detection, calendar-version gate, JSON/NDJSON parser,
+  raw event translator, and golden fixtures
+
+The OpenClaw adapter owns only the daemon-side C4 adapter ACL for the external
+OpenClaw CLI. It does not bundle, install, or distribute the OpenClaw CLI. Real
+CLI integration remains opt-in through `AGENTBRIDGE_INTEGRATION=1`; public CI
+runs deterministic black-box tests and keeps the integration test skipped when
+the external CLI is absent.
+
+This slice does not move the Cursor adapter, supervisor polling / runtime
+selection, SaaS control-plane adapters, task DB/project/mwsd local API packages,
+packaging artifacts, private infra, secrets, or local machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
