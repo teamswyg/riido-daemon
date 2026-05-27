@@ -1,0 +1,55 @@
+name: bridge-detectutil
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/bridge-detectutil.yml"
+      - "internal/agentbridge/bridge/**"
+      - "internal/agentbridge/detectutil/**"
+      - "internal/agentbridge/session/**"
+      - "internal/process/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/bridge-detectutil.yml"
+      - "internal/agentbridge/bridge/**"
+      - "internal/agentbridge/detectutil/**"
+      - "internal/agentbridge/session/**"
+      - "internal/process/**"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  bridge-detect-helper-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify bridge/detectutil stay provider neutral
+        run: |
+          imports="$(go list -f '{{range .Imports}}{{println .}}{{end}}' ./internal/agentbridge/bridge ./internal/agentbridge/detectutil)"
+          forbidden="$(printf '%s\n' "$imports" | grep -E 'github.com/teamswyg/riido-daemon/internal/(provider|task|ir|project|riidoapi|riidoaiserver|mwsdbridge|agentbridge/(runtimeactor|supervisor|controlplane))' || true)"
+          if [ -n "$forbidden" ]; then
+            printf 'Forbidden bridge/detectutil imports:\n%s\n' "$forbidden"
+            exit 1
+          fi
+      - name: Verify bridge/detect helper gates
+        run: |
+          go test ./internal/agentbridge/bridge ./internal/agentbridge/detectutil ./internal/agentbridge/session ./internal/process -run 'New|Detect|Run|Cancel|ProtocolDriver|TempFiles|ResolveExecutable|VersionProbe' -count=1
