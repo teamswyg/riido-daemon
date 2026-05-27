@@ -481,6 +481,29 @@ move `cmd/riido` CLI commands, mwsdbridge/project projection sync,
 `controlplane/saasplane`, server HTTP transport, packaging artifacts, private
 infra, secrets, or local machine state.
 
+### RIID-4685 — task/api/bridge CLI adapter migration
+
+This slice moves the public-safe part of the local CLI:
+
+- `cmd/riido`
+- `riido task list|transition|evidence|validate`
+- `riido serve`
+- `riido api status|tasks|transition|evidence|validate|review-demo`
+- `riido bridge providers|detect`
+- focused public CI for CLI build, help output, bridge provider listing,
+  guarded task validation scenarios, local API review-demo scenario, public
+  boundary import checks, and local-only listener checks
+
+The CLI remains a thin adapter. Task mutations call public `internal/taskdb`,
+local IPC calls go through public `internal/riidoapi`, and provider listing uses
+the public provider adapter ports. The CLI does not redefine FSM, IR,
+validation, provider policy, or local transport decisions.
+
+This slice does not move `riido mwsd ...`, mwsdbridge/project projection sync,
+full `riido daemon ...` process lifecycle commands, `controlplane/saasplane`,
+server HTTP transport, packaging artifacts, private infra, secrets, or local
+machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
