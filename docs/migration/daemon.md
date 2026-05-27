@@ -9,7 +9,7 @@ This document defines how the daemon/runtime part of the former private
 
 `riido-daemon` owns the customer-PC daemon runtime, local host integration, and
 provider execution boundary. It must stay public, store-reviewable, and
-stdlib-only unless a later ADR explicitly changes that rule.
+free of non-Riido dependencies unless a later ADR explicitly changes that rule.
 
 ## Source In The Private Repository
 
@@ -27,7 +27,7 @@ contexts:
 | C8 Validation | `internal/validation` |
 | C9 Local Locking | `internal/lock` |
 | Local workspace projection / mwsd ACL | `internal/mwsdbridge`, `internal/project` |
-| C11 Distribution / Host Integration | `internal/hostintegration`, local transport pieces in `internal/riidoapi` |
+| C11 Distribution / Host Integration | `internal/hostintegration`, local transport pieces in `internal/riidoapi`, `packaging/store`, `tools/storecontract`, `NOTICE.md` |
 
 The documentation source is:
 
@@ -39,6 +39,7 @@ The documentation source is:
 - `docs/30-architecture/module-decomposition.md`
 - `docs/30-architecture/integration-matrix.md`
 - `docs/30-architecture/config-reference.md`
+- `docs/30-architecture/store-distribution.md`
 - daemon-related roadmap/audit files under `docs/50-roadmap/`
 
 ## Target Boundary
@@ -599,6 +600,29 @@ This slice does not move server HTTP implementation, SSE transport,
 Terraform/AWS/deploy evidence, packaging artifacts, private infra, secrets,
 provider CLI bundling, App Store/MSIX helper packaging, or local machine state.
 
+### RIID-4703 — store distribution contract migration
+
+This slice moves the executable store distribution contract into the public
+daemon repository:
+
+- `packaging/store/riido_daemon_store_distribution.riido.json`
+- `tools/storecontract`
+- `docs/30-architecture/store-distribution.md`
+- `NOTICE.md`
+- `.github/workflows/store-distribution-contract.yml`
+
+The gate fixes the public daemon boundary for Developer ID, Mac App Store,
+MSIX sideload, and Microsoft Store review surfaces. It makes provider CLI
+non-bundling, store-managed update rules, local-only IPC, App Sandbox/login
+item expectations, Windows named pipe/package local data expectations, demo
+review account surface, and privacy metadata allowlist requirements executable.
+
+This slice does not build/sign/notarize app bundles, produce MSIX packages,
+submit to App Store Connect or Partner Center, bundle provider CLIs, move
+private infra/account artifacts, or change the control-plane review account
+runtime seed. The SaaS review account artifact remains owned by
+`riido-control-plane`.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
@@ -606,6 +630,8 @@ Required before a daemon migration PR is mergeable:
 ```bash
 go test ./...
 go list -m all
+go test ./tools/storecontract
+go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .
 ```
 
 When the migrated files include the old audit tooling, restore the stronger

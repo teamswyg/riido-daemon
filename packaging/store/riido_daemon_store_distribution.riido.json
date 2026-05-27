@@ -1,0 +1,142 @@
+{
+  "schema_version": "riido-store-distribution-contract.v1",
+  "product": "riido_daemon",
+  "provider_cli_bundling": "forbidden",
+  "external_provider_cli_names": [
+    "claude",
+    "codex",
+    "openclaw",
+    "cursor-agent"
+  ],
+  "store_artifact_roots": [
+    "packaging/store"
+  ],
+  "required_docs": [
+    "docs/20-domain/distribution-host-integration.md",
+    "docs/30-architecture/store-distribution.md",
+    "NOTICE.md"
+  ],
+  "required_notice_terms": [
+    "No source code from any third-party project is directly incorporated",
+    "Modified Apache License, Version 2.0",
+    "do not redistribute any vendor code or bundle provider CLI executables",
+    "No vendored third-party code"
+  ],
+  "channels": [
+    {
+      "id": "developer-id",
+      "platform": "macos",
+      "status": "preferred-first",
+      "runtime_role": "local-helper-broker",
+      "background_rule": "explicit-consent",
+      "local_ipc_transport": "unix-socket",
+      "data_root": "user-application-support",
+      "update_mechanism": "self-managed",
+      "required_surfaces": [
+        "developer-id-signing",
+        "notarization",
+        "user-consented-background-helper",
+        "local-only-ipc"
+      ],
+      "forbidden_surfaces": [
+        "bundled-provider-cli",
+        "silent-provider-install",
+        "external-tcp-listener",
+        "arbitrary-home-scan"
+      ]
+    },
+    {
+      "id": "mac-app-store",
+      "platform": "macos",
+      "status": "requires-redesign",
+      "runtime_role": "sandboxed-login-item-helper",
+      "background_rule": "explicit-consent-and-store-review",
+      "local_ipc_transport": "unix-socket",
+      "data_root": "app-group-or-sandbox-container",
+      "update_mechanism": "app-store-managed",
+      "required_surfaces": [
+        "app-sandbox",
+        "app-group-or-container-ipc",
+        "security-scoped-workspace-grant",
+        "service-management-login-item-consent",
+        "helper-purpose-review-note",
+        "app-sandbox-entitlement-review-notes",
+        "app-store-managed-updates",
+        "privacy-policy",
+        "review-demo-mode",
+        "demo-review-account",
+        "privacy-metadata-allowlist",
+        "provider-non-bundling-review-note"
+      ],
+      "forbidden_surfaces": [
+        "bundled-provider-cli",
+        "silent-provider-install",
+        "direct-launchagent-install",
+        "self-updater",
+        "external-tcp-listener",
+        "arbitrary-home-scan",
+        "third-party-installer",
+        "shared-location-code-install",
+        "standalone-code-download",
+        "root-privilege-escalation"
+      ]
+    },
+    {
+      "id": "msix-sideload",
+      "platform": "windows",
+      "status": "preferred-first",
+      "runtime_role": "msix-packaged-helper-broker",
+      "background_rule": "explicit-consent",
+      "local_ipc_transport": "windows-named-pipe",
+      "data_root": "windows-package-local-data",
+      "update_mechanism": "self-managed",
+      "required_surfaces": [
+        "signed-msix-package",
+        "package-identity",
+        "windows-desktop-target-device-family",
+        "named-pipe-local-ipc",
+        "package-local-data",
+        "user-consented-background-helper"
+      ],
+      "forbidden_surfaces": [
+        "bundled-provider-cli",
+        "silent-provider-install",
+        "windows-service-default",
+        "external-tcp-listener",
+        "arbitrary-home-scan"
+      ]
+    },
+    {
+      "id": "msix-store",
+      "platform": "windows",
+      "status": "requires-policy-gate",
+      "runtime_role": "msix-packaged-full-trust-helper-tray",
+      "background_rule": "explicit-consent-and-store-review",
+      "local_ipc_transport": "windows-named-pipe",
+      "data_root": "windows-package-local-data",
+      "update_mechanism": "store-managed",
+      "required_surfaces": [
+        "package-identity",
+        "windows-desktop-target-device-family",
+        "named-pipe-local-ipc",
+        "package-local-data",
+        "runfulltrust-review-note",
+        "store-managed-updates",
+        "partner-center-review-notes",
+        "review-demo-mode",
+        "privacy-policy",
+        "demo-review-account",
+        "privacy-metadata-allowlist",
+        "provider-non-bundling-review-note"
+      ],
+      "forbidden_surfaces": [
+        "bundled-provider-cli",
+        "silent-provider-install",
+        "windows-service-default",
+        "self-updater",
+        "external-tcp-listener",
+        "arbitrary-home-scan"
+      ]
+    }
+  ]
+}
