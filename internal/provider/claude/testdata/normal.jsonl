@@ -1,0 +1,5 @@
+{"type":"system","subtype":"init","session_id":"sess-42"}
+{"type":"assistant","message":{"content":[{"type":"text","text":"hello"}]}}
+{"type":"assistant","message":{"content":[{"type":"thinking","thinking":"reasoning..."}]}}
+{"type":"result","subtype":"success","result":"done","usage":{"input_tokens":3,"output_tokens":7}}
+{"type":"log","message":"hello"}
