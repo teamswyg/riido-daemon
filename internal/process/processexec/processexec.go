@@ -58,6 +58,7 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 		exited:  make(chan process.ExitStatus, 1),
 		stdin:   stdinPipe,
 		stdinMu: &sync.Mutex{},
+		done:    make(chan struct{}),
 	}
 	c.Stdout = streamWriter{out: r.stdout}
 	c.Stderr = streamWriter{out: r.stderr}
@@ -67,6 +68,7 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 		return nil, err
 	}
 
+	go r.killOnContext(cmdCtx.Done())
 	go r.waitExit()
 
 	return r, nil
@@ -109,6 +111,7 @@ type execRunning struct {
 	stdinOnce sync.Once
 	stdinMu   *sync.Mutex
 	killOnce  sync.Once
+	done      chan struct{}
 }
 
 type streamWriter struct {
@@ -150,8 +153,21 @@ func (r *execRunning) CloseStdin() error {
 }
 
 func (r *execRunning) Kill(_ context.Context) error {
+	r.cancel()
+	r.terminateProcessGroup()
+	return nil
+}
+
+func (r *execRunning) killOnContext(ctxDone <-chan struct{}) {
+	select {
+	case <-ctxDone:
+		r.terminateProcessGroup()
+	case <-r.done:
+	}
+}
+
+func (r *execRunning) terminateProcessGroup() {
 	r.killOnce.Do(func() {
-		r.cancel()
 		if r.cmd.Process != nil {
 			// Best-effort: terminate the process group first so child
 			// processes cannot keep stdout/stderr pipes open after the shell
@@ -162,11 +178,11 @@ func (r *execRunning) Kill(_ context.Context) error {
 			_ = r.cmd.Process.Kill()
 		}
 	})
-	return nil
 }
 
 func (r *execRunning) waitExit() {
 	err := r.cmd.Wait()
+	close(r.done)
 	close(r.stdout)
 	close(r.stderr)
 	code := r.cmd.ProcessState.ExitCode()
