@@ -13,7 +13,7 @@ RIID-4651 에서 public `riido-daemon` 으로 이동한 구현 범위는 `intern
 
 아직 이 slice 에 포함하지 않은 구현:
 
-- `internal/agentbridge/runtimeactor`, `supervisor`, `controlplane`
+- `internal/agentbridge/supervisor`, `controlplane`
 - concrete provider adapters (`claude`, `codex`, `openclaw`, `cursor`)
 - provider process spawn wiring, task DB/project/mwsd/local API, server/control-plane/infra/secret/state files
 
@@ -39,6 +39,13 @@ provider registry / detect / run entrypoint 로서 `StartCommand` 를 public
 provider adapter 들이 공유할 PATH lookup / env override pin / version probe helper
 이며 concrete provider adapter 자체는 아니다. runtime pool / supervisor / task claim
 loop / concrete provider adapter 는 여전히 후속 migration slice 가 맡는다.
+
+RIID-4656 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
+`internal/agentbridge/runtimeactor` 이다. 이 package 는 one runtime capability
+boundary 의 mailbox-owned actor 로서 adapter detect, C3 capability reconciliation,
+bounded slot pool, Submit/Cancel/Status/Heartbeat, session handoff, Stop idempotency,
+and cancellation cascade 를 소유한다. supervisor task claim loop / control-plane
+transport / concrete provider adapter 는 여전히 후속 migration slice 가 맡는다.
 
 ## 1. 책임 한 줄
 
@@ -324,6 +331,33 @@ RunController, C6, C7, concrete adapter slice 가 소유한다.
 PATH fallback 을 하지 않고 fail-closed 한다. version probe helper 는 missing binary /
 timeout / unclassifiable signal 을 unavailable 로 접고, strict probe 는 command completion
 여부와 exit code 를 노출해 adapter 가 non-zero output 을 version 으로 오인하지 않게 한다.
+
+### 7.7 RuntimeActor boundary
+
+`internal/agentbridge/runtimeactor` 는 한 RuntimeID 의 provider execution capacity 를
+소유하는 mailbox actor 다. actor goroutine 하나가 in-flight task map 과 slot state 를
+단독으로 소유한다.
+
+RuntimeActor 의 책임:
+
+- Start 시 adapter `Detect` 를 실행하고 public C3 `ProviderCapability` 로 reconcile 한다.
+- `PolicyBundleVersion` 과 detected executable fingerprint 를 capability fingerprint input
+  에 포함한다.
+- MaxConcurrent slot limit, duplicate task id, unavailable provider, unknown provider 를
+  fail-closed 로 집행한다.
+- `Submit` 을 `session.Start` 로 handoff 하고 optional `ProtocolDriverProvider` 를
+  session 에 장착한다.
+- `Cancel` / `Stop` 은 session cancel 과 process kill cascade 를 일으키고 slot 을 회수한다.
+- `Status` / `HeartbeatPayload` 는 local settings UI 와 control-plane heartbeat 가 읽을
+  수 있는 daemon-side runtime snapshot 을 만든다.
+
+RuntimeActor 의 비책임:
+
+- supervisor polling / task claim / runtime selection
+- EventIngestor append / task transition 결정
+- workdir preparation / native config injection
+- provider-specific parser / adapter implementation
+- task DB / project / mwsd / local API persistence
 
 ## 8. provider session 보존 (영속화의 1 차 키)
 
