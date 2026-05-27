@@ -12,6 +12,12 @@ integration, and daemon-side validation.
 github.com/teamswyg/riido-daemon
 ```
 
+This module consumes shared public contracts from:
+
+```text
+github.com/teamswyg/riido-contracts v0.1.0
+```
+
 ## Repository Boundary
 
 This repository may contain:
@@ -36,8 +42,9 @@ go test ./...
 go list -m all
 ```
 
-The public GitHub Actions workflow runs the same lightweight checks so daemon
-verification can run outside the private repository billing pool.
+The public GitHub Actions workflow rejects non-Riido Go dependencies so daemon
+verification can run outside the private repository billing pool while still
+sharing versioned Riido contracts.
 
 ## License
 
