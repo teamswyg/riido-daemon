@@ -48,7 +48,7 @@
 
 ### 1.2 Mac App Store acceptance criteria
 
-정책 snapshot: 2026-05-26 기준 Apple App Review Guidelines(2026-02-06 last updated), App Sandbox documentation, App Store Connect App Sandbox information, Service Management / `SMAppService`, security-scoped bookmark 문서를 확인했다. 이 외부 정책이 바뀌면 본 문서와 C11 distribution SSOT 를 같은 work unit 에서 갱신한다.
+정책 snapshot: 2026-05-28 기준 Apple App Review Guidelines, App Sandbox entitlement documentation, App Store Connect App Sandbox information, Service Management / `SMAppService`, security-scoped bookmark 문서를 확인했다. 이 외부 정책이 바뀌면 본 문서와 C11 distribution SSOT 를 같은 work unit 에서 갱신한다.
 
 `mac-app-store` 는 현재 제품 구조에서 **가능하지만 제한 모드 redesign 이 필요한 target** 이다. 완료 기준은 다음이다.
 
@@ -56,13 +56,14 @@
 2. Store App / helper / broker 는 self-contained app bundle 안에 있어야 한다. third-party installer, shared location code install, standalone code download 는 금지다.
 3. background helper 는 `SMAppService` / Login Item 계열로 사용자 동의 후 등록하고, 직접 `~/Library/LaunchAgents` 를 설치하는 방식은 금지다.
 4. workspace 접근은 security-scoped bookmark 또는 App Sandbox 가 허용하는 user-selected document/folder grant 로만 지속된다.
-5. local control surface 는 app group/container 내부 local IPC 로만 열고 external TCP listener 는 금지다.
-6. update 는 Mac App Store update 경로를 사용한다. 앱 내부 self-updater 는 금지 surface 다.
-7. root privilege escalation / setuid 성격의 동작은 금지다.
-8. review/demo mode 로 provider CLI 없이 onboarding, provider connection status, workspace grant, privacy/telemetry setting 을 검증할 수 있어야 한다.
-9. privacy policy / Store metadata 는 SaaS 로 전송하지 않는 값(provider executable path, workspace absolute path, token/API key)을 명시해야 한다.
+5. 외부 Provider CLI 실행은 user-selected/sandbox/security-scoped OS grant 와 App Review approval 이 모두 있어야 한다. 둘 중 하나라도 없으면 Store App 은 provider 를 detected / login-required / store-blocked 로 보여줄 수 있지만 local helper 는 provider process 를 spawn 하지 않는다.
+6. local control surface 는 app group/container 내부 local IPC 로만 열고 external TCP listener 는 금지다.
+7. update 는 Mac App Store update 경로를 사용한다. 앱 내부 self-updater 는 금지 surface 다.
+8. root privilege escalation / setuid 성격의 동작은 금지다.
+9. review/demo mode 로 provider CLI 없이 onboarding, provider connection status, workspace grant, privacy/telemetry setting 을 검증할 수 있어야 한다.
+10. privacy policy / Store metadata 는 SaaS 로 전송하지 않는 값(provider executable path, workspace absolute path, token/API key)을 명시해야 한다.
 
-현재 executable 기준은 `tools/storecontract` 가 `mac-app-store` channel 에서 App Sandbox, app group/container IPC, security-scoped workspace grant, Service Management login item consent, helper purpose review note, App Sandbox review notes, App Store-managed updates, privacy policy, review/demo mode, demo/review account, privacy metadata allowlist, provider non-bundling review note 와 금지 surface(직접 LaunchAgent, self-updater, third-party installer, shared location code install, standalone code download, root privilege escalation)를 검사한다. GitHub Actions 의 `.github/workflows/store-distribution-contract.yml` 이 이 contract 를 별도 gate 로 검증한다.
+현재 executable 기준은 `tools/storecontract` 가 `mac-app-store` channel 에서 App Sandbox, app group/container IPC, security-scoped workspace grant, Service Management login item consent, helper purpose review note, App Sandbox review notes, App Store-managed updates, privacy policy, review/demo mode, demo/review account, privacy metadata allowlist, provider non-bundling review note 와 금지 surface(직접 LaunchAgent, self-updater, third-party installer, shared location code install, standalone code download, root privilege escalation)를 검사한다. RIID-4571 의 외부 Provider CLI 실행 decision 은 C7 `EvaluateStoreChannelPolicy` 가 user-selected/sandbox/security-scoped OS grant 와 Store review approval 을 동시에 요구함으로써 집행한다. GitHub Actions 의 `.github/workflows/store-distribution-contract.yml` 이 이 contract 를 별도 gate 로 검증한다.
 
 ## 2. Package boundaries
 
