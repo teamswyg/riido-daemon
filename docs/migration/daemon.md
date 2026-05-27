@@ -337,6 +337,28 @@ This slice does not move Codex/OpenClaw/Cursor adapters, supervisor polling /
 runtime selection, SaaS control-plane adapters, task DB/project/mwsd local API
 packages, packaging artifacts, private infra, secrets, or local machine state.
 
+### RIID-4659 — Codex provider adapter migration
+
+This slice moves the Codex concrete provider adapter:
+
+- `internal/provider/codex`
+- Codex adapter testdata
+- docs updates in provider-runtime and daemon migration SSOT files
+- focused public CI for Codex command construction, blocked protocol args,
+  unsafe bypass filtering, `CODEX_HOME` isolation, executable detection, JSONL
+  parser, raw event translator, golden fixtures, JSON-RPC actor, handshake, and
+  protocol-driver approval response path
+
+The Codex adapter owns only the daemon-side C4 adapter ACL for the external
+Codex CLI app-server stdio mode. It does not bundle, install, or distribute the
+Codex CLI. Real CLI integration remains opt-in through `AGENTBRIDGE_INTEGRATION=1`;
+public CI runs deterministic black-box tests and keeps the integration test
+skipped when the external CLI is absent.
+
+This slice does not move OpenClaw/Cursor adapters, supervisor polling / runtime
+selection, SaaS control-plane adapters, task DB/project/mwsd local API packages,
+packaging artifacts, private infra, secrets, or local machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
