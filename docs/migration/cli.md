@@ -65,7 +65,9 @@ SSOT docs.
 
 1. Move CLI docs and README examples.
 2. Move CLI parser/usage tests that do not need migrated internals.
-3. Move local API and task command wrappers once their backing packages move.
+3. Move task command wrappers once their backing packages move. The local API
+   backing package moved in RIID-4684 and should be consumed rather than
+   redefined by CLI code.
 4. Restore smoke scripts as black-box tests.
 5. Keep real provider CLI tests opt-in and skipped unless executables exist.
 
