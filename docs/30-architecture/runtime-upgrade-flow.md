@@ -42,6 +42,19 @@ safe boundaries.
 - Provider CLIs are external resources; detecting a newer CLI version is not a
   reason to self-update or install anything.
 
+## Native Config And Dirty Workdirs
+
+The `ReinjectNativeConfig` automatic threshold for a dirty workdir is zero.
+Once a run has entered `Preparing` or `Running`, policy bundle or native config
+changes are not applied in place. RuntimeActor records the stale input, cancels
+or blocks through the normal reporter path, and the next run/claim recomputes
+the workspace and `NativeConfigVersion` from fresh inputs.
+
+Manual rework may preserve artifacts for operator inspection, but it starts a
+new run identity before provider execution. C6 Workspace owns the materialized
+files and `NativeConfigVersion`; C7 owns whether a provider-native config
+surface is allowed; C4 owns provider session cancellation and restart.
+
 ## Change Procedure
 
 Any new runtime-pinned input must be added here, to the relevant domain SSOT,

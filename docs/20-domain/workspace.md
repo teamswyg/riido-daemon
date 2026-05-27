@@ -85,6 +85,7 @@ $RIIDO_WORKDIR_ROOT/
 3. terminal 후 로컬 기본 archive 는 `keep-in-place` 다. 즉 `archive.json` 에 `archiveURI=file://<run-root>` 를 기록하고 실제 디렉토리는 삭제하지 않는다. S3 / 다른 storage / 압축 bundle 같은 외부 archive backend 는 운영 정책이며, 위치 표현은 `WorkdirArchived.archiveURI`.
 4. local daemon stop 으로 in-flight run 이 cancel 되는 경우도 terminal workspace lifecycle 로 취급한다. RunController 는 `TaskCancelled` 와 같은 terminal transition 을 기록한 뒤 같은 `ArchiveWorkspace` 경로로 `archive.json` 을 남긴다. 실제 삭제는 `CleanupWorkspace` / retention 정책 만료 후에만 수행한다.
 5. local daemon 의 filesystem cleanup 은 기본 비활성이다. 운영자가 Factor 12 env `RIIDO_WORKDIR_RETENTION_SECONDS` 를 명시하면 daemon 은 `archive.json.archived_at` 이 cutoff 보다 오래된 `keep-in-place` run root 만 삭제한다. `archive.json` 이 없는 run 은 active 또는 dirty 로 간주해 삭제하지 않는다.
+6. local daemon 은 기본 size / task-count based cleanup 을 갖지 않는다. `RIIDO_WORKDIR_RETENTION_SECONDS=0` 이 default 이며, disk quota 나 N-task pruning 은 별도 operator policy / adapter 가 생기기 전까지 자동으로 추론하지 않는다.
 
 ### 3.1 Store channel workspace grants
 
@@ -136,6 +137,7 @@ Store channel 에서는 workdir root 와 user workspace root 를 분리한다.
 
 - `cache/repos/{repo_hash}` 는 multi-task 공유. fetch / prune 갱신 시에만 짧은 lock 필요(§7).
 - task workdir 은 cache 의 시점 스냅샷 위에서 동작. cache 가 갱신되더라도 진행 중 task 의 worktree 는 영향을 받지 않는다(`git worktree` 의 ref 또는 `clone` 의 분리).
+- shared repo cache 의 자동 prune 은 local daemon default 가 아니다. prune 이 필요하면 operator-triggered maintenance 로만 수행하며, 반드시 `repo_cache_update.lock` 안에서 진행하고 active task workdir / run root 를 삭제 대상으로 삼지 않는다.
 
 ## 5. Native config injection (C6 owns the injection mechanism)
 
@@ -186,6 +188,20 @@ Provider 별 native config file plan 의 실행 가능한 SSOT 는 `internal/wor
 | Claude | `CLAUDE.md`, `.claude/settings.json`, `.riido/hooks/claude-audit-hook.sh`, `.riido/native-config-manifest.json` | Claude Code 의 project settings hook surface 를 task workdir 안에 고정한다. 기본 hook 은 `PreToolUse` / `PostToolUse` 입력 JSON 을 `.riido/hooks/claude-hook-events.jsonl` 로 append 하는 audit-only command hook 이며, exit 0 으로 provider 행동을 차단하지 않는다. 단 `.claude/settings.json` 과 hook script 는 C7 policy bundle 이 `claude:command-hooks:audit` surface 를 허용한 경우에만 materialize 된다. 거절되면 manifest 의 `hook_mode` 은 `instruction-only` 로 기록되고 `CLAUDE.md` 만 남는다. |
 | Codex | `AGENTS.md`, `.codex/config.toml`, `.riido/native-config-manifest.json` | `.codex/config.toml` 은 task-scoped config home 을 생성해 사용자 전역 `~/.codex` config 로부터 분리하는 anchor 다. 단 `.codex/config.toml` 과 adapter `CODEX_HOME=<workdir>/.codex` metadata 는 C7 policy bundle 이 `codex:config-home:task-scoped` surface 를 허용한 경우에만 materialize 된다. 거절되면 manifest 의 `config_home_dir` 과 `provider_settings_files` 에서 Codex config home 이 빠지고 `AGENTS.md` 만 남는다. |
 | OpenClaw / Cursor / unknown | `AGENTS.md`, `.riido/native-config-manifest.json` | 현재는 provider-neutral instruction file 주입만 한다. |
+
+### 5.1.2 native config overlay policy
+
+Native config overlay 의 표준은 **user-global config 를 읽거나 복사하지 않는
+per-task materialization** 이다. Codex 는 C7 이
+`codex:config-home:task-scoped` surface 를 허용할 때만 `CODEX_HOME=<workdir>/.codex`
+형태의 task-scoped config home 을 제공한다. Claude command hook, Codex config
+home, future provider-native config home 은 모두 C7 policy bundle 의 explicit
+allow surface 로만 활성화된다.
+
+OpenClaw / Cursor / unknown provider 는 이 문서 기준에서 instruction-only
+overlay 가 default 이며, provider-native config home 을 자동으로 추론하지 않는다.
+새 provider-native overlay surface 를 추가하려면 C7 policy bundle surface,
+`riido-native-config-plan.v1`, manifest field, NCV 입력을 같은 PR 에서 갱신한다.
 
 ### 5.2 deterministic materialization
 
@@ -264,18 +280,21 @@ NativeConfigVersion = sha256-hex(
 | **C2 IR Event Log** | Cat E (workspace/config) 의 1차 producer. `WorkdirCreated` / `NativeConfigInjected` / `WorkdirArchived` / `ConfigTemplateReinjected` 발행은 EventIngestor API 를 통해서만 수행한다. local workdir adapter 는 run root 의 `ir/events.jsonl` sink 를 제공할 수 있지만, envelope 확정 권한은 C2 EventIngestor 에 있다. C2 event schema 는 public `riido-contracts` 가 소유한다. |
 | **C8 Validation** | 공급: workdir 의 base / final 상태, diff, artifacts. validation 은 본 디렉토리들을 **읽기 전용** 으로 본다. |
 | **C9 Locking** | 받는다: `flock` primitive (§8 의 도메인 lock 들이 실제로 사용하는 메커니즘). |
-| **컨테이너 / VM 매니저 (외부)** | tier=`IsolatedContainer`/`EphemeralVM` 인 경우 workdir 을 container/VM 안으로 mount 하는 책임은 본 문서가 직접 다루지 않음 — 별도 “runtime launcher” 가 (TBD, `Q-WS-005`). |
+| **컨테이너 / VM 매니저 (외부)** | tier=`IsolatedContainer`/`EphemeralVM` 인 경우 C6 는 host-side run root 와 manifest 를 준비하고, container/VM 안으로 mount/전달하는 책임은 C4 runtime launcher / platform adapter 가 갖는다. C6 는 mount primitive 나 VM lifecycle 을 소유하지 않는다. |
 
-## 10. 미결정 / 오픈 이슈
+## 10. Resolved workdir policy decisions
 
-[`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 위임.
+아래 항목은 RIID-4573 에서 본 C6 SSOT 로 흡수된 결정이다. 다시 open
+question 으로 복제하지 않는다.
 
-- `Q-WS-001`: local daemon 기본 archive 위치는 같은 host 의 run root `keep-in-place` 로 결정됨. S3 / 외부 storage backend 의 기본값은 미결정.
-- `Q-WS-002`: 기본 workdir 보관 기간 — local daemon 은 `RIIDO_WORKDIR_RETENTION_SECONDS` opt-in 만 제공한다. 기본 며칠 / 몇 GB / N task 정책은 미결정.
-- `Q-WS-003`: shared repo cache 의 prune 주기.
-- `Q-WS-004`: native config 의 “overlay” 구조 (per-task `CODEX_HOME` overlay 같은 trick) 의 표준화.
-- `Q-WS-005`: `IsolatedContainer` / `EphemeralVM` 에서 workdir 을 container 안으로 어떻게 전달하는가의 책임 owner (workspace vs runtime launcher 분리).
-- `Q-WS-006`: `ReinjectNativeConfig` 가 “workdir 에 다른 수정이 있을 때” 의 자동 / 수동 분기 임계값.
+| ID | Decision | Follow-up owner |
+| --- | --- | --- |
+| `Q-WS-001` | Local daemon archive backend default 는 same-host run root `keep-in-place` 다. S3 / 압축 bundle / 외부 storage 는 default 가 아니며, 별도 archive adapter 와 config/env 가 생기기 전에는 자동 선택하지 않는다. | future infra/archive adapter |
+| `Q-WS-002` | Default workdir retention 은 disabled 다. `RIIDO_WORKDIR_RETENTION_SECONDS` 가 명시된 경우에만 archived run TTL cleanup 이 켜지고, size / task-count cleanup 은 default 로 존재하지 않는다. | daemon config + workdir cleanup |
+| `Q-WS-003` | Shared repo cache prune 은 자동 주기가 없다. 필요 시 operator-triggered maintenance 로만 실행하고 `repo_cache_update.lock` 을 짧게 잡는다. | future cache maintenance adapter |
+| `Q-WS-004` | Native config overlay 는 per-task materialization 이 표준이다. User-global config overlay/copy 는 default 로 금지하고, provider-native config home 은 C7 explicit allow surface + manifest/NCV 반영이 있을 때만 쓴다. | C7 policy + C6 workdir |
+| `Q-WS-005` | Container/VM workdir 전달 owner 는 C4 runtime launcher / platform adapter 다. C6 는 host-side run root, materialized files, manifest 만 공급한다. | future isolated runtime launcher |
+| `Q-WS-006` | Dirty workdir 에 대한 automatic in-place `ReinjectNativeConfig` threshold 는 zero 다. `Preparing`/`Running` 이후 policy/native-config 변경은 runtime-upgrade flow 를 통해 cancel/fail and next-run 재평가로 처리한다. | runtime upgrade flow + supervisor |
 
 ## 11. version-affecting changes
 

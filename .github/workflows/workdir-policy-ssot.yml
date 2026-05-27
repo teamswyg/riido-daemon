@@ -1,0 +1,61 @@
+name: workdir-policy-ssot
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/workdir-policy-ssot.yml"
+      - "docs/20-domain/workspace.md"
+      - "docs/20-domain/security.md"
+      - "docs/30-architecture/runtime-upgrade-flow.md"
+      - "docs/30-architecture/config-reference.md"
+      - "docs/50-roadmap/open-questions.md"
+      - "docs/migration/daemon.md"
+      - "internal/workdir/**"
+      - "cmd/riido/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/workdir-policy-ssot.yml"
+      - "docs/20-domain/workspace.md"
+      - "docs/20-domain/security.md"
+      - "docs/30-architecture/runtime-upgrade-flow.md"
+      - "docs/30-architecture/config-reference.md"
+      - "docs/50-roadmap/open-questions.md"
+      - "docs/migration/daemon.md"
+      - "internal/workdir/**"
+      - "cmd/riido/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  q-ws-closure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify Q-WS decisions live in C6/C7/runtime SSOT
+        run: |
+          if grep -q "Q-WS-" docs/50-roadmap/open-questions.md; then
+            echo "Q-WS decisions must stay closed in workspace/security/runtime-upgrade SSOT docs"
+            exit 1
+          fi
+          grep -q "Q-WS-001" docs/20-domain/workspace.md
+          grep -q "Q-WS-002" docs/20-domain/workspace.md
+          grep -q "Q-WS-003" docs/20-domain/workspace.md
+          grep -q "Q-WS-004" docs/20-domain/workspace.md
+          grep -q "Q-WS-005" docs/20-domain/workspace.md
+          grep -q "Q-WS-006" docs/20-domain/workspace.md
+          grep -q "Default workdir retention 은 disabled" docs/20-domain/workspace.md
+          grep -q "No user-global native config overlay" docs/20-domain/security.md
+          grep -q "automatic threshold for a dirty workdir is zero" docs/30-architecture/runtime-upgrade-flow.md
+          grep -q "no default size/task-count cleanup" docs/30-architecture/config-reference.md
+          grep -q "RIID-4573" docs/migration/daemon.md
+      - name: Test workdir retention and native config gates
+        run: |
+          go test ./internal/workdir -run 'Archive|CleanupArchivedBefore|NativeConfigVersion|NativeConfig' -count=1
+          go test ./cmd/riido -run 'WorkdirCleanup|DaemonSettings' -count=1
