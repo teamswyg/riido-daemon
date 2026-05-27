@@ -134,9 +134,11 @@ LocalIPCEndpoint {
 
 현재 순수 모델은 `internal/hostintegration.LocalIPCEndpoint` /
 `DefaultLocalIPCEndpoint` 가 실행한다. 이 모델은 endpoint descriptor 만 계산한다.
-실제 listener adapter 는 `internal/riidoapi` 의 local API transport 가 소유하며,
-dev-local / Developer ID 는 Unix socket, Windows Store/MSIX path 는 Windows named
-pipe 를 사용한다.
+실제 listener adapter 는 public `internal/riidoapi` 의 local API transport 가
+소유하며, dev-local / Developer ID 는 Unix socket, Windows Store/MSIX path 는
+Windows named pipe 를 사용한다. RIID-4684 에서 이 adapter 는 private
+`project/mwsd` 의존성 없이 public `internal/taskdb` guarded mutation 을 사용하도록
+이동됐다.
 
 Channel 별 adapter:
 

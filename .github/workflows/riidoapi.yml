@@ -1,0 +1,63 @@
+name: riidoapi
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/riidoapi.yml"
+      - "internal/riidoapi/**"
+      - "internal/taskdb/**"
+      - "internal/hostintegration/**"
+      - "internal/validation/**"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/migration/cli.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/riidoapi.yml"
+      - "internal/riidoapi/**"
+      - "internal/taskdb/**"
+      - "internal/hostintegration/**"
+      - "internal/validation/**"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/migration/cli.md"
+      - "docs/migration/daemon.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  local-api-gate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify riidoapi public boundary
+        run: |
+          imports="$(go list -f '{{range .Imports}}{{println .}}{{end}}{{range .TestImports}}{{println .}}{{end}}{{range .XTestImports}}{{println .}}{{end}}' ./internal/riidoapi)"
+          forbidden="$(printf '%s\n' "$imports" | grep -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/(project|riidoaiserver|mwsdbridge|provider/|agentbridge/controlplane/(saasplane|taskdbplane))' || true)"
+          if [ -n "$forbidden" ]; then
+            printf 'Forbidden riidoapi imports:\n%s\n' "$forbidden"
+            exit 1
+          fi
+      - name: Verify riidoapi local-only gate
+        run: |
+          if grep -R --line-number -E 'net\\.Listen\\("tcp"|http\\.ListenAndServe|:8080|0\\.0\\.0\\.0' internal/riidoapi; then
+            echo "riidoapi must not open public TCP listeners"
+            exit 1
+          fi
+      - name: Verify riidoapi black-box/domain gates
+        run: |
+          go test ./internal/riidoapi ./internal/taskdb ./internal/hostintegration ./internal/validation -count=1
