@@ -1,0 +1,237 @@
+package codex
+
+import (
+	"strings"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/toolargs"
+)
+
+// Translate maps a Codex JSON-RPC RawEvent to run-scope Events.
+//
+// Notification methods we recognize (params are conventionally a map):
+//   - thread_started / thread_resumed → SessionIdentified
+//   - turn_started → Lifecycle(Running)
+//   - agent_message → TextDelta
+//   - reasoning → ThinkingDelta
+//   - command_execution_started → ToolCallStarted(kind=shell)
+//   - command_execution_output → ToolCallDelta
+//   - command_execution_completed → ToolCallCompleted / Failed (by exit_code)
+//   - apply_patch_started / apply_patch_completed → ToolCallStarted/Completed(kind=patch_apply)
+//   - turn_completed → Result(completed)
+//   - turn_error → Result(failed)
+//   - usage → UsageDelta
+//
+// Server-initiated requests (method present, id present):
+//   - approve_command / approve_patch → ToolApprovalNeeded
+//
+// Anything else surfaces as Log so we don't silently drop it
+// (spec §15 item 3).
+func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
+	switch raw.Source {
+	case agentbridge.RawSourceStderr:
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: string(raw.Bytes)}}, nil, nil
+	}
+
+	switch {
+	case raw.Type == "malformed":
+		return []agentbridge.Event{{Kind: agentbridge.EventWarning, Text: "malformed codex json-rpc frame", Err: string(raw.Bytes)}}, nil, nil
+
+	case raw.Type == "error":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventError,
+			Err:  errMessage(raw.Payload),
+		}}, nil, nil
+
+	case raw.Type == "response":
+		// Plain RPC responses aren't run-scope events; the RPC actor
+		// resolves them. Emit a Log so observability is preserved.
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex rpc response"}}, nil, nil
+
+	case strings.HasPrefix(raw.Type, "notification:"):
+		method := strings.TrimPrefix(raw.Type, "notification:")
+		return translateNotification(method, params(raw)), nil, nil
+
+	case strings.HasPrefix(raw.Type, "server_request:"):
+		method := strings.TrimPrefix(raw.Type, "server_request:")
+		return translateServerRequest(method, params(raw)), nil, nil
+	}
+
+	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown frame: " + raw.Type}}, nil, nil
+}
+
+func translateNotification(method string, p map[string]any) []agentbridge.Event {
+	switch method {
+	case "thread_started", "thread_resumed":
+		return []agentbridge.Event{{Kind: agentbridge.EventSessionIdentified, SessionID: stringField(p, "thread_id")}}
+
+	case "thread/started", "thread/resumed":
+		return []agentbridge.Event{{Kind: agentbridge.EventSessionIdentified, SessionID: threadIDFromParams(p)}}
+
+	case "turn_started", "turn/started":
+		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}
+
+	case "agent_message":
+		return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: stringField(p, "text")}}
+
+	case "item/agentMessage/delta":
+		return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: stringField(p, "delta")}}
+
+	case "reasoning":
+		return []agentbridge.Event{{Kind: agentbridge.EventThinkingDelta, Text: stringField(p, "text")}}
+
+	case "command_execution_started":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventToolCallStarted,
+			Tool: agentbridge.ToolRef{
+				ID:   stringField(p, "id"),
+				Name: stringField(p, "command"),
+				Kind: "shell",
+				Args: toolargs.FromPairs("command", stringField(p, "command")),
+			},
+		}}
+
+	case "command_execution_output":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventToolCallDelta,
+			Tool: agentbridge.ToolRef{ID: stringField(p, "id")},
+			Text: stringField(p, "chunk"),
+		}}
+
+	case "command_execution_completed":
+		kind := agentbridge.EventToolCallCompleted
+		if intField(p, "exit_code") != 0 {
+			kind = agentbridge.EventToolCallFailed
+		}
+		return []agentbridge.Event{{
+			Kind: kind,
+			Tool: agentbridge.ToolRef{ID: stringField(p, "id"), Kind: "shell"},
+		}}
+
+	case "apply_patch_started":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventToolCallStarted,
+			Tool: agentbridge.ToolRef{
+				ID:   stringField(p, "id"),
+				Kind: "patch_apply",
+				Args: toolargs.FromPairs("path", stringField(p, "path")),
+			},
+		}}
+
+	case "apply_patch_completed":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventToolCallCompleted,
+			Tool: agentbridge.ToolRef{ID: stringField(p, "id"), Kind: "patch_apply"},
+		}}
+
+	case "turn_completed", "turn/completed":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventResult,
+			Result: agentbridge.Result{
+				Status: agentbridge.ResultCompleted,
+				Output: stringField(p, "output"),
+			},
+		}}
+
+	case "turn_error", "turn/error":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventResult,
+			Result: agentbridge.Result{
+				Status: agentbridge.ResultFailed,
+				Error:  stringField(p, "message"),
+			},
+		}}
+
+	case "usage":
+		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: agentbridge.Usage{
+			PromptTokens:     intField(p, "input_tokens"),
+			CompletionTokens: intField(p, "output_tokens"),
+			ReasoningTokens:  intField(p, "reasoning_tokens"),
+		}}}
+
+	case "thread/tokenUsage/updated":
+		total := mapField(mapField(p, "tokenUsage"), "total")
+		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: agentbridge.Usage{
+			PromptTokens:     intField(total, "inputTokens"),
+			CompletionTokens: intField(total, "outputTokens"),
+			ReasoningTokens:  intField(total, "reasoningOutputTokens"),
+			CacheReadTokens:  intField(total, "cachedInputTokens"),
+		}}}
+	}
+
+	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown notification: " + method}}
+}
+
+func translateServerRequest(method string, p map[string]any) []agentbridge.Event {
+	switch method {
+	case "approve_command":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventToolApprovalNeeded,
+			Tool: agentbridge.ToolRef{
+				ID:   stringField(p, "id"),
+				Name: stringField(p, "command"),
+				Kind: "shell",
+				Args: toolargs.FromPairs("command", stringField(p, "command")),
+			},
+		}}
+	case "approve_patch":
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventToolApprovalNeeded,
+			Tool: agentbridge.ToolRef{
+				ID:   stringField(p, "id"),
+				Name: stringField(p, "path"),
+				Kind: "patch_apply",
+				Args: toolargs.FromPairs("path", stringField(p, "path")),
+			},
+		}}
+	}
+	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown server_request: " + method}}
+}
+
+func params(raw agentbridge.RawEvent) map[string]any {
+	p, _ := raw.Payload["params"].(map[string]any)
+	return p
+}
+
+func threadIDFromParams(p map[string]any) string {
+	if id := stringField(p, "threadId"); id != "" {
+		return id
+	}
+	if id := stringField(p, "thread_id"); id != "" {
+		return id
+	}
+	thread := mapField(p, "thread")
+	if id := stringField(thread, "id"); id != "" {
+		return id
+	}
+	return stringField(thread, "sessionId")
+}
+
+func stringField(m map[string]any, key string) string {
+	if m == nil {
+		return ""
+	}
+	s, _ := m[key].(string)
+	return s
+}
+
+func intField(m map[string]any, key string) int {
+	if m == nil {
+		return 0
+	}
+	switch v := m[key].(type) {
+	case float64:
+		return int(v)
+	case int:
+		return v
+	}
+	return 0
+}
+
+func errMessage(payload map[string]any) string {
+	e, ok := payload["error"].(map[string]any)
+	if !ok {
+		return ""
+	}
+	return stringField(e, "message")
+}

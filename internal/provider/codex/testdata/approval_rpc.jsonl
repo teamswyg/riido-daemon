@@ -1,0 +1,5 @@
+{"jsonrpc":"2.0","method":"thread_started","params":{"thread_id":"th-approval"}}
+{"jsonrpc":"2.0","method":"turn_started","params":{}}
+{"jsonrpc":"2.0","id":91,"method":"approve_command","params":{"id":"cmd-1","command":"rm -rf /"}}
+{"jsonrpc":"2.0","id":92,"method":"approve_patch","params":{"id":"p-1","path":"/tmp/x"}}
+{"jsonrpc":"2.0","method":"turn_error","params":{"message":"boom"}}

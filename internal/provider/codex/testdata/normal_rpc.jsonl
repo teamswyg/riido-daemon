@@ -1,0 +1,9 @@
+{"jsonrpc":"2.0","method":"thread_started","params":{"thread_id":"th-1"}}
+{"jsonrpc":"2.0","method":"turn_started","params":{}}
+{"jsonrpc":"2.0","method":"agent_message","params":{"text":"hello"}}
+{"jsonrpc":"2.0","method":"reasoning","params":{"text":"thinking..."}}
+{"jsonrpc":"2.0","method":"command_execution_started","params":{"id":"c1","command":"ls"}}
+{"jsonrpc":"2.0","method":"command_execution_output","params":{"id":"c1","chunk":"line1"}}
+{"jsonrpc":"2.0","method":"command_execution_completed","params":{"id":"c1","exit_code":0}}
+{"jsonrpc":"2.0","method":"usage","params":{"input_tokens":10,"output_tokens":20}}
+{"jsonrpc":"2.0","method":"turn_completed","params":{"output":"done"}}
