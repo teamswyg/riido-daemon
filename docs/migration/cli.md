@@ -96,8 +96,30 @@ SSOT docs.
 6. Restore daemon architecture config docs. RIID-4711 moves
    `docs/30-architecture/config-reference.md` into the public daemon repo as
    the CLI/daemon env and flag SSOT.
-7. Restore smoke scripts as black-box tests.
-8. Keep real provider CLI tests opt-in and skipped unless executables exist.
+7. Restore CLI surface architecture docs. RIID-4714 adds
+   `docs/30-architecture/cli-surface.md` as the local-only command boundary
+   SSOT and wires the architecture-docs workflow to require it.
+8. Restore smoke scripts as black-box tests.
+9. Keep real provider CLI tests opt-in and skipped unless executables exist.
+
+## Current Migration Slices
+
+### RIID-4714 — architecture SSOT docs migration
+
+This slice documents the public CLI command boundary after the split-repo
+migration.
+
+This slice does:
+
+- add `docs/30-architecture/cli-surface.md`
+- link `docs/30-architecture/module-decomposition.md` to the CLI surface SSOT
+- add `docs/30-architecture/cli-surface.md` to the architecture-docs required
+  file gate
+- record the slice in this migration plan
+
+This slice does not change CLI command behavior, add server runtime behavior,
+move infrastructure workflows, bundle provider CLIs, or add new shared
+contracts.
 
 ## Validation Gates
 
@@ -107,6 +129,16 @@ Required before a CLI migration PR is mergeable:
 go test ./...
 go list -m all
 go build ./cmd/riido
+go run ./cmd/riido --help
+go run ./cmd/riido bridge providers
+```
+
+Architecture-doc migration PRs must also pass:
+
+```bash
+test -f docs/30-architecture/cli-surface.md
+go test ./...
+go build -o /tmp/riido ./cmd/riido
 go run ./cmd/riido --help
 go run ./cmd/riido bridge providers
 ```

@@ -42,6 +42,11 @@
 | `tools/storecontract` | Store distribution contract verifier. |
 | `tools/riidogen` | Local generator for executable Riido contracts. |
 
+The user/operator command boundary is owned by
+[`cli-surface.md`](cli-surface.md). `cmd/riido` remains a thin adapter over
+these packages; command semantics stay in the backing domain packages and SSOT
+docs.
+
 ## Import Rules
 
 | Package group | May import | Must not import |
