@@ -208,6 +208,22 @@ func (s *idlePollSource) WatchCancellation(context.Context, string) (<-chan erro
 	return make(chan error), nil
 }
 
+func TestSupervisorDefaultMailboxMatchesProviderRuntimeBackpressureSSOT(t *testing.T) {
+	rt := startRuntime(t, process.NewFake())
+	actor, err := New(Config{
+		DaemonID: "daemon-mailbox-default",
+		Runtime:  rt,
+		Source:   newRuntimeRoutingSource(nil),
+		Reporter: newReporterProbe(),
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	if got := cap(actor.mailbox); got != DefaultMailboxSize {
+		t.Fatalf("mailbox size = %d, want %d", got, DefaultMailboxSize)
+	}
+}
+
 func TestSupervisorBacksOffPollingWhenIdle(t *testing.T) {
 	source := &idlePollSource{claims: make(chan string, 16)}
 	reporter := newReporterProbe()

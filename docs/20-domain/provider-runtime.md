@@ -412,19 +412,32 @@ CanonicalEvent (append-only)
 
 ### 7.5 Draft/session event backpressure
 
-C4 Provider Runtime 이 provider draft / session event channel 의 숫자와 drop 정책을 소유한다. C6 workspace, C7 policy, C10 server 는 이 값을 재정의하지 않는다.
+C4 Provider Runtime 이 provider process stream, provider draft / session event channel,
+actor mailbox 의 숫자와 drop 정책을 소유한다. C6 workspace, C7 policy, C10 server 는
+이 값을 재정의하지 않는다. 이 절은 `Q-RT-001`, legacy `Q-MULTICA-005`, 그리고
+`Q-CTX-001` 의 runtime/session boundary 답이다.
+
+`internal/agentbridge/session` 은 C4 내부 submodel 이며 별도 bounded context 가 아니다.
+Claude/Codex/OpenClaw/Cursor 의 session id 차이는 concrete adapter ACL/protocol 차이로
+처리하고, runtime/session lifecycle split decision 으로 승격하지 않는다.
 
 | Surface | 구현 상수 | 값 | 정책 |
 | --- | --- | --- | --- |
+| process stdout chunk stream | `internal/process.DefaultStdoutBuffer` | `64` | no-drop, blocking process backpressure |
+| process stderr chunk stream | `internal/process.DefaultStderrBuffer` | `64` | no-drop, blocking process backpressure |
 | provider/session semantic event stream | `internal/agentbridge/session.DefaultEventBuffer` | `256` | no-drop, blocking backpressure |
 | terminal result stream | `internal/agentbridge/session.DefaultResultBuffer` | `1` | exactly one terminal result |
+| runtime actor mailbox | `internal/agentbridge/runtimeactor.DefaultMailboxSize` | `16` | caller-context bounded send |
+| supervisor actor mailbox | `internal/agentbridge/supervisor.DefaultMailboxSize` | `64` | caller-context bounded send |
 
 규칙:
 
-1. session actor 는 event buffer 가 가득 차면 event 를 drop / overwrite / reorder 하지 않고 consumer 가 `Events()` 를 drain 할 때까지 block 한다.
-2. caller 는 `Events()` 를 close 될 때까지 drain 해야 한다. drain 하지 않는 caller 는 provider runtime 을 backpressure 로 세운 것이며 adapter bug 로 분류하지 않는다.
-3. C4 는 현재 in-memory channel 에서 retry queue 를 두지 않는다. durable retry 는 향후 EventIngestor / outbox adapter 가 소유한다.
-4. session buffer 값을 바꾸는 slice 는 본 문서, `internal/agentbridge/session` 상수, `TestSessionDefaultBuffersMatchProviderRuntimeBackpressureSSOT`, 그리고 session actor workflow 를 같은 work unit 에서 갱신해야 한다.
+1. process stdout/stderr channel 이 가득 차면 stream writer 는 block 한다. text/log/warning chunk 를 drop / overwrite / reorder 하지 않는다.
+2. session actor 는 event buffer 가 가득 차면 event 를 drop / overwrite / reorder 하지 않고 consumer 가 `Events()` 를 drain 할 때까지 block 한다.
+3. runtime actor 와 supervisor mailbox send 는 bounded send 이며 caller context 가 deadline / cancellation 을 소유한다. mailbox-full 을 숨겨진 retry queue 로 우회하지 않는다.
+4. caller 는 `Events()` 를 close 될 때까지 drain 해야 한다. result-only caller 는 discard-drain 해야 하며, drain 하지 않는 caller 는 provider runtime 을 backpressure 로 세운 것이지 adapter bug 가 아니다.
+5. C4 는 현재 in-memory channel 에서 retry queue 를 두지 않는다. EventIngestor / sink append failure 는 warning event 로 표면화하고, durable retry / outbox 는 C2/C10 future decision 이 소유한다.
+6. buffer / mailbox 값을 바꾸는 slice 는 본 문서, 구현 상수, default-size tests, 그리고 `provider-runtime-backpressure` workflow 를 같은 work unit 에서 갱신해야 한다.
 
 ### 7.6 Bridge/detect helper boundary
 
@@ -611,7 +624,7 @@ Cursor adapter 를 [`internal/provider/cursor`](../../internal/provider/cursor) 
 
 ## 11. 미결정 / 오픈 이슈
 
-Open questions roadmap 문서는 [`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 가 소유한다. `Q-RT-001` 은 §7.5 로 닫혔고, `Q-RT-003` 은 §5.6 으로 닫혔으며, `Q-RT-005` 는 §8 로 닫혔다.
+Open questions roadmap 문서는 [`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 가 소유한다. `Q-RT-001` 과 legacy `Q-MULTICA-005` 는 §7.5 로 닫혔고, `Q-CTX-001` 은 §7.5/§7.7 로 닫혔으며, `Q-RT-003` 은 §5.6 으로 닫혔고, `Q-RT-005` 는 §8 로 닫혔다.
 
 - `Q-RT-002`: provider process crash 와 lease handoff 사이의 정확한 ordering (`ConnectionLost` draft → ingest → handoff orchestration).
 - `Q-RT-004`: wrapper 매니페스트의 표준 위치 / 형식(공개 spec vs 사내 전용).

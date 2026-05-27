@@ -257,6 +257,26 @@ concrete provider adapters, task DB/project/mwsd local API packages,
 provider-native approval RPC/hook implementations, packaging artifacts,
 private infra, secrets, or local machine state.
 
+### RIID-4572 — runtime/session backpressure and context boundary closure
+
+This slice closes the discussion-complete C4 runtime/session boundary work:
+
+- process stdout/stderr stream buffers are SSOT constants in `internal/process`
+  and stay fixed at 64 chunks each
+- session event/result buffers stay fixed at 256 events and 1 terminal result
+- runtime actor mailbox defaults to 16 messages
+- supervisor actor mailbox defaults to 64 messages
+- provider runtime streams remain lossless bounded streams; full buffers block
+  and propagate backpressure instead of dropping text/log/warning events
+- `internal/agentbridge/session` remains a C4 internal submodel, not a separate
+  bounded context
+
+The slice adds focused public CI for these default-size and no-drop
+backpressure gates. It does not add provider CLI dependencies, retry queues,
+EventIngestor/outbox durability, concrete provider adapter ownership, task
+DB/project/mwsd local API packages, packaging artifacts, private infra,
+secrets, or local machine state.
+
 ### RIID-4654 — bridge/detectutil migration
 
 This slice moves the provider-neutral C4 bridge entrypoint and provider adapter

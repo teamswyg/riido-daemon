@@ -1,0 +1,57 @@
+name: provider-runtime-backpressure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/provider-runtime-backpressure.yml"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "internal/process/**"
+      - "internal/agentbridge/session/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/agentbridge/supervisor/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/provider-runtime-backpressure.yml"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/migration/daemon.md"
+      - "internal/process/**"
+      - "internal/agentbridge/session/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/agentbridge/supervisor/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  backpressure-ssot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Verify provider runtime backpressure SSOT constants
+        run: |
+          grep -q "internal/process.DefaultStdoutBuffer" docs/20-domain/provider-runtime.md
+          grep -q "internal/process.DefaultStderrBuffer" docs/20-domain/provider-runtime.md
+          grep -q "internal/agentbridge/session.DefaultEventBuffer" docs/20-domain/provider-runtime.md
+          grep -q "internal/agentbridge/session.DefaultResultBuffer" docs/20-domain/provider-runtime.md
+          grep -q "internal/agentbridge/runtimeactor.DefaultMailboxSize" docs/20-domain/provider-runtime.md
+          grep -q "internal/agentbridge/supervisor.DefaultMailboxSize" docs/20-domain/provider-runtime.md
+          grep -q "Q-RT-001.*Q-MULTICA-005" docs/20-domain/provider-runtime.md
+          grep -q "Q-CTX-001" docs/20-domain/provider-runtime.md
+      - name: Test provider runtime backpressure gates
+        run: |
+          go test ./internal/process ./internal/process/processexec ./internal/agentbridge/session ./internal/agentbridge/runtimeactor ./internal/agentbridge/supervisor -run 'Backpressure|Default.*Buffer|Default.*Mailbox|MailboxBackpressure|StdoutStderrBurst' -count=1

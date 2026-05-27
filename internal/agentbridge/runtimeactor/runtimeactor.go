@@ -31,6 +31,12 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/process"
 )
 
+const (
+	// DefaultMailboxSize is the runtime actor mailbox size fixed by
+	// docs/20-domain/provider-runtime.md §7.5.
+	DefaultMailboxSize = 16
+)
+
 // ----- Errors -----
 
 var (
@@ -241,7 +247,7 @@ func New(cfg Config) (*Actor, error) {
 		cfg.MaxConcurrent = 4
 	}
 	if cfg.MailboxSize <= 0 {
-		cfg.MailboxSize = 16
+		cfg.MailboxSize = DefaultMailboxSize
 	}
 	if cfg.Now == nil {
 		cfg.Now = time.Now

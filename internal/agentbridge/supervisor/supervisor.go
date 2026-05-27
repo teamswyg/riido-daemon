@@ -34,6 +34,12 @@ import (
 var ErrStopped = errors.New("supervisor: stopped")
 
 const (
+	// DefaultMailboxSize is the supervisor actor mailbox size fixed by
+	// docs/20-domain/provider-runtime.md §7.5.
+	DefaultMailboxSize = 64
+)
+
+const (
 	MetadataWorkspaceID              = "workspace_id"
 	MetadataWorkspace                = "workspace"
 	MetadataRunID                    = "run_id"
@@ -158,7 +164,7 @@ func New(cfg Config) (*Actor, error) {
 		cfg.HeartbeatEvery = 10 * time.Second
 	}
 	if cfg.MailboxSize <= 0 {
-		cfg.MailboxSize = 64
+		cfg.MailboxSize = DefaultMailboxSize
 	}
 	if cfg.RiidoDaemonVersion == "" {
 		cfg.RiidoDaemonVersion = "riido-agentd v0.0.0"

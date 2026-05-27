@@ -12,6 +12,15 @@ package process
 
 import "context"
 
+const (
+	// DefaultStdoutBuffer is the bounded process stdout chunk channel size
+	// fixed by docs/20-domain/provider-runtime.md §7.5.
+	DefaultStdoutBuffer = 64
+	// DefaultStderrBuffer is the bounded process stderr chunk channel size
+	// fixed by docs/20-domain/provider-runtime.md §7.5.
+	DefaultStderrBuffer = 64
+)
+
 // Command is the spawn input.
 type Command struct {
 	Executable string
