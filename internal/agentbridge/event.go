@@ -31,8 +31,10 @@ const (
 // IsSemanticActivity reports whether an event resets the idle watchdog.
 // Stderr/log spam and process-level signals do NOT count — only events
 // that show the provider is making progress on the task.
+// Approval requests count because the session actor owns the wait timeout
+// after a provider-native ApprovalRequested event.
 //
-// See docs/20-domain/provider-runtime.md §5.5.
+// See docs/20-domain/provider-runtime.md §5.5 and §5.6.
 func (k EventKind) IsSemanticActivity() bool {
 	switch k {
 	case EventLifecycle,

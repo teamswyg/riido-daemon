@@ -324,6 +324,33 @@ Non-semantic activity:
 
 즉 stderr heartbeat / log spam / process 신호만으로 idle watchdog 을 reset 하지 않는다. 이 규칙이 깨지면 provider 가 실제 진행 없이 로그만 뿜어도 run 이 무기한 살아남는다.
 
+### 5.6 Approval wait timeout ownership
+
+`Q-RT-003` is closed here: C4 Provider Runtime / Adapter owns approval wait
+timeout policy through the session actor's run clocks.
+
+The rule:
+
+- provider adapters surface provider-native approval requests as
+  `tool_approval_needed` / `ApprovalRequested`
+- `tool_approval_needed` is semantic activity, so the first approval request
+  resets `SemanticIdle`
+- after the approval request, the same C4 `SemanticIdle` clock expires the run
+  if there is no provider progress, auto-approval response, human approval
+  response, cancellation, or terminal provider result
+- `HardTimeout` remains the whole-run upper bound and also applies while waiting
+  for approval
+- `EventIngestor` appends observed draft events but does not own approval
+  timers, expiry policy, or terminal timeout decisions
+- UI / review surfaces may display the pending approval and send a response,
+  but they are not the source of truth for timing out the provider run
+
+When the C4 clock expires, the session actor emits `EventTimeout`; the reducer
+turns it into `ResultTimeout` plus `CommandCancelProvider`, and the session
+actor kills the provider process. If a provider reports its own timeout/error,
+that raw observation is still translated as a provider event, but Riido's
+provider-run timeout decision remains the C4 session actor decision.
+
 ## 6. raw → draft 변환 규칙 (어댑터 ACL)
 
 본 문서가 강제하는 변환 규칙:
@@ -584,10 +611,9 @@ Cursor adapter 를 [`internal/provider/cursor`](../../internal/provider/cursor) 
 
 ## 11. 미결정 / 오픈 이슈
 
-Open questions roadmap 문서는 [`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 가 소유한다. `Q-RT-001` 은 §7.5 로 닫혔고, `Q-RT-005` 는 §8 로 닫혔다.
+Open questions roadmap 문서는 [`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 가 소유한다. `Q-RT-001` 은 §7.5 로 닫혔고, `Q-RT-003` 은 §5.6 으로 닫혔으며, `Q-RT-005` 는 §8 로 닫혔다.
 
 - `Q-RT-002`: provider process crash 와 lease handoff 사이의 정확한 ordering (`ConnectionLost` draft → ingest → handoff orchestration).
-- `Q-RT-003`: `ApprovalRequested` 의 응답 timeout 정책(provider 측 vs ingest 측 어느 쪽이 만료를 결정?).
 - `Q-RT-004`: wrapper 매니페스트의 표준 위치 / 형식(공개 spec vs 사내 전용).
 - `Q-RT-006`: Codex app-server `thread/fork` 같은 experimental surface 의 사용 가부 — `task.allowExperimentalRuntime` 외에 어떤 추가 게이트가 필요한가.
 

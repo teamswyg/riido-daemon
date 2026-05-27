@@ -195,6 +195,11 @@ func TestReduceSemanticActivityWatchdog(t *testing.T) {
 	if !s.LastSemanticActivity.Equal(now) {
 		t.Fatalf("text delta should update watchdog, got %v", s.LastSemanticActivity)
 	}
+	approvalAt := now.Add(time.Second)
+	s, _ = Reduce(s, Event{Kind: EventToolApprovalNeeded, At: approvalAt, Tool: ToolRef{ID: "approval-1"}}, nil)
+	if !s.LastSemanticActivity.Equal(approvalAt) {
+		t.Fatalf("approval request should reset watchdog, got %v", s.LastSemanticActivity)
+	}
 }
 
 // Tool start moves to ToolRunning; tool completion returns to Running
