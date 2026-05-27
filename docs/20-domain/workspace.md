@@ -268,7 +268,7 @@ NativeConfigVersion = sha256-hex(
 
 ## 10. 미결정 / 오픈 이슈
 
-`open-questions.md` 위임.
+[`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 위임.
 
 - `Q-WS-001`: local daemon 기본 archive 위치는 같은 host 의 run root `keep-in-place` 로 결정됨. S3 / 외부 storage backend 의 기본값은 미결정.
 - `Q-WS-002`: 기본 workdir 보관 기간 — local daemon 은 `RIIDO_WORKDIR_RETENTION_SECONDS` opt-in 만 제공한다. 기본 며칠 / 몇 GB / N task 정책은 미결정.

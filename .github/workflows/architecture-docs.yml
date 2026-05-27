@@ -1,0 +1,61 @@
+name: architecture-docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/architecture-docs.yml"
+      - "docs/20-domain/context-map.md"
+      - "docs/30-architecture/**"
+      - "docs/50-roadmap/open-questions.md"
+      - "docs/migration/daemon.md"
+      - "docs/migration/cli.md"
+  pull_request:
+    paths:
+      - ".github/workflows/architecture-docs.yml"
+      - "docs/20-domain/context-map.md"
+      - "docs/30-architecture/**"
+      - "docs/50-roadmap/open-questions.md"
+      - "docs/migration/daemon.md"
+      - "docs/migration/cli.md"
+
+jobs:
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify architecture SSOT files exist
+        run: |
+          test -f docs/20-domain/context-map.md
+          test -f docs/30-architecture/module-decomposition.md
+          test -f docs/30-architecture/config-reference.md
+          test -f docs/30-architecture/integration-matrix.md
+          test -f docs/30-architecture/compatibility-gate.md
+          test -f docs/30-architecture/runtime-upgrade-flow.md
+          test -f docs/50-roadmap/open-questions.md
+      - name: Verify split-repo wording
+        run: |
+          stale="$(grep -R --line-number -E '후속 architecture-doc migration|architecture-doc migration slice|github.com/teamswyg/riido_daemon|cmd/riido_ai_server|internal/riidoaiserver|terraform/' docs/20-domain docs/30-architecture docs/50-roadmap || true)"
+          if [ -n "$stale" ]; then
+            printf 'Stale or cross-boundary architecture wording:\n%s\n' "$stale"
+            exit 1
+          fi
+      - name: Verify config reference covers daemon env surface
+        run: |
+          for key in RIIDO_CLAUDE_PATH RIIDO_CODEX_PATH RIIDO_OPENCLAW_PATH RIIDO_CURSOR_PATH AGENTBRIDGE_INTEGRATION RIIDO_TASK_QUEUE_DIR RIIDO_TASK_DB_SOURCE_PATH RIIDO_SAAS_URL RIIDO_POLICY_BUNDLE_PATH; do
+            grep -q "$key" docs/30-architecture/config-reference.md
+          done
+      - name: Verify no non-Riido Go dependencies
+        run: |
+          allowed="github.com/teamswyg/riido-contracts"
+          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
+          if [ -n "$disallowed" ]; then
+            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
+            exit 1
+          fi
+      - name: Test
+        run: go test ./...

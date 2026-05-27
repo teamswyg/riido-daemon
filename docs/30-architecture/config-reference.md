@@ -1,0 +1,94 @@
+# Daemon Config Reference
+
+> Riido task: RIID-4711 `[Daemon] Architecture SSOT docs migration`
+>
+> This document owns the public `riido-daemon` env/flag catalog. SaaS server
+> `RIIDO_AI_SERVER_*` variables are owned by `riido-control-plane` and private
+> deploy-time evidence paths are owned by `riido-infra`.
+
+## Naming Rules
+
+- User/operator runtime config uses `RIIDO_*`.
+- Test-only integration gates use `AGENTBRIDGE_*`.
+- Provider executable overrides use `RIIDO_<PROVIDER>_PATH`.
+- New env vars must be documented here in the same PR that reads them.
+
+## Provider Executable Overrides
+
+| Variable | Consumer | Default | Fail-closed rule |
+| --- | --- | --- | --- |
+| `RIIDO_CLAUDE_PATH` | `internal/provider/claude.Detect` | `exec.LookPath("claude")` | explicit missing/bad path does not fall back to PATH |
+| `RIIDO_CODEX_PATH` | `internal/provider/codex.Detect` | `exec.LookPath("codex")` | same |
+| `RIIDO_OPENCLAW_PATH` | `internal/provider/openclaw.Detect` | `exec.LookPath("openclaw")` | same |
+| `RIIDO_CURSOR_PATH` | `internal/provider/cursor.Detect` | `exec.LookPath("cursor-agent")` | same |
+
+The daemon reports unavailable providers instead of executing a different
+binary than the operator selected.
+
+## Test Integration Gate
+
+| Variable | Consumer | Default |
+| --- | --- | --- |
+| `AGENTBRIDGE_INTEGRATION=1` | provider `TestIntegration` tests | unset tests skip |
+
+Real provider CLI integration is opt-in. Public CI runs deterministic adapter
+tests by default and does not require provider CLIs or vendor credentials.
+
+## Daemon Identity And Runtime Config
+
+| Variable | Consumer | Default | Meaning |
+| --- | --- | --- | --- |
+| `RIIDO_DAEMON_ID` | `cmd/riido/daemon_config.go` | `agentd-local` | stable local daemon/runtime slot id |
+| `RIIDO_DAEMON_VERSION` | daemon config + supervisor event stamps | `riido-agentd v0.0.0` | daemon binary version label |
+| `RIIDO_DAEMON_PROFILE` | daemon status | `local` | user-facing daemon profile |
+| `RIIDO_SERVER_URL` | daemon status | empty | display-only server URL unless SaaS source is configured |
+| `RIIDO_DEVICE_NAME` | daemon status | hostname or `localhost` | device display name |
+| `RIIDO_RUNTIME_OWNER` | daemon status | `$USER` or `local` | runtime owner display name |
+| `RIIDO_RUNTIME_AGENTS` | daemon status | empty list | comma-separated attached agent display names |
+| `RIIDO_WORKSPACE_COUNT` | daemon status | `0` | non-negative workspace count display value |
+| `RIIDO_WORKDIR_ROOT` | supervisor + workdir FS adapter | C11 dev-local app data workdir root | isolated run workdir root |
+| `RIIDO_WORKDIR_RETENTION_SECONDS` | daemon config + workdir cleanup | `0` | opt-in archived workdir cleanup; zero disables cleanup |
+| `RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS` | daemon config + workdir cleanup | `3600` when retention is enabled | cleanup loop interval; invalid without retention |
+| `RIIDO_POLICY_BUNDLE_PATH` | daemon config + policy loader | empty | optional `riido-policy-bundle.v1` file |
+| `RIIDO_POLICY_BUNDLE_VERSION` | daemon config/runtime/workdir | `policy-bundle.local.v0` | active policy version; must match file version when path is set |
+
+## Task Source Selection
+
+Exactly one production task source may be selected.
+
+| Variable | Consumer | Default | Meaning |
+| --- | --- | --- | --- |
+| `RIIDO_TASK_QUEUE_DIR` | file queue source | empty | directory of provider-neutral task JSON files |
+| `RIIDO_TASK_REPORT_DIR` | file reporter | `RIIDO_TASK_QUEUE_DIR/reports` when queue is set | JSONL report output directory |
+| `RIIDO_TASK_DB_SOURCE_PATH` | `taskdbplane` | empty | local `riido-task-db.v1` production source |
+| `RIIDO_SAAS_URL` | `saasplane` | empty | SaaS assignment polling endpoint |
+| `RIIDO_SAAS_AGENTS` | `saasplane` | empty | comma list of `agent_id:provider` or `agent_id=provider`; required with SaaS URL |
+| `RIIDO_SAAS_TOKEN` | `saasplane` | empty | optional bearer token forwarded to SaaS API |
+| `RIIDO_DAEMON_POLL_INTERVAL_SECONDS` | supervisor | `1` | active/fast claim polling interval |
+| `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS` | supervisor | `5` | idle polling interval; must be >= active interval |
+| `RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS` | supervisor | `10` | runtime heartbeat interval |
+
+Queue, task DB, and SaaS source variables are mutually exclusive where their
+adapters would otherwise compete for task ownership.
+
+## Local Daemon Flags
+
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `--socket` | C11 dev-local local IPC endpoint | local API socket or named pipe path |
+| `--transport` | `unix-socket` | `unix-socket` or `windows-named-pipe` |
+| `--pid-file` | unset | optional background PID file |
+| `--log-file` | unset | optional structured log file |
+| `--foreground` | false | run daemon in the current process |
+| `--lock-file` | `$HOME/.riido/.lock` | local singleton advisory lock |
+| `--timeout-seconds` | `5` for stop | graceful stop wait before kill |
+
+`cmd/riido` remains local-only. Health, ready, status, and metrics are exposed
+through local IPC subcommands, not public HTTP.
+
+## Change Procedure
+
+When an env var or daemon flag is added, update this document, add a parser
+test, and keep failure modes explicit. Provider-specific env reads must go
+through testable env helpers rather than direct unscoped `os.Getenv` calls in
+adapter internals.

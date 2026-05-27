@@ -5,7 +5,7 @@
 > - 책임: Riido daemon 이 App Store / Microsoft Store / Developer ID / MSIX sideload 같은 distribution channel 에서 어떤 host surface 를 쓸 수 있는가, provider CLI 를 어떻게 외부 도구로 등록하는가, background/helper 실행과 workspace 접근 동의를 어떻게 기록하는가.
 > - 비책임: provider capability 모델은 public `riido-contracts/provider/capability` (C3), workspace materialization 은 [`./workspace.md`](./workspace.md) (C6) 이 소유한다. provider process 실행 의미(C4), security decision matrix(C7), SaaS assignment / polling(C10)은 후속 migration slice 가 각 SSOT 를 이동한다.
 
-이 SSOT 는 **C11 Distribution / Host Integration** context 를 채운다. Context map SSOT 는 후속 architecture-doc migration slice 에서 public repo 로 이동한다.
+이 SSOT 는 **C11 Distribution / Host Integration** context 를 채운다. Context map SSOT 는 [`./context-map.md`](./context-map.md) 가 소유한다.
 
 ## 0. 핵심 invariant
 
@@ -328,11 +328,11 @@ Demo mode 는 실제 provider process 를 spawn 하지 않는다. 따라서 C4 P
 
 현재 순수 결정 함수는 `internal/hostintegration.EvaluateReviewDemoMode` 다. 이 함수는 store-managed channel(`mac-app-store`, `msix-store`) 에서 `ConsentLedger` 의 `review-demo-mode` grant 가 있을 때만 review/demo surface 를 활성화한다. 활성화된 demo mode 도 provider execution 과 telemetry sync 를 허용하지 않는다. 즉 reviewer 가 보는 것은 onboarding / provider status preview / workspace grant flow / background consent / privacy setting / local status 화면이며, 실제 C4 provider spawn 과 C10 telemetry sync 는 열리지 않는다.
 
-Store App / helper adapter 가 쓰는 local control surface 는 후속 local API migration slice 의 `internal/riidoapi` `review-demo` method 다. Request 는 `distribution_channel` 과 `review_demo_consent_granted` 만 받으며, response schema 는 `riido-api-review-demo.v1` 이다. Response 는 `enabled`, `surfaces`, `provider_status_mode`, `provider_execution_allowed=false`, `telemetry_sync_allowed=false`, `local_only=true` 로 reviewer-facing UI 가 어느 화면을 열 수 있는지 알려준다. `riido api review-demo --channel mac-app-store --review-demo-consent-granted true` 는 같은 계약을 CLI 로 검증하는 adapter 이며, provider CLI 를 탐지하거나 실행하지 않는다.
+Store App / helper adapter 가 쓰는 local control surface 는 public `internal/riidoapi` `review-demo` method 다. Request 는 `distribution_channel` 과 `review_demo_consent_granted` 만 받으며, response schema 는 `riido-api-review-demo.v1` 이다. Response 는 `enabled`, `surfaces`, `provider_status_mode`, `provider_execution_allowed=false`, `telemetry_sync_allowed=false`, `local_only=true` 로 reviewer-facing UI 가 어느 화면을 열 수 있는지 알려준다. `riido api review-demo --channel mac-app-store --review-demo-consent-granted true` 는 같은 계약을 CLI 로 검증하는 adapter 이며, provider CLI 를 탐지하거나 실행하지 않는다.
 
 ## 9. Open questions
 
-`open-questions.md` 위임.
+[`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 위임.
 
 - `Q-DIST-001`: `mac-app-store` 에서 외부 provider CLI 실행을 어떤 entitlement / security-scoped bookmark 조합으로 허용 가능한지의 최종 심사 전략.
 - `Q-DIST-002`: RESOLVED by §4.2. `msix-store` 는 packaged full-trust helper/tray process 를 local runtime broker 로 쓰고 Windows service default install 은 금지한다.

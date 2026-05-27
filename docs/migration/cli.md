@@ -93,8 +93,11 @@ SSOT docs.
 5. Restore daemon lifecycle wrappers once their backing runtime packages move.
    RIID-4690 restores `riido daemon ...` against public runtimeactor,
    supervisor, taskdbplane, and saasplane packages.
-6. Restore smoke scripts as black-box tests.
-7. Keep real provider CLI tests opt-in and skipped unless executables exist.
+6. Restore daemon architecture config docs. RIID-4711 moves
+   `docs/30-architecture/config-reference.md` into the public daemon repo as
+   the CLI/daemon env and flag SSOT.
+7. Restore smoke scripts as black-box tests.
+8. Keep real provider CLI tests opt-in and skipped unless executables exist.
 
 ## Validation Gates
 
