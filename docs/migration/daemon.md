@@ -86,6 +86,30 @@ Do not move into `riido-daemon`:
    black-box daemon checks. Private CI should not duplicate those expensive
    checks.
 
+## Current Migration Slices
+
+### RIID-4643 — contracts import gate
+
+`riido-daemon` consumes `github.com/teamswyg/riido-contracts v0.1.0` and keeps
+CI limited to Riido-owned Go module dependencies. This is a compatibility gate
+only; it does not move runtime packages.
+
+### RIID-4645 — local process / validation / lock core
+
+This slice moves provider-neutral local daemon primitives that have no external
+dependencies:
+
+- `internal/process` and `internal/process/processexec`
+- `internal/validation`
+- `internal/lock`
+- `internal/logging`
+- `internal/jsontest`
+- C8 validation and C9 locking SSOT docs under `docs/20-domain/`
+
+This slice does not move provider adapters, runtime/session/supervisor actors,
+task DB/project/mwsd/local API packages, CLI commands, private infra, secrets,
+or local machine state.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
