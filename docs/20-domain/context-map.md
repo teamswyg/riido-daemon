@@ -67,6 +67,12 @@ When both daemon and control-plane need the same DTO/schema, promote it to
 `riido-infra`. When a fact is server runtime behavior, keep it in
 `riido-control-plane`.
 
+Agent settings follow the same direction. `riido-contracts` owns the shared
+meaning of agent profile fields and instruction limits. `riido-control-plane`
+owns save/update API behavior. `riido-daemon` owns only the customer-PC runtime
+consumption of an assigned instruction value and must not redefine thumbnail
+presentation, RBAC/editability, API shape, or server storage policy.
+
 ## Change Procedure
 
 Changing context ownership or dependency direction is a policy-breaking change.
