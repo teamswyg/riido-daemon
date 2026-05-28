@@ -9,7 +9,6 @@
 | ID | Area | Question | Current handling |
 | --- | --- | --- | --- |
 | Q-DIST-003 | Consent storage | Should `ConsentLedger` persist only as local JSON append log or also use OS secure storage? | Pure model is public; durable OS adapter remains future work. |
-| Q-WS-002 | Workdir retention | What default retention size/time should the daemon use? | Default cleanup remains disabled; operators opt in with env. |
 | Q-GATE-001 | Real CLI CI | Should provider real-CLI integration run on a scheduled public workflow? | Default PR CI stays deterministic; scheduled/manual integration can be added without bundled CLIs. |
 
 Questions that require shared DTO/schema changes must first be evaluated under
