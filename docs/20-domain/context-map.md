@@ -97,12 +97,13 @@ consumes only the selected model value in provider execution requests.
 Figma `node-id=42-3014` onboarding is also client/control-plane composition.
 The onboarding runtime choice, template list (`node-id=138-7389`), direct-setting
 expansion (`node-id=164-26969`), workspace scroll affordance
-(`node-id=164-30192`), two-line ellipsis annotation (`node-id=164-27719`), and
-no-installed-AI skip branch (`node-id=164-30206`) are not daemon-owned
-decisions. The daemon supplies runtime liveness/detection facts and consumes an
-already-assigned instruction after SaaS authorization. It must not hard-code
-starter agent templates, workspace selection, onboarding step skipping, or
-client text overflow behavior.
+(`node-id=164-30192`), including selected-workspace and `새 워크스페이스` rows,
+two-line ellipsis annotation (`node-id=164-27719`), and no-installed-AI skip
+branch (`node-id=164-30206`) are not daemon-owned decisions. The daemon supplies
+runtime liveness/detection facts and consumes an already-assigned instruction
+after SaaS authorization. It must not hard-code starter agent templates,
+workspace selection/create-new entry points, onboarding step skipping, or client
+text overflow behavior.
 
 Figma `node-id=275-22731` runtime-settings empty states are the same boundary.
 The daemon supplies local liveness/detection facts when it is running; it does
