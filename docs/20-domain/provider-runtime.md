@@ -212,14 +212,16 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   executable detection/execution boundary 만 소유하고, auth/team/distribution
   presentation 을 runtime command 로 바꾸지 않는다.
 - Figma agent settings (`node-id=164-50215`), agent add
-  (`node-id=134-6542`), and agent list (`node-id=432-35713`) 의 create/update
-  form, save-button enablement, row edit/delete entry, created/update date
-  stamping, absolute-time tooltip, no-description row layout, status-label
-  copy/color, long-description UI, runtime dropdown rendering, or model
-  dropdown catalog 를 해석한다. Runtime binding 과 runtime-scoped `model_id` 는
-  upstream assignment/configuration input 으로 소비할 수 있다. 하지만
-  provider-specific model catalog 와 label 은 public contracts 의
-  `runtime_model_catalog.v1` / control-plane read model 이 소유하며, C4 는 이미
+  (`node-id=134-6542`), agent list/add affordance (`node-id=337-24001` /
+  `node-id=337-24013`), and agent list (`node-id=432-35713`) 의 create/update
+  form, save/add-button enablement, "모든 멤버가 런타임이 없으면" 표시 조건,
+  row edit/delete entry, created/update date stamping, absolute-time tooltip,
+  no-description row layout, status-label copy/color, long-description UI,
+  runtime dropdown rendering, or model dropdown catalog 를 해석한다. Runtime
+  binding 과 runtime-scoped `model_id` 는 upstream assignment/configuration
+  input 으로 소비할 수 있다. 하지만 provider-specific model catalog 와 label 은
+  public contracts 의 `runtime_model_catalog.v1` / control-plane read model 이
+  소유하며, C4 는 이미
   승인된 실행 요청의 model 값만 provider adapter argument 로 변환한다.
 - Figma onboarding direct-setting expansion (`node-id=164-26969`) 의 `이름`,
   `설명`, `지침` form composition, placeholder copy, dimmed template rows, or
