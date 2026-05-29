@@ -71,7 +71,8 @@ Agent settings follow the same direction. `riido-contracts` owns the shared
 meaning of agent profile fields and instruction limits. `riido-control-plane`
 owns save/update API behavior. `riido-daemon` owns only the customer-PC runtime
 consumption of an assigned instruction value and must not redefine thumbnail
-presentation, RBAC/editability, API shape, or server storage policy.
+presentation, one-line description presentation, RBAC/editability, API shape, or
+server storage policy.
 
 Figma `node-id=156-19307` menu placement is a client route affordance. The
 daemon may power runtime status after a route is opened, but it does not own

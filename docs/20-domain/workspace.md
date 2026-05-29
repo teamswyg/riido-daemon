@@ -158,9 +158,10 @@ SaaS task source 가 `riido_telemetry_contract` metadata 를 제공하면 superv
 
 SaaS task source 가 agent instruction 값을 제공하는 경우 C6/C4 는 그 값을
 run-scope prompt/native config 입력으로만 소비한다. instruction 의 저장 위치,
-길이 제한, 수정 가능성, RBAC, 그리고 `profile_thumbnail_url` 같은 presentation
-field 는 public `riido-contracts` 와 `riido-control-plane` 의 SSOT 가 소유한다.
-Daemon 은 thumbnail 값을 native config 에 주입하지 않는다.
+길이 제한, 수정 가능성, RBAC, 그리고 `profile_thumbnail_url` / `description`
+같은 presentation field 는 public `riido-contracts` 와
+`riido-control-plane` 의 SSOT 가 소유한다. Daemon 은 thumbnail 이나
+description 값을 native config 에 주입하지 않는다.
 
 ### 5.1.1 native config manifest
 
