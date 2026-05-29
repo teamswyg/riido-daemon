@@ -73,6 +73,10 @@ owns save/update API behavior. `riido-daemon` owns only the customer-PC runtime
 consumption of an assigned instruction value and must not redefine thumbnail
 presentation, RBAC/editability, API shape, or server storage policy.
 
+Figma `node-id=156-19307` menu placement is a client route affordance. The
+daemon may power runtime status after a route is opened, but it does not own
+menu labels, ordering, selected state, or route availability.
+
 ## Change Procedure
 
 Changing context ownership or dependency direction is a policy-breaking change.

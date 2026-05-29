@@ -147,6 +147,9 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
 - agent 설정을 저장하거나 수정. Agent profile / instruction 의미와 API shape 는
   upstream contracts/control-plane SSOT 가 소유하고, C4 는 이미 배정된 run 입력만
   provider process 로 전달한다.
+- Figma menu placement (`node-id=156-19307`) 또는 client route selected state 를
+  해석한다. 메뉴는 runtime 실행 입력이 아니며, C4 는 route 진입 이후 배정된 run 만
+  소비한다.
 - task 를 lease / claim / heartbeat (C5).
 - workdir / native config 작성 (C6).
 - 정책 / sandbox / 보호 경로 결정 (C7).
