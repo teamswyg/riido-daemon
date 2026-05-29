@@ -654,6 +654,13 @@ state, right details panel, and the visible `중지` button are client/task
 presentation. The daemon responds only after SaaS polling returns cancellation
 or interrupt state, then applies that to the provider runtime and reports
 progress/result through existing ports.
+Figma `node-id=153-8761` busy-agent queued rendering is also outside daemon
+comment ownership. When SaaS reports that an already-working agent has accepted
+a queued assignment/comment, the daemon does not synthesize the Korean
+"지금은 다른 작업을 처리 중이에요..." copy or a task-thread row. It only waits for
+the SaaS poll result that either grants work to this runtime or reports a
+cancel/stop transition, then applies the provider action and reports existing
+progress/result events.
 
 The adapter imports shared DTO/state/event/poll constants from
 `github.com/teamswyg/riido-contracts/assignment v0.3.0` and does not import
