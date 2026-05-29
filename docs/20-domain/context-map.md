@@ -71,8 +71,8 @@ Agent settings follow the same direction. `riido-contracts` owns the shared
 meaning of agent profile fields and instruction limits. `riido-control-plane`
 owns create/save/update API behavior. `riido-daemon` owns only the customer-PC runtime
 consumption of an assigned instruction value and must not redefine thumbnail
-presentation, one-line description presentation, `updated_at` timestamp meaning,
-RBAC/editability, API shape, or server storage policy.
+presentation, one-line description presentation, `created_at`/`updated_at`
+timestamp meaning, RBAC/editability, API shape, or server storage policy.
 
 Figma `node-id=156-19307` menu placement is a client route affordance. The
 daemon may power runtime status after a route is opened, but it does not own
@@ -85,14 +85,17 @@ The daemon owns the current-device local facts exposed by `riido daemon status`,
 agent hover popover, daemon stop modal copy, restart animation, remote-device
 presentation, or SaaS `GET /v1/client/ai-agent/devices` projection.
 
-Figma `node-id=164-50215` agent settings and `node-id=134-6542` agent add are
-client/control-plane composition over agent bootstrap/create/update/editability
-APIs. The daemon owns only runtime execution after an already-authorized runtime
-binding/model/instruction is assigned. It does not create agent records, enable
-or disable the save button, own row/meatball edit entry, absolute-time tooltip
-behavior, long-description presentation, or the model dropdown catalog. The
-model catalog is a runtime-scoped contracts/control-plane read-model fact; C4
-consumes only the selected model value in provider execution requests.
+Figma `node-id=164-50215` agent settings, `node-id=134-6542` agent add, and
+`node-id=432-35713` agent list are client/control-plane composition over agent
+bootstrap/create/update/editability APIs. The daemon owns only runtime
+execution after an already-authorized runtime binding/model/instruction is
+assigned. It does not create agent records, stamp `created_at`, refresh
+`updated_at`, enable or disable the save button, own row/meatball edit entry,
+absolute-time tooltip behavior, no-description row layout,
+long-description presentation, status-label copy/color, or the model dropdown
+catalog. The model catalog is a runtime-scoped contracts/control-plane
+read-model fact; C4 consumes only the selected model value in provider
+execution requests.
 
 Figma `node-id=42-3014` onboarding is also client/control-plane composition.
 The onboarding runtime choice (`node-id=137-6746`), template list
