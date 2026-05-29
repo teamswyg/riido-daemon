@@ -92,6 +92,16 @@ binding/instruction is assigned. It does not create agent records, enable or
 disable the save button, own row/meatball edit entry, absolute-time tooltip
 behavior, long-description presentation, or the model dropdown catalog.
 
+Figma `node-id=42-3014` onboarding is also client/control-plane composition.
+The onboarding runtime choice, template list (`node-id=138-7389`), direct-setting
+expansion (`node-id=164-26969`), workspace scroll affordance
+(`node-id=164-30192`), two-line ellipsis annotation (`node-id=164-27719`), and
+no-installed-AI skip branch (`node-id=164-30206`) are not daemon-owned
+decisions. The daemon supplies runtime liveness/detection facts and consumes an
+already-assigned instruction after SaaS authorization. It must not hard-code
+starter agent templates, workspace selection, onboarding step skipping, or
+client text overflow behavior.
+
 ## Change Procedure
 
 Changing context ownership or dependency direction is a policy-breaking change.

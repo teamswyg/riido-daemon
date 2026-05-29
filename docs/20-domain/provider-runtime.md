@@ -15,6 +15,13 @@ RIID-4651 에서 public `riido-daemon` 으로 이동한 구현 범위는 `intern
 
 - task DB/project/mwsd/local API, server/control-plane/infra/secret/state files
 
+The Figma onboarding planning screen (`v.1.22 AI Agent`, `node-id=42-3014`) is
+outside C4 ownership. C4 may report runtime detection and liveness used by the
+client's onboarding runtime-choice screen, and it may execute a task using the
+instruction that SaaS assigns later. C4 does not own the onboarding template
+catalog, direct-setting form composition, workspace selector, no-runtime skip
+branch, scroll affordances, two-line ellipsis behavior, or starter-agent copy.
+
 RIID-4652 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/agentbridge/toolargs` 와 `internal/agentbridge/toolpolicy` 다. 이 package
 들은 provider raw tool input 을 bounded/redacted `ToolRef.Args` 로 요약하고,
