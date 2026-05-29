@@ -155,6 +155,10 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   `riido.aiAgent.tasks.stop` 은 control-plane/client generated path evidence 이고,
   C4 는 upstream ingest/orchestrator 가 내린 cancel/interrupt 와
   `<riido_log>...<end>` telemetry marker 만 실행 표면으로 소비한다.
+- Figma participant dropdown annotations (`node-id=153-12742`) 의 member/agent
+  정렬, 긴 이름 표시, max height, scrollbar width, checkbox layout 을 해석한다.
+  assignable-agent response 와 client composition 은 control-plane/client
+  boundary 이며, C4 는 dropdown 표시 순서나 멤버 목록을 만들지 않는다.
 - task 를 lease / claim / heartbeat (C5).
 - workdir / native config 작성 (C6).
 - 정책 / sandbox / 보호 경로 결정 (C7).
