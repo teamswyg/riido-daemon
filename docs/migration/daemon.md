@@ -648,6 +648,12 @@ invent the client cold-thread collection. Figma `node-id=153-15931` viewer-away
 thread visibility and long-body scroll/focus behavior remain control-plane
 cold-collection and client presentation facts, not daemon scheduling or provider
 runtime state.
+Figma `node-id=236-21379` normal task-thread rendering is the same boundary at
+task-screen scale: generic comment input, AI Agent reply input, send-button
+state, right details panel, and the visible `중지` button are client/task
+presentation. The daemon responds only after SaaS polling returns cancellation
+or interrupt state, then applies that to the provider runtime and reports
+progress/result through existing ports.
 
 The adapter imports shared DTO/state/event/poll constants from
 `github.com/teamswyg/riido-contracts/assignment v0.3.0` and does not import

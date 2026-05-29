@@ -177,6 +177,12 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   Client-facing cold thread collection, active stream link selection,
   persisted viewer-away thread visibility, and rendered thread composition are
   not provider-runtime facts.
+- Figma normal task-thread screen (`node-id=236-21379`) 의 generic comment
+  input, AI Agent reply input, send-button state, right-side task details panel,
+  또는 `중지` button rendering 을 해석한다. C4 는 browser/client click 을 직접
+  관찰하지 않는다. SaaS polling/assignment response 가 cancel/interrupt 를
+  내려준 뒤에만 provider runtime process 에 중단을 반영하고, progress/result
+  는 SaaS thread-progress/reporting port 로 올린다.
 - Figma participant dropdown annotations (`node-id=153-12742`) 의 member/agent
   정렬, 긴 이름 표시, max height, scrollbar width, checkbox layout 을 해석한다.
   assignable-agent response 와 client composition 은 control-plane/client
