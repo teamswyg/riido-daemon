@@ -187,6 +187,11 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   정렬, 긴 이름 표시, max height, scrollbar width, checkbox layout 을 해석한다.
   assignable-agent response 와 client composition 은 control-plane/client
   boundary 이며, C4 는 dropdown 표시 순서나 멤버 목록을 만들지 않는다.
+- Figma additional planning section (`node-id=153-15935`) 의 task/subtask-only
+  assignment target scope, AI property filler recommendation exclusion, or agent
+  mention exclusion 을 해석한다. C4 는 project/milestone/intake/property-filler/
+  mention surface 에서 agent 후보를 계산하지 않으며, task/subtask target 검증도
+  하지 않는다. C4 는 SaaS 가 이미 승인한 assignment 만 실행 입력으로 소비한다.
 - Figma runtime settings (`node-id=162-23090`) 의 agent hover popover, daemon
   stop modal copy, restart animation, or remote-device table presentation 을
   해석한다. C4 는 provider process/run lifecycle 과 runtime status 를 공급하고,

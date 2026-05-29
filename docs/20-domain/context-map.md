@@ -110,6 +110,16 @@ not own Windows app waitlist copy, marketing-consent mutation, provider
 install-card hover behavior, or external provider installation links. Claude,
 Codex, OpenClaw, and Cursor CLIs remain external user-installed tools.
 
+Figma `node-id=153-15935` additional planning content confirms the assignment
+target boundary. The daemon does not decide whether a project, milestone,
+intake, existing AI property filler, mention surface, task, or subtask can
+receive an agent. That target validation is a contracts/control-plane/client
+surface rule. The daemon consumes only SaaS assignments that already passed
+target-scope policy, then controls the selected runtime. It also does not
+recommend agents for AI property filling or implement agent mentions.
+Device/runtime owner-only local actions remain C11/local-helper facts for the
+current device.
+
 Figma `node-id=236-29749` web onboarding does not change daemon ownership either.
 macOS app download is distribution/client routing, not a provider CLI install
 command. Google/email sign-up, terms consent, member invite, Windows waitlist,

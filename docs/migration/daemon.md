@@ -669,6 +669,15 @@ runtime because the agent was deleted, the daemon receives that as the same
 SaaS cancellation/stop path, interrupts the provider process when applicable,
 and reports terminal progress/result through the existing adapter ports.
 
+Figma `node-id=153-15935` additional planning content is also no daemon runtime
+diff. The task/subtask-only Agent assignment target scope belongs upstream to
+contracts/control-plane/client composition. The daemon must not infer Agent
+targets for projects, milestones, intakes, AI property filling, or mention
+surfaces, and it must not implement agent recommendation for the existing AI
+property filler. It only executes SaaS assignments after target validation and
+continues to treat device/runtime owner-only actions as local current-device
+host integration behavior.
+
 The adapter imports shared DTO/state/event/poll constants from
 `github.com/teamswyg/riido-contracts/assignment v0.3.0` and does not import
 private `internal/riidoaiserver` packages. The control-plane repository still
