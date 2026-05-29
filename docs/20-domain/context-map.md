@@ -100,7 +100,10 @@ The onboarding runtime choice (`node-id=137-6746`), template list
 scroll affordance (`node-id=164-30192`), including selected-workspace and
 `새 워크스페이스` rows, two-line ellipsis annotation (`node-id=164-27719`), and
 no-installed-AI skip branch (`node-id=164-30206`) are not daemon-owned
-decisions. `node-id=137-6746` can show Claude Code/Codex as `감지됨` selectable
+decisions. In `node-id=164-26969`, the `이름`, `설명`, and `지침` input
+composition maps upstream to control-plane agent creation; C4 later consumes
+only the already-assigned instruction/runtime/model values. `node-id=137-6746`
+can show Claude Code/Codex as `감지됨` selectable
 rows and OpenClaw/Cursor Agent as `감지 안 됨` non-selectable rows, but those
 labels, radios, and row states are client presentation over runtime
 liveness/detection facts. `node-id=138-7389` can show `리도`, `영실`, `홍도`,

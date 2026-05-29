@@ -218,6 +218,10 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   하지만 provider-specific model catalog 와 label 은 public contracts 의
   `runtime_model_catalog.v1` / control-plane read model 이 소유하며, C4 는
   이미 승인된 실행 요청의 model 값만 provider adapter argument 로 변환한다.
+- Figma onboarding direct-setting expansion (`node-id=164-26969`) 의 `이름`,
+  `설명`, `지침` form composition, placeholder copy, dimmed template rows, or
+  scroll behavior 를 해석한다. C4 는 control-plane 이 생성/할당한 agent
+  configuration 의 instruction/runtime/model 값만 실행 입력으로 소비한다.
 - task 를 lease / claim / heartbeat (C5).
 - workdir / native config 작성 (C6).
 - 정책 / sandbox / 보호 경로 결정 (C7).
