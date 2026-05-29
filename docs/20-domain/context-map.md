@@ -110,6 +110,14 @@ not own Windows app waitlist copy, marketing-consent mutation, provider
 install-card hover behavior, or external provider installation links. Claude,
 Codex, OpenClaw, and Cursor CLIs remain external user-installed tools.
 
+Figma `node-id=236-29749` web onboarding does not change daemon ownership either.
+macOS app download is distribution/client routing, not a provider CLI install
+command. Google/email sign-up, terms consent, member invite, Windows waitlist,
+marketing consent, chat animation, and progress-bar references are
+auth/team/product/client facts. The daemon only starts after the desktop/helper
+surface launches it and then reports runtime liveness/control-plane assignment
+state through the existing SaaS boundary.
+
 ## Change Procedure
 
 Changing context ownership or dependency direction is a policy-breaking change.

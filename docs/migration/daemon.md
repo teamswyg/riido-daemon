@@ -692,6 +692,13 @@ boundary. Provider install cards and hover states are client/product
 presentation over external provider links, and Windows app waitlist /
 marketing-consent mutations are not daemon commands.
 
+Figma web onboarding (`node-id=236-29749`) does not change that boundary either.
+The macOS app download CTA is distribution/product routing to a Riido desktop
+artifact, not a daemon command to install provider CLIs. Sign-up, terms consent,
+member invite, Windows waitlist/marketing consent, chat animation, and
+progress-bar references remain client/auth/team/product surfaces unless a future
+daemon SSOT explicitly promotes a local helper behavior.
+
 This slice does not move server HTTP implementation, SSE transport,
 Terraform/AWS/deploy evidence, packaging artifacts, private infra, secrets,
 provider CLI bundling, App Store/MSIX helper packaging, or local machine state.

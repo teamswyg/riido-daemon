@@ -22,6 +22,14 @@ instruction that SaaS assigns later. C4 does not own the onboarding template
 catalog, direct-setting form composition, workspace selector, no-runtime skip
 branch, scroll affordances, two-line ellipsis behavior, or starter-agent copy.
 
+The Figma web onboarding section (`node-id=236-29749`) is also outside C4
+ownership. Its macOS app download CTA can lead a user to a desktop artifact, but
+it is not a provider runtime command and does not authorize C4 to bundle,
+download, install, or update Claude/Codex/OpenClaw/Cursor CLIs. Its sign-up,
+terms consent, member invite, Windows waitlist, marketing-consent, chat
+animation, and progress-bar reference facts belong to client/auth/team/product
+surfaces until a separate SSOT promotes executable daemon behavior.
+
 RIID-4652 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/agentbridge/toolargs` 와 `internal/agentbridge/toolpolicy` 다. 이 package
 들은 provider raw tool input 을 bounded/redacted `ToolRef.Args` 로 요약하고,
@@ -183,6 +191,11 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   install-card hover, Windows app waitlist copy, or marketing-consent state 를
   해석한다. C4 는 provider CLI 를 bundle/download/install 하지 않으며, waitlist
   mutation 이 필요하면 client/product/control-plane SSOT 가 먼저 소유해야 한다.
+- Figma web onboarding (`node-id=236-29749`) 의 macOS app download CTA,
+  sign-up/terms/member-invite flows, Windows waitlist/marketing consent,
+  chat animation, or progress-bar reference 를 해석한다. C4 는 external provider
+  executable detection/execution boundary 만 소유하고, auth/team/distribution
+  presentation 을 runtime command 로 바꾸지 않는다.
 - Figma agent settings (`node-id=164-50215`) 와 agent add
   (`node-id=134-6542`) 의 create/update form, save-button enablement, row edit
   entry, absolute-time tooltip, long-description UI, runtime dropdown rendering,
