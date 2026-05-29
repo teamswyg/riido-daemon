@@ -71,8 +71,8 @@ Agent settings follow the same direction. `riido-contracts` owns the shared
 meaning of agent profile fields and instruction limits. `riido-control-plane`
 owns save/update API behavior. `riido-daemon` owns only the customer-PC runtime
 consumption of an assigned instruction value and must not redefine thumbnail
-presentation, one-line description presentation, RBAC/editability, API shape, or
-server storage policy.
+presentation, one-line description presentation, `updated_at` timestamp meaning,
+RBAC/editability, API shape, or server storage policy.
 
 Figma `node-id=156-19307` menu placement is a client route affordance. The
 daemon may power runtime status after a route is opened, but it does not own
@@ -84,6 +84,12 @@ The daemon owns the current-device local facts exposed by `riido daemon status`,
 `health`, `ready`, `metrics`, `stop`, `logs`, and `start`. It does not own the
 agent hover popover, daemon stop modal copy, restart animation, remote-device
 presentation, or SaaS `GET /v1/client/ai-agent/devices` projection.
+
+Figma `node-id=164-50215` agent settings is a client/control-plane composition
+over agent bootstrap/update/editability APIs. The daemon owns only runtime
+execution after an already-authorized runtime binding/instruction is assigned.
+It does not own row/meatball edit entry, absolute-time tooltip behavior,
+long-description presentation, or the model dropdown catalog.
 
 ## Change Procedure
 
