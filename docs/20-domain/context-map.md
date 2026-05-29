@@ -69,7 +69,7 @@ When both daemon and control-plane need the same DTO/schema, promote it to
 
 Agent settings follow the same direction. `riido-contracts` owns the shared
 meaning of agent profile fields and instruction limits. `riido-control-plane`
-owns save/update API behavior. `riido-daemon` owns only the customer-PC runtime
+owns create/save/update API behavior. `riido-daemon` owns only the customer-PC runtime
 consumption of an assigned instruction value and must not redefine thumbnail
 presentation, one-line description presentation, `updated_at` timestamp meaning,
 RBAC/editability, API shape, or server storage policy.
@@ -85,11 +85,12 @@ The daemon owns the current-device local facts exposed by `riido daemon status`,
 agent hover popover, daemon stop modal copy, restart animation, remote-device
 presentation, or SaaS `GET /v1/client/ai-agent/devices` projection.
 
-Figma `node-id=164-50215` agent settings is a client/control-plane composition
-over agent bootstrap/update/editability APIs. The daemon owns only runtime
-execution after an already-authorized runtime binding/instruction is assigned.
-It does not own row/meatball edit entry, absolute-time tooltip behavior,
-long-description presentation, or the model dropdown catalog.
+Figma `node-id=164-50215` agent settings and `node-id=134-6542` agent add are
+client/control-plane composition over agent bootstrap/create/update/editability
+APIs. The daemon owns only runtime execution after an already-authorized runtime
+binding/instruction is assigned. It does not create agent records, enable or
+disable the save button, own row/meatball edit entry, absolute-time tooltip
+behavior, long-description presentation, or the model dropdown catalog.
 
 ## Change Procedure
 
