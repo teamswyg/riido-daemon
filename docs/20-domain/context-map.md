@@ -104,6 +104,12 @@ already-assigned instruction after SaaS authorization. It must not hard-code
 starter agent templates, workspace selection, onboarding step skipping, or
 client text overflow behavior.
 
+Figma `node-id=275-22731` runtime-settings empty states are the same boundary.
+The daemon supplies local liveness/detection facts when it is running; it does
+not own Windows app waitlist copy, marketing-consent mutation, provider
+install-card hover behavior, or external provider installation links. Claude,
+Codex, OpenClaw, and Cursor CLIs remain external user-installed tools.
+
 ## Change Procedure
 
 Changing context ownership or dependency direction is a policy-breaking change.

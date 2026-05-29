@@ -179,6 +179,10 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   `cmd/riido daemon ...` local lifecycle adapter 가 current-device status/stop
   surface 를 조립한다. SaaS device/runtime read model 은 control-plane contract
   projection 이며 C4 가 만들지 않는다.
+- Figma runtime settings empty-state (`node-id=275-22731`) 의 provider
+  install-card hover, Windows app waitlist copy, or marketing-consent state 를
+  해석한다. C4 는 provider CLI 를 bundle/download/install 하지 않으며, waitlist
+  mutation 이 필요하면 client/product/control-plane SSOT 가 먼저 소유해야 한다.
 - Figma agent settings (`node-id=164-50215`) 와 agent add
   (`node-id=134-6542`) 의 create/update form, save-button enablement, row edit
   entry, absolute-time tooltip, long-description UI, runtime dropdown rendering,

@@ -687,6 +687,11 @@ The daemon command imports public daemon packages only and must not import
 private `riido_daemon` paths or `internal/riidoaiserver`. It does not bundle,
 install, or auto-download Claude/Codex/OpenClaw/Cursor CLIs.
 
+Figma runtime-settings empty states (`node-id=275-22731`) do not change that
+boundary. Provider install cards and hover states are client/product
+presentation over external provider links, and Windows app waitlist /
+marketing-consent mutations are not daemon commands.
+
 This slice does not move server HTTP implementation, SSE transport,
 Terraform/AWS/deploy evidence, packaging artifacts, private infra, secrets,
 provider CLI bundling, App Store/MSIX helper packaging, or local machine state.
