@@ -150,6 +150,11 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
 - Figma menu placement (`node-id=156-19307`) 또는 client route selected state 를
   해석한다. 메뉴는 runtime 실행 입력이 아니며, C4 는 route 진입 이후 배정된 run 만
   소비한다.
+- Figma task-thread annotations (`node-id=153-15931`) 의 scroll, hover, modal,
+  animation reference 를 해석한다. `riido.aiAgent.events.stream` /
+  `riido.aiAgent.tasks.stop` 은 control-plane/client generated path evidence 이고,
+  C4 는 upstream ingest/orchestrator 가 내린 cancel/interrupt 와
+  `<riido_log>...<end>` telemetry marker 만 실행 표면으로 소비한다.
 - task 를 lease / claim / heartbeat (C5).
 - workdir / native config 작성 (C6).
 - 정책 / sandbox / 보호 경로 결정 (C7).
