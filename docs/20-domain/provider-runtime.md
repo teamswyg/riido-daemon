@@ -181,10 +181,11 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
 - Figma agent settings (`node-id=164-50215`) 와 agent add
   (`node-id=134-6542`) 의 create/update form, save-button enablement, row edit
   entry, absolute-time tooltip, long-description UI, runtime dropdown rendering,
-  or model dropdown catalog 를 해석한다. Runtime binding 은 upstream
-  assignment/configuration input 으로 소비할 수 있지만, provider-specific model
-  선택지는 contracts `Q-CON-006` 이 해결되기 전까지 C4 가 client catalog 로
-  승격하지 않는다.
+  or model dropdown catalog 를 해석한다. Runtime binding 과 runtime-scoped
+  `model_id` 는 upstream assignment/configuration input 으로 소비할 수 있다.
+  하지만 provider-specific model catalog 와 label 은 public contracts 의
+  `runtime_model_catalog.v1` / control-plane read model 이 소유하며, C4 는
+  이미 승인된 실행 요청의 model 값만 provider adapter argument 로 변환한다.
 - task 를 lease / claim / heartbeat (C5).
 - workdir / native config 작성 (C6).
 - 정책 / sandbox / 보호 경로 결정 (C7).

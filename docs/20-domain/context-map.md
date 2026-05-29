@@ -88,9 +88,11 @@ presentation, or SaaS `GET /v1/client/ai-agent/devices` projection.
 Figma `node-id=164-50215` agent settings and `node-id=134-6542` agent add are
 client/control-plane composition over agent bootstrap/create/update/editability
 APIs. The daemon owns only runtime execution after an already-authorized runtime
-binding/instruction is assigned. It does not create agent records, enable or
-disable the save button, own row/meatball edit entry, absolute-time tooltip
-behavior, long-description presentation, or the model dropdown catalog.
+binding/model/instruction is assigned. It does not create agent records, enable
+or disable the save button, own row/meatball edit entry, absolute-time tooltip
+behavior, long-description presentation, or the model dropdown catalog. The
+model catalog is a runtime-scoped contracts/control-plane read-model fact; C4
+consumes only the selected model value in provider execution requests.
 
 Figma `node-id=42-3014` onboarding is also client/control-plane composition.
 The onboarding runtime choice, template list (`node-id=138-7389`), direct-setting
