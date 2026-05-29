@@ -38,6 +38,24 @@ The CLI must not:
 `printUsage()` in `cmd/riido/main.go` is the executable usage matrix. This
 document describes command ownership; it does not replace usage text.
 
+## Runtime Settings Mapping
+
+Figma `node-id=162-23090` shows a runtime settings page with current-device
+daemon status, daemon stop, restart-in-progress UI, attached agents, and other
+devices. This CLI owns only the current-device local lifecycle facts that a
+desktop helper can read or invoke through local IPC/CLI:
+
+- `riido daemon status|health|ready|metrics` expose current daemon status,
+  readiness, PID, uptime, profile, device name, and runtime snapshots
+- `riido daemon stop` performs cooperative local shutdown with PID fallback
+- `riido daemon start` starts the local daemon process
+
+There is no separate `riido daemon restart` command today. A desktop helper may
+compose restart from local stop/start behavior and own the spinner/animation.
+Remote device rows and the SaaS `GET /v1/client/ai-agent/devices` projection are
+owned by `riido-control-plane` and `riido-contracts`; this CLI must not add a
+public network listener or SaaS endpoint for the runtime settings screen.
+
 ## Local IPC Rule
 
 `riido serve`, `riido api`, and `riido daemon` may use:

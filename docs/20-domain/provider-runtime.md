@@ -159,6 +159,12 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   정렬, 긴 이름 표시, max height, scrollbar width, checkbox layout 을 해석한다.
   assignable-agent response 와 client composition 은 control-plane/client
   boundary 이며, C4 는 dropdown 표시 순서나 멤버 목록을 만들지 않는다.
+- Figma runtime settings (`node-id=162-23090`) 의 agent hover popover, daemon
+  stop modal copy, restart animation, or remote-device table presentation 을
+  해석한다. C4 는 provider process/run lifecycle 과 runtime status 를 공급하고,
+  `cmd/riido daemon ...` local lifecycle adapter 가 current-device status/stop
+  surface 를 조립한다. SaaS device/runtime read model 은 control-plane contract
+  projection 이며 C4 가 만들지 않는다.
 - task 를 lease / claim / heartbeat (C5).
 - workdir / native config 작성 (C6).
 - 정책 / sandbox / 보호 경로 결정 (C7).

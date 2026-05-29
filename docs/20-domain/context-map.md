@@ -78,6 +78,13 @@ Figma `node-id=156-19307` menu placement is a client route affordance. The
 daemon may power runtime status after a route is opened, but it does not own
 menu labels, ordering, selected state, or route availability.
 
+Figma `node-id=162-23090` runtime settings is a client composition over
+control-plane device/runtime liveness and the local daemon lifecycle surface.
+The daemon owns the current-device local facts exposed by `riido daemon status`,
+`health`, `ready`, `metrics`, `stop`, `logs`, and `start`. It does not own the
+agent hover popover, daemon stop modal copy, restart animation, remote-device
+presentation, or SaaS `GET /v1/client/ai-agent/devices` projection.
+
 ## Change Procedure
 
 Changing context ownership or dependency direction is a policy-breaking change.
