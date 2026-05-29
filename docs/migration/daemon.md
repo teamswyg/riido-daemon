@@ -641,12 +641,17 @@ This slice moves the daemon-side SaaS assignment polling/report adapter:
 turns `start` responses into `bridge.TaskRequest`, watches `cancel` responses
 for in-flight task cancellation, forwards heartbeat active assignment ids, and
 posts daemon progress/result events to `/v1/agents/{agent_id}/events`.
+Task-thread progress intended for the client thread surface is reported as
+bounded parsed batches to `/v1/agents/{agent_id}/thread-progress`; the daemon
+must preserve SaaS-supplied task/run/thread identity when present and must not
+invent the client cold-thread collection.
 
 The adapter imports shared DTO/state/event/poll constants from
 `github.com/teamswyg/riido-contracts/assignment v0.3.0` and does not import
 private `internal/riidoaiserver` packages. The control-plane repository still
-owns HTTP handlers, store actors, SSE fan-out, authZ, metrics/health read
-models, persistence, and production infra.
+owns HTTP handlers, the task-thread cold collection read model, store actors,
+SSE fan-out, authZ, metrics/health read models, persistence, and production
+infra.
 
 This slice does not move full `riido daemon ...` process lifecycle CLI wiring,
 server HTTP implementation, SSE transport, Terraform/AWS/deploy evidence,
