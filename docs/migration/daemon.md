@@ -644,7 +644,10 @@ posts daemon progress/result events to `/v1/agents/{agent_id}/events`.
 Task-thread progress intended for the client thread surface is reported as
 bounded parsed batches to `/v1/agents/{agent_id}/thread-progress`; the daemon
 must preserve SaaS-supplied task/run/thread identity when present and must not
-invent the client cold-thread collection.
+invent the client cold-thread collection. Figma `node-id=153-15931` viewer-away
+thread visibility and long-body scroll/focus behavior remain control-plane
+cold-collection and client presentation facts, not daemon scheduling or provider
+runtime state.
 
 The adapter imports shared DTO/state/event/poll constants from
 `github.com/teamswyg/riido-contracts/assignment v0.3.0` and does not import

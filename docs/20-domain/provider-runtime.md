@@ -161,12 +161,13 @@ Terraform/AWS/deploy evidence, and private machine-local state 는 이 context �
   해석한다. 메뉴는 runtime 실행 입력이 아니며, C4 는 route 진입 이후 배정된 run 만
   소비한다.
 - Figma task-thread annotations (`node-id=153-15931`) 의 scroll, hover, modal,
-  animation reference 를 해석한다. `riido.aiAgent.events.stream` /
-  `riido.aiAgent.tasks.stop` / `riido.aiAgent.tasks.threads` 는
-  control-plane/client generated path evidence 이고, C4 는 upstream
-  ingest/orchestrator 가 내린 cancel/interrupt 와 `<riido_log>...<end>`
-  telemetry marker 만 실행 표면으로 소비한다. Client-facing cold thread
-  collection, active stream link selection, and rendered thread composition are
+  animation reference 또는 viewer-away 상태의 thread 표시 방식을 해석한다.
+  `riido.aiAgent.events.stream` / `riido.aiAgent.tasks.stop` /
+  `riido.aiAgent.tasks.threads` 는 control-plane/client generated path evidence
+  이고, C4 는 upstream ingest/orchestrator 가 내린 cancel/interrupt 와
+  `<riido_log>...<end>` telemetry marker 만 실행 표면으로 소비한다.
+  Client-facing cold thread collection, active stream link selection,
+  persisted viewer-away thread visibility, and rendered thread composition are
   not provider-runtime facts.
 - Figma participant dropdown annotations (`node-id=153-12742`) 의 member/agent
   정렬, 긴 이름 표시, max height, scrollbar width, checkbox layout 을 해석한다.
