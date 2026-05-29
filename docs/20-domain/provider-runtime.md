@@ -17,10 +17,12 @@ RIID-4651 에서 public `riido-daemon` 으로 이동한 구현 범위는 `intern
 
 The Figma onboarding planning screen (`v.1.22 AI Agent`, `node-id=42-3014`) is
 outside C4 ownership. C4 may report runtime detection and liveness used by the
-client's onboarding runtime-choice screen, and it may execute a task using the
-instruction that SaaS assigns later. C4 does not own the onboarding template
-catalog, direct-setting form composition, workspace selector, no-runtime skip
-branch, scroll affordances, two-line ellipsis behavior, or starter-agent copy.
+client's onboarding runtime-choice screen (`node-id=137-6746`), and it may
+execute a task using the instruction that SaaS assigns later. C4 does not own
+the `감지됨` / `감지 안 됨` labels, radio enabled/disabled state, row dimming,
+onboarding template catalog, direct-setting form composition, workspace
+selector, no-runtime skip branch, scroll affordances, two-line ellipsis
+behavior, or starter-agent copy.
 
 The Figma web onboarding section (`node-id=236-29749`) is also outside C4
 ownership. Its macOS app download CTA can lead a user to a desktop artifact, but

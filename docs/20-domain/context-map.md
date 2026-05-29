@@ -95,17 +95,21 @@ model catalog is a runtime-scoped contracts/control-plane read-model fact; C4
 consumes only the selected model value in provider execution requests.
 
 Figma `node-id=42-3014` onboarding is also client/control-plane composition.
-The onboarding runtime choice, template list (`node-id=138-7389`), direct-setting
-expansion (`node-id=164-26969`), workspace scroll affordance
-(`node-id=164-30192`), including selected-workspace and `새 워크스페이스` rows,
-two-line ellipsis annotation (`node-id=164-27719`), and no-installed-AI skip
-branch (`node-id=164-30206`) are not daemon-owned decisions. In that branch, the
-all-disconnected Claude Code/Codex/OpenClaw/Cursor Agent rows and `시작하기` CTA
-are client presentation over liveness data, not daemon commands. The daemon
-supplies runtime liveness/detection facts and consumes an already-assigned
-instruction after SaaS authorization. It must not hard-code starter agent
-templates, workspace selection/create-new entry points, onboarding step
-skipping, provider install/start CTAs, or client text overflow behavior.
+The onboarding runtime choice (`node-id=137-6746`), template list
+(`node-id=138-7389`), direct-setting expansion (`node-id=164-26969`), workspace
+scroll affordance (`node-id=164-30192`), including selected-workspace and
+`새 워크스페이스` rows, two-line ellipsis annotation (`node-id=164-27719`), and
+no-installed-AI skip branch (`node-id=164-30206`) are not daemon-owned
+decisions. `node-id=137-6746` can show Claude Code/Codex as `감지됨` selectable
+rows and OpenClaw/Cursor Agent as `감지 안 됨` non-selectable rows, but those
+labels, radios, and row states are client presentation over runtime
+liveness/detection facts. In the no-installed-AI branch, the all-disconnected
+Claude Code/Codex/OpenClaw/Cursor Agent rows and `시작하기` CTA are also client
+presentation over liveness data, not daemon commands. The daemon supplies
+runtime liveness/detection facts and consumes an already-assigned instruction
+after SaaS authorization. It must not hard-code starter agent templates,
+workspace selection/create-new entry points, onboarding step skipping, provider
+install/start CTAs, or client text overflow behavior.
 
 Figma `node-id=275-22731` runtime-settings empty states are the same boundary.
 The daemon supplies local liveness/detection facts when it is running; it does
