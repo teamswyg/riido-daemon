@@ -654,6 +654,29 @@ state, right details panel, and the visible `중지` button are client/task
 presentation. The daemon responds only after SaaS polling returns cancellation
 or interrupt state, then applies that to the provider runtime and reports
 progress/result through existing ports.
+Figma `node-id=153-8761` busy-agent queued rendering is also outside daemon
+comment ownership. When SaaS reports that an already-working agent has accepted
+a queued assignment/comment, the daemon does not synthesize the Korean
+"지금은 다른 작업을 처리 중이에요..." copy or a task-thread row. It only waits for
+the SaaS poll result that either grants work to this runtime or reports a
+cancel/stop transition, then applies the provider action and reports existing
+progress/result events.
+Figma `node-id=227-19354` stopped-by-deleted-agent rendering follows the same
+boundary. Agent deletion is a client/control-plane command; the daemon does not
+decide that deletion, render the "에이전트가 삭제되어..." task-thread copy, or
+create a Riido-authored thread row. If the control plane force-stops an assigned
+runtime because the agent was deleted, the daemon receives that as the same
+SaaS cancellation/stop path, interrupts the provider process when applicable,
+and reports terminal progress/result through the existing adapter ports.
+
+Figma `node-id=153-15935` additional planning content is also no daemon runtime
+diff. The task/subtask-only Agent assignment target scope belongs upstream to
+contracts/control-plane/client composition. The daemon must not infer Agent
+targets for projects, milestones, intakes, AI property filling, or mention
+surfaces, and it must not implement agent recommendation for the existing AI
+property filler. It only executes SaaS assignments after target validation and
+continues to treat device/runtime owner-only actions as local current-device
+host integration behavior.
 
 The adapter imports shared DTO/state/event/poll constants from
 `github.com/teamswyg/riido-contracts/assignment v0.3.0` and does not import
