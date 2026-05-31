@@ -156,6 +156,13 @@ Store channel 에서는 workdir root 와 user workspace root 를 분리한다.
 
 SaaS task source 가 `riido_telemetry_contract` metadata 를 제공하면 supervisor 는 provider 별 prompt placement 와 별개로 native config hard rule 에 `<riido_log>...<end>` progress telemetry contract 를 주입한다. 이 rule 도 `NativeConfigVersion` 입력 파일 해시에 포함되므로, telemetry contract 변경은 run replay 에서 식별 가능해야 한다.
 
+SaaS task source 가 agent instruction 값을 제공하는 경우 C6/C4 는 그 값을
+run-scope prompt/native config 입력으로만 소비한다. instruction 의 저장 위치,
+길이 제한, 수정 가능성, RBAC, 그리고 `profile_thumbnail_url` / `description`
+같은 presentation field 는 public `riido-contracts` 와
+`riido-control-plane` 의 SSOT 가 소유한다. Daemon 은 thumbnail 이나
+description 값을 native config 에 주입하지 않는다.
+
 ### 5.1.1 native config manifest
 
 Provider 별 native config file plan 의 실행 가능한 SSOT 는 `internal/workdir/native_config_plan.riido.json` (`riido-native-config-plan.v1`) 이다. 이 IR 은 `tools/riidogen/templates/native_config_plan.go.gotmpl` 로 `internal/workdir/native_config_plan_gen.go` 를 생성하며, `go generate ./internal/workdir` 로 갱신한다. 코드가 직접 provider→filename/hook/config-home mapping 을 재정의하면 안 된다.
