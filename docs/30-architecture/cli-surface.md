@@ -41,7 +41,8 @@ document describes command ownership; it does not replace usage text.
 ## Runtime Settings Mapping
 
 Figma `node-id=162-23090` shows a runtime settings page with current-device
-daemon status, daemon stop, restart-in-progress UI, attached agents, and other
+daemon status, daemon detail fields (`실행 시간`, PID, daemon ID, profile, and
+device name), daemon stop, restart-in-progress UI, attached agents, and other
 devices. This CLI owns only the current-device local lifecycle facts that a
 desktop helper can read or invoke through local IPC/CLI:
 
@@ -55,6 +56,8 @@ compose restart from local stop/start behavior and own the spinner/animation.
 Remote device rows and the SaaS `GET /v1/client/ai-agent/devices` projection are
 owned by `riido-control-plane` and `riido-contracts`; this CLI must not add a
 public network listener or SaaS endpoint for the runtime settings screen.
+Attached-agent avatar/profile rendering and hover details remain client
+presentation over control-plane records.
 
 ## Local IPC Rule
 
