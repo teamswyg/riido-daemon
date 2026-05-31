@@ -71,8 +71,9 @@ Agent settings follow the same direction. `riido-contracts` owns the shared
 meaning of agent profile fields and instruction limits. `riido-control-plane`
 owns create/save/update API behavior. `riido-daemon` owns only the customer-PC runtime
 consumption of an assigned instruction value and must not redefine thumbnail
-presentation, one-line description presentation, `updated_at` timestamp meaning,
-RBAC/editability, API shape, or server storage policy.
+presentation, one-line description presentation, `created_at`/`updated_at`
+timestamp meaning, RBAC/editability, API shape, model-default request semantics,
+client required-control presentation, or server storage policy.
 
 Figma `node-id=156-19307` menu placement is a client route affordance. The
 daemon may power runtime status after a route is opened, but it does not own
@@ -85,30 +86,67 @@ The daemon owns the current-device local facts exposed by `riido daemon status`,
 agent hover popover, daemon stop modal copy, restart animation, remote-device
 presentation, or SaaS `GET /v1/client/ai-agent/devices` projection.
 
-Figma `node-id=164-50215` agent settings and `node-id=134-6542` agent add are
-client/control-plane composition over agent bootstrap/create/update/editability
-APIs. The daemon owns only runtime execution after an already-authorized runtime
-binding/model/instruction is assigned. It does not create agent records, enable
-or disable the save button, own row/meatball edit entry, absolute-time tooltip
-behavior, long-description presentation, or the model dropdown catalog. The
-model catalog is a runtime-scoped contracts/control-plane read-model fact; C4
-consumes only the selected model value in provider execution requests.
+Figma `node-id=164-50215` agent settings, `node-id=134-6542` agent add,
+`node-id=337-24001` / `node-id=337-24013` agent list/add affordance, and
+`node-id=432-35713` agent list are client/control-plane composition over agent
+bootstrap/create/update/editability APIs and authorized device/runtime read
+models. The daemon owns only runtime execution after an already-authorized
+runtime binding/model/instruction is assigned. It does not create agent records,
+stamp `created_at`, refresh `updated_at`, enable or disable the save/add
+button, decide whether all visible members have selectable runtimes, own
+row/meatball edit entry, absolute-time tooltip behavior, no-description row
+layout, long-description presentation, status-label copy/color, or the model
+dropdown catalog. The model catalog is a runtime-scoped contracts/control-plane
+read-model fact; C4 consumes only the selected model value in provider
+execution requests.
 
 Figma `node-id=42-3014` onboarding is also client/control-plane composition.
-The onboarding runtime choice, template list (`node-id=138-7389`), direct-setting
-expansion (`node-id=164-26969`), workspace scroll affordance
-(`node-id=164-30192`), two-line ellipsis annotation (`node-id=164-27719`), and
+The onboarding runtime choice (`node-id=137-6746`), template list
+(`node-id=138-7389`), direct-setting expansion (`node-id=164-26969`), workspace
+scroll affordance (`node-id=164-30192`), including selected-workspace and
+`새 워크스페이스` rows, two-line ellipsis annotation (`node-id=164-27719`), and
 no-installed-AI skip branch (`node-id=164-30206`) are not daemon-owned
-decisions. The daemon supplies runtime liveness/detection facts and consumes an
+decisions. In `node-id=164-26969`, the `이름`, `설명`, and `지침` input
+composition maps upstream to control-plane agent creation; C4 later consumes
+only the already-assigned instruction/runtime/model values. `node-id=137-6746`
+can show Claude Code/Codex as `감지됨` selectable
+rows and OpenClaw/Cursor Agent as `감지 안 됨` non-selectable rows, but those
+labels, radios, and row states are client presentation over runtime
+liveness/detection facts. `node-id=138-7389` can show `리도`, `영실`, `홍도`,
+and `지원` starter-agent rows, a `직접 설정` row, disabled-next presentation
+before selection, and a preview skeleton, but those are bootstrap/client
+composition facts rather than daemon execution facts. In the no-installed-AI
+branch, the all-disconnected Claude Code/Codex/OpenClaw/Cursor Agent rows and
+`시작하기` CTA are also client presentation over liveness data, not daemon
+commands. The daemon supplies runtime liveness/detection facts and consumes an
 already-assigned instruction after SaaS authorization. It must not hard-code
-starter agent templates, workspace selection, onboarding step skipping, or
-client text overflow behavior.
+starter agent templates, template descriptions/instructions, direct-setting
+entry points, workspace selection/create-new entry points, onboarding step
+skipping, provider install/start CTAs, or client text overflow behavior.
 
 Figma `node-id=275-22731` runtime-settings empty states are the same boundary.
 The daemon supplies local liveness/detection facts when it is running; it does
 not own Windows app waitlist copy, marketing-consent mutation, provider
 install-card hover behavior, or external provider installation links. Claude,
 Codex, OpenClaw, and Cursor CLIs remain external user-installed tools.
+
+Figma `node-id=153-15935` additional planning content confirms the assignment
+target boundary. The daemon does not decide whether a project, milestone,
+intake, existing AI property filler, mention surface, task, or subtask can
+receive an agent. That target validation is a contracts/control-plane/client
+surface rule. The daemon consumes only SaaS assignments that already passed
+target-scope policy, then controls the selected runtime. It also does not
+recommend agents for AI property filling or implement agent mentions.
+Device/runtime owner-only local actions remain C11/local-helper facts for the
+current device.
+
+Figma `node-id=236-29749` web onboarding does not change daemon ownership either.
+macOS app download is distribution/client routing, not a provider CLI install
+command. Google/email sign-up, terms consent, member invite, Windows waitlist,
+marketing consent, chat animation, and progress-bar references are
+auth/team/product/client facts. The daemon only starts after the desktop/helper
+surface launches it and then reports runtime liveness/control-plane assignment
+state through the existing SaaS boundary.
 
 ## Change Procedure
 
