@@ -137,8 +137,10 @@ receive an agent. That target validation is a contracts/control-plane/client
 surface rule. The daemon consumes only SaaS assignments that already passed
 target-scope policy, then controls the selected runtime. It also does not
 recommend agents for AI property filling or implement agent mentions.
-Device/runtime owner-only local actions remain C11/local-helper facts for the
-current device.
+Direct host-helper actions remain current-device local facts in C11. SaaS
+assignment and daemon command authorization are agent-access facts owned
+upstream: public agents can delegate indirect runtime execution to workspace
+members, and private agents limit that path to admins and owners.
 
 Figma `node-id=236-29749` web onboarding does not change daemon ownership either.
 macOS app download is distribution/client routing, not a provider CLI install

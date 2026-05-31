@@ -675,8 +675,10 @@ contracts/control-plane/client composition. The daemon must not infer Agent
 targets for projects, milestones, intakes, AI property filling, or mention
 surfaces, and it must not implement agent recommendation for the existing AI
 property filler. It only executes SaaS assignments after target validation and
-continues to treat device/runtime owner-only actions as local current-device
-host integration behavior.
+keeps direct host-helper actions current-device scoped. SaaS authorization for
+assigned work and daemon command requests remains an upstream agent-access
+policy: public agents can delegate indirect runtime execution to workspace
+members, while private agents limit that path to admins and owners.
 
 The adapter imports shared DTO/state/event/poll constants from
 `github.com/teamswyg/riido-contracts/assignment v0.3.0` and does not import
