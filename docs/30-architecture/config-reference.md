@@ -71,6 +71,16 @@ Exactly one production task source may be selected.
 Queue, task DB, and SaaS source variables are mutually exclusive where their
 adapters would otherwise compete for task ownership.
 
+When `RIIDO_SAAS_URL` is selected, `saasplane` turns the control-plane
+assignment into a provider-neutral `TaskRequest`. The assignment-created
+`agent_instruction` snapshot and the Riido telemetry contract are placed by
+provider capability: Claude and OpenClaw use the system prompt surface, while
+Codex and Cursor use a prompt prefix because their current daemon surface does
+not rely on a separate system prompt channel. The chosen placements are recorded
+in `TaskRequest.Metadata["riido_agent_instruction"]` and
+`TaskRequest.Metadata["riido_telemetry_contract"]` so tests can detect provider
+placement drift.
+
 ## Local Daemon Flags
 
 | Flag | Default | Meaning |

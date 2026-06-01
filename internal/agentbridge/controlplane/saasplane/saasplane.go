@@ -402,8 +402,11 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		"workspace_id":          firstNonEmpty(assignment.ComponentID, assignment.TaskID),
 		"run_id":                assignment.ID,
 	}
-	prompt, systemPrompt, placement := agentbridge.ApplyTelemetryContract(assignment.RuntimeProvider, assignment.Prompt, "")
-	metadata[agentbridge.MetadataTelemetryContract] = placement
+	prompt, systemPrompt, telemetryPlacement, instructionPlacement := agentbridge.ApplyRuntimeInstructionContract(assignment.RuntimeProvider, assignment.Prompt, "", assignment.AgentInstruction)
+	metadata[agentbridge.MetadataTelemetryContract] = telemetryPlacement
+	if instructionPlacement != "" {
+		metadata[agentbridge.MetadataAgentInstruction] = instructionPlacement
+	}
 	return &bridge.TaskRequest{
 		ID:           assignment.TaskID,
 		Provider:     bridge.Provider(assignment.RuntimeProvider),

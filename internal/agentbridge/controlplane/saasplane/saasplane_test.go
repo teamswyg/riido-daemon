@@ -18,14 +18,15 @@ import (
 func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.enqueue(assignmentcontract.Assignment{
-		ID:              "asn-1",
-		TaskID:          "task-a",
-		ComponentID:     "component-1",
-		AgentID:         "jykim1",
-		RuntimeProvider: "codex",
-		Prompt:          "golang hello world quickly",
-		State:           assignmentcontract.AssignmentQueued,
-		LeaseToken:      "lease-1",
+		ID:               "asn-1",
+		TaskID:           "task-a",
+		ComponentID:      "component-1",
+		AgentID:          "jykim1",
+		RuntimeProvider:  "codex",
+		Prompt:           "golang hello world quickly",
+		AgentInstruction: "write concise Korean progress updates",
+		State:            assignmentcontract.AssignmentQueued,
+		LeaseToken:       "lease-1",
 	})
 	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
 	defer plane.Close()
@@ -43,11 +44,14 @@ func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 	if got := req.Metadata["workspace_id"]; got != "component-1" {
 		t.Fatalf("workspace_id = %q", got)
 	}
-	if !strings.Contains(req.Prompt, "<riido_log>") || !strings.Contains(req.Prompt, "golang hello world") {
+	if !strings.Contains(req.Prompt, "<riido_log>") || !strings.Contains(req.Prompt, "golang hello world") || !strings.Contains(req.Prompt, "write concise Korean progress updates") {
 		t.Fatalf("prompt missing telemetry contract: %q", req.Prompt)
 	}
 	if got := req.Metadata[agentbridge.MetadataTelemetryContract]; got != agentbridge.TelemetryPlacementPrompt {
 		t.Fatalf("telemetry placement = %q", got)
+	}
+	if got := req.Metadata[agentbridge.MetadataAgentInstruction]; got != agentbridge.TelemetryPlacementPrompt {
+		t.Fatalf("instruction placement = %q", got)
 	}
 
 	if err := plane.StartTask(context.Background(), req.ID); err != nil {
@@ -81,22 +85,26 @@ func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 
 func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 	assignment := assignmentcontract.Assignment{
-		ID:              "asn-1",
-		TaskID:          "task-a",
-		ComponentID:     "component-1",
-		AgentID:         "jykim1",
-		RuntimeProvider: "claude",
-		Prompt:          "golang hello world quickly",
+		ID:               "asn-1",
+		TaskID:           "task-a",
+		ComponentID:      "component-1",
+		AgentID:          "jykim1",
+		RuntimeProvider:  "claude",
+		Prompt:           "golang hello world quickly",
+		AgentInstruction: "act as a backend reviewer",
 	}
 	req := taskRequestFromAssignment(assignment)
 	if req.Prompt != assignment.Prompt {
 		t.Fatalf("claude prompt should remain user task only: %q", req.Prompt)
 	}
-	if !strings.Contains(req.SystemPrompt, "<riido_log>") {
-		t.Fatalf("claude system prompt missing telemetry contract: %q", req.SystemPrompt)
+	if !strings.Contains(req.SystemPrompt, "<riido_log>") || !strings.Contains(req.SystemPrompt, "act as a backend reviewer") {
+		t.Fatalf("claude system prompt missing runtime instructions: %q", req.SystemPrompt)
 	}
 	if got := req.Metadata[agentbridge.MetadataTelemetryContract]; got != agentbridge.TelemetryPlacementSystemPrompt {
 		t.Fatalf("telemetry placement = %q", got)
+	}
+	if got := req.Metadata[agentbridge.MetadataAgentInstruction]; got != agentbridge.TelemetryPlacementSystemPrompt {
+		t.Fatalf("instruction placement = %q", got)
 	}
 }
 
