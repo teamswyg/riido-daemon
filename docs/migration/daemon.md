@@ -827,6 +827,27 @@ generated client, provider install flow, provider CLI bundling, or new local
 daemon command. It also does not make Figma a daemon SSOT; Figma remains product
 evidence and the contracts/control-plane coverage manifest remains upstream.
 
+### RIID-4843 — Figma metadata page-list limitation downstream guard
+
+This slice mirrors the upstream `riido-contracts` Figma metadata tooling
+limitation into the daemon boundary manifest.
+
+This slice does:
+
+- record `teamswyg/riido-contracts#52` as the upstream provenance for the
+  `figma-metadata-page-list-underreports-pages.v1` limitation
+- require the daemon projection to preserve authoritative pages `129:5215`,
+  `42:3014`, and `0:1`, even when supporting metadata lists only the UI page
+- require non-UI/onboarding daemon evidence nodes to stay in
+  `figma-ai-agent-daemon-boundary.riido.json`
+- add a focused public Go test for the mirrored limitation and downstream
+  non-UI node preservation
+
+This slice does not change daemon runtime behavior, add Figma integration,
+add SaaS endpoints, or make daemon the owner of Figma page discovery. The
+canonical Figma coverage and inspection method remain in `riido-contracts`;
+daemon only guards its downstream projection.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:

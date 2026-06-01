@@ -2,8 +2,27 @@
   "schema_version": "riido-figma-ai-agent-daemon-boundary.v1",
   "id": "figma-v1-22-ai-agent-daemon-boundary",
   "riido_task": "RIID-4813",
+  "hardening_tasks": ["RIID-4843"],
   "human_doc": "docs/30-architecture/figma-ai-agent-daemon-boundary.md",
   "source_coverage_manifest": "riido-contracts/docs/30-architecture/figma-ai-agent-coverage.riido.json",
+  "source_coverage_manifest_provenance": {
+    "repo": "riido-contracts",
+    "path": "docs/30-architecture/figma-ai-agent-coverage.riido.json",
+    "schema_version": "riido-figma-ai-agent-coverage.v1",
+    "id": "figma-v1-22-ai-agent-ui-coverage",
+    "stabilized_by": ["teamswyg/riido-contracts#52"]
+  },
+  "mirrored_supporting_tool_limitations": [
+    {
+      "source_id": "figma-metadata-page-list-underreports-pages.v1",
+      "source_owner": "riido-contracts",
+      "source_stabilized_by": ["teamswyg/riido-contracts#52"],
+      "local_riido_task": "RIID-4843",
+      "daemon_scope": "Daemon boundary must not collapse to the UI page only when no-nodeId get_metadata under-reports the Figma file page list.",
+      "required_authoritative_pages": ["129:5215", "42:3014", "0:1"],
+      "must_preserve_non_ui_nodes": ["42:3014", "137:6746", "138:7389", "164:26969", "164:30192", "164:30206", "435:60050", "236:29749", "275:22731"]
+    }
+  ],
   "figma": {
     "file_key": "MUOd9lctoEHASUStN3vUuK",
     "file_name": "v.1.22 AI Agent",

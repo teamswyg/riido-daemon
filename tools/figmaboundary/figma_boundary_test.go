@@ -9,14 +9,35 @@ import (
 )
 
 type boundaryManifest struct {
-	SchemaVersion          string          `json:"schema_version"`
-	ID                     string          `json:"id"`
-	RiidoTask              string          `json:"riido_task"`
-	HumanDoc               string          `json:"human_doc"`
-	SourceCoverageManifest string          `json:"source_coverage_manifest"`
-	Figma                  figmaRef        `json:"figma"`
-	BoundaryPolicy         boundaryPolicy  `json:"boundary_policy"`
-	Entries                []boundaryEntry `json:"entries"`
+	SchemaVersion                     string              `json:"schema_version"`
+	ID                                string              `json:"id"`
+	RiidoTask                         string              `json:"riido_task"`
+	HardeningTasks                    []string            `json:"hardening_tasks"`
+	HumanDoc                          string              `json:"human_doc"`
+	SourceCoverageManifest            string              `json:"source_coverage_manifest"`
+	SourceCoverageManifestProvenance  upstreamManifestRef `json:"source_coverage_manifest_provenance"`
+	MirroredSupportingToolLimitations []toolLimitation    `json:"mirrored_supporting_tool_limitations"`
+	Figma                             figmaRef            `json:"figma"`
+	BoundaryPolicy                    boundaryPolicy      `json:"boundary_policy"`
+	Entries                           []boundaryEntry     `json:"entries"`
+}
+
+type upstreamManifestRef struct {
+	Repo          string   `json:"repo"`
+	Path          string   `json:"path"`
+	SchemaVersion string   `json:"schema_version"`
+	ID            string   `json:"id"`
+	StabilizedBy  []string `json:"stabilized_by"`
+}
+
+type toolLimitation struct {
+	SourceID                   string   `json:"source_id"`
+	SourceOwner                string   `json:"source_owner"`
+	SourceStabilizedBy         []string `json:"source_stabilized_by"`
+	LocalRiidoTask             string   `json:"local_riido_task"`
+	DaemonScope                string   `json:"daemon_scope"`
+	RequiredAuthoritativePages []string `json:"required_authoritative_pages"`
+	MustPreserveNonUINodes     []string `json:"must_preserve_non_ui_nodes"`
 }
 
 type figmaRef struct {
@@ -58,12 +79,19 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 	if manifest.ID != "figma-v1-22-ai-agent-daemon-boundary" || manifest.RiidoTask != "RIID-4813" {
 		t.Fatalf("manifest identity drifted: %#v", manifest)
 	}
+	requireSliceContains(t, manifest.HardeningTasks, "RIID-4843")
 	if manifest.HumanDoc != "docs/30-architecture/figma-ai-agent-daemon-boundary.md" {
 		t.Fatalf("human doc path drifted: %q", manifest.HumanDoc)
 	}
 	if !strings.Contains(manifest.SourceCoverageManifest, "riido-contracts") {
 		t.Fatalf("source coverage manifest must point upstream to contracts: %q", manifest.SourceCoverageManifest)
 	}
+	if manifest.SourceCoverageManifestProvenance.Repo != "riido-contracts" ||
+		manifest.SourceCoverageManifestProvenance.SchemaVersion != "riido-figma-ai-agent-coverage.v1" ||
+		manifest.SourceCoverageManifestProvenance.ID != "figma-v1-22-ai-agent-ui-coverage" {
+		t.Fatalf("upstream coverage provenance drifted: %#v", manifest.SourceCoverageManifestProvenance)
+	}
+	requireSliceContains(t, manifest.SourceCoverageManifestProvenance.StabilizedBy, "teamswyg/riido-contracts#52")
 	if manifest.Figma.FileKey != "MUOd9lctoEHASUStN3vUuK" || manifest.Figma.PageID != "129:5215" {
 		t.Fatalf("Figma source drifted: %#v", manifest.Figma)
 	}
@@ -88,6 +116,16 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 		entries[entry.NodeID] = entry
 	}
 
+	limitation := requireToolLimitation(t, manifest.MirroredSupportingToolLimitations, "figma-metadata-page-list-underreports-pages.v1")
+	if limitation.SourceOwner != "riido-contracts" || limitation.LocalRiidoTask != "RIID-4843" {
+		t.Fatalf("metadata page-list limitation mirror drifted: %#v", limitation)
+	}
+	requireSliceContains(t, limitation.SourceStabilizedBy, "teamswyg/riido-contracts#52")
+	for _, pageID := range []string{"129:5215", "42:3014", "0:1"} {
+		requireSliceContains(t, limitation.RequiredAuthoritativePages, pageID)
+	}
+	requireContains(t, limitation.DaemonScope, "must not collapse")
+
 	for _, nodeID := range []string{
 		"153:12742",
 		"153:15931",
@@ -111,6 +149,11 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 			t.Fatalf("daemon-relevant Figma node %s missing from manifest", nodeID)
 		}
 	}
+	for _, nodeID := range limitation.MustPreserveNonUINodes {
+		if _, ok := entries[nodeID]; !ok {
+			t.Fatalf("metadata limitation requires preserving non-UI node %s", nodeID)
+		}
+	}
 
 	requireSliceContains(t, entries["162:23090"].UpstreamOwner, "riido-daemon")
 	requireSliceContains(t, entries["137:6746"].UpstreamOwner, "riido-daemon")
@@ -119,6 +162,9 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 
 	humanDoc := string(mustReadFile(t, docPath))
 	requireContains(t, humanDoc, manifest.SchemaVersion)
+	requireContains(t, humanDoc, "RIID-4843")
+	requireContains(t, humanDoc, "figma-metadata-page-list-underreports-pages.v1")
+	requireContains(t, humanDoc, "teamswyg/riido-contracts#52")
 	requireContains(t, humanDoc, "432:37336")
 	requireContains(t, humanDoc, "fixture")
 	requireContains(t, humanDoc, "Bottom-up")
@@ -205,4 +251,15 @@ func requireSliceContains(t *testing.T, items []string, want string) {
 		}
 	}
 	t.Fatalf("missing %q in %#v", want, items)
+}
+
+func requireToolLimitation(t *testing.T, limitations []toolLimitation, sourceID string) toolLimitation {
+	t.Helper()
+	for _, limitation := range limitations {
+		if limitation.SourceID == sourceID {
+			return limitation
+		}
+	}
+	t.Fatalf("missing mirrored tool limitation %q", sourceID)
+	return toolLimitation{}
 }
