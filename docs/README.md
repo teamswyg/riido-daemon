@@ -9,6 +9,7 @@
 3. [`20-domain/provider-runtime.md`](20-domain/provider-runtime.md)에서 provider process/session/run lifecycle과 adapter ACL 출력 타입을 봅니다.
 4. [`20-domain/distribution-host-integration.md`](20-domain/distribution-host-integration.md)와 [`30-architecture/store-distribution.md`](30-architecture/store-distribution.md)에서 App Store/MSIX/Developer ID 배포를 위한 role split과 provider CLI non-bundling 원칙을 봅니다.
 5. [`30-architecture/cli-surface.md`](30-architecture/cli-surface.md)와 [`30-architecture/config-reference.md`](30-architecture/config-reference.md)에서 CLI/env/flag surface를 봅니다.
+6. Figma v1.22 AI Agent 화면을 daemon 관점에서 해석해야 할 때는 [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md)를 봅니다.
 
 ## 결정별 문서
 
@@ -27,6 +28,7 @@
 | package map과 import rule | [`30-architecture/module-decomposition.md`](30-architecture/module-decomposition.md) |
 | provider CLI real integration test 정책 | [`30-architecture/integration-matrix.md`](30-architecture/integration-matrix.md) |
 | runtime upgrade와 compatibility gate | [`30-architecture/runtime-upgrade-flow.md`](30-architecture/runtime-upgrade-flow.md), [`30-architecture/compatibility-gate.md`](30-architecture/compatibility-gate.md) |
+| Figma AI Agent 화면에서 daemon이 소비하는 경계 | [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md) |
 | migration history | [`migration/daemon.md`](migration/daemon.md), [`migration/cli.md`](migration/cli.md) |
 | 미해결 질문 | [`50-roadmap/open-questions.md`](50-roadmap/open-questions.md) |
 
