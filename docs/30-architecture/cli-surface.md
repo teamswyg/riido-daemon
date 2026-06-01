@@ -59,6 +59,12 @@ public network listener or SaaS endpoint for the runtime settings screen.
 Attached-agent avatar/profile rendering and hover details remain client
 presentation over control-plane records.
 
+The broader Figma AI Agent daemon boundary is projected in
+[`figma-ai-agent-daemon-boundary.md`](figma-ai-agent-daemon-boundary.md).
+That projection does not add CLI commands by itself; this CLI changes only when
+the daemon boundary becomes a local lifecycle, IPC, provider detection, or
+provider execution surface.
+
 ## Local IPC Rule
 
 `riido serve`, `riido api`, and `riido daemon` may use:

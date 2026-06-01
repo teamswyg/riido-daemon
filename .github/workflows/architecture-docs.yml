@@ -6,18 +6,22 @@ on:
     paths:
       - ".github/workflows/architecture-docs.yml"
       - "docs/20-domain/context-map.md"
+      - "docs/20-domain/provider-runtime.md"
       - "docs/30-architecture/**"
       - "docs/50-roadmap/open-questions.md"
       - "docs/migration/daemon.md"
       - "docs/migration/cli.md"
+      - "tools/figmaboundary/**"
   pull_request:
     paths:
       - ".github/workflows/architecture-docs.yml"
       - "docs/20-domain/context-map.md"
+      - "docs/20-domain/provider-runtime.md"
       - "docs/30-architecture/**"
       - "docs/50-roadmap/open-questions.md"
       - "docs/migration/daemon.md"
       - "docs/migration/cli.md"
+      - "tools/figmaboundary/**"
 
 jobs:
   docs:
@@ -37,6 +41,8 @@ jobs:
           test -f docs/30-architecture/integration-matrix.md
           test -f docs/30-architecture/compatibility-gate.md
           test -f docs/30-architecture/runtime-upgrade-flow.md
+          test -f docs/30-architecture/figma-ai-agent-daemon-boundary.md
+          test -f docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
           test -f docs/50-roadmap/open-questions.md
       - name: Verify split-repo wording
         run: |
@@ -58,5 +64,7 @@ jobs:
             printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
             exit 1
           fi
+      - name: Verify Figma AI Agent daemon boundary
+        run: go test ./tools/figmaboundary -count=1
       - name: Test
         run: go test ./...

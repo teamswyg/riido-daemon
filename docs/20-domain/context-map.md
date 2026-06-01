@@ -86,7 +86,7 @@ The daemon owns the current-device local facts exposed by `riido daemon status`,
 agent hover popover, daemon stop modal copy, restart animation, remote-device
 presentation, or SaaS `GET /v1/client/ai-agent/devices` projection.
 
-Figma `node-id=164-50215` agent settings, `node-id=134-6542` agent add,
+Figma `node-id=432-37336` agent settings, `node-id=134-6542` agent add,
 `node-id=337-24001` / `node-id=337-24013` agent list/add affordance, and
 `node-id=432-35713` agent list are client/control-plane composition over agent
 bootstrap/create/update/editability APIs and authorized device/runtime read
@@ -101,7 +101,7 @@ read-model fact; C4 consumes only the selected model value in provider
 execution requests.
 
 Figma `node-id=42-3014` onboarding is also client/control-plane composition.
-The onboarding runtime choice (`node-id=137-6746`), template list
+The onboarding runtime choice (`node-id=137-6746`), fixture list
 (`node-id=138-7389`), direct-setting expansion (`node-id=164-26969`), workspace
 scroll affordance (`node-id=164-30192`), including selected-workspace and
 `새 워크스페이스` rows, two-line ellipsis annotation (`node-id=164-27719`), and
@@ -113,14 +113,14 @@ can show Claude Code/Codex as `감지됨` selectable
 rows and OpenClaw/Cursor Agent as `감지 안 됨` non-selectable rows, but those
 labels, radios, and row states are client presentation over runtime
 liveness/detection facts. `node-id=138-7389` can show `리도`, `영실`, `홍도`,
-and `지원` starter-agent rows, a `직접 설정` row, disabled-next presentation
+and `지원` starter-fixture rows, a `직접 설정` row, disabled-next presentation
 before selection, and a preview skeleton, but those are bootstrap/client
 composition facts rather than daemon execution facts. In the no-installed-AI
 branch, the all-disconnected Claude Code/Codex/OpenClaw/Cursor Agent rows and
 `시작하기` CTA are also client presentation over liveness data, not daemon
 commands. The daemon supplies runtime liveness/detection facts and consumes an
 already-assigned instruction after SaaS authorization. It must not hard-code
-starter agent templates, template descriptions/instructions, direct-setting
+starter agent fixtures, fixture descriptions/instructions, direct-setting
 entry points, workspace selection/create-new entry points, onboarding step
 skipping, provider install/start CTAs, or client text overflow behavior.
 
@@ -149,6 +149,11 @@ marketing consent, chat animation, and progress-bar references are
 auth/team/product/client facts. The daemon only starts after the desktop/helper
 surface launches it and then reports runtime liveness/control-plane assignment
 state through the existing SaaS boundary.
+
+The daemon-side projection of these Figma boundaries is
+[`../30-architecture/figma-ai-agent-daemon-boundary.md`](../30-architecture/figma-ai-agent-daemon-boundary.md).
+That manifest is a downstream boundary check, not a replacement for the
+contracts/control-plane SSOT.
 
 ## Change Procedure
 

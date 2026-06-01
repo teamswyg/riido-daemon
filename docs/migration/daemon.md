@@ -804,6 +804,29 @@ This slice does:
 This slice does not change provider-native approval RPC frames, add UI, change
 CLI flags, introduce dependencies, or alter hard/semantic timeout defaults.
 
+### RIID-4813 — Figma AI Agent daemon boundary projection gate
+
+This slice adds a daemon-local projection of the Figma v1.22 AI Agent screen
+coverage. It records which screen facts are only consumed by the daemon and
+which remain upstream contracts/control-plane/client/desktop ownership.
+
+This slice does:
+
+- add `docs/30-architecture/figma-ai-agent-daemon-boundary.md`
+- add `docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json`
+- refresh stale agent-settings evidence to the current `node-id=432-37336`
+- replace onboarding "template entity" wording with fixture wording where the
+  daemon boundary discusses `리도`, `영실`, `홍도`, and `지원`
+- add a focused public Go test that checks daemon-relevant Figma nodes,
+  manifest fields, cross-doc links, stale node ids, and fixture terminology
+- wire the architecture-docs workflow to run that boundary test when the
+  manifest, provider-runtime/context-map docs, CLI docs, or test changes
+
+This slice does not add a daemon UI, Figma integration, SaaS endpoint,
+generated client, provider install flow, provider CLI bundling, or new local
+daemon command. It also does not make Figma a daemon SSOT; Figma remains product
+evidence and the contracts/control-plane coverage manifest remains upstream.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
