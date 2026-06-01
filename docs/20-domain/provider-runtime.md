@@ -20,10 +20,11 @@ outside C4 ownership. C4 may report runtime detection and liveness used by the
 client's onboarding runtime-choice screen (`node-id=137-6746`), and it may
 execute a task using the instruction that SaaS assigns later. C4 does not own
 the `감지됨` / `감지 안 됨` labels, radio enabled/disabled state, row dimming,
-onboarding fixture catalog, the `리도` / `영실` / `홍도` / `지원` starter-fixture
-rows, the `직접 설정` row, disabled-next presentation, preview skeleton or
-popover, direct-setting form composition, workspace selector, no-runtime skip
-branch, scroll affordances, two-line ellipsis behavior, or starter-fixture copy.
+onboarding fixture catalog, the `리도` / `영실` / `홍도` / `지원` onboarding
+fixture rows, the `직접 설정` row, disabled-next presentation, preview skeleton
+or popover, direct-setting form composition, workspace selector, no-runtime
+skip branch, scroll affordances, two-line ellipsis behavior, or onboarding
+fixture copy.
 
 The Figma web onboarding section (`node-id=236-29749`) is also outside C4
 ownership. Its macOS app download CTA can lead a user to a desktop artifact, but

@@ -113,14 +113,14 @@ can show Claude Code/Codex as `감지됨` selectable
 rows and OpenClaw/Cursor Agent as `감지 안 됨` non-selectable rows, but those
 labels, radios, and row states are client presentation over runtime
 liveness/detection facts. `node-id=138-7389` can show `리도`, `영실`, `홍도`,
-and `지원` starter-fixture rows, a `직접 설정` row, disabled-next presentation
+and `지원` onboarding fixture rows, a `직접 설정` row, disabled-next presentation
 before selection, and a preview skeleton, but those are bootstrap/client
 composition facts rather than daemon execution facts. In the no-installed-AI
 branch, the all-disconnected Claude Code/Codex/OpenClaw/Cursor Agent rows and
 `시작하기` CTA are also client presentation over liveness data, not daemon
 commands. The daemon supplies runtime liveness/detection facts and consumes an
 already-assigned instruction after SaaS authorization. It must not hard-code
-starter agent fixtures, fixture descriptions/instructions, direct-setting
+onboarding fixture rows, fixture descriptions/instructions, direct-setting
 entry points, workspace selection/create-new entry points, onboarding step
 skipping, provider install/start CTAs, or client text overflow behavior.
 
