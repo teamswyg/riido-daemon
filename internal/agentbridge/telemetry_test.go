@@ -121,6 +121,88 @@ func TestApplyRuntimeInstructionContractPlacesByProvider(t *testing.T) {
 	}
 }
 
+func TestRuntimeInstructionStrategiesAreStable(t *testing.T) {
+	want := []RuntimeInstructionStrategy{
+		{
+			Provider:                  "claude",
+			AgentInstructionPlacement: TelemetryPlacementSystemPrompt,
+			TelemetryPlacement:        TelemetryPlacementSystemPrompt,
+			EffectivenessGate:         "opt-in-real-provider-probe",
+		},
+		{
+			Provider:                  "openclaw",
+			AgentInstructionPlacement: TelemetryPlacementSystemPromptInline,
+			TelemetryPlacement:        TelemetryPlacementSystemPromptInline,
+			EffectivenessGate:         "opt-in-real-provider-probe",
+		},
+		{
+			Provider:                  "codex",
+			AgentInstructionPlacement: TelemetryPlacementPrompt,
+			TelemetryPlacement:        TelemetryPlacementPrompt,
+			EffectivenessGate:         "opt-in-real-provider-probe",
+		},
+		{
+			Provider:                  "cursor",
+			AgentInstructionPlacement: TelemetryPlacementPrompt,
+			TelemetryPlacement:        TelemetryPlacementPrompt,
+			EffectivenessGate:         "opt-in-real-provider-probe",
+		},
+	}
+	got := RuntimeInstructionStrategies()
+	if len(got) != len(want) {
+		t.Fatalf("strategy count = %d, want %d", len(got), len(want))
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("strategy[%d] = %+v, want %+v", i, got[i], want[i])
+		}
+	}
+}
+
+func TestBuildInstructionEffectivenessProbePlacesMarkerByProvider(t *testing.T) {
+	for _, strategy := range RuntimeInstructionStrategies() {
+		t.Run(strategy.Provider, func(t *testing.T) {
+			probe := BuildInstructionEffectivenessProbe(strategy.Provider)
+			if probe.AgentInstructionPlacement != strategy.AgentInstructionPlacement {
+				t.Fatalf("instruction placement = %q, want %q", probe.AgentInstructionPlacement, strategy.AgentInstructionPlacement)
+			}
+			if probe.TelemetryPlacement != strategy.TelemetryPlacement {
+				t.Fatalf("telemetry placement = %q, want %q", probe.TelemetryPlacement, strategy.TelemetryPlacement)
+			}
+			promptHasMarker := strings.Contains(probe.Prompt, probe.ExpectedMarker)
+			systemHasMarker := strings.Contains(probe.SystemPrompt, probe.ExpectedMarker)
+			switch strategy.AgentInstructionPlacement {
+			case TelemetryPlacementPrompt:
+				if !promptHasMarker || systemHasMarker {
+					t.Fatalf("marker location prompt=%t system=%t probe=%+v", promptHasMarker, systemHasMarker, probe)
+				}
+			case TelemetryPlacementSystemPrompt, TelemetryPlacementSystemPromptInline:
+				if promptHasMarker || !systemHasMarker {
+					t.Fatalf("marker location prompt=%t system=%t probe=%+v", promptHasMarker, systemHasMarker, probe)
+				}
+			default:
+				t.Fatalf("unknown placement %q", strategy.AgentInstructionPlacement)
+			}
+			if err := ValidateInstructionEffectivenessOutput(probe, "ok\n"+probe.ExpectedMarker+"\n"); err != nil {
+				t.Fatalf("valid marker rejected: %v", err)
+			}
+			if err := ValidateInstructionEffectivenessOutput(probe, "ok"); err == nil {
+				t.Fatal("missing marker accepted")
+			}
+		})
+	}
+}
+
+func TestRuntimeInstructionStrategyForUnknownProviderDefaultsToPrompt(t *testing.T) {
+	strategy := RuntimeInstructionStrategyForProvider("future-provider")
+	if strategy.Provider != "future-provider" {
+		t.Fatalf("provider = %q", strategy.Provider)
+	}
+	if strategy.AgentInstructionPlacement != TelemetryPlacementPrompt || strategy.TelemetryPlacement != TelemetryPlacementPrompt {
+		t.Fatalf("unknown provider strategy = %+v", strategy)
+	}
+}
+
 func TestInjectTelemetryContractIsIdempotent(t *testing.T) {
 	first := InjectTelemetryContract("do it")
 	second := InjectTelemetryContract(first)

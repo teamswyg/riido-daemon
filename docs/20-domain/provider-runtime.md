@@ -544,6 +544,37 @@ Claude/Codex/OpenClaw/Cursor 의 session id 차이는 concrete adapter ACL/proto
 decision, provider-specific parsing 을 소유하지 않는다. 이 책임들은 각각 C5, C2/C4
 RunController, C6, C7, concrete adapter slice 가 소유한다.
 
+### 7.6.1 Agent instruction placement and effectiveness probe
+
+C4 Provider Runtime owns only how an assignment-created
+`Assignment.agent_instruction` snapshot is delivered to each provider surface.
+It does not own the client-authored instruction text, the 1000-character limit,
+or the assignment-time snapshot decision; those remain in `riido-contracts`
+AI Agent policy and assignment polling contracts.
+
+Current placement matrix:
+
+| Provider | Instruction placement | Telemetry placement | Deterministic gate |
+| --- | --- | --- | --- |
+| Claude Code | `system-prompt` | `system-prompt` | `go test ./internal/agentbridge` |
+| OpenClaw | `system-prompt-inline` | `system-prompt-inline` | `go test ./internal/agentbridge` |
+| Codex | `prompt` prefix | `prompt` prefix | `go test ./internal/agentbridge` |
+| Cursor Agent | `prompt` prefix | `prompt` prefix | `go test ./internal/agentbridge` |
+
+The matrix is implemented by `RuntimeInstructionStrategies()` and consumed by
+`ApplyRuntimeInstructionContract`. Public CI verifies deterministic placement,
+metadata, idempotent section composition, and the provider-neutral effectiveness
+probe shape without executing external provider CLIs.
+
+Provider-specific "effectiveness" means the real provider obeys the delivered
+instruction after it is placed on that provider's chosen surface. It is verified
+by `BuildInstructionEffectivenessProbe` and
+`ValidateInstructionEffectivenessOutput`: the probe asks the provider to echo a
+provider-specific marker such as `RIIDO_INSTRUCTION_ACK:codex`, and the validator
+accepts only outputs containing that marker. Real provider execution remains an
+opt-in integration/evidence gate because provider CLIs, credentials, model
+selection, latency, and vendor behavior are external attached resources.
+
 `internal/agentbridge/detectutil` 은 concrete provider adapters 가 공유하는 탐지 helper
 다. env override 는 hint 가 아니라 pin 이므로 override path 가 없거나 directory 이면
 PATH fallback 을 하지 않고 fail-closed 한다. version probe helper 는 missing binary /

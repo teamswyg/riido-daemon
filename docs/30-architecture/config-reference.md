@@ -79,7 +79,12 @@ Codex and Cursor use a prompt prefix because their current daemon surface does
 not rely on a separate system prompt channel. The chosen placements are recorded
 in `TaskRequest.Metadata["riido_agent_instruction"]` and
 `TaskRequest.Metadata["riido_telemetry_contract"]` so tests can detect provider
-placement drift.
+placement drift. The provider-specific placement matrix and the opt-in real
+provider effectiveness probe are owned by
+[`provider-runtime.md`](../20-domain/provider-runtime.md#761-agent-instruction-placement-and-effectiveness-probe)
+and [`integration-matrix.md`](integration-matrix.md#agent-instruction-effectiveness-probe);
+this config reference only names the runtime source variable and emitted
+metadata keys.
 
 ## Local Daemon Flags
 
