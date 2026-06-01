@@ -22,6 +22,23 @@
   timestamp, fixture row, workspace selection, waitlist, marketing consent를
   소유하지 않습니다.
 
+## Upstream Metadata Limitation Mirror
+
+> Riido task: RIID-4843 `[Daemon] Figma metadata page-list limitation downstream guard`
+
+`riido-contracts`는 `teamswyg/riido-contracts#52`에서
+`figma-metadata-page-list-underreports-pages.v1` limitation을 고정했습니다.
+Figma `get_metadata`를 `nodeId` 없이 호출하면 이 파일에서 `129:5215` UI
+page만 보일 수 있지만, authoritative page registry는 Figma Plugin API가
+로드한 `129:5215`, `42:3014`, `0:1`입니다.
+
+daemon projection은 이 limitation을 downstream에서 미러링합니다. 따라서
+metadata page-list 출력은 보조 근거일 뿐이고, 그 결과만 믿어 `42:3014`
+온보딩 page나 `0:1` legacy wireframe inventory를 삭제하면 안 됩니다.
+특히 `42:3014`, `137:6746`, `138:7389`, `164:26969`, `164:30192`,
+`164:30206`, `435:60050`, `236:29749`, `275:22731` node는 daemon이
+직접 실행하지 않는 사실까지 포함해 boundary evidence로 보존되어야 합니다.
+
 ## 주요 화면 경계
 
 | Figma node | 화면 | daemon 판단 |
@@ -66,6 +83,10 @@ Bottom-up 변경:
 `go test ./tools/figmaboundary -count=1`은 다음을 확인합니다.
 
 - manifest schema, RIID, Figma file/page identity가 유지되는지
+- contracts upstream provenance와 `figma-metadata-page-list-underreports-pages.v1`
+  limitation mirror가 유지되는지
+- authoritative page `129:5215`, `42:3014`, `0:1`과 non-UI daemon evidence
+  node가 metadata 축소 결과로 사라지지 않는지
 - daemon-relevant Figma node가 모두 entry로 남아 있는지
 - 각 entry가 `daemon_scope`, `upstream_owner`, `daemon_consumed_facts`,
   `client_owned_facts`를 구분하는지
