@@ -10,6 +10,7 @@ const (
 	// contract was placed for this task. The supervisor uses its
 	// presence to mirror the contract into provider-native config.
 	MetadataTelemetryContract = "riido_telemetry_contract"
+	MetadataAgentInstruction  = "riido_agent_instruction"
 
 	TelemetryPlacementPrompt             = "prompt"
 	TelemetryPlacementSystemPrompt       = "system-prompt"
@@ -38,12 +39,53 @@ func ApplyTelemetryContract(provider, prompt, systemPrompt string) (string, stri
 	}
 }
 
+func ApplyRuntimeInstructionContract(provider, prompt, systemPrompt, agentInstruction string) (string, string, string, string) {
+	provider = strings.TrimSpace(strings.ToLower(provider))
+	agentSection := AgentInstructionContract(agentInstruction)
+	switch provider {
+	case "claude":
+		system := appendPromptSection(systemPrompt, agentSection)
+		system = appendPromptSection(system, TelemetryContractInstruction())
+		return strings.TrimSpace(prompt), system, TelemetryPlacementSystemPrompt, placementForSection(agentSection, TelemetryPlacementSystemPrompt)
+	case "openclaw":
+		system := appendPromptSection(systemPrompt, agentSection)
+		system = appendPromptSection(system, TelemetryContractInstruction())
+		return strings.TrimSpace(prompt), system, TelemetryPlacementSystemPromptInline, placementForSection(agentSection, TelemetryPlacementSystemPromptInline)
+	default:
+		return InjectPromptSections(prompt, agentSection, TelemetryContractInstruction()), strings.TrimSpace(systemPrompt), TelemetryPlacementPrompt, placementForSection(agentSection, TelemetryPlacementPrompt)
+	}
+}
+
 func InjectTelemetryContract(prompt string) string {
 	prompt = strings.TrimSpace(prompt)
 	if strings.Contains(prompt, telemetryLogStart) && strings.Contains(prompt, telemetryLogEnd) {
 		return prompt
 	}
 	return strings.TrimSpace(TelemetryContractInstruction() + "\n\nUser task:\n" + prompt)
+}
+
+func InjectPromptSections(prompt string, sections ...string) string {
+	prompt = strings.TrimSpace(prompt)
+	var out []string
+	for _, section := range sections {
+		section = strings.TrimSpace(section)
+		if section == "" || strings.Contains(prompt, section) {
+			continue
+		}
+		out = append(out, section)
+	}
+	if prompt != "" {
+		out = append(out, "User task:\n"+prompt)
+	}
+	return strings.TrimSpace(strings.Join(out, "\n\n"))
+}
+
+func AgentInstructionContract(instruction string) string {
+	instruction = strings.TrimSpace(instruction)
+	if instruction == "" {
+		return ""
+	}
+	return "Riido agent instruction:\n" + instruction
 }
 
 func TelemetryContractInstruction() string {
@@ -71,6 +113,13 @@ func appendPromptSection(existing, section string) string {
 		return existing
 	}
 	return existing + "\n\n" + section
+}
+
+func placementForSection(section, placement string) string {
+	if strings.TrimSpace(section) == "" {
+		return ""
+	}
+	return placement
 }
 
 func (p *TelemetryParser) Feed(text string) []Event {

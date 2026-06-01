@@ -60,6 +60,67 @@ func TestApplyTelemetryContractPlacesByProvider(t *testing.T) {
 	}
 }
 
+func TestApplyRuntimeInstructionContractPlacesByProvider(t *testing.T) {
+	tests := []struct {
+		provider        string
+		wantInstruction string
+		wantTelemetry   string
+		wantPromptHas   []string
+		wantSystemHas   []string
+		wantPromptExact bool
+	}{
+		{
+			provider:        "claude",
+			wantInstruction: TelemetryPlacementSystemPrompt,
+			wantTelemetry:   TelemetryPlacementSystemPrompt,
+			wantPromptHas:   []string{"do it"},
+			wantSystemHas:   []string{"Riido agent instruction:", "act as a PM", "<riido_log>"},
+			wantPromptExact: true,
+		},
+		{
+			provider:        "openclaw",
+			wantInstruction: TelemetryPlacementSystemPromptInline,
+			wantTelemetry:   TelemetryPlacementSystemPromptInline,
+			wantPromptHas:   []string{"do it"},
+			wantSystemHas:   []string{"Riido agent instruction:", "act as a PM", "<riido_log>"},
+			wantPromptExact: true,
+		},
+		{
+			provider:        "codex",
+			wantInstruction: TelemetryPlacementPrompt,
+			wantTelemetry:   TelemetryPlacementPrompt,
+			wantPromptHas:   []string{"Riido agent instruction:", "act as a PM", "<riido_log>", "User task:", "do it"},
+		},
+		{
+			provider:        "cursor",
+			wantInstruction: TelemetryPlacementPrompt,
+			wantTelemetry:   TelemetryPlacementPrompt,
+			wantPromptHas:   []string{"Riido agent instruction:", "act as a PM", "<riido_log>", "User task:", "do it"},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.provider, func(t *testing.T) {
+			prompt, system, telemetryPlacement, instructionPlacement := ApplyRuntimeInstructionContract(tt.provider, "do it", "", "act as a PM")
+			if telemetryPlacement != tt.wantTelemetry || instructionPlacement != tt.wantInstruction {
+				t.Fatalf("placements telemetry=%q instruction=%q", telemetryPlacement, instructionPlacement)
+			}
+			if tt.wantPromptExact && prompt != "do it" {
+				t.Fatalf("prompt = %q", prompt)
+			}
+			for _, want := range tt.wantPromptHas {
+				if !strings.Contains(prompt, want) {
+					t.Fatalf("prompt missing %q: %q", want, prompt)
+				}
+			}
+			for _, want := range tt.wantSystemHas {
+				if !strings.Contains(system, want) {
+					t.Fatalf("system missing %q: %q", want, system)
+				}
+			}
+		})
+	}
+}
+
 func TestInjectTelemetryContractIsIdempotent(t *testing.T) {
 	first := InjectTelemetryContract("do it")
 	second := InjectTelemetryContract(first)
