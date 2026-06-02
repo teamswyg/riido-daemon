@@ -32,8 +32,6 @@ const (
 	envTaskReportDir                 = "RIIDO_TASK_REPORT_DIR"
 	envTaskDBSourcePath              = "RIIDO_TASK_DB_SOURCE_PATH"
 	envSaaSURL                       = "RIIDO_SAAS_URL"
-	envSaaSAgents                    = "RIIDO_SAAS_AGENTS"
-	envSaaSToken                     = "RIIDO_SAAS_TOKEN"
 	envDaemonPollIntervalSeconds     = "RIIDO_DAEMON_POLL_INTERVAL_SECONDS"
 	envDaemonIdlePollIntervalSeconds = "RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS"
 	envDaemonHeartbeatSeconds        = "RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS"
@@ -58,8 +56,6 @@ type daemonSettings struct {
 	TaskReportDir       string
 	TaskDBSourcePath    string
 	SaaSURL             string
-	SaaSAgents          string
-	SaaSToken           string
 	PollEvery           time.Duration
 	IdlePollEvery       time.Duration
 	HeartbeatEvery      time.Duration
@@ -132,8 +128,6 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		policyBundleDoc.Version = policyBundleVersion
 	}
 	saaSURL := strings.TrimSpace(getenv(envSaaSURL))
-	saaSAgents := strings.TrimSpace(getenv(envSaaSAgents))
-	saaSToken := strings.TrimSpace(getenv(envSaaSToken))
 	deviceID := strings.TrimSpace(getenv(envDeviceID))
 	deviceSecret := strings.TrimSpace(getenv(envDeviceSecret))
 	if taskReportDir == "" && taskQueueDir != "" {
@@ -155,11 +149,8 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		if taskDBSourcePath != "" {
 			return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envSaaSURL, envTaskDBSourcePath)
 		}
-		if saaSAgents == "" {
-			return daemonSettings{}, fmt.Errorf("%s requires %s", envSaaSURL, envSaaSAgents)
-		}
-		if saaSToken == "" && (deviceID == "" || deviceSecret == "") {
-			return daemonSettings{}, fmt.Errorf("%s requires either %s or %s/%s", envSaaSURL, envSaaSToken, envDeviceID, envDeviceSecret)
+		if deviceID == "" || deviceSecret == "" {
+			return daemonSettings{}, fmt.Errorf("%s requires %s/%s", envSaaSURL, envDeviceID, envDeviceSecret)
 		}
 	}
 	if deviceID == "" && deviceSecret != "" {
@@ -215,8 +206,6 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		TaskReportDir:       taskReportDir,
 		TaskDBSourcePath:    taskDBSourcePath,
 		SaaSURL:             saaSURL,
-		SaaSAgents:          saaSAgents,
-		SaaSToken:           saaSToken,
 		PollEvery:           pollEvery,
 		IdlePollEvery:       idlePollEvery,
 		HeartbeatEvery:      heartbeatEvery,

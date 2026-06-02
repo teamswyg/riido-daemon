@@ -64,8 +64,6 @@ Exactly one production task source may be selected.
 | `RIIDO_TASK_REPORT_DIR` | file reporter | `RIIDO_TASK_QUEUE_DIR/reports` when queue is set | JSONL report output directory |
 | `RIIDO_TASK_DB_SOURCE_PATH` | `taskdbplane` | empty | local `riido-task-db.v1` production source |
 | `RIIDO_SAAS_URL` | `saasplane` | empty | SaaS assignment polling endpoint |
-| `RIIDO_SAAS_AGENTS` | `saasplane` | empty | comma list of `agent_id:provider` or `agent_id=provider`; required with SaaS URL |
-| `RIIDO_SAAS_TOKEN` | `saasplane` | empty | optional legacy/development bearer token forwarded to SaaS API; Desktop-launched daemon should prefer `RIIDO_DEVICE_ID` / `RIIDO_DEVICE_SECRET` |
 | `RIIDO_DAEMON_POLL_INTERVAL_SECONDS` | supervisor | `1` | active/fast claim polling interval |
 | `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS` | supervisor | `5` | idle polling interval; must be >= active interval |
 | `RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS` | supervisor | `10` | runtime heartbeat interval |
@@ -73,13 +71,20 @@ Exactly one production task source may be selected.
 Queue, task DB, and SaaS source variables are mutually exclusive where their
 adapters would otherwise compete for task ownership.
 
-When `RIIDO_SAAS_URL` is selected, `saasplane` turns the control-plane
-assignment into a provider-neutral `TaskRequest`. The assignment-created
-`agent_instruction` snapshot and the Riido telemetry contract are placed by
-provider capability: Claude and OpenClaw use the system prompt surface, while
-Codex and Cursor use a prompt prefix because their current daemon surface does
-not rely on a separate system prompt channel. The chosen placements are recorded
-in `TaskRequest.Metadata["riido_agent_instruction"]` and
+When `RIIDO_SAAS_URL` is selected with `RIIDO_DEVICE_ID` and
+`RIIDO_DEVICE_SECRET`, `saasplane` uses DevicePrincipal authentication. The
+daemon reports provider runtime snapshots to `/v1/daemon/runtime-snapshot`,
+polls `/v1/daemon/agent-bindings`, and only then polls the agent-specific
+assignment endpoint. Legacy `RIIDO_SAAS_AGENTS` / `RIIDO_SAAS_TOKEN` values are
+not read by the daemon settings model.
+
+When a task is claimed, `saasplane` turns the control-plane assignment into a
+provider-neutral `TaskRequest`. The assignment-created `agent_instruction`
+snapshot and the Riido telemetry contract are placed by provider capability:
+Claude and OpenClaw use the system prompt surface, while Codex and Cursor use a
+prompt prefix because their current daemon surface does not rely on a separate
+system prompt channel. The chosen placements are recorded in
+`TaskRequest.Metadata["riido_agent_instruction"]` and
 `TaskRequest.Metadata["riido_telemetry_contract"]` so tests can detect provider
 placement drift. The provider-specific placement matrix and the opt-in real
 provider effectiveness probe are owned by
