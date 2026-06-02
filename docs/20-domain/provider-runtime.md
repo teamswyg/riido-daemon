@@ -600,6 +600,11 @@ selection, latency, and vendor behavior are external attached resources.
 PATH fallback 을 하지 않고 fail-closed 한다. version probe helper 는 missing binary /
 timeout / unclassifiable signal 을 unavailable 로 접고, strict probe 는 command completion
 여부와 exit code 를 노출해 adapter 가 non-zero output 을 version 으로 오인하지 않게 한다.
+`ResolveExecutableCandidates` 는 no-override PATH 후보 목록을 PATH 순서대로 제공하지만,
+그 후보를 하나만 쓸지 여러 개 probe 할지는 concrete adapter 의 호환성 정책이다. 현재
+OpenClaw 만 calendar-version gate 특성상 지원 버전 후보를 찾을 때까지 later PATH
+candidate 를 probe 할 수 있다. `RIIDO_OPENCLAW_PATH` 가 설정된 경우에는 여전히 pin 이며
+구버전/오류여도 PATH fallback 을 하지 않는다.
 
 ### 7.7 RuntimeActor boundary
 

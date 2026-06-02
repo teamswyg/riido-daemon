@@ -25,13 +25,17 @@ request requirements are compatible.
 
 1. Resolve executable using `RIIDO_<PROVIDER>_PATH` or PATH fallback.
 2. If an explicit override is invalid, fail closed without PATH fallback.
-3. Run adapter detect/probe and normalize to provider capability contract.
-4. Apply C11 provenance/store-channel constraints.
-5. Apply C7 policy decisions for unsafe bypass, native config, and tool-use
+3. If no explicit OpenClaw override exists, OpenClaw may probe later same-name
+   PATH candidates and select the first candidate that satisfies its
+   calendar-version gate. This is an adapter-owned compatibility decision, not
+   a general provider rule.
+4. Run adapter detect/probe and normalize to provider capability contract.
+5. Apply C11 provenance/store-channel constraints.
+6. Apply C7 policy decisions for unsafe bypass, native config, and tool-use
    surfaces.
-6. C5 scheduling selects only runtimes whose capability snapshot satisfies the
+7. C5 scheduling selects only runtimes whose capability snapshot satisfies the
    task requirement.
-7. C4 runtimeactor starts the session only after the selected runtime remains
+8. C4 runtimeactor starts the session only after the selected runtime remains
    compatible.
 
 ## Outputs
