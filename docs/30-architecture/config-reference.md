@@ -77,6 +77,10 @@ daemon reports provider runtime snapshots to `/v1/daemon/runtime-snapshot`,
 polls `/v1/daemon/agent-bindings`, and only then polls the agent-specific
 assignment endpoint. Legacy `RIIDO_SAAS_AGENTS` / `RIIDO_SAAS_TOKEN` values are
 not read by the daemon settings model.
+The snapshot must preserve the local provider availability verdict: an explicitly
+false `provider.<name>.available` capability is projected as `offline` /
+`missing`, not normalized to `online` merely because the provider binary was
+seen.
 This daemon-side flow does not accept `team_id`, `teamId`, OpenAPI task-context
 paths, Open API keys, or `X-Workspace-Api-Key` as identity, binding, polling, or
 smoke-test inputs. Those values are outside the generated AI Agent assignment
