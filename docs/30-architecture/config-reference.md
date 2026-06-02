@@ -42,6 +42,8 @@ tests by default and does not require provider CLIs or vendor credentials.
 | `RIIDO_DAEMON_VERSION` | daemon config + supervisor event stamps | `riido-agentd v0.0.0` | daemon binary version label |
 | `RIIDO_DAEMON_PROFILE` | daemon status | `local` | user-facing daemon profile |
 | `RIIDO_SERVER_URL` | daemon status | empty | display-only server URL unless SaaS source is configured |
+| `RIIDO_DEVICE_ID` | `saasplane` | empty | device principal id issued by `riido-control-plane`; required with `RIIDO_DEVICE_SECRET` when SaaS auth uses device credentials |
+| `RIIDO_DEVICE_SECRET` | `saasplane` | empty | device principal secret issued by Desktop device enrollment; sent only as `X-Riido-Device-Secret` to the SaaS API |
 | `RIIDO_DEVICE_NAME` | daemon status | hostname or `localhost` | device display name |
 | `RIIDO_RUNTIME_OWNER` | daemon status | `$USER` or `local` | runtime owner display name |
 | `RIIDO_RUNTIME_AGENTS` | daemon status | empty list | comma-separated attached agent display names |
@@ -63,7 +65,7 @@ Exactly one production task source may be selected.
 | `RIIDO_TASK_DB_SOURCE_PATH` | `taskdbplane` | empty | local `riido-task-db.v1` production source |
 | `RIIDO_SAAS_URL` | `saasplane` | empty | SaaS assignment polling endpoint |
 | `RIIDO_SAAS_AGENTS` | `saasplane` | empty | comma list of `agent_id:provider` or `agent_id=provider`; required with SaaS URL |
-| `RIIDO_SAAS_TOKEN` | `saasplane` | empty | optional bearer token forwarded to SaaS API |
+| `RIIDO_SAAS_TOKEN` | `saasplane` | empty | optional legacy/development bearer token forwarded to SaaS API; Desktop-launched daemon should prefer `RIIDO_DEVICE_ID` / `RIIDO_DEVICE_SECRET` |
 | `RIIDO_DAEMON_POLL_INTERVAL_SECONDS` | supervisor | `1` | active/fast claim polling interval |
 | `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS` | supervisor | `5` | idle polling interval; must be >= active interval |
 | `RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS` | supervisor | `10` | runtime heartbeat interval |
@@ -85,6 +87,14 @@ provider effectiveness probe are owned by
 and [`integration-matrix.md`](integration-matrix.md#agent-instruction-effectiveness-probe);
 this config reference only names the runtime source variable and emitted
 metadata keys.
+
+Desktop-launched daemon authentication is device-principal based. Desktop first
+uses the logged-in webview session to enroll the device with `riido-control-plane`,
+then launches the daemon with `RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET`.
+`saasplane` sends those values as `X-Riido-Device-ID` and
+`X-Riido-Device-Secret` on poll/heartbeat/event requests. This keeps daemon
+polling alive after the webview is closed and avoids treating a browser JWT as a
+daemon credential.
 
 ## Local Daemon Flags
 

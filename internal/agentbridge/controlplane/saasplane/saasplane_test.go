@@ -217,6 +217,41 @@ func TestPlaneSendsBearerToken(t *testing.T) {
 	}
 }
 
+func TestPlaneSendsDeviceCredentialHeaders(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "hello",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+		Agents:       []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}},
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask with device credential: %v", err)
+	}
+	if req == nil || req.ID != "task-a" {
+		t.Fatalf("request = %+v", req)
+	}
+}
+
 func TestPlaneRejectsMissingBearerToken(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.bearerToken = "secret"
@@ -259,9 +294,11 @@ func newTestPlaneWithToken(t *testing.T, baseURL string, agents []AgentBinding, 
 }
 
 type fakeAssignmentServer struct {
-	t           *testing.T
-	server      *httptest.Server
-	bearerToken string
+	t            *testing.T
+	server       *httptest.Server
+	bearerToken  string
+	deviceID     string
+	deviceSecret string
 
 	assignmentsByAgent map[string][]assignmentcontract.Assignment
 	cancelByAgent      map[string]assignmentcontract.Assignment
@@ -295,6 +332,10 @@ func (f *fakeAssignmentServer) cancelNext(agentID string, assignment assignmentc
 }
 
 func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
+	if f.deviceSecret != "" && (r.Header.Get("X-Riido-Device-ID") != f.deviceID || r.Header.Get("X-Riido-Device-Secret") != f.deviceSecret) {
+		http.Error(w, "missing device credential", http.StatusUnauthorized)
+		return
+	}
 	if f.bearerToken != "" && r.Header.Get("Authorization") != "Bearer "+f.bearerToken {
 		http.Error(w, "missing bearer token", http.StatusUnauthorized)
 		return

@@ -36,6 +36,7 @@ type Config struct {
 	BaseURL        string
 	DaemonID       string
 	DeviceID       string
+	DeviceSecret   string
 	Agents         []AgentBinding
 	BearerToken    string
 	HTTPClient     *http.Client
@@ -68,7 +69,11 @@ func New(cfg Config) (*Plane, error) {
 	if cfg.DeviceID == "" {
 		cfg.DeviceID = cfg.DaemonID
 	}
+	cfg.DeviceSecret = strings.TrimSpace(cfg.DeviceSecret)
 	cfg.BearerToken = strings.TrimSpace(cfg.BearerToken)
+	if cfg.DeviceSecret != "" && cfg.DeviceID == "" {
+		return nil, errors.New("saasplane: DeviceID is required when DeviceSecret is set")
+	}
 	cfg.Agents = normalizeAgents(cfg.Agents)
 	if len(cfg.Agents) == 0 {
 		return nil, errors.New("saasplane: at least one agent binding is required")
@@ -268,6 +273,10 @@ func (p *Plane) postJSON(ctx context.Context, path string, in any, out any) erro
 		return err
 	}
 	req.Header.Set("Content-Type", "application/json")
+	if p.cfg.DeviceSecret != "" {
+		req.Header.Set("X-Riido-Device-ID", p.cfg.DeviceID)
+		req.Header.Set("X-Riido-Device-Secret", p.cfg.DeviceSecret)
+	}
 	if p.cfg.BearerToken != "" {
 		req.Header.Set("Authorization", "Bearer "+p.cfg.BearerToken)
 	}

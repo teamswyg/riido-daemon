@@ -541,11 +541,12 @@ func buildDaemonControlPlane(settings daemonSettings) (controlplane.TaskSourcePo
 			return nil, nil, "", err
 		}
 		plane, err := saasplane.New(saasplane.Config{
-			BaseURL:     settings.SaaSURL,
-			DaemonID:    settings.DaemonID,
-			DeviceID:    settings.DeviceName,
-			Agents:      agents,
-			BearerToken: settings.SaaSToken,
+			BaseURL:      settings.SaaSURL,
+			DaemonID:     settings.DaemonID,
+			DeviceID:     settings.DeviceID,
+			DeviceSecret: settings.DeviceSecret,
+			Agents:       agents,
+			BearerToken:  settings.SaaSToken,
 		})
 		if err != nil {
 			return nil, nil, "", fmt.Errorf("controlplane: saas source: %w", err)

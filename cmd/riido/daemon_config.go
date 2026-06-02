@@ -19,6 +19,8 @@ const (
 	envDaemonVersion                 = "RIIDO_DAEMON_VERSION"
 	envDaemonProfile                 = "RIIDO_DAEMON_PROFILE"
 	envServerURL                     = "RIIDO_SERVER_URL"
+	envDeviceID                      = "RIIDO_DEVICE_ID"
+	envDeviceSecret                  = "RIIDO_DEVICE_SECRET"
 	envDeviceName                    = "RIIDO_DEVICE_NAME"
 	envRuntimeOwner                  = "RIIDO_RUNTIME_OWNER"
 	envRuntimeAgents                 = "RIIDO_RUNTIME_AGENTS"
@@ -44,6 +46,8 @@ type daemonSettings struct {
 	DaemonVersion       string
 	Profile             string
 	ServerURL           string
+	DeviceID            string
+	DeviceSecret        string
 	DeviceName          string
 	RuntimeOwner        string
 	WorkdirRoot         string
@@ -130,6 +134,8 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	saaSURL := strings.TrimSpace(getenv(envSaaSURL))
 	saaSAgents := strings.TrimSpace(getenv(envSaaSAgents))
 	saaSToken := strings.TrimSpace(getenv(envSaaSToken))
+	deviceID := strings.TrimSpace(getenv(envDeviceID))
+	deviceSecret := strings.TrimSpace(getenv(envDeviceSecret))
 	if taskReportDir == "" && taskQueueDir != "" {
 		taskReportDir = filepath.Join(taskQueueDir, "reports")
 	}
@@ -152,6 +158,15 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		if saaSAgents == "" {
 			return daemonSettings{}, fmt.Errorf("%s requires %s", envSaaSURL, envSaaSAgents)
 		}
+		if saaSToken == "" && (deviceID == "" || deviceSecret == "") {
+			return daemonSettings{}, fmt.Errorf("%s requires either %s or %s/%s", envSaaSURL, envSaaSToken, envDeviceID, envDeviceSecret)
+		}
+	}
+	if deviceID == "" && deviceSecret != "" {
+		return daemonSettings{}, fmt.Errorf("%s requires %s", envDeviceSecret, envDeviceID)
+	}
+	if deviceID != "" && deviceSecret == "" {
+		return daemonSettings{}, fmt.Errorf("%s requires %s", envDeviceID, envDeviceSecret)
 	}
 	workdirRetention, err := parseOptionalDurationSeconds(getenv(envWorkdirRetentionSeconds), envWorkdirRetentionSeconds)
 	if err != nil {
@@ -188,6 +203,8 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		DaemonVersion:       firstNonEmpty(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
 		Profile:             firstNonEmpty(getenv(envDaemonProfile), "local"),
 		ServerURL:           strings.TrimSpace(getenv(envServerURL)),
+		DeviceID:            deviceID,
+		DeviceSecret:        deviceSecret,
 		DeviceName:          deviceName,
 		RuntimeOwner:        owner,
 		WorkdirRoot:         workdirRoot,

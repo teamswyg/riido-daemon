@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -510,6 +511,38 @@ func TestLoadDaemonSettingsAcceptsSaaSControlPlane(t *testing.T) {
 	}
 	if settings.SaaSURL != "https://api.riido.ai" || settings.SaaSAgents != "jykim1:codex,jykim2=claude" || settings.SaaSToken != "secret" {
 		t.Fatalf("saas settings = %+v", settings)
+	}
+}
+
+func TestLoadDaemonSettingsAcceptsSaaSDeviceCredential(t *testing.T) {
+	env := map[string]string{
+		envSaaSURL:      "https://api.riido.ai",
+		envSaaSAgents:   "jykim1:codex",
+		envDeviceID:     "device-1",
+		envDeviceSecret: "rdev-secret",
+	}
+	settings, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
+		return "host", nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if settings.DeviceID != "device-1" || settings.DeviceSecret != "rdev-secret" || settings.SaaSToken != "" {
+		t.Fatalf("device credential settings = %+v", settings)
+	}
+}
+
+func TestLoadDaemonSettingsRejectsIncompleteSaaSDeviceCredential(t *testing.T) {
+	env := map[string]string{
+		envSaaSURL:    "https://api.riido.ai",
+		envSaaSAgents: "jykim1:codex",
+		envDeviceID:   "device-1",
+	}
+	_, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
+		return "host", nil
+	})
+	if err == nil || !strings.Contains(err.Error(), envDeviceID) || !strings.Contains(err.Error(), envDeviceSecret) {
+		t.Fatalf("expected incomplete device credential error, got %v", err)
 	}
 }
 
