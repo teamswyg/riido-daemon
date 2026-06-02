@@ -91,7 +91,15 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 		manifest.SourceCoverageManifestProvenance.ID != "figma-v1-22-ai-agent-ui-coverage" {
 		t.Fatalf("upstream coverage provenance drifted: %#v", manifest.SourceCoverageManifestProvenance)
 	}
-	requireSliceContains(t, manifest.SourceCoverageManifestProvenance.StabilizedBy, "teamswyg/riido-contracts#52")
+	expectedSourceProvenance := []string{
+		"teamswyg/riido-contracts#38",
+		"teamswyg/riido-contracts#39",
+		"teamswyg/riido-contracts#45",
+		"teamswyg/riido-contracts#46",
+		"teamswyg/riido-contracts#51",
+		"teamswyg/riido-contracts#52",
+	}
+	requireSameStringSlice(t, manifest.SourceCoverageManifestProvenance.StabilizedBy, expectedSourceProvenance)
 	if manifest.Figma.FileKey != "MUOd9lctoEHASUStN3vUuK" || manifest.Figma.PageID != "129:5215" {
 		t.Fatalf("Figma source drifted: %#v", manifest.Figma)
 	}
@@ -120,7 +128,7 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 	if limitation.SourceOwner != "riido-contracts" || limitation.LocalRiidoTask != "RIID-4843" {
 		t.Fatalf("metadata page-list limitation mirror drifted: %#v", limitation)
 	}
-	requireSliceContains(t, limitation.SourceStabilizedBy, "teamswyg/riido-contracts#52")
+	requireSameStringSlice(t, limitation.SourceStabilizedBy, []string{"teamswyg/riido-contracts#52"})
 	for _, pageID := range []string{"129:5215", "42:3014", "0:1"} {
 		requireSliceContains(t, limitation.RequiredAuthoritativePages, pageID)
 	}
@@ -163,7 +171,9 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 	humanDoc := string(mustReadFile(t, docPath))
 	requireContains(t, humanDoc, manifest.SchemaVersion)
 	requireContains(t, humanDoc, "RIID-4843")
+	requireContains(t, humanDoc, "RIID-4847")
 	requireContains(t, humanDoc, "figma-metadata-page-list-underreports-pages.v1")
+	requireContains(t, humanDoc, "teamswyg/riido-contracts#38")
 	requireContains(t, humanDoc, "teamswyg/riido-contracts#52")
 	requireContains(t, humanDoc, "432:37336")
 	requireContains(t, humanDoc, "fixture")
@@ -251,6 +261,18 @@ func requireSliceContains(t *testing.T, items []string, want string) {
 		}
 	}
 	t.Fatalf("missing %q in %#v", want, items)
+}
+
+func requireSameStringSlice(t *testing.T, got, want []string) {
+	t.Helper()
+	if len(got) != len(want) {
+		t.Fatalf("string slice length = %d, want %d: got %#v want %#v", len(got), len(want), got, want)
+	}
+	for i := range want {
+		if got[i] != want[i] {
+			t.Fatalf("string slice[%d] = %q, want %q: got %#v want %#v", i, got[i], want[i], got, want)
+		}
+	}
 }
 
 func requireToolLimitation(t *testing.T, limitations []toolLimitation, sourceID string) toolLimitation {

@@ -26,6 +26,20 @@
 
 > Riido task: RIID-4843 `[Daemon] Figma metadata page-list limitation downstream guard`
 
+> Riido task: RIID-4847 `[Daemon] Figma coverage upstream provenance full mirror guard`
+
+daemon manifest의 `source_coverage_manifest_provenance.stabilized_by`는
+contracts coverage manifest의 전체 stabilization history
+(`teamswyg/riido-contracts#38`, `#39`, `#45`, `#46`, `#51`, `#52`)를
+미러링합니다. 이것은 daemon이 Figma coverage owner라는 뜻이 아니라,
+downstream projection이 어떤 upstream coverage 이력을 기준으로 좁혀졌는지
+잃지 않기 위한 provenance guard입니다.
+
+반대로 `mirrored_supporting_tool_limitations[].source_stabilized_by`는 해당
+limitation이 도입된 upstream slice만 기록합니다. 현재
+`figma-metadata-page-list-underreports-pages.v1` limitation 자체는
+`teamswyg/riido-contracts#52`가 provenance입니다.
+
 `riido-contracts`는 `teamswyg/riido-contracts#52`에서
 `figma-metadata-page-list-underreports-pages.v1` limitation을 고정했습니다.
 Figma `get_metadata`를 `nodeId` 없이 호출하면 이 파일에서 `129:5215` UI
@@ -83,8 +97,9 @@ Bottom-up 변경:
 `go test ./tools/figmaboundary -count=1`은 다음을 확인합니다.
 
 - manifest schema, RIID, Figma file/page identity가 유지되는지
-- contracts upstream provenance와 `figma-metadata-page-list-underreports-pages.v1`
-  limitation mirror가 유지되는지
+- contracts upstream coverage provenance full mirror와
+  `figma-metadata-page-list-underreports-pages.v1` limitation-local provenance
+  mirror가 분리되어 유지되는지
 - authoritative page `129:5215`, `42:3014`, `0:1`과 non-UI daemon evidence
   node가 metadata 축소 결과로 사라지지 않는지
 - daemon-relevant Figma node가 모두 entry로 남아 있는지
