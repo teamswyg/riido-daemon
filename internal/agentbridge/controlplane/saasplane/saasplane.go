@@ -234,7 +234,7 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 				continue
 			}
 			switch poll.Action {
-			case assignmentcontract.PollStart:
+			case assignmentcontract.PollStart, assignmentcontract.PollActive:
 				assignment := *poll.Assignment
 				if assignment.RuntimeProvider != "" && assignment.RuntimeProvider != provider {
 					continue
@@ -246,7 +246,7 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 			case assignmentcontract.PollCancel:
 				_ = p.deliverCancel(ctx, *poll.Assignment)
 				return nil, nil
-			case assignmentcontract.PollActive, assignmentcontract.PollNone:
+			case assignmentcontract.PollNone:
 				continue
 			default:
 				continue
@@ -270,7 +270,7 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 			continue
 		}
 		switch poll.Action {
-		case assignmentcontract.PollStart:
+		case assignmentcontract.PollStart, assignmentcontract.PollActive:
 			assignment := *poll.Assignment
 			if assignment.RuntimeProvider != "" && assignment.RuntimeProvider != provider {
 				continue
@@ -282,7 +282,7 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 		case assignmentcontract.PollCancel:
 			_ = p.deliverCancel(ctx, *poll.Assignment)
 			return nil, nil
-		case assignmentcontract.PollActive, assignmentcontract.PollNone:
+		case assignmentcontract.PollNone:
 			continue
 		default:
 			continue
