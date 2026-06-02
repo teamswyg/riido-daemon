@@ -1,0 +1,89 @@
+#!/bin/sh
+set -eu
+
+repo="${RIIDO_DAEMON_REPO:-teamswyg/riido-daemon}"
+version="${RIIDO_DAEMON_VERSION:-latest}"
+install_dir="${RIIDO_DAEMON_INSTALL_DIR:-$HOME/.riido/bin}"
+
+need() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    echo "$1 is required" >&2
+    exit 1
+  fi
+}
+
+detect_os() {
+  case "$(uname -s)" in
+    Darwin) echo "darwin" ;;
+    Linux) echo "linux" ;;
+    *)
+      echo "unsupported OS: $(uname -s)" >&2
+      exit 1
+      ;;
+  esac
+}
+
+detect_arch() {
+  case "$(uname -m)" in
+    x86_64 | amd64) echo "amd64" ;;
+    arm64 | aarch64) echo "arm64" ;;
+    *)
+      echo "unsupported arch: $(uname -m)" >&2
+      exit 1
+      ;;
+  esac
+}
+
+sha256_check() {
+  file="$1"
+  sums="$2"
+  asset_name="$(basename "$file")"
+  expected="$(grep "  $asset_name\$" "$sums" | awk '{print $1}')"
+  if [ -z "$expected" ]; then
+    echo "checksum for $asset_name is missing" >&2
+    exit 1
+  fi
+
+  if command -v sha256sum >/dev/null 2>&1; then
+    actual="$(sha256sum "$file" | awk '{print $1}')"
+  else
+    actual="$(shasum -a 256 "$file" | awk '{print $1}')"
+  fi
+
+  if [ "$actual" != "$expected" ]; then
+    echo "checksum mismatch for $asset_name" >&2
+    exit 1
+  fi
+}
+
+download_base_url() {
+  if [ "$version" = "latest" ]; then
+    echo "https://github.com/$repo/releases/latest/download"
+  else
+    echo "https://github.com/$repo/releases/download/$version"
+  fi
+}
+
+need curl
+need tar
+if ! command -v sha256sum >/dev/null 2>&1; then
+  need shasum
+fi
+
+os="$(detect_os)"
+arch="$(detect_arch)"
+asset="riido-daemon_${os}_${arch}.tar.gz"
+base_url="$(download_base_url)"
+tmp_dir="$(mktemp -d)"
+trap 'rm -rf "$tmp_dir"' EXIT
+
+curl -fsSL "$base_url/$asset" -o "$tmp_dir/$asset"
+curl -fsSL "$base_url/SHA256SUMS" -o "$tmp_dir/SHA256SUMS"
+sha256_check "$tmp_dir/$asset" "$tmp_dir/SHA256SUMS"
+
+mkdir -p "$install_dir"
+tar -xzf "$tmp_dir/$asset" -C "$tmp_dir"
+install -m 0755 "$tmp_dir/riido" "$install_dir/riido"
+
+echo "riido-daemon installed: $install_dir/riido"
+echo "Add $install_dir to PATH or launch it from Riido Desktop."

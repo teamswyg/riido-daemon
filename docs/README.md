@@ -7,7 +7,7 @@
 1. [`20-domain/context-map.md`](20-domain/context-map.md)에서 daemon이 소유하는 bounded context와 `riido-contracts`, `riido-control-plane`, `riido-infra`와의 책임 경계를 봅니다.
 2. [`30-architecture/module-decomposition.md`](30-architecture/module-decomposition.md)에서 package별 역할, import rule, 12-factor daemon boundary를 봅니다.
 3. [`20-domain/provider-runtime.md`](20-domain/provider-runtime.md)에서 provider process/session/run lifecycle과 adapter ACL 출력 타입을 봅니다.
-4. [`20-domain/distribution-host-integration.md`](20-domain/distribution-host-integration.md)와 [`30-architecture/store-distribution.md`](30-architecture/store-distribution.md)에서 App Store/MSIX/Developer ID 배포를 위한 role split과 provider CLI non-bundling 원칙을 봅니다.
+4. [`20-domain/distribution-host-integration.md`](20-domain/distribution-host-integration.md), [`30-architecture/store-distribution.md`](30-architecture/store-distribution.md), [`30-architecture/release-artifacts.md`](30-architecture/release-artifacts.md)에서 App Store/MSIX/Developer ID 배포를 위한 role split, provider CLI non-bundling 원칙, GitHub Release binary 경로를 봅니다.
 5. [`30-architecture/cli-surface.md`](30-architecture/cli-surface.md)와 [`30-architecture/config-reference.md`](30-architecture/config-reference.md)에서 CLI/env/flag surface를 봅니다.
 6. Figma v1.22 AI Agent 화면을 daemon 관점에서 해석해야 할 때는 [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md)를 봅니다.
 
@@ -18,6 +18,7 @@
 | public daemon이 어떤 bounded context를 소유하는가 | [`20-domain/context-map.md`](20-domain/context-map.md) |
 | `cmd/riido`가 local-only CLI/helper라는 경계 | [`30-architecture/cli-surface.md`](30-architecture/cli-surface.md) |
 | provider CLI를 번들하지 않는 이유와 실행 경계 | [`20-domain/distribution-host-integration.md`](20-domain/distribution-host-integration.md), [`30-architecture/store-distribution.md`](30-architecture/store-distribution.md) |
+| GitHub Release binary와 curl 설치 경로 | [`30-architecture/release-artifacts.md`](30-architecture/release-artifacts.md) |
 | provider process/session/run을 어떻게 domain event draft로 바꾸는가 | [`20-domain/provider-runtime.md`](20-domain/provider-runtime.md) |
 | runtime scheduling과 task claim eligibility | [`20-domain/runtime-scheduling.md`](20-domain/runtime-scheduling.md) |
 | workspace/native config materialization | [`20-domain/workspace.md`](20-domain/workspace.md) |
@@ -49,4 +50,4 @@
 - `cmd/riido`는 local-only입니다. Unix socket 또는 Windows named pipe만 열고 public TCP/HTTP listener를 만들지 않습니다.
 - 새 env var나 flag는 [`30-architecture/config-reference.md`](30-architecture/config-reference.md)와 parser test를 같은 PR에서 갱신합니다.
 - provider adapter behavior가 바뀌면 deterministic test와 [`30-architecture/integration-matrix.md`](30-architecture/integration-matrix.md)를 함께 갱신합니다.
-- store distribution surface가 바뀌면 [`packaging/store/riido_daemon_store_distribution.riido.json`](../packaging/store/riido_daemon_store_distribution.riido.json), [`30-architecture/store-distribution.md`](30-architecture/store-distribution.md), `tools/storecontract` 검증을 함께 확인합니다.
+- store distribution surface가 바뀌면 [`packaging/store/riido_daemon_store_distribution.riido.json`](../packaging/store/riido_daemon_store_distribution.riido.json), [`30-architecture/store-distribution.md`](30-architecture/store-distribution.md), [`30-architecture/release-artifacts.md`](30-architecture/release-artifacts.md), `tools/storecontract` 검증을 함께 확인합니다.

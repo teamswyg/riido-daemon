@@ -16,6 +16,7 @@
 5. **Local IPC 는 OS별 adapter 뒤에 둔다.** 도메인은 "local-only IPC" 만 안다. macOS Unix domain socket / app group container path, Windows named pipe / package local data path 는 C11 adapter 가 결정한다.
 6. **Store channel 은 runtime capability 의 사용 가부를 제한한다.** provider 가 어떤 surface 를 지원해도 `mac-app-store` / `msix-store` policy 가 금지하면 C3 compatibility 또는 C4 pre-execute 단계에서 blocked 로 본다.
 7. **Review 환경은 provider CLI 없이도 평가 가능해야 한다.** Store 심사용 demo/offline mode 는 provider 실행 없이 app shell, consent, provider connection status, workspace grant UX 를 검증할 수 있어야 한다.
+8. **Public daemon binary 는 GitHub Release asset 으로 배포한다.** Desktop/MSIX launcher 는 release asset 을 사용자 app data 영역에 다운로드하고 checksum 을 검증한 뒤 실행한다. 이 경로도 provider CLI bundling 이 아니며, provider executable 은 계속 외부 사용자 설치 도구다.
 
 ## 1. Distribution channel enum
 
