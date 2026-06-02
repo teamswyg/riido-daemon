@@ -24,8 +24,9 @@ func TestBuildStartDefaultProfileIsRootPrint(t *testing.T) {
 		t.Fatal(err)
 	}
 	args := strings.Join(cmd.Args, " ")
-	// Required: -p prompt, --output-format stream-json, --workspace cwd.
-	for _, want := range []string{"-p do the thing", "--output-format stream-json", "--workspace /tmp/work"} {
+	// Required: -p prompt, --output-format stream-json, --workspace cwd,
+	// and --trust so headless Cursor does not stop at the workspace trust prompt.
+	for _, want := range []string{"-p do the thing", "--output-format stream-json", "--workspace /tmp/work", "--trust"} {
 		if !strings.Contains(args, want) {
 			t.Fatalf("missing %q in %q", want, args)
 		}
@@ -37,6 +38,23 @@ func TestBuildStartDefaultProfileIsRootPrint(t *testing.T) {
 	}
 	if cmd.Dir != "/tmp/work" {
 		t.Fatalf("Dir: %q", cmd.Dir)
+	}
+}
+
+func TestBuildStartTrustsDaemonWorkspaceWithoutYolo(t *testing.T) {
+	cmd, err := BuildStart(agentbridge.StartRequest{
+		Cwd:    "/tmp/work",
+		Prompt: "do the thing",
+	}, StartOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	args := strings.Join(cmd.Args, " ")
+	if !strings.Contains(args, "--trust") {
+		t.Fatalf("headless workspace must be trusted explicitly: %v", cmd.Args)
+	}
+	if strings.Contains(args, "--yolo") {
+		t.Fatalf("--trust must not imply unsafe --yolo: %v", cmd.Args)
 	}
 }
 

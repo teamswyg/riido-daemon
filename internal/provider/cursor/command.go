@@ -8,9 +8,9 @@
 // To stay robust across cursor-agent versions, this adapter exposes
 // three explicit launch profiles:
 //
-//   - ProfileRootPrint        cursor-agent -p <prompt> --output-format stream-json --workspace <cwd>
-//   - ProfileAgentSubcommand  cursor-agent agent -p ... (some builds require it)
-//   - ProfileLegacyChat       cursor-agent chat -p ... (legacy; opt-in only)
+//   - ProfileRootPrint        cursor-agent -p <prompt> --output-format stream-json --workspace <cwd> --trust
+//   - ProfileAgentSubcommand  cursor-agent agent -p ... --workspace <cwd> --trust (some builds require it)
+//   - ProfileLegacyChat       cursor-agent chat -p ... --workspace <cwd> --trust (legacy; opt-in only)
 //
 // Default is ProfileRootPrint. ProfileLegacyChat MUST NOT be selected
 // unless Detect (still deferred — Step 5) has confirmed that the local
@@ -121,6 +121,11 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 	}
 	if req.Cwd != "" {
 		args = append(args, "--workspace", req.Cwd)
+		// Headless Cursor Agent refuses to run in an untrusted workspace.
+		// The daemon supplies a task-scoped workdir, so this acknowledges
+		// that selected workspace without enabling Cursor's unsafe --yolo
+		// auto-approval surface.
+		args = append(args, "--trust")
 	}
 	if req.Model != "" {
 		args = append(args, "--model", req.Model)
