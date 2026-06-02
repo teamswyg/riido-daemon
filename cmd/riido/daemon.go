@@ -433,14 +433,6 @@ func serveAgentDaemon(ctx context.Context, flags startFlags, settings daemonSett
 }
 
 func newDaemonRuntimeActors(settings daemonSettings, adapters []agentbridge.Adapter) ([]*runtimeactor.Actor, error) {
-	if settings.SaaSURL != "" {
-		agents, err := parseSaaSAgents(settings.SaaSAgents)
-		if err != nil {
-			return nil, err
-		}
-		return newSaaSAgentRuntimeActors(settings, adapters, agents)
-	}
-
 	out := make([]*runtimeactor.Actor, 0, len(adapters))
 	for _, adapter := range adapters {
 		name := strings.TrimSpace(adapter.Name())
@@ -455,43 +447,6 @@ func newDaemonRuntimeActors(settings daemonSettings, adapters []agentbridge.Adap
 	}
 	if len(out) == 0 {
 		return nil, errors.New("runtimeactor.New: at least one adapter is required")
-	}
-	return out, nil
-}
-
-func newSaaSAgentRuntimeActors(settings daemonSettings, adapters []agentbridge.Adapter, agents []saasplane.AgentBinding) ([]*runtimeactor.Actor, error) {
-	adapterByProvider := make(map[string]agentbridge.Adapter, len(adapters))
-	for _, adapter := range adapters {
-		name := strings.TrimSpace(adapter.Name())
-		if name == "" {
-			return nil, errors.New("runtimeactor.New: adapter name is required")
-		}
-		adapterByProvider[name] = adapter
-	}
-	out := make([]*runtimeactor.Actor, 0, len(agents))
-	seen := map[string]bool{}
-	for _, agent := range agents {
-		adapter, ok := adapterByProvider[agent.RuntimeProvider]
-		if !ok {
-			return nil, fmt.Errorf("%s provider %q has no daemon adapter", envSaaSAgents, agent.RuntimeProvider)
-		}
-		runtimeID := saasplane.RuntimeIDForAgent(settings.DaemonID, agent)
-		if seen[runtimeID] {
-			return nil, fmt.Errorf("%s contains duplicate agent/provider binding %q:%q", envSaaSAgents, agent.AgentID, agent.RuntimeProvider)
-		}
-		seen[runtimeID] = true
-		rt, err := newDaemonRuntimeActor(settings, runtimeID, adapter, []runtimeactor.AgentStatus{{
-			AgentID: agent.AgentID,
-			Name:    agent.AgentID,
-			State:   "online",
-		}})
-		if err != nil {
-			return nil, fmt.Errorf("runtimeactor.New(%s): %w", runtimeID, err)
-		}
-		out = append(out, rt)
-	}
-	if len(out) == 0 {
-		return nil, errors.New("runtimeactor.New: at least one saas agent runtime is required")
 	}
 	return out, nil
 }
@@ -536,17 +491,11 @@ func providerRuntimeID(daemonID string, provider string) string {
 
 func buildDaemonControlPlane(settings daemonSettings) (controlplane.TaskSourcePort, controlplane.TaskReporterPort, string, error) {
 	if settings.SaaSURL != "" {
-		agents, err := parseSaaSAgents(settings.SaaSAgents)
-		if err != nil {
-			return nil, nil, "", err
-		}
 		plane, err := saasplane.New(saasplane.Config{
 			BaseURL:      settings.SaaSURL,
 			DaemonID:     settings.DaemonID,
 			DeviceID:     settings.DeviceID,
 			DeviceSecret: settings.DeviceSecret,
-			Agents:       agents,
-			BearerToken:  settings.SaaSToken,
 		})
 		if err != nil {
 			return nil, nil, "", fmt.Errorf("controlplane: saas source: %w", err)
@@ -585,33 +534,6 @@ func buildDaemonControlPlane(settings daemonSettings) (controlplane.TaskSourcePo
 		return nil, nil, "", fmt.Errorf("controlplane: file reporter: %w", err)
 	}
 	return source, reporter, "file", nil
-}
-
-func parseSaaSAgents(raw string) ([]saasplane.AgentBinding, error) {
-	parts := strings.Split(raw, ",")
-	out := make([]saasplane.AgentBinding, 0, len(parts))
-	for _, part := range parts {
-		part = strings.TrimSpace(part)
-		if part == "" {
-			continue
-		}
-		sep := strings.IndexAny(part, ":=")
-		if sep <= 0 || sep >= len(part)-1 {
-			return nil, fmt.Errorf("%s entries must be agent:provider, got %q", envSaaSAgents, part)
-		}
-		binding := saasplane.AgentBinding{
-			AgentID:         strings.TrimSpace(part[:sep]),
-			RuntimeProvider: strings.TrimSpace(part[sep+1:]),
-		}
-		if binding.AgentID == "" || binding.RuntimeProvider == "" {
-			return nil, fmt.Errorf("%s entries must be agent:provider, got %q", envSaaSAgents, part)
-		}
-		out = append(out, binding)
-	}
-	if len(out) == 0 {
-		return nil, fmt.Errorf("%s requires at least one agent:provider entry", envSaaSAgents)
-	}
-	return out, nil
 }
 
 func startWorkdirCleanupLoop(ctx context.Context, cleaner workdir.Cleaner, settings daemonSettings, log logging.Logger) func() {

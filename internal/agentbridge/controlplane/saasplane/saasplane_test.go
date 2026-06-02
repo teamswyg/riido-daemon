@@ -252,6 +252,101 @@ func TestPlaneSendsDeviceCredentialHeaders(t *testing.T) {
 	}
 }
 
+func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	err = plane.RegisterRuntime(context.Background(), controlplane.RuntimeRegistration{
+		DaemonID:   "daemon-1",
+		RuntimeID:  "daemon-1:codex",
+		Provider:   "codex",
+		DeviceName: "주윤의 MacBook",
+	})
+	if err != nil {
+		t.Fatalf("RegisterRuntime: %v", err)
+	}
+	if len(fake.runtimeSnapshots) != 1 {
+		t.Fatalf("runtime snapshots = %+v", fake.runtimeSnapshots)
+	}
+	snapshot := fake.runtimeSnapshots[0]
+	if snapshot.DaemonID != "daemon-1" || snapshot.DeviceID != "device-1" || snapshot.DeviceDisplayName != "주윤의 MacBook" {
+		t.Fatalf("snapshot identity = %+v", snapshot)
+	}
+	if len(snapshot.Runtimes) != 1 || snapshot.Runtimes[0].RuntimeID != "daemon-1:codex" || snapshot.Runtimes[0].Kind != "codex" {
+		t.Fatalf("snapshot runtimes = %+v", snapshot.Runtimes)
+	}
+}
+
+func TestPlaneClaimsDynamicAgentBinding(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	fake.bindings = []assignmentcontract.AgentRuntimeBinding{{
+		AgentID:         "jykim1",
+		DaemonID:        "daemon-1",
+		DeviceID:        "device-1",
+		RuntimeID:       "daemon-1:codex",
+		RuntimeProvider: "codex",
+	}}
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "dynamic binding task",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	if req == nil || req.ID != "task-a" || req.Provider != "codex" || req.Metadata[MetadataAgentID] != "jykim1" {
+		t.Fatalf("dynamic claim = %+v", req)
+	}
+	if err := plane.StartTask(context.Background(), req.ID); err != nil {
+		t.Fatalf("StartTask: %v", err)
+	}
+	if err := plane.Heartbeat(context.Background(), controlplane.RuntimeHeartbeat{
+		RuntimeID:      "daemon-1:codex",
+		RunningTaskIDs: []string{req.ID},
+	}); err != nil {
+		t.Fatalf("Heartbeat: %v", err)
+	}
+	if len(fake.heartbeats) != 1 || fake.heartbeats[0].RuntimeID != "daemon-1:codex" || len(fake.heartbeats[0].ActiveAssignmentIDs) != 1 || fake.heartbeats[0].ActiveAssignmentIDs[0] != "asn-1" {
+		t.Fatalf("dynamic heartbeats = %+v", fake.heartbeats)
+	}
+	if err := plane.ReportEvent(context.Background(), req.ID, agentbridge.Event{Kind: agentbridge.EventProgress, Text: "dynamic progress"}); err != nil {
+		t.Fatalf("ReportEvent: %v", err)
+	}
+	if len(fake.events) < 2 || fake.events[len(fake.events)-1].RuntimeID != "daemon-1:codex" {
+		t.Fatalf("dynamic events = %+v", fake.events)
+	}
+}
+
 func TestPlaneRejectsMissingBearerToken(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.bearerToken = "secret"
@@ -302,6 +397,8 @@ type fakeAssignmentServer struct {
 
 	assignmentsByAgent map[string][]assignmentcontract.Assignment
 	cancelByAgent      map[string]assignmentcontract.Assignment
+	bindings           []assignmentcontract.AgentRuntimeBinding
+	runtimeSnapshots   []DeviceRuntimeSnapshotSyncRequest
 	events             []assignmentcontract.AgentEventRequest
 	heartbeats         []assignmentcontract.AgentHeartbeatRequest
 }
@@ -338,6 +435,35 @@ func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
 	}
 	if f.bearerToken != "" && r.Header.Get("Authorization") != "Bearer "+f.bearerToken {
 		http.Error(w, "missing bearer token", http.StatusUnauthorized)
+		return
+	}
+	if strings.Trim(r.URL.Path, "/") == "v1/daemon/agent-bindings" {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		writeJSON(w, AgentRuntimeBindingListResponse{
+			SchemaVersion: assignmentcontract.SchemaVersion,
+			Bindings:      append([]assignmentcontract.AgentRuntimeBinding(nil), f.bindings...),
+		})
+		return
+	}
+	if strings.Trim(r.URL.Path, "/") == "v1/daemon/runtime-snapshot" {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		var req DeviceRuntimeSnapshotSyncRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		f.runtimeSnapshots = append(f.runtimeSnapshots, req)
+		w.Header().Set("Content-Type", "application/json")
+		writeJSON(w, struct {
+			SchemaVersion string `json:"schema_version"`
+		}{SchemaVersion: assignmentcontract.SchemaVersion})
 		return
 	}
 	if r.Method != http.MethodPost {

@@ -499,25 +499,7 @@ func TestLoadDaemonSettingsRejectsTaskDBSourceWithFileQueue(t *testing.T) {
 
 func TestLoadDaemonSettingsAcceptsSaaSControlPlane(t *testing.T) {
 	env := map[string]string{
-		envSaaSURL:    "https://api.riido.ai",
-		envSaaSAgents: "jykim1:codex,jykim2=claude",
-		envSaaSToken:  "secret",
-	}
-	settings, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
-		return "host", nil
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if settings.SaaSURL != "https://api.riido.ai" || settings.SaaSAgents != "jykim1:codex,jykim2=claude" || settings.SaaSToken != "secret" {
-		t.Fatalf("saas settings = %+v", settings)
-	}
-}
-
-func TestLoadDaemonSettingsAcceptsSaaSDeviceCredential(t *testing.T) {
-	env := map[string]string{
 		envSaaSURL:      "https://api.riido.ai",
-		envSaaSAgents:   "jykim1:codex",
 		envDeviceID:     "device-1",
 		envDeviceSecret: "rdev-secret",
 	}
@@ -527,16 +509,51 @@ func TestLoadDaemonSettingsAcceptsSaaSDeviceCredential(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if settings.DeviceID != "device-1" || settings.DeviceSecret != "rdev-secret" || settings.SaaSToken != "" {
+	if settings.SaaSURL != "https://api.riido.ai" || settings.DeviceID != "device-1" || settings.DeviceSecret != "rdev-secret" {
+		t.Fatalf("saas settings = %+v", settings)
+	}
+}
+
+func TestLoadDaemonSettingsIgnoresLegacySaaSEnvsWithDeviceCredential(t *testing.T) {
+	env := map[string]string{
+		envSaaSURL:          "https://api.riido.ai",
+		envDeviceID:         "device-1",
+		envDeviceSecret:     "rdev-secret",
+		"RIIDO_SAAS_AGENTS": "jykim1:codex",
+		"RIIDO_SAAS_TOKEN":  "secret",
+	}
+	settings, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
+		return "host", nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if settings.DeviceID != "device-1" || settings.DeviceSecret != "rdev-secret" {
 		t.Fatalf("device credential settings = %+v", settings)
+	}
+}
+
+func TestLoadDaemonSettingsAcceptsDynamicSaaSDeviceCredential(t *testing.T) {
+	env := map[string]string{
+		envSaaSURL:      "https://api.riido.ai",
+		envDeviceID:     "device-1",
+		envDeviceSecret: "rdev-secret",
+	}
+	settings, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
+		return "host", nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if settings.SaaSURL != "https://api.riido.ai" || settings.DeviceID != "device-1" || settings.DeviceSecret != "rdev-secret" {
+		t.Fatalf("dynamic device credential settings = %+v", settings)
 	}
 }
 
 func TestLoadDaemonSettingsRejectsIncompleteSaaSDeviceCredential(t *testing.T) {
 	env := map[string]string{
-		envSaaSURL:    "https://api.riido.ai",
-		envSaaSAgents: "jykim1:codex",
-		envDeviceID:   "device-1",
+		envSaaSURL:  "https://api.riido.ai",
+		envDeviceID: "device-1",
 	}
 	_, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
 		return "host", nil
@@ -569,20 +586,21 @@ func TestLoadDaemonSettingsRejectsIdlePollBelowActivePoll(t *testing.T) {
 	}
 }
 
-func TestLoadDaemonSettingsRejectsSaaSWithoutAgents(t *testing.T) {
+func TestLoadDaemonSettingsRejectsSaaSWithoutDeviceCredential(t *testing.T) {
 	env := map[string]string{envSaaSURL: "https://api.riido.ai"}
 	_, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
 		return "host", nil
 	})
 	if err == nil {
-		t.Fatal("expected SaaS URL without agents error")
+		t.Fatal("expected SaaS URL without device credential error")
 	}
 }
 
 func TestLoadDaemonSettingsRejectsSaaSWithTaskDBSource(t *testing.T) {
 	env := map[string]string{
 		envSaaSURL:          "https://api.riido.ai",
-		envSaaSAgents:       "jykim1:codex",
+		envDeviceID:         "device-1",
+		envDeviceSecret:     "rdev-secret",
 		envTaskDBSourcePath: "/tmp/task-db.json",
 	}
 	_, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
@@ -779,11 +797,11 @@ func TestBuildDaemonControlPlaneUsesMemoryByDefault(t *testing.T) {
 
 func TestBuildDaemonControlPlaneUsesSaaS(t *testing.T) {
 	source, reporter, kind, err := buildDaemonControlPlane(daemonSettings{
-		DaemonID:   "daemon-1",
-		DeviceName: "device-1",
-		SaaSURL:    "http://127.0.0.1:1",
-		SaaSAgents: "jykim1:codex",
-		SaaSToken:  "secret",
+		DaemonID:     "daemon-1",
+		DeviceName:   "device-1",
+		SaaSURL:      "http://127.0.0.1:1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -801,13 +819,14 @@ func TestBuildDaemonControlPlaneUsesSaaS(t *testing.T) {
 	}
 }
 
-func TestNewDaemonRuntimeActorsUsesSaaSAgentSlots(t *testing.T) {
+func TestNewDaemonRuntimeActorsUsesProviderSlotsForDynamicSaaSBindings(t *testing.T) {
 	settings := daemonSettings{
 		DaemonID:     "daemon-1",
 		DeviceName:   "device-1",
 		RuntimeOwner: "owner-1",
 		SaaSURL:      "https://api.riido.ai",
-		SaaSAgents:   "jykim1:codex,jykim2:codex",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
 		PolicyBundle: "policy-bundle.test.v1",
 	}
 	runtimes, err := newDaemonRuntimeActors(settings, []agentbridge.Adapter{
@@ -818,35 +837,30 @@ func TestNewDaemonRuntimeActorsUsesSaaSAgentSlots(t *testing.T) {
 		t.Fatal(err)
 	}
 	if len(runtimes) != 2 {
-		t.Fatalf("want one runtime per SaaS agent binding, got %d", len(runtimes))
+		t.Fatalf("want one runtime per provider adapter, got %d", len(runtimes))
 	}
 	ctx := context.Background()
+	want := map[string]string{
+		"daemon-1:codex":  "codex",
+		"daemon-1:claude": "claude",
+	}
 	for _, rt := range runtimes {
 		if err := rt.Start(ctx); err != nil {
 			t.Fatalf("runtime start: %v", err)
 		}
 		t.Cleanup(func() { _ = rt.Stop(context.Background()) })
-	}
-	want := map[string]string{
-		saasplane.RuntimeIDForAgent("daemon-1", saasplane.AgentBinding{AgentID: "jykim1", RuntimeProvider: "codex"}): "jykim1",
-		saasplane.RuntimeIDForAgent("daemon-1", saasplane.AgentBinding{AgentID: "jykim2", RuntimeProvider: "codex"}): "jykim2",
-	}
-	for _, rt := range runtimes {
 		status, err := rt.Status(ctx)
 		if err != nil {
 			t.Fatalf("status: %v", err)
 		}
-		agentID, ok := want[status.RuntimeID]
+		provider, ok := want[status.RuntimeID]
 		if !ok {
 			t.Fatalf("unexpected runtime id %q", status.RuntimeID)
 		}
-		if status.MaxConcurrent != 1 {
-			t.Fatalf("runtime %s max concurrent = %d", status.RuntimeID, status.MaxConcurrent)
+		if len(status.Agents) != 0 {
+			t.Fatalf("dynamic runtime %s should not use static agents: %+v", status.RuntimeID, status.Agents)
 		}
-		if len(status.Agents) != 1 || status.Agents[0].AgentID != agentID {
-			t.Fatalf("runtime %s agents = %+v", status.RuntimeID, status.Agents)
-		}
-		if len(status.Capabilities) != 1 || status.Capabilities[0].Provider != "codex" {
+		if len(status.Capabilities) != 1 || status.Capabilities[0].Provider != provider {
 			t.Fatalf("runtime %s capabilities = %+v", status.RuntimeID, status.Capabilities)
 		}
 	}

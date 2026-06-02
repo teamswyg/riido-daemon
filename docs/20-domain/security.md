@@ -175,8 +175,8 @@ in-place reinjection 을 하지 않고 runtime upgrade flow 의 T-POLICY / T-CON
 
 | Evidence kind | Evidence id | 증명 내용 | 금지 내용 |
 | --- | --- | --- | --- |
-| `runtime-secret-readiness` | `actual-runtime-secret-readiness` | `RIIDO_AI_SERVER_BEARER_TOKEN`, `RIIDO_AI_SERVER_AGENT_BINDINGS_JSON`, `RIIDO_AI_SERVER_AUTHZ_TOKENS_JSON`, `RIIDO_AI_SERVER_REVIEW_ACCOUNT_TOKEN_SHA256` 의 reference 존재와 payload shape | raw bearer/authZ/review token 값 |
-| `runtime-secret-rotation` | `actual-runtime-secret-rotation` | 위 4개 secret reference 가 `rotatable=true`, `last_rotated_at`, `next_rotation_due_at`, `max_age_seconds` 기준을 만족하고 아직 due 상태가 아님 | raw secret 값, token value, secret payload 본문 |
+| `runtime-secret-readiness` | `actual-runtime-secret-readiness` | `RIIDO_AI_SERVER_BEARER_TOKEN`, `RIIDO_AI_SERVER_AUTHZ_TOKENS_JSON`, `RIIDO_AI_SERVER_REVIEW_ACCOUNT_TOKEN_SHA256` 의 reference 존재와 payload shape | raw bearer/authZ/review token 값 |
+| `runtime-secret-rotation` | `actual-runtime-secret-rotation` | 위 3개 secret reference 가 `rotatable=true`, `last_rotated_at`, `next_rotation_due_at`, `max_age_seconds` 기준을 만족하고 아직 due 상태가 아님 | raw secret 값, token value, secret payload 본문 |
 
 `runtime-secret-rotation` evidence 는 `riido-runtime-secret-rotation-metadata.v1` input 에서 생성된다. input/evidence 모두 unknown field 를 fail-closed 로 거절해 `value`, `token`, payload 본문 같은 raw secret field 가 섞이면 생성/검증이 실패해야 한다. SSM Parameter Store 를 runtime secret store 로 쓰는 production slice 는 `aws ssm describe-parameters` 의 metadata-only JSON 을 `tools/caasrotationmetadata` 로 변환해 이 input 을 만든다. 이 collector 는 `GetParameter` / `GetParameters` / decrypt 경로를 갖지 않으며 `SecureString` / `Standard` tier / expected parameter name 을 요구하고, SSM `LastModifiedDate` 를 manual overwrite rotation 의 `last_rotated_at` 으로 기록한다. `next_rotation_due_at` 은 `observed_at` 이후여야 하고, `last_rotated_at` 부터 `next_rotation_due_at` 까지의 간격은 각 secret 의 `max_age_seconds` 를 넘을 수 없다. Release packet `apply-ready` mode 는 readiness 와 rotation evidence 를 모두 요구한다.
 

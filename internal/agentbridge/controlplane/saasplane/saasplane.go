@@ -43,6 +43,34 @@ type Config struct {
 	RequestTimeout time.Duration
 }
 
+type RuntimeModelRecord struct {
+	ModelID   string `json:"model_id"`
+	Label     string `json:"label"`
+	IsDefault bool   `json:"is_default"`
+}
+
+type RuntimeSnapshotRecord struct {
+	RuntimeID      string               `json:"runtime_id"`
+	Kind           string               `json:"kind"`
+	Availability   string               `json:"availability,omitempty"`
+	DetectionState string               `json:"detection_state,omitempty"`
+	Models         []RuntimeModelRecord `json:"models,omitempty"`
+}
+
+type DeviceRuntimeSnapshotSyncRequest struct {
+	DaemonID          string                  `json:"daemon_id"`
+	DeviceID          string                  `json:"device_id,omitempty"`
+	DeviceDisplayName string                  `json:"device_display_name,omitempty"`
+	Profile           string                  `json:"profile,omitempty"`
+	AppVersion        string                  `json:"app_version,omitempty"`
+	Runtimes          []RuntimeSnapshotRecord `json:"runtimes"`
+}
+
+type AgentRuntimeBindingListResponse struct {
+	SchemaVersion string                                   `json:"schema_version"`
+	Bindings      []assignmentcontract.AgentRuntimeBinding `json:"bindings"`
+}
+
 // Plane implements both TaskSourcePort and TaskReporterPort against the
 // control-plane assignment polling API. Internal state is owned by a mailbox
 // goroutine so the supervisor can use the adapter without shared mutable maps.
@@ -75,8 +103,8 @@ func New(cfg Config) (*Plane, error) {
 		return nil, errors.New("saasplane: DeviceID is required when DeviceSecret is set")
 	}
 	cfg.Agents = normalizeAgents(cfg.Agents)
-	if len(cfg.Agents) == 0 {
-		return nil, errors.New("saasplane: at least one agent binding is required")
+	if len(cfg.Agents) == 0 && cfg.DeviceSecret == "" {
+		return nil, errors.New("saasplane: at least one static agent binding or a device credential is required")
 	}
 	if cfg.RequestTimeout <= 0 {
 		cfg.RequestTimeout = 5 * time.Second
@@ -104,8 +132,29 @@ func (p *Plane) Close() {
 	}
 }
 
-func (p *Plane) RegisterRuntime(context.Context, controlplane.RuntimeRegistration) error {
-	return nil
+func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegistration) error {
+	if !p.dynamicBindingsEnabled() {
+		return nil
+	}
+	runtimeID := strings.TrimSpace(rt.RuntimeID)
+	provider := providerFromRuntimeID(firstNonEmpty(rt.Provider, runtimeID))
+	if runtimeID == "" || provider == "" {
+		return nil
+	}
+	var out struct {
+		SchemaVersion string `json:"schema_version"`
+	}
+	return p.postJSON(ctx, "/v1/daemon/runtime-snapshot", DeviceRuntimeSnapshotSyncRequest{
+		DaemonID:          firstNonEmpty(rt.DaemonID, p.cfg.DaemonID),
+		DeviceID:          p.cfg.DeviceID,
+		DeviceDisplayName: firstNonEmpty(rt.DeviceName, p.cfg.DeviceID),
+		Runtimes: []RuntimeSnapshotRecord{{
+			RuntimeID:      runtimeID,
+			Kind:           runtimeKindForProvider(provider),
+			Availability:   "online",
+			DetectionState: "detected",
+		}},
+	}, &out)
 }
 
 func (p *Plane) DeregisterRuntime(context.Context, string) error {
@@ -113,6 +162,28 @@ func (p *Plane) DeregisterRuntime(context.Context, string) error {
 }
 
 func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat) error {
+	if p.dynamicBindingsEnabled() {
+		assignmentsByAgent, err := p.activeAssignmentsByAgentForHeartbeat(ctx, hb.RunningTaskIDs)
+		if err != nil {
+			return err
+		}
+		for agentID, assignmentIDs := range assignmentsByAgent {
+			if len(assignmentIDs) == 0 {
+				continue
+			}
+			var out assignmentcontract.AgentHeartbeatResponse
+			if err := p.postJSON(ctx, "/v1/agents/"+url.PathEscape(agentID)+"/heartbeat", assignmentcontract.AgentHeartbeatRequest{
+				DaemonID:            p.cfg.DaemonID,
+				DeviceID:            p.cfg.DeviceID,
+				RuntimeID:           hb.RuntimeID,
+				RunningTaskIDs:      append([]string(nil), hb.RunningTaskIDs...),
+				ActiveAssignmentIDs: assignmentIDs,
+			}, &out); err != nil {
+				return err
+			}
+		}
+		return nil
+	}
 	agentID, ok := agentFromRuntimeID(hb.RuntimeID)
 	if !ok {
 		return nil
@@ -136,6 +207,43 @@ func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat)
 
 func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRequest, error) {
 	provider := providerFromRuntimeID(runtimeID)
+	if p.dynamicBindingsEnabled() {
+		bindings, err := p.agentBindings(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, binding := range bindings {
+			if binding.RuntimeProvider != provider || strings.TrimSpace(binding.RuntimeID) != strings.TrimSpace(runtimeID) {
+				continue
+			}
+			poll, err := p.pollAgent(ctx, binding.AgentID, runtimeID)
+			if err != nil {
+				return nil, err
+			}
+			if poll.Assignment == nil {
+				continue
+			}
+			switch poll.Action {
+			case assignmentcontract.PollStart:
+				assignment := *poll.Assignment
+				if assignment.RuntimeProvider != "" && assignment.RuntimeProvider != provider {
+					continue
+				}
+				if err := p.saveAssignmentRuntime(ctx, assignment, runtimeID); err != nil {
+					return nil, err
+				}
+				return taskRequestFromAssignment(assignment), nil
+			case assignmentcontract.PollCancel:
+				_ = p.deliverCancel(ctx, *poll.Assignment)
+				return nil, nil
+			case assignmentcontract.PollActive, assignmentcontract.PollNone:
+				continue
+			default:
+				continue
+			}
+		}
+		return nil, nil
+	}
 	runtimeAgent, hasRuntimeAgent := agentFromRuntimeID(runtimeID)
 	for _, agent := range p.cfg.Agents {
 		if agent.RuntimeProvider != provider {
@@ -157,7 +265,7 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 			if assignment.RuntimeProvider != "" && assignment.RuntimeProvider != provider {
 				continue
 			}
-			if err := p.saveAssignment(ctx, assignment); err != nil {
+			if err := p.saveAssignmentRuntime(ctx, assignment, runtimeID); err != nil {
 				return nil, err
 			}
 			return taskRequestFromAssignment(assignment), nil
@@ -238,6 +346,7 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 	}
 	return p.withState(ctx, func(s *planeState) {
 		delete(s.assignmentsByTask, taskID)
+		delete(s.runtimeIDsByTask, taskID)
 		delete(s.cancelWatchers, taskID)
 	})
 }
@@ -256,8 +365,12 @@ func (p *Plane) postAgentEvent(ctx context.Context, assignment assignmentcontrac
 	var out assignmentcontract.AgentEventResponse
 	req.DaemonID = p.cfg.DaemonID
 	req.DeviceID = p.cfg.DeviceID
-	req.RuntimeID = p.runtimeIDForAssignment(assignment)
-	err := p.postJSON(ctx, "/v1/agents/"+url.PathEscape(assignment.AgentID)+"/events", req, &out)
+	runtimeID, err := p.runtimeIDForAssignment(ctx, assignment)
+	if err != nil {
+		return out, err
+	}
+	req.RuntimeID = runtimeID
+	err = p.postJSON(ctx, "/v1/agents/"+url.PathEscape(assignment.AgentID)+"/events", req, &out)
 	return out, err
 }
 
@@ -295,9 +408,41 @@ func (p *Plane) postJSON(ctx context.Context, path string, in any, out any) erro
 	return json.NewDecoder(resp.Body).Decode(out)
 }
 
-func (p *Plane) saveAssignment(ctx context.Context, assignment assignmentcontract.Assignment) error {
+func (p *Plane) getJSON(ctx context.Context, path string, out any) error {
+	ctx, cancel := context.WithTimeout(ctx, p.cfg.RequestTimeout)
+	defer cancel()
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.cfg.BaseURL+path, nil)
+	if err != nil {
+		return err
+	}
+	if p.cfg.DeviceSecret != "" {
+		req.Header.Set("X-Riido-Device-ID", p.cfg.DeviceID)
+		req.Header.Set("X-Riido-Device-Secret", p.cfg.DeviceSecret)
+	}
+	if p.cfg.BearerToken != "" {
+		req.Header.Set("Authorization", "Bearer "+p.cfg.BearerToken)
+	}
+	resp, err := p.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		return fmt.Errorf("saasplane: %s returned %s: %s", path, resp.Status, strings.TrimSpace(string(b)))
+	}
+	if out == nil {
+		return nil
+	}
+	return json.NewDecoder(resp.Body).Decode(out)
+}
+
+func (p *Plane) saveAssignmentRuntime(ctx context.Context, assignment assignmentcontract.Assignment, runtimeID string) error {
 	return p.withState(ctx, func(s *planeState) {
 		s.assignmentsByTask[assignment.TaskID] = assignment
+		if runtimeID != "" {
+			s.runtimeIDsByTask[assignment.TaskID] = runtimeID
+		}
 	})
 }
 
@@ -308,6 +453,14 @@ func (p *Plane) assignmentForTask(ctx context.Context, taskID string) (assignmen
 		assignment, ok = s.assignmentsByTask[taskID]
 	})
 	return assignment, ok, err
+}
+
+func (p *Plane) agentBindings(ctx context.Context) ([]assignmentcontract.AgentRuntimeBinding, error) {
+	var out AgentRuntimeBindingListResponse
+	if err := p.getJSON(ctx, "/v1/daemon/agent-bindings", &out); err != nil {
+		return nil, err
+	}
+	return out.Bindings, nil
 }
 
 func (p *Plane) activeAssignmentIDsForHeartbeat(ctx context.Context, agentID string, runningTaskIDs []string) ([]string, error) {
@@ -339,6 +492,24 @@ func (p *Plane) activeAssignmentIDsForHeartbeat(ctx context.Context, agentID str
 	return ids, nil
 }
 
+func (p *Plane) activeAssignmentsByAgentForHeartbeat(ctx context.Context, runningTaskIDs []string) (map[string][]string, error) {
+	tasks := normalizedTaskIDs(runningTaskIDs)
+	if len(tasks) == 0 {
+		return nil, nil
+	}
+	byAgent := map[string][]string{}
+	err := p.withState(ctx, func(s *planeState) {
+		for _, taskID := range tasks {
+			assignment := s.assignmentsByTask[taskID]
+			if assignment.AgentID == "" || assignment.ID == "" {
+				continue
+			}
+			byAgent[assignment.AgentID] = append(byAgent[assignment.AgentID], assignment.ID)
+		}
+	})
+	return byAgent, err
+}
+
 func (p *Plane) deliverCancel(ctx context.Context, assignment assignmentcontract.Assignment) error {
 	return p.withState(ctx, func(s *planeState) {
 		ch := s.cancelWatchers[assignment.TaskID]
@@ -354,6 +525,7 @@ func (p *Plane) deliverCancel(ctx context.Context, assignment assignmentcontract
 
 type planeState struct {
 	assignmentsByTask map[string]assignmentcontract.Assignment
+	runtimeIDsByTask  map[string]string
 	cancelWatchers    map[string]chan error
 }
 
@@ -366,6 +538,7 @@ type stateOp struct {
 func (p *Plane) loop() {
 	state := planeState{
 		assignmentsByTask: map[string]assignmentcontract.Assignment{},
+		runtimeIDsByTask:  map[string]string{},
 		cancelWatchers:    map[string]chan error{},
 	}
 	defer close(p.done)
@@ -477,13 +650,25 @@ func RuntimeIDForAgent(daemonID string, agent AgentBinding) string {
 	return strings.TrimSpace(daemonID) + ":agent:" + url.QueryEscape(strings.TrimSpace(agent.AgentID)) + ":" + strings.TrimSpace(agent.RuntimeProvider)
 }
 
-func (p *Plane) runtimeIDForAssignment(assignment assignmentcontract.Assignment) string {
-	for _, agent := range p.cfg.Agents {
-		if agent.AgentID == assignment.AgentID && agent.RuntimeProvider == assignment.RuntimeProvider {
-			return RuntimeIDForAgent(p.cfg.DaemonID, agent)
+func (p *Plane) runtimeIDForAssignment(ctx context.Context, assignment assignmentcontract.Assignment) (string, error) {
+	if p.dynamicBindingsEnabled() {
+		var runtimeID string
+		err := p.withState(ctx, func(s *planeState) {
+			runtimeID = s.runtimeIDsByTask[assignment.TaskID]
+		})
+		if err != nil {
+			return "", err
+		}
+		if strings.TrimSpace(runtimeID) != "" {
+			return runtimeID, nil
 		}
 	}
-	return RuntimeIDForAgent(p.cfg.DaemonID, AgentBinding{AgentID: assignment.AgentID, RuntimeProvider: assignment.RuntimeProvider})
+	for _, agent := range p.cfg.Agents {
+		if agent.AgentID == assignment.AgentID && agent.RuntimeProvider == assignment.RuntimeProvider {
+			return RuntimeIDForAgent(p.cfg.DaemonID, agent), nil
+		}
+	}
+	return RuntimeIDForAgent(p.cfg.DaemonID, AgentBinding{AgentID: assignment.AgentID, RuntimeProvider: assignment.RuntimeProvider}), nil
 }
 
 func agentFromRuntimeID(runtimeID string) (string, bool) {
@@ -510,6 +695,33 @@ func normalizeAgents(in []AgentBinding) []AgentBinding {
 		out = append(out, agent)
 	}
 	return out
+}
+
+func (p *Plane) dynamicBindingsEnabled() bool {
+	return len(p.cfg.Agents) == 0
+}
+
+func normalizedTaskIDs(in []string) []string {
+	seen := map[string]bool{}
+	out := make([]string, 0, len(in))
+	for _, taskID := range in {
+		taskID = strings.TrimSpace(taskID)
+		if taskID == "" || seen[taskID] {
+			continue
+		}
+		seen[taskID] = true
+		out = append(out, taskID)
+	}
+	return out
+}
+
+func runtimeKindForProvider(provider string) string {
+	switch strings.TrimSpace(provider) {
+	case "claude":
+		return "claude_code"
+	default:
+		return strings.TrimSpace(provider)
+	}
 }
 
 func firstNonEmpty(values ...string) string {

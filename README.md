@@ -118,7 +118,7 @@ go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/r
 
 - `RIIDO_TASK_QUEUE_DIR`
 - `RIIDO_TASK_DB_SOURCE_PATH`
-- `RIIDO_SAAS_URL` + `RIIDO_SAAS_AGENTS`
+- `RIIDO_SAAS_URL` + `RIIDO_DEVICE_ID` + `RIIDO_DEVICE_SECRET`
 
 이 source들은 서로 경쟁하지 않도록 하나만 production source로 선택해야 합니다.
 

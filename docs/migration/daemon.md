@@ -711,8 +711,10 @@ The CLI adapter wires the already public runtimeactor/supervisor/provider
 adapters to the already public control-plane sources: in-memory offline mode,
 file queue, `riido-task-db.v1` via `taskdbplane`, and SaaS assignment HTTP via
 `saasplane`. Source selection is 12-factor env based:
-`RIIDO_TASK_QUEUE_DIR`, `RIIDO_TASK_DB_SOURCE_PATH`, or `RIIDO_SAAS_URL` with
-`RIIDO_SAAS_AGENTS`.
+`RIIDO_TASK_QUEUE_DIR`, `RIIDO_TASK_DB_SOURCE_PATH`, or `RIIDO_SAAS_URL`. The
+Desktop-launched SaaS path uses `RIIDO_DEVICE_ID` / `RIIDO_DEVICE_SECRET` and
+dynamic `/v1/daemon/agent-bindings`. Legacy `RIIDO_SAAS_AGENTS` /
+`RIIDO_SAAS_TOKEN` inputs are no longer read by the daemon settings model.
 
 The daemon command imports public daemon packages only and must not import
 private `riido_daemon` paths or `internal/riidoaiserver`. It does not bundle,
