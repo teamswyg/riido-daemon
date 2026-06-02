@@ -332,11 +332,54 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 	if len(snapshot.Runtimes) != 1 ||
 		snapshot.Runtimes[0].RuntimeID != "daemon-1:codex" ||
 		snapshot.Runtimes[0].Kind != "codex" ||
+		snapshot.Runtimes[0].Availability != "online" ||
+		snapshot.Runtimes[0].DetectionState != "detected" ||
 		!snapshot.Runtimes[0].RequiresExperimentalOptIn {
 		t.Fatalf("snapshot runtimes = %+v", snapshot.Runtimes)
 	}
 	if len(snapshot.Runtimes[0].Models) != 1 || snapshot.Runtimes[0].Models[0].ModelID != "gpt-5.5" || !snapshot.Runtimes[0].Models[0].IsDefault {
 		t.Fatalf("snapshot runtime models = %+v", snapshot.Runtimes[0].Models)
+	}
+}
+
+func TestPlaneRegistersUnavailableRuntimeSnapshotAsOffline(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	err = plane.RegisterRuntime(context.Background(), controlplane.RuntimeRegistration{
+		DaemonID:   "daemon-1",
+		RuntimeID:  "daemon-1:openclaw",
+		Provider:   "openclaw",
+		DeviceName: "주윤의 MacBook",
+		Capabilities: map[string]bool{
+			"provider.openclaw.available":                    false,
+			"provider.openclaw.requires_experimental_opt_in": true,
+		},
+	})
+	if err != nil {
+		t.Fatalf("RegisterRuntime: %v", err)
+	}
+	if len(fake.runtimeSnapshots) != 1 {
+		t.Fatalf("runtime snapshots = %+v", fake.runtimeSnapshots)
+	}
+	runtime := fake.runtimeSnapshots[0].Runtimes[0]
+	if runtime.RuntimeID != "daemon-1:openclaw" ||
+		runtime.Kind != "openclaw" ||
+		runtime.Availability != "offline" ||
+		runtime.DetectionState != "missing" ||
+		!runtime.RequiresExperimentalOptIn {
+		t.Fatalf("snapshot runtime = %+v", runtime)
 	}
 }
 

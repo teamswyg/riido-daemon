@@ -143,6 +143,7 @@ func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegi
 	if runtimeID == "" || provider == "" {
 		return nil
 	}
+	availability, detectionState := runtimeAvailability(rt, provider)
 	var out struct {
 		SchemaVersion string `json:"schema_version"`
 	}
@@ -153,8 +154,8 @@ func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegi
 		Runtimes: []RuntimeSnapshotRecord{{
 			RuntimeID:                 runtimeID,
 			Kind:                      runtimeKindForProvider(provider),
-			Availability:              "online",
-			DetectionState:            "detected",
+			Availability:              availability,
+			DetectionState:            detectionState,
 			RequiresExperimentalOptIn: runtimeRequiresExperimentalOptIn(rt, provider),
 			Models:                    runtimeModels(rt.Models),
 		}},
@@ -163,6 +164,13 @@ func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegi
 
 func (p *Plane) DeregisterRuntime(context.Context, string) error {
 	return nil
+}
+
+func runtimeAvailability(rt controlplane.RuntimeRegistration, provider string) (string, string) {
+	if available, ok := rt.Capabilities["provider."+provider+".available"]; ok && !available {
+		return "offline", "missing"
+	}
+	return "online", "detected"
 }
 
 func runtimeModels(in []controlplane.RuntimeModel) []RuntimeModelRecord {
