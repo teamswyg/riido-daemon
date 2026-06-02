@@ -161,6 +161,35 @@ func TestPlaneDeliversCancellationFromPollResponse(t *testing.T) {
 	}
 }
 
+func TestPlaneClaimsActiveAssignmentAfterLocalStateLoss(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	active := assignmentcontract.Assignment{
+		ID:                       "asn-active",
+		TaskID:                   "task-active",
+		ComponentID:              "component-1",
+		AgentID:                  "jykim1",
+		RuntimeProvider:          "codex",
+		Prompt:                   "resume active assignment",
+		State:                    assignmentcontract.AssignmentLeased,
+		LeaseToken:               "lease-active",
+		AllowExperimentalRuntime: true,
+	}
+	fake.activeNext(active.AgentID, active)
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask active: %v", err)
+	}
+	if req == nil || req.ID != active.TaskID || req.Metadata[MetadataAssignmentID] != active.ID {
+		t.Fatalf("active claim = %+v", req)
+	}
+	if !req.AllowExperimentalRuntime {
+		t.Fatal("active assignment should preserve experimental opt-in")
+	}
+}
+
 func TestPlanePollsOnlyRuntimeScopedAgent(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.enqueue(assignmentcontract.Assignment{
@@ -406,6 +435,7 @@ type fakeAssignmentServer struct {
 	deviceSecret string
 
 	assignmentsByAgent map[string][]assignmentcontract.Assignment
+	activeByAgent      map[string]assignmentcontract.Assignment
 	cancelByAgent      map[string]assignmentcontract.Assignment
 	bindings           []assignmentcontract.AgentRuntimeBinding
 	runtimeSnapshots   []DeviceRuntimeSnapshotSyncRequest
@@ -418,6 +448,7 @@ func newFakeAssignmentServer(t *testing.T) *fakeAssignmentServer {
 	f := &fakeAssignmentServer{
 		t:                  t,
 		assignmentsByAgent: map[string][]assignmentcontract.Assignment{},
+		activeByAgent:      map[string]assignmentcontract.Assignment{},
 		cancelByAgent:      map[string]assignmentcontract.Assignment{},
 	}
 	f.server = httptest.NewServer(http.HandlerFunc(f.handle))
@@ -436,6 +467,13 @@ func (f *fakeAssignmentServer) enqueue(assignment assignmentcontract.Assignment)
 func (f *fakeAssignmentServer) cancelNext(agentID string, assignment assignmentcontract.Assignment) {
 	assignment.State = assignmentcontract.AssignmentCancelling
 	f.cancelByAgent[agentID] = assignment
+}
+
+func (f *fakeAssignmentServer) activeNext(agentID string, assignment assignmentcontract.Assignment) {
+	if assignment.State == "" {
+		assignment.State = assignmentcontract.AssignmentLeased
+	}
+	f.activeByAgent[agentID] = assignment
 }
 
 func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
@@ -519,6 +557,15 @@ func (f *fakeAssignmentServer) handlePoll(w http.ResponseWriter, r *http.Request
 			SchemaVersion: assignmentcontract.SchemaVersion,
 			Action:        assignmentcontract.PollCancel,
 			Assignment:    &cancel,
+		})
+		return
+	}
+	if active, ok := f.activeByAgent[agentID]; ok {
+		delete(f.activeByAgent, agentID)
+		writeJSON(w, assignmentcontract.PollResponse{
+			SchemaVersion: assignmentcontract.SchemaVersion,
+			Action:        assignmentcontract.PollActive,
+			Assignment:    &active,
 		})
 		return
 	}
