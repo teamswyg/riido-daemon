@@ -265,6 +265,14 @@ Store channel policy 의 표는 [`./distribution-host-integration.md`](./distrib
 
 Codex 의 unsafe bypass 표면은 현재 local daemon command builder 가 생성하지 않으며, free-form `CustomArgs` 에서도 차단된다. 추후 이 표면을 의도적으로 허용하는 PR 은 `StartOptions` 같은 명시적 입력과 `internal/policy.EvaluateUnsafeBypass` 호출을 먼저 추가해야 하며, Host / Unknown trust tier 는 여전히 항상 거절한다.
 
+Cursor `--trust` 는 이 표의 unsafe bypass surface 가 아니다. 이는 Cursor Agent 가
+daemon 이 선택한 task-scoped workspace 에서 headless 로 실행될 때 interactive
+workspace trust prompt 로 멈추지 않게 하는 workspace acknowledgement 다. `--trust`
+를 붙여도 Cursor `--yolo`, `-f`, tool auto-approval, sandbox 우회가 암묵적으로
+허용되지 않는다. 따라서 Cursor adapter 는 daemon task workdir 을 지정할 때 `--trust`
+를 붙일 수 있지만, `--yolo` 는 위 매트릭스와
+`internal/policy.EvaluateUnsafeBypass` 집행을 계속 통과해야 한다.
+
 ### 5.2 Native config hook materialization 정책
 
 `internal/policy.EvaluateNativeConfigHook` 은 T-CFG provider-native hook surface 의 순수 결정 함수다. 현재 실행 surface 는 Claude Code command hook 설정/스크립트 주입을 audit-only 로 허용하는 `claude:command-hooks:audit` 하나다. C6 `internal/workdir` 는 hook 정책을 결정하지 않고, C4/C6 경계의 supervisor 가 active policy bundle 을 평가해 `claude-command-hooks` 또는 `instruction-only` hook mode 를 넘긴다.
