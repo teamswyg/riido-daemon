@@ -9,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/supervisor"
 	"github.com/teamswyg/riido-daemon/internal/provider/claude"
 	"github.com/teamswyg/riido-daemon/internal/provider/codex"
 	"github.com/teamswyg/riido-daemon/internal/provider/cursor"
@@ -115,7 +114,7 @@ func TestRegisteredAdaptersBuildStartForDaemonRuntime(t *testing.T) {
 		case codex.Name:
 			for _, env := range cmd.Env {
 				if strings.HasPrefix(env, "CODEX_HOME=") {
-					t.Fatalf("codex adapter must not invent CODEX_HOME without supervisor workdir metadata: %v", cmd.Env)
+					t.Fatalf("codex adapter must not invent CODEX_HOME while building daemon permission profile: %v", cmd.Env)
 				}
 			}
 		case openclaw.Name:
@@ -128,35 +127,31 @@ func TestRegisteredAdaptersBuildStartForDaemonRuntime(t *testing.T) {
 	}
 }
 
-func TestCodexDaemonAdapterUsesTaskScopedCodexHome(t *testing.T) {
+func TestCodexDaemonAdapterDeniesConfiguredCodexAuthHome(t *testing.T) {
 	cmd, err := bridgeCodexAdapter{}.BuildStart(agentbridge.StartRequest{
 		Cwd: "/tmp/work",
-		Metadata: map[string]string{
-			supervisor.MetadataNativeConfigHome: "/tmp/work/.codex",
-		},
+		Env: map[string]string{"CODEX_HOME": "/Users/example/.codex"},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !containsEnv(cmd.Env, "CODEX_HOME=/tmp/work/.codex") {
-		t.Fatalf("codex adapter did not set task-scoped CODEX_HOME: %v", cmd.Env)
+	args := strings.Join(cmd.Args, " ")
+	if !strings.Contains(args, `"/Users/example/.codex"="none"`) {
+		t.Fatalf("codex adapter did not deny auth home in permission profile: %q", args)
 	}
 }
 
-func TestCodexDaemonAdapterDoesNotInferTaskScopedCodexHome(t *testing.T) {
+func TestCodexDaemonAdapterDerivesDefaultCodexAuthHomeFromHome(t *testing.T) {
 	cmd, err := bridgeCodexAdapter{}.BuildStart(agentbridge.StartRequest{
 		Cwd: "/tmp/work",
-		Metadata: map[string]string{
-			supervisor.MetadataWorkdir: "/tmp/work",
-		},
+		Env: map[string]string{"HOME": "/Users/example"},
 	})
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, env := range cmd.Env {
-		if strings.HasPrefix(env, "CODEX_HOME=") {
-			t.Fatalf("codex adapter must wait for explicit native config home metadata: %v", cmd.Env)
-		}
+	args := strings.Join(cmd.Args, " ")
+	if !strings.Contains(args, `"/Users/example/.codex"="none"`) {
+		t.Fatalf("codex adapter did not derive default auth home deny path: %q", args)
 	}
 }
 

@@ -19,9 +19,7 @@
       "provider_kind": "codex",
       "primary_instruction_file": "AGENTS.md",
       "manifest_file": ".riido/native-config-manifest.json",
-      "hook_mode": "instruction-only",
-      "config_home_dir": ".codex",
-      "provider_settings_files": [".codex/config.toml"]
+      "hook_mode": "instruction-only"
     },
     {
       "provider_kind": "cursor",

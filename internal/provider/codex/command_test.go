@@ -25,6 +25,15 @@ func TestBuildStartProtocolCriticalArgs(t *testing.T) {
 	if cmd.StdinMode != agentbridge.StdinPipe {
 		t.Fatalf("expected StdinPipe, got %q", cmd.StdinMode)
 	}
+	for _, want := range []string{
+		`default_permissions="riido-task"`,
+		`permissions.riido-task.filesystem={":minimal"="read","/tmp/work"="write"}`,
+		`permissions.riido-task.network={enabled=true}`,
+	} {
+		if !strings.Contains(args, want) {
+			t.Fatalf("missing daemon permission profile token %q in %q", want, args)
+		}
+	}
 }
 
 func TestBuildStartBlocksListenOverride(t *testing.T) {
@@ -86,6 +95,43 @@ func TestBuildStartBlocksUnsafeBypassCustomArgs(t *testing.T) {
 	}
 }
 
+func TestBuildStartBlocksConfigOverrideArgs(t *testing.T) {
+	cmd, err := BuildStart(agentbridge.StartRequest{
+		Cwd: "/tmp/work",
+		CustomArgs: []string{
+			"-c", "default_permissions=\"unsafe\"",
+			"--config=permissions.unsafe.filesystem={\":minimal\"=\"read\"}",
+			"--enable", "experimental_untrusted",
+			"--disable=some_guard",
+			"--safe",
+		},
+	}, StartOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, want := range []string{
+		"-c",
+		"default_permissions=\"unsafe\"",
+		"--config=permissions.unsafe.filesystem={\":minimal\"=\"read\"}",
+		"--enable",
+		"experimental_untrusted",
+		"--disable=some_guard",
+	} {
+		if !slices.Contains(cmd.DroppedArgs, want) {
+			t.Fatalf("config override arg %q must be dropped: %v", want, cmd.DroppedArgs)
+		}
+	}
+	args := strings.Join(cmd.Args, " ")
+	for _, bad := range []string{"unsafe", "experimental_untrusted", "some_guard"} {
+		if strings.Contains(args, bad) {
+			t.Fatalf("config override value %q bled through: %q", bad, args)
+		}
+	}
+	if !strings.Contains(args, "--safe") {
+		t.Fatalf("non-critical custom arg lost: %q", args)
+	}
+}
+
 func TestBuildStartBlocksCodexDangerSandboxEqualsArg(t *testing.T) {
 	cmd, err := BuildStart(agentbridge.StartRequest{
 		CustomArgs: []string{"--sandbox=danger-full-access", "--safe"},
@@ -135,35 +181,32 @@ func TestBuildStartBlocksCodexUnsafeBypassBooleanEqualsArgs(t *testing.T) {
 	}
 }
 
-func TestBuildStartCodexHomeIsolation(t *testing.T) {
-	// CODEX_HOME isolation: when StartOptions.CodexHome is set, the env
-	// must include CODEX_HOME=<that path>. This prevents Codex from
-	// reading the user's global ~/.codex.
+func TestBuildStartDeniesCodexAuthHomeInPermissionProfile(t *testing.T) {
 	cmd, _ := BuildStart(agentbridge.StartRequest{
+		Cwd: "/tmp/work",
 		Env: map[string]string{"FOO": "bar"},
-	}, StartOptions{CodexHome: "/tmp/codex-task-1"})
-	envJoined := strings.Join(cmd.Env, " ")
-	if !strings.Contains(envJoined, "CODEX_HOME=/tmp/codex-task-1") {
-		t.Fatalf("CODEX_HOME not injected: %v", cmd.Env)
+	}, StartOptions{AuthHomeDenyPath: "/Users/example/.codex"})
+	args := strings.Join(cmd.Args, " ")
+	if !strings.Contains(args, `"/Users/example/.codex"="none"`) {
+		t.Fatalf("Codex auth home must be denied in permission profile: %q", args)
 	}
+	envJoined := strings.Join(cmd.Env, " ")
 	if !strings.Contains(envJoined, "FOO=bar") {
 		t.Fatalf("caller env lost: %v", cmd.Env)
 	}
 }
 
-func TestBuildStartCallerCannotOverrideCodexHome(t *testing.T) {
-	// Caller's CODEX_HOME via req.Env must NOT override the adapter's
-	// isolation value.
+func TestBuildStartDerivesCodexAuthHomeDenyPathFromEnv(t *testing.T) {
 	cmd, _ := BuildStart(agentbridge.StartRequest{
+		Cwd: "/tmp/work",
 		Env: map[string]string{"CODEX_HOME": "/home/user/.codex"},
-	}, StartOptions{CodexHome: "/tmp/isolated"})
-	for _, env := range cmd.Env {
-		if env == "CODEX_HOME=/home/user/.codex" {
-			t.Fatalf("caller overrode CODEX_HOME: %v", cmd.Env)
-		}
+	}, StartOptions{})
+	args := strings.Join(cmd.Args, " ")
+	if !strings.Contains(args, `"/home/user/.codex"="none"`) {
+		t.Fatalf("caller CODEX_HOME must be denied in permission profile: %q", args)
 	}
-	if !slices.Contains(cmd.Env, "CODEX_HOME=/tmp/isolated") {
-		t.Fatalf("isolated CODEX_HOME not set: %v", cmd.Env)
+	if !slices.Contains(cmd.Env, "CODEX_HOME=/home/user/.codex") {
+		t.Fatalf("caller env should still reach Codex app-server auth process: %v", cmd.Env)
 	}
 }
 

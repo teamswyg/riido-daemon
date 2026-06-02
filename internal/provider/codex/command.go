@@ -5,14 +5,16 @@
 // What this slice provides:
 //   - Command builder with protocol-critical args locked in.
 //   - --listen blocklist (caller cannot reroute transport).
-//   - CODEX_HOME per-task isolation (caller's env cannot override).
+//   - task-scoped Codex permission profile injection.
 //   - JSON-RPC protocol driver via the provider-neutral agentbridge port.
 package codex
 
 import (
 	"fmt"
 	"maps"
+	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
@@ -21,6 +23,7 @@ import (
 
 const Name = "codex"
 const DefaultExecutable = "codex"
+const DefaultPermissionProfile = "riido-task"
 
 // BlockedArgs are protocol-critical flags the adapter sets itself.
 // --listen is the load-bearing one: caller-supplied --listen would let
@@ -42,14 +45,31 @@ func UnsafeBypassArgs() []string {
 	}
 }
 
+// SecurityCriticalArgs are Codex app-server flags that can rewrite the
+// daemon-owned permission profile. They are distinct from protocol-critical
+// args: --listen protects transport shape, while these protect C7 sandbox
+// policy injection.
+func SecurityCriticalArgs() []string {
+	return []string{
+		"-c",
+		"--config",
+		"--enable",
+		"--disable",
+	}
+}
+
 // StartOptions carries Codex-specific knobs.
 type StartOptions struct {
 	// Executable overrides the binary path. Falls back to DefaultExecutable.
 	Executable string
-	// CodexHome is the per-task isolated $CODEX_HOME directory. When
-	// non-empty it is injected into the process env and the caller
-	// cannot override it. See docs/20-domain/provider-runtime.md.
-	CodexHome string
+	// AuthHomeDenyPath is the user-global Codex credential/config home path
+	// that provider tool commands must not read. The Codex app-server process
+	// may still use its inherited auth store, but every spawned shell command
+	// receives a daemon-owned permission profile with this path set to none.
+	AuthHomeDenyPath string
+	// PermissionProfile overrides the generated Codex permission profile name.
+	// Empty means DefaultPermissionProfile.
+	PermissionProfile string
 }
 
 // BuildStart turns an agentbridge.StartRequest + Codex options into a
@@ -62,8 +82,9 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 
 	args := []string{
 		"app-server",
-		"--listen", "stdio://",
 	}
+	args = append(args, permissionProfileArgs(req, opts)...)
+	args = append(args, "--listen", "stdio://")
 
 	kept, dropped := filterCustomArgs(req.CustomArgs)
 	args = append(args, kept...)
@@ -82,7 +103,37 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 
 func filterCustomArgs(custom []string) (kept []string, dropped []string) {
 	kept, dropped = agentbridge.FilterBlockedArgs(custom, BlockedArgs())
+	kept, dropped = filterConfigOverrideArgs(kept, dropped)
 	return filterUnsafeBypassArgs(kept, dropped)
+}
+
+func filterConfigOverrideArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
+	blocked := make(map[string]struct{}, len(SecurityCriticalArgs()))
+	for _, arg := range SecurityCriticalArgs() {
+		blocked[arg] = struct{}{}
+	}
+
+	allDropped = append(allDropped, dropped...)
+	for i := 0; i < len(custom); i++ {
+		arg := custom[i]
+		if _, isBlocked := blocked[arg]; isBlocked {
+			allDropped = append(allDropped, arg)
+			if (arg == "-c" || arg == "--config" || arg == "--enable" || arg == "--disable") && i+1 < len(custom) {
+				allDropped = append(allDropped, custom[i+1])
+				i++
+			}
+			continue
+		}
+		if strings.HasPrefix(arg, "-c=") ||
+			strings.HasPrefix(arg, "--config=") ||
+			strings.HasPrefix(arg, "--enable=") ||
+			strings.HasPrefix(arg, "--disable=") {
+			allDropped = append(allDropped, arg)
+			continue
+		}
+		kept = append(kept, arg)
+	}
+	return kept, allDropped
 }
 
 func filterUnsafeBypassArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
@@ -126,11 +177,8 @@ func filterUnsafeBypassArgs(custom []string, dropped []string) (kept []string, a
 // no secrets, and adding a warning per env collision would be noisy).
 // If we later need observability, switch to returning a separate
 // DroppedEnvKeys slice.
-func buildEnv(caller map[string]string, opts StartOptions) []string {
+func buildEnv(caller map[string]string, _ StartOptions) []string {
 	reserved := map[string]string{}
-	if opts.CodexHome != "" {
-		reserved["CODEX_HOME"] = opts.CodexHome
-	}
 
 	merged := make(map[string]string, len(caller)+len(reserved))
 	for k, v := range caller {
@@ -151,4 +199,70 @@ func buildEnv(caller map[string]string, opts StartOptions) []string {
 		env = append(env, fmt.Sprintf("%s=%s", k, merged[k]))
 	}
 	return env
+}
+
+func permissionProfileArgs(req agentbridge.StartRequest, opts StartOptions) []string {
+	profile := strings.TrimSpace(opts.PermissionProfile)
+	if profile == "" {
+		profile = DefaultPermissionProfile
+	}
+	cwd := cleanAbs(req.Cwd)
+	authHome := cleanAbs(firstNonEmpty(
+		opts.AuthHomeDenyPath,
+		startEnvValue(req.Env, "CODEX_HOME"),
+		defaultCodexHomeFromEnv(req.Env),
+	))
+
+	entries := []string{tomlInlineEntry(":minimal", "read")}
+	if cwd != "" {
+		entries = append(entries, tomlInlineEntry(cwd, "write"))
+	}
+	if authHome != "" {
+		entries = append(entries, tomlInlineEntry(authHome, "none"))
+	}
+
+	return []string{
+		"-c", fmt.Sprintf("default_permissions=%s", strconv.Quote(profile)),
+		"-c", fmt.Sprintf("permissions.%s.filesystem={%s}", profile, strings.Join(entries, ",")),
+		"-c", fmt.Sprintf("permissions.%s.network={enabled=true}", profile),
+	}
+}
+
+func tomlInlineEntry(path string, access string) string {
+	return strconv.Quote(path) + "=" + strconv.Quote(access)
+}
+
+func cleanAbs(path string) string {
+	path = strings.TrimSpace(path)
+	if path == "" {
+		return ""
+	}
+	if !filepath.IsAbs(path) {
+		return path
+	}
+	return filepath.Clean(path)
+}
+
+func startEnvValue(env map[string]string, key string) string {
+	if env == nil {
+		return ""
+	}
+	return strings.TrimSpace(env[key])
+}
+
+func defaultCodexHomeFromEnv(env map[string]string) string {
+	home := startEnvValue(env, "HOME")
+	if home == "" {
+		return ""
+	}
+	return filepath.Join(home, ".codex")
+}
+
+func firstNonEmpty(values ...string) string {
+	for _, value := range values {
+		if strings.TrimSpace(value) != "" {
+			return value
+		}
+	}
+	return ""
 }

@@ -101,19 +101,29 @@ type AgentStatus struct {
 	State   string `json:"state,omitempty"`
 }
 
+// RuntimeModel is the runtime-scoped model catalog projected to the
+// control plane. Model IDs are opaque to the daemon except for the local
+// provider config source that reported them.
+type RuntimeModel struct {
+	ModelID   string `json:"model_id"`
+	Label     string `json:"label"`
+	IsDefault bool   `json:"is_default"`
+}
+
 // Status is the synchronous Status(ctx) snapshot.
 type Status struct {
-	RuntimeID       string        `json:"runtime_id"`
-	StartedAt       time.Time     `json:"started_at"`
-	UptimeSeconds   int64         `json:"uptime_seconds"`
-	Health          string        `json:"health"`
-	Owner           string        `json:"owner,omitempty"`
-	DeviceName      string        `json:"device_name,omitempty"`
-	Agents          []AgentStatus `json:"agents,omitempty"`
-	Capabilities    []Capability  `json:"capabilities"`
-	MaxConcurrent   int           `json:"max_concurrent"`
-	RunningSessions int           `json:"running_sessions"`
-	RunningTasks    []TaskStatus  `json:"running_tasks"`
+	RuntimeID       string         `json:"runtime_id"`
+	StartedAt       time.Time      `json:"started_at"`
+	UptimeSeconds   int64          `json:"uptime_seconds"`
+	Health          string         `json:"health"`
+	Owner           string         `json:"owner,omitempty"`
+	DeviceName      string         `json:"device_name,omitempty"`
+	Agents          []AgentStatus  `json:"agents,omitempty"`
+	Models          []RuntimeModel `json:"models,omitempty"`
+	Capabilities    []Capability   `json:"capabilities"`
+	MaxConcurrent   int            `json:"max_concurrent"`
+	RunningSessions int            `json:"running_sessions"`
+	RunningTasks    []TaskStatus   `json:"running_tasks"`
 }
 
 // Heartbeat is the publish-ready payload for ControlPlane.Heartbeat.
@@ -151,6 +161,7 @@ type Config struct {
 	Owner          string
 	DeviceName     string
 	Agents         []AgentStatus
+	Models         []RuntimeModel
 	Adapters       []agentbridge.Adapter
 	Process        process.Process
 	MaxConcurrent  int
@@ -477,6 +488,7 @@ func (a *Actor) buildStatus(caps []Capability, inFlight map[string]*runningTask)
 		Owner:           a.cfg.Owner,
 		DeviceName:      a.cfg.DeviceName,
 		Agents:          append([]AgentStatus(nil), a.cfg.Agents...),
+		Models:          append([]RuntimeModel(nil), a.cfg.Models...),
 		Capabilities:    append([]Capability(nil), caps...),
 		MaxConcurrent:   a.cfg.MaxConcurrent,
 		RunningSessions: len(inFlight),

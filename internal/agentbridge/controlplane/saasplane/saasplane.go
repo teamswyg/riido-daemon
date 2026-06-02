@@ -156,12 +156,25 @@ func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegi
 			Availability:              "online",
 			DetectionState:            "detected",
 			RequiresExperimentalOptIn: runtimeRequiresExperimentalOptIn(rt, provider),
+			Models:                    runtimeModels(rt.Models),
 		}},
 	}, &out)
 }
 
 func (p *Plane) DeregisterRuntime(context.Context, string) error {
 	return nil
+}
+
+func runtimeModels(in []controlplane.RuntimeModel) []RuntimeModelRecord {
+	out := make([]RuntimeModelRecord, 0, len(in))
+	for _, model := range in {
+		out = append(out, RuntimeModelRecord{
+			ModelID:   model.ModelID,
+			Label:     model.Label,
+			IsDefault: model.IsDefault,
+		})
+	}
+	return out
 }
 
 func runtimeRequiresExperimentalOptIn(rt controlplane.RuntimeRegistration, provider string) bool {

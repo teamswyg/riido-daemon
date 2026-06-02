@@ -130,7 +130,7 @@ func TestParsePolicyBundleAllowsToolUseSurface(t *testing.T) {
 	}
 }
 
-func TestDefaultLocalPolicyBundleAllowsOnlyNativeConfigSurfaces(t *testing.T) {
+func TestDefaultLocalPolicyBundleAllowsOnlyClaudeNativeConfigSurface(t *testing.T) {
 	bundle := DefaultLocalPolicyBundle()
 	if err := bundle.Validate(); err != nil {
 		t.Fatal(err)
@@ -141,8 +141,8 @@ func TestDefaultLocalPolicyBundleAllowsOnlyNativeConfigSurfaces(t *testing.T) {
 	if !bundle.AllowsNativeConfigHook(TrustTierHost, NativeConfigHookClaudeCommandAudit) {
 		t.Fatal("local default should allow Claude audit hook materialization")
 	}
-	if !bundle.AllowsNativeConfigFile(TrustTierHost, NativeConfigFileCodexTaskScopedHome) {
-		t.Fatal("local default should allow Codex task-scoped config home materialization")
+	if bundle.AllowsNativeConfigFile(TrustTierHost, NativeConfigFileCodexTaskScopedHome) {
+		t.Fatal("local default must not materialize Codex task-scoped config home")
 	}
 	if bundle.AllowsUnsafeBypass(TrustTierHost, UnsafeBypassClaudePermissions) {
 		t.Fatal("local default must not allow unsafe bypass on Host")

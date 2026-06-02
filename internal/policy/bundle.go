@@ -46,9 +46,6 @@ func DefaultLocalPolicyBundle() PolicyBundle {
 					NativeConfigHooks: []NativeConfigHookSurface{
 						NativeConfigHookClaudeCommandAudit,
 					},
-					NativeConfigFiles: []NativeConfigFileSurface{
-						NativeConfigFileCodexTaskScopedHome,
-					},
 				},
 			},
 		},

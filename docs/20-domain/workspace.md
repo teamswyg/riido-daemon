@@ -143,13 +143,12 @@ Store channel 에서는 workdir root 와 user workspace root 를 분리한다.
 
 ### 5.1 무엇이 주입되는가
 
-`InjectNativeConfig` 가 `workdir/` 또는 `workdir/.claude/` / `workdir/.codex/` / `workdir/.riido/` 같은 표준 위치에 다음 파일을 생성한다(provider 별 차이는 어댑터별 가이드가 있겠지만, **결정** 은 정책 번들이, **생성 동작** 은 workspace 가).
+`InjectNativeConfig` 가 `workdir/` 또는 `workdir/.claude/` / `workdir/.riido/` 같은 표준 위치에 다음 파일을 생성한다(provider 별 차이는 어댑터별 가이드가 있겠지만, **결정** 은 정책 번들이, **생성 동작** 은 workspace 가).
 
 - `CLAUDE.md` — Claude Code 가 자동 로드. provider research SSOT 는 provider-runtime slice 에서 public repo 로 이동한다.
 - `AGENTS.md` — Codex 가 자동 로드. provider research SSOT 는 provider-runtime slice 에서 public repo 로 이동한다.
 - Claude `.claude/settings.json` (managed/local/project precedence — 우리는 보통 `project` 위치)
 - hooks settings (`.claude/hooks/...` 또는 동등)
-- Codex `.codex/config.toml` (per-task `CODEX_HOME` overlay 가능)
 - wrapper manifest (있을 때)
 - `.riido/native-config-manifest.json` — C6 가 실제 생성한 provider-native config 파일 목록과 hook materialization mode 를 기록하는 `riido-native-config-manifest.v1`
 - `.riido/` 메타: `task.json`, `policy-bundle.lock`, `native-config.lock` 등
@@ -179,8 +178,8 @@ Provider 별 native config file plan 의 실행 가능한 SSOT 는 `internal/wor
 | `primary_instruction_file` | provider 가 자동 로드하는 1차 instruction 파일 (`CLAUDE.md`, `AGENTS.md`, `GEMINI.md`) |
 | `manifest_file` | manifest 자체의 상대 경로. 현재 `.riido/native-config-manifest.json` |
 | `hook_mode` | 현재 hook materialization 방식. `instruction-only` 는 provider-native hook script/settings 를 아직 쓰지 않고 1차 instruction file hard rule 로만 집행한다는 뜻이고, `claude-command-hooks` 는 Claude `.claude/settings.json` 과 command hook script 를 주입했다는 뜻이다 |
-| `config_home_dir` | provider 전용 config home 이 task-scoped 로 주입될 때의 상대 경로. 현재 Codex 는 `.codex` 를 쓴다 |
-| `provider_settings_files` | provider 가 직접 읽는 settings/config 파일 목록. 현재 Claude `.claude/settings.json`, Codex `.codex/config.toml` 을 쓸 수 있다 |
+| `config_home_dir` | provider 전용 config home 이 task-scoped 로 주입될 때의 상대 경로. 현재 기본 plan 에서는 비어 있다 |
+| `provider_settings_files` | provider 가 직접 읽는 settings/config 파일 목록. 현재 Claude `.claude/settings.json` 을 쓸 수 있다 |
 | `hook_files` | provider-native hook settings 가 참조하는 script 파일 목록. 현재 Claude command hook script 는 `.riido/hooks/claude-audit-hook.sh` |
 | `telemetry_contract_placement` | SaaS source 가 prompt/system prompt 에 telemetry contract 를 둔 위치. 비어 있으면 field 자체를 생략한다 |
 | `workflow` | runtime config workflow branch. 비어 있으면 `default` |
@@ -193,17 +192,16 @@ Provider 별 native config file plan 의 실행 가능한 SSOT 는 `internal/wor
 | Provider | 생성 파일 | 의미 |
 | --- | --- | --- |
 | Claude | `CLAUDE.md`, `.claude/settings.json`, `.riido/hooks/claude-audit-hook.sh`, `.riido/native-config-manifest.json` | Claude Code 의 project settings hook surface 를 task workdir 안에 고정한다. 기본 hook 은 `PreToolUse` / `PostToolUse` 입력 JSON 을 `.riido/hooks/claude-hook-events.jsonl` 로 append 하는 audit-only command hook 이며, exit 0 으로 provider 행동을 차단하지 않는다. 단 `.claude/settings.json` 과 hook script 는 C7 policy bundle 이 `claude:command-hooks:audit` surface 를 허용한 경우에만 materialize 된다. 거절되면 manifest 의 `hook_mode` 은 `instruction-only` 로 기록되고 `CLAUDE.md` 만 남는다. |
-| Codex | `AGENTS.md`, `.codex/config.toml`, `.riido/native-config-manifest.json` | `.codex/config.toml` 은 task-scoped config home 을 생성해 사용자 전역 `~/.codex` config 로부터 분리하는 anchor 다. 단 `.codex/config.toml` 과 adapter `CODEX_HOME=<workdir>/.codex` metadata 는 C7 policy bundle 이 `codex:config-home:task-scoped` surface 를 허용한 경우에만 materialize 된다. 거절되면 manifest 의 `config_home_dir` 과 `provider_settings_files` 에서 Codex config home 이 빠지고 `AGENTS.md` 만 남는다. |
+| Codex | `AGENTS.md`, `.riido/native-config-manifest.json` | Codex 는 task-scoped `.codex/config.toml` 또는 `CODEX_HOME` overlay 를 materialize 하지 않는다. app-server credential 사용과 tool command sandbox 는 C4 Codex adapter 가 `-c default_permissions=...` permission profile 로 고정한다. Codex process 가 실행 중 workdir `.codex` state 를 만들 수 있지만, C6 manifest/provider settings output 으로 선언하지 않는다. |
 | OpenClaw / Cursor / unknown | `AGENTS.md`, `.riido/native-config-manifest.json` | 현재는 provider-neutral instruction file 주입만 한다. |
 
 ### 5.1.2 native config overlay policy
 
 Native config overlay 의 표준은 **user-global config 를 읽거나 복사하지 않는
-per-task materialization** 이다. Codex 는 C7 이
-`codex:config-home:task-scoped` surface 를 허용할 때만 `CODEX_HOME=<workdir>/.codex`
-형태의 task-scoped config home 을 제공한다. Claude command hook, Codex config
-home, future provider-native config home 은 모두 C7 policy bundle 의 explicit
-allow surface 로만 활성화된다.
+per-task materialization** 이다. Claude command hook 과 future provider-native
+config home 은 모두 C7 policy bundle 의 explicit allow surface 로만 활성화된다.
+Codex 는 이 C6 overlay 를 쓰지 않고 C4 adapter 의 mandatory permission profile
+injection 으로 workdir write 와 Codex auth/config home read deny 를 동시에 적용한다.
 
 OpenClaw / Cursor / unknown provider 는 이 문서 기준에서 instruction-only
 overlay 가 default 이며, provider-native config home 을 자동으로 추론하지 않는다.
