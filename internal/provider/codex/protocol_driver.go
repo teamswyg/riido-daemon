@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -40,9 +41,11 @@ type protocolDriver struct {
 	pending map[int64]pendingRequest
 
 	// Handshake progress flags. Single-goroutine access (session actor).
-	initialized bool
-	threadID    string
-	turnStarted bool
+	initialized        bool
+	threadID           string
+	turnStarted        bool
+	sawAssistantOutput bool
+	lastRuntimeError   string
 }
 
 type pendingRequest struct {
@@ -74,21 +77,45 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		return d.handleResponse(ctx, raw, io)
 	}
 	if raw.Type == "error" {
-		// Mirror the existing Translate behavior for error responses.
 		id, _ := rpcID(raw.Payload)
-		delete(d.pending, id)
-		return Translate(raw)
+		if pr, known := d.pending[id]; known {
+			delete(d.pending, id)
+			return d.failedEvents("codex " + pr.method + " rpc error: " + codexRPCErrorMessage(raw.Payload)), nil, nil
+		}
+		d.recordRuntimeError(codexRPCErrorMessage(raw.Payload))
+		events, cmds, err := Translate(raw)
+		d.observeEvents(events)
+		return events, cmds, err
+	}
+	if strings.HasPrefix(raw.Type, "notification:") {
+		method := strings.TrimPrefix(raw.Type, "notification:")
+		if method == "error" {
+			errText := codexNotificationErrorMessage(params(raw))
+			d.recordRuntimeError(errText)
+			return []agentbridge.Event{{Kind: agentbridge.EventError, Err: errText}}, nil, nil
+		}
+		if method == "turn_completed" || method == "turn/completed" {
+			p := params(raw)
+			if d.lastRuntimeError != "" && !d.sawAssistantOutput && stringField(p, "output") == "" {
+				return d.failedEvents(d.lastRuntimeError), nil, nil
+			}
+		}
 	}
 	// Notifications + server_requests + malformed + stderr: fall through
 	// to existing Translate. This keeps the Codex translator the single
 	// source of provider→IR mappings.
-	return Translate(raw)
+	events, cmds, err := Translate(raw)
+	d.observeEvents(events)
+	return events, cmds, err
 }
 
 // OnProcessExit emits one Error event per still-pending request so
 // callers never block forever waiting for a response that will never
 // arrive. Also clears the pending map (cleanup).
 func (d *protocolDriver) OnProcessExit(_ context.Context, status agentbridge.ProcessExitStatus, _ agentbridge.ProtocolIO) ([]agentbridge.Event, error) {
+	if d.lastRuntimeError != "" && !d.sawAssistantOutput {
+		return d.failedEvents(d.lastRuntimeError), nil
+	}
 	if len(d.pending) == 0 {
 		return nil, nil
 	}
@@ -110,6 +137,38 @@ func (d *protocolDriver) OnProcessExit(_ context.Context, status agentbridge.Pro
 func (d *protocolDriver) OnClose(_ context.Context, _ agentbridge.ProtocolIO) error {
 	d.pending = nil
 	return nil
+}
+
+func (d *protocolDriver) observeEvents(events []agentbridge.Event) {
+	for _, ev := range events {
+		switch ev.Kind {
+		case agentbridge.EventTextDelta:
+			if strings.TrimSpace(ev.Text) != "" {
+				d.sawAssistantOutput = true
+			}
+		case agentbridge.EventResult:
+			if strings.TrimSpace(ev.Result.Output) != "" {
+				d.sawAssistantOutput = true
+			}
+		}
+	}
+}
+
+func (d *protocolDriver) recordRuntimeError(message string) {
+	if message == "" {
+		message = "codex runtime error"
+	}
+	d.lastRuntimeError = message
+}
+
+func (d *protocolDriver) failedEvents(message string) []agentbridge.Event {
+	if message == "" {
+		message = "codex runtime error"
+	}
+	return []agentbridge.Event{
+		{Kind: agentbridge.EventError, Err: message},
+		{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultFailed, Error: message}},
+	}
 }
 
 // --- handshake state machine (NOT a RunState FSM — just transport progress) ---
@@ -249,4 +308,28 @@ func threadIDFromResult(result map[string]any) string {
 		return id
 	}
 	return stringField(thread, "sessionId")
+}
+
+func codexRPCErrorMessage(payload map[string]any) string {
+	if msg := errMessage(payload); msg != "" {
+		return msg
+	}
+	return "codex rpc error"
+}
+
+func codexNotificationErrorMessage(p map[string]any) string {
+	if msg := stringField(p, "message"); msg != "" {
+		return msg
+	}
+	if msg := stringField(p, "detail"); msg != "" {
+		return msg
+	}
+	if errText := stringField(p, "error"); errText != "" {
+		return errText
+	}
+	errMap := mapField(p, "error")
+	if msg := stringField(errMap, "message"); msg != "" {
+		return msg
+	}
+	return "codex runtime error"
 }

@@ -382,6 +382,7 @@ RunReportedDone (provider 자기 보고)
 - 위 모든 화살표 단계마다 adapter 는 한 개 또는 여러 개의 `ProviderEventDraft` 를 발행한다.
 - `RunReportedDone` 은 “agent 가 끝났다고 신고” 일 뿐 task 완료가 아니다. local RunController(supervisor) 는 terminal provider `Result(completed)` 를 `RunReportedDone` transition event 로 append 하고, completion 판정은 validation gate (C8) 가 한다.
 - `Result(failed|blocked|aborted|cancelled|timeout)` 은 adapter 가 직접 task 상태를 set 하지 않는다. local RunController 가 각각 `TaskFailed` / `TaskCancelled` / `TaskTimedOut` transition event 로 번역하고 `FSMVersion` 을 stamp 한다.
+- provider transport 오류는 provider 자기보고 완료보다 우선한다. 특히 Codex JSON-RPC pending request 가 error response 로 닫히거나, Codex `error` notification 이후 의미 있는 assistant output 없이 빈 `turn_completed` / process exit 로 끝난 경우 adapter 는 `Result(failed)` 를 발행해야 한다. 단, 오류 notification 이후 `TextDelta` 또는 non-empty `Result.Output` 이 관측되면 회복된 실행으로 보고 일반 완료를 허용한다.
 
 ### 5.4 cancel / interrupt / needs-input
 
