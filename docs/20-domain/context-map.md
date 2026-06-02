@@ -108,7 +108,10 @@ scroll affordance (`node-id=164-30192`), including selected-workspace and
 no-installed-AI skip branch (`node-id=164-30206`) are not daemon-owned
 decisions. In `node-id=164-26969`, the `이름`, `설명`, and `지침` input
 composition maps upstream to control-plane agent creation; C4 later consumes
-only the already-assigned instruction/runtime/model values. `node-id=137-6746`
+only the already-assigned instruction/runtime/model values. Figma planning
+node `432:46849` changes the explanation order to agent draft/configuration,
+runtime selection, then workspace selection, but that draft is client-local and
+does not authorize a daemon command or workspace-less create path. `node-id=137-6746`
 can show Claude Code/Codex as `감지됨` selectable
 rows and OpenClaw/Cursor Agent as `감지 안 됨` non-selectable rows, but those
 labels, radios, and row states are client presentation over runtime

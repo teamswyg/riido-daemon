@@ -899,6 +899,32 @@ add SaaS endpoints, or make daemon the owner of Figma page discovery. It only
 improves the SSOT dependency mirror between contracts coverage and daemon
 projection.
 
+### RIID-4859 — Figma onboarding draft-create downstream boundary mirror
+
+This slice absorbs `teamswyg/riido-contracts#54` into the daemon projection.
+The upstream Figma planning node `432:46849` changes onboarding explanation
+order to agent draft/configuration, runtime selection, then workspace
+selection. Daemon keeps that as downstream boundary evidence only: local draft
+state, final create submit timing, and workspace/runtime selection are
+client/control-plane facts, while daemon consumes only the final assignment
+snapshot after SaaS authorization.
+
+This slice does:
+
+- add `teamswyg/riido-contracts#54` to the mirrored upstream coverage
+  provenance
+- preserve `432:46849` as non-UI daemon boundary evidence so supporting Figma
+  metadata limitations do not erase the planning fact
+- state in context/provider-runtime docs that client-local draft does not
+  create daemon execution or a workspace-less provider start path
+- update `tools/figmaboundary` so the revised onboarding order remains
+  downstream-only unless contracts/control-plane promote a new executable
+  daemon input
+
+This slice does not change daemon runtime behavior, add Figma integration,
+add SaaS endpoints, create a persisted draft API, create a workspace-less
+agent create route, or make daemon the owner of onboarding sequence.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:

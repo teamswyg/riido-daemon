@@ -24,7 +24,10 @@ onboarding fixture catalog, the `리도` / `영실` / `홍도` / `지원` onboar
 fixture rows, the `직접 설정` row, disabled-next presentation, preview skeleton
 or popover, direct-setting form composition, workspace selector, no-runtime
 skip branch, scroll affordances, two-line ellipsis behavior, or onboarding
-fixture copy.
+fixture copy. Figma planning node `432:46849` may ask clients to collect an
+agent draft/configuration before runtime and workspace selection, but C4 still
+does not start a provider from that draft. C4 receives only the final
+SaaS-authorized runtime/model/instruction snapshot.
 
 The Figma web onboarding section (`node-id=236-29749`) is also outside C4
 ownership. Its macOS app download CTA can lead a user to a desktop artifact, but
