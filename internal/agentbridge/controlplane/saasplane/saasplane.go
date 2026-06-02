@@ -50,11 +50,12 @@ type RuntimeModelRecord struct {
 }
 
 type RuntimeSnapshotRecord struct {
-	RuntimeID      string               `json:"runtime_id"`
-	Kind           string               `json:"kind"`
-	Availability   string               `json:"availability,omitempty"`
-	DetectionState string               `json:"detection_state,omitempty"`
-	Models         []RuntimeModelRecord `json:"models,omitempty"`
+	RuntimeID                 string               `json:"runtime_id"`
+	Kind                      string               `json:"kind"`
+	Availability              string               `json:"availability,omitempty"`
+	DetectionState            string               `json:"detection_state,omitempty"`
+	RequiresExperimentalOptIn bool                 `json:"requires_experimental_opt_in,omitempty"`
+	Models                    []RuntimeModelRecord `json:"models,omitempty"`
 }
 
 type DeviceRuntimeSnapshotSyncRequest struct {
@@ -149,16 +150,25 @@ func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegi
 		DeviceID:          p.cfg.DeviceID,
 		DeviceDisplayName: firstNonEmpty(rt.DeviceName, p.cfg.DeviceID),
 		Runtimes: []RuntimeSnapshotRecord{{
-			RuntimeID:      runtimeID,
-			Kind:           runtimeKindForProvider(provider),
-			Availability:   "online",
-			DetectionState: "detected",
+			RuntimeID:                 runtimeID,
+			Kind:                      runtimeKindForProvider(provider),
+			Availability:              "online",
+			DetectionState:            "detected",
+			RequiresExperimentalOptIn: runtimeRequiresExperimentalOptIn(rt, provider),
 		}},
 	}, &out)
 }
 
 func (p *Plane) DeregisterRuntime(context.Context, string) error {
 	return nil
+}
+
+func runtimeRequiresExperimentalOptIn(rt controlplane.RuntimeRegistration, provider string) bool {
+	if len(rt.Capabilities) == 0 {
+		return false
+	}
+	key := "provider." + provider + ".requires_experimental_opt_in"
+	return rt.Capabilities[key]
 }
 
 func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat) error {
@@ -590,11 +600,12 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		metadata[agentbridge.MetadataAgentInstruction] = instructionPlacement
 	}
 	return &bridge.TaskRequest{
-		ID:           assignment.TaskID,
-		Provider:     bridge.Provider(assignment.RuntimeProvider),
-		Prompt:       prompt,
-		SystemPrompt: systemPrompt,
-		Metadata:     metadata,
+		ID:                       assignment.TaskID,
+		Provider:                 bridge.Provider(assignment.RuntimeProvider),
+		Prompt:                   prompt,
+		SystemPrompt:             systemPrompt,
+		AllowExperimentalRuntime: assignment.AllowExperimentalRuntime,
+		Metadata:                 metadata,
 	}
 }
 

@@ -85,13 +85,14 @@ func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 
 func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 	assignment := assignmentcontract.Assignment{
-		ID:               "asn-1",
-		TaskID:           "task-a",
-		ComponentID:      "component-1",
-		AgentID:          "jykim1",
-		RuntimeProvider:  "claude",
-		Prompt:           "golang hello world quickly",
-		AgentInstruction: "act as a backend reviewer",
+		ID:                       "asn-1",
+		TaskID:                   "task-a",
+		ComponentID:              "component-1",
+		AgentID:                  "jykim1",
+		RuntimeProvider:          "claude",
+		Prompt:                   "golang hello world quickly",
+		AgentInstruction:         "act as a backend reviewer",
+		AllowExperimentalRuntime: true,
 	}
 	req := taskRequestFromAssignment(assignment)
 	if req.Prompt != assignment.Prompt {
@@ -105,6 +106,9 @@ func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 	}
 	if got := req.Metadata[agentbridge.MetadataAgentInstruction]; got != agentbridge.TelemetryPlacementSystemPrompt {
 		t.Fatalf("instruction placement = %q", got)
+	}
+	if !req.AllowExperimentalRuntime {
+		t.Fatalf("allow experimental runtime was not copied from assignment")
 	}
 }
 
@@ -272,6 +276,9 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 		RuntimeID:  "daemon-1:codex",
 		Provider:   "codex",
 		DeviceName: "주윤의 MacBook",
+		Capabilities: map[string]bool{
+			"provider.codex.requires_experimental_opt_in": true,
+		},
 	})
 	if err != nil {
 		t.Fatalf("RegisterRuntime: %v", err)
@@ -283,7 +290,10 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 	if snapshot.DaemonID != "daemon-1" || snapshot.DeviceID != "device-1" || snapshot.DeviceDisplayName != "주윤의 MacBook" {
 		t.Fatalf("snapshot identity = %+v", snapshot)
 	}
-	if len(snapshot.Runtimes) != 1 || snapshot.Runtimes[0].RuntimeID != "daemon-1:codex" || snapshot.Runtimes[0].Kind != "codex" {
+	if len(snapshot.Runtimes) != 1 ||
+		snapshot.Runtimes[0].RuntimeID != "daemon-1:codex" ||
+		snapshot.Runtimes[0].Kind != "codex" ||
+		!snapshot.Runtimes[0].RequiresExperimentalOptIn {
 		t.Fatalf("snapshot runtimes = %+v", snapshot.Runtimes)
 	}
 }
