@@ -35,11 +35,59 @@ func TestResolveExecutablePathFallback(t *testing.T) {
 	}
 }
 
+func TestResolveExecutableCandidatesPreservePathOrder(t *testing.T) {
+	firstDir := t.TempDir()
+	secondDir := t.TempDir()
+	first := writeExecutable(t, filepath.Join(firstDir, "fake-tool"), "first")
+	second := writeExecutable(t, filepath.Join(secondDir, "fake-tool"), "second")
+	t.Setenv("PATH", firstDir+string(os.PathListSeparator)+secondDir)
+
+	got := ResolveExecutableCandidates("fake-tool", "")
+	if len(got) != 2 {
+		t.Fatalf("candidate count: got %d (%v), want 2", len(got), got)
+	}
+	if got[0] != first || got[1] != second {
+		t.Fatalf("candidate order: got %v, want [%s %s]", got, first, second)
+	}
+}
+
+func TestResolveExecutableCandidatesOverrideIsOnlyCandidate(t *testing.T) {
+	override := writeExecutable(t, filepath.Join(t.TempDir(), "fake-tool"), "override")
+	pathDir := t.TempDir()
+	_ = writeExecutable(t, filepath.Join(pathDir, "fake-tool"), "path")
+	t.Setenv("PATH", pathDir)
+
+	got := ResolveExecutableCandidates("fake-tool", override)
+	if len(got) != 1 || got[0] != override {
+		t.Fatalf("override must be the only candidate, got %v", got)
+	}
+}
+
+func TestResolveExecutableCandidatesMissingOverrideFailsClosed(t *testing.T) {
+	pathDir := t.TempDir()
+	_ = writeExecutable(t, filepath.Join(pathDir, "fake-tool"), "path")
+	t.Setenv("PATH", pathDir)
+
+	got := ResolveExecutableCandidates("fake-tool", "/definitely/not/real-xyz")
+	if len(got) != 0 {
+		t.Fatalf("missing override must not fall back to PATH, got %v", got)
+	}
+}
+
 func TestResolveExecutableMissing(t *testing.T) {
 	_, ok := ResolveExecutable("definitely-not-a-real-binary-xyz", "")
 	if ok {
 		t.Fatal("expected not found")
 	}
+}
+
+func writeExecutable(t *testing.T, path, output string) string {
+	t.Helper()
+	script := "#!/bin/sh\necho '" + output + "'\n"
+	if err := os.WriteFile(path, []byte(script), 0o755); err != nil {
+		t.Fatalf("write executable %s: %v", path, err)
+	}
+	return path
 }
 
 func TestVersionProbeEchoesOutput(t *testing.T) {

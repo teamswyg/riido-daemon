@@ -121,14 +121,33 @@ func sanitizeReason(raw string) string {
 //   - --version exits zero and parses and version ≥ MinSupportedVersion
 //     → Available=true with Version populated.
 func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
-	exe, ok := detectutil.ResolveExecutable(DefaultExecutable, envValue(env, EnvOverride))
-	if !ok {
+	candidates := detectutil.ResolveExecutableCandidates(DefaultExecutable, envValue(env, EnvOverride))
+	if len(candidates) == 0 {
 		return agentbridge.DetectResult{
 			Available: false,
 			Reason:    "openclaw executable not found on PATH and " + EnvOverride + " is not set",
 		}, nil
 	}
 
+	var first agentbridge.DetectResult
+	for i, exe := range candidates {
+		res := detectExecutable(ctx, exe)
+		if len(candidates) > 1 {
+			res.Metadata["path_candidate_count"] = strconv.Itoa(len(candidates))
+			res.Metadata["path_candidate_index"] = strconv.Itoa(i + 1)
+		}
+		if i == 0 {
+			first = res
+		}
+		if res.Available {
+			return res, nil
+		}
+	}
+
+	return first, nil
+}
+
+func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult {
 	base := agentbridge.DetectResult{
 		Executable:        exe,
 		SupportsStreaming: true,
@@ -145,7 +164,7 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 	if !probe.OK {
 		base.Available = false
 		base.Reason = "openclaw --version did not run to completion (timeout or signal); cannot enforce minimum version " + MinSupportedVersion
-		return base, nil
+		return base
 	}
 
 	if probe.ExitCode != 0 {
@@ -155,7 +174,7 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		base.Reason = sanitizeReason(probe.Output)
 		// Leave Version empty — exit code says we have no trustworthy
 		// version information.
-		return base, nil
+		return base
 	}
 
 	parsed, ok := parseVersion(probe.Output)
@@ -163,7 +182,7 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		base.Available = false
 		base.Version = ""
 		base.Reason = "openclaw --version output did not match the expected YYYY.M.D shape: " + sanitizeReason(probe.Output)
-		return base, nil
+		return base
 	}
 
 	// Successful parse: record what we observed for diagnostics.
@@ -174,11 +193,11 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 	if compareVersions(parsed, minTuple) < 0 {
 		base.Available = false
 		base.Reason = "openclaw " + base.Version + " is older than minimum supported " + MinSupportedVersion + " — upgrade openclaw"
-		return base, nil
+		return base
 	}
 
 	base.Available = true
-	return base, nil
+	return base
 }
 
 func envValue(env agentbridge.DetectEnv, key string) string {

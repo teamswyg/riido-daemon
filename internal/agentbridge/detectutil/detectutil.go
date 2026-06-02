@@ -14,6 +14,8 @@ import (
 	"errors"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 )
@@ -34,19 +36,108 @@ const versionProbeTimeout = 10 * time.Second
 //
 // Returns (path, true) on success, ("", false) if not found.
 func ResolveExecutable(name, envOverride string) (string, bool) {
-	override := strings.TrimSpace(envOverride)
-	if override != "" {
-		info, err := os.Stat(override)
-		if err != nil || info.IsDir() {
-			return "", false
-		}
-		return override, true
-	}
-	p, err := exec.LookPath(name)
-	if err != nil {
+	candidates := ResolveExecutableCandidates(name, envOverride)
+	if len(candidates) == 0 {
 		return "", false
 	}
-	return p, true
+	return candidates[0], true
+}
+
+// ResolveExecutableCandidates returns executable candidates in PATH order.
+//
+// It preserves the same env override pin semantics as ResolveExecutable:
+// an override returns at most that one file, and an invalid override
+// returns no candidates. With no override, the first element matches the
+// normal exec.LookPath result, followed by any later same-name PATH hits.
+func ResolveExecutableCandidates(name, envOverride string) []string {
+	override := strings.TrimSpace(envOverride)
+	if override != "" {
+		if !isRegularFile(override) {
+			return nil
+		}
+		return []string{override}
+	}
+
+	name = strings.TrimSpace(name)
+	if name == "" {
+		return nil
+	}
+
+	var candidates []string
+	seen := map[string]struct{}{}
+	add := func(p string) {
+		if p == "" {
+			return
+		}
+		key := filepath.Clean(p)
+		if _, ok := seen[key]; ok {
+			return
+		}
+		seen[key] = struct{}{}
+		candidates = append(candidates, p)
+	}
+
+	p, err := exec.LookPath(name)
+	if err == nil {
+		add(p)
+	}
+
+	if strings.ContainsAny(name, `/\`) {
+		return candidates
+	}
+
+	for _, dir := range filepath.SplitList(os.Getenv("PATH")) {
+		if dir == "" {
+			dir = "."
+		}
+		for _, candidateName := range executableNames(name) {
+			path := filepath.Join(dir, candidateName)
+			if isExecutableFile(path) {
+				add(path)
+			}
+		}
+	}
+
+	return candidates
+}
+
+func isRegularFile(path string) bool {
+	info, err := os.Stat(path)
+	return err == nil && !info.IsDir() && info.Mode().IsRegular()
+}
+
+func isExecutableFile(path string) bool {
+	info, err := os.Stat(path)
+	if err != nil || info.IsDir() || !info.Mode().IsRegular() {
+		return false
+	}
+	if runtime.GOOS == "windows" {
+		return true
+	}
+	return info.Mode().Perm()&0o111 != 0
+}
+
+func executableNames(name string) []string {
+	if runtime.GOOS != "windows" || filepath.Ext(name) != "" {
+		return []string{name}
+	}
+
+	exts := filepath.SplitList(os.Getenv("PATHEXT"))
+	if len(exts) == 0 {
+		exts = []string{".COM", ".EXE", ".BAT", ".CMD"}
+	}
+	out := make([]string, 0, len(exts))
+	for _, ext := range exts {
+		ext = strings.TrimSpace(ext)
+		if ext == "" {
+			continue
+		}
+		out = append(out, name+ext)
+	}
+	if len(out) == 0 {
+		return []string{name}
+	}
+	return out
 }
 
 // EnvOverride reads an env var by key, defaulting to os.Getenv.
