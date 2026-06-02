@@ -23,6 +23,7 @@ const (
 	MetadataAgentID         = "riido_saas_agent_id"
 	MetadataComponentID     = "riido_saas_component_id"
 	MetadataLeaseToken      = "riido_saas_lease_token"
+	MetadataModelID         = "riido_saas_model_id"
 	MetadataRuntimeProvider = "riido_saas_runtime_provider"
 )
 
@@ -590,6 +591,7 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		MetadataAgentID:         assignment.AgentID,
 		MetadataComponentID:     assignment.ComponentID,
 		MetadataLeaseToken:      assignment.LeaseToken,
+		MetadataModelID:         assignment.ModelID,
 		MetadataRuntimeProvider: assignment.RuntimeProvider,
 		"workspace_id":          firstNonEmpty(assignment.ComponentID, assignment.TaskID),
 		"run_id":                assignment.ID,
@@ -602,6 +604,7 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 	return &bridge.TaskRequest{
 		ID:                       assignment.TaskID,
 		Provider:                 bridge.Provider(assignment.RuntimeProvider),
+		Model:                    assignment.ModelID,
 		Prompt:                   prompt,
 		SystemPrompt:             systemPrompt,
 		AllowExperimentalRuntime: assignment.AllowExperimentalRuntime,

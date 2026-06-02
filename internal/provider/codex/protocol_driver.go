@@ -198,6 +198,8 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 		if d.req.ResumeSessionID != "" {
 			method = "thread/resume"
 			params["threadId"] = d.req.ResumeSessionID
+		} else if d.req.Model != "" {
+			params["model"] = d.req.Model
 		}
 		if _, err := d.sendRequest(ctx, io, method, params); err != nil {
 			return nil, nil, err
@@ -221,6 +223,9 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 		}
 		if d.req.Prompt != "" {
 			params["input"] = []map[string]any{{"type": "text", "text": d.req.Prompt}}
+		}
+		if d.req.Model != "" {
+			params["model"] = d.req.Model
 		}
 		if _, err := d.sendRequest(ctx, io, "turn/start", params); err != nil {
 			return nil, nil, err
