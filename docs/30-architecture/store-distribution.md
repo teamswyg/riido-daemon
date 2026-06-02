@@ -23,6 +23,12 @@
 | `msix-store` | Microsoft Store MSIX packaged desktop app | requires policy gate | runFullTrust explanation, no service install by default, privacy/review notes |
 | `dev-local` | `go run` / launchd plist | existing | not a store artifact |
 
+The helper binary that Desktop/MSIX launchers download is published as a
+GitHub Release asset by
+[`release-artifacts.md`](release-artifacts.md). Store package updates remain a
+Desktop packaging concern; the daemon release asset is the user-data helper
+binary source and must not contain provider CLIs or secrets.
+
 ### 1.1 MSIX acceptance criteria
 
 정책 snapshot: 2026-05-26 기준 Microsoft Learn 의 Microsoft Store Policies v7.19(2025-09-10 published, 2025-10-14 effective), packaged desktop app distribution, MSIX package upload, MSIX signing 문서를 확인했다. 이 외부 정책이 바뀌면 본 문서와 C11 distribution SSOT 를 같은 work unit 에서 갱신한다.
