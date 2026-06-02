@@ -23,11 +23,13 @@ type boundaryManifest struct {
 }
 
 type upstreamManifestRef struct {
-	Repo          string   `json:"repo"`
-	Path          string   `json:"path"`
-	SchemaVersion string   `json:"schema_version"`
-	ID            string   `json:"id"`
-	StabilizedBy  []string `json:"stabilized_by"`
+	Repo                    string   `json:"repo"`
+	Path                    string   `json:"path"`
+	SchemaVersion           string   `json:"schema_version"`
+	ID                      string   `json:"id"`
+	MirrorsSourceField      string   `json:"mirrors_source_field"`
+	SourceFieldIntroducedBy string   `json:"source_field_introduced_by"`
+	StabilizedBy            []string `json:"stabilized_by"`
 }
 
 type toolLimitation struct {
@@ -90,6 +92,10 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 		manifest.SourceCoverageManifestProvenance.SchemaVersion != "riido-figma-ai-agent-coverage.v1" ||
 		manifest.SourceCoverageManifestProvenance.ID != "figma-v1-22-ai-agent-ui-coverage" {
 		t.Fatalf("upstream coverage provenance drifted: %#v", manifest.SourceCoverageManifestProvenance)
+	}
+	if manifest.SourceCoverageManifestProvenance.MirrorsSourceField != "stabilized_by" ||
+		manifest.SourceCoverageManifestProvenance.SourceFieldIntroducedBy != "teamswyg/riido-contracts#53" {
+		t.Fatalf("upstream coverage provenance source field marker drifted: %#v", manifest.SourceCoverageManifestProvenance)
 	}
 	expectedSourceProvenance := []string{
 		"teamswyg/riido-contracts#38",
@@ -172,7 +178,10 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 	requireContains(t, humanDoc, manifest.SchemaVersion)
 	requireContains(t, humanDoc, "RIID-4843")
 	requireContains(t, humanDoc, "RIID-4847")
+	requireContains(t, humanDoc, "RIID-4851")
 	requireContains(t, humanDoc, "figma-metadata-page-list-underreports-pages.v1")
+	requireContains(t, humanDoc, "teamswyg/riido-contracts#53")
+	requireContains(t, humanDoc, "`stabilized_by`")
 	requireContains(t, humanDoc, "teamswyg/riido-contracts#38")
 	requireContains(t, humanDoc, "teamswyg/riido-contracts#52")
 	requireContains(t, humanDoc, "432:37336")
