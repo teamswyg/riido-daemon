@@ -2,7 +2,7 @@
   "schema_version": "riido-figma-ai-agent-daemon-boundary.v1",
   "id": "figma-v1-22-ai-agent-daemon-boundary",
   "riido_task": "RIID-4813",
-  "hardening_tasks": ["RIID-4843"],
+  "hardening_tasks": ["RIID-4843", "RIID-4859"],
   "human_doc": "docs/30-architecture/figma-ai-agent-daemon-boundary.md",
   "source_coverage_manifest": "riido-contracts/docs/30-architecture/figma-ai-agent-coverage.riido.json",
   "source_coverage_manifest_provenance": {
@@ -18,7 +18,8 @@
       "teamswyg/riido-contracts#45",
       "teamswyg/riido-contracts#46",
       "teamswyg/riido-contracts#51",
-      "teamswyg/riido-contracts#52"
+      "teamswyg/riido-contracts#52",
+      "teamswyg/riido-contracts#54"
     ]
   },
   "mirrored_supporting_tool_limitations": [
@@ -29,7 +30,7 @@
       "local_riido_task": "RIID-4843",
       "daemon_scope": "Daemon boundary must not collapse to the UI page only when no-nodeId get_metadata under-reports the Figma file page list.",
       "required_authoritative_pages": ["129:5215", "42:3014", "0:1"],
-      "must_preserve_non_ui_nodes": ["42:3014", "137:6746", "138:7389", "164:26969", "164:30192", "164:30206", "435:60050", "236:29749", "275:22731"]
+      "must_preserve_non_ui_nodes": ["42:3014", "137:6746", "138:7389", "164:26969", "164:30192", "164:30206", "432:46849", "435:60050", "236:29749", "275:22731"]
     }
   ],
   "figma": {
@@ -132,6 +133,14 @@
       "daemon_scope": "No fixture catalog ownership. Fixture selection creates a normal agent upstream; daemon only consumes that agent after assignment.",
       "daemon_consumed_facts": ["assigned instruction/runtime/model after fixture-created agent is assigned"],
       "client_owned_facts": ["fixture rows for 리도/영실/홍도/지원", "direct-setting row", "preview skeleton", "disabled-next presentation"]
+    },
+    {
+      "node_id": "432:46849",
+      "name": "Ex AI - 온보딩 순서 변경 메모",
+      "upstream_owner": ["riido-contracts", "riido-control-plane", "riido-client", "riido-desktop"],
+      "daemon_scope": "No onboarding draft execution ownership. The revised order lets clients collect a local agent draft/configuration before runtime and workspace selection; daemon only consumes the final SaaS-authorized assignment/runtime/model/instruction snapshot after workspace_id and runtime_id are known.",
+      "daemon_consumed_facts": ["final assigned runtime id", "final agent instruction snapshot", "final model id after SaaS authorization"],
+      "client_owned_facts": ["local onboarding draft state", "agent draft/configuration step", "runtime selection step", "workspace selection step", "final create submit timing"]
     },
     {
       "node_id": "164:26969",

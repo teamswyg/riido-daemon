@@ -82,6 +82,7 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 		t.Fatalf("manifest identity drifted: %#v", manifest)
 	}
 	requireSliceContains(t, manifest.HardeningTasks, "RIID-4843")
+	requireSliceContains(t, manifest.HardeningTasks, "RIID-4859")
 	if manifest.HumanDoc != "docs/30-architecture/figma-ai-agent-daemon-boundary.md" {
 		t.Fatalf("human doc path drifted: %q", manifest.HumanDoc)
 	}
@@ -104,6 +105,7 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 		"teamswyg/riido-contracts#46",
 		"teamswyg/riido-contracts#51",
 		"teamswyg/riido-contracts#52",
+		"teamswyg/riido-contracts#54",
 	}
 	requireSameStringSlice(t, manifest.SourceCoverageManifestProvenance.StabilizedBy, expectedSourceProvenance)
 	if manifest.Figma.FileKey != "MUOd9lctoEHASUStN3vUuK" || manifest.Figma.PageID != "129:5215" {
@@ -152,6 +154,7 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 		"42:3014",
 		"137:6746",
 		"138:7389",
+		"432:46849",
 		"164:26969",
 		"164:30192",
 		"164:30206",
@@ -173,6 +176,9 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 	requireSliceContains(t, entries["137:6746"].UpstreamOwner, "riido-daemon")
 	requireContains(t, entries["432:37336"].DaemonScope, "Consumes the assigned runtime")
 	requireContains(t, entries["138:7389"].DaemonScope, "No fixture catalog ownership")
+	requireContains(t, entries["432:46849"].DaemonScope, "No onboarding draft execution ownership")
+	requireContains(t, entries["432:46849"].DaemonScope, "workspace_id")
+	requireContains(t, entries["432:46849"].DaemonScope, "runtime_id")
 
 	humanDoc := string(mustReadFile(t, docPath))
 	requireContains(t, humanDoc, manifest.SchemaVersion)
@@ -181,10 +187,13 @@ func TestFigmaAIAgentDaemonBoundaryManifest(t *testing.T) {
 	requireContains(t, humanDoc, "RIID-4851")
 	requireContains(t, humanDoc, "figma-metadata-page-list-underreports-pages.v1")
 	requireContains(t, humanDoc, "teamswyg/riido-contracts#53")
+	requireContains(t, humanDoc, "teamswyg/riido-contracts#54")
 	requireContains(t, humanDoc, "`stabilized_by`")
 	requireContains(t, humanDoc, "teamswyg/riido-contracts#38")
 	requireContains(t, humanDoc, "teamswyg/riido-contracts#52")
 	requireContains(t, humanDoc, "432:37336")
+	requireContains(t, humanDoc, "432:46849")
+	requireContains(t, humanDoc, "workspace-less create")
 	requireContains(t, humanDoc, "fixture")
 	requireContains(t, humanDoc, "Bottom-up")
 }
