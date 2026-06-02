@@ -927,6 +927,26 @@ This slice does not change daemon runtime behavior, add Figma integration,
 add SaaS endpoints, create a persisted draft API, create a workspace-less
 agent create route, or make daemon the owner of onboarding sequence.
 
+### RIID-4881 — DevicePrincipal config excludes team/OpenAPI inputs
+
+This slice mirrors the upstream contracts/control-plane decision that daemon
+SaaS polling is bound by DevicePrincipal credentials and assignment snapshots,
+not team/OpenAPI-key configuration.
+
+This slice does:
+
+- document that `RIIDO_DEVICE_ID` / `RIIDO_DEVICE_SECRET` are the only daemon
+  credential inputs for SaaS polling in the Desktop-launched flow
+- state that `team_id`, `teamId`, OpenAPI task-context paths, Open API keys, and
+  `X-Workspace-Api-Key` are not identity, binding, polling, or smoke-test inputs
+  for daemon assignment execution
+- keep the daemon as a downstream consumer of already-authorized assignment
+  snapshots
+
+This slice does not change daemon runtime behavior, add SaaS endpoints, edit
+provider credential handling, alter workdir isolation, add deployment config, or
+remove any legacy local-only task source.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:

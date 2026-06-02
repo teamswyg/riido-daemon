@@ -77,6 +77,10 @@ daemon reports provider runtime snapshots to `/v1/daemon/runtime-snapshot`,
 polls `/v1/daemon/agent-bindings`, and only then polls the agent-specific
 assignment endpoint. Legacy `RIIDO_SAAS_AGENTS` / `RIIDO_SAAS_TOKEN` values are
 not read by the daemon settings model.
+This daemon-side flow does not accept `team_id`, `teamId`, OpenAPI task-context
+paths, Open API keys, or `X-Workspace-Api-Key` as identity, binding, polling, or
+smoke-test inputs. Those values are outside the generated AI Agent assignment
+and DevicePrincipal SSOT owned by `riido-contracts`.
 
 When a task is claimed, `saasplane` turns the control-plane assignment into a
 provider-neutral `TaskRequest`. The assignment-created `agent_instruction`
@@ -99,7 +103,9 @@ then launches the daemon with `RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET`.
 `saasplane` sends those values as `X-Riido-Device-ID` and
 `X-Riido-Device-Secret` on poll/heartbeat/event requests. This keeps daemon
 polling alive after the webview is closed and avoids treating a browser JWT as a
-daemon credential.
+daemon credential. Team IDs and Open API keys are not a substitute bridge
+between the webview and daemon; the bridge is the enrolled device credential
+only.
 
 ## Local Daemon Flags
 
