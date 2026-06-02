@@ -848,6 +848,31 @@ add SaaS endpoints, or make daemon the owner of Figma page discovery. The
 canonical Figma coverage and inspection method remain in `riido-contracts`;
 daemon only guards its downstream projection.
 
+### RIID-4847 — Figma coverage upstream provenance full mirror guard
+
+This slice tightens the daemon-side Figma boundary provenance guard.
+`riido-control-plane` already mirrors the full contracts Figma coverage
+stabilization history, but the daemon projection only recorded
+`teamswyg/riido-contracts#52`. That was enough for the metadata page-list
+limitation itself, but too weak for the broader upstream coverage manifest
+dependency.
+
+This slice does:
+
+- expand `source_coverage_manifest_provenance.stabilized_by` to mirror the full
+  contracts coverage stabilization history:
+  `teamswyg/riido-contracts#38`, `#39`, `#45`, `#46`, `#51`, and `#52`
+- keep `mirrored_supporting_tool_limitations[].source_stabilized_by` narrowed to
+  `teamswyg/riido-contracts#52`, because that field describes the limitation
+  slice, not the whole coverage manifest
+- update `tools/figmaboundary` so full upstream coverage provenance and
+  limitation-local provenance are verified separately
+
+This slice does not change daemon runtime behavior, add Figma integration,
+add SaaS endpoints, or make daemon the owner of Figma page discovery. It only
+improves the SSOT dependency mirror between contracts coverage and daemon
+projection.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
