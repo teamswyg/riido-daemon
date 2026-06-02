@@ -10,7 +10,9 @@
 CLI/helper binary. Provider CLIs remain external user-installed tools and are
 never bundled in the release archive.
 
-The release workflow is `.github/workflows/release-artifacts.yml`.
+The release workflow is `.github/workflows/release-artifacts.yml`. It runs a
+packaging dry-run on pull requests and branch pushes that touch release-owned
+paths. It publishes GitHub Release assets only from `v*` tags.
 
 ## Asset Names
 
@@ -32,6 +34,12 @@ Archives contain:
 - `LICENSE`
 - `NOTICE.md`
 - `VERSION`
+
+Windows assets use the same public release channel so MSIX/Desktop launchers can
+select an artifact by platform. The current Windows process adapter is a
+stdlib-only portability layer: it can launch and stop the direct child process,
+while full Windows process-tree control remains a separate native-hosting
+improvement.
 
 ## Installer
 

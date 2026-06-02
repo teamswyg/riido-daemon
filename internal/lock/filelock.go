@@ -11,13 +11,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 	"time"
 )
 
-// FileLock is an exclusive advisory lock backed by flock(2).
+// FileLock is an exclusive advisory lock backed by the host OS lock primitive.
 type FileLock struct {
 	file *os.File
+	path string
 }
 
 // AcquireFile waits until an exclusive lock can be acquired or ctx is done.
@@ -35,11 +35,11 @@ func AcquireFile(ctx context.Context, path string) (*FileLock, error) {
 	ticker := time.NewTicker(10 * time.Millisecond)
 	defer ticker.Stop()
 	for {
-		err := syscall.Flock(int(file.Fd()), syscall.LOCK_EX|syscall.LOCK_NB)
+		err := tryLockFile(file, path)
 		if err == nil {
-			return &FileLock{file: file}, nil
+			return &FileLock{file: file, path: path}, nil
 		}
-		if err != syscall.EWOULDBLOCK && err != syscall.EAGAIN {
+		if !isLockBusy(err) {
 			_ = file.Close()
 			return nil, fmt.Errorf("lock: acquire file lock: %w", err)
 		}
@@ -57,14 +57,19 @@ func (l *FileLock) Release() error {
 	if l == nil || l.file == nil {
 		return nil
 	}
-	err := syscall.Flock(int(l.file.Fd()), syscall.LOCK_UN)
+	err := unlockFile(l.file, l.path)
 	closeErr := l.file.Close()
+	path := l.path
 	l.file = nil
+	l.path = ""
 	if err != nil {
 		return fmt.Errorf("lock: release file lock: %w", err)
 	}
 	if closeErr != nil {
 		return fmt.Errorf("lock: close file lock: %w", closeErr)
+	}
+	if err := cleanupLockFile(path); err != nil {
+		return fmt.Errorf("lock: cleanup file lock: %w", err)
 	}
 	return nil
 }
