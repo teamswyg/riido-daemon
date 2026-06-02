@@ -108,7 +108,7 @@ func TestCodexProtocolDriverWritesInitializeOnStart(t *testing.T) {
 // --- B2: initialize response → initialized + thread/start ---
 
 func TestCodexProtocolDriverInitializeResponseWritesInitializedAndThreadStart(t *testing.T) {
-	d, _ := NewProtocolDriver(agentbridge.StartRequest{})
+	d, _ := NewProtocolDriver(agentbridge.StartRequest{Model: "gpt-5.5"})
 	io := newRecordingIO()
 	if err := d.OnStart(context.Background(), io); err != nil {
 		t.Fatal(err)
@@ -131,12 +131,15 @@ func TestCodexProtocolDriverInitializeResponseWritesInitializedAndThreadStart(t 
 	if !strings.Contains(string(second), `"method":"thread/start"`) {
 		t.Fatalf("expected thread/start, got %q", second)
 	}
+	if !strings.Contains(string(second), `"model":"gpt-5.5"`) {
+		t.Fatalf("thread/start missing model: %q", second)
+	}
 }
 
 // --- B3: thread response → turn/start ---
 
 func TestCodexProtocolDriverThreadResponseWritesTurnStart(t *testing.T) {
-	d, _ := NewProtocolDriver(agentbridge.StartRequest{Prompt: "do the thing"})
+	d, _ := NewProtocolDriver(agentbridge.StartRequest{Prompt: "do the thing", Model: "gpt-5.5"})
 	io := newRecordingIO()
 	_ = d.OnStart(context.Background(), io)
 	_ = io.next(t, time.Second) // initialize
@@ -162,6 +165,9 @@ func TestCodexProtocolDriverThreadResponseWritesTurnStart(t *testing.T) {
 	}
 	if !strings.Contains(string(frame), `"input"`) {
 		t.Fatalf("turn/start missing input array: %q", frame)
+	}
+	if !strings.Contains(string(frame), `"model":"gpt-5.5"`) {
+		t.Fatalf("turn/start missing model: %q", frame)
 	}
 }
 

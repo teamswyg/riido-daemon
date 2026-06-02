@@ -90,6 +90,7 @@ func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 		ComponentID:              "component-1",
 		AgentID:                  "jykim1",
 		RuntimeProvider:          "claude",
+		ModelID:                  "claude-opus-4-7",
 		Prompt:                   "golang hello world quickly",
 		AgentInstruction:         "act as a backend reviewer",
 		AllowExperimentalRuntime: true,
@@ -109,6 +110,12 @@ func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 	}
 	if !req.AllowExperimentalRuntime {
 		t.Fatalf("allow experimental runtime was not copied from assignment")
+	}
+	if req.Model != assignment.ModelID {
+		t.Fatalf("model_id was not copied from assignment: %q", req.Model)
+	}
+	if got := req.Metadata[MetadataModelID]; got != assignment.ModelID {
+		t.Fatalf("metadata model_id = %q, want %q", got, assignment.ModelID)
 	}
 }
 
