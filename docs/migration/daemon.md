@@ -873,6 +873,32 @@ add SaaS endpoints, or make daemon the owner of Figma page discovery. It only
 improves the SSOT dependency mirror between contracts coverage and daemon
 projection.
 
+### RIID-4851 — Figma coverage provenance source-field mirror marker
+
+This slice records that daemon's upstream coverage provenance now mirrors a
+contracts-owned source field, not local memory.
+
+After `teamswyg/riido-contracts#53`, the canonical Figma coverage manifest owns
+top-level `stabilized_by`. Daemon already preserved the full contracts coverage
+history, but it did not identify that list as a mirror of the contracts source
+field. That made the downstream boundary weaker than the contracts/control-plane
+SSOT chain.
+
+This slice does:
+
+- add `mirrors_source_field = "stabilized_by"` to
+  `source_coverage_manifest_provenance`
+- record `source_field_introduced_by = "teamswyg/riido-contracts#53"`
+- keep the mirrored full history as `teamswyg/riido-contracts#38`, `#39`, `#45`,
+  `#46`, `#51`, and `#52`
+- update `tools/figmaboundary` so the source-field marker and human doc mention
+  are verified with the rest of the Figma boundary manifest
+
+This slice does not change daemon runtime behavior, add Figma integration,
+add SaaS endpoints, or make daemon the owner of Figma page discovery. It only
+improves the SSOT dependency mirror between contracts coverage and daemon
+projection.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:

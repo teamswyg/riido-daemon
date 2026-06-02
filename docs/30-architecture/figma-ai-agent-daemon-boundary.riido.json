@@ -10,6 +10,8 @@
     "path": "docs/30-architecture/figma-ai-agent-coverage.riido.json",
     "schema_version": "riido-figma-ai-agent-coverage.v1",
     "id": "figma-v1-22-ai-agent-ui-coverage",
+    "mirrors_source_field": "stabilized_by",
+    "source_field_introduced_by": "teamswyg/riido-contracts#53",
     "stabilized_by": [
       "teamswyg/riido-contracts#38",
       "teamswyg/riido-contracts#39",

@@ -28,12 +28,22 @@
 
 > Riido task: RIID-4847 `[Daemon] Figma coverage upstream provenance full mirror guard`
 
+> Riido task: RIID-4851 `[Daemon] Figma coverage provenance source-field mirror marker`
+
 daemon manifest의 `source_coverage_manifest_provenance.stabilized_by`는
-contracts coverage manifest의 전체 stabilization history
+contracts coverage manifest의 top-level `stabilized_by` source field가 담은
+전체 stabilization history
 (`teamswyg/riido-contracts#38`, `#39`, `#45`, `#46`, `#51`, `#52`)를
 미러링합니다. 이것은 daemon이 Figma coverage owner라는 뜻이 아니라,
 downstream projection이 어떤 upstream coverage 이력을 기준으로 좁혀졌는지
 잃지 않기 위한 provenance guard입니다.
+
+`teamswyg/riido-contracts#53`에서 contracts manifest가 `stabilized_by`
+필드를 직접 소유하게 되었기 때문에, daemon manifest는
+`source_coverage_manifest_provenance.mirrors_source_field = "stabilized_by"`와
+`source_field_introduced_by = "teamswyg/riido-contracts#53"`도 함께 기록합니다.
+즉 daemon은 upstream history를 로컬 기억으로 재정의하지 않고, contracts의
+source field를 downstream boundary metadata로 좁혀서 소비합니다.
 
 반대로 `mirrored_supporting_tool_limitations[].source_stabilized_by`는 해당
 limitation이 도입된 upstream slice만 기록합니다. 현재
