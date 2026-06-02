@@ -312,6 +312,9 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 		RuntimeID:  "daemon-1:codex",
 		Provider:   "codex",
 		DeviceName: "주윤의 MacBook",
+		Models: []controlplane.RuntimeModel{
+			{ModelID: "gpt-5.5", Label: "gpt-5.5", IsDefault: true},
+		},
 		Capabilities: map[string]bool{
 			"provider.codex.requires_experimental_opt_in": true,
 		},
@@ -331,6 +334,9 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 		snapshot.Runtimes[0].Kind != "codex" ||
 		!snapshot.Runtimes[0].RequiresExperimentalOptIn {
 		t.Fatalf("snapshot runtimes = %+v", snapshot.Runtimes)
+	}
+	if len(snapshot.Runtimes[0].Models) != 1 || snapshot.Runtimes[0].Models[0].ModelID != "gpt-5.5" || !snapshot.Runtimes[0].Models[0].IsDefault {
+		t.Fatalf("snapshot runtime models = %+v", snapshot.Runtimes[0].Models)
 	}
 }
 

@@ -87,15 +87,15 @@ func TestInjectCodexWritesAGENTSmd(t *testing.T) {
 		manifest.PrimaryInstructionFile != "AGENTS.md" ||
 		manifest.ManifestFile != NativeConfigManifestPath ||
 		manifest.HookMode != NativeConfigHookModeInstructionOnly ||
-		manifest.ConfigHomeDir != ".codex" ||
+		manifest.ConfigHomeDir != "" ||
 		manifest.TelemetryContractPlacement != "prompt" ||
 		manifest.Workflow != "quick-create" {
 		t.Fatalf("manifest = %+v", manifest)
 	}
-	if !containsString(manifest.ProviderSettingsFiles, ".codex/config.toml") {
+	if len(manifest.ProviderSettingsFiles) != 0 {
 		t.Fatalf("manifest provider settings files = %+v", manifest.ProviderSettingsFiles)
 	}
-	for _, want := range []string{"AGENTS.md", ".codex/config.toml", NativeConfigManifestPath} {
+	for _, want := range []string{"AGENTS.md", NativeConfigManifestPath} {
 		if !containsString(manifest.GeneratedFiles, want) {
 			t.Fatalf("manifest generated files missing %q: %+v", want, manifest.GeneratedFiles)
 		}
@@ -296,7 +296,7 @@ func TestProviderConfigPlanUsesGeneratedCatalog(t *testing.T) {
 		t.Fatalf("claude plan = %+v", claude)
 	}
 	codex := ProviderConfigPlan("codex")
-	if codex.ConfigHomeDir != ".codex" || !containsString(codex.ProviderSettingsFiles, ".codex/config.toml") {
+	if codex.ConfigHomeDir != "" || len(codex.ProviderSettingsFiles) != 0 {
 		t.Fatalf("codex plan = %+v", codex)
 	}
 	cursor := ProviderConfigPlan("cursor")

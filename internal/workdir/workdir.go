@@ -725,7 +725,8 @@ exit 0
 
 func codexConfigTOML() string {
 	return `# Managed by riido-daemon.
-# This task-scoped CODEX_HOME prevents Codex from reading the user's global config.
+# Reserved for future Codex native config materialization.
+# Current Codex runs use adapter-injected permission profiles instead of task-scoped CODEX_HOME.
 `
 }
 

@@ -33,11 +33,19 @@ func TestIntegration(t *testing.T) {
 		t.Skipf("codex Detect reported Available=false: %s", det.Reason)
 	}
 
+	env := map[string]string{}
+	if value := os.Getenv("CODEX_HOME"); value != "" {
+		env["CODEX_HOME"] = value
+	}
+	if value := os.Getenv("HOME"); value != "" {
+		env["HOME"] = value
+	}
 	req := agentbridge.StartRequest{
 		Prompt: `Respond with exactly "ok".`,
 		Cwd:    t.TempDir(),
+		Env:    env,
 	}
-	spawn, err := BuildStart(req, StartOptions{CodexHome: t.TempDir()})
+	spawn, err := BuildStart(req, StartOptions{})
 	if err != nil {
 		t.Fatalf("BuildStart: %v", err)
 	}

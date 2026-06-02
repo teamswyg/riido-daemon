@@ -257,6 +257,7 @@ func (a *Actor) register(ctx context.Context, status runtimeactor.Status) error 
 		Capabilities:         caps,
 		CapabilityAttributes: attrs,
 		DeviceName:           status.DeviceName,
+		Models:               runtimeModels(status.Models),
 		StartedAt:            status.StartedAt,
 		UptimeSeconds:        status.UptimeSeconds,
 		SlotLimit:            status.MaxConcurrent,
@@ -264,6 +265,18 @@ func (a *Actor) register(ctx context.Context, status runtimeactor.Status) error 
 		RunningTaskIDs:       runtimeTaskIDs(status.RunningTasks),
 	}
 	return a.cfg.Source.RegisterRuntime(ctx, reg)
+}
+
+func runtimeModels(in []runtimeactor.RuntimeModel) []controlplane.RuntimeModel {
+	out := make([]controlplane.RuntimeModel, 0, len(in))
+	for _, model := range in {
+		out = append(out, controlplane.RuntimeModel{
+			ModelID:   model.ModelID,
+			Label:     model.Label,
+			IsDefault: model.IsDefault,
+		})
+	}
+	return out
 }
 
 func statusProvider(status runtimeactor.Status) string {
