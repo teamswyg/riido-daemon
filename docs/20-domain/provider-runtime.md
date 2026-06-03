@@ -140,6 +140,18 @@ provider text result -> SaaS completed thread` 경로를 통과했다. 하지만
 아니다. OpenClaw 파일 작성 capability 는 별도 provider capability / permission gate
 로 검증되기 전까지 PASS 조건으로 선언하지 않는다.
 
+A-48 부터 OpenClaw real CLI integration gate 는 `ResultCompleted` 와 함께 daemon 이
+선택한 workdir 안의 expected file artifact 를 확인한다. 이 gate 는
+`AGENTBRIDGE_INTEGRATION=1` 과 지원 OpenClaw version 이 모두 충족된 operator
+environment 에서만 실행된다. Gate 가 skip 된 경우에는 filesystem side-effect 가
+검증된 것이 아니며, SaaS thread completion 만으로 파일 산출을 증명하지 않는다.
+현재 OpenClaw CLI 의 `agent` surface 는 per-run `--workspace` / `--cwd` 를 제공하지
+않고 `agents add --workspace` 또는 `setup --workspace` 로 사전 구성된 workspace 를
+사용하므로, daemon-selected task workdir 을 요구하는 task 는 C5
+`required_surfaces=["worktree"]` 로 pre-submit 차단되어야 한다. Runtime capability
+reconciliation 은 OpenClaw `SupportsWorktree=false`, Claude/Codex/Cursor
+`SupportsWorktree=true` 로 노출한다.
+
 RIID-4661 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/cursor` 다. 이 package 는 Cursor Agent CLI 를 번들하지 않고,
 root-print / agent-subcommand / legacy-chat launch profile selection, `--yolo` unsafe

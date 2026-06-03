@@ -37,6 +37,7 @@ task 는 provider-neutral surface 이름으로 요구 조건을 표현한다.
 | `mcp` | MCP config / tool bridge 를 지원해야 함 | `SupportsMCP` |
 | `tool-hooks` | tool / hook event surface 를 지원해야 함 | `SupportsHookEvents` |
 | `usage` | token usage metric 을 제공해야 함 | `SupportsUsageMetrics` |
+| `worktree` | daemon 이 선택한 task-scoped workdir/worktree 를 provider 실행 표면으로 전달할 수 있어야 함 | `SupportsWorktree` |
 
 Go surface 는 `bridge.TaskRequest.RequiredSurfaces []string` 이다. local file queue JSON 에서는 `required_surfaces` 로 쓸 수 있다. 예:
 
@@ -45,7 +46,7 @@ Go surface 는 `bridge.TaskRequest.RequiredSurfaces []string` 이다. local file
   "id": "task-1",
   "provider": "cursor",
   "prompt": "inspect this repo",
-  "required_surfaces": ["structured-event-stream"],
+  "required_surfaces": ["structured-event-stream", "worktree"],
   "allow_experimental_runtime": true,
   "metadata": {
     "workspace_id": "ws-1"

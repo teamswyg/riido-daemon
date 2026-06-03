@@ -243,6 +243,8 @@ func (a *Actor) register(ctx context.Context, status runtimeactor.Status) error 
 		caps[prefix+"supports_mcp"] = c.SupportsMCP
 		caps[prefix+"supports_tool_hooks"] = c.SupportsToolHooks
 		caps[prefix+"supports_usage"] = c.SupportsUsage
+		caps[prefix+"supports_file_events"] = c.SupportsFileEvents
+		caps[prefix+"supports_worktree"] = c.SupportsWorktree
 		attrs[prefix+"compatibility_status"] = c.CompatibilityStatus
 		attrs[prefix+"capability_fingerprint"] = c.CapabilityFingerprint
 		attrs[prefix+"protocol_kind"] = c.ProtocolKind
@@ -489,6 +491,7 @@ func taskEligibility(status runtimeactor.Status, req *bridge.TaskRequest) schedu
 		SupportsMCP:               capView.SupportsMCP,
 		SupportsToolHooks:         capView.SupportsToolHooks,
 		SupportsUsage:             capView.SupportsUsage,
+		SupportsWorktree:          capView.SupportsWorktree,
 	})
 }
 

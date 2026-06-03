@@ -82,6 +82,8 @@ type Capability struct {
 	SupportsMCP               bool   `json:"supports_mcp"`
 	SupportsToolHooks         bool   `json:"supports_tool_hooks"`
 	SupportsUsage             bool   `json:"supports_usage"`
+	SupportsFileEvents        bool   `json:"supports_file_events"`
+	SupportsWorktree          bool   `json:"supports_worktree"`
 }
 
 // TaskStatus describes one in-flight task within the runtime.

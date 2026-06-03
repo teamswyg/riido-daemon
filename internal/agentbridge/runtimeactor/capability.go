@@ -20,6 +20,8 @@ type capabilityProfile struct {
 	supportsPermissionControl bool
 	exposesUnsafeBypass       bool
 	supportsApprovalProtocol  bool
+	supportsFileEvents        bool
+	supportsWorktree          bool
 	defaultSandboxMode        string
 	defaultApprovalPolicy     string
 }
@@ -51,6 +53,8 @@ func buildRuntimeCapability(runtimeID, provider string, res agentbridge.DetectRe
 		SupportsMCP:               domain.SupportsMCP,
 		SupportsToolHooks:         domain.SupportsHookEvents,
 		SupportsUsage:             domain.SupportsUsageMetrics,
+		SupportsFileEvents:        domain.SupportsFileEvents,
+		SupportsWorktree:          domain.SupportsWorktree,
 	}, nil
 }
 
@@ -99,11 +103,13 @@ func reconcileProviderCapability(runtimeID, provider string, res agentbridge.Det
 		SupportsMaxTurns:              res.SupportsMaxTurns,
 		SupportsToolEvents:            res.SupportsToolHooks,
 		SupportsUsageMetrics:          res.SupportsUsage,
+		SupportsFileEvents:            profile.supportsFileEvents,
 		SupportsPermissionControl:     profile.supportsPermissionControl,
 		ExposesUnsafePermissionBypass: profile.exposesUnsafeBypass,
 		SupportsApprovalProtocol:      profile.supportsApprovalProtocol,
 		SupportsMCP:                   res.SupportsMCP,
 		SupportsHookEvents:            res.SupportsToolHooks,
+		SupportsWorktree:              profile.supportsWorktree,
 		DefaultSandboxMode:            profile.defaultSandboxMode,
 		DefaultApprovalPolicy:         profile.defaultApprovalPolicy,
 		CompatibilityStatus:           status,
@@ -168,6 +174,7 @@ func profileForProvider(provider string) capabilityProfile {
 			eventStreamFormat:         providercap.EventStreamFormatNDJSON,
 			supportsPermissionControl: true,
 			exposesUnsafeBypass:       true,
+			supportsWorktree:          true,
 			defaultSandboxMode:        "unknown",
 			defaultApprovalPolicy:     "on-request",
 		}
@@ -179,6 +186,7 @@ func profileForProvider(provider string) capabilityProfile {
 			supportsPermissionControl: true,
 			exposesUnsafeBypass:       true,
 			supportsApprovalProtocol:  true,
+			supportsWorktree:          true,
 			defaultSandboxMode:        "workspace-write",
 			defaultApprovalPolicy:     "on-request",
 		}
@@ -187,6 +195,7 @@ func profileForProvider(provider string) capabilityProfile {
 			protocolKind:          providercap.ProtocolOpenClawAgentJSON,
 			protocolMaturity:      providercap.ProtocolMaturityExperimental,
 			eventStreamFormat:     providercap.EventStreamFormatNDJSON,
+			supportsWorktree:      false,
 			defaultSandboxMode:    "unknown",
 			defaultApprovalPolicy: "unknown",
 		}
@@ -196,6 +205,7 @@ func profileForProvider(provider string) capabilityProfile {
 			protocolMaturity:      providercap.ProtocolMaturityExperimental,
 			eventStreamFormat:     providercap.EventStreamFormatNDJSON,
 			exposesUnsafeBypass:   true,
+			supportsWorktree:      true,
 			defaultSandboxMode:    "unknown",
 			defaultApprovalPolicy: "unknown",
 		}

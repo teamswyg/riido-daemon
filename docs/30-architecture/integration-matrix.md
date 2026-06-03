@@ -52,7 +52,7 @@ integration failure.
 | --- | --- |
 | Claude | simple prompt reaches `ResultCompleted` through stream JSON parsing |
 | Codex | app-server JSON-RPC initialize/thread/turn flow reaches `ResultCompleted` |
-| OpenClaw | JSON or NDJSON result flow reaches `ResultCompleted` with deterministic session id, using the executable path that passed Detect |
+| OpenClaw | JSON or NDJSON result flow reaches `ResultCompleted` with deterministic session id, using the executable path that passed Detect, and the run writes the expected file artifact inside the daemon-selected workdir |
 | Cursor | selected launch profile adds daemon-workdir `--trust` without `--yolo`, and stream JSON flow reaches `ResultCompleted`; missing login probe skips |
 
 ## Agent Instruction Effectiveness Probe
