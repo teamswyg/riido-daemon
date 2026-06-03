@@ -50,6 +50,9 @@ func translateFullResult(p map[string]any) []agentbridge.Event {
 	status := agentbridge.ResultCompleted
 	if errMsg != "" {
 		status = agentbridge.ResultFailed
+	} else if text == "" {
+		status = agentbridge.ResultFailed
+		errMsg = "openclaw full_result completed without text payload"
 	}
 	out = append(out, agentbridge.Event{
 		Kind: agentbridge.EventResult,
