@@ -134,11 +134,19 @@ func (c *Client) Run(ctx context.Context, req TaskRequest) (*Session, error) {
 	if c.process == nil {
 		return nil, errors.New("bridge: Process port not configured")
 	}
+	det, err := adapter.Detect(ctx, agentbridge.DetectEnv{})
+	if err != nil {
+		return nil, fmt.Errorf("bridge: detect %s: %w", req.Provider, err)
+	}
+	if !det.Available {
+		return nil, fmt.Errorf("bridge: provider %s unavailable: %s", req.Provider, det.Reason)
+	}
 
 	startReq := agentbridge.StartRequest{
 		TaskID:          req.ID,
 		Prompt:          req.Prompt,
 		Cwd:             req.Cwd,
+		Executable:      det.Executable,
 		Model:           req.Model,
 		SystemPrompt:    req.SystemPrompt,
 		MaxTurns:        req.MaxTurns,

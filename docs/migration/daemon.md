@@ -972,6 +972,30 @@ This slice does not change daemon runtime behavior, add SaaS endpoints, edit
 provider credential handling, alter workdir isolation, add deployment config, or
 remove any legacy local-only task source.
 
+### RIID-4890 — Detect-selected executable start parity
+
+This slice closes the provider runtime gap where capability detection could
+select one executable path but process start could re-resolve a different
+same-name binary from `PATH`.
+
+This slice does:
+
+- add a provider-neutral `StartRequest.Executable` field for the executable path
+  selected during adapter `Detect`
+- pass the selected executable from `bridge.Run` and `runtimeactor.Submit` into
+  provider `BuildStart`
+- make Claude, Codex, OpenClaw, and Cursor command builders use
+  `StartOptions.Executable`, then `StartRequest.Executable`, then the provider
+  default executable name
+- update OpenClaw integration coverage so the real prompt roundtrip starts the
+  exact executable that passed OpenClaw's calendar-version detect gate
+- preserve the existing env override rule: explicit `RIIDO_<PROVIDER>_PATH`
+  remains a pin, not a hint
+
+This slice does not install provider CLIs, change provider auth, add SaaS
+endpoints, change assignment polling, or make daemon responsible for provider
+binary distribution.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:

@@ -57,6 +57,7 @@ type StartRequest struct {
 	TaskID          string // stable task id; adapters may use it only as a provider-neutral correlation seed
 	Prompt          string
 	Cwd             string
+	Executable      string // runtime-selected executable path from Detect; adapter options may still override it
 	Model           string
 	SystemPrompt    string
 	MaxTurns        int

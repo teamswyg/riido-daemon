@@ -217,6 +217,13 @@ func TestBuildStartExecutableOverride(t *testing.T) {
 	}
 }
 
+func TestBuildStartUsesRuntimeSelectedExecutable(t *testing.T) {
+	cmd, _ := BuildStart(agentbridge.StartRequest{Executable: "/opt/riido/bin/codex-selected"}, StartOptions{})
+	if cmd.Executable != "/opt/riido/bin/codex-selected" {
+		t.Fatalf("runtime-selected executable lost: %q", cmd.Executable)
+	}
+}
+
 func TestBlockedArgsCoverProtocolCritical(t *testing.T) {
 	for _, want := range []string{"--listen"} {
 		if !slices.Contains(BlockedArgs(), want) {

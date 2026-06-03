@@ -108,6 +108,9 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 	}
 	exe := opts.Executable
 	if exe == "" {
+		exe = req.Executable
+	}
+	if exe == "" {
 		exe = DefaultExecutable
 	}
 
