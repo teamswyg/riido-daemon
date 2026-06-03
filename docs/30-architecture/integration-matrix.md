@@ -51,7 +51,7 @@ integration failure.
 | Provider | Integration assertion |
 | --- | --- |
 | Claude | stream JSON flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir |
-| Codex | app-server JSON-RPC initialize/thread/turn flow reaches `ResultCompleted` |
+| Codex | app-server JSON-RPC initialize/thread/turn flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir |
 | OpenClaw | JSON or NDJSON result flow reaches `ResultCompleted` with deterministic session id, using the executable path that passed Detect, and the run writes the expected file artifact inside the daemon-selected workdir |
 | Cursor | selected launch profile adds daemon-workdir `--trust` without `--yolo`, stream JSON flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir; missing login probe skips |
 
