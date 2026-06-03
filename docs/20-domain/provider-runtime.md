@@ -107,6 +107,15 @@ runtime-scoped opaque `model_id` 로 보고할 수 있다. 이 값은 provider c
 입력이다. Daemon 은 OpenAI/ChatGPT auth token, account identity, API key,
 team id, Open API key 로 model catalog 를 추론하지 않는다.
 
+Control-plane fallback catalog id 인 `codex-default`, `claude-default`,
+`openclaw-default`, `cursor-auto`, `runtime-default` 는 client read-model 의
+선택/표시용 sentinel 이다. 이 값은 assignment metadata 에는 원문 그대로 보존되지만,
+provider native process 에 넘기는 model override 가 아니다. `saasplane` 은 이런
+synthetic default 를 `StartRequest.Model=""` 로 정규화해야 한다. Provider adapter
+가 `--model` 같은 native flag 로 변환할 수 있는 값은 runtime 이 실제 host/provider
+catalog 에서 보고했거나 control-plane 이 provider-native 값으로 승인한
+non-synthetic `model_id` 뿐이다.
+
 RIID-4660 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/openclaw` 다. 이 package 는 OpenClaw CLI 를 번들하지 않고,
 external executable detection, calendar-version gate, `openclaw agent --local --json`
@@ -115,6 +124,21 @@ translator 를 소유한다. real OpenClaw CLI execution 은 `AGENTBRIDGE_INTEGR
 opt-in 된 경우에만 검증한다. Cursor adapter, supervisor polling loop, server/task
 DB/project/mwsd adapter 는 RIID-4660 당시 후속 migration slice 가 맡는 것으로
 남겼다.
+
+OpenClaw `--session-id` 는 provider-native identifier 다. 이미 provider 가 발급한
+`ResumeSessionID` 는 그대로 보존하지만, first-run 의 `TaskID` fallback 은 raw Riido
+component id 를 그대로 넘기지 않는다. Riido component id 는 `-4ck...` 처럼 하이픈으로
+시작할 수 있고 OpenClaw 가 이를 거부할 수 있으므로, adapter 는 task id 로부터
+`riido-<sanitized-task-slug>-<short-hash>` 형태의 deterministic provider-safe
+session id 를 파생한다. Raw task id 는 run metadata/workdir path 의 SSOT 로 남고,
+OpenClaw session id 만 native process boundary 에서 별도로 정규화된다.
+
+A-42 live E2E 에서 OpenClaw 는 `assignment -> daemon -> provider process ->
+provider text result -> SaaS completed thread` 경로를 통과했다. 하지만 provider 가
+파일 생성 완료라고 응답해도 daemon workdir 에 expected artifact 가 없을 수 있음이
+확인되었다. 따라서 OpenClaw text completion 은 filesystem side-effect evidence 가
+아니다. OpenClaw 파일 작성 capability 는 별도 provider capability / permission gate
+로 검증되기 전까지 PASS 조건으로 선언하지 않는다.
 
 RIID-4661 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/cursor` 다. 이 package 는 Cursor Agent CLI 를 번들하지 않고,
