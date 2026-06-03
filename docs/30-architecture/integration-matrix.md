@@ -33,6 +33,19 @@ integration opt-in. A future scheduled/manual workflow may install provider
 CLIs with `continue-on-error` for install steps only; the integration test step
 itself must fail when the gates pass but behavior regresses.
 
+Operators can run the current local provider matrix with:
+
+```bash
+./scripts/integration-smoke.sh
+```
+
+The script probes `claude`, `codex`, `openclaw`, and `cursor-agent`, honors
+`RIIDO_CLAUDE_PATH`, `RIIDO_CODEX_PATH`, `RIIDO_OPENCLAW_PATH`, and
+`RIIDO_CURSOR_PATH`, then runs `TestIntegration` only for providers that are
+present. Missing executables remain an operator-environment skip, not a PASS.
+Once a provider is detected and available, a failing roundtrip is a real
+integration failure.
+
 ## Assertions
 
 | Provider | Integration assertion |
