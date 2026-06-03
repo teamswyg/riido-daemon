@@ -4,6 +4,9 @@
 >
 > This document owns how public `riido-daemon` verifies real provider CLIs.
 > Provider CLIs are external attached resources and are never bundled.
+>
+> Provider-by-provider current evidence is executable in
+> [`provider-validation-matrix.riido.json`](provider-validation-matrix.riido.json).
 
 ## Gate Policy
 
@@ -19,14 +22,22 @@ After all gates pass, a failed prompt roundtrip is a real integration failure.
 Provider authentication probes may classify missing login/API-key state as
 operator environment skip only when the provider exposes a deterministic probe.
 
+`PASS` in this matrix means the provider produced the evidence named in
+`provider-validation-matrix.riido.json`. A skipped integration test, a detected
+binary, or a SaaS completed thread alone is not filesystem side-effect evidence.
+This is especially important for OpenClaw: its current runtime capability remains
+`supports_worktree=false`, so worktree-required tasks must be blocked by the C5
+scheduling gate even though OpenClaw can produce text completion and optional
+artifact evidence in a locally preconfigured operator environment.
+
 ## Provider Matrix
 
-| Provider | Executable | Public deterministic CI | Real CLI integration |
-| --- | --- | --- | --- |
-| Claude Code | `claude` | command/parser/translator/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/claude -run TestIntegration -count=1` |
-| Codex | `codex` app-server stdio | command/parser/translator/RPC/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/codex -run TestIntegration -count=1` |
-| OpenClaw | `openclaw` | command/parser/version/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -run TestIntegration -count=1` |
-| Cursor Agent | `cursor-agent` | command/parser/profile/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -run TestIntegration -count=1` |
+| Provider | Executable | Public deterministic CI | Real CLI integration | Worktree routing status |
+| --- | --- | --- | --- | --- |
+| Claude Code | `claude` | command/parser/translator/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/claude -run TestIntegration -count=1` | `supports_worktree=true` |
+| Codex | `codex` app-server stdio | command/parser/translator/RPC/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/codex -run TestIntegration -count=1` | `supports_worktree=true` |
+| OpenClaw | `openclaw` | command/parser/version/golden tests plus C5 worktree ineligibility gate | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -run TestIntegration -count=1` | `supports_worktree=false`; `required_surfaces=[worktree]` must fail with `MISSING_REQUIRED_SURFACE:worktree` |
+| Cursor Agent | `cursor-agent` | command/parser/profile/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -run TestIntegration -count=1` | `supports_worktree=true` |
 
 Public pull-request CI runs deterministic tests and keeps real provider
 integration opt-in. A future scheduled/manual workflow may install provider
@@ -52,7 +63,7 @@ integration failure.
 | --- | --- |
 | Claude | stream JSON flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir |
 | Codex | app-server JSON-RPC initialize/thread/turn flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir |
-| OpenClaw | JSON or NDJSON result flow reaches `ResultCompleted` with deterministic session id, using the executable path that passed Detect, and the run writes the expected file artifact inside the daemon-selected workdir |
+| OpenClaw | JSON or NDJSON result flow reaches `ResultCompleted` with deterministic session id and uses the executable path that passed Detect. Optional artifact integration may pass in a preconfigured local OpenClaw environment, but SaaS completion alone must not be treated as filesystem side-effect evidence, and runtime routing remains `supports_worktree=false`. |
 | Cursor | selected launch profile adds daemon-workdir `--trust` without `--yolo`, stream JSON flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir; missing login probe skips |
 
 ## Agent Instruction Effectiveness Probe
