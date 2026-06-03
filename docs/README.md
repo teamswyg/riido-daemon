@@ -44,8 +44,11 @@
 
 같은 fact가 두 repo 이상에서 필요하면 daemon 문서에 새로 복사하지 말고 `riido-contracts` 승격을 먼저 검토합니다. 배포-only fact는 `riido-infra`, server runtime fact는 `riido-control-plane`이 소유합니다.
 
+`riido_daemon_private` / `riido-daemon-private`는 retired historical source입니다. 새 작업에서 해당 repository를 참고, 비교, cherry-pick, push, PR, merge 대상으로 사용하지 않습니다. 필요한 결정이나 evidence가 public `riido-daemon`에 없으면 이 문서 디렉터리의 SSOT에 새로 흡수하거나 `riido-contracts`로 승격합니다.
+
 ## 작업할 때 지키는 규칙
 
+- `riido_daemon_private` / `riido-daemon-private`를 열람하거나 수정하지 않습니다.
 - Provider CLI는 외부 사용자 설치 도구입니다. package artifact, store artifact root, 테스트 fixture에 CLI binary를 넣지 않습니다.
 - `cmd/riido`는 local-only입니다. Unix socket 또는 Windows named pipe만 열고 public TCP/HTTP listener를 만들지 않습니다.
 - 새 env var나 flag는 [`30-architecture/config-reference.md`](30-architecture/config-reference.md)와 parser test를 같은 PR에서 갱신합니다.
