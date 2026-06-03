@@ -189,6 +189,16 @@ environment 에서만 실행된다. Cursor adapter 는 native `--workspace <cwd>
 파일 side-effect 를 확인해야 한다. Gate 가 skip 된 경우에는 filesystem side-effect
 가 검증된 것이 아니다.
 
+RIID-4901 부터 provider별 현재 검증 증거의 executable manifest 는
+[`docs/30-architecture/provider-validation-matrix.riido.json`](../30-architecture/provider-validation-matrix.riido.json)
+다. 이 manifest 는 Claude/Codex/Cursor 의 worktree side-effect PASS 조건과
+OpenClaw 의 제한 상태를 분리한다. OpenClaw 는 text completion, deterministic
+session id, selected executable evidence 를 가질 수 있지만, C4/C5 runtime capability
+는 여전히 `supports_worktree=false` 이다. 따라서 worktree-required task 는
+`required_surfaces=[worktree]` 를 통해 C5 scheduling 에서
+`MISSING_REQUIRED_SURFACE:worktree` 로 차단되어야 하며, SaaS completed thread 만으로
+filesystem side-effect 를 증명했다고 쓰면 안 된다.
+
 RIID-4662 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/agentbridge/supervisor` 다. 이 package 는 Daemon tier control loop 로서
 RuntimeActor pool registration / heartbeat, task claim, pre-submit C5 eligibility,
