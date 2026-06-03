@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -40,9 +41,14 @@ func TestIntegration(t *testing.T) {
 	if det.Metadata != nil && det.Metadata["profile"] != "" {
 		profile = Profile(det.Metadata["profile"])
 	}
+	workdir := t.TempDir()
+	const artifactName = "riido-cursor-side-effect.txt"
+	const artifactBody = "RIIDO_CURSOR_FILESYSTEM_SIDE_EFFECT_OK"
 	req := agentbridge.StartRequest{
-		Prompt: `Respond with exactly "ok".`,
-		Cwd:    t.TempDir(),
+		Prompt: `In the current working directory, create a file named ` + artifactName + ` with exactly this content and no trailing commentary in the file: ` + artifactBody + `
+
+After the file is written, respond with exactly "ok".`,
+		Cwd: workdir,
 	}
 	spawn, err := BuildStart(req, StartOptions{Profile: profile})
 	if err != nil {
@@ -83,6 +89,13 @@ func TestIntegration(t *testing.T) {
 			t.Skip("cursor-agent authentication missing; run cursor-agent login or set CURSOR_API_KEY")
 		}
 		t.Fatalf("cursor integration did not complete: %+v", res)
+	}
+	artifact, err := os.ReadFile(filepath.Join(workdir, artifactName))
+	if err != nil {
+		t.Fatalf("cursor integration completed without writing expected artifact %q in %q: %v", artifactName, workdir, err)
+	}
+	if strings.TrimSpace(string(artifact)) != artifactBody {
+		t.Fatalf("cursor artifact content = %q, want %q", string(artifact), artifactBody)
 	}
 }
 
