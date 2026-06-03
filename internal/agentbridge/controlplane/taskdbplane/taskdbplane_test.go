@@ -16,6 +16,36 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/taskdb"
 )
 
+func TestRuntimeCapabilityForProviderReadsWorktreeSurface(t *testing.T) {
+	prefix := "provider.openclaw."
+	capability, ok := runtimeCapabilityForProvider(controlplane.RegisteredRuntime{
+		RuntimeRegistration: controlplane.RuntimeRegistration{
+			RuntimeID: "runtime-1",
+			Capabilities: map[string]bool{
+				prefix + "available":                    true,
+				prefix + "requires_experimental_opt_in": true,
+				prefix + "supports_streaming":           true,
+				prefix + "supports_resume":              true,
+				prefix + "supports_usage":               true,
+				prefix + "supports_worktree":            false,
+			},
+			CapabilityAttributes: map[string]string{
+				prefix + "compatibility_status":   "experimental",
+				prefix + "capability_fingerprint": "fp-openclaw",
+			},
+		},
+	}, "openclaw")
+	if !ok {
+		t.Fatal("expected provider capability")
+	}
+	if capability.SupportsWorktree {
+		t.Fatalf("worktree support must mirror runtime registry, got %+v", capability)
+	}
+	if !capability.SupportsStreaming || !capability.SupportsResume || !capability.SupportsUsage {
+		t.Fatalf("other support flags not preserved: %+v", capability)
+	}
+}
+
 func TestClaimTaskTransitionsQueuedRowAndBuildsRequest(t *testing.T) {
 	path := writeTaskDB(t, taskdb.TaskDB{
 		SchemaVersion:       taskdb.TaskDBSchemaVersion,
@@ -824,6 +854,7 @@ func registerRuntimeForProvider(t *testing.T, plane *Plane, runtimeID string, pr
 			prefix + "supports_mcp":                 true,
 			prefix + "supports_tool_hooks":          true,
 			prefix + "supports_usage":               true,
+			prefix + "supports_worktree":            true,
 			prefix + "requires_experimental_opt_in": false,
 		},
 		CapabilityAttributes: map[string]string{

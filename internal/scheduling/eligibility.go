@@ -20,6 +20,7 @@ const (
 	SurfaceMCP                   RequiredSurface = "mcp"
 	SurfaceToolHooks             RequiredSurface = "tool-hooks"
 	SurfaceUsage                 RequiredSurface = "usage"
+	SurfaceWorktree              RequiredSurface = "worktree"
 )
 
 // TaskRequirements is the C5 view of a task before claim/execute.
@@ -47,6 +48,7 @@ type RuntimeCapability struct {
 	SupportsMCP               bool
 	SupportsToolHooks         bool
 	SupportsUsage             bool
+	SupportsWorktree          bool
 }
 
 // IneligibilityReason is one reason a runtime cannot execute a task.
@@ -156,6 +158,8 @@ func supportsSurface(cap RuntimeCapability, surface RequiredSurface) (bool, bool
 		return cap.SupportsToolHooks, true
 	case SurfaceUsage:
 		return cap.SupportsUsage, true
+	case SurfaceWorktree:
+		return cap.SupportsWorktree, true
 	default:
 		return false, false
 	}

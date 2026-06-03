@@ -3,6 +3,7 @@ package openclaw
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -35,9 +36,14 @@ func TestIntegration(t *testing.T) {
 	}
 
 	sessionID := "integration-openclaw-" + strconv.FormatInt(time.Now().UnixNano(), 36)
+	workdir := t.TempDir()
+	const artifactName = "riido-openclaw-side-effect.txt"
+	const artifactBody = "RIIDO_OPENCLAW_FILESYSTEM_SIDE_EFFECT_OK"
 	spawn, err := BuildStart(agentbridge.StartRequest{
-		Prompt:     `Respond with exactly "ok".`,
-		Cwd:        t.TempDir(),
+		Prompt: `In the current working directory, create a file named ` + artifactName + ` with exactly this content and no trailing commentary in the file: ` + artifactBody + `
+
+After the file is written, respond with exactly "ok".`,
+		Cwd:        workdir,
 		Executable: det.Executable,
 	}, StartOptions{SessionID: sessionID})
 	if err != nil {
@@ -72,6 +78,14 @@ func TestIntegration(t *testing.T) {
 	}
 	if !strings.Contains(strings.ToLower(res.Output), "ok") {
 		t.Fatalf("openclaw integration output = %q", res.Output)
+	}
+
+	artifact, err := os.ReadFile(filepath.Join(workdir, artifactName))
+	if err != nil {
+		t.Fatalf("openclaw integration completed without writing expected artifact %q in %q: %v", artifactName, workdir, err)
+	}
+	if strings.TrimSpace(string(artifact)) != artifactBody {
+		t.Fatalf("openclaw artifact content = %q, want %q", string(artifact), artifactBody)
 	}
 }
 

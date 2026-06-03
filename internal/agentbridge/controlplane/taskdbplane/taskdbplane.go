@@ -646,6 +646,7 @@ func runtimeCapabilityForProvider(rec controlplane.RegisteredRuntime, provider s
 		SupportsMCP:               rec.Capabilities[prefix+"supports_mcp"],
 		SupportsToolHooks:         rec.Capabilities[prefix+"supports_tool_hooks"],
 		SupportsUsage:             rec.Capabilities[prefix+"supports_usage"],
+		SupportsWorktree:          rec.Capabilities[prefix+"supports_worktree"],
 	}, true
 }
 

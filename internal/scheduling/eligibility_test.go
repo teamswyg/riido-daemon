@@ -46,6 +46,24 @@ func TestEvaluateCapabilityMissingRequiredSurface(t *testing.T) {
 	}
 }
 
+func TestEvaluateCapabilityMissingRequiredWorktreeSurface(t *testing.T) {
+	got := EvaluateCapability(TaskRequirements{
+		Provider:         "openclaw",
+		RequiredSurfaces: []RequiredSurface{SurfaceWorktree},
+	}, RuntimeCapability{
+		Provider:            "openclaw",
+		Available:           true,
+		CompatibilityStatus: capability.CompatExperimental,
+		SupportsWorktree:    false,
+	})
+	if got.Eligible {
+		t.Fatalf("expected worktree-ineligible runtime")
+	}
+	if got.Reasons[0].Code != "MISSING_REQUIRED_SURFACE" || got.Reasons[0].Surface != SurfaceWorktree {
+		t.Fatalf("reason: %+v", got.Reasons)
+	}
+}
+
 func TestEvaluateCapabilityExperimentalRequiresOptIn(t *testing.T) {
 	cap := RuntimeCapability{
 		Provider:                  "codex",
@@ -81,8 +99,8 @@ func TestEvaluateCapabilityUnknownSurfaceFailsClosed(t *testing.T) {
 }
 
 func TestNormalizeRequiredSurfaces(t *testing.T) {
-	got := NormalizeRequiredSurfaces([]RequiredSurface{" MCP ", "mcp", "system_prompt", ""})
-	want := []RequiredSurface{SurfaceMCP, SurfaceSystemPrompt}
+	got := NormalizeRequiredSurfaces([]RequiredSurface{" MCP ", "mcp", "system_prompt", "worktree", ""})
+	want := []RequiredSurface{SurfaceMCP, SurfaceSystemPrompt, SurfaceWorktree}
 	if len(got) != len(want) {
 		t.Fatalf("got %+v, want %+v", got, want)
 	}

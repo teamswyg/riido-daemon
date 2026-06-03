@@ -262,8 +262,35 @@ func TestRuntimeActorReconcilesDetectResultToProviderCapability(t *testing.T) {
 	}
 	if !capability.SupportsStreaming || !capability.SupportsResume || !capability.SupportsSystem ||
 		!capability.SupportsMaxTurns || !capability.SupportsMCP || !capability.SupportsToolHooks ||
-		!capability.SupportsUsage {
+		!capability.SupportsUsage || !capability.SupportsWorktree {
 		t.Fatalf("surface flags were not preserved: %+v", capability)
+	}
+	if capability.SupportsFileEvents {
+		t.Fatalf("file events must stay false until a provider emits structured file events: %+v", capability)
+	}
+}
+
+func TestRuntimeActorLeavesOpenClawWorktreeUnsupported(t *testing.T) {
+	openclawLike := &stubAdapter{name: "openclaw", detected: agentbridge.DetectResult{
+		Available:         true,
+		Version:           "2026.5.22",
+		Executable:        "/usr/local/bin/openclaw",
+		SupportsStreaming: true,
+		SupportsResume:    true,
+		SupportsUsage:     true,
+	}}
+	a, _ := startActor(t, Config{
+		RuntimeID: "rt-openclaw",
+		Adapters:  []agentbridge.Adapter{openclawLike},
+	})
+
+	status, err := a.Status(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	capability := status.Capabilities[0]
+	if capability.SupportsWorktree {
+		t.Fatalf("OpenClaw must not advertise daemon-selected worktree support without a native workspace surface: %+v", capability)
 	}
 }
 
