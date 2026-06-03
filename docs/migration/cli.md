@@ -12,9 +12,18 @@ the customer-PC daemon. It should be documented separately from the long-running
 daemon runtime so CLI command ownership, compatibility, and store-review
 constraints stay clear.
 
-## Source In The Private Repository
+## Retired Historical Source Boundary
 
-The initial CLI source is:
+The initial CLI migration once used the former private source as history. That
+source is now closed. New work must not read, compare, copy from, cherry-pick
+from, push to, open PRs against, merge, or otherwise modify
+`riido_daemon_private` / `riido-daemon-private`.
+
+If a CLI fact is missing from public `riido-daemon`, define it in this public
+SSOT or promote the shared contract to `riido-contracts`; do not consult the
+retired private repository.
+
+The historical CLI slice was:
 
 - `cmd/riido`
 - CLI usage text owned by `printUsage()`

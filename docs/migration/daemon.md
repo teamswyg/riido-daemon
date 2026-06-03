@@ -11,11 +11,19 @@ This document defines how the daemon/runtime part of the former private
 provider execution boundary. It must stay public, store-reviewable, and
 free of non-Riido dependencies unless a later ADR explicitly changes that rule.
 
-## Source In The Private Repository
+## Retired Historical Source Boundary
 
-The first migration source is the current private `riido_daemon` main branch.
-The daemon slice is the code and documentation that implement these bounded
-contexts:
+The first migration wave originally compared against the former private
+`riido_daemon` source. That source is now **retired history only**.
+
+New work must not read, compare, copy from, cherry-pick from, push to, open PRs
+against, merge, or otherwise modify `riido_daemon_private` /
+`riido-daemon-private`. If a required fact is missing from public
+`riido-daemon`, the fact must be written into this public SSOT or promoted to
+`riido-contracts`; the private repository is not a fallback source of truth.
+
+The historical daemon slice was the code and documentation that implement these
+bounded contexts:
 
 | Context | Source paths |
 | --- | --- |

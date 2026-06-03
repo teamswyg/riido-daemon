@@ -48,6 +48,13 @@ the edges. Runtime/domain packages must not import `cmd/riido`,
 `riido-control-plane`, `riido-infra`, Terraform, AWS account data, or provider
 CLI binaries.
 
+Repository boundary rule: `riido_daemon_private` / `riido-daemon-private` is a
+retired historical source, not an active dependency, evidence store, or work
+target. Daemon work must not reference, compare against, cherry-pick from, push
+to, open PRs against, merge, or otherwise modify that repository. Missing facts
+must be resolved in public `riido-daemon` SSOT or promoted to
+`riido-contracts`.
+
 ## ACL Locations
 
 | ACL | Input | Output |
