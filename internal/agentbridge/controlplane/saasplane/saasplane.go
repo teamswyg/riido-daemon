@@ -625,12 +625,41 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 	return &bridge.TaskRequest{
 		ID:                       assignment.TaskID,
 		Provider:                 bridge.Provider(assignment.RuntimeProvider),
-		Model:                    assignment.ModelID,
+		Model:                    providerModelOverride(assignment.RuntimeProvider, assignment.ModelID),
 		Prompt:                   prompt,
 		SystemPrompt:             systemPrompt,
 		AllowExperimentalRuntime: assignment.AllowExperimentalRuntime,
 		Metadata:                 metadata,
 	}
+}
+
+func providerModelOverride(runtimeProvider, modelID string) string {
+	modelID = strings.TrimSpace(modelID)
+	if modelID == "" {
+		return ""
+	}
+	switch strings.TrimSpace(runtimeProvider) {
+	case "codex":
+		if modelID == "codex-default" {
+			return ""
+		}
+	case "claude", "claude_code":
+		if modelID == "claude-default" {
+			return ""
+		}
+	case "openclaw":
+		if modelID == "openclaw-default" {
+			return ""
+		}
+	case "cursor":
+		if modelID == "cursor-auto" {
+			return ""
+		}
+	}
+	if modelID == "runtime-default" {
+		return ""
+	}
+	return modelID
 }
 
 func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev agentbridge.Event) (assignmentcontract.AgentEventRequest, bool) {

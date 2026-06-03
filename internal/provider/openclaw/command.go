@@ -14,6 +14,7 @@
 package openclaw
 
 import (
+	"crypto/sha256"
 	"errors"
 	"fmt"
 	"strings"
@@ -90,16 +91,75 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 
 // ResolveSessionID maps the provider-neutral start request onto
 // OpenClaw's mandatory --session-id. ResumeSessionID preserves a
-// provider session, while TaskID gives first-run tasks a deterministic
-// session id without inventing provider state.
+// provider session, while TaskID gives first-run tasks a deterministic,
+// provider-safe session id without inventing provider state.
 func ResolveSessionID(req agentbridge.StartRequest) (string, error) {
 	if strings.TrimSpace(req.ResumeSessionID) != "" {
 		return req.ResumeSessionID, nil
 	}
 	if strings.TrimSpace(req.TaskID) != "" {
-		return req.TaskID, nil
+		return sessionIDFromTaskID(req.TaskID), nil
 	}
 	return "", errors.New("openclaw: SessionID is required (set ResumeSessionID or TaskID)")
+}
+
+func sessionIDFromTaskID(taskID string) string {
+	taskID = strings.TrimSpace(taskID)
+	if isOpenClawSessionID(taskID) {
+		return taskID
+	}
+
+	var b strings.Builder
+	lastDash := false
+	for _, r := range taskID {
+		if isOpenClawSessionRune(r) {
+			b.WriteRune(r)
+			lastDash = false
+			continue
+		}
+		if !lastDash {
+			b.WriteByte('-')
+			lastDash = true
+		}
+	}
+	slug := strings.Trim(b.String(), "-_")
+	if slug == "" {
+		slug = "task"
+	}
+	sum := sha256.Sum256([]byte(taskID))
+	hash := fmt.Sprintf("%x", sum[:6])
+	const maxSessionIDLen = 80
+	maxSlugLen := maxSessionIDLen - len("riido--") - len(hash)
+	if len(slug) > maxSlugLen {
+		slug = strings.Trim(slug[:maxSlugLen], "-_")
+		if slug == "" {
+			slug = "task"
+		}
+	}
+	return fmt.Sprintf("riido-%s-%s", slug, hash)
+}
+
+func isOpenClawSessionID(s string) bool {
+	if s == "" {
+		return false
+	}
+	for i, r := range s {
+		if i == 0 && !isOpenClawSessionStartRune(r) {
+			return false
+		}
+		if !isOpenClawSessionRune(r) {
+			return false
+		}
+	}
+	return true
+}
+
+func isOpenClawSessionStartRune(r rune) bool {
+	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9')
+}
+
+func isOpenClawSessionRune(r rune) bool {
+	return isOpenClawSessionStartRune(r) || r == '-' || r == '_'
 }
 
 // buildMessage inlines the system prompt above the user prompt when both

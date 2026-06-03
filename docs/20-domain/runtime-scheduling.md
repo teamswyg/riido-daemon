@@ -156,6 +156,13 @@ TaskSourcePort 를 사용한다. `saasplane` 은 runtime id 에 포함된 agent/
 변환해 `/heartbeat` 으로 전송한다. progress/result report 는
 `/v1/agents/{agent_id}/events` 로 전송한다.
 
+SaaS assignment FSM 은 `ready -> running -> terminal` 순서를 요구한다. Provider
+adapter 가 별도 running lifecycle event 를 내지 않더라도 supervisor 는 provider
+process submit 이 성공한 직후 `assignment_running` report 를 보장해야 한다. Terminal
+result 를 `ready` 상태에서 바로 보고하면 control-plane 이 `ready -> completed`
+전이를 거부할 수 있고, 그 assignment 가 다시 lease 되어 같은 provider run 이 반복될
+수 있다.
+
 이 adapter 는 remote assignment lease token 과 assignment id 를 request metadata 에
 보존하지만, durable assignment store, reassignment blocker policy, SSE fan-out,
 request authorization, metrics/health read model 은 소유하지 않는다.

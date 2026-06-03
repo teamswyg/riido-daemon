@@ -104,6 +104,41 @@ func TestBuildStartDerivesSessionIDFromTaskID(t *testing.T) {
 	}
 }
 
+func TestBuildStartDerivesProviderSafeSessionIDFromRiidoComponentID(t *testing.T) {
+	cmd, err := BuildStart(agentbridge.StartRequest{
+		TaskID: "-4ckNAErFPZoB721KhZgt",
+		Prompt: "do the thing",
+	}, StartOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var sessionID string
+	for i, arg := range cmd.Args {
+		if arg == "--session-id" && i+1 < len(cmd.Args) {
+			sessionID = cmd.Args[i+1]
+			break
+		}
+	}
+	if sessionID == "" {
+		t.Fatalf("session id not found: %v", cmd.Args)
+	}
+	if strings.HasPrefix(sessionID, "-") {
+		t.Fatalf("session id must not start with hyphen: %q", sessionID)
+	}
+	if !strings.HasPrefix(sessionID, "riido-4ckNAErFPZoB721KhZgt-") {
+		t.Fatalf("session id did not preserve task id slug: %q", sessionID)
+	}
+	if len(sessionID) > 80 {
+		t.Fatalf("session id too long: %d %q", len(sessionID), sessionID)
+	}
+	if !isOpenClawSessionID(sessionID) {
+		t.Fatalf("session id is not provider-safe: %q", sessionID)
+	}
+	if got := sessionIDFromTaskID("-4ckNAErFPZoB721KhZgt"); got != sessionID {
+		t.Fatalf("session id must be deterministic: %q != %q", got, sessionID)
+	}
+}
+
 func TestBuildStartPrefersResumeSessionID(t *testing.T) {
 	cmd, err := BuildStart(agentbridge.StartRequest{
 		TaskID:          "task-openclaw-1",

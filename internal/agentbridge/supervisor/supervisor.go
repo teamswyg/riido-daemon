@@ -446,6 +446,10 @@ func (a *Actor) claimOne(ctx context.Context, rt *runtimeactor.Actor, status run
 		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, res)
 		return true
 	}
+	_ = a.cfg.Reporter.ReportEvent(reportCtx, req.ID, agentbridge.Event{
+		Kind:  agentbridge.EventLifecycle,
+		Phase: agentbridge.StateRunning,
+	})
 	var ws *workdir.Workspace
 	var events *workspaceEventContext
 	if prepared != nil {

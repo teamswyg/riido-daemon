@@ -316,6 +316,15 @@ func TestSupervisorClaimsTaskAndReportsResult(t *testing.T) {
 		t.Fatal("task was not claimed")
 	}
 
+	select {
+	case ev := <-reporter.events:
+		if ev.Kind != agentbridge.EventLifecycle || ev.Phase != agentbridge.StateRunning {
+			t.Fatalf("running event: %+v", ev)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("running event was not reported")
+	}
+
 	go func() {
 		running.EmitStdout([]byte("done"))
 		running.EmitExit(0, nil)
@@ -970,6 +979,15 @@ func TestSupervisorStopArchivesInFlightWorkspace(t *testing.T) {
 	}
 
 	running.EmitStdout([]byte("event"))
+	select {
+	case ev := <-reporter.events:
+		if ev.Kind != agentbridge.EventLifecycle || ev.Phase != agentbridge.StateRunning {
+			t.Fatalf("running event: %+v", ev)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("running event was not reported")
+	}
+
 	select {
 	case ev := <-reporter.events:
 		if ev.Kind != agentbridge.EventTextDelta || ev.Text != "event" {
