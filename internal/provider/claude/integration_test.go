@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,10 +39,16 @@ func TestIntegration(t *testing.T) {
 		t.Skipf("claude Detect reported Available=false: %s", det.Reason)
 	}
 
-	spawn, err := BuildStart(agentbridge.StartRequest{
-		Prompt: `Respond with exactly the single word "ok" and nothing else.`,
-		Cwd:    t.TempDir(),
-	}, StartOptions{PermissionMode: PermissionModeApproval})
+	workdir := t.TempDir()
+	const artifactName = "riido-claude-side-effect.txt"
+	const artifactBody = "RIIDO_CLAUDE_FILESYSTEM_SIDE_EFFECT_OK"
+	req := agentbridge.StartRequest{
+		Prompt: `In the current working directory, create a file named ` + artifactName + ` with exactly this content and no trailing commentary in the file: ` + artifactBody + `
+
+After the file is written, respond with exactly "ok".`,
+		Cwd: workdir,
+	}
+	spawn, err := BuildStart(req, StartOptions{PermissionMode: PermissionModeAcceptEdits})
 	if err != nil {
 		t.Fatalf("BuildStart: %v", err)
 	}
@@ -49,10 +57,7 @@ func TestIntegration(t *testing.T) {
 	// followed by EOF. Plumb the Claude ProtocolDriver so the session
 	// actor writes the frame and closes stdin instead of leaving claude
 	// blocked on read.
-	driver, err := NewProtocolDriver(agentbridge.StartRequest{
-		Prompt: `Respond with exactly the single word "ok" and nothing else.`,
-		Cwd:    spawn.Dir,
-	})
+	driver, err := NewProtocolDriver(req)
 	if err != nil {
 		t.Fatalf("NewProtocolDriver: %v", err)
 	}
@@ -84,6 +89,13 @@ func TestIntegration(t *testing.T) {
 	res := <-sess.Result()
 	if res.Status != agentbridge.ResultCompleted {
 		t.Fatalf("claude integration did not complete: %+v", res)
+	}
+	artifact, err := os.ReadFile(filepath.Join(workdir, artifactName))
+	if err != nil {
+		t.Fatalf("claude integration completed without writing expected artifact %q in %q: %v", artifactName, workdir, err)
+	}
+	if strings.TrimSpace(string(artifact)) != artifactBody {
+		t.Fatalf("claude artifact content = %q, want %q", string(artifact), artifactBody)
 	}
 }
 
