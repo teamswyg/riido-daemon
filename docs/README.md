@@ -27,6 +27,7 @@
 | store channel policy와 tool/security decision | [`20-domain/security.md`](20-domain/security.md) |
 | raw provider/tool/event redaction | [`20-domain/security-redaction.md`](20-domain/security-redaction.md) |
 | package map과 import rule | [`30-architecture/module-decomposition.md`](30-architecture/module-decomposition.md) |
+| Riido 작업 생성 응답의 `branchName`만 쓰는 work-unit branch rule | [`30-architecture/riido-work-branch-gate.md`](30-architecture/riido-work-branch-gate.md) |
 | provider CLI real integration test 정책 | [`30-architecture/integration-matrix.md`](30-architecture/integration-matrix.md) |
 | runtime upgrade와 compatibility gate | [`30-architecture/runtime-upgrade-flow.md`](30-architecture/runtime-upgrade-flow.md), [`30-architecture/compatibility-gate.md`](30-architecture/compatibility-gate.md) |
 | Figma AI Agent 화면에서 daemon이 소비하는 경계 | [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md) |
@@ -48,6 +49,7 @@
 
 ## 작업할 때 지키는 규칙
 
+- 먼저 Riido 작업을 만들고, 반환된 `branchName` 그대로 브랜치를 만듭니다. PR branch가 이 형식을 따르지 않으면 GitHub Actions가 실패합니다.
 - `riido_daemon_private` / `riido-daemon-private`를 열람하거나 수정하지 않습니다.
 - Provider CLI는 외부 사용자 설치 도구입니다. package artifact, store artifact root, 테스트 fixture에 CLI binary를 넣지 않습니다.
 - `cmd/riido`는 local-only입니다. Unix socket 또는 Windows named pipe만 열고 public TCP/HTTP listener를 만들지 않습니다.

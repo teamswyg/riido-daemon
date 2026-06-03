@@ -11,6 +11,7 @@ on:
       - "docs/50-roadmap/open-questions.md"
       - "docs/migration/daemon.md"
       - "docs/migration/cli.md"
+      - "scripts/verify-riido-work-branch.sh"
       - "tools/figmaboundary/**"
   pull_request:
     paths:
@@ -21,6 +22,7 @@ on:
       - "docs/50-roadmap/open-questions.md"
       - "docs/migration/daemon.md"
       - "docs/migration/cli.md"
+      - "scripts/verify-riido-work-branch.sh"
       - "tools/figmaboundary/**"
 
 jobs:
@@ -43,7 +45,19 @@ jobs:
           test -f docs/30-architecture/runtime-upgrade-flow.md
           test -f docs/30-architecture/figma-ai-agent-daemon-boundary.md
           test -f docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
+          test -f docs/30-architecture/riido-work-branch-gate.md
           test -f docs/50-roadmap/open-questions.md
+      - name: Verify Riido work branch gate
+        run: |
+          scripts/verify-riido-work-branch.sh "A-40-AI-Agent-SSOT-Riido-작업-branchName-사용-강제"
+          if scripts/verify-riido-work-branch.sh "codex/not-allowed"; then
+            echo "namespaced helper branch unexpectedly passed"
+            exit 1
+          fi
+          if scripts/verify-riido-work-branch.sh "feature-branch"; then
+            echo "non-Riido branch unexpectedly passed"
+            exit 1
+          fi
       - name: Verify split-repo wording
         run: |
           stale="$(grep -R --line-number -E '후속 architecture-doc migration|architecture-doc migration slice|github.com/teamswyg/riido_daemon|cmd/riido_ai_server|internal/riidoaiserver|terraform/' docs/20-domain docs/30-architecture docs/50-roadmap || true)"

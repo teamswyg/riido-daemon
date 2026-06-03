@@ -55,6 +55,11 @@ to, open PRs against, merge, or otherwise modify that repository. Missing facts
 must be resolved in public `riido-daemon` SSOT or promoted to
 `riido-contracts`.
 
+Work-unit boundary rule: every change starts from a Riido task. The task
+creation response `branchName` is the only allowed branch name for the work.
+The executable PR gate is `.github/workflows/riido-work-branch.yml`, backed by
+`scripts/verify-riido-work-branch.sh`.
+
 ## ACL Locations
 
 | ACL | Input | Output |
