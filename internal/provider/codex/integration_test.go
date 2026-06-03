@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -40,10 +42,15 @@ func TestIntegration(t *testing.T) {
 	if value := os.Getenv("HOME"); value != "" {
 		env["HOME"] = value
 	}
+	workdir := t.TempDir()
+	const artifactName = "riido-codex-side-effect.txt"
+	const artifactBody = "RIIDO_CODEX_FILESYSTEM_SIDE_EFFECT_OK"
 	req := agentbridge.StartRequest{
-		Prompt: `Respond with exactly "ok".`,
-		Cwd:    t.TempDir(),
-		Env:    env,
+		Prompt: `In the current working directory, create a file named ` + artifactName + ` with exactly this content and no trailing commentary in the file: ` + artifactBody + `
+
+After the file is written, respond with exactly "ok".`,
+		Cwd: workdir,
+		Env: env,
 	}
 	spawn, err := BuildStart(req, StartOptions{})
 	if err != nil {
@@ -81,6 +88,13 @@ func TestIntegration(t *testing.T) {
 	res := <-sess.Result()
 	if res.Status != agentbridge.ResultCompleted {
 		t.Fatalf("codex integration did not complete: %+v", res)
+	}
+	artifact, err := os.ReadFile(filepath.Join(workdir, artifactName))
+	if err != nil {
+		t.Fatalf("codex integration completed without writing expected artifact %q in %q: %v", artifactName, workdir, err)
+	}
+	if strings.TrimSpace(string(artifact)) != artifactBody {
+		t.Fatalf("codex artifact content = %q, want %q", string(artifact), artifactBody)
 	}
 }
 

@@ -109,6 +109,14 @@ Codex auth/config home read deny 를 강제한다. real Codex CLI execution 은
 adapter, supervisor polling loop, server/task DB/project/mwsd adapter 는 RIID-4659
 당시 후속 migration slice 가 맡는 것으로 남겼다.
 
+A-57 부터 Codex real CLI integration gate 는 `ResultCompleted` 와 함께 daemon 이
+선택한 workdir 안의 expected file artifact 를 확인한다. 이 gate 는
+`AGENTBRIDGE_INTEGRATION=1` 과 local Codex auth/runtime 이 준비된 operator
+environment 에서만 실행된다. Codex adapter 는 `codex app-server --listen stdio://`
+실행과 함께 task-scoped permission profile 을 주입하며, workdir 은 write 로 허용하고
+Codex auth/config home 은 provider tool command 에서 read deny 한다. Gate 가 skip 된
+경우에는 filesystem side-effect 가 검증된 것이 아니다.
+
 Codex runtime model catalog 는 host Codex config 의 `model` 값을
 runtime-scoped opaque `model_id` 로 보고할 수 있다. 이 값은 provider credential 이
 아니며, control-plane 이 agent 설정/assignment snapshot 에 저장하는 model 선택의
