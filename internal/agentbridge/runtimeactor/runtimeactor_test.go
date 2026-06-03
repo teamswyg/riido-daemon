@@ -21,16 +21,27 @@ import (
 // --- Test scaffolding ---
 
 type stubAdapter struct {
-	name     string
-	detected agentbridge.DetectResult
+	name       string
+	detected   agentbridge.DetectResult
+	startReqCh chan agentbridge.StartRequest
 }
 
 func (a *stubAdapter) Name() string { return a.name }
 func (a *stubAdapter) Detect(_ context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return a.detected, nil
 }
-func (a *stubAdapter) BuildStart(_ agentbridge.StartRequest) (agentbridge.StartCommand, error) {
-	return agentbridge.StartCommand{Executable: a.name}, nil
+func (a *stubAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
+	if a.startReqCh != nil {
+		select {
+		case a.startReqCh <- req:
+		default:
+		}
+	}
+	exe := req.Executable
+	if exe == "" {
+		exe = a.name
+	}
+	return agentbridge.StartCommand{Executable: exe}, nil
 }
 func (a *stubAdapter) NewParser() agentbridge.Parser { return &stubParser{} }
 func (a *stubAdapter) Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
@@ -55,10 +66,12 @@ func (p *stubParser) Close() ([]agentbridge.RawEvent, error)                  { 
 type fakeProcess struct {
 	startCh chan startReq
 	atCh    chan atReq
+	cmdCh   chan cmdReq
 	cntCh   chan chan int
 }
 
 type startReq struct {
+	cmd   process.Command
 	reply chan *process.FakeRunning
 }
 
@@ -67,10 +80,16 @@ type atReq struct {
 	reply chan *process.FakeRunning
 }
 
+type cmdReq struct {
+	idx   int
+	reply chan process.Command
+}
+
 func newFakeProcess() *fakeProcess {
 	f := &fakeProcess{
 		startCh: make(chan startReq, 8),
 		atCh:    make(chan atReq, 8),
+		cmdCh:   make(chan cmdReq, 8),
 		cntCh:   make(chan chan int, 4),
 	}
 	go f.run()
@@ -79,11 +98,13 @@ func newFakeProcess() *fakeProcess {
 
 func (f *fakeProcess) run() {
 	var produced []*process.FakeRunning
+	var commands []process.Command
 	for {
 		select {
 		case msg := <-f.startCh:
 			r := process.NewFakeRunning()
 			produced = append(produced, r)
+			commands = append(commands, msg.cmd)
 			msg.reply <- r
 		case msg := <-f.atCh:
 			if msg.idx >= len(produced) {
@@ -91,15 +112,21 @@ func (f *fakeProcess) run() {
 			} else {
 				msg.reply <- produced[msg.idx]
 			}
+		case msg := <-f.cmdCh:
+			if msg.idx >= len(commands) {
+				msg.reply <- process.Command{}
+			} else {
+				msg.reply <- commands[msg.idx]
+			}
 		case reply := <-f.cntCh:
 			reply <- len(produced)
 		}
 	}
 }
 
-func (f *fakeProcess) Start(_ context.Context, _ process.Command) (process.RunningProcess, error) {
+func (f *fakeProcess) Start(_ context.Context, cmd process.Command) (process.RunningProcess, error) {
 	reply := make(chan *process.FakeRunning, 1)
-	f.startCh <- startReq{reply: reply}
+	f.startCh <- startReq{cmd: cmd, reply: reply}
 	return <-reply, nil
 }
 
@@ -112,6 +139,12 @@ func (f *fakeProcess) at(i int) *process.FakeRunning {
 func (f *fakeProcess) count() int {
 	reply := make(chan int, 1)
 	f.cntCh <- reply
+	return <-reply
+}
+
+func (f *fakeProcess) commandAt(i int) process.Command {
+	reply := make(chan process.Command, 1)
+	f.cmdCh <- cmdReq{idx: i, reply: reply}
 	return <-reply
 }
 
@@ -473,6 +506,54 @@ func TestRuntimeActorStartsSessionAndReportsResult(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
 	}
 	t.Fatal("RunningSessions never returned to 0")
+}
+
+func TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn(t *testing.T) {
+	selected := "/opt/riido/bin/openclaw-supported"
+	startReqCh := make(chan agentbridge.StartRequest, 1)
+	a, p := startActor(t, Config{
+		Adapters: []agentbridge.Adapter{
+			&stubAdapter{
+				name: "openclaw",
+				detected: agentbridge.DetectResult{
+					Available:  true,
+					Executable: selected,
+				},
+				startReqCh: startReqCh,
+			},
+		},
+		MaxConcurrent: 1,
+	})
+	h, err := a.Submit(context.Background(), bridge.TaskRequest{ID: "t-openclaw", Provider: "openclaw", Prompt: "hi"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := waitForRunning(t, p, 0, time.Second)
+
+	select {
+	case req := <-startReqCh:
+		if req.Executable != selected {
+			t.Fatalf("BuildStart request executable = %q, want %q", req.Executable, selected)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("BuildStart request not observed")
+	}
+	if got := p.commandAt(0).Executable; got != selected {
+		t.Fatalf("spawn executable = %q, want %q", got, selected)
+	}
+
+	go func() {
+		r.EmitStdout([]byte("ok"))
+		r.EmitExit(0, nil)
+	}()
+	select {
+	case res := <-h.Result():
+		if res.Status != agentbridge.ResultCompleted {
+			t.Fatalf("result: %+v", res)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("no result")
+	}
 }
 
 // --- 6. Cancellation cascade ---

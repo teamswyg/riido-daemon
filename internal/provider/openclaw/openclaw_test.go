@@ -30,6 +30,20 @@ func TestBuildStartShape(t *testing.T) {
 	}
 }
 
+func TestBuildStartUsesRuntimeSelectedExecutable(t *testing.T) {
+	cmd, err := BuildStart(agentbridge.StartRequest{
+		Executable: "/opt/riido/bin/openclaw-supported",
+		TaskID:     "task-openclaw-1",
+		Prompt:     "do the thing",
+	}, StartOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cmd.Executable != "/opt/riido/bin/openclaw-supported" {
+		t.Fatalf("executable = %q", cmd.Executable)
+	}
+}
+
 func TestBuildStartSystemPromptInlineFallback(t *testing.T) {
 	// OpenClaw versions without --system-prompt: the adapter inlines the
 	// system prompt into the message so behavior is preserved

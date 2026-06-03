@@ -157,6 +157,17 @@ func TestBuildStartExecutableOverride(t *testing.T) {
 	}
 }
 
+func TestBuildStartUsesRuntimeSelectedExecutable(t *testing.T) {
+	cmd, _ := BuildStart(agentbridge.StartRequest{
+		Executable: "/opt/riido/bin/claude-selected",
+	}, StartOptions{
+		PermissionMode: PermissionModeApproval,
+	})
+	if cmd.Executable != "/opt/riido/bin/claude-selected" {
+		t.Fatalf("runtime-selected executable lost: %q", cmd.Executable)
+	}
+}
+
 func TestBlockedArgsCoverProtocolCritical(t *testing.T) {
 	want := []string{"-p", "--output-format", "--input-format", "--permission-mode", "--mcp-config", "--strict-mcp-config"}
 	got := BlockedArgs()

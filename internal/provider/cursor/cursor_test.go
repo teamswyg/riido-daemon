@@ -58,6 +58,19 @@ func TestBuildStartTrustsDaemonWorkspaceWithoutYolo(t *testing.T) {
 	}
 }
 
+func TestBuildStartUsesRuntimeSelectedExecutable(t *testing.T) {
+	cmd, err := BuildStart(agentbridge.StartRequest{
+		Executable: "/opt/riido/bin/cursor-selected",
+		Prompt:     "do the thing",
+	}, StartOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cmd.Executable != "/opt/riido/bin/cursor-selected" {
+		t.Fatalf("runtime-selected executable lost: %q", cmd.Executable)
+	}
+}
+
 // Explicit profile selection must be honored.
 func TestBuildStartProfileAgentSubcommand(t *testing.T) {
 	cmd, err := BuildStart(agentbridge.StartRequest{

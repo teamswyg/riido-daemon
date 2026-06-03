@@ -25,6 +25,10 @@
 The daemon reports unavailable providers instead of executing a different
 binary than the operator selected.
 
+The executable that passes Detect is also the executable handed to provider
+process start. Runtime start MUST NOT re-resolve a same-name binary from `PATH`
+after capability detection has selected a concrete path.
+
 OpenClaw is the only adapter that probes later same-name PATH candidates when
 `RIIDO_OPENCLAW_PATH` is unset. The first candidate that passes the
 calendar-version gate is selected. An explicit `RIIDO_OPENCLAW_PATH` remains a

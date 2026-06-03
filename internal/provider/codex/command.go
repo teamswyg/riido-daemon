@@ -77,6 +77,9 @@ type StartOptions struct {
 func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.StartCommand, error) {
 	exe := opts.Executable
 	if exe == "" {
+		exe = req.Executable
+	}
+	if exe == "" {
 		exe = DefaultExecutable
 	}
 

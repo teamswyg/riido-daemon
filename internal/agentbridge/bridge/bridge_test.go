@@ -16,18 +16,23 @@ type stubAdapter struct {
 	name         string
 	detected     agentbridge.DetectResult
 	startCommand agentbridge.StartCommand
+	seenStart    agentbridge.StartRequest
 }
 
 func (a *stubAdapter) Name() string { return a.name }
 func (a *stubAdapter) Detect(_ context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return a.detected, nil
 }
-func (a *stubAdapter) BuildStart(_ agentbridge.StartRequest) (agentbridge.StartCommand, error) {
+func (a *stubAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
+	a.seenStart = req
 	if a.startCommand.Executable != "" {
 		return a.startCommand, nil
 	}
 	cmd := a.startCommand
-	cmd.Executable = a.name
+	cmd.Executable = req.Executable
+	if cmd.Executable == "" {
+		cmd.Executable = a.name
+	}
 	return cmd, nil
 }
 func (a *stubAdapter) NewParser() agentbridge.Parser { return &stubParser{} }
@@ -142,6 +147,48 @@ func TestRunReachesCompletion(t *testing.T) {
 	select {
 	case res := <-sess.Result():
 		if res.Status != agentbridge.ResultCompleted || res.Output != "hello" {
+			t.Fatalf("result: %+v", res)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("timeout waiting for result")
+	}
+}
+
+func TestRunPassesDetectedExecutableToBuildStartAndSpawn(t *testing.T) {
+	selected := "/opt/riido/bin/openclaw-supported"
+	a := &stubAdapter{name: "openclaw", detected: agentbridge.DetectResult{
+		Available:  true,
+		Executable: selected,
+	}}
+	fake := process.NewFake()
+	running := process.NewFakeRunning()
+	fake.NextRunning = running
+
+	c, _ := New(Config{
+		Adapters: []agentbridge.Adapter{a},
+		Process:  fake,
+	})
+
+	sess, err := c.Run(context.Background(), TaskRequest{
+		ID: "t-openclaw", Provider: "openclaw", Prompt: "hello",
+	})
+	if err != nil {
+		t.Fatalf("Run: %v", err)
+	}
+	if a.seenStart.Executable != selected {
+		t.Fatalf("BuildStart executable = %q, want %q", a.seenStart.Executable, selected)
+	}
+	if got := running.Command().Executable; got != selected {
+		t.Fatalf("spawn executable = %q, want %q", got, selected)
+	}
+
+	go func() {
+		running.EmitStdout([]byte("ok"))
+		running.EmitExit(0, nil)
+	}()
+	select {
+	case res := <-sess.Result():
+		if res.Status != agentbridge.ResultCompleted {
 			t.Fatalf("result: %+v", res)
 		}
 	case <-time.After(2 * time.Second):

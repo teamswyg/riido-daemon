@@ -3,7 +3,6 @@ package openclaw
 import (
 	"context"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"testing"
@@ -18,9 +17,6 @@ import (
 func TestIntegration(t *testing.T) {
 	if os.Getenv("AGENTBRIDGE_INTEGRATION") != "1" {
 		t.Skip("AGENTBRIDGE_INTEGRATION not set")
-	}
-	if _, err := exec.LookPath(DefaultExecutable); err != nil {
-		t.Skipf("openclaw not on $PATH: %v", err)
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 210*time.Second)
@@ -40,8 +36,9 @@ func TestIntegration(t *testing.T) {
 
 	sessionID := "integration-openclaw-" + strconv.FormatInt(time.Now().UnixNano(), 36)
 	spawn, err := BuildStart(agentbridge.StartRequest{
-		Prompt: `Respond with exactly "ok".`,
-		Cwd:    t.TempDir(),
+		Prompt:     `Respond with exactly "ok".`,
+		Cwd:        t.TempDir(),
+		Executable: det.Executable,
 	}, StartOptions{SessionID: sessionID})
 	if err != nil {
 		t.Fatalf("BuildStart: %v", err)

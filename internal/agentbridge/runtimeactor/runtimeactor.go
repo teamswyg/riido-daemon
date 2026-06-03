@@ -365,7 +365,8 @@ func (a *Actor) handleSubmit(
 	if !ok {
 		return nil, fmt.Errorf("%w: %s", ErrUnknownProvider, msg.req.Provider)
 	}
-	if !capabilityAvailable(caps, string(msg.req.Provider)) {
+	capView, ok := capabilityForProvider(caps, string(msg.req.Provider))
+	if !ok || !capView.Available {
 		return nil, fmt.Errorf("%w: %s", ErrProviderUnavailable, msg.req.Provider)
 	}
 
@@ -373,6 +374,7 @@ func (a *Actor) handleSubmit(
 		TaskID:          msg.req.ID,
 		Prompt:          msg.req.Prompt,
 		Cwd:             msg.req.Cwd,
+		Executable:      capView.Executable,
 		Model:           msg.req.Model,
 		SystemPrompt:    msg.req.SystemPrompt,
 		MaxTurns:        msg.req.MaxTurns,
@@ -660,13 +662,13 @@ func indexAdapters(in []agentbridge.Adapter) map[string]agentbridge.Adapter {
 	return out
 }
 
-func capabilityAvailable(caps []Capability, provider string) bool {
+func capabilityForProvider(caps []Capability, provider string) (Capability, bool) {
 	for _, c := range caps {
 		if c.Provider == provider {
-			return c.Available
+			return c, true
 		}
 	}
-	return false
+	return Capability{}, false
 }
 
 func metaProfile(meta map[string]string) string {
