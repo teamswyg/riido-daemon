@@ -55,6 +55,7 @@
       "worktree_support": "supported",
       "pass_evidence": [
         "ResultCompleted",
+        "daemon-owned --sandbox danger-full-access launch shape",
         "expected file artifact inside daemon-selected workdir"
       ],
       "skip_before_run": [
@@ -67,6 +68,7 @@
       ],
       "must_not_claim": [
         "Codex auth/config home is copied into task workdir",
+        "Codex task-scoped permission profile is active",
         "Skipped integration gate proves filesystem side effect"
       ]
     },

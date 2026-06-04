@@ -235,7 +235,7 @@ func isKnownTrustTier(tier TrustTier) bool {
 
 func isKnownUnsafeBypassSurface(surface UnsafeBypassSurface) bool {
 	switch surface {
-	case UnsafeBypassClaudePermissions, UnsafeBypassCursorYolo, UnsafeBypassCodexYolo, UnsafeBypassCodexDangerBypass, UnsafeBypassCodexDangerAccess:
+	case UnsafeBypassClaudePermissions, UnsafeBypassCursorYolo, UnsafeBypassCodexYolo, UnsafeBypassCodexDangerBypass:
 		return true
 	default:
 		return false

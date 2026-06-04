@@ -29,7 +29,6 @@ const (
 	UnsafeBypassCursorYolo        UnsafeBypassSurface = "cursor:--yolo"
 	UnsafeBypassCodexYolo         UnsafeBypassSurface = "codex:--yolo"
 	UnsafeBypassCodexDangerBypass UnsafeBypassSurface = "codex:--dangerously-bypass-approvals-and-sandbox"
-	UnsafeBypassCodexDangerAccess UnsafeBypassSurface = "codex:danger-full-access"
 )
 
 // NativeConfigHookSurface is one provider-native hook materialization surface
