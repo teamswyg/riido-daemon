@@ -1050,6 +1050,28 @@ This slice does not install provider CLIs, run provider auth setup, change
 provider native commands, change SaaS endpoints, edit Desktop, edit generated
 client code, or make provider CLIs bundled artifacts.
 
+### RIID-4917 — runtime progress numeric args and telemetry prompt correction
+
+This slice closes a live development finding where Codex could emit progress
+telemetry with an integer `count` argument for code `1102`. The upstream
+`riido-contracts/progressmessage` catalog already defines that argument as an
+int, but the daemon projection accepted only string-valued args, so malformed or
+incomplete progress telemetry could fall back to raw JSON-shaped copy later in
+the public thread stream.
+
+This slice does:
+
+- accept primitive JSON progress args and normalize them into the string
+  metadata shape used by the existing SaaS assignment event contract
+- preserve rendered Korean progress text for `1102` when `count` is numeric
+- update the injected telemetry instruction so providers know that `1102`
+  requires `label`, `count`, and `representative_title`
+- keep the public SSE/client response shape unchanged: frontend still receives
+  rendered `message` strings and optional message metadata
+
+This slice does not add new progress codes, change the append-only progress
+catalog, change frontend rendering, or alter provider final-answer content.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:
