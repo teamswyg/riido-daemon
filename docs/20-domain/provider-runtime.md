@@ -99,7 +99,7 @@ environment 에서만 실행된다. Claude adapter 는 process `Dir` 를 task wo
 
 RIID-4659 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/codex` 다. 이 package 는 Codex CLI 를 번들하지 않고,
-`codex app-server --sandbox danger-full-access --listen stdio://` command
+`codex --sandbox danger-full-access app-server --listen stdio://` command
 construction, daemon-owned full-access sandbox selection, JSONL parser, raw event translator, JSON-RPC
 protocol driver, pending request actor, approval response path 를 소유한다. Codex
 app-server 자체는 사용자의 기존 Codex auth store 를 쓸 수 있다. Workdir 은
@@ -113,7 +113,7 @@ A-57 부터 Codex real CLI integration gate 는 `ResultCompleted` 와 함께 dae
 선택한 workdir 안의 expected file artifact 를 확인한다. 이 gate 는
 `AGENTBRIDGE_INTEGRATION=1` 과 local Codex auth/runtime 이 준비된 operator
 environment 에서만 실행된다. Codex adapter 는
-`codex app-server --sandbox danger-full-access --listen stdio://` 를 실행한다.
+`codex --sandbox danger-full-access app-server --listen stdio://` 를 실행한다.
 이 gate 는 full-access
 provider runtime 이 daemon-selected workdir 안에 expected artifact 를 실제로 만들 수
 있는지를 확인한다. Gate 가 skip 된 경우에는 filesystem side-effect 가 검증된 것이

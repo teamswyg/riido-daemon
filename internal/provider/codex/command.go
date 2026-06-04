@@ -1,6 +1,8 @@
 // Package codex owns the C4 run-scope adapter for OpenAI's Codex CLI. The
-// spawn shape is `codex app-server --listen stdio://` so the session actor
-// speaks JSON-RPC 2.0 over the process's stdio pipes.
+// spawn shape is `codex --sandbox danger-full-access app-server --listen
+// stdio://` so the session actor speaks JSON-RPC 2.0 over the process's stdio
+// pipes while the daemon, not provider defaults or caller args, owns execution
+// authority.
 //
 // What this slice provides:
 //   - Command builder with protocol-critical args locked in.
@@ -49,7 +51,7 @@ func UnsafeBypassArgs() []string {
 // SandboxOverrideArgs are Codex sandbox-selection flags. The daemon owns the
 // provider trust envelope, so caller CustomArgs may not override it.
 func SandboxOverrideArgs() []string {
-	return []string{"--sandbox"}
+	return []string{"--sandbox", "-s"}
 }
 
 // SecurityCriticalArgs are Codex app-server flags that can rewrite the
@@ -83,8 +85,8 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 	}
 
 	args := []string{
-		"app-server",
 		"--sandbox", FullAccessSandboxMode,
+		"app-server",
 	}
 	args = append(args, "--listen", "stdio://")
 
@@ -156,7 +158,7 @@ func filterSandboxOverrideArgs(custom []string, dropped []string) (kept []string
 			}
 			continue
 		}
-		if strings.HasPrefix(arg, "--sandbox=") {
+		if strings.HasPrefix(arg, "--sandbox=") || strings.HasPrefix(arg, "-s=") {
 			allDropped = append(allDropped, arg)
 			continue
 		}

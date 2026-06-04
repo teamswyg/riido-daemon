@@ -26,6 +26,7 @@ func TestBuildStartProtocolCriticalArgs(t *testing.T) {
 		t.Fatalf("expected StdinPipe, got %q", cmd.StdinMode)
 	}
 	assertArgPair(t, cmd.Args, "--sandbox", FullAccessSandboxMode)
+	assertArgBefore(t, cmd.Args, "--sandbox", "app-server")
 	for _, bad := range []string{"default_permissions", "permissions.riido-task"} {
 		if strings.Contains(args, bad) {
 			t.Fatalf("permission profile token %q must not be generated in %q", bad, args)
@@ -58,8 +59,10 @@ func TestBuildStartBlocksUnsafeBypassCustomArgs(t *testing.T) {
 			"--yolo",
 			"--dangerously-bypass-approvals-and-sandbox",
 			"--sandbox", "danger-full-access",
+			"-s", "read-only",
 			"--keep",
 			"--sandbox=workspace-write",
+			"-s=workspace-write",
 		},
 	}, StartOptions{})
 	if err != nil {
@@ -70,13 +73,13 @@ func TestBuildStartBlocksUnsafeBypassCustomArgs(t *testing.T) {
 			t.Fatalf("unsafe bypass arg %q must be dropped: %v", want, cmd.DroppedArgs)
 		}
 	}
-	for _, want := range []string{"--sandbox", "danger-full-access", "--sandbox=workspace-write"} {
+	for _, want := range []string{"--sandbox", "danger-full-access", "-s", "read-only", "--sandbox=workspace-write", "-s=workspace-write"} {
 		if !slices.Contains(cmd.DroppedArgs, want) {
 			t.Fatalf("sandbox override arg %q must be dropped: %v", want, cmd.DroppedArgs)
 		}
 	}
 	args := strings.Join(cmd.Args, " ")
-	for _, bad := range []string{"--yolo", "--dangerously-bypass-approvals-and-sandbox", "--sandbox=workspace-write"} {
+	for _, bad := range []string{"--yolo", "--dangerously-bypass-approvals-and-sandbox", "--sandbox=workspace-write", "-s=workspace-write", "read-only"} {
 		if strings.Contains(args, bad) {
 			t.Fatalf("unsafe bypass arg %q bled through: %q", bad, args)
 		}
@@ -126,18 +129,18 @@ func TestBuildStartBlocksConfigOverrideArgs(t *testing.T) {
 
 func TestBuildStartBlocksCallerSandboxOverride(t *testing.T) {
 	cmd, err := BuildStart(agentbridge.StartRequest{
-		CustomArgs: []string{"--sandbox=danger-full-access", "--sandbox", "workspace-write", "--safe"},
+		CustomArgs: []string{"--sandbox=danger-full-access", "--sandbox", "workspace-write", "-s", "read-only", "-s=workspace-write", "--safe"},
 	}, StartOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"--sandbox=danger-full-access", "--sandbox", "workspace-write"} {
+	for _, want := range []string{"--sandbox=danger-full-access", "--sandbox", "workspace-write", "-s", "read-only", "-s=workspace-write"} {
 		if !slices.Contains(cmd.DroppedArgs, want) {
 			t.Fatalf("sandbox override arg %q must be dropped: %v", want, cmd.DroppedArgs)
 		}
 	}
 	args := strings.Join(cmd.Args, " ")
-	if strings.Contains(args, "workspace-write") || strings.Contains(args, "--sandbox=danger-full-access") {
+	if strings.Contains(args, "workspace-write") || strings.Contains(args, "read-only") || strings.Contains(args, "--sandbox=danger-full-access") {
 		t.Fatalf("caller sandbox override bled through: %q", args)
 	}
 	assertArgPair(t, cmd.Args, "--sandbox", FullAccessSandboxMode)
@@ -267,8 +270,10 @@ func TestUnsafeBypassArgsCoverSecuritySSOTSurfaces(t *testing.T) {
 }
 
 func TestSandboxOverrideArgsCoverDaemonOwnedSandboxSelection(t *testing.T) {
-	if !slices.Contains(SandboxOverrideArgs(), "--sandbox") {
-		t.Fatalf("SandboxOverrideArgs missing --sandbox: %v", SandboxOverrideArgs())
+	for _, want := range []string{"--sandbox", "-s"} {
+		if !slices.Contains(SandboxOverrideArgs(), want) {
+			t.Fatalf("SandboxOverrideArgs missing %s: %v", want, SandboxOverrideArgs())
+		}
 	}
 }
 
@@ -280,4 +285,21 @@ func assertArgPair(t *testing.T, args []string, key string, value string) {
 		}
 	}
 	t.Fatalf("missing arg pair %s %s in %v", key, value, args)
+}
+
+func assertArgBefore(t *testing.T, args []string, before string, after string) {
+	t.Helper()
+	beforeIndex := -1
+	afterIndex := -1
+	for i, arg := range args {
+		if arg == before && beforeIndex == -1 {
+			beforeIndex = i
+		}
+		if arg == after && afterIndex == -1 {
+			afterIndex = i
+		}
+	}
+	if beforeIndex == -1 || afterIndex == -1 || beforeIndex >= afterIndex {
+		t.Fatalf("expected %q before %q in %v", before, after, args)
+	}
 }

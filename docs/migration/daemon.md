@@ -466,15 +466,15 @@ filesystem permission semantics. The corrected boundary is:
 - C6 no longer materializes Codex `.codex/config.toml` or
   `native_config_home=<workdir>/.codex`.
 - C4 `internal/provider/codex` starts
-  `codex app-server --sandbox danger-full-access --listen stdio://`.
+  `codex --sandbox danger-full-access app-server --listen stdio://`.
 - `danger-full-access` is not a caller-provided default and not a hidden
   fallback. It is the only Codex sandbox selection the daemon generates for the
   local provider runtime.
 - Free-form custom args cannot pass `-c`, `--config`, `--enable`, or `--disable`
   because those could rewrite the daemon-owned launch/trust shape.
-- Free-form custom args cannot pass `--sandbox`, `--sandbox=*`, `--yolo`, or
-  `--dangerously-bypass-approvals-and-sandbox` because sandbox selection and
-  approval-bypass surfaces are not caller-owned.
+- Free-form custom args cannot pass `--sandbox`, `--sandbox=*`, `-s`, `-s=*`,
+  `--yolo`, or `--dangerously-bypass-approvals-and-sandbox` because sandbox
+  selection and approval-bypass surfaces are not caller-owned.
 - The harness owns assignment snapshot, daemon-selected workdir/evidence root,
   provider process start/stop/cancel, heartbeat/stale lease handling, terminal
   result reporting, dropped arg evidence, and provider integration gates.
