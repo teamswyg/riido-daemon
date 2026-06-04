@@ -466,6 +466,10 @@ SaaS assignments to fail with provider 401 responses. The corrected boundary is:
   overrides.
 - The generated profile grants minimal platform read and task workdir write,
   while the detected Codex auth/config home is set to filesystem access `none`.
+- The generated profile may grant read access to common local Go/Rust toolchain
+  roots and write access to Go build cache paths so provider tool commands can
+  run ordinary `go` / `rust` smoke tasks without falling back to
+  `danger-full-access`.
 - Free-form custom args cannot pass `-c`, `--config`, `--enable`, or `--disable`
   because those could rewrite the daemon-owned permission profile.
 - Codex runtime registration reports the host Codex config `model` value as the
@@ -674,6 +678,11 @@ This slice moves the daemon-side SaaS assignment polling/report adapter:
 turns `start` responses into `bridge.TaskRequest`, watches `cancel` responses
 for in-flight task cancellation, forwards heartbeat active assignment ids, and
 posts daemon progress/result events to `/v1/agents/{agent_id}/events`.
+The SaaS heartbeat cadence is 5 seconds and the control-plane stale lease
+deadline is 20 seconds. If heartbeat response omits a requested active
+assignment, the daemon treats the assignment as server-side stale/cancelled and
+signals the local cancellation watcher instead of continuing to report that
+lease.
 Task-thread progress intended for the client thread surface is reported as
 bounded parsed batches to `/v1/agents/{agent_id}/thread-progress`; the daemon
 must preserve SaaS-supplied task/run/thread identity when present and must not

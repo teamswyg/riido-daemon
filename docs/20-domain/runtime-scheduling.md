@@ -154,8 +154,12 @@ TaskSourcePort 를 사용한다. `saasplane` 은 runtime id 에 포함된 agent/
 로 `/v1/agents/{agent_id}/poll` 을 호출하고, `start` action 만
 `bridge.TaskRequest` 로 변환한다. `cancel` action 은 in-flight task watcher 에
 취소 cause 를 전달한다. heartbeat 는 local running task id 를 active assignment id 로
-변환해 `/heartbeat` 으로 전송한다. progress/result report 는
-`/v1/agents/{agent_id}/events` 로 전송한다.
+변환해 `/heartbeat` 으로 전송하며, 기본 cadence 는 5 seconds 다. Control plane 은
+active assignment heartbeat 가 20 seconds 동안 refresh 되지 않으면 stale 로
+간주한다. heartbeat response 에서 requested active assignment 가 refresh 되지 않으면
+daemon 은 그 server-side stale/cancel 판정을 인정하고 local provider run 에 취소
+cause 를 전달한다. progress/result report 는 `/v1/agents/{agent_id}/events` 로
+전송한다.
 
 SaaS assignment FSM 은 `ready -> running -> terminal` 순서를 요구한다. Provider
 adapter 가 별도 running lifecycle event 를 내지 않더라도 supervisor 는 provider

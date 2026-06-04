@@ -196,6 +196,30 @@ func TestBuildStartDeniesCodexAuthHomeInPermissionProfile(t *testing.T) {
 	}
 }
 
+func TestBuildStartAllowsCommonToolchainRootsWithoutDangerSandbox(t *testing.T) {
+	cmd, _ := BuildStart(agentbridge.StartRequest{
+		Cwd: "/tmp/work",
+		Env: map[string]string{
+			"HOME":   "/Users/example",
+			"GOROOT": "/usr/local/go",
+		},
+	}, StartOptions{})
+	args := strings.Join(cmd.Args, " ")
+	for _, want := range []string{
+		`"/usr/local/go"="read"`,
+		`"/Users/example/.rustup"="read"`,
+		`"/Users/example/.cargo"="read"`,
+		`"/Users/example/Library/Caches/go-build"="write"`,
+	} {
+		if !strings.Contains(args, want) {
+			t.Fatalf("missing toolchain permission %q in %q", want, args)
+		}
+	}
+	if strings.Contains(args, "danger-full-access") {
+		t.Fatalf("toolchain permission must not require danger sandbox: %q", args)
+	}
+}
+
 func TestBuildStartDerivesCodexAuthHomeDenyPathFromEnv(t *testing.T) {
 	cmd, _ := BuildStart(agentbridge.StartRequest{
 		Cwd: "/tmp/work",

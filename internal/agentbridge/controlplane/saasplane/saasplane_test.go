@@ -240,6 +240,54 @@ func TestPlaneDeliversCancellationFromPollResponse(t *testing.T) {
 	}
 }
 
+func TestPlaneDeliversCancellationFromUnrefreshedHeartbeat(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	first := assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "first",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	}
+	fake.enqueue(first)
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask first: %v", err)
+	}
+	if req == nil || req.Metadata[MetadataAssignmentID] != first.ID {
+		t.Fatalf("first claim = %+v", req)
+	}
+	if err := plane.StartTask(context.Background(), req.ID); err != nil {
+		t.Fatalf("StartTask: %v", err)
+	}
+	cancelCh, err := plane.WatchCancellation(context.Background(), req.ID)
+	if err != nil {
+		t.Fatalf("WatchCancellation: %v", err)
+	}
+
+	fake.staleHeartbeatIDs[first.ID] = true
+	if err := plane.Heartbeat(context.Background(), controlplane.RuntimeHeartbeat{
+		RuntimeID:      RuntimeIDForAgent("daemon-1", AgentBinding{AgentID: "jykim1", RuntimeProvider: "codex"}),
+		RunningTaskIDs: []string{req.ID},
+	}); err != nil {
+		t.Fatalf("Heartbeat: %v", err)
+	}
+	select {
+	case cause := <-cancelCh:
+		if cause == nil || !strings.Contains(cause.Error(), "heartbeat lease stale") {
+			t.Fatalf("cancel cause = %v", cause)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timeout waiting for stale heartbeat cancellation")
+	}
+}
+
 func TestPlaneClaimsActiveAssignmentAfterLocalStateLoss(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	active := assignmentcontract.Assignment{
@@ -563,8 +611,10 @@ type fakeAssignmentServer struct {
 	deviceSecret string
 
 	assignmentsByAgent map[string][]assignmentcontract.Assignment
+	assignmentsByID    map[string]assignmentcontract.Assignment
 	activeByAgent      map[string]assignmentcontract.Assignment
 	cancelByAgent      map[string]assignmentcontract.Assignment
+	staleHeartbeatIDs  map[string]bool
 	bindings           []assignmentcontract.AgentRuntimeBinding
 	runtimeSnapshots   []DeviceRuntimeSnapshotSyncRequest
 	events             []assignmentcontract.AgentEventRequest
@@ -576,8 +626,10 @@ func newFakeAssignmentServer(t *testing.T) *fakeAssignmentServer {
 	f := &fakeAssignmentServer{
 		t:                  t,
 		assignmentsByAgent: map[string][]assignmentcontract.Assignment{},
+		assignmentsByID:    map[string]assignmentcontract.Assignment{},
 		activeByAgent:      map[string]assignmentcontract.Assignment{},
 		cancelByAgent:      map[string]assignmentcontract.Assignment{},
+		staleHeartbeatIDs:  map[string]bool{},
 	}
 	f.server = httptest.NewServer(http.HandlerFunc(f.handle))
 	t.Cleanup(f.server.Close)
@@ -590,11 +642,13 @@ func (f *fakeAssignmentServer) URL() string {
 
 func (f *fakeAssignmentServer) enqueue(assignment assignmentcontract.Assignment) {
 	f.assignmentsByAgent[assignment.AgentID] = append(f.assignmentsByAgent[assignment.AgentID], assignment)
+	f.assignmentsByID[assignment.ID] = assignment
 }
 
 func (f *fakeAssignmentServer) cancelNext(agentID string, assignment assignmentcontract.Assignment) {
 	assignment.State = assignmentcontract.AssignmentCancelling
 	f.cancelByAgent[agentID] = assignment
+	f.assignmentsByID[assignment.ID] = assignment
 }
 
 func (f *fakeAssignmentServer) activeNext(agentID string, assignment assignmentcontract.Assignment) {
@@ -602,6 +656,7 @@ func (f *fakeAssignmentServer) activeNext(agentID string, assignment assignmentc
 		assignment.State = assignmentcontract.AssignmentLeased
 	}
 	f.activeByAgent[agentID] = assignment
+	f.assignmentsByID[assignment.ID] = assignment
 }
 
 func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
@@ -681,6 +736,7 @@ func (f *fakeAssignmentServer) handlePoll(w http.ResponseWriter, r *http.Request
 	}
 	if cancel, ok := f.cancelByAgent[agentID]; ok {
 		delete(f.cancelByAgent, agentID)
+		f.assignmentsByID[cancel.ID] = cancel
 		writeJSON(w, assignmentcontract.PollResponse{
 			SchemaVersion: assignmentcontract.SchemaVersion,
 			Action:        assignmentcontract.PollCancel,
@@ -690,6 +746,7 @@ func (f *fakeAssignmentServer) handlePoll(w http.ResponseWriter, r *http.Request
 	}
 	if active, ok := f.activeByAgent[agentID]; ok {
 		delete(f.activeByAgent, agentID)
+		f.assignmentsByID[active.ID] = active
 		writeJSON(w, assignmentcontract.PollResponse{
 			SchemaVersion: assignmentcontract.SchemaVersion,
 			Action:        assignmentcontract.PollActive,
@@ -708,6 +765,7 @@ func (f *fakeAssignmentServer) handlePoll(w http.ResponseWriter, r *http.Request
 	assignment := queue[0]
 	f.assignmentsByAgent[agentID] = queue[1:]
 	assignment.State = assignmentcontract.AssignmentLeased
+	f.assignmentsByID[assignment.ID] = assignment
 	writeJSON(w, assignmentcontract.PollResponse{
 		SchemaVersion: assignmentcontract.SchemaVersion,
 		Action:        assignmentcontract.PollStart,
@@ -722,8 +780,20 @@ func (f *fakeAssignmentServer) handleHeartbeat(w http.ResponseWriter, r *http.Re
 		return
 	}
 	f.heartbeats = append(f.heartbeats, req)
+	var refreshed []assignmentcontract.Assignment
+	for _, assignmentID := range req.ActiveAssignmentIDs {
+		if f.staleHeartbeatIDs[assignmentID] {
+			continue
+		}
+		assignment, ok := f.assignmentsByID[assignmentID]
+		if !ok {
+			continue
+		}
+		refreshed = append(refreshed, assignment)
+	}
 	writeJSON(w, assignmentcontract.AgentHeartbeatResponse{
-		SchemaVersion: assignmentcontract.SchemaVersion,
+		SchemaVersion:        assignmentcontract.SchemaVersion,
+		RefreshedAssignments: refreshed,
 	})
 }
 
@@ -738,6 +808,10 @@ func (f *fakeAssignmentServer) handleEvents(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	f.events = append(f.events, req)
+	if assignment, ok := f.assignmentsByID[req.AssignmentID]; ok && req.State != "" {
+		assignment.State = req.State
+		f.assignmentsByID[req.AssignmentID] = assignment
+	}
 	writeJSON(w, assignmentcontract.AgentEventResponse{
 		SchemaVersion: assignmentcontract.SchemaVersion,
 		Event: assignmentcontract.TaskEvent{

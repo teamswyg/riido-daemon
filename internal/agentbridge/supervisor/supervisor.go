@@ -161,7 +161,7 @@ func New(cfg Config) (*Actor, error) {
 		cfg.IdlePollEvery = cfg.PollEvery
 	}
 	if cfg.HeartbeatEvery <= 0 {
-		cfg.HeartbeatEvery = 10 * time.Second
+		cfg.HeartbeatEvery = 5 * time.Second
 	}
 	if cfg.MailboxSize <= 0 {
 		cfg.MailboxSize = DefaultMailboxSize

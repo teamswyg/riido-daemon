@@ -72,6 +72,11 @@ type StartOptions struct {
 	PermissionProfile string
 }
 
+type permissionEntry struct {
+	path   string
+	access string
+}
+
 // BuildStart turns an agentbridge.StartRequest + Codex options into a
 // runtime.StartCommand.
 func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.StartCommand, error) {
@@ -216,19 +221,81 @@ func permissionProfileArgs(req agentbridge.StartRequest, opts StartOptions) []st
 		defaultCodexHomeFromEnv(req.Env),
 	))
 
-	entries := []string{tomlInlineEntry(":minimal", "read")}
+	entries := []permissionEntry{}
+	addEntry := func(path string, access string) {
+		path = cleanAbs(path)
+		if path == "" {
+			return
+		}
+		for i := range entries {
+			if entries[i].path == path {
+				entries[i].access = access
+				return
+			}
+		}
+		entries = append(entries, permissionEntry{path: path, access: access})
+	}
+
+	addEntry(":minimal", "read")
 	if cwd != "" {
-		entries = append(entries, tomlInlineEntry(cwd, "write"))
+		addEntry(cwd, "write")
+	}
+	for _, path := range commonToolchainReadPaths(req.Env) {
+		addEntry(path, "read")
+	}
+	for _, path := range commonToolchainWritePaths(req.Env) {
+		addEntry(path, "write")
 	}
 	if authHome != "" {
-		entries = append(entries, tomlInlineEntry(authHome, "none"))
+		addEntry(authHome, "none")
+	}
+	inlineEntries := make([]string, 0, len(entries))
+	for _, entry := range entries {
+		inlineEntries = append(inlineEntries, tomlInlineEntry(entry.path, entry.access))
 	}
 
 	return []string{
 		"-c", fmt.Sprintf("default_permissions=%s", strconv.Quote(profile)),
-		"-c", fmt.Sprintf("permissions.%s.filesystem={%s}", profile, strings.Join(entries, ",")),
+		"-c", fmt.Sprintf("permissions.%s.filesystem={%s}", profile, strings.Join(inlineEntries, ",")),
 		"-c", fmt.Sprintf("permissions.%s.network={enabled=true}", profile),
 	}
+}
+
+func commonToolchainReadPaths(env map[string]string) []string {
+	home := startEnvValue(env, "HOME")
+	paths := []string{
+		startEnvValue(env, "GOROOT"),
+		startEnvValue(env, "RUSTUP_HOME"),
+		startEnvValue(env, "CARGO_HOME"),
+	}
+	if home != "" {
+		paths = append(paths,
+			filepath.Join(home, ".rustup"),
+			filepath.Join(home, ".cargo"),
+		)
+	}
+	if home != "" || startEnvValue(env, "GOROOT") != "" {
+		paths = append(paths,
+			"/usr/local/go",
+			"/opt/homebrew/opt/go",
+			"/usr/local/opt/go",
+		)
+	}
+	return paths
+}
+
+func commonToolchainWritePaths(env map[string]string) []string {
+	home := startEnvValue(env, "HOME")
+	paths := []string{
+		startEnvValue(env, "GOCACHE"),
+	}
+	if home != "" {
+		paths = append(paths,
+			filepath.Join(home, "Library", "Caches", "go-build"),
+			filepath.Join(home, ".cache", "go-build"),
+		)
+	}
+	return paths
 }
 
 func tomlInlineEntry(path string, access string) string {

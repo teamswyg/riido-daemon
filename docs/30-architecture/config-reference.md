@@ -76,7 +76,7 @@ Exactly one production task source may be selected.
 | `RIIDO_SAAS_URL` | `saasplane` | empty | SaaS assignment polling endpoint |
 | `RIIDO_DAEMON_POLL_INTERVAL_SECONDS` | supervisor | `1` | active/fast claim polling interval |
 | `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS` | supervisor | `5` | idle polling interval; must be >= active interval |
-| `RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS` | supervisor | `10` | runtime heartbeat interval |
+| `RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS` | supervisor | `5` | runtime heartbeat interval |
 
 Queue, task DB, and SaaS source variables are mutually exclusive where their
 adapters would otherwise compete for task ownership.
