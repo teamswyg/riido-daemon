@@ -147,7 +147,7 @@
         "A-54-AI-Agent-Provider-Cursor-Agent-worktree-side-effect-검증"
       ],
       "must_not_claim": [
-        "Cursor --trust is a --yolo unsafe bypass",
+        "Cursor --trust enables --yolo or any provider-native approval bypass",
         "Skipped integration gate proves filesystem side effect"
       ]
     }

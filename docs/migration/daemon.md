@@ -484,6 +484,14 @@ filesystem permission semantics. The corrected boundary is:
   assignment from snapshotting an invented `codex-default` model that Codex
   app-server rejects for ChatGPT-account runs.
 
+RIID-4917 also records the structural split of this decision:
+`docs/20-domain/security.md` owns the C7 judgment that full-access/trusted
+runtime envelopes are explicit harness-managed choices rather than provider or
+caller defaults, while `docs/20-domain/provider-runtime.md` §2.1 owns the C4
+provider-by-provider adoption table. Codex is currently adopted; Claude,
+Cursor, and OpenClaw must not be treated as silently adopted without their own
+SSOT, command-builder tests, and real integration evidence.
+
 This keeps real Codex auth usable for development E2E and treats Codex as
 trusted local automation. The structural decision is not "make full access the
 default"; it is "when a provider must work on the user's machine, make the

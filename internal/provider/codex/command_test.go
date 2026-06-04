@@ -27,6 +27,7 @@ func TestBuildStartProtocolCriticalArgs(t *testing.T) {
 	}
 	assertArgPair(t, cmd.Args, "--sandbox", FullAccessSandboxMode)
 	assertArgBefore(t, cmd.Args, "--sandbox", "app-server")
+	assertArgCount(t, cmd.Args, "--sandbox", 1)
 	for _, bad := range []string{"default_permissions", "permissions.riido-task"} {
 		if strings.Contains(args, bad) {
 			t.Fatalf("permission profile token %q must not be generated in %q", bad, args)
@@ -144,8 +145,33 @@ func TestBuildStartBlocksCallerSandboxOverride(t *testing.T) {
 		t.Fatalf("caller sandbox override bled through: %q", args)
 	}
 	assertArgPair(t, cmd.Args, "--sandbox", FullAccessSandboxMode)
+	assertArgCount(t, cmd.Args, "--sandbox", 1)
 	if !strings.Contains(args, "--safe") {
 		t.Fatalf("non-sandbox custom arg lost: %q", args)
+	}
+}
+
+func TestBuildStartUsesOnlyDaemonGeneratedSandboxSelection(t *testing.T) {
+	cmd, err := BuildStart(agentbridge.StartRequest{
+		CustomArgs: []string{
+			"--sandbox", FullAccessSandboxMode,
+			"--sandbox=danger-full-access",
+			"-s", FullAccessSandboxMode,
+			"--safe",
+		},
+	}, StartOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertArgPair(t, cmd.Args, "--sandbox", FullAccessSandboxMode)
+	assertArgCount(t, cmd.Args, "--sandbox", 1)
+	for _, dropped := range []string{"--sandbox", FullAccessSandboxMode, "--sandbox=danger-full-access", "-s"} {
+		if !slices.Contains(cmd.DroppedArgs, dropped) {
+			t.Fatalf("caller sandbox token %q must be dropped: %v", dropped, cmd.DroppedArgs)
+		}
+	}
+	if !slices.Contains(cmd.Args, "--safe") {
+		t.Fatalf("non-sandbox custom arg lost: %v", cmd.Args)
 	}
 }
 
@@ -301,5 +327,18 @@ func assertArgBefore(t *testing.T, args []string, before string, after string) {
 	}
 	if beforeIndex == -1 || afterIndex == -1 || beforeIndex >= afterIndex {
 		t.Fatalf("expected %q before %q in %v", before, after, args)
+	}
+}
+
+func assertArgCount(t *testing.T, args []string, key string, want int) {
+	t.Helper()
+	got := 0
+	for _, arg := range args {
+		if arg == key {
+			got++
+		}
+	}
+	if got != want {
+		t.Fatalf("arg %q count = %d, want %d in %v", key, got, want, args)
 	}
 }
