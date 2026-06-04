@@ -7,23 +7,27 @@ on:
       - ".github/workflows/architecture-docs.yml"
       - "docs/20-domain/context-map.md"
       - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/security.md"
       - "docs/30-architecture/**"
       - "docs/50-roadmap/open-questions.md"
       - "docs/migration/daemon.md"
       - "docs/migration/cli.md"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/figmaboundary/**"
+      - "tools/providervalidation/**"
   pull_request:
     paths:
       - ".github/workflows/architecture-docs.yml"
       - "docs/20-domain/context-map.md"
       - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/security.md"
       - "docs/30-architecture/**"
       - "docs/50-roadmap/open-questions.md"
       - "docs/migration/daemon.md"
       - "docs/migration/cli.md"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/figmaboundary/**"
+      - "tools/providervalidation/**"
 
 jobs:
   docs:
@@ -80,5 +84,7 @@ jobs:
           fi
       - name: Verify Figma AI Agent daemon boundary
         run: go test ./tools/figmaboundary -count=1
+      - name: Verify provider validation matrix
+        run: go test ./tools/providervalidation -count=1
       - name: Test
         run: go test ./...

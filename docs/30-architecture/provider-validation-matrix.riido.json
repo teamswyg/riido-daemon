@@ -4,6 +4,7 @@
   "riido_task": "RIID-4901",
   "human_doc": "docs/30-architecture/integration-matrix.md",
   "source_documents": [
+    "docs/20-domain/security.md",
     "docs/20-domain/provider-runtime.md",
     "docs/30-architecture/integration-matrix.md"
   ],
@@ -57,6 +58,7 @@
       "pass_evidence": [
         "ResultCompleted",
         "explicit daemon-owned codex --sandbox danger-full-access app-server --listen stdio:// launch shape",
+        "caller sandbox/config/unsafe-bypass args are dropped with DroppedArgs evidence",
         "expected file artifact inside daemon-selected workdir"
       ],
       "skip_before_run": [
@@ -65,7 +67,8 @@
         "Detect Available=false"
       ],
       "latest_evidence": [
-        "A-57-AI-Agent-Provider-Codex-worktree-side-effect-검증"
+        "A-57-AI-Agent-Provider-Codex-worktree-side-effect-검증",
+        "RIID-4917-Codex-full-access-harness-policy"
       ],
       "must_not_claim": [
         "Codex full-access came from provider default sandbox selection",
