@@ -12,7 +12,8 @@
     "Missing executable, unsupported detected version, or missing provider authentication is an operator-environment skip before a run starts, not a PASS.",
     "Once an opt-in provider roundtrip starts, ResultCompleted without the required evidence for that provider is a failure.",
     "SaaS completed thread evidence is not filesystem side-effect evidence unless the daemon-selected workdir artifact is also verified.",
-    "OpenClaw worktree-required task routing remains blocked while runtime capability reports supports_worktree=false."
+    "OpenClaw worktree-required task routing remains blocked while runtime capability reports supports_worktree=false.",
+    "Provider full-access/trusted runtime modes must be explicit daemon-owned harness envelopes, never implicit provider defaults or caller-provided CustomArgs."
   ],
   "providers": [
     {
@@ -55,7 +56,7 @@
       "worktree_support": "supported",
       "pass_evidence": [
         "ResultCompleted",
-        "daemon-owned --sandbox danger-full-access launch shape",
+        "explicit daemon-owned codex --sandbox danger-full-access app-server --listen stdio:// launch shape",
         "expected file artifact inside daemon-selected workdir"
       ],
       "skip_before_run": [
@@ -67,6 +68,8 @@
         "A-57-AI-Agent-Provider-Codex-worktree-side-effect-검증"
       ],
       "must_not_claim": [
+        "Codex full-access came from provider default sandbox selection",
+        "Codex sandbox selection came from caller CustomArgs or SaaS payload",
         "Codex auth/config home is copied into task workdir",
         "Codex task-scoped permission profile is active",
         "Skipped integration gate proves filesystem side effect"
