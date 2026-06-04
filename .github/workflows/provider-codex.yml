@@ -9,7 +9,12 @@ on:
       - "internal/agentbridge/**"
       - "internal/process/**"
       - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/security.md"
+      - "docs/20-domain/workspace.md"
+      - "docs/30-architecture/integration-matrix.md"
+      - "docs/30-architecture/provider-validation-matrix.riido.json"
       - "docs/migration/daemon.md"
+      - "tools/providervalidation/**"
       - "go.mod"
       - "go.sum"
   pull_request:
@@ -19,7 +24,12 @@ on:
       - "internal/agentbridge/**"
       - "internal/process/**"
       - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/security.md"
+      - "docs/20-domain/workspace.md"
+      - "docs/30-architecture/integration-matrix.md"
+      - "docs/30-architecture/provider-validation-matrix.riido.json"
       - "docs/migration/daemon.md"
+      - "tools/providervalidation/**"
       - "go.mod"
       - "go.sum"
 
@@ -51,3 +61,6 @@ jobs:
       - name: Verify Codex adapter gates
         run: |
           go test ./internal/provider/codex -count=1
+      - name: Verify Codex full-access harness SSOT
+        run: |
+          go test ./tools/providervalidation -run TestProviderValidationMatrix -count=1

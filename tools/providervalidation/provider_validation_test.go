@@ -13,11 +13,13 @@ func TestProviderValidationMatrix(t *testing.T) {
 	root := filepath.Join("..", "..")
 	manifestPath := filepath.Join(root, "docs", "30-architecture", "provider-validation-matrix.riido.json")
 	docPath := filepath.Join(root, "docs", "30-architecture", "integration-matrix.md")
+	securityDocPath := filepath.Join(root, "docs", "20-domain", "security.md")
 	runtimeDocPath := filepath.Join(root, "docs", "20-domain", "provider-runtime.md")
 	migrationDocPath := filepath.Join(root, "docs", "migration", "daemon.md")
 
 	manifest := loadManifest(t, manifestPath)
 	docText := readText(t, docPath)
+	securityText := readText(t, securityDocPath)
 	runtimeText := readText(t, runtimeDocPath)
 	migrationText := readText(t, migrationDocPath)
 
@@ -30,15 +32,39 @@ func TestProviderValidationMatrix(t *testing.T) {
 	if manifest.HumanDoc != "docs/30-architecture/integration-matrix.md" {
 		t.Fatalf("human_doc = %q", manifest.HumanDoc)
 	}
+	for _, want := range []string{
+		"docs/20-domain/security.md",
+		"docs/20-domain/provider-runtime.md",
+		"docs/30-architecture/integration-matrix.md",
+	} {
+		if !hasString(manifest.SourceDocuments, want) {
+			t.Fatalf("source_documents must include %q: %+v", want, manifest.SourceDocuments)
+		}
+	}
+	if !hasString(manifest.GlobalRules, "Provider full-access/trusted runtime modes must be explicit daemon-owned harness envelopes, never implicit provider defaults or caller-provided CustomArgs.") {
+		t.Fatalf("global_rules must preserve full-access harness invariant: %+v", manifest.GlobalRules)
+	}
 	for _, needle := range []string{
 		"provider-validation-matrix.riido.json",
 		"`PASS`",
 		"SaaS completed thread alone is not filesystem side-effect evidence",
 		"`supports_worktree=false`",
 		"`MISSING_REQUIRED_SURFACE:worktree`",
+		"[`security.md`](../20-domain/security.md) §4.2",
 	} {
 		if !strings.Contains(docText, needle) {
 			t.Fatalf("integration matrix doc must mention %q", needle)
+		}
+	}
+	for _, needle := range []string{
+		"Provider full-access runtime harness",
+		"default 가 full-access",
+		"codex --sandbox danger-full-access app-server --listen stdio://",
+		"daemon 이 Codex 를 전권 host automation",
+		"Claude / Cursor / OpenClaw 도 같은 메타 모델",
+	} {
+		if !strings.Contains(securityText, needle) {
+			t.Fatalf("security doc must preserve full-access harness SSOT phrase %q", needle)
 		}
 	}
 	for _, needle := range []string{
@@ -76,6 +102,7 @@ func TestProviderValidationMatrix(t *testing.T) {
 	assertWorktreeProvider(t, providers["claude"])
 	assertWorktreeProvider(t, providers["codex"])
 	assertWorktreeProvider(t, providers["cursor"])
+	assertCodexFullAccessHarness(t, providers["codex"], docText, securityText, runtimeText, migrationText)
 	assertOpenClawLimits(t, providers["openclaw"], docText, runtimeText)
 }
 
@@ -132,6 +159,44 @@ func assertWorktreeProvider(t *testing.T, row providerEvidence) {
 	}
 	if hasAny(row.MustNotClaim, "SaaS completed thread proves filesystem side effect", "OpenClaw supports daemon-selected worktree") {
 		t.Fatalf("provider %q has OpenClaw-only negative claim: %+v", row.Provider, row.MustNotClaim)
+	}
+}
+
+func assertCodexFullAccessHarness(t *testing.T, row providerEvidence, docText string, securityText string, runtimeText string, migrationText string) {
+	t.Helper()
+	if row.Provider != "codex" {
+		t.Fatalf("Codex harness assertion called with provider %q", row.Provider)
+	}
+	for _, needle := range []string{
+		"explicit daemon-owned codex --sandbox danger-full-access app-server --listen stdio:// launch shape",
+		"caller sandbox/config/unsafe-bypass args are dropped with DroppedArgs evidence",
+		"expected file artifact inside daemon-selected workdir",
+	} {
+		if !hasString(row.PassEvidence, needle) {
+			t.Fatalf("Codex pass evidence missing %q: %+v", needle, row.PassEvidence)
+		}
+	}
+	for _, needle := range []string{
+		"Codex full-access came from provider default sandbox selection",
+		"Codex sandbox selection came from caller CustomArgs or SaaS payload",
+		"Codex task-scoped permission profile is active",
+	} {
+		if !hasString(row.MustNotClaim, needle) {
+			t.Fatalf("Codex must_not_claim missing %q: %+v", needle, row.MustNotClaim)
+		}
+	}
+	if !hasString(row.LatestEvidence, "RIID-4917-Codex-full-access-harness-policy") {
+		t.Fatalf("Codex latest_evidence must include RIID-4917 harness policy: %+v", row.LatestEvidence)
+	}
+	for _, needle := range []string{
+		"Provider full-access/trusted modes are not assumed from provider defaults or\ncaller arguments",
+		"daemon-owned full-access runtime selection",
+		"not a provider default, caller-provided default, or\n  hidden fallback",
+		"Other providers should follow the same full-access/trusted-runtime\nmeta model only through provider-specific SSOT",
+	} {
+		if !strings.Contains(docText+"\n"+securityText+"\n"+runtimeText+"\n"+migrationText, needle) {
+			t.Fatalf("docs must preserve Codex full-access harness decision %q", needle)
+		}
 	}
 }
 
