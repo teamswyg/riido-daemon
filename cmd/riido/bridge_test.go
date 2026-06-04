@@ -112,9 +112,14 @@ func TestRegisteredAdaptersBuildStartForDaemonRuntime(t *testing.T) {
 				t.Fatalf("claude daemon adapter must not default to bypassPermissions: %q", args)
 			}
 		case codex.Name:
+			args := strings.Join(cmd.Args, " ")
+			assertBridgeArgPair(t, cmd.Args, "--sandbox", codex.FullAccessSandboxMode)
+			if strings.Contains(args, "default_permissions") || strings.Contains(args, "permissions.riido-task") {
+				t.Fatalf("codex adapter must not generate a task-scoped permission profile: %q", args)
+			}
 			for _, env := range cmd.Env {
 				if strings.HasPrefix(env, "CODEX_HOME=") {
-					t.Fatalf("codex adapter must not invent CODEX_HOME while building daemon permission profile: %v", cmd.Env)
+					t.Fatalf("codex adapter must not invent CODEX_HOME: %v", cmd.Env)
 				}
 			}
 		case openclaw.Name:
@@ -127,7 +132,7 @@ func TestRegisteredAdaptersBuildStartForDaemonRuntime(t *testing.T) {
 	}
 }
 
-func TestCodexDaemonAdapterDeniesConfiguredCodexAuthHome(t *testing.T) {
+func TestCodexDaemonAdapterPreservesConfiguredCodexHomeWithoutPermissionProfile(t *testing.T) {
 	cmd, err := bridgeCodexAdapter{}.BuildStart(agentbridge.StartRequest{
 		Cwd: "/tmp/work",
 		Env: map[string]string{"CODEX_HOME": "/Users/example/.codex"},
@@ -136,12 +141,18 @@ func TestCodexDaemonAdapterDeniesConfiguredCodexAuthHome(t *testing.T) {
 		t.Fatal(err)
 	}
 	args := strings.Join(cmd.Args, " ")
-	if !strings.Contains(args, `"/Users/example/.codex"="none"`) {
-		t.Fatalf("codex adapter did not deny auth home in permission profile: %q", args)
+	assertBridgeArgPair(t, cmd.Args, "--sandbox", codex.FullAccessSandboxMode)
+	for _, bad := range []string{`"/Users/example/.codex"="none"`, "default_permissions", "permissions.riido-task"} {
+		if strings.Contains(args, bad) {
+			t.Fatalf("codex adapter must not generate permission profile token %q: %q", bad, args)
+		}
+	}
+	if !containsEnv(cmd.Env, "CODEX_HOME=/Users/example/.codex") {
+		t.Fatalf("codex adapter should preserve caller CODEX_HOME for app-server auth: %v", cmd.Env)
 	}
 }
 
-func TestCodexDaemonAdapterDerivesDefaultCodexAuthHomeFromHome(t *testing.T) {
+func TestCodexDaemonAdapterDoesNotDeriveDefaultCodexHomeFromHome(t *testing.T) {
 	cmd, err := bridgeCodexAdapter{}.BuildStart(agentbridge.StartRequest{
 		Cwd: "/tmp/work",
 		Env: map[string]string{"HOME": "/Users/example"},
@@ -150,8 +161,13 @@ func TestCodexDaemonAdapterDerivesDefaultCodexAuthHomeFromHome(t *testing.T) {
 		t.Fatal(err)
 	}
 	args := strings.Join(cmd.Args, " ")
-	if !strings.Contains(args, `"/Users/example/.codex"="none"`) {
-		t.Fatalf("codex adapter did not derive default auth home deny path: %q", args)
+	if strings.Contains(args, "/Users/example/.codex") || strings.Contains(args, "default_permissions") {
+		t.Fatalf("codex adapter must not derive auth home permission profile: %q", args)
+	}
+	for _, env := range cmd.Env {
+		if strings.HasPrefix(env, "CODEX_HOME=") {
+			t.Fatalf("codex adapter must not invent CODEX_HOME: %v", cmd.Env)
+		}
 	}
 }
 

@@ -726,7 +726,7 @@ exit 0
 func codexConfigTOML() string {
 	return `# Managed by riido-daemon.
 # Reserved for future Codex native config materialization.
-# Current Codex runs use adapter-injected permission profiles instead of task-scoped CODEX_HOME.
+# Current Codex runs use adapter-owned full-access sandbox selection instead of task-scoped CODEX_HOME.
 `
 }
 

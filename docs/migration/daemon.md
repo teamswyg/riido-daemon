@@ -443,7 +443,7 @@ This slice moves the Codex concrete provider adapter:
 - Codex adapter testdata
 - docs updates in provider-runtime and daemon migration SSOT files
 - focused public CI for Codex command construction, blocked protocol args,
-  unsafe bypass filtering, original `CODEX_HOME` isolation, executable detection,
+  unsafe bypass filtering, `CODEX_HOME` non-materialization, executable detection,
   JSONL parser, raw event translator, golden fixtures, JSON-RPC actor, handshake,
   and protocol-driver approval response path
 
@@ -453,34 +453,41 @@ Codex CLI. Real CLI integration remains opt-in through `AGENTBRIDGE_INTEGRATION=
 public CI runs deterministic black-box tests and keeps the integration test
 skipped when the external CLI is absent.
 
-### RIID-4881 — Codex app-server auth and tool sandbox correction
+### RIID-4881 / RIID-4917 — Codex app-server auth and full-access harness correction
 
 The initial task-scoped `CODEX_HOME` model prevented Codex from reading the
 user's global config but also removed Codex-managed ChatGPT auth, causing real
-SaaS assignments to fail with provider 401 responses. The corrected boundary is:
+SaaS assignments to fail with provider 401 responses. RIID-4881 first corrected
+that by keeping the real Codex auth store available while trying a daemon-owned
+permission profile for provider tool commands. RIID-4917 supersedes that
+permission-profile experiment: the daemon no longer tries to own Codex internal
+filesystem permission semantics. The corrected boundary is:
 
 - C6 no longer materializes Codex `.codex/config.toml` or
   `native_config_home=<workdir>/.codex`.
-- C4 `internal/provider/codex` starts `codex app-server --listen stdio://` with
-  daemon-owned `default_permissions` / `permissions.<profile>.filesystem`
-  overrides.
-- The generated profile grants minimal platform read and task workdir write,
-  while the detected Codex auth/config home is set to filesystem access `none`.
-- The generated profile may grant read access to common local Go/Rust toolchain
-  roots and write access to Go build cache paths so provider tool commands can
-  run ordinary `go` / `rust` smoke tasks without falling back to
-  `danger-full-access`.
+- C4 `internal/provider/codex` starts
+  `codex app-server --sandbox danger-full-access --listen stdio://`.
+- `danger-full-access` is not a caller-provided default and not a hidden
+  fallback. It is the only Codex sandbox selection the daemon generates for the
+  local provider runtime.
 - Free-form custom args cannot pass `-c`, `--config`, `--enable`, or `--disable`
-  because those could rewrite the daemon-owned permission profile.
+  because those could rewrite the daemon-owned launch/trust shape.
+- Free-form custom args cannot pass `--sandbox`, `--sandbox=*`, `--yolo`, or
+  `--dangerously-bypass-approvals-and-sandbox` because sandbox selection and
+  approval-bypass surfaces are not caller-owned.
+- The harness owns assignment snapshot, daemon-selected workdir/evidence root,
+  provider process start/stop/cancel, heartbeat/stale lease handling, terminal
+  result reporting, dropped arg evidence, and provider integration gates.
 - Codex runtime registration reports the host Codex config `model` value as the
   default runtime-scoped model catalog entry. This prevents control-plane agent
   assignment from snapshotting an invented `codex-default` model that Codex
   app-server rejects for ChatGPT-account runs.
 
-This keeps real Codex auth usable for development E2E while preventing provider
-tool commands from reading the Codex auth/config home. It does not use team id,
-OpenAPI key, or task-location metadata as any part of Codex identity or sandbox
-binding.
+This keeps real Codex auth usable for development E2E and treats Codex as
+trusted local automation. It does not use team id, OpenAPI key, or task-location
+metadata as any part of Codex identity or sandbox binding. Other providers
+should follow the same full-access/trusted-runtime meta model only through
+provider-specific SSOT, command builder changes, and integration evidence.
 
 This slice does not move OpenClaw/Cursor adapters, supervisor polling / runtime
 selection, SaaS control-plane adapters, task DB/project/mwsd local API packages,
