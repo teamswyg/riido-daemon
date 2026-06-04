@@ -1,20 +1,20 @@
 // Package codex owns the C4 run-scope adapter for OpenAI's Codex CLI. The
-// spawn shape is `codex app-server --listen stdio://` so the session actor
-// speaks JSON-RPC 2.0 over the process's stdio pipes.
+// spawn shape is `codex --sandbox danger-full-access app-server --listen
+// stdio://` so the session actor speaks JSON-RPC 2.0 over the process's stdio
+// pipes while the daemon, not provider defaults or caller args, owns execution
+// authority.
 //
 // What this slice provides:
 //   - Command builder with protocol-critical args locked in.
 //   - --listen blocklist (caller cannot reroute transport).
-//   - task-scoped Codex permission profile injection.
+//   - daemon-owned full-access sandbox selection.
 //   - JSON-RPC protocol driver via the provider-neutral agentbridge port.
 package codex
 
 import (
 	"fmt"
 	"maps"
-	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
@@ -23,7 +23,7 @@ import (
 
 const Name = "codex"
 const DefaultExecutable = "codex"
-const DefaultPermissionProfile = "riido-task"
+const FullAccessSandboxMode = "danger-full-access"
 
 // BlockedArgs are protocol-critical flags the adapter sets itself.
 // --listen is the load-bearing one: caller-supplied --listen would let
@@ -33,22 +33,31 @@ func BlockedArgs() []string {
 	return providercap.ProtocolCriticalArgs(providercap.ProtocolCodexAppServer)
 }
 
-// UnsafeBypassArgs are Codex flags covered by docs/20-domain/security.md §5.
-// BuildStart does not expose a policy-approved allow path for these surfaces,
-// so free-form CustomArgs must not smuggle them into the provider process.
-// Boolean equals-forms such as --yolo=true are the same unsafe surface.
+// UnsafeBypassArgs are provider-native approval-bypass flags covered by
+// docs/20-domain/security.md §5. The daemon does not expose an allow path for
+// these free-form CustomArgs. Boolean equals-forms such as --yolo=true are the
+// same unsafe surface.
+//
+// Codex `--sandbox danger-full-access` is deliberately not in this list: it is
+// the daemon-owned provider full-access runtime envelope, not a caller-owned
+// bypass flag.
 func UnsafeBypassArgs() []string {
 	return []string{
 		"--yolo",
 		"--dangerously-bypass-approvals-and-sandbox",
-		"--sandbox=danger-full-access",
 	}
 }
 
+// SandboxOverrideArgs are Codex sandbox-selection flags. The daemon owns the
+// provider trust envelope, so caller CustomArgs may not override it.
+func SandboxOverrideArgs() []string {
+	return []string{"--sandbox", "-s"}
+}
+
 // SecurityCriticalArgs are Codex app-server flags that can rewrite the
-// daemon-owned permission profile. They are distinct from protocol-critical
-// args: --listen protects transport shape, while these protect C7 sandbox
-// policy injection.
+// daemon-owned launch/trust shape. They are distinct from protocol-critical
+// args: --listen protects transport shape, while these protect C4/C7 runtime
+// policy decisions from caller-provided config overlays.
 func SecurityCriticalArgs() []string {
 	return []string{
 		"-c",
@@ -62,19 +71,6 @@ func SecurityCriticalArgs() []string {
 type StartOptions struct {
 	// Executable overrides the binary path. Falls back to DefaultExecutable.
 	Executable string
-	// AuthHomeDenyPath is the user-global Codex credential/config home path
-	// that provider tool commands must not read. The Codex app-server process
-	// may still use its inherited auth store, but every spawned shell command
-	// receives a daemon-owned permission profile with this path set to none.
-	AuthHomeDenyPath string
-	// PermissionProfile overrides the generated Codex permission profile name.
-	// Empty means DefaultPermissionProfile.
-	PermissionProfile string
-}
-
-type permissionEntry struct {
-	path   string
-	access string
 }
 
 // BuildStart turns an agentbridge.StartRequest + Codex options into a
@@ -89,9 +85,9 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 	}
 
 	args := []string{
+		"--sandbox", FullAccessSandboxMode,
 		"app-server",
 	}
-	args = append(args, permissionProfileArgs(req, opts)...)
 	args = append(args, "--listen", "stdio://")
 
 	kept, dropped := filterCustomArgs(req.CustomArgs)
@@ -112,6 +108,7 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 func filterCustomArgs(custom []string) (kept []string, dropped []string) {
 	kept, dropped = agentbridge.FilterBlockedArgs(custom, BlockedArgs())
 	kept, dropped = filterConfigOverrideArgs(kept, dropped)
+	kept, dropped = filterSandboxOverrideArgs(kept, dropped)
 	return filterUnsafeBypassArgs(kept, dropped)
 }
 
@@ -144,6 +141,32 @@ func filterConfigOverrideArgs(custom []string, dropped []string) (kept []string,
 	return kept, allDropped
 }
 
+func filterSandboxOverrideArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
+	blocked := make(map[string]struct{}, len(SandboxOverrideArgs()))
+	for _, arg := range SandboxOverrideArgs() {
+		blocked[arg] = struct{}{}
+	}
+
+	allDropped = append(allDropped, dropped...)
+	for i := 0; i < len(custom); i++ {
+		arg := custom[i]
+		if _, isBlocked := blocked[arg]; isBlocked {
+			allDropped = append(allDropped, arg)
+			if i+1 < len(custom) {
+				allDropped = append(allDropped, custom[i+1])
+				i++
+			}
+			continue
+		}
+		if strings.HasPrefix(arg, "--sandbox=") || strings.HasPrefix(arg, "-s=") {
+			allDropped = append(allDropped, arg)
+			continue
+		}
+		kept = append(kept, arg)
+	}
+	return kept, allDropped
+}
+
 func filterUnsafeBypassArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
 	blocked := make(map[string]struct{}, len(UnsafeBypassArgs()))
 	for _, arg := range UnsafeBypassArgs() {
@@ -160,17 +183,6 @@ func filterUnsafeBypassArgs(custom []string, dropped []string) (kept []string, a
 		if strings.HasPrefix(arg, "--yolo=") ||
 			strings.HasPrefix(arg, "--dangerously-bypass-approvals-and-sandbox=") {
 			allDropped = append(allDropped, arg)
-			continue
-		}
-		if strings.HasPrefix(arg, "--sandbox=") {
-			if strings.TrimPrefix(arg, "--sandbox=") == "danger-full-access" {
-				allDropped = append(allDropped, arg)
-				continue
-			}
-		}
-		if arg == "--sandbox" && i+1 < len(custom) && custom[i+1] == "danger-full-access" {
-			allDropped = append(allDropped, arg, custom[i+1])
-			i++
 			continue
 		}
 		kept = append(kept, arg)
@@ -207,132 +219,4 @@ func buildEnv(caller map[string]string, _ StartOptions) []string {
 		env = append(env, fmt.Sprintf("%s=%s", k, merged[k]))
 	}
 	return env
-}
-
-func permissionProfileArgs(req agentbridge.StartRequest, opts StartOptions) []string {
-	profile := strings.TrimSpace(opts.PermissionProfile)
-	if profile == "" {
-		profile = DefaultPermissionProfile
-	}
-	cwd := cleanAbs(req.Cwd)
-	authHome := cleanAbs(firstNonEmpty(
-		opts.AuthHomeDenyPath,
-		startEnvValue(req.Env, "CODEX_HOME"),
-		defaultCodexHomeFromEnv(req.Env),
-	))
-
-	entries := []permissionEntry{}
-	addEntry := func(path string, access string) {
-		path = cleanAbs(path)
-		if path == "" {
-			return
-		}
-		for i := range entries {
-			if entries[i].path == path {
-				entries[i].access = access
-				return
-			}
-		}
-		entries = append(entries, permissionEntry{path: path, access: access})
-	}
-
-	addEntry(":minimal", "read")
-	if cwd != "" {
-		addEntry(cwd, "write")
-	}
-	for _, path := range commonToolchainReadPaths(req.Env) {
-		addEntry(path, "read")
-	}
-	for _, path := range commonToolchainWritePaths(req.Env) {
-		addEntry(path, "write")
-	}
-	if authHome != "" {
-		addEntry(authHome, "none")
-	}
-	inlineEntries := make([]string, 0, len(entries))
-	for _, entry := range entries {
-		inlineEntries = append(inlineEntries, tomlInlineEntry(entry.path, entry.access))
-	}
-
-	return []string{
-		"-c", fmt.Sprintf("default_permissions=%s", strconv.Quote(profile)),
-		"-c", fmt.Sprintf("permissions.%s.filesystem={%s}", profile, strings.Join(inlineEntries, ",")),
-		"-c", fmt.Sprintf("permissions.%s.network={enabled=true}", profile),
-	}
-}
-
-func commonToolchainReadPaths(env map[string]string) []string {
-	home := startEnvValue(env, "HOME")
-	paths := []string{
-		startEnvValue(env, "GOROOT"),
-		startEnvValue(env, "RUSTUP_HOME"),
-		startEnvValue(env, "CARGO_HOME"),
-	}
-	if home != "" {
-		paths = append(paths,
-			filepath.Join(home, ".rustup"),
-			filepath.Join(home, ".cargo"),
-		)
-	}
-	if home != "" || startEnvValue(env, "GOROOT") != "" {
-		paths = append(paths,
-			"/usr/local/go",
-			"/opt/homebrew/opt/go",
-			"/usr/local/opt/go",
-		)
-	}
-	return paths
-}
-
-func commonToolchainWritePaths(env map[string]string) []string {
-	home := startEnvValue(env, "HOME")
-	paths := []string{
-		startEnvValue(env, "GOCACHE"),
-	}
-	if home != "" {
-		paths = append(paths,
-			filepath.Join(home, "Library", "Caches", "go-build"),
-			filepath.Join(home, ".cache", "go-build"),
-		)
-	}
-	return paths
-}
-
-func tomlInlineEntry(path string, access string) string {
-	return strconv.Quote(path) + "=" + strconv.Quote(access)
-}
-
-func cleanAbs(path string) string {
-	path = strings.TrimSpace(path)
-	if path == "" {
-		return ""
-	}
-	if !filepath.IsAbs(path) {
-		return path
-	}
-	return filepath.Clean(path)
-}
-
-func startEnvValue(env map[string]string, key string) string {
-	if env == nil {
-		return ""
-	}
-	return strings.TrimSpace(env[key])
-}
-
-func defaultCodexHomeFromEnv(env map[string]string) string {
-	home := startEnvValue(env, "HOME")
-	if home == "" {
-		return ""
-	}
-	return filepath.Join(home, ".codex")
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if strings.TrimSpace(value) != "" {
-			return value
-		}
-	}
-	return ""
 }

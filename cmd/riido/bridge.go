@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/provider/claude"
@@ -153,7 +150,7 @@ func (bridgeCodexAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv)
 	return codex.Detect(ctx, env)
 }
 func (bridgeCodexAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
-	return codex.BuildStart(req, codex.StartOptions{AuthHomeDenyPath: codexAuthHomeDenyPath(req)})
+	return codex.BuildStart(req, codex.StartOptions{})
 }
 func (bridgeCodexAdapter) NewParser() agentbridge.Parser { return codex.NewParser() }
 func (bridgeCodexAdapter) Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
@@ -165,24 +162,6 @@ func (bridgeCodexAdapter) BlockedArgs() []string { return codex.BlockedArgs() }
 // handshake driver. Implements agentbridge.ProtocolDriverProvider.
 func (bridgeCodexAdapter) NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	return codex.NewProtocolDriver(req)
-}
-
-func codexAuthHomeDenyPath(req agentbridge.StartRequest) string {
-	if req.Env != nil {
-		if value := strings.TrimSpace(req.Env["CODEX_HOME"]); value != "" {
-			return value
-		}
-		if value := strings.TrimSpace(req.Env["HOME"]); value != "" {
-			return filepath.Join(value, ".codex")
-		}
-	}
-	if value := strings.TrimSpace(os.Getenv("CODEX_HOME")); value != "" {
-		return value
-	}
-	if home, err := os.UserHomeDir(); err == nil && strings.TrimSpace(home) != "" {
-		return filepath.Join(home, ".codex")
-	}
-	return ""
 }
 
 type bridgeOpenClawAdapter struct{}
