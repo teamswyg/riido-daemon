@@ -184,16 +184,19 @@ func AgentInstructionContract(instruction string) string {
 
 func TelemetryContractInstruction() string {
 	return `Riido telemetry contract:
-- While working, periodically emit progress as <riido_log>short Korean status<end>.
+- While working, periodically emit fixed progress telemetry as <riido_log>{"code":1001,"args":{}}<end>.
+- Use only these active codes: 1001 thinking, 1101 tool collecting, 1102 collection completed count, 1103 tool running, 1104 tool completed.
+- For 1101 and 1103 use args label and description. For 1104 use args label and summary. If unsure, emit code 1001.
 - Use the tag only for progress telemetry, not for final code blocks.
-- Keep each telemetry message under 120 characters.`
+- Do not invent new codes or free-form user-facing copy.`
 }
 
 func TelemetryNativeConfigHardRules() []string {
 	return []string{
-		"While working, periodically emit progress as <riido_log>short Korean status<end>.",
+		`While working, periodically emit progress as <riido_log>{"code":1001,"args":{}}<end>.`,
+		"Use only Riido progress message codes 1001, 1101, 1102, 1103, and 1104.",
 		"Use <riido_log> only for progress telemetry, not for final code blocks.",
-		"Keep each Riido telemetry message under 120 characters.",
+		"Do not invent new Riido progress codes or free-form user-facing copy.",
 	}
 }
 
@@ -248,8 +251,8 @@ func (p *TelemetryParser) Feed(text string) []Event {
 			return out
 		}
 		message := strings.TrimSpace(afterStart[:end])
-		if message != "" {
-			out = append(out, Event{Kind: EventProgress, Text: message})
+		if event, ok := progressEventFromTelemetryMessage(message); ok {
+			out = append(out, event)
 		}
 		p.buf = afterStart[end+len(telemetryLogEnd):]
 	}

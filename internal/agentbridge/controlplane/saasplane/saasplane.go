@@ -671,6 +671,7 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 	case agentbridge.EventProgress:
 		req.EventType = assignmentcontract.EventRiidoLog
 		req.Message = ev.Text
+		req.Metadata = agentbridge.ProgressEventMetadata(ev)
 	case agentbridge.EventLifecycle:
 		if ev.Phase == agentbridge.StateRunning {
 			req.EventType = assignmentcontract.EventAssignmentRunning
