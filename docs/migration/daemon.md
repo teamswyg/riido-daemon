@@ -467,9 +467,10 @@ filesystem permission semantics. The corrected boundary is:
   `native_config_home=<workdir>/.codex`.
 - C4 `internal/provider/codex` starts
   `codex --sandbox danger-full-access app-server --listen stdio://`.
-- `danger-full-access` is not a caller-provided default and not a hidden
-  fallback. It is the only Codex sandbox selection the daemon generates for the
-  local provider runtime.
+- `danger-full-access` is not a provider default, caller-provided default, or
+  hidden fallback. It is the only Codex sandbox selection the daemon generates
+  for the local provider runtime, and that choice is paired with the daemon
+  harness responsibilities below.
 - Free-form custom args cannot pass `-c`, `--config`, `--enable`, or `--disable`
   because those could rewrite the daemon-owned launch/trust shape.
 - Free-form custom args cannot pass `--sandbox`, `--sandbox=*`, `-s`, `-s=*`,
@@ -484,10 +485,14 @@ filesystem permission semantics. The corrected boundary is:
   app-server rejects for ChatGPT-account runs.
 
 This keeps real Codex auth usable for development E2E and treats Codex as
-trusted local automation. It does not use team id, OpenAPI key, or task-location
-metadata as any part of Codex identity or sandbox binding. Other providers
-should follow the same full-access/trusted-runtime meta model only through
-provider-specific SSOT, command builder changes, and integration evidence.
+trusted local automation. The structural decision is not "make full access the
+default"; it is "when a provider must work on the user's machine, make the
+trusted/full-access launch explicit and make Riido's harness own lifecycle,
+workdir, heartbeat, lease, cancellation, and evidence." It does not use team id,
+OpenAPI key, or task-location metadata as any part of Codex identity or sandbox
+binding. Other providers should follow the same full-access/trusted-runtime
+meta model only through provider-specific SSOT, command builder changes, and
+integration evidence.
 
 This slice does not move OpenClaw/Cursor adapters, supervisor polling / runtime
 selection, SaaS control-plane adapters, task DB/project/mwsd local API packages,

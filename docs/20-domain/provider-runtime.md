@@ -100,11 +100,13 @@ environment 에서만 실행된다. Claude adapter 는 process `Dir` 를 task wo
 RIID-4659 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/provider/codex` 다. 이 package 는 Codex CLI 를 번들하지 않고,
 `codex --sandbox danger-full-access app-server --listen stdio://` command
-construction, daemon-owned full-access sandbox selection, JSONL parser, raw event translator, JSON-RPC
-protocol driver, pending request actor, approval response path 를 소유한다. Codex
-app-server 자체는 사용자의 기존 Codex auth store 를 쓸 수 있다. Workdir 은
-daemon-selected 작업/evidence root 이지만 filesystem sandbox boundary 가 아니며,
-provider 는 local full-access automation 으로 실행된다. real Codex CLI execution 은
+construction, daemon-owned full-access runtime selection, JSONL parser, raw event
+translator, JSON-RPC protocol driver, pending request actor, approval response path
+를 소유한다. Codex app-server 자체는 사용자의 기존 Codex auth store 를 쓸 수 있다.
+Workdir 은 daemon-selected 작업/evidence root 이지만 filesystem sandbox boundary 가
+아니며, provider 는 local full-access automation 으로 실행된다. 이 full-access 는
+Codex 의 provider default 또는 caller 입력에 맡기는 값이 아니라 C4 adapter 가
+고정하는 harness-managed launch envelope 다. real Codex CLI execution 은
 `AGENTBRIDGE_INTEGRATION=1` 로 opt-in 된 경우에만 검증한다. OpenClaw/Cursor
 adapter, supervisor polling loop, server/task DB/project/mwsd adapter 는 RIID-4659
 당시 후속 migration slice 가 맡는 것으로 남겼다.
@@ -850,7 +852,7 @@ Cursor adapter 를 [`internal/provider/cursor`](../../internal/provider/cursor) 
 | Adapter | 본 컨텍스트의 표현 | 1차 draft 카테고리 |
 | --- | --- | --- |
 | `ClaudeStreamJSONAdapter` | `claude -p --output-format stream-json` 의 stdout 라인을 NDJSON 으로 흡수. session id 는 `system.init` 라인에서 추출. | Cat C 위주 |
-| `CodexAppServerAdapter` | `codex app-server --listen stdio://` JSON-RPC. `initialize` 핸드셰이크와 pending request actor 로 approval response 를 처리한다. | Cat C + approval (Cat C `ApprovalRequested`) |
+| `CodexAppServerAdapter` | `codex --sandbox danger-full-access app-server --listen stdio://` JSON-RPC. sandbox selection 은 default/caller 값이 아니라 daemon-owned full-access harness envelope 다. `initialize` 핸드셰이크와 pending request actor 로 approval response 를 처리한다. | Cat C + approval (Cat C `ApprovalRequested`) |
 | `OpenClawAgentJSONAdapter` | `openclaw agent --local --json` 의 JSON/NDJSON 출력을 흡수. calendar-version gate 로 unsupported CLI 를 unavailable 로 접는다. | Cat C 위주 |
 | `CursorAgentStreamJSONAdapter` | `cursor-agent -p --output-format stream-json` root-print shape 를 기본으로 사용하고, version/profile 차이는 explicit launch profile 로만 선택한다. | Cat C 위주 |
 

@@ -192,7 +192,7 @@ Provider 별 native config file plan 의 실행 가능한 SSOT 는 `internal/wor
 | Provider | 생성 파일 | 의미 |
 | --- | --- | --- |
 | Claude | `CLAUDE.md`, `.claude/settings.json`, `.riido/hooks/claude-audit-hook.sh`, `.riido/native-config-manifest.json` | Claude Code 의 project settings hook surface 를 task workdir 안에 고정한다. 기본 hook 은 `PreToolUse` / `PostToolUse` 입력 JSON 을 `.riido/hooks/claude-hook-events.jsonl` 로 append 하는 audit-only command hook 이며, exit 0 으로 provider 행동을 차단하지 않는다. 단 `.claude/settings.json` 과 hook script 는 C7 policy bundle 이 `claude:command-hooks:audit` surface 를 허용한 경우에만 materialize 된다. 거절되면 manifest 의 `hook_mode` 은 `instruction-only` 로 기록되고 `CLAUDE.md` 만 남는다. |
-| Codex | `AGENTS.md`, `.riido/native-config-manifest.json` | Codex 는 task-scoped `.codex/config.toml` 또는 `CODEX_HOME` overlay 를 materialize 하지 않는다. app-server credential 사용과 full-access sandbox envelope 는 C4 Codex adapter 가 `--sandbox danger-full-access` 로 고정한다. Codex process 가 실행 중 workdir `.codex` state 를 만들 수 있지만, C6 manifest/provider settings output 으로 선언하지 않는다. Workdir 은 기본 cwd/evidence root 이며 filesystem sandbox boundary 가 아니다. |
+| Codex | `AGENTS.md`, `.riido/native-config-manifest.json` | Codex 는 task-scoped `.codex/config.toml` 또는 `CODEX_HOME` overlay 를 materialize 하지 않는다. app-server credential 사용과 full-access runtime envelope 는 C4 Codex adapter 가 `codex --sandbox danger-full-access app-server --listen stdio://` 로 고정한다. Codex process 가 실행 중 workdir `.codex` state 를 만들 수 있지만, C6 manifest/provider settings output 으로 선언하지 않는다. Workdir 은 기본 cwd/evidence root 이며 filesystem sandbox boundary 가 아니다. |
 | OpenClaw / Cursor / unknown | `AGENTS.md`, `.riido/native-config-manifest.json` | 현재는 provider-neutral instruction file 주입만 한다. |
 
 ### 5.1.2 native config overlay policy

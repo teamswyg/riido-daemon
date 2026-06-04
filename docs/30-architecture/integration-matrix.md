@@ -30,12 +30,18 @@ This is especially important for OpenClaw: its current runtime capability remain
 scheduling gate even though OpenClaw can produce text completion and optional
 artifact evidence in a locally preconfigured operator environment.
 
+Provider full-access/trusted modes are not assumed from provider defaults or
+caller arguments. When Riido chooses such a mode, the provider adapter must make
+that launch envelope explicit and the integration evidence must prove the
+daemon-selected harness still owns workdir, lifecycle, terminal result, and
+filesystem side-effect verification.
+
 ## Provider Matrix
 
 | Provider | Executable | Public deterministic CI | Real CLI integration | Worktree routing status |
 | --- | --- | --- | --- | --- |
 | Claude Code | `claude` | command/parser/translator/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/claude -run TestIntegration -count=1` | `supports_worktree=true` |
-| Codex | `codex` app-server stdio | command/parser/translator/RPC/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/codex -run TestIntegration -count=1` | `supports_worktree=true` |
+| Codex | `codex --sandbox danger-full-access app-server --listen stdio://` stdio | command/parser/translator/RPC/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/codex -run TestIntegration -count=1` | `supports_worktree=true` |
 | OpenClaw | `openclaw` | command/parser/version/golden tests plus C5 worktree ineligibility gate | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -run TestIntegration -count=1` | `supports_worktree=false`; `required_surfaces=[worktree]` must fail with `MISSING_REQUIRED_SURFACE:worktree` |
 | Cursor Agent | `cursor-agent` | command/parser/profile/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -run TestIntegration -count=1` | `supports_worktree=true` |
 
@@ -62,7 +68,7 @@ integration failure.
 | Provider | Integration assertion |
 | --- | --- |
 | Claude | stream JSON flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir |
-| Codex | app-server JSON-RPC initialize/thread/turn flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir |
+| Codex | app-server JSON-RPC initialize/thread/turn flow reaches `ResultCompleted`, launch shape is explicit `--sandbox danger-full-access`, and the run writes the expected file artifact inside the daemon-selected workdir |
 | OpenClaw | JSON or NDJSON result flow reaches `ResultCompleted` with deterministic session id and uses the executable path that passed Detect. Optional artifact integration may pass in a preconfigured local OpenClaw environment, but SaaS completion alone must not be treated as filesystem side-effect evidence, and runtime routing remains `supports_worktree=false`. |
 | Cursor | selected launch profile adds daemon-workdir `--trust` without `--yolo`, stream JSON flow reaches `ResultCompleted`, and the run writes the expected file artifact inside the daemon-selected workdir; missing login probe skips |
 

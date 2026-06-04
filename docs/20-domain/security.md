@@ -23,10 +23,10 @@
 
    Codex `--sandbox danger-full-access` 는 이 unsafe approval-bypass 목록이 아니다.
    뤼이도 daemon 은 provider 를 사용자 PC 에서 실제로 작업시키는 로컬 automation 으로
-   취급하며, Codex 의 현재 canonical 실행 envelope 는 C4 adapter 가 직접 선택한
-   full-access sandbox 다. 이 선택은 “안전 sandbox” 가 아니라 “전권 실행을 인지한
-   harness-managed host runtime” 이며, caller custom arg / policy bundle 이 임의로
-   바꾸는 surface 가 아니다.
+   취급하며, Codex 의 현재 canonical 실행 envelope 는 C4 adapter 가 명시적으로
+   선택한 full-access runtime 이다. 이 선택은 provider / caller 의 default sandbox
+   에 기대는 것이 아니라 “전권 실행을 인지한 harness-managed host runtime” 을 쓰는
+   결정이다. caller custom arg / policy bundle 이 임의로 바꾸는 surface 가 아니다.
 
 3. **default-deny.** policy bundle 이 명시적으로 허용하지 않은 모든 surface 는 자동으로 거절된다. 옛 정책 → 새 정책 으로 **downgrade(약화) 금지**. 정책 번들 버전은 항상 증가하는 방향으로만 적용된다.
 
@@ -244,8 +244,10 @@ Store channel policy 의 표는 [`./distribution-host-integration.md`](./distrib
 Riido AI Agent 는 provider CLI 를 사용자 PC 위에서 실제로 실행하는 automation 이다.
 따라서 provider 에게 충분한 실행 권한을 주지 않으면 “작업을 대신 수행한다”는 제품
 목표와 충돌한다. C4 의 현재 canonical 방향은 provider-native full-access/trusted
-runtime envelope 를 adapter 가 직접 선택하고, C7/C4/C5/C6 harness 가 실행 전체를
-관리하는 것이다.
+runtime envelope 를 adapter 가 명시적으로 선택하고, C7/C4/C5/C6 harness 가 실행
+전체를 관리하는 것이다. 이는 “default 가 full-access” 라는 뜻이 아니다. 반대로
+daemon 은 provider default 나 caller 입력에 기대지 않고, 선택한 runtime envelope 와
+그 envelope 를 감싸는 harness 책임을 함께 고정한다.
 
 Codex 의 현재 canonical launch shape 는 다음과 같다.
 
@@ -255,7 +257,9 @@ codex --sandbox danger-full-access app-server --listen stdio://
 
 이 값은 default sandbox 가 아니라 **유일하게 daemon 이 생성하는 Codex sandbox
 selection** 이다. Caller `CustomArgs`, client codegen, SaaS assignment payload,
-policy bundle 은 이를 임의로 바꾸지 않는다. C4 adapter 는 caller-provided
+policy bundle 은 이를 임의로 바꾸지 않는다. 따라서 Codex 실행 권한의 의미는
+“기본값으로 우연히 전권이 되었다”가 아니라 “daemon 이 Codex 를 전권 host automation
+으로 실행하고, 그 위험을 하네스가 관리한다”다. C4 adapter 는 caller-provided
 `--sandbox`, `--sandbox=*`, `-s`, `-s=*`, `-c`, `--config`, `--enable`,
 `--disable`, `--yolo`, `--dangerously-bypass-approvals-and-sandbox` 를 drop 하고
 `DroppedArgs` 로 남긴다.
