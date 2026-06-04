@@ -2,6 +2,7 @@ package agentbridge
 
 import (
 	"encoding/json"
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -20,10 +21,10 @@ type progressMessageTemplate struct {
 }
 
 type telemetryProgressPayload struct {
-	Code    int               `json:"code"`
-	Key     string            `json:"key,omitempty"`
-	Args    map[string]string `json:"args,omitempty"`
-	Message string            `json:"message,omitempty"`
+	Code    int            `json:"code"`
+	Key     string         `json:"key,omitempty"`
+	Args    map[string]any `json:"args,omitempty"`
+	Message string         `json:"message,omitempty"`
 }
 
 var progressPlaceholderPattern = regexp.MustCompile(`\{\{([a-zA-Z0-9_]+)\}\}`)
@@ -144,22 +145,41 @@ func splitLegacyProgress(message, marker string) (string, string, bool) {
 	return label, detail, true
 }
 
-func cleanProgressArgs(args map[string]string) map[string]string {
+func cleanProgressArgs(args map[string]any) map[string]string {
 	if len(args) == 0 {
 		return nil
 	}
 	out := map[string]string{}
 	for key, value := range args {
 		key = strings.TrimSpace(key)
-		value = strings.TrimSpace(value)
-		if key != "" && value != "" {
-			out[key] = value
+		rendered := strings.TrimSpace(progressArgString(value))
+		if key != "" && rendered != "" {
+			out[key] = rendered
 		}
 	}
 	if len(out) == 0 {
 		return nil
 	}
 	return out
+}
+
+func progressArgString(value any) string {
+	switch v := value.(type) {
+	case nil:
+		return ""
+	case string:
+		return v
+	case json.Number:
+		return v.String()
+	case float64:
+		return strconv.FormatFloat(v, 'f', -1, 64)
+	case float32:
+		return strconv.FormatFloat(float64(v), 'f', -1, 32)
+	case int, int8, int16, int32, int64, uint, uint8, uint16, uint32, uint64, bool:
+		return fmt.Sprint(v)
+	default:
+		return ""
+	}
 }
 
 func renderProgressTemplate(template string, args map[string]string) string {

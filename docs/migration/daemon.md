@@ -484,6 +484,14 @@ filesystem permission semantics. The corrected boundary is:
   assignment from snapshotting an invented `codex-default` model that Codex
   app-server rejects for ChatGPT-account runs.
 
+RIID-4917 also records the structural split of this decision:
+`docs/20-domain/security.md` owns the C7 judgment that full-access/trusted
+runtime envelopes are explicit harness-managed choices rather than provider or
+caller defaults, while `docs/20-domain/provider-runtime.md` §2.1 owns the C4
+provider-by-provider adoption table. Codex is currently adopted; Claude,
+Cursor, and OpenClaw must not be treated as silently adopted without their own
+SSOT, command-builder tests, and real integration evidence.
+
 This keeps real Codex auth usable for development E2E and treats Codex as
 trusted local automation. The structural decision is not "make full access the
 default"; it is "when a provider must work on the user's machine, make the
@@ -1049,6 +1057,28 @@ This slice does:
 This slice does not install provider CLIs, run provider auth setup, change
 provider native commands, change SaaS endpoints, edit Desktop, edit generated
 client code, or make provider CLIs bundled artifacts.
+
+### RIID-4917 — runtime progress numeric args and telemetry prompt correction
+
+This slice closes a live development finding where Codex could emit progress
+telemetry with an integer `count` argument for code `1102`. The upstream
+`riido-contracts/progressmessage` catalog already defines that argument as an
+int, but the daemon projection accepted only string-valued args, so malformed or
+incomplete progress telemetry could fall back to raw JSON-shaped copy later in
+the public thread stream.
+
+This slice does:
+
+- accept primitive JSON progress args and normalize them into the string
+  metadata shape used by the existing SaaS assignment event contract
+- preserve rendered Korean progress text for `1102` when `count` is numeric
+- update the injected telemetry instruction so providers know that `1102`
+  requires `label`, `count`, and `representative_title`
+- keep the public SSE/client response shape unchanged: frontend still receives
+  rendered `message` strings and optional message metadata
+
+This slice does not add new progress codes, change the append-only progress
+catalog, change frontend rendering, or alter provider final-answer content.
 
 ## Validation Gates
 
