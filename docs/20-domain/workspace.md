@@ -153,7 +153,7 @@ Store channel 에서는 workdir root 와 user workspace root 를 분리한다.
 - `.riido/native-config-manifest.json` — C6 가 실제 생성한 provider-native config 파일 목록과 hook materialization mode 를 기록하는 `riido-native-config-manifest.v1`
 - `.riido/` 메타: `task.json`, `policy-bundle.lock`, `native-config.lock` 등
 
-SaaS task source 가 `riido_telemetry_contract` metadata 를 제공하면 supervisor 는 provider 별 prompt placement 와 별개로 native config hard rule 에 `<riido_log>...<end>` progress telemetry contract 를 주입한다. 이 rule 도 `NativeConfigVersion` 입력 파일 해시에 포함되므로, telemetry contract 변경은 run replay 에서 식별 가능해야 한다.
+SaaS task source 가 `riido_telemetry_contract` metadata 를 제공하면 supervisor 는 provider 별 prompt placement 와 별개로 native config hard rule 에 `<riido_log>{"code":...,"args":{...}}<end>` progress telemetry contract 를 주입한다. Progress code catalog 와 append-only 정책은 `riido-contracts/progressmessage/catalog.dsl.riido.json` 이 소유하고, workspace/native config 는 해당 rule 을 provider 가 읽는 위치에 투영만 한다. 이 rule 도 `NativeConfigVersion` 입력 파일 해시에 포함되므로, telemetry contract 변경은 run replay 에서 식별 가능해야 한다.
 
 SaaS task source 가 agent instruction 값을 제공하는 경우 C6/C4 는 그 값을
 run-scope prompt/native config 입력으로만 소비한다. instruction 의 저장 위치,
