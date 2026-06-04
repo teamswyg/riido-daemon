@@ -184,7 +184,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	if idlePollEvery < pollEvery {
 		return daemonSettings{}, fmt.Errorf("%s must be greater than or equal to %s", envDaemonIdlePollIntervalSeconds, envDaemonPollIntervalSeconds)
 	}
-	heartbeatEvery, err := parseOptionalPositiveDurationSeconds(getenv(envDaemonHeartbeatSeconds), envDaemonHeartbeatSeconds, 10*time.Second)
+	heartbeatEvery, err := parseOptionalPositiveDurationSeconds(getenv(envDaemonHeartbeatSeconds), envDaemonHeartbeatSeconds, 5*time.Second)
 	if err != nil {
 		return daemonSettings{}, err
 	}

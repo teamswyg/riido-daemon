@@ -213,6 +213,9 @@ func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat)
 			}, &out); err != nil {
 				return err
 			}
+			if err := p.deliverUnrefreshedHeartbeatCancels(ctx, assignmentIDs, out); err != nil {
+				return err
+			}
 		}
 		return nil
 	}
@@ -228,13 +231,16 @@ func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat)
 		return nil
 	}
 	var out assignmentcontract.AgentHeartbeatResponse
-	return p.postJSON(ctx, "/v1/agents/"+url.PathEscape(agentID)+"/heartbeat", assignmentcontract.AgentHeartbeatRequest{
+	if err := p.postJSON(ctx, "/v1/agents/"+url.PathEscape(agentID)+"/heartbeat", assignmentcontract.AgentHeartbeatRequest{
 		DaemonID:            p.cfg.DaemonID,
 		DeviceID:            p.cfg.DeviceID,
 		RuntimeID:           hb.RuntimeID,
 		RunningTaskIDs:      append([]string(nil), hb.RunningTaskIDs...),
 		ActiveAssignmentIDs: assignmentIDs,
-	}, &out)
+	}, &out); err != nil {
+		return err
+	}
+	return p.deliverUnrefreshedHeartbeatCancels(ctx, assignmentIDs, out)
 }
 
 func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRequest, error) {
@@ -551,6 +557,40 @@ func (p *Plane) deliverCancel(ctx context.Context, assignment assignmentcontract
 		select {
 		case ch <- fmt.Errorf("saas assignment %s cancelled", assignment.ID):
 		default:
+		}
+	})
+}
+
+func (p *Plane) deliverUnrefreshedHeartbeatCancels(ctx context.Context, requestedAssignmentIDs []string, response assignmentcontract.AgentHeartbeatResponse) error {
+	if len(requestedAssignmentIDs) == 0 {
+		return nil
+	}
+	refreshed := map[string]bool{}
+	for _, assignment := range response.RefreshedAssignments {
+		if strings.TrimSpace(assignment.ID) != "" {
+			refreshed[assignment.ID] = true
+		}
+	}
+	return p.withState(ctx, func(s *planeState) {
+		for _, assignmentID := range requestedAssignmentIDs {
+			assignmentID = strings.TrimSpace(assignmentID)
+			if assignmentID == "" || refreshed[assignmentID] {
+				continue
+			}
+			for taskID, assignment := range s.assignmentsByTask {
+				if assignment.ID != assignmentID {
+					continue
+				}
+				if ch := s.cancelWatchers[taskID]; ch != nil {
+					select {
+					case ch <- fmt.Errorf("saas assignment %s heartbeat lease stale", assignment.ID):
+					default:
+					}
+				}
+				delete(s.assignmentsByTask, taskID)
+				delete(s.runtimeIDsByTask, taskID)
+				break
+			}
 		}
 	})
 }
