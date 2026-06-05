@@ -363,11 +363,13 @@ workspace 를 다뤄야 한다면, adapter 는 그 provider 의 trusted-runtime 
 이 규칙은 **"full-access 가 기본값"** 이라는 뜻이 아니다. 오히려 반대다. C4 는
 provider default/caller args/SaaS payload 에서 sandbox 또는 approval-bypass 의미를
 추론하지 않고, adapter 가 생성하는 단 하나의 launch envelope 와 harness 관리 책임을
-함께 고정한다.
+함께 고정한다. Codex 의 경우 "default sandbox 가 danger-full-access" 가 아니라
+"Codex adapter 가 danger-full-access envelope 만 생성하고 그 위험을 Riido harness 가
+관리한다" 가 정확한 표현이다.
 
 | Provider | 현재 C4 trusted-runtime envelope 상태 |
 | --- | --- |
-| Codex | 채택됨. `codex --sandbox danger-full-access app-server --listen stdio://` 만 adapter 가 생성한다. Caller `--sandbox`, config override, unsafe bypass arg 는 drop evidence 로 남긴다. |
+| Codex | 채택됨. `codex --sandbox danger-full-access app-server --listen stdio://` 만 adapter 가 생성한다. 이 값은 provider default/caller 선택이 아니라 daemon-owned trusted-runtime envelope 다. Caller `--sandbox`, config override, unsafe bypass arg 는 drop evidence 로 남긴다. |
 | Claude | 전권 승격 미채택. `PermissionMode` 는 explicit input 이며, `bypassPermissions` 는 C7 unsafe-bypass gate 를 통과한 isolated tier 에서만 가능하다. |
 | Cursor | 전권 승격 미채택. `--trust` 는 daemon-selected workdir acknowledgement 일 뿐이고, `--yolo` 는 계속 C7 unsafe-bypass gate 대상이다. |
 | OpenClaw | 전권/worktree envelope 미채택. 현재 worktree-required task 는 `supports_worktree=false` 로 C5 에서 차단되어야 한다. |

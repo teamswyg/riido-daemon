@@ -65,6 +65,8 @@ func TestProviderValidationMatrix(t *testing.T) {
 	for _, needle := range []string{
 		"Provider full-access runtime harness",
 		"default 가 full-access",
+		"default sandbox 가\ndanger-full-access",
+		"Codex adapter 가 danger-full-access launch\nenvelope 만 생성",
 		"codex --sandbox danger-full-access app-server --listen stdio://",
 		"daemon 이 Codex 를 전권 host automation",
 		"Claude / Cursor / OpenClaw 도 같은 메타 모델",
@@ -197,6 +199,7 @@ func assertCodexFullAccessHarness(t *testing.T, row providerEvidence, docText st
 	for _, needle := range []string{
 		"Provider full-access/trusted modes are not assumed from provider defaults or\ncaller arguments",
 		"daemon-owned full-access runtime selection",
+		"Codex adapter 가 danger-full-access envelope 만 생성하고 그 위험을 Riido harness 가\n관리한다",
 		"not a provider default, caller-provided default, or\n  hidden fallback",
 		"Other providers should follow the same full-access/trusted-runtime\nmeta model only through provider-specific SSOT",
 	} {
