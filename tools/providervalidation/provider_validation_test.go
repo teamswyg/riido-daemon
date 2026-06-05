@@ -50,11 +50,17 @@ func TestProviderValidationMatrix(t *testing.T) {
 		"SaaS completed thread alone is not filesystem side-effect evidence",
 		"`supports_worktree=false`",
 		"`MISSING_REQUIRED_SURFACE:worktree`",
-		"[`security.md`](../20-domain/security.md) §4.2",
+		"[`security.md`](../20-domain/security.md) §4.3",
 	} {
 		if !strings.Contains(docText, needle) {
 			t.Fatalf("integration matrix doc must mention %q", needle)
 		}
+	}
+	if strings.Count(securityText, "### 4.3 Provider full-access runtime harness") != 1 {
+		t.Fatalf("security doc must expose exactly one full-access harness SSOT section")
+	}
+	if strings.Contains(securityText, "### 4.2 Provider full-access runtime harness") {
+		t.Fatalf("security doc must not keep the old duplicate §4.2 full-access heading")
 	}
 	for _, needle := range []string{
 		"Provider full-access runtime harness",
