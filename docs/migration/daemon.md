@@ -1080,6 +1080,27 @@ This slice does:
 This slice does not add new progress codes, change the append-only progress
 catalog, change frontend rendering, or alter provider final-answer content.
 
+### RIID-4917 — aggregated device/runtime snapshot heartbeat
+
+This slice closes a live development finding where an idle-but-running daemon
+did not refresh the SaaS device/runtime read model after initial runtime
+registration. Once control-plane applies the 20 second stale projection, the
+daemon must refresh liveness even when no assignment is active.
+
+This slice does:
+
+- store registered runtime snapshot facts inside `saasplane` mailbox state
+- send an aggregated daemon runtime snapshot during the 5 second heartbeat
+  cadence for DevicePrincipal mode
+- preserve provider model catalog and experimental opt-in facts in heartbeat
+  snapshots
+- rate-limit same-tick runtime heartbeat calls so the daemon does not fan out
+  one SaaS snapshot request per runtime
+
+This slice does not change frontend generated code, assignment SSE shape,
+provider command construction, device credential enrollment, or static
+test-only bearer-token paths.
+
 ## Validation Gates
 
 Required before a daemon migration PR is mergeable:

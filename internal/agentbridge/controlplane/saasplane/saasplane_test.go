@@ -503,6 +503,78 @@ func TestPlaneRegistersUnavailableRuntimeSnapshotAsOffline(t *testing.T) {
 	}
 }
 
+func TestPlaneHeartbeatRefreshesAggregatedRuntimeSnapshot(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	if err := plane.RegisterRuntime(context.Background(), controlplane.RuntimeRegistration{
+		DaemonID:   "daemon-1",
+		RuntimeID:  "daemon-1:codex",
+		Provider:   "codex",
+		DeviceName: "주윤의 MacBook",
+		Models: []controlplane.RuntimeModel{
+			{ModelID: "gpt-5.5", Label: "gpt-5.5", IsDefault: true},
+		},
+		Capabilities: map[string]bool{
+			"provider.codex.requires_experimental_opt_in": true,
+		},
+	}); err != nil {
+		t.Fatalf("RegisterRuntime codex: %v", err)
+	}
+	if err := plane.RegisterRuntime(context.Background(), controlplane.RuntimeRegistration{
+		DaemonID:   "daemon-1",
+		RuntimeID:  "daemon-1:cursor",
+		Provider:   "cursor",
+		DeviceName: "주윤의 MacBook",
+	}); err != nil {
+		t.Fatalf("RegisterRuntime cursor: %v", err)
+	}
+	if len(fake.runtimeSnapshots) != 2 {
+		t.Fatalf("registration snapshots = %+v", fake.runtimeSnapshots)
+	}
+
+	if err := plane.Heartbeat(context.Background(), controlplane.RuntimeHeartbeat{
+		RuntimeID: "daemon-1:codex",
+	}); err != nil {
+		t.Fatalf("Heartbeat codex: %v", err)
+	}
+	if len(fake.runtimeSnapshots) != 3 {
+		t.Fatalf("heartbeat should append one aggregated snapshot, got %+v", fake.runtimeSnapshots)
+	}
+	snapshot := fake.runtimeSnapshots[2]
+	if snapshot.DaemonID != "daemon-1" || snapshot.DeviceID != "device-1" || snapshot.DeviceDisplayName != "주윤의 MacBook" {
+		t.Fatalf("heartbeat snapshot identity = %+v", snapshot)
+	}
+	if len(snapshot.Runtimes) != 2 ||
+		snapshot.Runtimes[0].RuntimeID != "daemon-1:codex" ||
+		snapshot.Runtimes[1].RuntimeID != "daemon-1:cursor" {
+		t.Fatalf("heartbeat snapshot must aggregate sorted runtimes: %+v", snapshot.Runtimes)
+	}
+	if len(snapshot.Runtimes[0].Models) != 1 || snapshot.Runtimes[0].Models[0].ModelID != "gpt-5.5" || !snapshot.Runtimes[0].RequiresExperimentalOptIn {
+		t.Fatalf("codex runtime facts lost in heartbeat snapshot: %+v", snapshot.Runtimes[0])
+	}
+
+	if err := plane.Heartbeat(context.Background(), controlplane.RuntimeHeartbeat{
+		RuntimeID: "daemon-1:cursor",
+	}); err != nil {
+		t.Fatalf("Heartbeat cursor: %v", err)
+	}
+	if len(fake.runtimeSnapshots) != 3 {
+		t.Fatalf("same heartbeat window should not create per-runtime snapshot fanout: %+v", fake.runtimeSnapshots)
+	}
+}
+
 func TestPlaneClaimsDynamicAgentBinding(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.deviceID = "device-1"
