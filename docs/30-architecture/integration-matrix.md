@@ -36,7 +36,7 @@ that launch envelope explicit and the integration evidence must prove the
 daemon-selected harness still owns workdir, lifecycle, terminal result, and
 filesystem side-effect verification.
 The security decision itself is owned by
-[`security.md`](../20-domain/security.md) §4.2; this matrix only records the
+[`security.md`](../20-domain/security.md) §4.3; this matrix only records the
 provider-specific evidence required to claim that the harness decision is
 implemented.
 
