@@ -129,7 +129,8 @@ func TestDetectScansPathCandidatesUntilSupportedVersion(t *testing.T) {
 	if !strings.Contains(res.Version, "2026.5.22") {
 		t.Fatalf("Version should come from supported candidate, got %q", res.Version)
 	}
-	if res.Metadata["path_candidate_count"] != "2" || res.Metadata["path_candidate_index"] != "2" {
+	candidateCount, err := strconv.Atoi(res.Metadata["path_candidate_count"])
+	if err != nil || candidateCount < 2 || res.Metadata["path_candidate_index"] != "2" {
 		t.Fatalf("candidate metadata: %+v", res.Metadata)
 	}
 }

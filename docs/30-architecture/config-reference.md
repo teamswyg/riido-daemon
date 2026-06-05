@@ -76,7 +76,7 @@ tests by default and does not require provider CLIs or vendor credentials.
 
 | Variable | Consumer | Default | Meaning |
 | --- | --- | --- | --- |
-| `RIIDO_DAEMON_ID` | `cmd/riido/daemon_config.go` | `agentd-local` | stable local daemon/runtime slot id |
+| `RIIDO_DAEMON_ID` | `cmd/riido/daemon_config.go` | `RIIDO_DEVICE_ID` in SaaS device-credential mode, otherwise `agentd-local` | stable daemon/runtime slot id |
 | `RIIDO_DAEMON_VERSION` | daemon config + supervisor event stamps | `riido-agentd v0.0.0` | daemon binary version label |
 | `RIIDO_DAEMON_PROFILE` | daemon status | `local` | user-facing daemon profile |
 | `RIIDO_SERVER_URL` | daemon status | empty | display-only server URL unless SaaS source is configured |
@@ -115,6 +115,13 @@ daemon reports provider runtime snapshots to `/v1/daemon/runtime-snapshot`,
 polls `/v1/daemon/agent-bindings`, and only then polls the agent-specific
 assignment endpoint. Legacy `RIIDO_SAAS_AGENTS` / `RIIDO_SAAS_TOKEN` values are
 not read by the daemon settings model.
+If `RIIDO_DAEMON_ID` is not explicitly configured on this path, the daemon uses
+`RIIDO_DEVICE_ID` as its daemon id. This keeps generated runtime ids such as
+`device-enrolled-000123:codex` scoped to the enrolled device and prevents
+different customer PCs from colliding on a shared default like
+`agentd-local:codex`. Explicit `RIIDO_DAEMON_ID` remains supported for
+controlled diagnostic runs, but Desktop-launched SaaS runs should rely on the
+device-principal default.
 The snapshot must preserve the local provider availability verdict: an explicitly
 false `provider.<name>.available` capability is projected as `offline` /
 `missing`, not normalized to `online` merely because the provider binary was

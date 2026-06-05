@@ -512,6 +512,27 @@ func TestLoadDaemonSettingsAcceptsSaaSControlPlane(t *testing.T) {
 	if settings.SaaSURL != "https://api.riido.ai" || settings.DeviceID != "device-1" || settings.DeviceSecret != "rdev-secret" {
 		t.Fatalf("saas settings = %+v", settings)
 	}
+	if settings.DaemonID != "device-1" {
+		t.Fatalf("SaaS device credential daemon id = %q, want device principal id", settings.DaemonID)
+	}
+}
+
+func TestLoadDaemonSettingsKeepsExplicitDaemonIDForSaaSControlPlane(t *testing.T) {
+	env := map[string]string{
+		envDaemonID:     "explicit-daemon",
+		envSaaSURL:      "https://api.riido.ai",
+		envDeviceID:     "device-1",
+		envDeviceSecret: "rdev-secret",
+	}
+	settings, err := loadDaemonSettingsFromEnv(func(k string) string { return env[k] }, func() (string, error) {
+		return "host", nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if settings.DaemonID != "explicit-daemon" {
+		t.Fatalf("explicit daemon id = %q", settings.DaemonID)
+	}
 }
 
 func TestLoadDaemonSettingsIgnoresLegacySaaSEnvsWithDeviceCredential(t *testing.T) {
