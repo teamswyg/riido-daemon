@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 
@@ -26,6 +27,8 @@ const (
 	MetadataModelID         = "riido_saas_model_id"
 	MetadataRuntimeProvider = "riido_saas_runtime_provider"
 )
+
+const runtimeSnapshotHeartbeatMinInterval = 4 * time.Second
 
 // AgentBinding maps a SaaS agent identity to one local provider runtime.
 type AgentBinding struct {
@@ -138,28 +141,36 @@ func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegi
 	if !p.dynamicBindingsEnabled() {
 		return nil
 	}
+	snapshot, deviceName, ok := runtimeSnapshotFromRegistration(rt)
+	if !ok {
+		return nil
+	}
+	if err := p.withState(ctx, func(s *planeState) {
+		s.registeredRuntimes[snapshot.RuntimeID] = snapshot
+		if deviceName != "" {
+			s.registeredDeviceName = deviceName
+		}
+	}); err != nil {
+		return err
+	}
+	return p.postRuntimeSnapshot(ctx, []RuntimeSnapshotRecord{snapshot}, deviceName)
+}
+
+func runtimeSnapshotFromRegistration(rt controlplane.RuntimeRegistration) (RuntimeSnapshotRecord, string, bool) {
 	runtimeID := strings.TrimSpace(rt.RuntimeID)
 	provider := providerFromRuntimeID(firstNonEmpty(rt.Provider, runtimeID))
 	if runtimeID == "" || provider == "" {
-		return nil
+		return RuntimeSnapshotRecord{}, "", false
 	}
 	availability, detectionState := runtimeAvailability(rt, provider)
-	var out struct {
-		SchemaVersion string `json:"schema_version"`
-	}
-	return p.postJSON(ctx, "/v1/daemon/runtime-snapshot", DeviceRuntimeSnapshotSyncRequest{
-		DaemonID:          firstNonEmpty(rt.DaemonID, p.cfg.DaemonID),
-		DeviceID:          p.cfg.DeviceID,
-		DeviceDisplayName: firstNonEmpty(rt.DeviceName, p.cfg.DeviceID),
-		Runtimes: []RuntimeSnapshotRecord{{
-			RuntimeID:                 runtimeID,
-			Kind:                      runtimeKindForProvider(provider),
-			Availability:              availability,
-			DetectionState:            detectionState,
-			RequiresExperimentalOptIn: runtimeRequiresExperimentalOptIn(rt, provider),
-			Models:                    runtimeModels(rt.Models),
-		}},
-	}, &out)
+	return RuntimeSnapshotRecord{
+		RuntimeID:                 runtimeID,
+		Kind:                      runtimeKindForProvider(provider),
+		Availability:              availability,
+		DetectionState:            detectionState,
+		RequiresExperimentalOptIn: runtimeRequiresExperimentalOptIn(rt, provider),
+		Models:                    runtimeModels(rt.Models),
+	}, strings.TrimSpace(rt.DeviceName), true
 }
 
 func (p *Plane) DeregisterRuntime(context.Context, string) error {
@@ -195,6 +206,9 @@ func runtimeRequiresExperimentalOptIn(rt controlplane.RuntimeRegistration, provi
 
 func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat) error {
 	if p.dynamicBindingsEnabled() {
+		if err := p.refreshRegisteredRuntimeSnapshot(ctx, hb); err != nil {
+			return err
+		}
 		assignmentsByAgent, err := p.activeAssignmentsByAgentForHeartbeat(ctx, hb.RunningTaskIDs)
 		if err != nil {
 			return err
@@ -241,6 +255,63 @@ func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat)
 		return err
 	}
 	return p.deliverUnrefreshedHeartbeatCancels(ctx, assignmentIDs, out)
+}
+
+func (p *Plane) refreshRegisteredRuntimeSnapshot(ctx context.Context, hb controlplane.RuntimeHeartbeat) error {
+	now := time.Now()
+	var runtimes []RuntimeSnapshotRecord
+	var deviceName string
+	err := p.withState(ctx, func(s *planeState) {
+		if len(s.registeredRuntimes) == 0 {
+			fallback, ok := runtimeSnapshotFromHeartbeat(hb)
+			if !ok {
+				return
+			}
+			s.registeredRuntimes[fallback.RuntimeID] = fallback
+		}
+		if !s.lastRuntimeSnapshotSync.IsZero() && now.Sub(s.lastRuntimeSnapshotSync) < runtimeSnapshotHeartbeatMinInterval {
+			return
+		}
+		s.lastRuntimeSnapshotSync = now
+		deviceName = s.registeredDeviceName
+		runtimes = make([]RuntimeSnapshotRecord, 0, len(s.registeredRuntimes))
+		for _, runtime := range s.registeredRuntimes {
+			runtimes = append(runtimes, runtime)
+		}
+		sort.Slice(runtimes, func(i, j int) bool {
+			return runtimes[i].RuntimeID < runtimes[j].RuntimeID
+		})
+	})
+	if err != nil || len(runtimes) == 0 {
+		return err
+	}
+	return p.postRuntimeSnapshot(ctx, runtimes, deviceName)
+}
+
+func runtimeSnapshotFromHeartbeat(hb controlplane.RuntimeHeartbeat) (RuntimeSnapshotRecord, bool) {
+	runtimeID := strings.TrimSpace(hb.RuntimeID)
+	provider := providerFromRuntimeID(runtimeID)
+	if runtimeID == "" || provider == "" {
+		return RuntimeSnapshotRecord{}, false
+	}
+	return RuntimeSnapshotRecord{
+		RuntimeID:      runtimeID,
+		Kind:           runtimeKindForProvider(provider),
+		Availability:   "online",
+		DetectionState: "detected",
+	}, true
+}
+
+func (p *Plane) postRuntimeSnapshot(ctx context.Context, runtimes []RuntimeSnapshotRecord, deviceName string) error {
+	var out struct {
+		SchemaVersion string `json:"schema_version"`
+	}
+	return p.postJSON(ctx, "/v1/daemon/runtime-snapshot", DeviceRuntimeSnapshotSyncRequest{
+		DaemonID:          p.cfg.DaemonID,
+		DeviceID:          p.cfg.DeviceID,
+		DeviceDisplayName: firstNonEmpty(deviceName, p.cfg.DeviceID),
+		Runtimes:          runtimes,
+	}, &out)
 }
 
 func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRequest, error) {
@@ -596,9 +667,12 @@ func (p *Plane) deliverUnrefreshedHeartbeatCancels(ctx context.Context, requeste
 }
 
 type planeState struct {
-	assignmentsByTask map[string]assignmentcontract.Assignment
-	runtimeIDsByTask  map[string]string
-	cancelWatchers    map[string]chan error
+	assignmentsByTask       map[string]assignmentcontract.Assignment
+	runtimeIDsByTask        map[string]string
+	cancelWatchers          map[string]chan error
+	registeredRuntimes      map[string]RuntimeSnapshotRecord
+	registeredDeviceName    string
+	lastRuntimeSnapshotSync time.Time
 }
 
 type stateOp struct {
@@ -609,9 +683,10 @@ type stateOp struct {
 
 func (p *Plane) loop() {
 	state := planeState{
-		assignmentsByTask: map[string]assignmentcontract.Assignment{},
-		runtimeIDsByTask:  map[string]string{},
-		cancelWatchers:    map[string]chan error{},
+		assignmentsByTask:  map[string]assignmentcontract.Assignment{},
+		runtimeIDsByTask:   map[string]string{},
+		cancelWatchers:     map[string]chan error{},
+		registeredRuntimes: map[string]RuntimeSnapshotRecord{},
 	}
 	defer close(p.done)
 	for op := range p.ops {
