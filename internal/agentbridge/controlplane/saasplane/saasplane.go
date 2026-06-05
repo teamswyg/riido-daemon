@@ -154,15 +154,34 @@ func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegi
 	if !ok {
 		return nil
 	}
+	var runtimes []RuntimeSnapshotRecord
+	var postDeviceName string
 	if err := p.withState(ctx, func(s *planeState) {
 		s.registeredRuntimes[snapshot.RuntimeID] = snapshot
 		if deviceName != "" {
 			s.registeredDeviceName = deviceName
 		}
+		postDeviceName = s.registeredDeviceName
+		runtimes = sortedRuntimeSnapshots(s.registeredRuntimes)
 	}); err != nil {
 		return err
 	}
-	return p.postRuntimeSnapshot(ctx, []RuntimeSnapshotRecord{snapshot}, deviceName)
+	// Post the full accumulated provider set, not just this one runtime, so the
+	// control-plane device projection always reflects every known runtime —
+	// undetected providers stay present as detection_state=missing instead of
+	// being clobbered to an empty list under snapshot replace semantics.
+	return p.postRuntimeSnapshot(ctx, runtimes, postDeviceName)
+}
+
+func sortedRuntimeSnapshots(in map[string]RuntimeSnapshotRecord) []RuntimeSnapshotRecord {
+	out := make([]RuntimeSnapshotRecord, 0, len(in))
+	for _, runtime := range in {
+		out = append(out, runtime)
+	}
+	sort.Slice(out, func(i, j int) bool {
+		return out[i].RuntimeID < out[j].RuntimeID
+	})
+	return out
 }
 
 func runtimeSnapshotFromRegistration(rt controlplane.RuntimeRegistration) (RuntimeSnapshotRecord, string, bool) {
@@ -283,13 +302,7 @@ func (p *Plane) refreshRegisteredRuntimeSnapshot(ctx context.Context, hb control
 		}
 		s.lastRuntimeSnapshotSync = now
 		deviceName = s.registeredDeviceName
-		runtimes = make([]RuntimeSnapshotRecord, 0, len(s.registeredRuntimes))
-		for _, runtime := range s.registeredRuntimes {
-			runtimes = append(runtimes, runtime)
-		}
-		sort.Slice(runtimes, func(i, j int) bool {
-			return runtimes[i].RuntimeID < runtimes[j].RuntimeID
-		})
+		runtimes = sortedRuntimeSnapshots(s.registeredRuntimes)
 	})
 	if err != nil || len(runtimes) == 0 {
 		return err
