@@ -41,6 +41,10 @@ type Config struct {
 	DaemonID       string
 	DeviceID       string
 	DeviceSecret   string
+	Profile        string
+	AppVersion     string
+	PID            int
+	StartedAt      time.Time
 	Agents         []AgentBinding
 	BearerToken    string
 	HTTPClient     *http.Client
@@ -68,6 +72,9 @@ type DeviceRuntimeSnapshotSyncRequest struct {
 	DeviceDisplayName string                  `json:"device_display_name,omitempty"`
 	Profile           string                  `json:"profile,omitempty"`
 	AppVersion        string                  `json:"app_version,omitempty"`
+	PID               int                     `json:"pid,omitempty"`
+	UptimeSeconds     int64                   `json:"uptime_seconds,omitempty"`
+	StartedAt         time.Time               `json:"started_at,omitempty"`
 	Runtimes          []RuntimeSnapshotRecord `json:"runtimes"`
 }
 
@@ -103,6 +110,8 @@ func New(cfg Config) (*Plane, error) {
 		cfg.DeviceID = cfg.DaemonID
 	}
 	cfg.DeviceSecret = strings.TrimSpace(cfg.DeviceSecret)
+	cfg.Profile = strings.TrimSpace(cfg.Profile)
+	cfg.AppVersion = strings.TrimSpace(cfg.AppVersion)
 	cfg.BearerToken = strings.TrimSpace(cfg.BearerToken)
 	if cfg.DeviceSecret != "" && cfg.DeviceID == "" {
 		return nil, errors.New("saasplane: DeviceID is required when DeviceSecret is set")
@@ -310,8 +319,24 @@ func (p *Plane) postRuntimeSnapshot(ctx context.Context, runtimes []RuntimeSnaps
 		DaemonID:          p.cfg.DaemonID,
 		DeviceID:          p.cfg.DeviceID,
 		DeviceDisplayName: firstNonEmpty(deviceName, p.cfg.DeviceID),
+		Profile:           p.cfg.Profile,
+		AppVersion:        p.cfg.AppVersion,
+		PID:               p.cfg.PID,
+		UptimeSeconds:     p.daemonUptimeSeconds(),
+		StartedAt:         p.cfg.StartedAt,
 		Runtimes:          runtimes,
 	}, &out)
+}
+
+func (p *Plane) daemonUptimeSeconds() int64 {
+	if p.cfg.StartedAt.IsZero() {
+		return 0
+	}
+	seconds := int64(time.Since(p.cfg.StartedAt).Seconds())
+	if seconds < 0 {
+		return 0
+	}
+	return seconds
 }
 
 func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRequest, error) {

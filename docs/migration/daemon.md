@@ -1092,6 +1092,9 @@ This slice does:
 - store registered runtime snapshot facts inside `saasplane` mailbox state
 - send an aggregated daemon runtime snapshot during the 5 second heartbeat
   cadence for DevicePrincipal mode
+- include daemon process facts in that snapshot: profile, PID, started-at
+  timestamp, and uptime seconds; daemon app version may also be sent as
+  server-side telemetry without changing the client read shape
 - preserve provider model catalog and experimental opt-in facts in heartbeat
   snapshots
 - rate-limit same-tick runtime heartbeat calls so the daemon does not fan out

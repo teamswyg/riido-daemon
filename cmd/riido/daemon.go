@@ -349,7 +349,7 @@ func serveAgentDaemon(ctx context.Context, flags startFlags, settings daemonSett
 
 	log.Printf("runtimeactors started: %d providers", len(rtActors))
 
-	taskSource, taskReporter, controlPlaneKind, err := buildDaemonControlPlane(settings)
+	taskSource, taskReporter, controlPlaneKind, err := buildDaemonControlPlane(settings, startedAt)
 	if err != nil {
 		return err
 	}
@@ -548,13 +548,17 @@ func providerRuntimeID(daemonID string, provider string) string {
 	return daemonID + ":" + provider
 }
 
-func buildDaemonControlPlane(settings daemonSettings) (controlplane.TaskSourcePort, controlplane.TaskReporterPort, string, error) {
+func buildDaemonControlPlane(settings daemonSettings, startedAt time.Time) (controlplane.TaskSourcePort, controlplane.TaskReporterPort, string, error) {
 	if settings.SaaSURL != "" {
 		plane, err := saasplane.New(saasplane.Config{
 			BaseURL:      settings.SaaSURL,
 			DaemonID:     settings.DaemonID,
 			DeviceID:     settings.DeviceID,
 			DeviceSecret: settings.DeviceSecret,
+			Profile:      settings.Profile,
+			AppVersion:   settings.DaemonVersion,
+			PID:          os.Getpid(),
+			StartedAt:    startedAt.UTC(),
 		})
 		if err != nil {
 			return nil, nil, "", fmt.Errorf("controlplane: saas source: %w", err)

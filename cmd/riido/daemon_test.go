@@ -780,7 +780,7 @@ func TestLoadDaemonSettingsRejectsCleanupIntervalWithoutRetention(t *testing.T) 
 }
 
 func TestBuildDaemonControlPlaneUsesMemoryByDefault(t *testing.T) {
-	source, reporter, kind, err := buildDaemonControlPlane(daemonSettings{})
+	source, reporter, kind, err := buildDaemonControlPlane(daemonSettings{}, time.Time{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -802,7 +802,7 @@ func TestBuildDaemonControlPlaneUsesSaaS(t *testing.T) {
 		SaaSURL:      "http://127.0.0.1:1",
 		DeviceID:     "device-1",
 		DeviceSecret: "rdev-secret",
-	})
+	}, time.Time{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -872,7 +872,7 @@ func TestBuildDaemonControlPlaneUsesFileQueue(t *testing.T) {
 	source, reporter, kind, err := buildDaemonControlPlane(daemonSettings{
 		TaskQueueDir:  queueDir,
 		TaskReportDir: reportDir,
-	})
+	}, time.Time{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -994,7 +994,7 @@ func TestBuildDaemonControlPlaneUsesTaskDBSource(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	source, reporter, kind, err := buildDaemonControlPlane(daemonSettings{TaskDBSourcePath: taskDBPath})
+	source, reporter, kind, err := buildDaemonControlPlane(daemonSettings{TaskDBSourcePath: taskDBPath}, time.Time{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -1020,14 +1020,14 @@ func TestBuildDaemonControlPlaneRejectsTaskDBSourceWithReportDir(t *testing.T) {
 	_, _, _, err := buildDaemonControlPlane(daemonSettings{
 		TaskDBSourcePath: filepath.Join(t.TempDir(), "task-db.json"),
 		TaskReportDir:    t.TempDir(),
-	})
+	}, time.Time{})
 	if err == nil {
 		t.Fatal("expected task DB source and report dir conflict")
 	}
 }
 
 func TestBuildDaemonControlPlaneRejectsReportDirWithoutQueueDir(t *testing.T) {
-	_, _, _, err := buildDaemonControlPlane(daemonSettings{TaskReportDir: t.TempDir()})
+	_, _, _, err := buildDaemonControlPlane(daemonSettings{TaskReportDir: t.TempDir()}, time.Time{})
 	if err == nil {
 		t.Fatal("expected error for report dir without queue dir")
 	}
