@@ -190,7 +190,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	}
 
 	return daemonSettings{
-		DaemonID:            firstNonEmpty(getenv(envDaemonID), "agentd-local"),
+		DaemonID:            defaultDaemonID(getenv(envDaemonID), deviceID),
 		DaemonVersion:       firstNonEmpty(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
 		Profile:             firstNonEmpty(getenv(envDaemonProfile), "local"),
 		ServerURL:           strings.TrimSpace(getenv(envServerURL)),
@@ -237,6 +237,16 @@ func firstNonEmpty(value, fallback string) string {
 		return trimmed
 	}
 	return fallback
+}
+
+func defaultDaemonID(configuredDaemonID string, deviceID string) string {
+	if daemonID := strings.TrimSpace(configuredDaemonID); daemonID != "" {
+		return daemonID
+	}
+	if devicePrincipalID := strings.TrimSpace(deviceID); devicePrincipalID != "" {
+		return devicePrincipalID
+	}
+	return "agentd-local"
 }
 
 func parseOptionalNonNegativeInt(raw, name string) (int, error) {
