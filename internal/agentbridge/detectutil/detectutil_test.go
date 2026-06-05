@@ -81,6 +81,86 @@ func TestResolveExecutableMissing(t *testing.T) {
 	}
 }
 
+// A GUI/launchd-spawned daemon inherits a minimal process PATH that omits
+// the directory where the provider CLI is installed. Resolution must still
+// find the binary through the augmented search dirs (login-shell PATH and
+// well-known install locations).
+func TestResolveExecutableFindsToolOutsideProcessPATH(t *testing.T) {
+	minimalDir := t.TempDir()
+	toolDir := t.TempDir()
+	tool := writeExecutable(t, filepath.Join(toolDir, "fake-claude"), "v1")
+	t.Setenv("PATH", minimalDir)
+
+	restore := augmentedSearchDirs
+	augmentedSearchDirs = func() []string { return []string{minimalDir, toolDir} }
+	t.Cleanup(func() { augmentedSearchDirs = restore })
+
+	got, ok := ResolveExecutable("fake-claude", "")
+	if !ok || got != tool {
+		t.Fatalf("want %s found via augmented dirs, got %q ok=%v", tool, got, ok)
+	}
+}
+
+func TestProductionSearchDirsIncludesLoginShellAndWellKnown(t *testing.T) {
+	home := t.TempDir()
+	loginDir := t.TempDir()
+
+	restoreShell := readLoginShellPATH
+	restoreHome := userHomeDir
+	readLoginShellPATH = func() string { return loginDir }
+	userHomeDir = func() (string, error) { return home, nil }
+	resetLoginShellCacheForTest()
+	t.Cleanup(func() {
+		readLoginShellPATH = restoreShell
+		userHomeDir = restoreHome
+		resetLoginShellCacheForTest()
+	})
+
+	t.Setenv("PATH", "/usr/bin")
+	dirs := productionSearchDirs()
+
+	if len(dirs) == 0 || dirs[0] != "/usr/bin" {
+		t.Fatalf("os PATH must come first, got %v", dirs)
+	}
+	if !containsDir(dirs, loginDir) {
+		t.Fatalf("login-shell PATH dir %q missing from %v", loginDir, dirs)
+	}
+	if want := filepath.Join(home, ".local", "bin"); !containsDir(dirs, want) {
+		t.Fatalf("well-known dir %q missing from %v", want, dirs)
+	}
+}
+
+// The login-shell PATH lookup must be cached so we do not spawn a shell on
+// every Detect call.
+func TestLoginShellPATHDirsCached(t *testing.T) {
+	calls := 0
+	restore := readLoginShellPATH
+	readLoginShellPATH = func() string {
+		calls++
+		return "/tmp/cached-bin"
+	}
+	resetLoginShellCacheForTest()
+	t.Cleanup(func() {
+		readLoginShellPATH = restore
+		resetLoginShellCacheForTest()
+	})
+
+	_ = loginShellPATHDirs()
+	_ = loginShellPATHDirs()
+	if calls != 1 {
+		t.Fatalf("login-shell PATH should be read once, got %d reads", calls)
+	}
+}
+
+func containsDir(dirs []string, want string) bool {
+	for _, d := range dirs {
+		if d == want {
+			return true
+		}
+	}
+	return false
+}
+
 func writeExecutable(t *testing.T, path, output string) string {
 	t.Helper()
 	script := "#!/bin/sh\necho '" + output + "'\n"

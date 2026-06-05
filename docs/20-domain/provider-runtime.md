@@ -244,6 +244,15 @@ TaskSourcePort/TaskReporterPort 로 번역한다. HTTP handler, store actor, SSE
 authZ, metrics/health, persistence, Terraform/AWS/deploy evidence 는 여전히
 `riido-control-plane` 또는 `riido-infra` 가 소유한다.
 
+`saasplane` 은 runtime-snapshot 을 device 단위 full set 으로 보고한다.
+`RegisterRuntime` 과 heartbeat refresh 모두 단일 runtime 이 아니라 현재까지 등록된
+모든 provider runtime 을 RuntimeID 정렬 순서로 post 한다. 따라서 미탐지 provider 도
+`detection_state=missing` 으로 항상 set 안에 남고, snapshot replace 의미를 쓰는 서버
+projection 이 device runtime 을 빈 `[]` 로 덮어쓰지 않는다. detected/missing 판정 자체는
+runtime capability(`provider.<name>.available`)에서 파생되며, control-plane device
+projection(`GET .../ai-agent/devices`)의 최종 표현/필드는 여전히 `riido-control-plane`
+이 소유한다.
+
 RIID-4690 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `cmd/riido daemon ...` lifecycle adapter 다. 이 adapter 는 public provider
 adapters, `runtimeactor`, `supervisor`, `taskdbplane`, and `saasplane` 을 하나의
@@ -723,6 +732,16 @@ timeout / unclassifiable signal 을 unavailable 로 접고, strict probe 는 com
 OpenClaw 만 calendar-version gate 특성상 지원 버전 후보를 찾을 때까지 later PATH
 candidate 를 probe 할 수 있다. `RIIDO_OPENCLAW_PATH` 가 설정된 경우에는 여전히 pin 이며
 구버전/오류여도 PATH fallback 을 하지 않는다.
+
+override 가 없을 때 후보 탐색은 process `PATH` 만이 아니라 augmented search path 를
+쓴다. Desktop app / launchd / service 로 기동된 daemon 은 최소 `PATH`(macOS launchd 는
+보통 `/usr/bin:/bin:/usr/sbin:/sbin`)만 상속해 Homebrew·per-user 디렉터리에 설치된
+`claude`/`codex`/`cursor-agent`/`openclaw` 를 못 찾고 `detection_state=missing` 로
+보고하던 문제를 막기 위함이다. 탐색 순서는 process `PATH` → login-shell `PATH`(프로세스당
+1회 `$SHELL -lc` 로 읽어 캐시, Windows·`$SHELL` 미설정·timeout 시 skip) → well-known
+install 디렉터리다. 이는 unset-override lookup 의 탐색 범위만 넓히며 `RIIDO_<PROVIDER>_PATH`
+pin 의 fail-closed 의미는 그대로다. 카탈로그는
+[`../30-architecture/config-reference.md`](../30-architecture/config-reference.md) 가 소유한다.
 
 Detect 가 선택한 executable path 는 capability snapshot 의 실행 사실이다. `bridge.Run`
 과 `runtimeactor.Submit` 은 이 값을 `StartRequest.Executable` 로 `BuildStart` 까지

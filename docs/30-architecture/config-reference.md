@@ -35,6 +35,34 @@ calendar-version gate is selected. An explicit `RIIDO_OPENCLAW_PATH` remains a
 pin and never falls back to PATH, even when a supported OpenClaw binary exists
 later on PATH.
 
+### Executable Search Path (GUI/launchd-spawned daemons)
+
+When no `RIIDO_<PROVIDER>_PATH` override is set, `internal/agentbridge/detectutil`
+resolves the provider executable across an augmented search path, not just the
+process `PATH`. A daemon launched by the Riido Desktop app, launchd, or a
+service inherits a minimal `PATH` (on macOS launchd typically only
+`/usr/bin:/bin:/usr/sbin:/sbin`) that omits the Homebrew and per-user
+directories where `claude`, `codex`, `cursor-agent`, and `openclaw` are
+installed. Resolving from the process `PATH` alone would report installed
+providers as `detection_state=missing`.
+
+The augmented search order is:
+
+1. the process `PATH` (an operator's explicit `PATH` still wins);
+2. the user's login-shell `PATH`, read once per process via
+   `$SHELL -lc` and cached (skipped on Windows, when `$SHELL` is unset, or on
+   timeout — bounded by a short deadline so a slow profile cannot hang Detect);
+3. well-known install directories: `/opt/homebrew/{bin,sbin}`,
+   `/usr/local/{bin,sbin}`, the standard system dirs, and per-user locations
+   (`~/.local/bin`, `~/.npm-global/bin`, `~/.cargo/bin`, `~/.bun/bin`,
+   `~/.deno/bin`, `~/go/bin`, `~/.volta/bin`, `~/.asdf/shims`, `~/.cursor/bin`,
+   `~/.claude/bin`) plus resolved nvm/fnm/asdf Node version bins.
+
+This augmentation only widens where an unset-override lookup may find a binary.
+The fail-closed pin semantics of `RIIDO_<PROVIDER>_PATH` are unchanged: an
+explicit override still resolves to exactly that file and never falls back to
+the search path.
+
 ## Test Integration Gate
 
 | Variable | Consumer | Default |
