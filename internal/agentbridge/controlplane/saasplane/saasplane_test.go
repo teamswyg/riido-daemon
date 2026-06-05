@@ -416,11 +416,16 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.deviceID = "device-1"
 	fake.deviceSecret = "rdev-secret"
+	startedAt := time.Now().Add(-2 * time.Minute).UTC()
 	plane, err := New(Config{
 		BaseURL:      fake.URL(),
 		DaemonID:     "daemon-1",
 		DeviceID:     "device-1",
 		DeviceSecret: "rdev-secret",
+		Profile:      "development",
+		AppVersion:   "v0.0.13",
+		PID:          4321,
+		StartedAt:    startedAt,
 	})
 	if err != nil {
 		t.Fatalf("New: %v", err)
@@ -448,6 +453,9 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 	snapshot := fake.runtimeSnapshots[0]
 	if snapshot.DaemonID != "daemon-1" || snapshot.DeviceID != "device-1" || snapshot.DeviceDisplayName != "주윤의 MacBook" {
 		t.Fatalf("snapshot identity = %+v", snapshot)
+	}
+	if snapshot.Profile != "development" || snapshot.AppVersion != "v0.0.13" || snapshot.PID != 4321 || !snapshot.StartedAt.Equal(startedAt) || snapshot.UptimeSeconds <= 0 {
+		t.Fatalf("snapshot daemon facts = %+v", snapshot)
 	}
 	if len(snapshot.Runtimes) != 1 ||
 		snapshot.Runtimes[0].RuntimeID != "daemon-1:codex" ||
@@ -507,11 +515,16 @@ func TestPlaneHeartbeatRefreshesAggregatedRuntimeSnapshot(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.deviceID = "device-1"
 	fake.deviceSecret = "rdev-secret"
+	startedAt := time.Now().Add(-5 * time.Minute).UTC()
 	plane, err := New(Config{
 		BaseURL:      fake.URL(),
 		DaemonID:     "daemon-1",
 		DeviceID:     "device-1",
 		DeviceSecret: "rdev-secret",
+		Profile:      "development",
+		AppVersion:   "v0.0.13",
+		PID:          8765,
+		StartedAt:    startedAt,
 	})
 	if err != nil {
 		t.Fatalf("New: %v", err)
@@ -555,6 +568,9 @@ func TestPlaneHeartbeatRefreshesAggregatedRuntimeSnapshot(t *testing.T) {
 	snapshot := fake.runtimeSnapshots[2]
 	if snapshot.DaemonID != "daemon-1" || snapshot.DeviceID != "device-1" || snapshot.DeviceDisplayName != "주윤의 MacBook" {
 		t.Fatalf("heartbeat snapshot identity = %+v", snapshot)
+	}
+	if snapshot.Profile != "development" || snapshot.AppVersion != "v0.0.13" || snapshot.PID != 8765 || !snapshot.StartedAt.Equal(startedAt) || snapshot.UptimeSeconds <= 0 {
+		t.Fatalf("heartbeat daemon facts = %+v", snapshot)
 	}
 	if len(snapshot.Runtimes) != 2 ||
 		snapshot.Runtimes[0].RuntimeID != "daemon-1:codex" ||
