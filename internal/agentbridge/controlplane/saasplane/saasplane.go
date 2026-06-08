@@ -825,16 +825,12 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		req.EventType = assignmentcontract.EventRiidoLog
 		req.Message = ev.Text
 		req.Metadata = agentbridge.ProgressEventMetadata(ev)
-	case agentbridge.EventTextDelta:
-		// Forward the assistant's response text to the control plane as progress
-		// lines so the web client's SSE thread stream shows the answer as it is
-		// produced (one delta per assistant text content block). Empty deltas
-		// carry no content and would only create blank lines.
-		if ev.Text == "" {
-			return req, false
-		}
-		req.EventType = assignmentcontract.EventRiidoLog
-		req.Message = ev.Text
+	// NOTE: EventTextDelta is intentionally NOT forwarded. Providers (esp. codex)
+	// emit deltas as tiny token/JSON fragments; surfacing each as its own progress
+	// line produced incoherent, fragmented output ("code", "\":", "110", ...).
+	// The control plane shows structured progress + the final result instead.
+	// Coherent live streaming requires accumulating deltas into one evolving
+	// message (a separate feature), not one progress line per delta.
 	case agentbridge.EventLifecycle:
 		if ev.Phase == agentbridge.StateRunning {
 			req.EventType = assignmentcontract.EventAssignmentRunning
