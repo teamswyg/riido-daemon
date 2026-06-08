@@ -94,11 +94,23 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 			d.recordRuntimeError(errText)
 			return []agentbridge.Event{{Kind: agentbridge.EventError, Err: errText}}, nil, nil
 		}
+		if method == "turn_started" || method == "turn/started" {
+			d.turnStarted = true
+		}
 		if method == "turn_completed" || method == "turn/completed" {
 			p := params(raw)
 			if d.lastRuntimeError != "" && !d.sawAssistantOutput && stringField(p, "output") == "" {
 				return d.failedEvents(d.lastRuntimeError), nil, nil
 			}
+		}
+		// Newer codex app-server builds signal turn end via thread/status/changed
+		// (the thread returns to a terminal/idle status) instead of
+		// turn/completed. Without this the run never receives a completion and
+		// fails with "codex unknown notification: thread/status/changed".
+		if method == "thread/status/changed" || method == "thread_status_changed" {
+			events := d.threadStatusEvents(params(raw))
+			d.observeEvents(events)
+			return events, nil, nil
 		}
 	}
 	// Notifications + server_requests + malformed + stderr: fall through
@@ -169,6 +181,70 @@ func (d *protocolDriver) failedEvents(message string) []agentbridge.Event {
 		{Kind: agentbridge.EventError, Err: message},
 		{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultFailed, Error: message}},
 	}
+}
+
+// threadStatusEvents maps a codex app-server thread/status/changed notification
+// to run-scope events. The new codex protocol uses thread status transitions
+// (the thread returns to idle/completed when a turn finishes) instead of a
+// turn/completed notification. Completion is gated on turnStarted so an initial
+// idle status cannot end the run before any work happens; unknown statuses are
+// logged (never fail the run).
+func (d *protocolDriver) threadStatusEvents(p map[string]any) []agentbridge.Event {
+	status := strings.ToLower(strings.TrimSpace(codexThreadStatus(p)))
+	switch {
+	case codexStatusIsError(status):
+		return d.failedEvents("codex thread status: " + status)
+	case codexStatusIsTerminal(status):
+		if !d.turnStarted {
+			return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex thread status: " + status + " (no active turn)"}}
+		}
+		d.turnStarted = false
+		return []agentbridge.Event{{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultCompleted}}}
+	case codexStatusIsActive(status):
+		d.turnStarted = true
+		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}
+	default:
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex thread status changed: " + status}}
+	}
+}
+
+// codexThreadStatus extracts the status string from a thread/status/changed
+// payload, tolerating a few shapes (flat string, nested object, or "state").
+func codexThreadStatus(p map[string]any) string {
+	if s := stringField(p, "status"); s != "" {
+		return s
+	}
+	if s := stringField(mapField(p, "status"), "type"); s != "" {
+		return s
+	}
+	if s := stringField(mapField(p, "thread"), "status"); s != "" {
+		return s
+	}
+	return stringField(p, "state")
+}
+
+func codexStatusIsTerminal(status string) bool {
+	switch status {
+	case "idle", "completed", "complete", "finished", "done", "ready", "succeeded":
+		return true
+	}
+	return false
+}
+
+func codexStatusIsError(status string) bool {
+	switch status {
+	case "error", "errored", "failed", "aborted", "cancelled", "canceled", "interrupted":
+		return true
+	}
+	return false
+}
+
+func codexStatusIsActive(status string) bool {
+	switch status {
+	case "running", "active", "in_progress", "working", "streaming", "thinking", "busy", "generating", "turn_running":
+		return true
+	}
+	return false
 }
 
 // --- handshake state machine (NOT a RunState FSM — just transport progress) ---
