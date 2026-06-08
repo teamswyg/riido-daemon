@@ -133,7 +133,7 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 			},
 		}}
 
-	case "turn_error", "turn/error":
+	case "turn_error", "turn/error", "turn/failed":
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventResult,
 			Result: agentbridge.Result{
@@ -141,6 +141,24 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 				Error:  stringField(p, "message"),
 			},
 		}}
+
+	case "account/rateLimits/updated", "account_rate_limits_updated":
+		// Codex app-server periodically reports current account rate-limit
+		// windows. Informational (not terminal) — surface as a clear log so it
+		// is no longer reported as an "unknown notification".
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex rate limits updated"}}
+
+	// Newer codex app-server (0.13x) "item" + lifecycle notifications. The
+	// assistant text still arrives via item/agentMessage/delta (handled above);
+	// these are structural/lifecycle signals we acknowledge as informational so
+	// they stop surfacing as "unknown notification" noise. Completion is NOT
+	// inferred here — that stays with turn/completed and thread/status/changed
+	// so a per-item completion can never truncate a live turn.
+	case "item/started", "item/updated", "item/completed",
+		"hook/started", "hook/completed",
+		"mcpServer/startupStatus/updated",
+		"remoteControl/status/changed":
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex " + method}}
 
 	case "usage":
 		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: agentbridge.Usage{

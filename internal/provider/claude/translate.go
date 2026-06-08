@@ -61,6 +61,18 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 			Err:  stringField(raw.Payload, "message"),
 		}}, nil, nil
 
+	case "rate_limit_event", "rate_limit":
+		// Claude Code emits rate_limit_event when the upstream account is being
+		// throttled. It is informational (the CLI keeps the session alive and
+		// retries), NOT terminal — surface it as a Warning so the run keeps its
+		// semantic-activity timer alive and the UI shows a clear "rate limited"
+		// status instead of a generic "unknown event" line.
+		return []agentbridge.Event{{
+			Kind: agentbridge.EventWarning,
+			Text: "claude rate limited",
+			Err:  claudeRateLimitDetail(raw.Payload),
+		}}, nil, nil
+
 	default:
 		// Unknown but well-formed event — surface as Log so the watchdog
 		// keeps semantic-activity tracking accurate and we never silently
@@ -256,4 +268,30 @@ func stringField(m map[string]any, key string) string {
 	}
 	s, _ := m[key].(string)
 	return s
+}
+
+// claudeRateLimitDetail extracts a human-readable detail from a Claude Code
+// rate_limit_event payload, tolerating both a flat shape and a nested
+// "rate_limit" object. Falls back to a generic note so the Warning is never
+// empty.
+func claudeRateLimitDetail(payload map[string]any) string {
+	for _, scope := range []map[string]any{payload, mapField(payload, "rate_limit")} {
+		if scope == nil {
+			continue
+		}
+		for _, key := range []string{"message", "status", "resets_at", "resetsAt", "retry_after", "retryAfter"} {
+			if v := stringField(scope, key); v != "" {
+				return v
+			}
+		}
+	}
+	return "upstream rate limit reached"
+}
+
+func mapField(m map[string]any, key string) map[string]any {
+	if m == nil {
+		return nil
+	}
+	nested, _ := m[key].(map[string]any)
+	return nested
 }
