@@ -460,7 +460,7 @@ func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter ag
 		Models:              daemonRuntimeModels(adapter.Name()),
 		Adapters:            []agentbridge.Adapter{adapter},
 		Process:             processexec.New(),
-		MaxConcurrent:       1,
+		MaxConcurrent:       settings.RuntimeMaxConcurrent,
 		AutoApprove:         daemonToolAutoApprover(settings),
 		ToolStartGate:       daemonToolStartGate(settings),
 		PolicyBundleVersion: settings.PolicyBundle,

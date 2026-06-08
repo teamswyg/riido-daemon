@@ -25,6 +25,7 @@ const (
 	envRuntimeOwner                  = "RIIDO_RUNTIME_OWNER"
 	envRuntimeAgents                 = "RIIDO_RUNTIME_AGENTS"
 	envWorkspaceCount                = "RIIDO_WORKSPACE_COUNT"
+	envRuntimeMaxConcurrent          = "RIIDO_RUNTIME_MAX_CONCURRENT"
 	envWorkdirRoot                   = "RIIDO_WORKDIR_ROOT"
 	envPolicyBundle                  = "RIIDO_POLICY_BUNDLE_VERSION"
 	envPolicyBundlePath              = "RIIDO_POLICY_BUNDLE_PATH"
@@ -40,29 +41,30 @@ const (
 )
 
 type daemonSettings struct {
-	DaemonID            string
-	DaemonVersion       string
-	Profile             string
-	ServerURL           string
-	DeviceID            string
-	DeviceSecret        string
-	DeviceName          string
-	RuntimeOwner        string
-	WorkdirRoot         string
-	PolicyBundle        string
-	PolicyBundlePath    string
-	PolicyBundleDoc     policy.PolicyBundle
-	TaskQueueDir        string
-	TaskReportDir       string
-	TaskDBSourcePath    string
-	SaaSURL             string
-	PollEvery           time.Duration
-	IdlePollEvery       time.Duration
-	HeartbeatEvery      time.Duration
-	WorkdirRetention    time.Duration
-	WorkdirCleanupEvery time.Duration
-	WorkspaceCount      int
-	RuntimeAgents       []runtimeactor.AgentStatus
+	DaemonID             string
+	DaemonVersion        string
+	Profile              string
+	ServerURL            string
+	DeviceID             string
+	DeviceSecret         string
+	DeviceName           string
+	RuntimeOwner         string
+	WorkdirRoot          string
+	PolicyBundle         string
+	PolicyBundlePath     string
+	PolicyBundleDoc      policy.PolicyBundle
+	TaskQueueDir         string
+	TaskReportDir        string
+	TaskDBSourcePath     string
+	SaaSURL              string
+	PollEvery            time.Duration
+	IdlePollEvery        time.Duration
+	HeartbeatEvery       time.Duration
+	WorkdirRetention     time.Duration
+	WorkdirCleanupEvery  time.Duration
+	WorkspaceCount       int
+	RuntimeMaxConcurrent int
+	RuntimeAgents        []runtimeactor.AgentStatus
 }
 
 func loadDaemonSettings() (daemonSettings, error) {
@@ -87,6 +89,16 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	workspaceCount, err := parseOptionalNonNegativeInt(getenv(envWorkspaceCount), envWorkspaceCount)
 	if err != nil {
 		return daemonSettings{}, err
+	}
+
+	// Max concurrent runtime sessions per provider. Default 4 so a single agent
+	// isn't limited to one task at a time; override with RIIDO_RUNTIME_MAX_CONCURRENT.
+	runtimeMaxConcurrent, err := parseOptionalNonNegativeInt(getenv(envRuntimeMaxConcurrent), envRuntimeMaxConcurrent)
+	if err != nil {
+		return daemonSettings{}, err
+	}
+	if runtimeMaxConcurrent == 0 {
+		runtimeMaxConcurrent = 4
 	}
 
 	owner := strings.TrimSpace(getenv(envRuntimeOwner))
@@ -190,29 +202,30 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	}
 
 	return daemonSettings{
-		DaemonID:            defaultDaemonID(getenv(envDaemonID), deviceID),
-		DaemonVersion:       firstNonEmpty(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
-		Profile:             firstNonEmpty(getenv(envDaemonProfile), "local"),
-		ServerURL:           strings.TrimSpace(getenv(envServerURL)),
-		DeviceID:            deviceID,
-		DeviceSecret:        deviceSecret,
-		DeviceName:          deviceName,
-		RuntimeOwner:        owner,
-		WorkdirRoot:         workdirRoot,
-		PolicyBundle:        policyBundleVersion,
-		PolicyBundlePath:    policyBundlePath,
-		PolicyBundleDoc:     policyBundleDoc,
-		TaskQueueDir:        taskQueueDir,
-		TaskReportDir:       taskReportDir,
-		TaskDBSourcePath:    taskDBSourcePath,
-		SaaSURL:             saaSURL,
-		PollEvery:           pollEvery,
-		IdlePollEvery:       idlePollEvery,
-		HeartbeatEvery:      heartbeatEvery,
-		WorkdirRetention:    workdirRetention,
-		WorkdirCleanupEvery: workdirCleanupEvery,
-		WorkspaceCount:      workspaceCount,
-		RuntimeAgents:       parseRuntimeAgents(getenv(envRuntimeAgents)),
+		DaemonID:             defaultDaemonID(getenv(envDaemonID), deviceID),
+		DaemonVersion:        firstNonEmpty(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
+		Profile:              firstNonEmpty(getenv(envDaemonProfile), "local"),
+		ServerURL:            strings.TrimSpace(getenv(envServerURL)),
+		DeviceID:             deviceID,
+		DeviceSecret:         deviceSecret,
+		DeviceName:           deviceName,
+		RuntimeOwner:         owner,
+		WorkdirRoot:          workdirRoot,
+		PolicyBundle:         policyBundleVersion,
+		PolicyBundlePath:     policyBundlePath,
+		PolicyBundleDoc:      policyBundleDoc,
+		TaskQueueDir:         taskQueueDir,
+		TaskReportDir:        taskReportDir,
+		TaskDBSourcePath:     taskDBSourcePath,
+		SaaSURL:              saaSURL,
+		PollEvery:            pollEvery,
+		IdlePollEvery:        idlePollEvery,
+		HeartbeatEvery:       heartbeatEvery,
+		WorkdirRetention:     workdirRetention,
+		WorkdirCleanupEvery:  workdirCleanupEvery,
+		WorkspaceCount:       workspaceCount,
+		RuntimeMaxConcurrent: runtimeMaxConcurrent,
+		RuntimeAgents:        parseRuntimeAgents(getenv(envRuntimeAgents)),
 	}, nil
 }
 
