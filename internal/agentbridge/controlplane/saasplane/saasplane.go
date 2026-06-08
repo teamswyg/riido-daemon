@@ -30,6 +30,26 @@ const (
 
 const runtimeSnapshotHeartbeatMinInterval = 4 * time.Second
 
+// Live assistant-body streaming. Raw text deltas are never forwarded one line
+// per token (they are tiny, incoherent fragments). Instead the daemon
+// accumulates them per task and periodically forwards the FULL text-so-far as
+// one evolving progress line, tagged so the client can render it as the live
+// body (replaced by the final result on completion).
+const (
+	// assistantPartialProgressCode is a sentinel progress code OUTSIDE the
+	// control-plane canonical template range (1001-1203), so the control-plane
+	// keeps the verbatim accumulated body instead of rendering a template.
+	assistantPartialProgressCode = 9001
+	// assistantPartialProgressKey is relayed verbatim to the client as the
+	// line's message_key so it can distinguish the evolving body from status
+	// narration lines.
+	assistantPartialProgressKey = "assistant.partial"
+	// partialBodyFlushInterval / partialBodyFlushChars debounce forwarding so
+	// many deltas coalesce into a coherent, low-frequency update.
+	partialBodyFlushInterval = 350 * time.Millisecond
+	partialBodyFlushChars    = 24
+)
+
 // AgentBinding maps a SaaS agent identity to one local provider runtime.
 type AgentBinding struct {
 	AgentID         string
@@ -463,11 +483,68 @@ func (p *Plane) ReportEvent(ctx context.Context, taskID string, ev agentbridge.E
 	if err != nil || !ok {
 		return err
 	}
+	if ev.Kind == agentbridge.EventTextDelta {
+		return p.accumulatePartialBody(ctx, assignment, ev.Text)
+	}
 	req, ok := eventRequestFromAgentEvent(assignment, ev)
 	if !ok {
 		return nil
 	}
 	_, err = p.postAgentEvent(ctx, assignment, req)
+	return err
+}
+
+// accumulatePartialBody appends a text delta to the task's evolving assistant
+// body and, on a debounce boundary (time or character growth), forwards the
+// full text-so-far as one tagged progress line. Raw per-delta fragments are
+// never forwarded on their own.
+func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignmentcontract.Assignment, delta string) error {
+	if delta == "" {
+		return nil
+	}
+	var (
+		flush bool
+		body  string
+	)
+	now := time.Now()
+	if err := p.withState(ctx, func(s *planeState) {
+		st := s.partialBodies[assignment.TaskID]
+		if st == nil {
+			st = &partialBodyState{}
+			s.partialBodies[assignment.TaskID] = st
+		}
+		st.text += delta
+		grown := len(st.text) - st.lastFlushedLen
+		if st.lastFlushAt.IsZero() || now.Sub(st.lastFlushAt) >= partialBodyFlushInterval || grown >= partialBodyFlushChars {
+			flush = true
+			st.lastFlushAt = now
+			st.lastFlushedLen = len(st.text)
+			body = st.text
+		}
+	}); err != nil {
+		return err
+	}
+	if !flush {
+		return nil
+	}
+	return p.postPartialBody(ctx, assignment, body)
+}
+
+// postPartialBody forwards the accumulated body as a single evolving progress
+// line, reusing the existing EventProgress → riido_log mapping. The sentinel
+// progress code keeps the body verbatim and the progress key reaches the client
+// as the line's message_key — no control-plane change required.
+func (p *Plane) postPartialBody(ctx context.Context, assignment assignmentcontract.Assignment, body string) error {
+	req, ok := eventRequestFromAgentEvent(assignment, agentbridge.Event{
+		Kind:         agentbridge.EventProgress,
+		Text:         body,
+		ProgressCode: assistantPartialProgressCode,
+		ProgressKey:  assistantPartialProgressKey,
+	})
+	if !ok {
+		return nil
+	}
+	_, err := p.postAgentEvent(ctx, assignment, req)
 	return err
 }
 
@@ -495,6 +572,7 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 		delete(s.assignmentsByTask, taskID)
 		delete(s.runtimeIDsByTask, taskID)
 		delete(s.cancelWatchers, taskID)
+		delete(s.partialBodies, taskID)
 	})
 }
 
@@ -711,6 +789,18 @@ type planeState struct {
 	registeredRuntimes      map[string]RuntimeSnapshotRecord
 	registeredDeviceName    string
 	lastRuntimeSnapshotSync time.Time
+	// partialBodies accumulates each task's assistant text deltas between
+	// flushes so the daemon can forward a coherent evolving body instead of
+	// per-token fragments. Keyed by task ID.
+	partialBodies map[string]*partialBodyState
+}
+
+// partialBodyState holds the running assistant text for one task and the
+// debounce bookkeeping for forwarding it as an evolving progress line.
+type partialBodyState struct {
+	text           string
+	lastFlushAt    time.Time
+	lastFlushedLen int
 }
 
 type stateOp struct {
@@ -725,6 +815,7 @@ func (p *Plane) loop() {
 		runtimeIDsByTask:   map[string]string{},
 		cancelWatchers:     map[string]chan error{},
 		registeredRuntimes: map[string]RuntimeSnapshotRecord{},
+		partialBodies:      map[string]*partialBodyState{},
 	}
 	defer close(p.done)
 	for op := range p.ops {

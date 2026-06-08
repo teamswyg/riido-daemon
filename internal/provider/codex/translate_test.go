@@ -2,6 +2,7 @@ package codex
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -203,5 +204,38 @@ func TestTranslateErrorResponse(t *testing.T) {
 	evs := tx(t, raw)
 	if len(evs) != 1 || evs[0].Kind != agentbridge.EventError {
 		t.Fatalf("err response: %+v", evs)
+	}
+}
+
+// turn/failed is the newer codex name for a failed turn → terminal failure.
+func TestTranslateTurnFailed(t *testing.T) {
+	raw := rawFromJSON(t, `{"jsonrpc":"2.0","method":"turn/failed","params":{"message":"nope"}}`)
+	evs := tx(t, raw)
+	last := evs[len(evs)-1]
+	if last.Kind != agentbridge.EventResult || last.Result.Status != agentbridge.ResultFailed || last.Result.Error != "nope" {
+		t.Fatalf("turn/failed: %+v", last)
+	}
+}
+
+// New codex app-server lifecycle/rate-limit notifications are recognized as
+// informational Logs — never "unknown notification", and crucially never a
+// terminal EventResult (a per-item completion must not truncate a live turn).
+func TestTranslateNewLifecycleNotificationsAreNonTerminalLogs(t *testing.T) {
+	methods := []string{
+		"item/started", "item/updated", "item/completed",
+		"hook/started", "hook/completed",
+		"mcpServer/startupStatus/updated",
+		"remoteControl/status/changed",
+		"account/rateLimits/updated",
+	}
+	for _, m := range methods {
+		raw := rawFromJSON(t, `{"jsonrpc":"2.0","method":"`+m+`","params":{}}`)
+		evs := tx(t, raw)
+		if len(evs) != 1 || evs[0].Kind != agentbridge.EventLog {
+			t.Fatalf("%s: want single EventLog, got %+v", m, evs)
+		}
+		if strings.Contains(evs[0].Text, "unknown") {
+			t.Fatalf("%s: still labeled unknown: %q", m, evs[0].Text)
+		}
 	}
 }
