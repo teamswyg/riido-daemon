@@ -558,6 +558,19 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 	if message == "" {
 		message = res.Output
 	}
+	// Some providers (e.g. codex completing via thread/status/changed) report a
+	// successful result with no Output. Fall back to the accumulated streamed
+	// body so the completed thread shows the actual answer instead of an empty
+	// message (which the client renders as a generic status label).
+	if message == "" && res.Status == agentbridge.ResultCompleted {
+		if stateErr := p.withState(ctx, func(s *planeState) {
+			if st := s.partialBodies[taskID]; st != nil {
+				message = st.text
+			}
+		}); stateErr != nil {
+			return stateErr
+		}
+	}
 	_, err = p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{
 		AssignmentID: assignment.ID,
 		TaskID:       assignment.TaskID,
