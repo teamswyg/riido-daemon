@@ -81,3 +81,50 @@ func TestReportEventCoalescesTextDeltaIntoEvolvingBody(t *testing.T) {
 		t.Fatalf("partial body must be tagged with sentinel code + key, metadata = %+v", last.Metadata)
 	}
 }
+
+// On completion with no provider Output (e.g. codex completing via
+// thread/status/changed), the accumulated streamed body becomes the terminal
+// message so the completed thread shows the actual answer, not an empty/status
+// message.
+func TestCompleteTaskFallsBackToAccumulatedBody(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "ship it",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	for _, delta := range []string{"The answer ", "is fully streamed here."} {
+		if err := plane.ReportEvent(context.Background(), req.ID, agentbridge.Event{
+			Kind: agentbridge.EventTextDelta,
+			Text: delta,
+		}); err != nil {
+			t.Fatalf("ReportEvent: %v", err)
+		}
+	}
+	// Completed with empty Output.
+	if err := plane.CompleteTask(context.Background(), req.ID, agentbridge.Result{
+		Status: agentbridge.ResultCompleted,
+	}); err != nil {
+		t.Fatalf("CompleteTask: %v", err)
+	}
+
+	last := fake.events[len(fake.events)-1]
+	if last.State != assignmentcontract.AssignmentCompleted {
+		t.Fatalf("expected completed state, got %q", last.State)
+	}
+	if last.Message != "The answer is fully streamed here." {
+		t.Fatalf("completion message should fall back to accumulated body, got %q", last.Message)
+	}
+}
