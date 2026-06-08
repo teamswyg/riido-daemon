@@ -7,10 +7,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
@@ -29,6 +31,7 @@ const (
 )
 
 const runtimeSnapshotHeartbeatMinInterval = 4 * time.Second
+const claimObservationLogEvery = time.Minute
 
 // AgentBinding maps a SaaS agent identity to one local provider runtime.
 type AgentBinding struct {
@@ -49,6 +52,13 @@ type Config struct {
 	BearerToken    string
 	HTTPClient     *http.Client
 	RequestTimeout time.Duration
+	// ClaimWaitMs is the long-poll hint sent to the control plane on each claim
+	// poll (PollRequest.wait_ms). Zero keeps the legacy point-in-time short-poll.
+	ClaimWaitMs int
+	// LongPollTimeout bounds a single held claim poll on the client side. It must
+	// exceed the server's maximum hold budget. All other requests keep
+	// RequestTimeout, so failure detection on heartbeat/events stays tight.
+	LongPollTimeout time.Duration
 }
 
 type RuntimeModelRecord struct {
@@ -87,10 +97,12 @@ type AgentRuntimeBindingListResponse struct {
 // control-plane assignment polling API. Internal state is owned by a mailbox
 // goroutine so the supervisor can use the adapter without shared mutable maps.
 type Plane struct {
-	cfg    Config
-	client *http.Client
-	ops    chan stateOp
-	done   chan struct{}
+	cfg               Config
+	client            *http.Client
+	ops               chan stateOp
+	done              chan struct{}
+	claimLogMu        sync.Mutex
+	lastClaimLogByKey map[string]time.Time
 }
 
 func New(cfg Config) (*Plane, error) {
@@ -123,15 +135,23 @@ func New(cfg Config) (*Plane, error) {
 	if cfg.RequestTimeout <= 0 {
 		cfg.RequestTimeout = 5 * time.Second
 	}
+	if cfg.LongPollTimeout <= 0 {
+		cfg.LongPollTimeout = 30 * time.Second
+	}
 	client := cfg.HTTPClient
 	if client == nil {
-		client = &http.Client{Timeout: cfg.RequestTimeout}
+		// No client-wide Timeout: a long-poll claim can be held for the server's
+		// hold budget (~25s) while every other request is bounded by its own
+		// per-call context (RequestTimeout). A client.Timeout would be a hard
+		// wall that aborts the held poll.
+		client = &http.Client{}
 	}
 	p := &Plane{
-		cfg:    cfg,
-		client: client,
-		ops:    make(chan stateOp, 64),
-		done:   make(chan struct{}),
+		cfg:               cfg,
+		client:            client,
+		ops:               make(chan stateOp, 64),
+		done:              make(chan struct{}),
+		lastClaimLogByKey: map[string]time.Time{},
 	}
 	go p.loop()
 	return p, nil
@@ -357,14 +377,18 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 	if p.dynamicBindingsEnabled() {
 		bindings, err := p.agentBindings(ctx)
 		if err != nil {
+			p.logClaimObservation("agent-bindings-error:"+runtimeID, "saasplane claim agent-bindings error runtime_id=%s provider=%s daemon_id=%s err=%v", runtimeID, provider, p.cfg.DaemonID, err)
 			return nil, err
 		}
+		matchedBindings := 0
 		for _, binding := range bindings {
 			if binding.RuntimeProvider != provider || strings.TrimSpace(binding.RuntimeID) != strings.TrimSpace(runtimeID) {
 				continue
 			}
+			matchedBindings++
 			poll, err := p.pollAgent(ctx, binding.AgentID, runtimeID)
 			if err != nil {
+				p.logClaimObservation("poll-error:"+runtimeID+":"+binding.AgentID, "saasplane claim poll error runtime_id=%s provider=%s agent_id=%s daemon_id=%s err=%v", runtimeID, provider, binding.AgentID, p.cfg.DaemonID, err)
 				return nil, err
 			}
 			if poll.Assignment == nil {
@@ -388,6 +412,11 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 			default:
 				continue
 			}
+		}
+		if matchedBindings == 0 {
+			p.logClaimObservation("no-matching-binding:"+runtimeID, "saasplane claim no matching binding runtime_id=%s provider=%s daemon_id=%s binding_count=%d", runtimeID, provider, p.cfg.DaemonID, len(bindings))
+		} else {
+			p.logClaimObservation("no-claim:"+runtimeID, "saasplane claim no assignment runtime_id=%s provider=%s daemon_id=%s matching_bindings=%d", runtimeID, provider, p.cfg.DaemonID, matchedBindings)
 		}
 		return nil, nil
 	}
@@ -426,6 +455,23 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 		}
 	}
 	return nil, nil
+}
+
+func (p *Plane) logClaimObservation(key, format string, args ...any) {
+	key = strings.TrimSpace(key)
+	if key == "" {
+		return
+	}
+	now := time.Now()
+	p.claimLogMu.Lock()
+	last := p.lastClaimLogByKey[key]
+	if !last.IsZero() && now.Sub(last) < claimObservationLogEvery {
+		p.claimLogMu.Unlock()
+		return
+	}
+	p.lastClaimLogByKey[key] = now
+	p.claimLogMu.Unlock()
+	log.Printf(format, args...)
 }
 
 func (p *Plane) WatchCancellation(ctx context.Context, taskID string) (<-chan error, error) {
@@ -500,11 +546,15 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 
 func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string) (assignmentcontract.PollResponse, error) {
 	var out assignmentcontract.PollResponse
-	err := p.postJSON(ctx, "/v1/agents/"+url.PathEscape(agentID)+"/poll", assignmentcontract.PollRequest{
+	// The claim poll carries the long-poll hint and uses the longer client-side
+	// timeout so the control plane may hold the request open. wait_ms=0 (when
+	// ClaimWaitMs is unset) is a normal point-in-time poll that returns fast.
+	err := p.postJSONTimeout(ctx, "/v1/agents/"+url.PathEscape(agentID)+"/poll", assignmentcontract.PollRequest{
 		DaemonID:  p.cfg.DaemonID,
 		DeviceID:  p.cfg.DeviceID,
 		RuntimeID: runtimeID,
-	}, &out)
+		WaitMs:    p.cfg.ClaimWaitMs,
+	}, &out, p.cfg.LongPollTimeout)
 	return out, err
 }
 
@@ -522,7 +572,11 @@ func (p *Plane) postAgentEvent(ctx context.Context, assignment assignmentcontrac
 }
 
 func (p *Plane) postJSON(ctx context.Context, path string, in any, out any) error {
-	ctx, cancel := context.WithTimeout(ctx, p.cfg.RequestTimeout)
+	return p.postJSONTimeout(ctx, path, in, out, p.cfg.RequestTimeout)
+}
+
+func (p *Plane) postJSONTimeout(ctx context.Context, path string, in any, out any, timeout time.Duration) error {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	body, err := json.Marshal(in)
 	if err != nil {

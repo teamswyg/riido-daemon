@@ -354,10 +354,10 @@ func run(ctx context.Context, cfg Config, sess *Session, proc process.RunningPro
 			emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventCancellation, Err: reason})
 
 		case <-hardC:
-			emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
+			emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: fmt.Sprintf("run hard timeout exceeded (%s)", cfg.HardTimeout)})
 
 		case <-idleC:
-			emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "semantic idle timeout"})
+			emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: fmt.Sprintf("no provider progress for %s (semantic idle timeout)", cfg.SemanticIdle)})
 
 		case chunk, ok := <-stdoutCh:
 			if !ok {

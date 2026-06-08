@@ -25,10 +25,20 @@ Go 구현은 `internal/lock` 이 소유한다.
 
 | primitive | 구현 | 의미 |
 | --- | --- | --- |
-| `AcquireFile(ctx, path)` | `flock(2)` exclusive advisory lock | ctx 가 끝나기 전까지 lock 을 기다린다. |
+| `AcquireFile(ctx, path)` | `flock(2)` exclusive advisory lock | ctx 가 끝나기 전까지 lock 을 기다린다 (blocking). task DB adapter 가 사용한다. |
+| `TryAcquireFile(path)` | 같은 lock 의 non-blocking 1회 시도 | 이미 잡혀 있으면 기다리지 않고 `ErrLocked` 를 돌려준다. daemon single-instance 판정에 쓴다. |
+| `RemoveStaleLock(path)` | 죽은 holder 가 남긴 lock artifact 제거 | Unix 는 flock 이 프로세스 종료 시 자동 해제되므로 no-op. Windows `.claim` 파일처럼 자동 해제되지 않는 artifact 를, owner 가 죽은 것이 확인된 뒤에만 회수한다. |
 | `WithFile(ctx, path, fn)` | acquire → `fn` → release | adapter 의 read-modify-write critical section 을 감싼다. |
 
 이 primitive 는 `sync.Mutex` / `sync.RWMutex` 를 쓰지 않는다. 동시성 경계는 OS file lock 이고, actor 내부 상태 보호 수단이 아니다.
+
+### daemon single-instance (D3)
+
+`cmd/riido` 의 daemon 진입점은 `TryAcquireFile` 로 host 당 하나의 daemon 만 살아 있도록 보장한다. lock·socket·pid 파일은 같은 app-data identity root (`~/Library/Application Support/riido/` 계열) 아래에 함께 둔다 (D4: 서로 다른 경로의 daemon 이 같은 socket 을 hijack 하지 못하게 한다).
+
+- `TryAcquireFile` 가 `ErrLocked` 를 돌려주면 이미 다른 daemon 이 lock 을 잡고 있다는 뜻이다. Unix 에서 flock 은 holder 가 죽으면 커널이 자동 해제하므로 `ErrLocked` 는 **살아 있는 owner** 를 의미한다 → 두 번째 start 는 에러 없이 "already running" 으로 깨끗이 종료한다 (lock-waiter 좀비로 블록되지 않는다).
+- pid 파일에 기록된 owner 가 **확실히 죽은 경우에만** stale lock 을 `RemoveStaleLock` 으로 회수하고 1회 재시도한다. liveness 를 판정할 수 없으면 (예: 현재 Windows) 회수하지 않는다 (보수적 — 살아 있는 daemon 의 lock 을 빼앗지 않는다).
+- daemon 은 background 에 영속하지 않는다. 앱 종료 시 함께 종료되며, lock·pid 파일은 release 시 정리된다.
 
 `riido-task-db.v1` 에 대한 production adapter 는
 `internal/agentbridge/controlplane/taskdbplane` 이며, guarded mutation 자체는

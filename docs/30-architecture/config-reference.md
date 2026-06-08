@@ -105,6 +105,12 @@ Exactly one production task source may be selected.
 | `RIIDO_DAEMON_POLL_INTERVAL_SECONDS` | supervisor | `1` | active/fast claim polling interval |
 | `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS` | supervisor | `5` | idle polling interval; must be >= active interval |
 | `RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS` | supervisor | `5` | runtime heartbeat interval |
+| `RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS` | runtime actor → session run clock | `1800` (30m) | default whole-run upper bound; `0` disables. Per-task `TaskRequest.Timeout` overrides. See [provider-runtime §5.7](../20-domain/provider-runtime.md) |
+| `RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS` | runtime actor → session run clock | `600` (10m) | default idle watchdog (no semantic-progress event); `0` disables. Per-task `TaskRequest.SemanticIdle` overrides. See [provider-runtime §5.7](../20-domain/provider-runtime.md) |
+| `RIIDO_DAEMON_CLAIM_WAIT_MS` | `saasplane` claim poll | `20000` (20s) | long-poll hint (`PollRequest.wait_ms`) asking the control plane to hold the claim poll; `0` disables (legacy interval polling). See [runtime-scheduling](../20-domain/runtime-scheduling.md) |
+| `RIIDO_DAEMON_LONGPOLL_TIMEOUT_SECONDS` | `saasplane` claim poll | `30` | client-side timeout for a held claim poll; must exceed the hint and the server hold budget. Other requests keep `RequestTimeout` (5s) |
+| `RIIDO_DAEMON_TEXT_FLUSH_BYTES` | supervisor per-task text coalescer | `256` | flush buffered streamed text once it reaches this size; `0` disables the size trigger. With the interval also `0`, text coalescing is off |
+| `RIIDO_DAEMON_TEXT_FLUSH_MS` | supervisor per-task text coalescer | `200` | max time buffered streamed text is held before flush (max-latency, not debounce); `0` disables the timer trigger |
 
 Queue, task DB, and SaaS source variables are mutually exclusive where their
 adapters would otherwise compete for task ownership.
@@ -162,14 +168,21 @@ only.
 | --- | --- | --- |
 | `--socket` | C11 dev-local local IPC endpoint | local API socket or named pipe path |
 | `--transport` | `unix-socket` | `unix-socket` or `windows-named-pipe` |
-| `--pid-file` | unset | optional background PID file |
+| `--pid-file` | `<app-data root>/daemon.pid` | owner PID for liveness-based stale-lock reclaim; removed on clean exit |
 | `--log-file` | unset | optional structured log file |
 | `--foreground` | false | run daemon in the current process |
-| `--lock-file` | `$HOME/.riido/.lock` | local singleton advisory lock |
+| `--lock-file` | `<app-data root>/daemon.lock` | host singleton advisory lock (co-located with socket) |
 | `--timeout-seconds` | `5` for stop | graceful stop wait before kill |
 
 `cmd/riido` remains local-only. Health, ready, status, and metrics are exposed
 through local IPC subcommands, not public HTTP.
+
+The socket, lock, and pid file default to the same app-data identity root
+(`~/Library/Application Support/riido/` on macOS) so a manual `riido daemon
+start` and a desktop-launched daemon resolve to the **same** single instance.
+`TryAcquireFile` makes a second start exit cleanly ("already running") instead
+of blocking or hijacking the socket; see
+[locking SSOT §1 — daemon single-instance](../20-domain/locking.md#1-local-file-lock).
 
 ## Change Procedure
 

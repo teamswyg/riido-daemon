@@ -20,6 +20,44 @@ type FileLock struct {
 	path string
 }
 
+// ErrLocked is returned by TryAcquireFile when the lock is currently held by
+// another holder. It is a typed sentinel so callers can distinguish "already
+// held" from a real I/O error.
+var ErrLocked = errors.New("lock: already held")
+
+// TryAcquireFile attempts a single non-blocking acquire. It returns ErrLocked
+// without waiting if the lock is already held. On Unix the underlying flock is
+// released by the kernel when a holding process dies, so ErrLocked means a live
+// holder still owns the lock; a dead holder's lock is acquirable immediately.
+func TryAcquireFile(path string) (*FileLock, error) {
+	if strings.TrimSpace(path) == "" {
+		return nil, errors.New("lock: empty path")
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return nil, fmt.Errorf("lock: create lock directory: %w", err)
+	}
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o644)
+	if err != nil {
+		return nil, fmt.Errorf("lock: open file lock: %w", err)
+	}
+	if err := tryLockFile(file, path); err != nil {
+		_ = file.Close()
+		if isLockBusy(err) {
+			return nil, ErrLocked
+		}
+		return nil, fmt.Errorf("lock: acquire file lock: %w", err)
+	}
+	return &FileLock{file: file, path: path}, nil
+}
+
+// RemoveStaleLock removes a lock artifact left by a holder that died without
+// releasing (e.g. a Windows ".claim" file after a crash). On Unix the flock is
+// already released on process death, so this is a no-op. Only call it after
+// confirming the recorded owner is not alive.
+func RemoveStaleLock(path string) error {
+	return cleanupLockFile(path)
+}
+
 // AcquireFile waits until an exclusive lock can be acquired or ctx is done.
 func AcquireFile(ctx context.Context, path string) (*FileLock, error) {
 	if strings.TrimSpace(path) == "" {

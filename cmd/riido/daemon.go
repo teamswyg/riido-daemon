@@ -201,9 +201,20 @@ func runDaemonStartForeground(ctx context.Context, flags startFlags) error {
 		}
 		flags.lockFile = lockPath
 	}
-	lock, err := c9lock.AcquireFile(ctx, flags.lockFile)
+	if flags.pidFile == "" {
+		pidPath, err := defaultDaemonPidPath()
+		if err != nil {
+			return err
+		}
+		flags.pidFile = pidPath
+	}
+	lock, alreadyRunning, err := acquireDaemonSingleton(flags.lockFile, flags.pidFile)
 	if err != nil {
 		return fmt.Errorf("acquire daemon singleton lock %s: %w", flags.lockFile, err)
+	}
+	if alreadyRunning {
+		fmt.Fprintln(os.Stderr, "riido daemon: another instance is already running; exiting")
+		return nil
 	}
 	defer lock.Release()
 
@@ -213,12 +224,11 @@ func runDaemonStartForeground(ctx context.Context, flags startFlags) error {
 	}
 	defer closeLog()
 
-	if flags.pidFile != "" {
-		if err := os.WriteFile(flags.pidFile, []byte(strconv.Itoa(os.Getpid())), 0o644); err != nil {
-			return fmt.Errorf("write pid file: %w", err)
-		}
-		defer func() { _ = os.Remove(flags.pidFile) }()
+	// Record our PID so a future start can probe liveness for stale-lock reclaim.
+	if err := os.WriteFile(flags.pidFile, []byte(strconv.Itoa(os.Getpid())), 0o644); err != nil {
+		return fmt.Errorf("write pid file: %w", err)
 	}
+	defer func() { _ = os.Remove(flags.pidFile) }()
 
 	logSink.Printf("daemon starting id=%s profile=%s socket=%s pid=%d", settings.DaemonID, settings.Profile, flags.socket, os.Getpid())
 	return serveAgentDaemon(ctx, flags, settings, logSink)
@@ -324,6 +334,13 @@ func openLogSink(logFile string) (logging.Logger, func(), error) {
 // built-in provider adapter, answers status/health, and returns when ctx is
 // canceled or SIGTERM arrives.
 func serveAgentDaemon(ctx context.Context, flags startFlags, settings daemonSettings, log logging.Logger) error {
+	// Anti-hijack (D4): never unlink a socket a live daemon is still serving.
+	// The singleton lock already fast-fails a same-identity duplicate; this guards
+	// the transition window where a differently-pathed daemon shares the socket.
+	if daemonSocketServing(flags.socket) {
+		log.Printf("daemon: another instance is already serving %s; stepping aside", flags.socket)
+		return nil
+	}
 	// Remove a stale socket from a previous run.
 	_ = os.Remove(flags.socket)
 
@@ -364,6 +381,8 @@ func serveAgentDaemon(ctx context.Context, flags startFlags, settings daemonSett
 		PollEvery:           settings.PollEvery,
 		IdlePollEvery:       settings.IdlePollEvery,
 		HeartbeatEvery:      settings.HeartbeatEvery,
+		TextFlushBytes:      settings.TextFlushBytes,
+		TextFlushInterval:   settings.TextFlushInterval,
 		PolicyBundleVersion: settings.PolicyBundle,
 		PolicyBundle:        settings.PolicyBundleDoc,
 		RuntimeTrustTier:    policy.TrustTierHost,
@@ -461,6 +480,8 @@ func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter ag
 		Adapters:            []agentbridge.Adapter{adapter},
 		Process:             processexec.New(),
 		MaxConcurrent:       1,
+		HardTimeout:         settings.RunHardTimeout,
+		SemanticIdle:        settings.RunSemanticIdle,
 		AutoApprove:         daemonToolAutoApprover(settings),
 		ToolStartGate:       daemonToolStartGate(settings),
 		PolicyBundleVersion: settings.PolicyBundle,
@@ -551,14 +572,16 @@ func providerRuntimeID(daemonID string, provider string) string {
 func buildDaemonControlPlane(settings daemonSettings, startedAt time.Time) (controlplane.TaskSourcePort, controlplane.TaskReporterPort, string, error) {
 	if settings.SaaSURL != "" {
 		plane, err := saasplane.New(saasplane.Config{
-			BaseURL:      settings.SaaSURL,
-			DaemonID:     settings.DaemonID,
-			DeviceID:     settings.DeviceID,
-			DeviceSecret: settings.DeviceSecret,
-			Profile:      settings.Profile,
-			AppVersion:   settings.DaemonVersion,
-			PID:          os.Getpid(),
-			StartedAt:    startedAt.UTC(),
+			BaseURL:         settings.SaaSURL,
+			DaemonID:        settings.DaemonID,
+			DeviceID:        settings.DeviceID,
+			DeviceSecret:    settings.DeviceSecret,
+			Profile:         settings.Profile,
+			AppVersion:      settings.DaemonVersion,
+			PID:             os.Getpid(),
+			StartedAt:       startedAt.UTC(),
+			ClaimWaitMs:     settings.ClaimWaitMs,
+			LongPollTimeout: settings.LongPollTimeout,
 		})
 		if err != nil {
 			return nil, nil, "", fmt.Errorf("controlplane: saas source: %w", err)
@@ -840,16 +863,23 @@ func requireSocketFlag(args []string) (string, error) {
 	return defaultAgentDaemonSocket()
 }
 
-func defaultAgentDaemonSocket() (string, error) {
+// defaultDaemonAppDataRoot is the single identity directory the daemon derives
+// its socket, lock, and pid file from, so they always refer to the same daemon
+// instance (no cross-path socket hijack — D4).
+func defaultDaemonAppDataRoot() (hostintegration.AppDataRoot, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return "", err
+		return hostintegration.AppDataRoot{}, err
 	}
-	root, err := hostintegration.DefaultAppDataRoot(hostintegration.AppDataRootInput{
+	return hostintegration.DefaultAppDataRoot(hostintegration.AppDataRootInput{
 		Channel:  hostintegration.DistributionChannelDevLocal,
 		HostOS:   hostintegration.HostOSDarwin,
 		UserHome: home,
 	})
+}
+
+func defaultAgentDaemonSocket() (string, error) {
+	root, err := defaultDaemonAppDataRoot()
 	if err != nil {
 		return "", err
 	}
@@ -866,12 +896,73 @@ func defaultAgentDaemonSocket() (string, error) {
 	return endpoint.Path, nil
 }
 
+// defaultDaemonLockPath co-locates the singleton lock with the socket in the
+// app-data identity root so a manual `riido daemon start` and a desktop-launched
+// daemon resolve to the SAME single-instance lock (machine = one daemon).
 func defaultDaemonLockPath() (string, error) {
-	home, err := os.UserHomeDir()
+	root, err := defaultDaemonAppDataRoot()
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(home, ".riido", ".lock"), nil
+	return filepath.Join(root.Path, "daemon.lock"), nil
+}
+
+func defaultDaemonPidPath() (string, error) {
+	root, err := defaultDaemonAppDataRoot()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(root.Path, "daemon.pid"), nil
+}
+
+// acquireDaemonSingleton tries to become the single daemon instance (D3). It
+// returns the held lock, or (nil, true, nil) when another LIVE daemon already
+// owns the lock ("already running" — the caller exits cleanly rather than
+// blocking as a lock-waiter zombie). A lock left by a provably-dead owner (e.g.
+// a Windows ".claim" file after a crash) is reclaimed and retried once; on Unix
+// flock auto-releases on death so that reclaim path is unreachable.
+func acquireDaemonSingleton(lockPath, pidPath string) (*c9lock.FileLock, bool, error) {
+	lock, err := c9lock.TryAcquireFile(lockPath)
+	if err == nil {
+		return lock, false, nil
+	}
+	if !errors.Is(err, c9lock.ErrLocked) {
+		return nil, false, err
+	}
+	// Reclaim only when the recorded owner is provably dead; never reclaim a lock
+	// whose liveness we cannot determine (conservative — avoids double daemons).
+	if pid, ok := readDaemonPID(pidPath); ok && !daemonPIDProbablyAlive(pid) {
+		_ = c9lock.RemoveStaleLock(lockPath)
+		_ = os.Remove(pidPath)
+		if lock, err = c9lock.TryAcquireFile(lockPath); err == nil {
+			return lock, false, nil
+		}
+	}
+	return nil, true, nil
+}
+
+func readDaemonPID(pidPath string) (int, bool) {
+	data, err := os.ReadFile(pidPath)
+	if err != nil {
+		return 0, false
+	}
+	pid, err := strconv.Atoi(strings.TrimSpace(string(data)))
+	if err != nil || pid <= 0 {
+		return 0, false
+	}
+	return pid, true
+}
+
+// daemonSocketServing reports whether a daemon is actively listening on the unix
+// socket. A successful connect means a live peer owns it, so the socket must not
+// be unlinked (doing so would orphan that daemon — D4).
+func daemonSocketServing(socketPath string) bool {
+	conn, err := net.DialTimeout("unix", socketPath, 500*time.Millisecond)
+	if err != nil {
+		return false
+	}
+	_ = conn.Close()
+	return true
 }
 
 func daemonCall(sock string, method string) error {

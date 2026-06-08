@@ -47,6 +47,13 @@ func daemonLockPath(t *testing.T) string {
 	return filepath.Join(t.TempDir(), "agentd.lock")
 }
 
+// daemonPidPath returns a tempdir pid path so foreground daemon tests never
+// touch the real app-data daemon.pid that a live daemon may own.
+func daemonPidPath(t *testing.T) string {
+	t.Helper()
+	return filepath.Join(t.TempDir(), "agentd.pid")
+}
+
 // dialDaemon waits up to deadline for the daemon's local socket to accept.
 func dialDaemon(t *testing.T, sock string, deadline time.Duration) {
 	t.Helper()
@@ -91,6 +98,7 @@ func runCapturingStdout(t *testing.T, fn func() error) (string, error) {
 func TestDaemonForegroundStartsAndExposesStatus(t *testing.T) {
 	sock := daemonSocketPath(t)
 	lockPath := daemonLockPath(t)
+	pidPath := daemonPidPath(t)
 	t.Setenv(envDaemonID, "daemon-test-1")
 	t.Setenv(envDaemonVersion, "riido-agentd v1.2.3")
 	t.Setenv(envDaemonProfile, "desktop-api.riido.ai")
@@ -111,6 +119,7 @@ func TestDaemonForegroundStartsAndExposesStatus(t *testing.T) {
 			"start", "--foreground",
 			"--socket", sock,
 			"--lock-file", lockPath,
+			"--pid-file", pidPath,
 		})
 	}()
 
@@ -259,6 +268,7 @@ func TestDaemonForegroundStartsAndExposesStatus(t *testing.T) {
 func TestDaemonStartHoldsSingletonLock(t *testing.T) {
 	sock := daemonSocketPath(t)
 	lockPath := daemonLockPath(t)
+	pidPath := daemonPidPath(t)
 	t.Setenv(envTaskQueueDir, "")
 	t.Setenv(envTaskReportDir, "")
 
@@ -270,19 +280,29 @@ func TestDaemonStartHoldsSingletonLock(t *testing.T) {
 			"start", "--foreground",
 			"--socket", sock,
 			"--lock-file", lockPath,
+			"--pid-file", pidPath,
 		})
 	}()
 	dialDaemon(t, sock, 2*time.Second)
 
-	secondCtx, secondCancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	// A second daemon sharing the singleton lock must NOT serve: it detects the
+	// live owner and exits cleanly (no error, no second listener) rather than
+	// blocking as a lock-waiter zombie or hijacking the socket (D3).
+	secondSock := daemonSocketPath(t)
+	secondCtx, secondCancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer secondCancel()
 	err := runDaemonWithContext(secondCtx, []string{
 		"start", "--foreground",
-		"--socket", daemonSocketPath(t),
+		"--socket", secondSock,
 		"--lock-file", lockPath,
+		"--pid-file", pidPath,
 	})
-	if err == nil {
-		t.Fatal("expected second daemon start to fail while singleton lock is held")
+	if err != nil {
+		t.Fatalf("second daemon start should exit cleanly while singleton lock is held, got: %v", err)
+	}
+	if conn, derr := net.Dial("unix", secondSock); derr == nil {
+		_ = conn.Close()
+		t.Fatal("second daemon should not have started a listener while the singleton lock is held")
 	}
 
 	cancel()
@@ -297,12 +317,13 @@ func TestDaemonStartHoldsSingletonLock(t *testing.T) {
 func TestDaemonHealthEndpoint(t *testing.T) {
 	sock := daemonSocketPath(t)
 	lockPath := daemonLockPath(t)
+	pidPath := daemonPidPath(t)
 	t.Setenv(envTaskQueueDir, "")
 	t.Setenv(envTaskReportDir, "")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	go func() {
-		_ = runDaemonWithContext(ctx, []string{"start", "--foreground", "--socket", sock, "--lock-file", lockPath})
+		_ = runDaemonWithContext(ctx, []string{"start", "--foreground", "--socket", sock, "--lock-file", lockPath, "--pid-file", pidPath})
 	}()
 	dialDaemon(t, sock, 2*time.Second)
 
@@ -1051,5 +1072,111 @@ func TestBuildDaemonControlPlaneRejectsReportDirWithoutQueueDir(t *testing.T) {
 	_, _, _, err := buildDaemonControlPlane(daemonSettings{TaskReportDir: t.TempDir()}, time.Time{})
 	if err == nil {
 		t.Fatal("expected error for report dir without queue dir")
+	}
+}
+
+func TestLoadDaemonSettingsRunClockDefaultsAndOverrides(t *testing.T) {
+	home := t.TempDir()
+	load := func(env map[string]string) (daemonSettings, error) {
+		return loadDaemonSettingsFromEnvWithHome(
+			func(k string) string { return env[k] },
+			func() (string, error) { return "host", nil },
+			func() (string, error) { return home, nil },
+		)
+	}
+
+	// Unset -> non-zero policy defaults (so production runs are bounded).
+	def, err := load(map[string]string{})
+	if err != nil {
+		t.Fatalf("defaults: %v", err)
+	}
+	if def.RunHardTimeout != defaultRunHardTimeout || def.RunSemanticIdle != defaultRunSemanticIdle {
+		t.Fatalf("run-clock defaults = %s/%s, want %s/%s", def.RunHardTimeout, def.RunSemanticIdle, defaultRunHardTimeout, defaultRunSemanticIdle)
+	}
+
+	// Explicit positive seconds override.
+	over, err := load(map[string]string{
+		envDaemonRunHardTimeoutSeconds:  "900",
+		envDaemonRunSemanticIdleSeconds: "120",
+	})
+	if err != nil {
+		t.Fatalf("override: %v", err)
+	}
+	if over.RunHardTimeout != 900*time.Second || over.RunSemanticIdle != 120*time.Second {
+		t.Fatalf("run-clock override = %s/%s, want 15m0s/2m0s", over.RunHardTimeout, over.RunSemanticIdle)
+	}
+
+	// Explicit 0 disables the clock (operator escape hatch).
+	dis, err := load(map[string]string{
+		envDaemonRunHardTimeoutSeconds:  "0",
+		envDaemonRunSemanticIdleSeconds: "0",
+	})
+	if err != nil {
+		t.Fatalf("disable: %v", err)
+	}
+	if dis.RunHardTimeout != 0 || dis.RunSemanticIdle != 0 {
+		t.Fatalf("run-clock disable = %s/%s, want 0/0", dis.RunHardTimeout, dis.RunSemanticIdle)
+	}
+
+	// Negative / non-numeric is rejected.
+	if _, err := load(map[string]string{envDaemonRunHardTimeoutSeconds: "-5"}); err == nil {
+		t.Fatal("negative run hard timeout must be rejected")
+	}
+	if _, err := load(map[string]string{envDaemonRunSemanticIdleSeconds: "abc"}); err == nil {
+		t.Fatal("non-numeric run semantic idle must be rejected")
+	}
+}
+
+func TestLoadDaemonSettingsLongPollAndTextFlushKnobs(t *testing.T) {
+	home := t.TempDir()
+	load := func(env map[string]string) (daemonSettings, error) {
+		return loadDaemonSettingsFromEnvWithHome(
+			func(k string) string { return env[k] },
+			func() (string, error) { return "host", nil },
+			func() (string, error) { return home, nil },
+		)
+	}
+
+	def, err := load(map[string]string{})
+	if err != nil {
+		t.Fatalf("defaults: %v", err)
+	}
+	if def.ClaimWaitMs != defaultClaimWaitMs || def.LongPollTimeout != defaultLongPollTimeout {
+		t.Fatalf("long-poll defaults = %d/%s", def.ClaimWaitMs, def.LongPollTimeout)
+	}
+	if def.TextFlushBytes != defaultTextFlushBytes || def.TextFlushInterval != defaultTextFlushInterval {
+		t.Fatalf("text-flush defaults = %d/%s", def.TextFlushBytes, def.TextFlushInterval)
+	}
+
+	over, err := load(map[string]string{
+		envDaemonClaimWaitMs:            "10000",
+		envDaemonLongPollTimeoutSeconds: "45",
+		envDaemonTextFlushBytes:         "512",
+		envDaemonTextFlushMs:            "100",
+	})
+	if err != nil {
+		t.Fatalf("override: %v", err)
+	}
+	if over.ClaimWaitMs != 10000 || over.LongPollTimeout != 45*time.Second {
+		t.Fatalf("long-poll override = %d/%s", over.ClaimWaitMs, over.LongPollTimeout)
+	}
+	if over.TextFlushBytes != 512 || over.TextFlushInterval != 100*time.Millisecond {
+		t.Fatalf("text-flush override = %d/%s", over.TextFlushBytes, over.TextFlushInterval)
+	}
+
+	// Explicit 0 disables long-poll hint and text coalescing.
+	dis, err := load(map[string]string{envDaemonClaimWaitMs: "0", envDaemonTextFlushBytes: "0", envDaemonTextFlushMs: "0"})
+	if err != nil {
+		t.Fatalf("disable: %v", err)
+	}
+	if dis.ClaimWaitMs != 0 || dis.TextFlushBytes != 0 || dis.TextFlushInterval != 0 {
+		t.Fatalf("disable = %d/%d/%s", dis.ClaimWaitMs, dis.TextFlushBytes, dis.TextFlushInterval)
+	}
+
+	if _, err := load(map[string]string{envDaemonTextFlushMs: "-1"}); err == nil {
+		t.Fatal("negative text flush ms must be rejected")
+	}
+	if _, err := load(map[string]string{envDaemonClaimWaitMs: "abc"}); err == nil {
+		t.Fatal("non-numeric claim wait must be rejected")
 	}
 }

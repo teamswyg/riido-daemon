@@ -168,7 +168,8 @@ type Config struct {
 	Process        process.Process
 	MaxConcurrent  int
 	HeartbeatEvery time.Duration // reserved for the supervisor's heartbeat loop
-	HardTimeout    time.Duration // forwarded to each session as its hard timeout
+	HardTimeout    time.Duration // default whole-run upper bound forwarded to each session (TaskRequest.Timeout overrides; zero disables)
+	SemanticIdle   time.Duration // default idle watchdog forwarded to each session (TaskRequest.SemanticIdle overrides; zero disables)
 	MailboxSize    int
 	// AutoApprove is forwarded to each session.
 	AutoApprove agentbridge.AutoApprover
@@ -396,6 +397,9 @@ func (a *Actor) handleSubmit(
 		timeout = a.cfg.HardTimeout
 	}
 	idle := msg.req.SemanticIdle
+	if idle <= 0 {
+		idle = a.cfg.SemanticIdle
+	}
 
 	// Optional ProtocolDriver hook: if the adapter implements the
 	// provider-neutral agentbridge.ProtocolDriverProvider port, ask it

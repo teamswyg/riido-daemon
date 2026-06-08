@@ -251,11 +251,12 @@ func TestNeverMatchesAnything(t *testing.T) {}
 func TestForegroundPathStillWorks(t *testing.T) {
 	sock := daemonSocketPath(t)
 	lockPath := daemonLockPath(t)
+	pidPath := daemonPidPath(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	errCh := make(chan error, 1)
 	go func() {
-		errCh <- runDaemonWithContext(ctx, []string{"start", "--foreground", "--socket", sock, "--lock-file", lockPath})
+		errCh <- runDaemonWithContext(ctx, []string{"start", "--foreground", "--socket", sock, "--lock-file", lockPath, "--pid-file", pidPath})
 	}()
 	if !waitForSocket(sock, 2*time.Second) {
 		t.Fatal("foreground daemon did not bind socket")

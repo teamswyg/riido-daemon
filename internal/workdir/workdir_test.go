@@ -631,3 +631,36 @@ func containsString(values []string, want string) bool {
 	}
 	return false
 }
+
+func TestInjectRendersWorkdirGuidanceWhenSet(t *testing.T) {
+	root := t.TempDir()
+	a := NewFSAdapter(root)
+
+	ws, _ := a.Prepare(TaskID{Workspace: "ws-1", Task: "task-guidance"})
+	if err := a.InjectRuntimeConfig(ws, RuntimeConfig{
+		Provider:        "codex",
+		WorkdirGuidance: "The working directory `/x/workdir` is empty: it has no source repository.",
+		Workflow:        "default",
+	}); err != nil {
+		t.Fatalf("InjectRuntimeConfig: %v", err)
+	}
+	content, err := os.ReadFile(filepath.Join(ws.Workdir, "AGENTS.md"))
+	if err != nil {
+		t.Fatalf("read AGENTS.md: %v", err)
+	}
+	for _, want := range []string{"## Working directory", "no source repository"} {
+		if !strings.Contains(string(content), want) {
+			t.Fatalf("AGENTS.md missing %q:\n%s", want, string(content))
+		}
+	}
+
+	// Absent guidance -> no section.
+	ws2, _ := a.Prepare(TaskID{Workspace: "ws-1", Task: "task-none"})
+	if err := a.InjectRuntimeConfig(ws2, RuntimeConfig{Provider: "codex", Workflow: "default"}); err != nil {
+		t.Fatalf("InjectRuntimeConfig: %v", err)
+	}
+	c2, _ := os.ReadFile(filepath.Join(ws2.Workdir, "AGENTS.md"))
+	if strings.Contains(string(c2), "## Working directory") {
+		t.Fatalf("Working directory section should be absent when guidance is empty:\n%s", string(c2))
+	}
+}

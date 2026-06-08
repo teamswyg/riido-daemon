@@ -810,6 +810,8 @@ type fakeAssignmentServer struct {
 	runtimeSnapshots   []DeviceRuntimeSnapshotSyncRequest
 	events             []assignmentcontract.AgentEventRequest
 	heartbeats         []assignmentcontract.AgentHeartbeatRequest
+	lastPollWaitMs     int
+	pollDelay          time.Duration
 }
 
 func newFakeAssignmentServer(t *testing.T) *fakeAssignmentServer {
@@ -924,6 +926,10 @@ func (f *fakeAssignmentServer) handlePoll(w http.ResponseWriter, r *http.Request
 	if req.DaemonID == "" || req.RuntimeID == "" {
 		http.Error(w, "missing poll identity", http.StatusBadRequest)
 		return
+	}
+	f.lastPollWaitMs = req.WaitMs
+	if f.pollDelay > 0 {
+		time.Sleep(f.pollDelay)
 	}
 	if cancel, ok := f.cancelByAgent[agentID]; ok {
 		delete(f.cancelByAgent, agentID)

@@ -155,6 +155,16 @@ Store channel 에서는 workdir root 와 user workspace root 를 분리한다.
 
 SaaS task source 가 `riido_telemetry_contract` metadata 를 제공하면 supervisor 는 provider 별 prompt placement 와 별개로 native config hard rule 에 `<riido_log>{"code":...,"args":{...}}<end>` progress telemetry contract 를 주입한다. Progress code catalog 와 append-only 정책은 `riido-contracts/progressmessage/catalog.dsl.riido.json` 이 소유하고, workspace/native config 는 해당 rule 을 provider 가 읽는 위치에 투영만 한다. 이 rule 도 `NativeConfigVersion` 입력 파일 해시에 포함되므로, telemetry contract 변경은 run replay 에서 식별 가능해야 한다.
 
+task workdir 에 소스 저장소가 mount 되지 않은 경우(현재는 `MountRepo` 미구현이라
+사실상 항상) workspace 는 native config 에 "Working directory" 가이던스를 주입한다.
+이 가이던스는 workdir 절대경로를 알리고, 에이전트가 **먼저 이 task 가 코드베이스를
+필요로 하는지 판단**하도록 시킨다 — 코딩 작업(코드 읽기/수정/실행/생성)은 필요하고,
+비코딩 작업(답변/계획/문서)은 불필요. 필요하면 빈 디렉터리에서 추측·scaffold 하지
+말고 멈춰서 사용자에게 이 경로에 프로젝트를 두라고 하거나 새로 만들지 물어보고,
+불필요하면 그대로 진행한다. 이 주입은 `workdirHasWorkContent` 가 daemon-injected
+config 외 내용물을 감지하면(=repo mount 후) 자동으로 사라진다. 실제 repo
+mount(worktree / shallow clone, §4)는 후속 작업이며, 그때 이 가이던스는 비활성된다.
+
 SaaS task source 가 agent instruction 값을 제공하는 경우 C6/C4 는 그 값을
 run-scope prompt/native config 입력으로만 소비한다. instruction 의 저장 위치,
 길이 제한, 수정 가능성, RBAC, 그리고 `profile_thumbnail_url` / `description`

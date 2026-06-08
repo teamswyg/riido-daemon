@@ -97,6 +97,12 @@ type RuntimeConfig struct {
 	CLICatalog                 []string // command examples
 	HardRules                  []string // invariants the agent must follow
 	Workflow                   string   // workflow branch label (chat|quick-create|...)
+	// WorkdirGuidance is rendered as a "## Working directory" section. The
+	// supervisor sets it when the task workdir has no source repository, so the
+	// agent first judges whether the task needs a codebase and, if so, asks the
+	// user to bind one instead of working blindly in an empty directory. Empty
+	// when a repository is present.
+	WorkdirGuidance string
 }
 
 // ProviderNativeConfigPlan is the deterministic file plan for one provider's
@@ -879,6 +885,11 @@ func renderRuntimeConfig(cfg RuntimeConfig) string {
 			b.WriteString("\n")
 		}
 		b.WriteString("\n")
+	}
+	if cfg.WorkdirGuidance != "" {
+		b.WriteString("## Working directory\n\n")
+		b.WriteString(cfg.WorkdirGuidance)
+		b.WriteString("\n\n")
 	}
 	workflow := cfg.Workflow
 	if workflow == "" {

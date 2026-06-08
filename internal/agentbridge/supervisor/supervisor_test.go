@@ -266,6 +266,210 @@ func TestSupervisorBacksOffPollingWhenIdle(t *testing.T) {
 	}
 }
 
+func drainTextDelta(t *testing.T, mailbox <-chan envelope, d time.Duration) string {
+	t.Helper()
+	select {
+	case msg := <-mailbox:
+		if msg.taskEvent == nil || msg.taskEvent.event.Kind != agentbridge.EventTextDelta {
+			t.Fatalf("want a text-delta task event, got %+v", msg)
+		}
+		return msg.taskEvent.event.Text
+	case <-time.After(d):
+		t.Fatal("timed out waiting for a coalesced text delta")
+		return ""
+	}
+}
+
+// The per-task forwarder coalesces token-level text deltas into fewer, larger
+// chunks: by the max-interval timer when under the size threshold, by size, by a
+// boundary (non-text) event, and on terminal.
+func TestForwardSessionCoalescesTextDeltas(t *testing.T) {
+	a := &Actor{
+		cfg:       Config{TextFlushBytes: 1000, TextFlushInterval: 40 * time.Millisecond},
+		mailbox:   make(chan envelope, 32),
+		stoppedCh: make(chan struct{}),
+	}
+	events := make(chan agentbridge.Event, 16)
+	results := make(chan agentbridge.Result, 1)
+	go a.forwardSession("t-1", events, results)
+
+	// Three small deltas (under the 1000B size threshold) coalesce into one,
+	// flushed by the 40ms max-interval timer.
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "Hel"}
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "lo, "}
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "world"}
+	if got := drainTextDelta(t, a.mailbox, time.Second); got != "Hello, world" {
+		t.Fatalf("coalesced text = %q, want %q", got, "Hello, world")
+	}
+
+	// A non-text event flushes buffered text first (ordering), then forwards.
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "more"}
+	events <- agentbridge.Event{Kind: agentbridge.EventProgress, Text: "status"}
+	if got := drainTextDelta(t, a.mailbox, time.Second); got != "more" {
+		t.Fatalf("flush-before-nontext = %q, want %q", got, "more")
+	}
+	if msg := <-a.mailbox; msg.taskEvent == nil || msg.taskEvent.event.Kind != agentbridge.EventProgress {
+		t.Fatalf("want progress event after flush, got %+v", msg)
+	}
+
+	// Terminal: remaining buffered text is flushed before the result.
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "tail"}
+	close(events)
+	results <- agentbridge.Result{Status: agentbridge.ResultCompleted}
+	if got := drainTextDelta(t, a.mailbox, time.Second); got != "tail" {
+		t.Fatalf("terminal flush = %q, want %q", got, "tail")
+	}
+	if final := <-a.mailbox; final.taskResult == nil || final.taskResult.result.Status != agentbridge.ResultCompleted {
+		t.Fatalf("want completed result, got %+v", final)
+	}
+}
+
+// A byte threshold flushes mid-stream without waiting for the timer.
+func TestForwardSessionFlushesOnSizeThreshold(t *testing.T) {
+	a := &Actor{
+		cfg:       Config{TextFlushBytes: 5, TextFlushInterval: time.Hour},
+		mailbox:   make(chan envelope, 16),
+		stoppedCh: make(chan struct{}),
+	}
+	events := make(chan agentbridge.Event, 8)
+	results := make(chan agentbridge.Result, 1)
+	go a.forwardSession("t-size", events, results)
+
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "abc"}
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "defg"} // 3+4=7 >= 5
+	if got := drainTextDelta(t, a.mailbox, time.Second); got != "abcdefg" {
+		t.Fatalf("size-flushed text = %q, want %q", got, "abcdefg")
+	}
+	close(events)
+	results <- agentbridge.Result{Status: agentbridge.ResultCompleted}
+}
+
+// With coalescing disabled (both knobs zero) each delta is forwarded as-is.
+func TestForwardSessionPassthroughWhenDisabled(t *testing.T) {
+	a := &Actor{
+		cfg:       Config{},
+		mailbox:   make(chan envelope, 8),
+		stoppedCh: make(chan struct{}),
+	}
+	events := make(chan agentbridge.Event, 8)
+	results := make(chan agentbridge.Result, 1)
+	go a.forwardSession("t-off", events, results)
+
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "a"}
+	events <- agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "b"}
+	if got := drainTextDelta(t, a.mailbox, time.Second); got != "a" {
+		t.Fatalf("passthrough delta 1 = %q, want a", got)
+	}
+	if got := drainTextDelta(t, a.mailbox, time.Second); got != "b" {
+		t.Fatalf("passthrough delta 2 = %q, want b", got)
+	}
+	close(events)
+	results <- agentbridge.Result{Status: agentbridge.ResultCompleted}
+}
+
+func TestWorkdirHasWorkContent(t *testing.T) {
+	dir := t.TempDir()
+	if workdirHasWorkContent(dir) {
+		t.Fatal("empty workdir should have no work content")
+	}
+	// Only daemon-injected config -> still no work content.
+	if err := os.WriteFile(filepath.Join(dir, "AGENTS.md"), []byte("x"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(filepath.Join(dir, ".riido"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if workdirHasWorkContent(dir) {
+		t.Fatal("config-only workdir should have no work content")
+	}
+	// A real source file -> has work content (e.g. a mounted repo).
+	if err := os.WriteFile(filepath.Join(dir, "main.go"), []byte("package main"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if !workdirHasWorkContent(dir) {
+		t.Fatal("workdir with a source file should have work content")
+	}
+}
+
+func TestNoRepoWorkdirGuidance(t *testing.T) {
+	g := noRepoWorkdirGuidance("/tmp/ws/runs/asn-1/workdir")
+	for _, want := range []string{
+		"/tmp/ws/runs/asn-1/workdir",
+		"no source repository",
+		"needs a codebase",
+		"create a new one",
+	} {
+		if !strings.Contains(g, want) {
+			t.Fatalf("guidance missing %q:\n%s", want, g)
+		}
+	}
+}
+
+// holdClaimSource blocks ClaimTask (like a long-poll holding the connection)
+// until released, and signals every heartbeat.
+type holdClaimSource struct {
+	heartbeats chan struct{}
+	release    chan struct{}
+}
+
+func (s *holdClaimSource) RegisterRuntime(context.Context, controlplane.RuntimeRegistration) error {
+	return nil
+}
+func (s *holdClaimSource) DeregisterRuntime(context.Context, string) error { return nil }
+func (s *holdClaimSource) Heartbeat(context.Context, controlplane.RuntimeHeartbeat) error {
+	select {
+	case s.heartbeats <- struct{}{}:
+	default:
+	}
+	return nil
+}
+func (s *holdClaimSource) ClaimTask(ctx context.Context, _ string) (*bridge.TaskRequest, error) {
+	select {
+	case <-s.release:
+	case <-ctx.Done():
+	}
+	return nil, nil
+}
+func (s *holdClaimSource) WatchCancellation(context.Context, string) (<-chan error, error) {
+	return make(chan error), nil
+}
+
+// A held claim poll runs on its own goroutine, so the heartbeat loop (which
+// keeps assignment leases alive) must keep firing while ClaimTask blocks.
+func TestSupervisorHeartbeatNotStarvedByHeldClaim(t *testing.T) {
+	source := &holdClaimSource{heartbeats: make(chan struct{}, 16), release: make(chan struct{})}
+	defer close(source.release)
+	rt := startRuntime(t, process.NewFake())
+	actor, err := New(Config{
+		DaemonID:       "daemon-hold",
+		Runtime:        rt,
+		Source:         source,
+		Reporter:       newReporterProbe(),
+		PollEvery:      10 * time.Millisecond,
+		HeartbeatEvery: 30 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := actor.Start(context.Background()); err != nil {
+		t.Fatalf("supervisor Start: %v", err)
+	}
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		_ = actor.Stop(ctx)
+	})
+
+	// ClaimTask is parked; heartbeats must still fire repeatedly.
+	for i := 0; i < 3; i++ {
+		select {
+		case <-source.heartbeats:
+		case <-time.After(time.Second):
+			t.Fatalf("heartbeat %d did not fire while a claim was held", i)
+		}
+	}
+}
+
 func TestSupervisorClaimsTaskAndReportsResult(t *testing.T) {
 	source := controlplane.NewMemorySource()
 	source.Enqueue(bridge.TaskRequest{

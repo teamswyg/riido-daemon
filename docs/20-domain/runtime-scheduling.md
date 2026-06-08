@@ -161,6 +161,46 @@ daemon 은 그 server-side stale/cancel 판정을 인정하고 local provider ru
 cause 를 전달한다. progress/result report 는 `/v1/agents/{agent_id}/events` 로
 전송한다.
 
+### Long-poll claim (daemon side)
+
+claim 은 supervisor run goroutine 이 아니라 **runtime 별 claim goroutine** 에서
+수행한다. blocking `Source.ClaimTask` (SaaS source 에서는 long-poll 로 연결을
+유지) 가 그 goroutine 안에 있으므로, 한 runtime 의 held poll 이 heartbeat
+loop(lease keep-alive) 를 굶기거나 다른 runtime 의 claim 을 지연시키지 않는다.
+각 runtime 은 buffered(cap 1) capacity token 으로 보호된다: claim goroutine 은
+token 을 들고 fetch 하다가 task 를 받으면 token 소유권을 in-flight task 로 넘기고,
+run goroutine 이 task terminal 시 token 을 돌려준다(`MaxConcurrent: 1` 의미 유지).
+
+`saasplane` 은 poll 요청에 `PollRequest.wait_ms`(env `RIIDO_DAEMON_CLAIM_WAIT_MS`,
+기본 20000ms, `0` 이면 비활성) 를 실어 보내고, 그 poll 만 별도의
+`RIIDO_DAEMON_LONGPOLL_TIMEOUT_SECONDS`(기본 30s, 서버 hold budget 보다 커야 함)
+로 bound 한다. heartbeat/events 등 다른 요청은 짧은 `RequestTimeout`(기본 5s) 을
+유지해 실패 감지를 느슨하게 만들지 않는다. client 전역 `http.Client.Timeout` 은
+설정하지 않는다(held poll 을 자르지 않도록); 모든 요청은 per-call context 로
+bound 된다.
+
+nil claim 이 long-poll hold(임계값 1s 이상) 뒤에 오면 즉시 re-poll 하고, 그보다
+빠르게 오면(legacy short-poll, 일감 없음, 또는 wait_ms 를 무시하는 구 control
+plane 의 즉시 `action=none`) `IdlePollEvery` 만큼 backoff 한다. 즉 long-poll 은
+순수한 최적화이며, 미지원 서버에서는 hot-spin 없이 interval polling 으로 자연히
+degrade 한다. 이 wait_ms 계약과 server-side hold semantics 의 SSOT 는
+`riido-contracts/docs/20-domain/assignment-polling.md` 와
+`riido-control-plane/docs/20-domain/saas-control-plane.md` 가 소유한다.
+
+### 스트리밍 텍스트 coalescing (보고 측)
+
+provider 의 token 단위 `EventTextDelta` 를 토큰마다 보고하면 보고 폭주(요청 storm)와
+글자 단위 UI 단편화가 생긴다. 그래서 supervisor 의 per-task forwarder
+(`forwardSession`)가 텍스트 delta 를 task 별로 버퍼링해 더 적고 큰 청크로 합쳐
+보고한다. flush 조건은 (1) 크기(`RIIDO_DAEMON_TEXT_FLUSH_BYTES`, 기본 256B 이상),
+(2) max-interval 타이머(`RIIDO_DAEMON_TEXT_FLUSH_MS`, 기본 200ms — 첫 버퍼링 토큰
+이후 경과 시점, debounce-reset 아님), (3) **비텍스트 이벤트 직전**(tool 콜/progress/
+result 와의 순서 보존), (4) **종료** 다. 두 env 모두 `0` 이면 coalescing off(토큰별
+보고). 버퍼는 provider 의 token cadence 와 네트워크 보고를 분리하므로 read 루프가
+보고에 블록되지 않는다. structured progress(`<riido_log>` 에서 파생된
+`EventProgress`)는 비텍스트로 취급돼 버퍼를 flush 시키고 별도로 보고되어, 스트리밍
+답변 텍스트와 상태가 섞이지 않는다.
+
 SaaS assignment FSM 은 `ready -> running -> terminal` 순서를 요구한다. Provider
 adapter 가 별도 running lifecycle event 를 내지 않더라도 supervisor 는 provider
 process submit 이 성공한 직후 `assignment_running` report 를 보장해야 한다. Terminal

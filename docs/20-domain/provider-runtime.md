@@ -582,6 +582,42 @@ actor kills the provider process. If a provider reports its own timeout/error,
 that raw observation is still translated as a provider event, but Riido's
 provider-run timeout decision remains the C4 session actor decision.
 
+### 5.7 Daemon run-clock defaults are mandatory
+
+The §5.5 / §5.6 run clocks only bound a run when they are armed
+(`session.Config.HardTimeout > 0` / `SemanticIdle > 0`). The daemon must
+therefore supply non-zero **default** clock values to every runtime actor;
+otherwise a hung provider CLI runs forever and the only backstop is the
+control-plane assignment lease, which surfaces an opaque
+`active assignment lease expired` failure that hides what the provider was
+actually doing.
+
+The rule:
+
+- The daemon configures each runtime actor with a default whole-run
+  `HardTimeout` and a default idle `SemanticIdle`
+  (`runtimeactor.Config.HardTimeout` / `runtimeactor.Config.SemanticIdle`,
+  wired in `cmd/riido/daemon.go` `newDaemonRuntimeActor`). These defaults are
+  the fallback applied when a `TaskRequest` does not carry its own
+  `Timeout` / `SemanticIdle`; a per-task value always wins.
+- Production defaults are **30m hard timeout** and **10m semantic idle**.
+  They are intentionally generous so a legitimate long agentic run is not
+  killed, while a genuinely stuck run (no semantic-progress event at all) is
+  reclaimed. Operators override with
+  `RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS` /
+  `RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS`; an explicit `0` disables that
+  clock. See [`../30-architecture/config-reference.md`](../30-architecture/config-reference.md).
+- The C4 run clock is the **authoritative** provider-run-duration decision.
+  The control-plane active-assignment lease (refreshed by the daemon
+  heartbeat) is a *liveness* mechanism, not a run-duration policy: while the
+  daemon is alive and heartbeating a running task the lease is held, so it can
+  never bound a hung-but-heartbeating run. The daemon clock fires first and
+  reports a classified terminal result — `CompleteTask` maps `ResultTimeout`
+  to `EventAssignmentFailed` with a message that names the clock and its
+  configured duration (e.g. `run hard timeout exceeded (30m0s)` /
+  `no provider progress for 10m0s (semantic idle timeout)`) — rather than
+  leaving the run to expire as a generic lease failure.
+
 ## 6. raw → draft 변환 규칙 (어댑터 ACL)
 
 본 문서가 강제하는 변환 규칙:

@@ -12,6 +12,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -74,9 +76,18 @@ type Config struct {
 	Reporter controlplane.TaskReporterPort
 	Workdir  workdir.Adapter
 
-	PollEvery           time.Duration
-	IdlePollEvery       time.Duration
-	HeartbeatEvery      time.Duration
+	PollEvery      time.Duration
+	IdlePollEvery  time.Duration
+	HeartbeatEvery time.Duration
+	// TextFlushBytes / TextFlushInterval coalesce streamed assistant text
+	// (EventTextDelta) per task before it is reported, so provider token-level
+	// deltas are sent as fewer, larger chunks instead of one report per token.
+	// The per-task forwarder flushes the buffer on size (>= TextFlushBytes), on a
+	// max-interval timer (TextFlushInterval after the first buffered token), on
+	// any non-text event (to preserve ordering), and on terminal. Both zero
+	// disables coalescing (each delta is forwarded as-is).
+	TextFlushBytes      int
+	TextFlushInterval   time.Duration
 	MailboxSize         int
 	PolicyBundleVersion string
 	PolicyBundle        policy.PolicyBundle
@@ -96,6 +107,19 @@ type envelope struct {
 	taskEvent  *taskEventMsg
 	taskResult *taskResultMsg
 	cancel     *cancelMsg
+	claimed    *claimedMsg
+}
+
+// claimedMsg hands a task fetched by a per-runtime claim goroutine to the run
+// goroutine, which owns inFlight and starts the session. freeCh is the runtime's
+// capacity token channel: the run goroutine returns a token to it once the
+// runtime is free again (the task reached a terminal result, or no session was
+// started), so the claim goroutine may fetch the next assignment.
+type claimedMsg struct {
+	rt     *runtimeactor.Actor
+	status runtimeactor.Status
+	req    *bridge.TaskRequest
+	freeCh chan struct{}
 }
 
 type taskEventMsg struct {
@@ -118,6 +142,9 @@ type runningTask struct {
 	report  controlplane.TaskReportContext
 	runtime *runtimeactor.Actor
 	handle  *runtimeactor.SessionHandle
+	// freeCh is the claim goroutine capacity token for this task's runtime; the
+	// run goroutine returns a token here when the task terminates.
+	freeCh chan struct{}
 
 	workspace *workdir.Workspace
 	events    *workspaceEventContext
@@ -290,30 +317,39 @@ func statusProvider(status runtimeactor.Status) string {
 
 func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	defer close(a.stoppedCh)
-	poll := time.NewTimer(a.cfg.PollEvery)
-	defer stopTimer(poll)
 	heartbeat := time.NewTicker(a.cfg.HeartbeatEvery)
 	defer heartbeat.Stop()
 
 	inFlight := map[string]*runningTask{}
 	var stopErr error
 
+	// Each runtime claims independently on its own goroutine. The blocking
+	// Source.ClaimTask (which long-polls under the SaaS source) lives there, not
+	// on this run goroutine, so a held poll on one runtime never starves the
+	// heartbeat loop (lease keep-alive) or delays another runtime's discovery.
+	// claimCtx is cancelled before shutdown so any held request aborts promptly.
+	claimCtx, cancelClaims := context.WithCancel(ctx)
+	defer cancelClaims()
+	for _, rt := range runtimes {
+		freeCh := make(chan struct{}, 1)
+		freeCh <- struct{}{} // seed one capacity token; the runtime starts free
+		go a.claimLoop(claimCtx, rt, freeCh)
+	}
+
 	for {
 		select {
 		case <-ctx.Done():
 			stopErr = ctx.Err()
+			cancelClaims()
 			a.shutdown(context.Background(), runtimes, inFlight)
 			a.stopErrCh <- stopErr
 			return
 
 		case <-a.stopReqCh:
+			cancelClaims()
 			a.shutdown(context.Background(), runtimes, inFlight)
 			a.stopErrCh <- nil
 			return
-
-		case <-poll.C:
-			claimed := a.claimAvailable(ctx, runtimes, inFlight)
-			resetTimer(poll, a.nextPollInterval(claimed, len(inFlight)))
 
 		case <-heartbeat.C:
 			for _, rt := range runtimes {
@@ -333,6 +369,13 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 
 		case msg := <-a.mailbox:
 			switch {
+			case msg.claimed != nil:
+				if !a.startClaimedTask(ctx, msg.claimed, inFlight) {
+					// No long-running session started, so the runtime is free
+					// again: return its capacity token so the claim goroutine
+					// fetches the next assignment.
+					returnClaimToken(msg.claimed.freeCh)
+				}
 			case msg.taskEvent != nil:
 				reportCtx := ctx
 				if task := inFlight[msg.taskEvent.taskID]; task != nil {
@@ -350,7 +393,10 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 				}
 				_ = a.cfg.Reporter.CompleteTask(reportCtx, msg.taskResult.taskID, res)
 				delete(inFlight, msg.taskResult.taskID)
-				resetTimer(poll, a.cfg.PollEvery)
+				if running != nil {
+					// The runtime is free again; let its claim goroutine resume.
+					returnClaimToken(running.freeCh)
+				}
 			case msg.cancel != nil:
 				if inFlight[msg.cancel.taskID] != nil {
 					reason := "cancelled"
@@ -364,51 +410,118 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	}
 }
 
-func stopTimer(t *time.Timer) {
-	if !t.Stop() {
+// claimHeldThreshold separates a long-poll hold from a fast (legacy short-poll
+// or work-already-present) return. A nil claim that returned faster than this
+// means the source did not hold the request, so the claim goroutine paces the
+// next fetch by IdlePollEvery instead of re-polling immediately. This keeps the
+// loop from busy-spinning against a non-long-poll source or an old control
+// plane that ignores wait_ms and returns action=none immediately.
+const claimHeldThreshold = time.Second
+const claimObservationLogEvery = time.Minute
+
+// claimLoop runs one per runtime. It owns the blocking Source.ClaimTask call and
+// hands fetched tasks to the run goroutine via the mailbox. A buffered (cap 1)
+// freeCh is the runtime's capacity token: the loop holds it while fetching and
+// transfers ownership to the in-flight task on hand-off; the run goroutine
+// returns a token once the runtime is free again.
+func (a *Actor) claimLoop(ctx context.Context, rt *runtimeactor.Actor, freeCh chan struct{}) {
+	var lastClaimErrorLog time.Time
+	for {
+		// Acquire the runtime's capacity token (blocks until it is free).
 		select {
-		case <-t.C:
-		default:
+		case <-ctx.Done():
+			return
+		case <-freeCh:
+		}
+		// Hold the token and fetch until we obtain a task or shut down. A nil
+		// result leaves the runtime free, so we keep the token and pace.
+		for {
+			status, err := rt.Status(ctx)
+			if err != nil {
+				if !a.sleepOrDone(ctx, a.cfg.IdlePollEvery) {
+					return
+				}
+				continue
+			}
+			start := time.Now()
+			req, err := a.cfg.Source.ClaimTask(ctx, status.RuntimeID)
+			elapsed := time.Since(start)
+			if ctx.Err() != nil {
+				return
+			}
+			if err != nil || req == nil || req.ID == "" {
+				if err != nil && shouldLogClaimObservation(&lastClaimErrorLog, time.Now()) {
+					log.Printf("supervisor claim error runtime_id=%s elapsed_ms=%d err=%v", status.RuntimeID, elapsed.Milliseconds(), err)
+				}
+				if elapsed < claimHeldThreshold {
+					if !a.sleepOrDone(ctx, a.cfg.IdlePollEvery) {
+						return
+					}
+				}
+				continue
+			}
+			// Got a task. Hand it to the run goroutine; the capacity token is now
+			// owned by the in-flight task and returned by the run goroutine when
+			// the task terminates.
+			select {
+			case a.mailbox <- envelope{claimed: &claimedMsg{rt: rt, status: status, req: req, freeCh: freeCh}}:
+			case <-ctx.Done():
+				return
+			}
+			break
 		}
 	}
 }
 
-func resetTimer(t *time.Timer, d time.Duration) {
-	stopTimer(t)
-	t.Reset(d)
-}
-
-func (a *Actor) nextPollInterval(claimed bool, inFlightCount int) time.Duration {
-	if claimed || inFlightCount > 0 {
-		return a.cfg.PollEvery
+func shouldLogClaimObservation(last *time.Time, now time.Time) bool {
+	if last == nil {
+		return true
 	}
-	return a.cfg.IdlePollEvery
-}
-
-func (a *Actor) claimAvailable(ctx context.Context, runtimes []*runtimeactor.Actor, inFlight map[string]*runningTask) bool {
-	claimed := false
-	for _, rt := range runtimes {
-		status, err := rt.Status(ctx)
-		if err != nil {
-			continue
-		}
-		if a.claimOne(ctx, rt, status, inFlight) {
-			claimed = true
-		}
-	}
-	return claimed
-}
-
-func (a *Actor) claimOne(ctx context.Context, rt *runtimeactor.Actor, status runtimeactor.Status, inFlight map[string]*runningTask) bool {
-	req, err := a.cfg.Source.ClaimTask(ctx, status.RuntimeID)
-	if err != nil || req == nil {
+	if !last.IsZero() && now.Sub(*last) < claimObservationLogEvery {
 		return false
 	}
-	if req.ID == "" {
+	*last = now
+	return true
+}
+
+// sleepOrDone waits for d or until ctx ends. It returns false when ctx ended.
+func (a *Actor) sleepOrDone(ctx context.Context, d time.Duration) bool {
+	if d <= 0 {
+		return ctx.Err() == nil
+	}
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case <-t.C:
+		return true
+	case <-ctx.Done():
 		return false
 	}
+}
+
+func returnClaimToken(freeCh chan struct{}) {
+	if freeCh == nil {
+		return
+	}
+	select {
+	case freeCh <- struct{}{}:
+	default:
+	}
+}
+
+// startClaimedTask runs on the run goroutine. It returns true when the runtime
+// is now busy (a session started, or the task was already in flight), and false
+// when the task reached a terminal result without a session — in which case the
+// caller returns the runtime's capacity token.
+func (a *Actor) startClaimedTask(ctx context.Context, msg *claimedMsg, inFlight map[string]*runningTask) bool {
+	rt := msg.rt
+	status := msg.status
+	req := msg.req
 	if _, dup := inFlight[req.ID]; dup {
-		return false
+		// Already running on this runtime; keep the token out (it returns when
+		// the in-flight task terminates). With the per-runtime free-gate this is
+		// defensive and should not occur.
+		return true
 	}
 	report := reportContextFor(req)
 	reportCtx := controlplane.ContextWithTaskReport(ctx, report)
@@ -420,7 +533,7 @@ func (a *Actor) claimOne(ctx context.Context, rt *runtimeactor.Actor, status run
 			Status: agentbridge.ResultBlocked,
 			Error:  "supervisor: runtime ineligible: " + eligibility.Summary(),
 		})
-		return true
+		return false
 	}
 	prepared, err := a.prepareWorkspace(ctx, status, req)
 	if err != nil {
@@ -428,7 +541,7 @@ func (a *Actor) claimOne(ctx context.Context, rt *runtimeactor.Actor, status run
 			Status: agentbridge.ResultFailed,
 			Error:  err.Error(),
 		})
-		return true
+		return false
 	}
 	handle, err := rt.Submit(ctx, *req)
 	if err != nil {
@@ -446,7 +559,7 @@ func (a *Actor) claimOne(ctx context.Context, rt *runtimeactor.Actor, status run
 			}, res)
 		}
 		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, res)
-		return true
+		return false
 	}
 	_ = a.cfg.Reporter.ReportEvent(reportCtx, req.ID, agentbridge.Event{
 		Kind:  agentbridge.EventLifecycle,
@@ -458,7 +571,7 @@ func (a *Actor) claimOne(ctx context.Context, rt *runtimeactor.Actor, status run
 		ws = prepared.workspace
 		events = prepared.events
 	}
-	inFlight[req.ID] = &runningTask{taskID: req.ID, report: report, runtime: rt, handle: handle, workspace: ws, events: events}
+	inFlight[req.ID] = &runningTask{taskID: req.ID, report: report, runtime: rt, handle: handle, freeCh: msg.freeCh, workspace: ws, events: events}
 
 	go a.forwardSession(req.ID, handle.Events(), handle.Result())
 	go a.forwardCancellation(ctx, req.ID)
@@ -590,6 +703,14 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 	if err != nil {
 		return nil, err
 	}
+	// When no source repository is mounted into the task workdir, tell the agent
+	// to first judge whether the task needs a codebase and, if so, ask the user
+	// to bind one instead of working blindly in an empty directory (F3 first
+	// step). This disappears automatically once a repo is mounted.
+	workdirGuidance := ""
+	if !workdirHasWorkContent(ws.Workdir) {
+		workdirGuidance = noRepoWorkdirGuidance(ws.Workdir)
+	}
 	if err := a.cfg.Workdir.InjectRuntimeConfig(ws, workdir.RuntimeConfig{
 		Provider:                   string(req.Provider),
 		ProtocolKind:               capView.ProtocolKind,
@@ -599,6 +720,7 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		Identity:                   runtimeIdentity(req.Metadata),
 		HardRules:                  runtimeHardRules(req.Metadata),
 		Workflow:                   req.Metadata[MetadataWorkflow],
+		WorkdirGuidance:            workdirGuidance,
 	}); err != nil {
 		return nil, err
 	}
@@ -977,21 +1099,145 @@ func runtimeHardRules(meta map[string]string) []string {
 	return agentbridge.TelemetryNativeConfigHardRules()
 }
 
+// workdirInjectedNames are the files/dirs the daemon itself writes into a task
+// workdir; they do not count as user/repo work content.
+var workdirInjectedNames = map[string]struct{}{
+	"AGENTS.md":     {},
+	"CLAUDE.md":     {},
+	".riido":        {},
+	".gc_meta.json": {},
+}
+
+// workdirHasWorkContent reports whether the workdir holds anything beyond the
+// daemon-injected runtime config — i.e. a mounted source repository. It is
+// read at prepare time; with no repo-binding step yet it is effectively always
+// empty, but the check makes the no-repo guidance disappear automatically once
+// a repo is mounted into the workdir.
+func workdirHasWorkContent(dir string) bool {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return false
+	}
+	for _, e := range entries {
+		if _, injected := workdirInjectedNames[e.Name()]; injected {
+			continue
+		}
+		return true
+	}
+	return false
+}
+
+// noRepoWorkdirGuidance is injected into the runtime config when the workdir has
+// no source repository. It makes the agent judge whether the task needs a
+// codebase and, if so, ask the user to bind one rather than work blindly.
+func noRepoWorkdirGuidance(workdir string) string {
+	return strings.Join([]string{
+		"The working directory `" + workdir + "` is empty: it has no source repository, only this runtime config.",
+		"First decide whether this task needs a codebase — a coding task (reading, editing, running, or creating code) needs one; a non-coding task (answering, planning, writing docs) does not.",
+		"- If it needs a codebase: do not guess or scaffold in this empty directory. Stop and tell the user that no project is connected at this path, then ask them to place their project folder here — or offer to create a new one for them — before continuing.",
+		"- If it does not need a codebase: continue normally.",
+	}, "\n")
+}
+
 func (a *Actor) forwardSession(taskID string, events <-chan agentbridge.Event, results <-chan agentbridge.Result) {
-	for ev := range events {
+	coalesce := a.cfg.TextFlushBytes > 0 || a.cfg.TextFlushInterval > 0
+
+	var buf strings.Builder
+	var flushTimer *time.Timer
+	var flushC <-chan time.Time
+
+	disarm := func() {
+		if flushTimer != nil {
+			if !flushTimer.Stop() {
+				select {
+				case <-flushTimer.C:
+				default:
+				}
+			}
+		}
+		flushC = nil
+	}
+	// arm starts the max-interval timer once, when the buffer first gains content,
+	// so a continuous fast stream still flushes every TextFlushInterval rather
+	// than being held until the stream pauses (which a debounce-reset would do).
+	arm := func() {
+		if a.cfg.TextFlushInterval <= 0 {
+			return
+		}
+		if flushTimer == nil {
+			flushTimer = time.NewTimer(a.cfg.TextFlushInterval)
+		} else {
+			flushTimer.Reset(a.cfg.TextFlushInterval)
+		}
+		flushC = flushTimer.C
+	}
+	forward := func(ev agentbridge.Event) bool {
 		select {
 		case a.mailbox <- envelope{taskEvent: &taskEventMsg{taskID: taskID, event: ev}}:
+			return true
+		case <-a.stoppedCh:
+			return false
+		}
+	}
+	flush := func() bool {
+		disarm()
+		if buf.Len() == 0 {
+			return true
+		}
+		text := buf.String()
+		buf.Reset()
+		return forward(agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: text})
+	}
+
+	for {
+		select {
+		case ev, ok := <-events:
+			if !ok {
+				// Provider event stream closed: flush any buffered text (terminal
+				// ordering), then deliver the run result.
+				if !flush() {
+					return
+				}
+				res, rok := <-results
+				if !rok {
+					return
+				}
+				select {
+				case a.mailbox <- envelope{taskResult: &taskResultMsg{taskID: taskID, result: res}}:
+				case <-a.stoppedCh:
+				}
+				return
+			}
+			if coalesce && ev.Kind == agentbridge.EventTextDelta {
+				if ev.Text == "" {
+					continue
+				}
+				wasEmpty := buf.Len() == 0
+				buf.WriteString(ev.Text)
+				if a.cfg.TextFlushBytes > 0 && buf.Len() >= a.cfg.TextFlushBytes {
+					if !flush() {
+						return
+					}
+				} else if wasEmpty {
+					arm()
+				}
+				continue
+			}
+			// Non-text event: flush buffered text first so ordering with tool
+			// calls / progress / results is preserved, then forward the event.
+			if !flush() {
+				return
+			}
+			if !forward(ev) {
+				return
+			}
+		case <-flushC:
+			if !flush() {
+				return
+			}
 		case <-a.stoppedCh:
 			return
 		}
-	}
-	res, ok := <-results
-	if !ok {
-		return
-	}
-	select {
-	case a.mailbox <- envelope{taskResult: &taskResultMsg{taskID: taskID, result: res}}:
-	case <-a.stoppedCh:
 	}
 }
 

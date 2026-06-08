@@ -804,3 +804,65 @@ func TestRuntimeActorTaskStatusIncluded(t *testing.T) {
 	}
 	_ = strconv.Itoa // satisfy import if unused
 }
+
+// --- Config run-clock defaults reach the session ---
+
+// A SemanticIdle configured on the actor (not the TaskRequest) must be
+// forwarded to the session so a provider that makes no semantic progress is
+// terminated as ResultTimeout instead of running forever. This is the C4
+// run-clock default wiring fixed for the SaaS daemon path (R3/F2); without it
+// the daemon submitted every assignment with idle=0 (disabled).
+func TestRuntimeActorAppliesConfigSemanticIdleTimeout(t *testing.T) {
+	a, p := startActor(t, Config{
+		Adapters: []agentbridge.Adapter{
+			&stubAdapter{name: "fake", detected: agentbridge.DetectResult{Available: true}},
+		},
+		MaxConcurrent: 1,
+		SemanticIdle:  40 * time.Millisecond,
+	})
+	h, err := a.Submit(context.Background(), bridge.TaskRequest{ID: "t-idle", Provider: "fake", Prompt: "hi"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = waitForRunning(t, p, 0, time.Second)
+
+	// Emit nothing: no semantic-progress event arrives, so the actor-config
+	// SemanticIdle must fire and terminate the run.
+	select {
+	case res := <-h.Result():
+		if res.Status != agentbridge.ResultTimeout {
+			t.Fatalf("status = %s, want %s", res.Status, agentbridge.ResultTimeout)
+		}
+		if !strings.Contains(res.Error, "semantic idle timeout") {
+			t.Fatalf("error = %q, want it to name the semantic idle clock", res.Error)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("no result; actor-config SemanticIdle did not reach the session")
+	}
+}
+
+// A TaskRequest.SemanticIdle must take precedence over the actor-config
+// default (the actor default is only a fallback).
+func TestRuntimeActorTaskRequestSemanticIdleOverridesConfig(t *testing.T) {
+	a, p := startActor(t, Config{
+		Adapters: []agentbridge.Adapter{
+			&stubAdapter{name: "fake", detected: agentbridge.DetectResult{Available: true}},
+		},
+		MaxConcurrent: 1,
+		SemanticIdle:  10 * time.Second, // long fallback; the request must win
+	})
+	h, err := a.Submit(context.Background(), bridge.TaskRequest{ID: "t-idle-override", Provider: "fake", Prompt: "hi", SemanticIdle: 40 * time.Millisecond})
+	if err != nil {
+		t.Fatal(err)
+	}
+	_ = waitForRunning(t, p, 0, time.Second)
+
+	select {
+	case res := <-h.Result():
+		if res.Status != agentbridge.ResultTimeout {
+			t.Fatalf("status = %s, want %s (request idle should win over the long config default)", res.Status, agentbridge.ResultTimeout)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("no result; TaskRequest.SemanticIdle did not take precedence")
+	}
+}

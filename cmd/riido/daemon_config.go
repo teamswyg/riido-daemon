@@ -37,6 +37,50 @@ const (
 	envDaemonHeartbeatSeconds        = "RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS"
 	envWorkdirRetentionSeconds       = "RIIDO_WORKDIR_RETENTION_SECONDS"
 	envWorkdirCleanupIntervalSeconds = "RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS"
+	envDaemonRunHardTimeoutSeconds   = "RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS"
+	envDaemonRunSemanticIdleSeconds  = "RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS"
+	envDaemonClaimWaitMs             = "RIIDO_DAEMON_CLAIM_WAIT_MS"
+	envDaemonLongPollTimeoutSeconds  = "RIIDO_DAEMON_LONGPOLL_TIMEOUT_SECONDS"
+	envDaemonTextFlushBytes          = "RIIDO_DAEMON_TEXT_FLUSH_BYTES"
+	envDaemonTextFlushMs             = "RIIDO_DAEMON_TEXT_FLUSH_MS"
+)
+
+const (
+	// defaultTextFlushBytes / defaultTextFlushInterval coalesce streamed
+	// assistant text deltas so provider token-level output is reported as fewer,
+	// larger chunks (cuts the per-token request storm and lets reporting run
+	// asynchronously to the provider's token cadence). The interval is the
+	// max-latency before buffered text is flushed even mid-stream. Either env set
+	// to `0` disables that trigger; both `0` disables coalescing.
+	defaultTextFlushBytes    = 256
+	defaultTextFlushInterval = 200 * time.Millisecond
+)
+
+const (
+	// defaultClaimWaitMs is the long-poll hint the daemon sends on each claim
+	// poll. It sits below the control plane's default 25s hold budget so the
+	// server's clamp governs; `0` disables long-poll (legacy interval polling).
+	defaultClaimWaitMs = 20000
+	// defaultLongPollTimeout bounds a single held claim poll on the client side
+	// and must exceed both the hint and the server's hold budget.
+	defaultLongPollTimeout = 30 * time.Second
+)
+
+const (
+	// defaultRunHardTimeout is the daemon's default whole-run upper bound for a
+	// provider CLI run. It is deliberately generous so legitimate long agentic
+	// runs (large refactors, long test suites) are not killed, while still
+	// bounding a hung/runaway provider. Operators override with
+	// RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS; 0 disables. See
+	// docs/20-domain/provider-runtime.md §5.7.
+	defaultRunHardTimeout = 30 * time.Minute
+	// defaultRunSemanticIdle is the daemon's default idle watchdog: the run is
+	// timed out if the provider emits no semantic-progress event (text/tool/
+	// usage/progress) for this long. Conservative on purpose so a long *silent*
+	// tool execution (e.g. a multi-minute build) is tolerated while a genuinely
+	// stuck run (no progress at all) is reclaimed. Override with
+	// RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS; 0 disables.
+	defaultRunSemanticIdle = 10 * time.Minute
 )
 
 type daemonSettings struct {
@@ -59,6 +103,12 @@ type daemonSettings struct {
 	PollEvery           time.Duration
 	IdlePollEvery       time.Duration
 	HeartbeatEvery      time.Duration
+	RunHardTimeout      time.Duration
+	RunSemanticIdle     time.Duration
+	ClaimWaitMs         int
+	LongPollTimeout     time.Duration
+	TextFlushBytes      int
+	TextFlushInterval   time.Duration
 	WorkdirRetention    time.Duration
 	WorkdirCleanupEvery time.Duration
 	WorkspaceCount      int
@@ -188,6 +238,30 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	if err != nil {
 		return daemonSettings{}, err
 	}
+	runHardTimeout, err := parseOptionalDurationSecondsWithDefault(getenv(envDaemonRunHardTimeoutSeconds), envDaemonRunHardTimeoutSeconds, defaultRunHardTimeout)
+	if err != nil {
+		return daemonSettings{}, err
+	}
+	runSemanticIdle, err := parseOptionalDurationSecondsWithDefault(getenv(envDaemonRunSemanticIdleSeconds), envDaemonRunSemanticIdleSeconds, defaultRunSemanticIdle)
+	if err != nil {
+		return daemonSettings{}, err
+	}
+	claimWaitMs, err := parseOptionalNonNegativeIntWithDefault(getenv(envDaemonClaimWaitMs), envDaemonClaimWaitMs, defaultClaimWaitMs)
+	if err != nil {
+		return daemonSettings{}, err
+	}
+	longPollTimeout, err := parseOptionalPositiveDurationSeconds(getenv(envDaemonLongPollTimeoutSeconds), envDaemonLongPollTimeoutSeconds, defaultLongPollTimeout)
+	if err != nil {
+		return daemonSettings{}, err
+	}
+	textFlushBytes, err := parseOptionalNonNegativeIntWithDefault(getenv(envDaemonTextFlushBytes), envDaemonTextFlushBytes, defaultTextFlushBytes)
+	if err != nil {
+		return daemonSettings{}, err
+	}
+	textFlushInterval, err := parseOptionalDurationMillisWithDefault(getenv(envDaemonTextFlushMs), envDaemonTextFlushMs, defaultTextFlushInterval)
+	if err != nil {
+		return daemonSettings{}, err
+	}
 
 	return daemonSettings{
 		DaemonID:            defaultDaemonID(getenv(envDaemonID), deviceID),
@@ -209,6 +283,12 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		PollEvery:           pollEvery,
 		IdlePollEvery:       idlePollEvery,
 		HeartbeatEvery:      heartbeatEvery,
+		RunHardTimeout:      runHardTimeout,
+		RunSemanticIdle:     runSemanticIdle,
+		ClaimWaitMs:         claimWaitMs,
+		LongPollTimeout:     longPollTimeout,
+		TextFlushBytes:      textFlushBytes,
+		TextFlushInterval:   textFlushInterval,
 		WorkdirRetention:    workdirRetention,
 		WorkdirCleanupEvery: workdirCleanupEvery,
 		WorkspaceCount:      workspaceCount,
@@ -265,6 +345,52 @@ func parseOptionalDurationSeconds(raw, name string) (time.Duration, error) {
 	n, err := parseOptionalNonNegativeInt(raw, name)
 	if err != nil {
 		return 0, err
+	}
+	return time.Duration(n) * time.Second, nil
+}
+
+// parseOptionalDurationSecondsWithDefault parses a second-valued env knob that
+// defaults to a non-zero policy value when unset, while still allowing an
+// explicit 0 to disable the clock. Empty -> fallback; "0" -> 0 (disabled);
+// positive -> that duration; negative/non-numeric -> error.
+// parseOptionalNonNegativeIntWithDefault parses an int env knob that defaults to
+// a non-zero value when unset while still allowing an explicit 0 to disable.
+// Empty -> fallback; "0" -> 0; positive -> value; negative/non-numeric -> error.
+func parseOptionalNonNegativeIntWithDefault(raw, name string, fallback int) (int, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return fallback, nil
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 0 {
+		return 0, fmt.Errorf("%s must be a non-negative integer (0 disables)", name)
+	}
+	return n, nil
+}
+
+// parseOptionalDurationMillisWithDefault parses a millisecond-valued env knob:
+// empty -> fallback; "0" -> 0 (disabled); positive -> that duration in ms;
+// negative/non-numeric -> error.
+func parseOptionalDurationMillisWithDefault(raw, name string, fallback time.Duration) (time.Duration, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return fallback, nil
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 0 {
+		return 0, fmt.Errorf("%s must be a non-negative integer (0 disables)", name)
+	}
+	return time.Duration(n) * time.Millisecond, nil
+}
+
+func parseOptionalDurationSecondsWithDefault(raw, name string, fallback time.Duration) (time.Duration, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		return fallback, nil
+	}
+	n, err := strconv.Atoi(raw)
+	if err != nil || n < 0 {
+		return 0, fmt.Errorf("%s must be a non-negative integer (0 disables)", name)
 	}
 	return time.Duration(n) * time.Second, nil
 }
