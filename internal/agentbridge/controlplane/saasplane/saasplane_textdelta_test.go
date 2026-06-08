@@ -7,33 +7,25 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-// Assistant text deltas must be forwarded to the control plane as RiidoLog
-// progress so the web client's SSE thread stream shows the answer live. Empty
-// deltas carry no content and must be dropped.
-func TestEventRequestFromAgentEventForwardsTextDelta(t *testing.T) {
+// Text deltas must NOT be forwarded to the control plane. Providers (esp. codex)
+// emit them as tiny token/JSON fragments; surfacing each as its own progress
+// line produced fragmented, incoherent output. Structured progress + the final
+// result are what reach the client.
+func TestEventRequestFromAgentEventDropsTextDelta(t *testing.T) {
 	assignment := assignmentcontract.Assignment{ID: "asn-1", TaskID: "task-1"}
-
-	req, ok := eventRequestFromAgentEvent(assignment, agentbridge.Event{
-		Kind: agentbridge.EventTextDelta,
-		Text: "hello world",
-	})
-	if !ok {
-		t.Fatal("text delta should be forwarded to the control plane")
-	}
-	if req.EventType != assignmentcontract.EventRiidoLog {
-		t.Fatalf("text delta event type = %q, want %q", req.EventType, assignmentcontract.EventRiidoLog)
-	}
-	if req.Message != "hello world" {
-		t.Fatalf("text delta message = %q, want %q", req.Message, "hello world")
-	}
-	if req.AssignmentID != "asn-1" || req.TaskID != "task-1" {
-		t.Fatalf("text delta lost assignment/task: %+v", req)
-	}
-
 	if _, ok := eventRequestFromAgentEvent(assignment, agentbridge.Event{
 		Kind: agentbridge.EventTextDelta,
-		Text: "",
+		Text: "hello world",
 	}); ok {
-		t.Fatal("empty text delta should be dropped, not forwarded")
+		t.Fatal("text delta must not be forwarded as a progress event")
+	}
+
+	// Structured progress is still forwarded as a RiidoLog line.
+	req, ok := eventRequestFromAgentEvent(assignment, agentbridge.Event{
+		Kind: agentbridge.EventProgress,
+		Text: "작업을 시작했어요.",
+	})
+	if !ok || req.EventType != assignmentcontract.EventRiidoLog {
+		t.Fatalf("structured progress should still be forwarded: ok=%v req=%+v", ok, req)
 	}
 }
