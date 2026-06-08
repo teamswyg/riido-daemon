@@ -825,6 +825,16 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		req.EventType = assignmentcontract.EventRiidoLog
 		req.Message = ev.Text
 		req.Metadata = agentbridge.ProgressEventMetadata(ev)
+	case agentbridge.EventTextDelta:
+		// Forward the assistant's response text to the control plane as progress
+		// lines so the web client's SSE thread stream shows the answer as it is
+		// produced (one delta per assistant text content block). Empty deltas
+		// carry no content and would only create blank lines.
+		if ev.Text == "" {
+			return req, false
+		}
+		req.EventType = assignmentcontract.EventRiidoLog
+		req.Message = ev.Text
 	case agentbridge.EventLifecycle:
 		if ev.Phase == agentbridge.StateRunning {
 			req.EventType = assignmentcontract.EventAssignmentRunning
