@@ -1081,3 +1081,40 @@ codex rate limits updated
   별도 후속이다.
 - repo/worktree binding을 추가해야 한다. prompt context가 바뀌어도 process cwd가 빈
   generated workdir이면 coding task 문맥은 실제로 바뀐 것이 아니다.
+
+## 23. 참여자 등록 지연 및 새로고침 후 공백 (2026-06-09)
+
+### 확인된 원인
+- 참여자에 agent를 추가하는 최초 표시 자체는 daemon poll, provider CLI spawn, SSE를
+  기다릴 필요가 없다. control-plane이 assignment를 만들고 AI Agent task thread read-model을
+  갱신하면 client는 바로 표시할 수 있어야 한다.
+- control-plane assign handler가 클릭한 task만 reconcile하지 않고
+  `reconcileAIAgentTaskThreadProjections(..., "")`를 호출해 workspace의 visible active
+  thread 후보 전체를 훑는다. active/queued/stale thread가 많으면 현재 task와 무관한 durable
+  assignment projection 조회 때문에 assign 응답이 늦어진다.
+- assign handler는 assignment 저장 전에 task context private API를 호출해 prompt를 만든다.
+  이 prompt는 runtime에는 필요하지만, 참여자 UI 표시까지 같은 요청에서 막고 있어 체감 지연을
+  키운다.
+- client `useAiAgentTask.assignAgent`는 mutation 응답의 `AIAgentTaskActionResponse`를
+  threads cache에 즉시 반영하지 않고 query invalidate만 한다. 서버가 202 Accepted를 반환해도
+  threads refetch가 끝나기 전까지 `currentThread`/`assignedAgent`가 바뀌지 않는다.
+- agent 교체 UI는 현재 `stopTask()` -> `unassignAgent()` -> `assignAgent()`를 순차 await한다.
+  control-plane `AssignTask`가 기존 assignment replace/cancel을 처리할 수 있으므로, 다른 agent
+  선택에는 이 순차 stop/unassign이 불필요한 지연이다.
+- 새로고침 후 참여자가 공백이 되는 경우는 두 종류다.
+  - 정상 queued/running thread가 있는데 client가 agent profile을 못 찾으면
+    `selectedAgentIds=[]`가 되어 공백으로 보인다. 이 경우 client 표시/cache 경로 문제다.
+  - thread가 failed/stopped/unassigned terminal 상태라면 selector가 의도적으로 active
+    participant에서 제외한다. 이 경우 공백은 UI rollback이 아니라 assignment terminal
+    projection 결과이며, root cause는 daemon/runtime/provider failure다.
+
+### 1차 수정 방향
+- control-plane assign/create-assignment handler의 reconcile scope를 `""`에서 `taskID`로
+  좁힌다. workspace 전체 active thread scan을 클릭 path에서 제거한다.
+- client는 assignment mutation 응답을 `tasks/{taskId}/threads` cache에 upsert한다. refetch는
+  background correction으로 남기고, 참여자 표시는 REST 재조회 왕복을 기다리지 않는다.
+- client agent 교체는 다른 agent를 선택할 때 바로 `assignAgent(newAgentId)`를 호출한다. 선택
+  해제일 때만 stop/unassign 경로를 사용한다.
+- terminal failed/stopped thread를 active participant로 되살리지는 않는다. 정상 active
+  상태의 표시 공백만 막고, terminal failure의 원인 노출은 별도 failure-classification 후속으로
+  둔다.
