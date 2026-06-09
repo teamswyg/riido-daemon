@@ -25,6 +25,7 @@ const (
 	envRuntimeOwner                  = "RIIDO_RUNTIME_OWNER"
 	envRuntimeAgents                 = "RIIDO_RUNTIME_AGENTS"
 	envWorkspaceCount                = "RIIDO_WORKSPACE_COUNT"
+	envRuntimeMaxConcurrent          = "RIIDO_RUNTIME_MAX_CONCURRENT"
 	envWorkdirRoot                   = "RIIDO_WORKDIR_ROOT"
 	envPolicyBundle                  = "RIIDO_POLICY_BUNDLE_VERSION"
 	envPolicyBundlePath              = "RIIDO_POLICY_BUNDLE_PATH"
@@ -137,6 +138,16 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	workspaceCount, err := parseOptionalNonNegativeInt(getenv(envWorkspaceCount), envWorkspaceCount)
 	if err != nil {
 		return daemonSettings{}, err
+	}
+
+	// Max concurrent runtime sessions per provider. Default 4 so a single agent
+	// isn't limited to one task at a time; override with RIIDO_RUNTIME_MAX_CONCURRENT.
+	runtimeMaxConcurrent, err := parseOptionalNonNegativeInt(getenv(envRuntimeMaxConcurrent), envRuntimeMaxConcurrent)
+	if err != nil {
+		return daemonSettings{}, err
+	}
+	if runtimeMaxConcurrent == 0 {
+		runtimeMaxConcurrent = 4
 	}
 
 	owner := strings.TrimSpace(getenv(envRuntimeOwner))

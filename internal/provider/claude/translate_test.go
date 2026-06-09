@@ -203,6 +203,23 @@ func TestBuildProviderInputDenyResponse(t *testing.T) {
 	}
 }
 
+// rate_limit_event is informational (not terminal): a clear Warning, never a
+// generic "unknown event" Log and never an EventResult.
+func TestTranslateRateLimitEventIsWarning(t *testing.T) {
+	raw := mustParseRaw(t, `{"type":"rate_limit_event","rate_limit":{"status":"rejected","resets_at":"2026-06-08T14:00:00Z"}}`)
+	events := translate(t, raw)
+	if len(events) != 1 {
+		t.Fatalf("rate_limit_event: want 1 event, got %d: %+v", len(events), events)
+	}
+	ev := events[0]
+	if ev.Kind != agentbridge.EventWarning {
+		t.Fatalf("rate_limit_event: want EventWarning, got %+v", ev)
+	}
+	if ev.Err == "" {
+		t.Fatalf("rate_limit_event: want non-empty detail, got %+v", ev)
+	}
+}
+
 func TestBuildProviderInputRequiresProviderRequestID(t *testing.T) {
 	if _, err := BuildProviderInput(agentbridge.Command{Kind: agentbridge.CommandApproveTool, ToolID: "tu_1"}); err == nil {
 		t.Fatal("expected missing provider request id to fail")

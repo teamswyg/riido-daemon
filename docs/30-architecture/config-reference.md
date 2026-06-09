@@ -86,6 +86,7 @@ tests by default and does not require provider CLIs or vendor credentials.
 | `RIIDO_RUNTIME_OWNER` | daemon status | `$USER` or `local` | runtime owner display name |
 | `RIIDO_RUNTIME_AGENTS` | daemon status | empty list | comma-separated attached agent display names |
 | `RIIDO_WORKSPACE_COUNT` | daemon status | `0` | non-negative workspace count display value |
+| `RIIDO_RUNTIME_MAX_CONCURRENT` | runtime actor slot pool | `4` | max concurrent runtime sessions per provider (raise to run more agents at once; `0`/unset → default) |
 | `RIIDO_WORKDIR_ROOT` | supervisor + workdir FS adapter | C11 dev-local app data workdir root | isolated run workdir root |
 | `RIIDO_WORKDIR_RETENTION_SECONDS` | daemon config + workdir cleanup | `0` | opt-in archived workdir TTL cleanup; zero disables cleanup and there is no default size/task-count cleanup |
 | `RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS` | daemon config + workdir cleanup | `3600` when retention is enabled | cleanup loop interval; invalid without retention |
