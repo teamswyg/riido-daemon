@@ -22,12 +22,13 @@ import (
 )
 
 const (
-	MetadataAssignmentID    = "riido_saas_assignment_id"
-	MetadataAgentID         = "riido_saas_agent_id"
-	MetadataComponentID     = "riido_saas_component_id"
-	MetadataLeaseToken      = "riido_saas_lease_token"
-	MetadataModelID         = "riido_saas_model_id"
-	MetadataRuntimeProvider = "riido_saas_runtime_provider"
+	MetadataAssignmentID      = "riido_saas_assignment_id"
+	MetadataAgentID           = "riido_saas_agent_id"
+	MetadataComponentID       = "riido_saas_component_id"
+	MetadataLeaseToken        = "riido_saas_lease_token"
+	MetadataModelID           = "riido_saas_model_id"
+	MetadataProviderSessionID = "provider_session_id"
+	MetadataRuntimeProvider   = "riido_saas_runtime_provider"
 )
 
 const runtimeSnapshotHeartbeatMinInterval = 4 * time.Second
@@ -527,12 +528,15 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 	if message == "" {
 		message = res.Output
 	}
+	metadata := providerSessionMetadata(res.SessionID)
 	_, err = p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{
-		AssignmentID: assignment.ID,
-		TaskID:       assignment.TaskID,
-		State:        state,
-		EventType:    eventType,
-		Message:      message,
+		AssignmentID:      assignment.ID,
+		TaskID:            assignment.TaskID,
+		State:             state,
+		EventType:         eventType,
+		Message:           message,
+		ProviderSessionID: strings.TrimSpace(res.SessionID),
+		Metadata:          metadata,
 	})
 	if err != nil {
 		return err
@@ -567,6 +571,8 @@ func (p *Plane) postAgentEvent(ctx context.Context, assignment assignmentcontrac
 		return out, err
 	}
 	req.RuntimeID = runtimeID
+	req.RuntimeProvider = assignment.RuntimeProvider
+	req.ModelID = assignment.ModelID
 	err = p.postJSON(ctx, "/v1/agents/"+url.PathEscape(assignment.AgentID)+"/events", req, &out)
 	return out, err
 }
@@ -835,6 +841,7 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		Model:                    providerModelOverride(assignment.RuntimeProvider, assignment.ModelID),
 		Prompt:                   prompt,
 		SystemPrompt:             systemPrompt,
+		ResumeSessionID:          strings.TrimSpace(assignment.ResumeSessionID),
 		AllowExperimentalRuntime: assignment.AllowExperimentalRuntime,
 		Metadata:                 metadata,
 	}
@@ -897,6 +904,14 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		} else {
 			return req, false
 		}
+	case agentbridge.EventSessionIdentified:
+		sessionID := strings.TrimSpace(ev.SessionID)
+		if sessionID == "" {
+			return req, false
+		}
+		req.EventType = assignmentcontract.EventProviderSessionPinned
+		req.ProviderSessionID = sessionID
+		req.Metadata = providerSessionMetadata(sessionID)
 	case agentbridge.EventLog:
 		req.EventType = assignmentcontract.EventProviderLog
 		req.Message = ev.Text
@@ -910,6 +925,14 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		return req, false
 	}
 	return req, true
+}
+
+func providerSessionMetadata(sessionID string) map[string]string {
+	sessionID = strings.TrimSpace(sessionID)
+	if sessionID == "" {
+		return nil
+	}
+	return map[string]string{MetadataProviderSessionID: sessionID}
 }
 
 func terminalStateAndEvent(status agentbridge.ResultStatus) (assignmentcontract.AssignmentState, string) {

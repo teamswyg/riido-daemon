@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/provider/claude"
 	"github.com/teamswyg/riido-daemon/internal/provider/codex"
 	"github.com/teamswyg/riido-daemon/internal/provider/cursor"
@@ -162,6 +163,10 @@ func (bridgeCodexAdapter) BlockedArgs() []string { return codex.BlockedArgs() }
 // handshake driver. Implements agentbridge.ProtocolDriverProvider.
 func (bridgeCodexAdapter) NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	return codex.NewProtocolDriver(req)
+}
+
+func (bridgeCodexAdapter) NewPersistentRunner(cfg runtimeactor.PersistentRunnerConfig) (runtimeactor.PersistentRunner, error) {
+	return newCodexPersistentRunner(cfg)
 }
 
 type bridgeOpenClawAdapter struct{}

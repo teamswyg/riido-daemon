@@ -94,6 +94,7 @@ func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 		Prompt:                   "golang hello world quickly",
 		AgentInstruction:         "act as a backend reviewer",
 		AllowExperimentalRuntime: true,
+		ResumeSessionID:          "sess-prev",
 	}
 	req := taskRequestFromAssignment(assignment)
 	if req.Prompt != assignment.Prompt {
@@ -113,6 +114,9 @@ func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 	}
 	if req.Model != assignment.ModelID {
 		t.Fatalf("model_id was not copied from assignment: %q", req.Model)
+	}
+	if req.ResumeSessionID != assignment.ResumeSessionID {
+		t.Fatalf("resume_session_id was not copied from assignment: %q", req.ResumeSessionID)
 	}
 	if got := req.Metadata[MetadataModelID]; got != assignment.ModelID {
 		t.Fatalf("metadata model_id = %q, want %q", got, assignment.ModelID)

@@ -230,33 +230,54 @@ func normalizeProviderName(provider string) string {
 	return provider
 }
 
-func (p *TelemetryParser) Feed(text string) []Event {
-	if p == nil || text == "" {
-		return nil
+// Feed consumes one provider text delta and returns (cleaned, events): the
+// assistant text with complete `<riido_log>…<end>` telemetry markers removed,
+// plus the progress events parsed out of them. Markers can span deltas, so a
+// trailing fragment that could begin a marker (or an open marker still awaiting
+// its `<end>`) is buffered and withheld from cleaned until it resolves — so raw
+// markers never leak into the forwarded assistant text (A1 of the lifecycle
+// review). cleaned can be empty when a delta was pure telemetry.
+func (p *TelemetryParser) Feed(text string) (string, []Event) {
+	if p == nil {
+		return text, nil
+	}
+	if text == "" {
+		return "", nil
 	}
 	p.buf += text
+	// Bound the buffer so an unterminated marker cannot grow without limit. The
+	// front is only dropped for a >64KiB open tag (malformed provider output),
+	// where losing the swallowed bytes is preferable to unbounded growth.
 	if len(p.buf) > 64*1024 {
 		p.buf = p.buf[len(p.buf)-64*1024:]
 	}
+	var cleaned strings.Builder
 	out := []Event{}
 	for {
 		start := strings.Index(p.buf, telemetryLogStart)
 		if start < 0 {
-			p.buf = suffixThatCanStartTag(p.buf)
-			return out
+			// No complete open tag. Emit everything except a trailing run that
+			// could be the start of one (held for the next Feed).
+			hold := suffixThatCanStartTag(p.buf)
+			cleaned.WriteString(p.buf[:len(p.buf)-len(hold)])
+			p.buf = hold
+			return cleaned.String(), out
 		}
-		if start > 0 {
-			p.buf = p.buf[start:]
-		}
+		// Text before the marker is real assistant output.
+		cleaned.WriteString(p.buf[:start])
+		p.buf = p.buf[start:]
 		afterStart := p.buf[len(telemetryLogStart):]
 		end := strings.Index(afterStart, telemetryLogEnd)
 		if end < 0 {
-			return out
+			// Open tag without its end yet: withhold the marker-in-progress (do
+			// not emit it as text) until the remainder arrives.
+			return cleaned.String(), out
 		}
 		message := strings.TrimSpace(afterStart[:end])
 		if event, ok := progressEventFromTelemetryMessage(message); ok {
 			out = append(out, event)
 		}
+		// Drop the marker and continue scanning after it.
 		p.buf = afterStart[end+len(telemetryLogEnd):]
 	}
 }

@@ -142,20 +142,51 @@ type Heartbeat struct {
 // session.Session but is the Actor's surface so we don't leak the
 // internal session package across the API boundary.
 type SessionHandle struct {
-	TaskID  string
-	session *session.Session
+	TaskID string
+	run    agentbridge.RunHandle
 }
 
 // Events returns the run-scope event stream, closed when the session
 // terminates.
-func (h *SessionHandle) Events() <-chan agentbridge.Event { return h.session.Events() }
+func (h *SessionHandle) Events() <-chan agentbridge.Event { return h.run.Events() }
 
 // Result returns the terminal result channel (single value, then closed).
-func (h *SessionHandle) Result() <-chan agentbridge.Result { return h.session.Result() }
+func (h *SessionHandle) Result() <-chan agentbridge.Result { return h.run.Result() }
 
 // Done signals termination without consuming Result. Used by the Actor
 // itself; callers normally prefer Result().
-func (h *SessionHandle) Done() <-chan struct{} { return h.session.Done() }
+func (h *SessionHandle) Done() <-chan struct{} { return h.run.Done() }
+
+// PersistentRunOptions carries the per-run settings forwarded to an adapter
+// owned persistent process.
+type PersistentRunOptions struct {
+	HardTimeout   time.Duration
+	SemanticIdle  time.Duration
+	AutoApprove   agentbridge.AutoApprover
+	ToolStartGate agentbridge.ToolStartGate
+}
+
+// PersistentRunnerConfig is supplied once when an adapter opts into a
+// runtime-scoped provider process.
+type PersistentRunnerConfig struct {
+	RuntimeID string
+	Adapter   agentbridge.Adapter
+	Process   process.Process
+	Now       func() time.Time
+}
+
+// PersistentRunner owns a provider process that can run multiple sequential
+// task turns.
+type PersistentRunner interface {
+	Submit(context.Context, agentbridge.StartRequest, PersistentRunOptions) (agentbridge.RunHandle, error)
+	Stop(context.Context) error
+}
+
+// PersistentRunnerProvider is an optional adapter capability. RuntimeActor
+// remains provider-neutral; composition roots attach provider-specific runners.
+type PersistentRunnerProvider interface {
+	NewPersistentRunner(PersistentRunnerConfig) (PersistentRunner, error)
+}
 
 // Config configures a new Actor.
 type Config struct {
@@ -309,6 +340,7 @@ func (a *Actor) Start(ctx context.Context) error {
 func (a *Actor) run(caps []Capability) {
 	adapters := indexAdapters(a.cfg.Adapters)
 	inFlight := map[string]*runningTask{}
+	persistentRunners := map[string]PersistentRunner{}
 
 	completeCh := make(chan string, 32)
 
@@ -317,7 +349,7 @@ func (a *Actor) run(caps []Capability) {
 		case env := <-a.mailbox:
 			switch {
 			case env.submit != nil:
-				h, err := a.handleSubmit(adapters, caps, inFlight, completeCh, env.submit)
+				h, err := a.handleSubmit(adapters, caps, inFlight, persistentRunners, completeCh, env.submit)
 				env.submit.reply <- submitReply{handle: h, err: err}
 			case env.cancel != nil:
 				env.cancel.reply <- a.handleCancel(inFlight, env.cancel)
@@ -333,7 +365,11 @@ func (a *Actor) run(caps []Capability) {
 			}
 
 		case <-a.stopReqCh:
-			a.drainAndShutdown(inFlight, completeCh)
+			err := a.drainAndShutdown(inFlight, completeCh)
+			if err == nil {
+				err = stopPersistentRunners(persistentRunners)
+			}
+			a.stopErrCh <- err
 			close(a.stoppedCh)
 			return
 		}
@@ -351,6 +387,7 @@ func (a *Actor) handleSubmit(
 	adapters map[string]agentbridge.Adapter,
 	caps []Capability,
 	inFlight map[string]*runningTask,
+	persistentRunners map[string]PersistentRunner,
 	completeCh chan<- string,
 	msg *submitMsg,
 ) (*SessionHandle, error) {
@@ -401,6 +438,41 @@ func (a *Actor) handleSubmit(
 		idle = a.cfg.SemanticIdle
 	}
 
+	if provider, ok := adapter.(PersistentRunnerProvider); ok {
+		runner := persistentRunners[adapter.Name()]
+		if runner == nil {
+			created, err := provider.NewPersistentRunner(PersistentRunnerConfig{
+				RuntimeID: a.cfg.RuntimeID,
+				Adapter:   adapter,
+				Process:   a.cfg.Process,
+				Now:       a.cfg.Now,
+			})
+			if err != nil {
+				return nil, fmt.Errorf("runtimeactor: NewPersistentRunner %s: %w", adapter.Name(), err)
+			}
+			runner = created
+			persistentRunners[adapter.Name()] = runner
+		}
+		run, err := runner.Submit(msg.ctx, startReq, PersistentRunOptions{
+			HardTimeout:   timeout,
+			SemanticIdle:  idle,
+			AutoApprove:   a.cfg.AutoApprove,
+			ToolStartGate: a.cfg.ToolStartGate,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("runtimeactor: persistent submit %s: %w", adapter.Name(), err)
+		}
+		handle := &SessionHandle{TaskID: msg.req.ID, run: run}
+		task := &runningTask{
+			taskID:   msg.req.ID,
+			provider: string(msg.req.Provider),
+			handle:   handle,
+		}
+		inFlight[msg.req.ID] = task
+		go watchRunCompletion(msg.req.ID, run.Done(), a.stoppedCh, completeCh)
+		return handle, nil
+	}
+
 	// Optional ProtocolDriver hook: if the adapter implements the
 	// provider-neutral agentbridge.ProtocolDriverProvider port, ask it
 	// for a driver to install in the session. RuntimeActor itself stays
@@ -436,7 +508,7 @@ func (a *Actor) handleSubmit(
 		return nil, fmt.Errorf("runtimeactor: session.Start: %w", err)
 	}
 
-	handle := &SessionHandle{TaskID: msg.req.ID, session: sess}
+	handle := &SessionHandle{TaskID: msg.req.ID, run: sess}
 	task := &runningTask{
 		taskID:   msg.req.ID,
 		provider: string(msg.req.Provider),
@@ -445,17 +517,7 @@ func (a *Actor) handleSubmit(
 	inFlight[msg.req.ID] = task
 
 	// Watcher uses Done() so we don't consume Result.
-	go func(id string, doneCh <-chan struct{}, stopped <-chan struct{}) {
-		select {
-		case <-doneCh:
-		case <-stopped:
-			return
-		}
-		select {
-		case completeCh <- id:
-		case <-stopped:
-		}
-	}(msg.req.ID, sess.Done(), a.stoppedCh)
+	go watchRunCompletion(msg.req.ID, sess.Done(), a.stoppedCh, completeCh)
 
 	return handle, nil
 }
@@ -469,7 +531,7 @@ func (a *Actor) handleCancel(inFlight map[string]*runningTask, msg *cancelMsg) e
 	if msg.reason == "" {
 		cause = errors.New("cancelled")
 	}
-	task.handle.session.Cancel(cause)
+	task.handle.run.Cancel(cause)
 	return nil
 }
 
@@ -520,9 +582,9 @@ func (a *Actor) buildHeartbeat(inFlight map[string]*runningTask) Heartbeat {
 	}
 }
 
-func (a *Actor) drainAndShutdown(inFlight map[string]*runningTask, completeCh <-chan string) {
+func (a *Actor) drainAndShutdown(inFlight map[string]*runningTask, completeCh <-chan string) error {
 	for _, t := range inFlight {
-		t.handle.session.Cancel(ErrActorStopped)
+		t.handle.run.Cancel(ErrActorStopped)
 	}
 	deadline := time.After(5 * time.Second)
 	for len(inFlight) > 0 {
@@ -530,11 +592,31 @@ func (a *Actor) drainAndShutdown(inFlight map[string]*runningTask, completeCh <-
 		case id := <-completeCh:
 			delete(inFlight, id)
 		case <-deadline:
-			a.stopErrCh <- fmt.Errorf("runtimeactor: %d session(s) did not terminate", len(inFlight))
-			return
+			return fmt.Errorf("runtimeactor: %d session(s) did not terminate", len(inFlight))
 		}
 	}
-	a.stopErrCh <- nil
+	return nil
+}
+
+func watchRunCompletion(id string, doneCh <-chan struct{}, stopped <-chan struct{}, completeCh chan<- string) {
+	select {
+	case <-doneCh:
+	case <-stopped:
+		return
+	}
+	select {
+	case completeCh <- id:
+	case <-stopped:
+	}
+}
+
+func stopPersistentRunners(runners map[string]PersistentRunner) error {
+	for name, runner := range runners {
+		if err := runner.Stop(context.Background()); err != nil {
+			return fmt.Errorf("runtimeactor: stop persistent runner %s: %w", name, err)
+		}
+	}
+	return nil
 }
 
 // ----- Public methods (mailbox-only) -----

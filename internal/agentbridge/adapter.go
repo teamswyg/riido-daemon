@@ -23,6 +23,17 @@ type Adapter interface {
 	BlockedArgs() []string
 }
 
+// RunHandle is the provider-neutral handle for one task/run. Most providers
+// implement this with one spawned process per run. Persistent providers can
+// return a run handle backed by a long-lived process and a run-scoped protocol
+// driver.
+type RunHandle interface {
+	Events() <-chan Event
+	Result() <-chan Result
+	Done() <-chan struct{}
+	Cancel(error)
+}
+
 // DetectEnv carries the environment an adapter consults during Detect.
 // Adapters MUST read only from this struct, never os.Environ directly —
 // the daemon supplies everything they need.

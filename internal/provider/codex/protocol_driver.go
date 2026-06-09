@@ -35,7 +35,8 @@ import (
 // about. The canonical RunState lives in agentbridge.State, owned by
 // the reducer that consumes the events returned by OnRaw.
 type protocolDriver struct {
-	req agentbridge.StartRequest
+	req      agentbridge.StartRequest
+	turnOnly bool
 
 	nextID  int64
 	pending map[int64]pendingRequest
@@ -61,8 +62,33 @@ func NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver
 	}, nil
 }
 
+// NewTurnProtocolDriver returns a driver for an already-initialized Codex
+// app-server process. It starts or resumes a provider thread and then starts a
+// turn, but it does not send initialize/initialized.
+func NewTurnProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
+	return NewTurnProtocolDriverWithIDSeed(req, 1)
+}
+
+// NewTurnProtocolDriverWithIDSeed is the persistent-process variant. The
+// caller supplies a monotonically increasing seed so late JSON-RPC responses
+// from an earlier turn cannot collide with the next turn's pending ids.
+func NewTurnProtocolDriverWithIDSeed(req agentbridge.StartRequest, seed int64) (agentbridge.ProtocolDriver, error) {
+	if seed <= 0 {
+		seed = 1
+	}
+	return &protocolDriver{
+		req:      req,
+		turnOnly: true,
+		nextID:   seed - 1,
+		pending:  map[int64]pendingRequest{},
+	}, nil
+}
+
 // OnStart writes the initialize request.
 func (d *protocolDriver) OnStart(ctx context.Context, io agentbridge.ProtocolIO) error {
+	if d.turnOnly {
+		return d.startThread(ctx, io)
+	}
 	_, err := d.sendRequest(ctx, io, "initialize", map[string]any{
 		"clientInfo": map[string]any{"name": "riido", "version": "0.0.0"},
 	})
@@ -268,16 +294,7 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 			return nil, nil, err
 		}
 		d.initialized = true
-		// Send thread/start (or thread/resume).
-		method := "thread/start"
-		params := map[string]any{}
-		if d.req.ResumeSessionID != "" {
-			method = "thread/resume"
-			params["threadId"] = d.req.ResumeSessionID
-		} else if d.req.Model != "" {
-			params["model"] = d.req.Model
-		}
-		if _, err := d.sendRequest(ctx, io, method, params); err != nil {
+		if err := d.startThread(ctx, io); err != nil {
 			return nil, nil, err
 		}
 
@@ -317,6 +334,19 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}, nil, nil
 	}
 	return nil, nil, nil
+}
+
+func (d *protocolDriver) startThread(ctx context.Context, io agentbridge.ProtocolIO) error {
+	method := "thread/start"
+	params := map[string]any{}
+	if d.req.ResumeSessionID != "" {
+		method = "thread/resume"
+		params["threadId"] = d.req.ResumeSessionID
+	} else if d.req.Model != "" {
+		params["model"] = d.req.Model
+	}
+	_, err := d.sendRequest(ctx, io, method, params)
+	return err
 }
 
 // --- transport helpers ---

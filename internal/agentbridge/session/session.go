@@ -13,6 +13,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -35,7 +36,14 @@ type Config struct {
 	Adapter agentbridge.Adapter
 	Process process.Process
 	Spawn   process.Command
-	Request agentbridge.StartRequest
+	// Running reuses an already-started provider process. When set, Process is
+	// not used to spawn a new process.
+	Running process.RunningProcess
+	// KeepProcessAlive keeps Running alive after provider terminal results so a
+	// persistent runtime can submit another thread/turn on the same transport.
+	// Cancellation, timeout, blocked runs, and process exits still kill/reap.
+	KeepProcessAlive bool
+	Request          agentbridge.StartRequest
 
 	// HardTimeout is the wall-clock deadline for the entire run. Zero disables.
 	HardTimeout time.Duration
@@ -119,7 +127,7 @@ func Start(ctx context.Context, cfg Config) (*Session, error) {
 	if cfg.Adapter == nil {
 		return nil, errors.New("session: Adapter is required")
 	}
-	if cfg.Process == nil {
+	if cfg.Process == nil && cfg.Running == nil {
 		return nil, errors.New("session: Process is required")
 	}
 	if cfg.Now == nil {
@@ -132,9 +140,13 @@ func Start(ctx context.Context, cfg Config) (*Session, error) {
 		cfg.ResultBuffer = DefaultResultBuffer
 	}
 
-	running, err := cfg.Process.Start(ctx, cfg.Spawn)
-	if err != nil {
-		return nil, fmt.Errorf("session: process start: %w", err)
+	running := cfg.Running
+	if running == nil {
+		var err error
+		running, err = cfg.Process.Start(ctx, cfg.Spawn)
+		if err != nil {
+			return nil, fmt.Errorf("session: process start: %w", err)
+		}
 	}
 
 	sess := &Session{
@@ -204,7 +216,13 @@ func run(ctx context.Context, cfg Config, sess *Session, proc process.RunningPro
 		case sess.events <- ev:
 		case <-ctx.Done():
 		}
-		if ev.Kind.IsSemanticActivity() {
+		// B1: telemetry progress (`<riido_log>` code 1001 "thinking" etc.) is the
+		// agent's self-narration, not ground-truth provider activity, so it must
+		// NOT keep the semantic-idle watchdog alive — otherwise a run that only
+		// emits progress pings never idle-times-out. Real output (text, tool
+		// calls, usage, reasoning) still resets it. Scoped to this watchdog only;
+		// the global IsSemanticActivity / reducer LastSemanticActivity are unchanged.
+		if ev.Kind.IsSemanticActivity() && ev.Kind != agentbridge.EventProgress {
 			resetIdle()
 		}
 	}
@@ -213,7 +231,18 @@ func run(ctx context.Context, cfg Config, sess *Session, proc process.RunningPro
 		for _, ev := range events {
 			expanded := []agentbridge.Event{ev}
 			if ev.Kind == agentbridge.EventTextDelta {
-				expanded = append(expanded, telemetry.Feed(ev.Text)...)
+				// A1: strip `<riido_log>…<end>` telemetry from the forwarded text
+				// and surface the parsed progress events instead. A delta that is
+				// pure telemetry (nothing left after stripping) is dropped so it
+				// neither leaks raw markers nor — being EventTextDelta — resets the
+				// idle watchdog (works with the EventProgress exclusion in emit).
+				cleaned, telemetryEvents := telemetry.Feed(ev.Text)
+				if strings.TrimSpace(cleaned) == "" {
+					expanded = telemetryEvents
+				} else {
+					ev.Text = cleaned
+					expanded = append([]agentbridge.Event{ev}, telemetryEvents...)
+				}
 			}
 			for _, expandedEvent := range expanded {
 				emit(expandedEvent)
@@ -393,11 +422,14 @@ func run(ctx context.Context, cfg Config, sess *Session, proc process.RunningPro
 		}
 	}
 
-	// Make sure the process is reaped if we terminated for a non-exit reason.
-	_ = proc.Kill(context.Background())
-	// Drain remaining stdout/stderr non-blockingly so the fake process doesn't block.
-	drain(stdoutCh)
-	drain(stderrCh)
+	keepProcess := cfg.KeepProcessAlive && canKeepProviderProcess(state.Result.Status) && deferredExit == nil
+	if !keepProcess {
+		// Make sure the process is reaped if we terminated for a non-exit reason.
+		_ = proc.Kill(context.Background())
+		// Drain remaining stdout/stderr non-blockingly so the fake process doesn't block.
+		drain(stdoutCh)
+		drain(stderrCh)
+	}
 	for _, ev := range cleanupTempFiles(cfg.TempFiles) {
 		emit(ev)
 	}
@@ -415,6 +447,15 @@ func run(ctx context.Context, cfg Config, sess *Session, proc process.RunningPro
 		finalResult.FinishedAt = cfg.Now()
 	}
 	sess.result <- finalResult
+}
+
+func canKeepProviderProcess(status agentbridge.ResultStatus) bool {
+	switch status {
+	case agentbridge.ResultCompleted, agentbridge.ResultFailed:
+		return true
+	default:
+		return false
+	}
 }
 
 func cleanupTempFiles(paths []string) []agentbridge.Event {

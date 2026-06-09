@@ -220,6 +220,13 @@
   `riido-control-plane/internal/riidoaiserver/server.go:906-929`.
 - **수정:** 계약에 prior-session 필드 추가 → terminal 완료 시 provider 세션 id 보고/
   영속화 → 다음 assignment에서 echo → `ResumeSessionID` 채움(배선은 이미 소비함).
+  단, resume eligibility 는 같은 Riido task/thread, 같은 agent, 같은 provider/model,
+  같은 runtime identity, 같은 workdir/repo context 에서만 true 다. 다른 task 는
+  `/clear` 를 보내는 것이 아니라 `ResumeSessionID` 를 비워 fresh provider session 으로
+  시작한다. Codex `app-server` 처럼 process 안에서 `thread/start` / `thread/resume` /
+  `turn/start` 를 구조적으로 구분할 수 있는 provider 는 task/run 별 process spawn 을
+  제거하고 runtime-scoped long-lived process 로 전환해야 한다. Claude 같은 one-shot
+  adapter 는 structured multi-session primitive 확인 전까지 process reuse 대상이 아니다.
   **난이도: large.**
 
 #### R3 — 프로덕션에 hard/idle run timeout 모두 없음 → hung CLI 무한 실행  `[B:2-C/4-B]` · confirmed · **high**
@@ -246,7 +253,10 @@
 - **근거:** `riido-control-plane/.../store.go:842,861,941,972`; `transition.go:3`;
   `saasplane.go:374`; `supervisor.go:410`.
 - **수정:** startup에서 PollActive를 reconcile(resumable id 있을 때만 resume, 아니면
-  lease 만료까지 거절). R2와 결합 시 재시작에 thread/resume 선호. **난이도: medium.**
+  조용한 fresh start 금지). R2와 결합 시 재시작에는 provider-native thread/session
+  resume 을 선호하지만, tool call / 파일 수정 / commit 같은 이미 발생한 부작용의
+  idempotency 는 보장하지 않는다. session id 가 없으면 `recovery_fresh_start` 같은 명시
+  이벤트를 남기거나 recovery failure 로 처리해야 한다. **난이도: medium.**
 
 #### R5 — 취소 watcher 고루틴/채널이 완료 후 데몬 종료까지 잔존  `[B:2-F]` · confirmed · **low**
 
@@ -942,3 +952,132 @@ socket connect-probe + PID liveness) + (b) app-data 단일 identity + PID-livene
 - **D1/D2** (desktop: 앱 종료 시 daemon kill + probe-and-adopt) — riido-desktop 미착수.
 - **D6** (daemon SIGKILL 시 고아 CLI child reaper; `Setpgid:true` 이미 설정됨).
 - **D7** (Windows `.claim` 자동 회수 — 신뢰 가능한 Windows liveness 필요; 현재 보수적 latent).
+
+## D1 + D2/D6 — 앱 종료 시 데몬 동반 종료 + 자식 추적/orphan reaper  ✅ 완료 (2026-06-09)
+
+관심사 #1의 desktop↔daemon 수명주기 마감. 사용자 결정: 데몬은 백그라운드 영속 금지(앱
+종료 시 동반 종료) / **(1c) 하이브리드** / will-quit+preventDefault **5초** 후 강제
+`app.exit(0)` / **(3c) 지속 pgid 레지스트리** reaper.
+
+### 근본 원인 (재확인, file:line)
+- **D1:** `riido-desktop/src/main.ts:606` `app.once('before-quit', controller.stop)` 의
+  `stop()`(`daemonLauncher.ts`)은 **폴링만 정지**, 데몬은 안 죽임. 데몬은
+  `spawn(...{detached:true}) + child.unref()` 로 부모와 수명 분리 → 앱 꺼져도 잔존.
+  종료 이벤트도 `before-quit`만, `will-quit` 없음(async teardown 불가).
+- **D2:** spawn한 데몬 ChildProcess 참조/PID를 버림(`unref`) → 죽일 핸들 없음. 단
+  협조적 `stopDaemonIfRunning`(`riido daemon stop --socket --pid-file`)은 이미 있으나
+  종료에 안 엮임.
+- **D6:** provider CLI는 자기 pgid(`Setpgid`)로 떠 session 종료/ graceful daemon
+  shutdown 시 그룹 kill(`terminateCommand`)로 정리되지만, 데몬 **SIGKILL/크래시** 시
+  자식이 reparent되어 고아로 남고, **startup orphan reaper 부재**.
+
+### 근본 접근
+- **daemon (D6):** `internal/process/childreg` — spawn한 provider pgid를 pid 파일과
+  같은 디렉터리(`daemon-children.pids`)에 지속(spawn 기록/exit 제거 → 살아있는 그룹만
+  잔존). `processexec`에 `ChildObserver`(OnSpawn/OnExit) 추가, `NewWithObserver` 로
+  레지스트리 주입(`daemon.go` `newDaemonRuntimeActor`). serve 진입 시(singleton lock
+  확보 후) `childreg.ReapOrphans` 가 이전 인스턴스의 살아있는 그룹을 `SIGKILL` 후 파일
+  reset. graceful 자식 kill은 기존 경로 유지. Windows는 process group 부재로 reaper
+  no-op(D7).
+- **desktop (D1+D2):** `daemonLauncher.ts` `stopDaemonNow` — 협조적
+  `stopDaemonIfRunning` 먼저 → 실패/잔존 시 **pid 파일의 PID로 SIGTERM→(대기)→SIGKILL**
+  강제 폴백(spawn/adopt 양쪽 커버, 같은 pid 파일 사용). `main.ts` `will-quit` 에서
+  `event.preventDefault()` 후 `Promise.race([stopDaemonNow(), 5s])` → 성공/실패 무관
+  `app.exit(0)`. 폴링 정지(before-quit)가 teardown 중 재기동을 막음.
+
+### 변경 파일
+- daemon (`JYM-ai-get-done`): `internal/process/childreg/{childreg.go,_unix.go,_windows.go,_test.go,_unix_test.go}`(신규), `internal/process/processexec/processexec.go`(observer), `cmd/riido/daemon.go`(reaper+레지스트리 wiring+`childRegistryPath`), `daemon_test.go`(시그니처), `docs/20-domain/provider-runtime.md` §5.1.1(SSOT).
+- desktop (`JYM-ai-get-done`): `src/modules/daemonLauncher.ts`(`stopDaemonNow`+force-kill 헬퍼), `src/main.ts`(`will-quit` teardown).
+
+### 검증
+- daemon: `go build ./...` + `GOOS=windows` OK, `go vet` OK, `go test ./...` 전 패키지 통과(childreg가 실제 process-group SIGKILL 검증).
+- desktop: `tsc -b` 통과, `eslint --quiet` 0 errors. (riido-desktop은 test runner 부재 → tsc+eslint+로직 검토로 검증.)
+
+### 후속(이번 범위 밖)
+- **D2 probe-and-adopt 고도화** / 비정상(SIGKILL) 종료 시 desktop은 OS가 정리(자식은 다음 기동 D6 reaper가 처리).
+- **D7** (Windows pgid/`.claim` reaper) — process group 부재로 현재 no-op.
+
+## C4/Codex — rate-limit notification 노출 + 장시간 대기/불투명 실패  ✅ 1차 수정 (2026-06-09)
+
+사용자 관찰:
+
+```text
+중지
+codex rate limits updated
+```
+
+### 근본 원인
+- `origin/main`의 Codex translator는 app-server 내부 notification
+  `account/rateLimits/updated` / `account_rate_limits_updated`를 user-visible
+  `EventLog("codex rate limits updated")`로 변환한다.
+- daemon SaaS reporter는 `EventLog`를 `EventProviderLog`로 올리고, control-plane read
+  model은 terminal/stopped thread fencing이 없거나 약하면 이 provider log를 thread
+  message로 반영할 수 있다.
+- 따라서 이 문구는 "Codex rate limit 때문에 실패"라기보다 **Codex 내부 account window
+  알림이 stopped/failed thread UI로 새어 나온 것**이다.
+
+### 관련 지연/실패 분석
+- Codex run은 간단한 명령도 매번 새 provider process + JSON-RPC handshake
+  (`initialize` → `thread/start|resume` → `turn/start`)를 거친다. long-lived CLI reuse가
+  아니다.
+- `JYM-ai-get-done` 기본 timeout은 hard 30분 / semantic idle 10분이라, 완료 신호가
+  누락되거나 non-semantic log만 오면 간단한 작업도 오래 도는 것처럼 보인다.
+- `origin/main`은 runtime max concurrency 기본값을 4로 바꿨다. 각 Codex run은 여전히
+  별도 app-server turn이라 동시 실행이 Codex account pressure와 실패 빈도를 키울 수 있다.
+- SaaS assignment는 `ResumeSessionID`를 채우지 않는다. "다른 작업인데 문맥이 안 바뀜"은
+  Codex thread resume 누수보다는, daemon이 실제 repo를 mount/clone하지 않고 빈 isolated
+  workdir에서 실행하는 **filesystem context 부재**가 더 유력하다.
+
+### 이번 1차 변경
+- SSOT: `docs/20-domain/provider-runtime.md` §5.3에 provider-internal notification은
+  user-visible `LogLine`/`EventLog`로 승격하지 않는다는 규칙 추가.
+- Review: `docs/review/ai-agent-runtime-lifecycle-review-2026-06-08.md` §22.1에
+  rate-limit noise, long-run timeout, failure opacity, context mismatch 원인 추가.
+- Code: `internal/provider/codex/translate.go`에서 Codex account rate-limit update와
+  structural item/hook/status notification을 drop한다.
+- Code: Codex `turn_error` / `turn/failed`의 nested `error.message` / `detail` /
+  `error` payload를 terminal failure reason으로 보존한다. 빈 실패 메시지가
+  control-plane fallback `agent work failed`로 뭉개지는 경우를 줄인다.
+- Test: `internal/provider/codex/translate_test.go`에 internal notification drop 회귀
+  테스트와 nested failure reason 회귀 테스트 추가.
+
+### 2차 확인 및 변경 (2026-06-09)
+- 참여자에 agent를 등록한 뒤 몇 초 후 체크가 풀리고 `중지 / agent work failed`가
+  보이는 현상은 participant mutation rollback이 아니라, assignment가 terminal `failed`
+  상태가 되면서 client selector가 terminal thread를 active participant에서 제외하는
+  projection 결과다.
+- `agent work failed`만 보이는 추가 원인은 control-plane assignment projection이
+  `Assignment.State`와 `LastEventSeq`만 보존하고, 마지막 terminal event message를 보존하지
+  않았기 때문이다. daemon이 실제 실패 원인을 보냈더라도 thread list/bootstrap reconcile이
+  projection state만 보고 `assignmentEventActionResponse(..., message="")`를 호출하면
+  fallback copy로 다시 덮일 수 있다.
+- Code(control-plane): `AssignmentProjection`에 `LastEvent`를 추가하고, in-memory/DynamoDB
+  projection에 `last_event_json`을 저장/로드한다. stale read-model repair는 projection의
+  마지막 event message를 사용해 failed/completed/cancelled thread message를 복구한다.
+- Code(daemon): supervisor가 runtime eligibility, workspace prepare, runtime submit,
+  terminal provider result failure를 daemon.log에 구조화된 한 줄로 남긴다. 필드는
+  `phase`, `task_id`, `assignment_id`, `agent_id`, `run_id`, `runtime_id`, `provider`,
+  `model`, `workdir`, `status`, `err`, `output`이다.
+- Test(control-plane): projection repair가 provider failure message를 보존하는지 검증한다.
+  DynamoDB projection load/save도 마지막 event JSON을 검증한다.
+- Test(daemon): supervisor/codex 패키지 테스트를 통과시켰다.
+
+### 검증
+- `go test ./internal/provider/codex -count=1`
+- `go test ./internal/agentbridge/session ./internal/agentbridge/runtimeactor -count=1`
+- `go test ./internal/agentbridge/supervisor ./internal/provider/codex -count=1`
+- `go test ./...`
+- control-plane: `go test ./internal/riidoaiserver -count=1`
+- control-plane: `go test ./...`
+
+### 남은 후속
+- control-plane terminal read-model fence는 별도 PR/변경으로 유지되어야 한다. daemon에서
+  provider noise를 drop해도 late progress/provider log를 terminal thread가 받아들이면
+  다른 noise가 같은 방식으로 샐 수 있다.
+- 실패 메시지 분류를 제품에 노출해야 한다. `agent work failed`는 마지막 fallback이어야
+  하고, 실제 terminal reason(`semantic idle timeout`, `process exited without provider
+  result`, provider RPC error, runtime ineligible, no repo/workdir 등)을 보존해야 한다.
+  이번 변경은 projection/reconcile 단계의 보존을 고정하지만, 제품 copy와 분류 UI는 아직
+  별도 후속이다.
+- repo/worktree binding을 추가해야 한다. prompt context가 바뀌어도 process cwd가 빈
+  generated workdir이면 coding task 문맥은 실제로 바뀐 것이 아니다.

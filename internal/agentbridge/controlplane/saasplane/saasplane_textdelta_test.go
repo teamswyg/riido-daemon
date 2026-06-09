@@ -37,3 +37,24 @@ func TestEventRequestFromAgentEventForwardsTextDelta(t *testing.T) {
 		t.Fatal("empty text delta should be dropped, not forwarded")
 	}
 }
+
+func TestEventRequestFromAgentEventForwardsProviderSessionPinned(t *testing.T) {
+	assignment := assignmentcontract.Assignment{ID: "asn-1", TaskID: "task-1"}
+
+	req, ok := eventRequestFromAgentEvent(assignment, agentbridge.Event{
+		Kind:      agentbridge.EventSessionIdentified,
+		SessionID: "th-1",
+	})
+	if !ok {
+		t.Fatal("session identified event should be forwarded to the control plane")
+	}
+	if req.EventType != assignmentcontract.EventProviderSessionPinned {
+		t.Fatalf("session event type = %q, want %q", req.EventType, assignmentcontract.EventProviderSessionPinned)
+	}
+	if req.ProviderSessionID != "th-1" {
+		t.Fatalf("provider_session_id = %q, want %q", req.ProviderSessionID, "th-1")
+	}
+	if req.Metadata[MetadataProviderSessionID] != "th-1" {
+		t.Fatalf("provider session metadata = %+v", req.Metadata)
+	}
+}

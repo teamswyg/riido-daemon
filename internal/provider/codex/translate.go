@@ -133,14 +133,29 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 			},
 		}}
 
-	case "turn_error", "turn/error":
+	case "turn_error", "turn/error", "turn/failed":
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventResult,
 			Result: agentbridge.Result{
 				Status: agentbridge.ResultFailed,
-				Error:  stringField(p, "message"),
+				Error:  codexNotificationErrorMessage(p),
 			},
 		}}
+
+	case "account/rateLimits/updated", "account_rate_limits_updated":
+		// Codex app-server account window updates are diagnostics, not task
+		// progress or a user-visible failure reason.
+		return nil
+
+	case "item/started", "item/updated", "item/completed",
+		"hook/started", "hook/completed",
+		"mcpServer/startupStatus/updated",
+		"remoteControl/status/changed":
+		// Known structural/lifecycle notifications. The semantic events
+		// (assistant text, tool calls, usage, and turn/thread completion) are
+		// handled separately; surfacing these as provider logs pollutes stopped
+		// or failed thread messages.
+		return nil
 
 	case "usage":
 		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: agentbridge.Usage{

@@ -27,10 +27,22 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/process"
 )
 
+// ChildObserver is notified when a spawned child starts and exits, so a caller
+// can track live provider process groups for orphan reaping (D6). pid is the
+// child PID, which equals its process-group id under Setpgid.
+type ChildObserver interface {
+	OnSpawn(pid int)
+	OnExit(pid int)
+}
+
 // New returns a process.Process that spawns via os/exec.
 func New() process.Process { return &execProcess{} }
 
-type execProcess struct{}
+// NewWithObserver is New plus child-lifecycle notifications. A nil observer
+// behaves like New.
+func NewWithObserver(obs ChildObserver) process.Process { return &execProcess{obs: obs} }
+
+type execProcess struct{ obs ChildObserver }
 
 func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.RunningProcess, error) {
 	if cmd.Executable == "" {
@@ -52,6 +64,7 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 	r := &execRunning{
 		cmd:     c,
 		cancel:  cancel,
+		obs:     e.obs,
 		stdout:  make(chan []byte, process.DefaultStdoutBuffer),
 		stderr:  make(chan []byte, process.DefaultStderrBuffer),
 		exited:  make(chan process.ExitStatus, 1),
@@ -65,6 +78,13 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 	if err := c.Start(); err != nil {
 		cancel()
 		return nil, err
+	}
+
+	if c.Process != nil {
+		r.pid = c.Process.Pid
+	}
+	if e.obs != nil && r.pid > 0 {
+		e.obs.OnSpawn(r.pid)
 	}
 
 	go r.killOnContext(cmdCtx.Done())
@@ -103,6 +123,8 @@ func mergeEnv(overrides []string) []string {
 type execRunning struct {
 	cmd       *exec.Cmd
 	cancel    context.CancelFunc
+	obs       ChildObserver
+	pid       int
 	stdout    chan []byte
 	stderr    chan []byte
 	exited    chan process.ExitStatus
@@ -173,6 +195,11 @@ func (r *execRunning) terminateProcessGroup() {
 
 func (r *execRunning) waitExit() {
 	err := r.cmd.Wait()
+	if r.obs != nil && r.pid > 0 {
+		// The process (and its group, after terminateCommand) is reaped; drop it
+		// from the live registry so only orphans from an unclean exit remain.
+		r.obs.OnExit(r.pid)
+	}
 	close(r.done)
 	close(r.stdout)
 	close(r.stderr)

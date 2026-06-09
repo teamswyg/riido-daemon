@@ -138,10 +138,16 @@ type cancelMsg struct {
 }
 
 type runningTask struct {
-	taskID  string
-	report  controlplane.TaskReportContext
-	runtime *runtimeactor.Actor
-	handle  *runtimeactor.SessionHandle
+	taskID       string
+	assignmentID string
+	agentID      string
+	runID        string
+	provider     string
+	model        string
+	runtimeID    string
+	report       controlplane.TaskReportContext
+	runtime      *runtimeactor.Actor
+	handle       *runtimeactor.SessionHandle
 	// freeCh is the claim goroutine capacity token for this task's runtime; the
 	// run goroutine returns a token here when the task terminates.
 	freeCh chan struct{}
@@ -529,6 +535,7 @@ func (a *Actor) startClaimedTask(ctx context.Context, msg *claimedMsg, inFlight 
 	_ = a.cfg.Reporter.StartTask(reportCtx, req.ID)
 	eligibility := taskEligibility(status, req)
 	if !eligibility.Eligible {
+		logTaskFailure("eligibility", status, req, "supervisor: runtime ineligible: "+eligibility.Summary())
 		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, agentbridge.Result{
 			Status: agentbridge.ResultBlocked,
 			Error:  "supervisor: runtime ineligible: " + eligibility.Summary(),
@@ -537,6 +544,7 @@ func (a *Actor) startClaimedTask(ctx context.Context, msg *claimedMsg, inFlight 
 	}
 	prepared, err := a.prepareWorkspace(ctx, status, req)
 	if err != nil {
+		logTaskFailure("prepare_workspace", status, req, err.Error())
 		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, agentbridge.Result{
 			Status: agentbridge.ResultFailed,
 			Error:  err.Error(),
@@ -545,17 +553,24 @@ func (a *Actor) startClaimedTask(ctx context.Context, msg *claimedMsg, inFlight 
 	}
 	handle, err := rt.Submit(ctx, *req)
 	if err != nil {
+		logTaskFailure("submit", status, req, err.Error())
 		res := agentbridge.Result{
 			Status: agentbridge.ResultFailed,
 			Error:  err.Error(),
 		}
 		if prepared != nil {
 			res = a.recordTerminalResult(ctx, &runningTask{
-				taskID:    req.ID,
-				report:    report,
-				runtime:   rt,
-				workspace: prepared.workspace,
-				events:    prepared.events,
+				taskID:       req.ID,
+				assignmentID: taskMetadata(req, "riido_saas_assignment_id"),
+				agentID:      taskMetadata(req, "riido_saas_agent_id"),
+				runID:        taskMetadata(req, MetadataRunID),
+				provider:     string(req.Provider),
+				model:        req.Model,
+				runtimeID:    status.RuntimeID,
+				report:       report,
+				runtime:      rt,
+				workspace:    prepared.workspace,
+				events:       prepared.events,
 			}, res)
 		}
 		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, res)
@@ -571,7 +586,21 @@ func (a *Actor) startClaimedTask(ctx context.Context, msg *claimedMsg, inFlight 
 		ws = prepared.workspace
 		events = prepared.events
 	}
-	inFlight[req.ID] = &runningTask{taskID: req.ID, report: report, runtime: rt, handle: handle, freeCh: msg.freeCh, workspace: ws, events: events}
+	inFlight[req.ID] = &runningTask{
+		taskID:       req.ID,
+		assignmentID: taskMetadata(req, "riido_saas_assignment_id"),
+		agentID:      taskMetadata(req, "riido_saas_agent_id"),
+		runID:        taskMetadata(req, MetadataRunID),
+		provider:     string(req.Provider),
+		model:        req.Model,
+		runtimeID:    status.RuntimeID,
+		report:       report,
+		runtime:      rt,
+		handle:       handle,
+		freeCh:       msg.freeCh,
+		workspace:    ws,
+		events:       events,
+	}
 
 	go a.forwardSession(req.ID, handle.Events(), handle.Result())
 	go a.forwardCancellation(ctx, req.ID)
@@ -611,6 +640,66 @@ func taskEligibility(status runtimeactor.Status, req *bridge.TaskRequest) schedu
 func reportContextFor(req *bridge.TaskRequest) controlplane.TaskReportContext {
 	report, _ := controlplane.TaskReportContextFromMetadata(req.Metadata)
 	return report
+}
+
+func taskMetadata(req *bridge.TaskRequest, key string) string {
+	if req == nil || req.Metadata == nil {
+		return ""
+	}
+	return strings.TrimSpace(req.Metadata[key])
+}
+
+func logTaskFailure(phase string, status runtimeactor.Status, req *bridge.TaskRequest, errText string) {
+	if req == nil {
+		return
+	}
+	log.Printf(
+		"supervisor task failed phase=%s task_id=%s assignment_id=%s agent_id=%s run_id=%s runtime_id=%s provider=%s model=%s workdir=%s err=%s",
+		strings.TrimSpace(phase),
+		strings.TrimSpace(req.ID),
+		taskMetadata(req, "riido_saas_assignment_id"),
+		taskMetadata(req, "riido_saas_agent_id"),
+		taskMetadata(req, MetadataRunID),
+		strings.TrimSpace(status.RuntimeID),
+		strings.TrimSpace(string(req.Provider)),
+		strings.TrimSpace(req.Model),
+		strings.TrimSpace(req.Cwd),
+		oneLineLogValue(errText),
+	)
+}
+
+func logTerminalTaskResult(running *runningTask, res agentbridge.Result) {
+	if running == nil {
+		return
+	}
+	switch res.Status {
+	case agentbridge.ResultCompleted, agentbridge.ResultCancelled:
+		return
+	}
+	log.Printf(
+		"supervisor task failed phase=terminal task_id=%s assignment_id=%s agent_id=%s run_id=%s runtime_id=%s provider=%s model=%s workdir=%s status=%s err=%s output=%s",
+		strings.TrimSpace(running.taskID),
+		strings.TrimSpace(running.assignmentID),
+		strings.TrimSpace(running.agentID),
+		strings.TrimSpace(running.runID),
+		strings.TrimSpace(running.runtimeID),
+		strings.TrimSpace(running.provider),
+		strings.TrimSpace(running.model),
+		strings.TrimSpace(res.Workdir),
+		strings.TrimSpace(string(res.Status)),
+		oneLineLogValue(res.Error),
+		oneLineLogValue(res.Output),
+	)
+}
+
+func oneLineLogValue(value string) string {
+	value = strings.TrimSpace(value)
+	value = strings.ReplaceAll(value, "\r", "\\r")
+	value = strings.ReplaceAll(value, "\n", "\\n")
+	if len(value) > 1024 {
+		return value[:1024] + "...(truncated)"
+	}
+	return value
 }
 
 func findCapability(caps []runtimeactor.Capability, provider string) (runtimeactor.Capability, bool) {
@@ -794,6 +883,7 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 	if res.Workdir == "" && running.workspace != nil {
 		res.Workdir = running.workspace.Workdir
 	}
+	logTerminalTaskResult(running, res)
 	a.appendTerminalResultEvent(ctx, running.taskID, running.events, res)
 	a.archiveTerminalWorkspace(ctx, running.taskID, running.workspace, running.events, res)
 	return res

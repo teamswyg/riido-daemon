@@ -483,6 +483,16 @@ ProviderEventDraft {
 
 - process 가 죽으면 adapter 가 `ProviderEventDraft(Type=LogLine, level="fatal", text=...)` 를 발행한다. **`TaskFailed` 같은 transition draft 를 직접 발행하지 않는다** — transition 결정은 server orchestrator 가 한다(adapter 는 “죽었다” 라는 관측만 제공).
 
+#### 5.1.1 process group ownership & orphan reaping (D6)
+
+provider CLI 는 **자기 프로세스 그룹**(`Setpgid`, `internal/process/processexec`)으로 기동한다. 그래서 CLI 가 만든 손자 프로세스까지 한 그룹으로 묶이고, session 종료 시 `terminateCommand` 가 그룹 전체를 `SIGTERM`→`SIGKILL` 로 정리한다(`syscall.Kill(-pid, …)`). graceful daemon shutdown(SIGTERM/SIGINT → runtime actor stop → session cancel)도 같은 경로로 in-flight provider 그룹을 죽인다.
+
+문제는 daemon 이 **SIGKILL/크래시**로 죽을 때다 — Go 코드가 돌지 못해 provider 그룹이 init/launchd 로 reparent 되어 고아로 남는다. 이를 막기 위해:
+
+- daemon 은 살아 있는 provider 그룹의 **pgid(= 자식 PID) 레지스트리**를 pid 파일과 같은 디렉터리(`daemon-children.pids`)에 지속한다(`internal/process/childreg`). spawn 시 기록, exit 시 제거하므로 파일에는 **현재 살아 있는 그룹만** 남는다 — clean shutdown 이면 비어 있다.
+- daemon **startup**(singleton lock 확보 후, serve 전)에 `ReapOrphans` 가 그 파일을 읽어 **아직 살아 있는 그룹을 `SIGKILL`** 한 뒤 파일을 reset 한다. 즉 이전 인스턴스가 남긴 고아 provider 만 정리된다(살아 있는 정상 daemon 의 자식은 건드리지 않는다 — singleton lock 이 동시 실행을 막으므로).
+- Windows 는 process group 이 없어(Setpgid 미지원) reaper 는 현재 no-op 다(D7 로 별도 추적).
+
 ### 5.2 session lifecycle
 
 | 단계 | adapter 책임 |
@@ -493,6 +503,10 @@ ProviderEventDraft {
 | **close** | process stop 직후 session 은 자동 close 로 간주. 별도 draft 발행 없음. |
 
 `SessionPinned` draft 발행 시점은 가능한 한 **provider 가 session id 를 처음 노출하는 순간** 이다. 늦게 발행하면 crash 후 resume 이 깨진다.
+SaaS reporter 는 이 draft 를 `provider_session_pinned` assignment event 로 변환하고
+`provider_session_id` metadata / request field 를 함께 전송한다. terminal report 는 같은
+provider session id 를 반복 보고할 수 있으며, control-plane 은 이를 durability backstop 으로
+idempotently 저장한다.
 
 ### 5.3 run lifecycle (단일 run 동안)
 
@@ -517,6 +531,19 @@ RunReportedDone (provider 자기 보고)
 - `RunReportedDone` 은 “agent 가 끝났다고 신고” 일 뿐 task 완료가 아니다. local RunController(supervisor) 는 terminal provider `Result(completed)` 를 `RunReportedDone` transition event 로 append 하고, completion 판정은 validation gate (C8) 가 한다.
 - `Result(failed|blocked|aborted|cancelled|timeout)` 은 adapter 가 직접 task 상태를 set 하지 않는다. local RunController 가 각각 `TaskFailed` / `TaskCancelled` / `TaskTimedOut` transition event 로 번역하고 `FSMVersion` 을 stamp 한다.
 - provider transport 오류는 provider 자기보고 완료보다 우선한다. 특히 Codex JSON-RPC pending request 가 error response 로 닫히거나, Codex `error` notification 이후 의미 있는 assistant output 없이 빈 `turn_completed` / process exit 로 끝난 경우 adapter 는 `Result(failed)` 를 발행해야 한다. OpenClaw `full_result` 도 명시적 `error` 가 없더라도 `text` / payload text 가 비어 있으면 산출 없는 terminal result 이므로 `Result(failed)` 로 fail-closed 한다. 단, 오류 notification 이후 `TextDelta` 또는 non-empty `Result.Output` 이 관측되면 회복된 실행으로 보고 일반 완료를 허용한다.
+- Known provider-internal notifications that do not advance the task must not be
+  promoted to user-visible `LogLine` / `EventLog`. For Codex, account window
+  updates such as `account/rateLimits/updated` and structural item/hook/status
+  notifications are diagnostics only. Adapters may keep local diagnostic logs or
+  metrics for these events, but they must not overwrite task-thread messages or
+  terminal failure copy.
+- Terminal `Result(failed|blocked|aborted)` must carry the most specific
+  provider/runtime reason available. The daemon must not collapse these into a
+  generic copy such as `agent work failed`; that phrase is only a client-facing
+  fallback when no upstream reason exists. Control-plane projections that repair
+  stale client read models must preserve the last assignment event message, and
+  daemon logs must include the terminal phase, runtime id, provider, model,
+  assignment id, workdir, and sanitized error text.
 
 ### 5.4 cancel / interrupt / needs-input
 
@@ -543,17 +570,27 @@ Semantic activity:
 - `tool_call_failed`
 - `tool_approval_needed`
 - `usage_delta`
-- `progress` (provider 공통 Riido telemetry parser 가
-  `<riido_log>{"code":...,"args":{...}}<end>` 에서 생성하고, legacy raw 문구는
-  호환 fallback 으로만 code/args 에 매핑)
 
-Non-semantic activity:
+Non-semantic activity (idle watchdog 을 reset 하지 않음):
 
 - `log`, `warning`, `error`
 - `result`, `process_exit`
 - `cancellation_requested`, `timeout`
+- `progress` — Riido telemetry(`<riido_log>{"code":...,"args":{...}}<end>`, legacy raw
+  문구는 호환 fallback)에서 생성된 진행 알림. UI 표시용으로 emit 되지만 **idle
+  watchdog 은 reset 하지 않는다**(B1): 이는 provider ground-truth 출력이 아니라
+  에이전트의 자기 narration 이므로, 진행 telemetry 만 반복하는 run 이 무기한
+  살아남지 않게 한다. (세션 actor 의 emit 에서 제외하며, 호환을 위해 전역
+  `IsSemanticActivity()` 분류 자체는 progress 를 그대로 둔다.)
 
-즉 stderr heartbeat / log spam / process 신호만으로 idle watchdog 을 reset 하지 않는다. 이 규칙이 깨지면 provider 가 실제 진행 없이 로그만 뿜어도 run 이 무기한 살아남는다.
+즉 stderr heartbeat / log spam / 진행 telemetry / process 신호만으로 idle watchdog 을 reset 하지 않는다. 이 규칙이 깨지면 provider 가 실제 진행 없이 로그/telemetry 만 뿜어도 run 이 무기한 살아남는다.
+
+**Telemetry strip (A1):** session actor 는 `text_delta` 에서 완성된
+`<riido_log>…<end>` 마커를 제거한 **정제 텍스트만** 하류로 forward 하고, 마커에서
+진행 이벤트를 별도로 추출한다(`agentbridge.TelemetryParser.Feed` 가 `(cleaned, events)`
+반환). 스트리밍으로 마커가 delta 경계에 걸치면 미완 조각은 버퍼에 보류해 raw 마커가
+하류 progress/SSE 로 새지 않게 한다. 정제 후 실텍스트가 없는(telemetry-only) delta 는
+emit 하지 않는다(빈 텍스트와 idle reset 둘 다 방지 — B1 과 맞물림).
 
 ### 5.6 Approval wait timeout ownership
 
@@ -899,6 +936,26 @@ adapter 는 session id 를 **자체 메모리에 들고 있지 않고**, 즉시 
 row 는 provider kind / protocol kind / last seen run identity / resume capability
 provenance 를 담을 수 있지만, runtime eligibility 나 fencing token 을 다시 해석하지
 않는다. lease expiry / stale fingerprint / task handoff 는 C5/C9 가 소유한다.
+
+Task 경계는 provider-native "clear" command 로 표현하지 않는다. 같은 Riido task/thread
+에서 resume eligibility 를 통과한 경우에만 `ResumeSessionID` 를 주입한다. 다른 Riido
+task, 다른 agent, 다른 provider/model, 다른 runtime identity, 다른 workdir/repo context
+는 `ResumeSessionID` 를 비워 **fresh provider session** 으로 시작한다.
+
+Provider process lifecycle 은 provider capability 별로 다르다. Codex `app-server`
+처럼 하나의 process 안에서 `thread/start`, `thread/resume`, `turn/start` 를 명시적으로
+구분할 수 있는 provider 는 runtime-scoped long-lived process 를 우선 구현 대상으로
+삼는다. 이 경우 task 전환은 `/clear` 문자열 주입이 아니라:
+
+1. 같은 Riido task/thread + 같은 runtime context: `thread/resume` + saved
+   `ProviderSessionID`.
+2. 다른 Riido task/thread 또는 context 불일치: `thread/start` 로 새 provider thread 생성.
+
+Claude `-p --output-format stream-json` 처럼 현재 adapter 가 run-scoped one-shot process
+를 전제로 하는 provider 는 별도 structured multi-session primitive 가 확인되기 전까지
+process reuse 대상이 아니다. Provider 별 hard reset capability 가 검증되지 않은 상태에서
+`/clear` 같은 interactive command 를 주입하면 reset 보장이 없고 task 간 문맥 오염을
+일으킬 수 있다.
 
 ## 9. 인접 SSOT 와의 계약
 

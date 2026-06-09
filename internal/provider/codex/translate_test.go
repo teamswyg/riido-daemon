@@ -160,6 +160,18 @@ func TestTranslateTurnError(t *testing.T) {
 	}
 }
 
+func TestTranslateTurnErrorUsesNestedErrorMessage(t *testing.T) {
+	raw := rawFromJSON(t, `{"jsonrpc":"2.0","method":"turn/failed","params":{"error":{"message":"nested boom"}}}`)
+	evs := tx(t, raw)
+	last := evs[len(evs)-1]
+	if last.Kind != agentbridge.EventResult || last.Result.Status != agentbridge.ResultFailed {
+		t.Fatalf("turn/failed: %+v", last)
+	}
+	if last.Result.Error != "nested boom" {
+		t.Fatalf("error: %q", last.Result.Error)
+	}
+}
+
 func TestTranslateUsage(t *testing.T) {
 	raw := rawFromJSON(t, `{"jsonrpc":"2.0","method":"usage","params":{"input_tokens":10,"output_tokens":20}}`)
 	evs := tx(t, raw)
@@ -179,6 +191,24 @@ func TestTranslateCurrentCodexUsage(t *testing.T) {
 	}
 	if evs[0].Usage.PromptTokens != 10 || evs[0].Usage.CacheReadTokens != 3 || evs[0].Usage.CompletionTokens != 4 || evs[0].Usage.ReasoningTokens != 2 {
 		t.Fatalf("usage: %+v", evs[0].Usage)
+	}
+}
+
+func TestTranslateCodexInternalNotificationsAreDropped(t *testing.T) {
+	for _, method := range []string{
+		"account/rateLimits/updated",
+		"account_rate_limits_updated",
+		"item/started",
+		"item/completed",
+		"remoteControl/status/changed",
+	} {
+		t.Run(method, func(t *testing.T) {
+			raw := rawFromJSON(t, `{"jsonrpc":"2.0","method":"`+method+`","params":{}}`)
+			evs := tx(t, raw)
+			if len(evs) != 0 {
+				t.Fatalf("%s should not surface user-visible events: %+v", method, evs)
+			}
+		})
 	}
 }
 

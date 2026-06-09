@@ -27,6 +27,7 @@ import (
 	c9lock "github.com/teamswyg/riido-daemon/internal/lock"
 	"github.com/teamswyg/riido-daemon/internal/logging"
 	"github.com/teamswyg/riido-daemon/internal/policy"
+	"github.com/teamswyg/riido-daemon/internal/process/childreg"
 	"github.com/teamswyg/riido-daemon/internal/process/processexec"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
@@ -346,7 +347,18 @@ func serveAgentDaemon(ctx context.Context, flags startFlags, settings daemonSett
 
 	startedAt := time.Now()
 
-	rtActors, err := newDaemonRuntimeActors(settings, builtinDaemonAdapters())
+	// D6: reap provider process groups orphaned by a previous unclean daemon
+	// exit (SIGKILL/crash), then track newly spawned children so they too can be
+	// reaped on the next start. Only the singleton lock holder reaches here.
+	regPath := childRegistryPath(flags)
+	if reaped, rerr := childreg.ReapOrphans(regPath); rerr != nil {
+		log.Printf("orphan provider reaper: %v", rerr)
+	} else if reaped > 0 {
+		log.Printf("reaped %d orphan provider process group(s) from a previous run", reaped)
+	}
+	childReg := childreg.New(regPath)
+
+	rtActors, err := newDaemonRuntimeActors(settings, builtinDaemonAdapters(), childReg)
 	if err != nil {
 		return err
 	}
@@ -451,14 +463,14 @@ func serveAgentDaemon(ctx context.Context, flags startFlags, settings daemonSett
 	}
 }
 
-func newDaemonRuntimeActors(settings daemonSettings, adapters []agentbridge.Adapter) ([]*runtimeactor.Actor, error) {
+func newDaemonRuntimeActors(settings daemonSettings, adapters []agentbridge.Adapter, childReg *childreg.Registry) ([]*runtimeactor.Actor, error) {
 	out := make([]*runtimeactor.Actor, 0, len(adapters))
 	for _, adapter := range adapters {
 		name := strings.TrimSpace(adapter.Name())
 		if name == "" {
 			return nil, errors.New("runtimeactor.New: adapter name is required")
 		}
-		rt, err := newDaemonRuntimeActor(settings, providerRuntimeID(settings.DaemonID, name), adapter, settings.RuntimeAgents)
+		rt, err := newDaemonRuntimeActor(settings, providerRuntimeID(settings.DaemonID, name), adapter, settings.RuntimeAgents, childReg)
 		if err != nil {
 			return nil, fmt.Errorf("runtimeactor.New(%s): %w", name, err)
 		}
@@ -470,7 +482,7 @@ func newDaemonRuntimeActors(settings daemonSettings, adapters []agentbridge.Adap
 	return out, nil
 }
 
-func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter agentbridge.Adapter, agents []runtimeactor.AgentStatus) (*runtimeactor.Actor, error) {
+func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter agentbridge.Adapter, agents []runtimeactor.AgentStatus, childReg *childreg.Registry) (*runtimeactor.Actor, error) {
 	return runtimeactor.New(runtimeactor.Config{
 		RuntimeID:           runtimeID,
 		Owner:               settings.RuntimeOwner,
@@ -478,7 +490,7 @@ func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter ag
 		Agents:              agents,
 		Models:              daemonRuntimeModels(adapter.Name()),
 		Adapters:            []agentbridge.Adapter{adapter},
-		Process:             processexec.New(),
+		Process:             processexec.NewWithObserver(childReg),
 		MaxConcurrent:       1,
 		HardTimeout:         settings.RunHardTimeout,
 		SemanticIdle:        settings.RunSemanticIdle,
@@ -913,6 +925,20 @@ func defaultDaemonPidPath() (string, error) {
 		return "", err
 	}
 	return filepath.Join(root.Path, "daemon.pid"), nil
+}
+
+// childRegistryPath co-locates the orphan-reaper registry (D6) with the daemon's
+// pid file, so it lands in the same identity dir (desktop userData or app-data)
+// and a crash leaves it where the next start looks.
+func childRegistryPath(flags startFlags) string {
+	base := strings.TrimSpace(flags.pidFile)
+	if base == "" {
+		base = strings.TrimSpace(flags.lockFile)
+	}
+	if base == "" {
+		return ""
+	}
+	return filepath.Join(filepath.Dir(base), "daemon-children.pids")
 }
 
 // acquireDaemonSingleton tries to become the single daemon instance (D3). It

@@ -7,7 +7,7 @@ import (
 
 func TestTelemetryParserExtractsRiidoLog(t *testing.T) {
 	parser := NewTelemetryParser()
-	events := parser.Feed(`before <riido_log>프로젝트 go.mod 작성중<end> after`)
+	_, events := parser.Feed(`before <riido_log>프로젝트 go.mod 작성중<end> after`)
 	if len(events) != 1 || events[0].Kind != EventProgress || events[0].Text != "프로젝트 go.mod 작성중" {
 		t.Fatalf("events = %+v", events)
 	}
@@ -15,7 +15,7 @@ func TestTelemetryParserExtractsRiidoLog(t *testing.T) {
 
 func TestTelemetryParserExtractsStructuredProgressCode(t *testing.T) {
 	parser := NewTelemetryParser()
-	events := parser.Feed(`<riido_log>{"code":1101,"args":{"label":"팀 프로젝트","description":"팀의 프로젝트 목록, 진행 상태, 우선순위와 담당자 정보를 조회해 요약을 준비 중. . ." }}<end>`)
+	_, events := parser.Feed(`<riido_log>{"code":1101,"args":{"label":"팀 프로젝트","description":"팀의 프로젝트 목록, 진행 상태, 우선순위와 담당자 정보를 조회해 요약을 준비 중. . ." }}<end>`)
 	want := "팀 프로젝트 수집 중 - 팀의 프로젝트 목록, 진행 상태, 우선순위와 담당자 정보를 조회해 요약을 준비 중. . ."
 	if len(events) != 1 ||
 		events[0].Kind != EventProgress ||
@@ -29,7 +29,7 @@ func TestTelemetryParserExtractsStructuredProgressCode(t *testing.T) {
 
 func TestTelemetryParserRendersNumericProgressArgs(t *testing.T) {
 	parser := NewTelemetryParser()
-	events := parser.Feed(`<riido_log>{"code":1102,"args":{"label":"팀 프로젝트","count":3,"representative_title":"프로젝트 Alpha"}}<end>`)
+	_, events := parser.Feed(`<riido_log>{"code":1102,"args":{"label":"팀 프로젝트","count":3,"representative_title":"프로젝트 Alpha"}}<end>`)
 	want := "팀 프로젝트 조회 완료 - 3건(프로젝트 Alpha 외)의 요약을 가져왔습니다. . ."
 	if len(events) != 1 ||
 		events[0].Kind != EventProgress ||
@@ -43,7 +43,7 @@ func TestTelemetryParserRendersNumericProgressArgs(t *testing.T) {
 
 func TestTelemetryParserNormalizesStatefulStructuredProgressLabels(t *testing.T) {
 	parser := NewTelemetryParser()
-	events := parser.Feed(`<riido_log>{"code":1103,"args":{"label":"테스트 실행","description":"Rust 프로젝트에서 cargo test를 다시 실행합니다."}}<end><riido_log>{"code":1104,"args":{"label":"검증 완료","summary":"README 마지막 줄과 cargo test 통과 결과를 확인했습니다."}}<end>`)
+	_, events := parser.Feed(`<riido_log>{"code":1103,"args":{"label":"테스트 실행","description":"Rust 프로젝트에서 cargo test를 다시 실행합니다."}}<end><riido_log>{"code":1104,"args":{"label":"검증 완료","summary":"README 마지막 줄과 cargo test 통과 결과를 확인했습니다."}}<end>`)
 	if len(events) != 2 {
 		t.Fatalf("events = %+v", events)
 	}
@@ -61,7 +61,7 @@ func TestTelemetryParserNormalizesStatefulStructuredProgressLabels(t *testing.T)
 
 func TestTelemetryParserMapsKnownLegacyProgressText(t *testing.T) {
 	parser := NewTelemetryParser()
-	events := parser.Feed(`<riido_log>웹 검색 실행 중 - 관련 문서(최대 3건)를 조회하고 참고 자료를 수집 중. . .<end>`)
+	_, events := parser.Feed(`<riido_log>웹 검색 실행 중 - 관련 문서(최대 3건)를 조회하고 참고 자료를 수집 중. . .<end>`)
 	if len(events) != 1 ||
 		events[0].ProgressCode != 1103 ||
 		events[0].ProgressKey != "tool.running" ||
@@ -72,13 +72,13 @@ func TestTelemetryParserMapsKnownLegacyProgressText(t *testing.T) {
 
 func TestTelemetryParserHandlesSplitTags(t *testing.T) {
 	parser := NewTelemetryParser()
-	if events := parser.Feed("noise <riido_"); len(events) != 0 {
+	if _, events := parser.Feed("noise <riido_"); len(events) != 0 {
 		t.Fatalf("unexpected early events: %+v", events)
 	}
-	if events := parser.Feed("log>main.go 작성중<e"); len(events) != 0 {
+	if _, events := parser.Feed("log>main.go 작성중<e"); len(events) != 0 {
 		t.Fatalf("unexpected partial end events: %+v", events)
 	}
-	events := parser.Feed("nd>")
+	_, events := parser.Feed("nd>")
 	if len(events) != 1 || events[0].Text != "main.go 작성중" {
 		t.Fatalf("events = %+v", events)
 	}
@@ -86,9 +86,57 @@ func TestTelemetryParserHandlesSplitTags(t *testing.T) {
 
 func TestTelemetryParserExtractsMultipleMessages(t *testing.T) {
 	parser := NewTelemetryParser()
-	events := parser.Feed(`<riido_log>go.mod<end><riido_log>go test<end>`)
+	_, events := parser.Feed(`<riido_log>go.mod<end><riido_log>go test<end>`)
 	if len(events) != 2 || events[0].Text != "go.mod" || events[1].Text != "go test" {
 		t.Fatalf("events = %+v", events)
+	}
+}
+
+func TestTelemetryParserStripsMarkersFromText(t *testing.T) {
+	parser := NewTelemetryParser()
+	cleaned, events := parser.Feed(`before <riido_log>프로젝트 go.mod 작성중<end> after`)
+	if cleaned != "before  after" {
+		t.Fatalf("cleaned = %q, want %q", cleaned, "before  after")
+	}
+	if len(events) != 1 || events[0].Kind != EventProgress {
+		t.Fatalf("events = %+v", events)
+	}
+}
+
+func TestTelemetryParserCleanedTextPassThroughWithoutMarkers(t *testing.T) {
+	parser := NewTelemetryParser()
+	cleaned, events := parser.Feed("plain assistant text, no markers")
+	if cleaned != "plain assistant text, no markers" || len(events) != 0 {
+		t.Fatalf("cleaned = %q events = %+v", cleaned, events)
+	}
+}
+
+func TestTelemetryParserPureTelemetryYieldsEmptyCleaned(t *testing.T) {
+	parser := NewTelemetryParser()
+	cleaned, events := parser.Feed(`<riido_log>{"code":1001,"args":{}}<end>`)
+	if cleaned != "" {
+		t.Fatalf("pure telemetry cleaned = %q, want empty", cleaned)
+	}
+	if len(events) != 1 || events[0].Kind != EventProgress {
+		t.Fatalf("events = %+v", events)
+	}
+}
+
+func TestTelemetryParserWithholdsMarkerSplitAcrossDeltas(t *testing.T) {
+	parser := NewTelemetryParser()
+	// Real text first, then a marker that begins mid-delta and finishes later.
+	c1, _ := parser.Feed("answer <riido_")
+	c2, _ := parser.Feed(`log>{"code":1001`)
+	c3, e3 := parser.Feed(`}<end> done`)
+	all := c1 + c2 + c3
+	if strings.Contains(all, "riido_log") {
+		t.Fatalf("marker leaked into cleaned text: c1=%q c2=%q c3=%q", c1, c2, c3)
+	}
+	if all != "answer  done" {
+		t.Fatalf("reassembled cleaned = %q, want %q", all, "answer  done")
+	}
+	if len(e3) != 1 {
+		t.Fatalf("final feed events = %+v", e3)
 	}
 }
 

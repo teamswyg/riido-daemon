@@ -263,14 +263,24 @@ Evidence:
 - `riido-daemon/cmd/riido/daemon.go:463`
   - `MaxConcurrent: 1`
 
-`MaxConcurrent: 1`은 provider별 동시 실행 제한이다. provider CLI process reuse를
+`MaxConcurrent`는 provider별 동시 실행 제한이다. provider CLI process reuse를
 의미하지 않는다.
 
+Branch/version note:
+
+- The reviewed `JYM-ai-get-done` daemon branch keeps runtime actor concurrency
+  at `MaxConcurrent: 1`.
+- `origin/main` later changed the default runtime max concurrency to 4 through
+  `RIIDO_RUNTIME_MAX_CONCURRENT` in `cmd/riido/daemon_config.go`.
+- That mainline change increases throughput but can also amplify Codex account
+  rate-limit pressure because each accepted run still starts its own Codex
+  app-server process and turn.
+
 The runtime actor is the in-memory owner for scheduling and capability status.
-It is not a persistent provider CLI daemon. It serializes work for a provider,
-but each accepted task becomes a run-scoped session with its own process and
-state reducer. Therefore runtime actor health does not imply there is a
-long-lived Codex/Claude process that can continue across Desktop or daemon
+It is not a persistent provider CLI daemon. It may serialize or bound work for a
+provider, but each accepted task becomes a run-scoped session with its own
+process and state reducer. Therefore runtime actor health does not imply there
+is a long-lived Codex/Claude process that can continue across Desktop or daemon
 restarts.
 
 ## 9. Every Task Starts A New Provider CLI Process
@@ -458,6 +468,20 @@ These causes compound. A run can start slowly because of CLI startup, then spend
 extra time discovering that the expected files are absent, while also flooding
 control-plane/client with text-delta progress events.
 
+Current branch follow-up:
+
+- `JYM-ai-get-done` coalesces provider `EventTextDelta` in supervisor before it
+  reaches the reporter (`TextFlushBytes=256`, `TextFlushInterval=200ms` by
+  default).
+- That reduces request storm volume, but `saasplane` still maps the coalesced
+  assistant text to `EventRiidoLog`, so assistant answer text and progress log
+  semantics remain collapsed.
+- `origin/main` changes this again: raw text deltas are accumulated and posted as
+  a special evolving partial body progress line, while final completion falls
+  back to the accumulated body when Codex reports an empty result.
+- Neither branch has a true repo-binding step yet; the LLM still runs inside the
+  generated isolated workdir, not the actual project checkout.
+
 ## 13. Workdir And Repo Binding Are Insufficient
 
 SaaS assignment를 daemon task request로 변환할 때 metadata의 `workspace_id`가 실제
@@ -489,6 +513,18 @@ detected and still perform badly if the run's `cwd` and prompt metadata do not
 point at the intended repository. "Codex is installed" only proves the executable
 can be found and version-probed; it does not prove the assignment has a usable
 worktree.
+
+The current branch added explicit no-repo guidance in the generated provider
+config, but that is only a fail-fast instruction to the LLM. It does not mount,
+clone, or checkout the selected repository. If the assignment prompt says a
+repository exists but the daemon workdir contains only generated runtime config,
+the agent has task metadata but no files to inspect or edit.
+
+This explains a common "context did not switch" symptom: the control-plane
+prompt can change to a different task snapshot, but the process `cwd` remains an
+empty generated run directory. From the provider CLI's perspective, every coding
+assignment has the same filesystem shape unless a repo/worktree binding step
+materializes the actual project into that run workdir.
 
 ## 14. Stop/Cancel Is Not ACID
 
@@ -1306,6 +1342,147 @@ Required fix:
 | Medium | provider process kill has no graceful wait | output/cleanup truncation and race with final reporting |
 | Medium | desktop stop is best-effort | stale pid/socket/orphan processes can survive |
 
+## 22.1 Codex Rate-Limit Noise, Long Runs, And Context Switching
+
+추가 확인일: 2026-06-09.
+
+User-visible symptom:
+
+```text
+중지
+codex rate limits updated
+```
+
+This text is unlikely to mean "the user request failed because of a Codex rate
+limit". In `origin/main`, the Codex app-server notification
+`account/rateLimits/updated` / `account_rate_limits_updated` is translated into
+a user-visible `EventLog` with text `codex rate limits updated`.
+
+Mainline evidence:
+
+- `riido-daemon/internal/provider/codex/translate.go`
+  - maps `account/rateLimits/updated` to `EventLog`
+- `riido-daemon/internal/agentbridge/controlplane/saasplane/saasplane.go`
+  - maps `EventLog` to `EventProviderLog`
+- `riido-control-plane/internal/riidoaiserver/ai_agent_client_development.go`
+  - provider log messages can become the visible thread message unless fenced by
+    terminal assignment/thread state
+
+Interpretation:
+
+- `중지` means the assignment/thread has reached stopped/cancelled state.
+- `codex rate limits updated` is an informational Codex app-server account
+  window notification.
+- They appear together when a provider log arrives near or after stop and leaks
+  into the stopped thread's visible message.
+
+Root fix:
+
+1. Daemon should not report `account/rateLimits/updated` as user-visible
+   provider log. It should be internal diagnostics only.
+2. Control-plane should reject or ignore provider log/progress updates for
+   terminal assignment/thread rows.
+3. Client filtering can hide this exact phrase, but that is only a presentation
+   fallback.
+
+### 22.1.1 Why Simple Codex Work Can Run Too Long
+
+Codex work is not a cheap command execution path. Each assignment starts a fresh
+provider process and app-server handshake:
+
+1. Start Codex process.
+2. Send JSON-RPC `initialize`.
+3. Send `initialized`.
+4. Send `thread/start` or `thread/resume`.
+5. Send `turn/start`.
+6. Wait for `turn/completed` or terminal `thread/status/changed`.
+
+Current branch defaults also make "hung" look slow:
+
+- `RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS` defaults to 30 minutes.
+- `RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS` defaults to 10 minutes.
+
+So if Codex does not emit a recognized terminal result, or emits only
+non-semantic log/noise, the run can sit until semantic idle or hard timeout.
+`EventLog` does not reset semantic idle, but the idle default is still long
+enough that a simple request can appear stuck for minutes.
+
+`origin/main` adds another pressure point:
+
+- default `RIIDO_RUNTIME_MAX_CONCURRENT` is 4.
+- each concurrent Codex run still starts its own app-server process/turn.
+- multiple simultaneous app-server turns can increase account rate-limit pressure
+  and make "rate limit updated" notifications appear more often.
+
+### 22.1.2 Why Failures Are Opaque
+
+The daemon session can fail for several distinct reasons:
+
+- `semantic idle timeout`
+- `hard timeout`
+- `process exited without provider result`
+- Codex JSON-RPC request error
+- Codex runtime `error` notification
+- provider executable detected but run command fails
+- runtime ineligible because selected agent binding does not match live runtime
+- empty/no-repo workdir for a coding task
+
+But the product often collapses the visible message to `agent work failed` when
+the terminal assignment event has no message. That fallback lives in the
+control-plane AI Agent client read model.
+
+One concrete daemon-side source of empty failure messages is provider-specific
+error shape mismatch. Codex `turn_error` / `turn/failed` notifications may carry
+the reason as `message`, `detail`, plain `error`, or nested `error.message`.
+The translator must normalize those shapes into `Result.Error`; otherwise the
+control-plane only receives a failed terminal state with no useful message.
+
+There is also a control-plane projection source of message loss. Assignment
+projection previously kept `Assignment.State` and `LastEventSeq`, but not the
+last assignment event body. When a client thread read model was stale, thread
+list/bootstrap reconcile could repair the thread from the projection by calling
+`assignmentEventActionResponse(..., message="")`. That made a real provider
+failure reason disappear behind the fallback `agent work failed`.
+
+Therefore "agent work failed" is not enough diagnostic data. The terminal event
+must preserve a classified failure reason and the UI should render that reason
+instead of a generic fallback whenever one exists.
+
+2026-06-09 follow-up:
+
+- Control-plane `AssignmentProjection` now carries the last assignment event.
+- DynamoDB assignment projection stores/loads `last_event_json`.
+- Stale read-model repair uses the projection's last event message, so a daemon
+  terminal reason such as `codex turn/start rpc error: ...`, `semantic idle
+  timeout`, or `runtime ineligible` is not replaced by `agent work failed`.
+- Daemon supervisor logs runtime failures with phase/runtime/provider/model/
+  assignment/workdir/error fields so the next repro can be diagnosed from
+  `daemon.log` even before the UI copy is refined.
+
+### 22.1.3 Why Context May Not Switch
+
+SaaS assignment conversion does not currently pass a provider
+`ResumeSessionID`, so the observed context issue is probably not Codex
+`thread/resume` accidentally reusing an old thread in the daemon path.
+
+The more likely context mismatch is filesystem and assignment scope:
+
+- control-plane composes a new prompt snapshot from task context;
+- daemon converts the assignment to a task request;
+- supervisor creates an isolated workdir under
+  `<workdir_root>/<workspace>/tasks/<task>/runs/<assignment>/workdir`;
+- no code in the reviewed daemon path clones, mounts, or checks out the selected
+  repository into that workdir.
+
+So the prompt context can change while the process filesystem context remains a
+fresh generated folder with only runtime config. For coding work, that looks like
+"context did not switch" or "the agent cannot find the right project".
+
+Follow-up thread messages intentionally include the previous thread id, previous
+run id, previous status, previous visible message, and the new user instruction.
+That is correct for a follow-up inside the same task thread, but it must not be
+confused with cross-task repo/workdir context switching.
+
 ## 23. Recommended Fix Order
 
 1. Fix daemon singleton and desktop launch lifecycle first.
@@ -1343,13 +1520,25 @@ Required fix:
    - If no repo binding exists, runtime should fail fast or ask for setup instead
      of launching provider CLI in an empty isolated directory.
 
-6. Separate CLI detection states in UI and API.
+6. Hide provider internal notifications from user-visible thread messages.
+   - Codex `account/rateLimits/updated` is an internal app-server account window
+     notification, not task progress or a terminal failure reason.
+   - Provider lifecycle/log noise should remain diagnostic metadata unless it is
+     explicitly promoted to user-facing progress.
+
+7. Preserve classified failure reasons.
+   - Terminal messages should distinguish timeout, process exit without result,
+     provider RPC error, runtime ineligible, and missing workdir/repo context.
+   - `agent work failed` should be a final fallback, not the normal visible
+     result for daemon/provider failure.
+
+8. Separate CLI detection states in UI and API.
    - Local daemon status
    - SaaS runtime snapshot freshness
    - Agent runtime binding
    - Provider executable/version probe result
 
-7. Add lifecycle regression tests.
+9. Add lifecycle regression tests.
    - Especially late progress after stop, duplicate daemon start, and raw delta
      batching.
    - Include the `AssignmentCancelling -> AgentAssignmentStateStopping ->
