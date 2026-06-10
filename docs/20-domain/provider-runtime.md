@@ -880,6 +880,18 @@ ControlPlane root package 의 비책임:
   owns project/mwsd projection sync outside this context.
 - `riidoaiserver`, local API, project persistence, packaging, infra, secrets
 
+#### 7.8.1 Assistant body delta reporting (`assistant.partial`)
+
+`controlplane/saasplane` reporter 가 provider 의 assistant 본문 델타
+(`EventTextDelta`) 를 control-plane 으로 보고할 때, `riido_log` progress 이벤트에
+`riido_progress_message_key = "assistant.partial"` metadata 를 붙인다. 이 key 는
+catalog progress code 가 아니라, 해당 progress 라인의 `message` 가 상태 문구가 아닌
+실시간 누적 assistant 본문임을 표시하는 마커다. control-plane 은 이 key 로 (1) web
+client 의 라이브 본문 렌더와 (2) 완료된 답변의 thread message history 보존을
+구분한다. 본문 자체는 rendered text 그대로이며 catalog code 로 치환되지 않는다.
+(consumer 계약: `riido-control-plane` 의 thread message-history 보존, 그리고
+`riido-contracts` 의 `AgentThreadProgressLine.message_key`.)
+
 ### 7.9 Supervisor boundary
 
 `internal/agentbridge/supervisor` 는 Daemon tier RunController 다. Provider adapter 도

@@ -160,6 +160,46 @@ func TestPlaneReportsStructuredProgressMetadata(t *testing.T) {
 	}
 }
 
+func TestPlaneTagsAssistantTextDeltaAsAssistantPartial(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "ship it",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	if err := plane.ReportEvent(context.Background(), req.ID, agentbridge.Event{
+		Kind: agentbridge.EventTextDelta,
+		Text: "the answer body",
+	}); err != nil {
+		t.Fatalf("ReportEvent: %v", err)
+	}
+	if len(fake.events) != 1 {
+		t.Fatalf("events = %+v", fake.events)
+	}
+	event := fake.events[0]
+	if event.EventType != assignmentcontract.EventRiidoLog {
+		t.Fatalf("event_type = %q, want riido_log", event.EventType)
+	}
+	if event.Message != "the answer body" {
+		t.Fatalf("message = %q", event.Message)
+	}
+	if event.Metadata[agentbridge.ProgressMessageMetadataKey] != agentbridge.AssistantPartialProgressKey {
+		t.Fatalf("assistant text delta must be tagged assistant.partial: metadata = %+v", event.Metadata)
+	}
+}
+
 func TestTaskRequestKeepsSyntheticDefaultModelIDAsMetadataOnly(t *testing.T) {
 	cases := []struct {
 		name     string

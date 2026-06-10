@@ -14,6 +14,12 @@ const (
 	ProgressMessageMetadataArgPrefix = "riido_progress_message_arg."
 )
 
+// AssistantPartialProgressKey marks a progress line whose message is the live,
+// accumulating assistant body (not a status string). The control plane uses it
+// to render the streaming answer and to preserve the completed answer as thread
+// message history. It is a marker key, not a catalog progress code.
+const AssistantPartialProgressKey = "assistant.partial"
+
 type progressMessageTemplate struct {
 	Code     int
 	Key      string

@@ -896,6 +896,12 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		}
 		req.EventType = assignmentcontract.EventRiidoLog
 		req.Message = ev.Text
+		// Tag the line as the live assistant body so the control plane can render
+		// the streaming answer and preserve the completed answer as thread message
+		// history, rather than treating it as a status line.
+		req.Metadata = map[string]string{
+			agentbridge.ProgressMessageMetadataKey: agentbridge.AssistantPartialProgressKey,
+		}
 	case agentbridge.EventLifecycle:
 		if ev.Phase == agentbridge.StateRunning {
 			req.EventType = assignmentcontract.EventAssignmentRunning
