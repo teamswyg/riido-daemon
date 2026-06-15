@@ -9,6 +9,11 @@
 | ID | Area | Question | Current handling |
 | --- | --- | --- | --- |
 | Q-DIST-003 | Consent storage | Should `ConsentLedger` persist only as local JSON append log or also use OS secure storage? | Pure model is public; durable OS adapter remains future work. |
+| Q-EXEC-001 | Agent execution workspace | Should private repo auth use a GitHub App installation token, a user PAT broker, or an org-level deploy key? | Public repo materialization only; private repo execution fails closed without logging credentials. |
+| Q-EXEC-002 | Provider lifecycle | Should long-lived provider processes be provider default or conversational-task opt-in? | One-shot process remains default; explicit provider session id enables resume. |
+| Q-EXEC-003 | Headless approval | What timeout and terminal state should web approval use? | Default proposal is `blocked` with `approval_timeout`. |
+| Q-EXEC-004 | Assignment DTO | Should `WorkspacePlan` be inline in the assignment snapshot or referenced by execution plan id? | Minimal inline snapshot is the current proposal. |
+| Q-EXEC-005 | Streaming | How long should live answer deltas be retained? | Final answer is durable; deltas remain bounded/ephemeral. |
 | Q-GATE-001 | Real CLI CI | Should provider real-CLI integration run on a scheduled public workflow? | Default PR CI stays deterministic; scheduled/manual integration can be added without bundled CLIs. |
 
 Questions that require shared DTO/schema changes must first be evaluated under

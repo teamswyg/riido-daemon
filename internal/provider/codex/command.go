@@ -176,8 +176,7 @@ func filterUnsafeBypassArgs(custom, dropped []string) (kept, allDropped []string
 	}
 
 	allDropped = append(allDropped, dropped...)
-	for i := 0; i < len(custom); i++ {
-		arg := custom[i]
+	for _, arg := range custom {
 		if _, isBlocked := blocked[arg]; isBlocked {
 			allDropped = append(allDropped, arg)
 			continue

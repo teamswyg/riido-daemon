@@ -25,8 +25,7 @@ func structJSONPaths(t reflect.Type, prefix string) []string {
 	}
 
 	var paths []string
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
+	for field := range t.Fields() {
 		if field.PkgPath != "" {
 			continue
 		}

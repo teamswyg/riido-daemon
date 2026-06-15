@@ -54,7 +54,7 @@ func TestStopIsIdempotentConcurrent(t *testing.T) {
 	wg.Add(N)
 	errs := make([]error, N)
 	start := make(chan struct{})
-	for i := 0; i < N; i++ {
+	for i := range N {
 		go func(idx int) {
 			defer wg.Done()
 			<-start // release everyone at once
@@ -78,7 +78,7 @@ func TestStopIsIdempotentConcurrent(t *testing.T) {
 // succeed-and-then-be-cancelled OR return ErrActorStopped; we accept
 // either outcome and only assert "did not hang."
 func TestStopWhileSubmitInFlight(t *testing.T) {
-	for trial := 0; trial < 20; trial++ {
+	for trial := range 20 {
 		a, _ := startActor(t, Config{
 			Adapters: []agentbridge.Adapter{
 				&stubAdapter{name: "fake", detected: agentbridge.DetectResult{Available: true}},

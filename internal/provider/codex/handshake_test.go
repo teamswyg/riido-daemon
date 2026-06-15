@@ -396,7 +396,7 @@ func TestCodexRPCActorReleasesPendingOnProcessExit(t *testing.T) {
 
 	const N = 8
 	replies := make([]<-chan RPCResult, 0, N)
-	for i := 0; i < N; i++ {
+	for range N {
 		id := rpc.NextID()
 		replies = append(replies, rpc.Register(id))
 	}

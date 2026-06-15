@@ -162,6 +162,16 @@ func waitForRunning(t *testing.T, p *fakeProcess, i int, d time.Duration) *proce
 	return nil
 }
 
+func envListValue(env []string, wantKey string) (string, bool) {
+	for _, entry := range env {
+		key, value, ok := strings.Cut(entry, "=")
+		if ok && strings.EqualFold(key, wantKey) {
+			return value, true
+		}
+	}
+	return "", false
+}
+
 func startActor(t *testing.T, cfg Config) (*Actor, *fakeProcess) {
 	t.Helper()
 	if cfg.Process == nil {
@@ -538,6 +548,7 @@ func TestRuntimeActorStartsSessionAndReportsResult(t *testing.T) {
 
 func TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn(t *testing.T) {
 	selected := "/opt/riido/bin/openclaw-supported"
+	launchPath := "/riido/test/bin"
 	startReqCh := make(chan agentbridge.StartRequest, 1)
 	a, p := startActor(t, Config{
 		Adapters: []agentbridge.Adapter{
@@ -552,7 +563,9 @@ func TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn(t *testing.T) 
 		},
 		MaxConcurrent: 1,
 	})
-	h, err := a.Submit(context.Background(), bridge.TaskRequest{ID: "t-openclaw", Provider: "openclaw", Prompt: "hi"})
+	h, err := a.Submit(context.Background(), bridge.TaskRequest{
+		ID: "t-openclaw", Provider: "openclaw", Prompt: "hi", Env: map[string]string{"PATH": launchPath},
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -563,11 +576,17 @@ func TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn(t *testing.T) 
 		if req.Executable != selected {
 			t.Fatalf("BuildStart request executable = %q, want %q", req.Executable, selected)
 		}
+		if got := req.Env["PATH"]; got != launchPath {
+			t.Fatalf("BuildStart PATH = %q, want %q", got, launchPath)
+		}
 	case <-time.After(time.Second):
 		t.Fatal("BuildStart request not observed")
 	}
 	if got := p.commandAt(0).Executable; got != selected {
 		t.Fatalf("spawn executable = %q, want %q", got, selected)
+	}
+	if got, ok := envListValue(p.commandAt(0).Env, "PATH"); !ok || got != launchPath {
+		t.Fatalf("spawn PATH = %q ok=%v, want %q; env=%v", got, ok, launchPath, p.commandAt(0).Env)
 	}
 
 	go func() {

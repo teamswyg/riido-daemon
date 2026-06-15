@@ -27,6 +27,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/session"
 	"github.com/teamswyg/riido-daemon/internal/process"
 )
@@ -372,6 +373,7 @@ func (a *Actor) handleSubmit(
 		return nil, fmt.Errorf("%w: %s", ErrProviderUnavailable, msg.req.Provider)
 	}
 
+	launchEnv := detectutil.EnvMapWithLaunchPATH(msg.req.Env)
 	startReq := agentbridge.StartRequest{
 		TaskID:          msg.req.ID,
 		Prompt:          msg.req.Prompt,
@@ -381,7 +383,7 @@ func (a *Actor) handleSubmit(
 		SystemPrompt:    msg.req.SystemPrompt,
 		MaxTurns:        msg.req.MaxTurns,
 		ResumeSessionID: msg.req.ResumeSessionID,
-		Env:             msg.req.Env,
+		Env:             launchEnv,
 		CustomArgs:      msg.req.CustomArgs,
 		MCPConfig:       msg.req.MCPConfig,
 		Metadata:        msg.req.Metadata,
@@ -414,6 +416,7 @@ func (a *Actor) handleSubmit(
 	if spawnCommand.Dir == "" {
 		spawnCommand.Dir = startReq.Cwd
 	}
+	spawnCommand.Env = detectutil.EnvListWithLaunchPATHFromMap(spawnCommand.Env, launchEnv)
 
 	sess, err := session.Start(msg.ctx, session.Config{
 		TaskID:         msg.req.ID,

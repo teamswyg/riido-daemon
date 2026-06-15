@@ -562,6 +562,10 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 	if workspaceID == "" {
 		return nil, errors.New("supervisor: workspace_id metadata is required when Workdir is configured")
 	}
+	logicalTaskID := firstMetadata(req.Metadata, controlplane.MetadataTaskID)
+	if logicalTaskID == "" {
+		logicalTaskID = req.ID
+	}
 	runID := firstMetadata(req.Metadata, MetadataRunID)
 	if runID == "" {
 		runID = req.ID
@@ -570,17 +574,17 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 	if !ok {
 		return nil, fmt.Errorf("supervisor: capability for provider %q disappeared before workspace prepare", req.Provider)
 	}
-	ws, err := a.cfg.Workdir.Prepare(workdir.TaskID{Workspace: workspaceID, Task: req.ID, Run: runID})
+	ws, err := a.cfg.Workdir.Prepare(workdir.TaskID{Workspace: workspaceID, Task: logicalTaskID, Run: runID})
 	if err != nil {
 		return nil, err
 	}
-	events, err := a.newWorkspaceEventContext(ws, status.RuntimeID, req, runID, capView)
+	events, err := a.newWorkspaceEventContext(ws, status.RuntimeID, req, logicalTaskID, runID, capView)
 	if err != nil {
 		return nil, err
 	}
 	a.appendWorkspaceEvent(ctx, req.ID, events, ir.EventWorkdirCreated, "", map[string]any{
 		"workdirPath": ws.Workdir,
-		"taskID":      req.ID,
+		"taskID":      logicalTaskID,
 	})
 	nativePlan := workdir.ProviderConfigPlan(string(req.Provider))
 	nativeHookMode := a.nativeHookMode(nativePlan)
@@ -705,7 +709,7 @@ func (a *Actor) archiveTerminalWorkspace(ctx context.Context, taskID string, ws 
 	})
 }
 
-func (a *Actor) newWorkspaceEventContext(ws workdir.Workspace, statusRuntimeID string, req *bridge.TaskRequest, runID string, capView runtimeactor.Capability) (*workspaceEventContext, error) {
+func (a *Actor) newWorkspaceEventContext(ws workdir.Workspace, statusRuntimeID string, req *bridge.TaskRequest, logicalTaskID, runID string, capView runtimeactor.Capability) (*workspaceEventContext, error) {
 	sink, err := workdir.NewRunEventSink(ws)
 	if err != nil {
 		return nil, err
@@ -731,7 +735,7 @@ func (a *Actor) newWorkspaceEventContext(ws workdir.Workspace, statusRuntimeID s
 		return nil, err
 	}
 	return &workspaceEventContext{
-		taskID:        req.ID,
+		taskID:        logicalTaskID,
 		runID:         runID,
 		runtimeID:     statusRuntimeID,
 		capability:    capView,

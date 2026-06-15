@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -84,6 +85,16 @@ func (d *driverSpy) OnProcessExit(context.Context, agentbridge.ProcessExitStatus
 
 func (d *driverSpy) OnClose(context.Context, agentbridge.ProtocolIO) error { return nil }
 
+func envListValue(env []string, wantKey string) (string, bool) {
+	for _, entry := range env {
+		key, value, ok := strings.Cut(entry, "=")
+		if ok && strings.EqualFold(key, wantKey) {
+			return value, true
+		}
+	}
+	return "", false
+}
+
 func TestNewRequiresAdapter(t *testing.T) {
 	_, err := New(Config{})
 	if err == nil {
@@ -157,6 +168,7 @@ func TestRunReachesCompletion(t *testing.T) {
 
 func TestRunPassesDetectedExecutableToBuildStartAndSpawn(t *testing.T) {
 	selected := "/opt/riido/bin/openclaw-supported"
+	launchPath := "/riido/test/bin"
 	a := &stubAdapter{name: "openclaw", detected: agentbridge.DetectResult{
 		Available:  true,
 		Executable: selected,
@@ -171,7 +183,7 @@ func TestRunPassesDetectedExecutableToBuildStartAndSpawn(t *testing.T) {
 	})
 
 	sess, err := c.Run(context.Background(), TaskRequest{
-		ID: "t-openclaw", Provider: "openclaw", Prompt: "hello",
+		ID: "t-openclaw", Provider: "openclaw", Prompt: "hello", Env: map[string]string{"PATH": launchPath},
 	})
 	if err != nil {
 		t.Fatalf("Run: %v", err)
@@ -179,8 +191,14 @@ func TestRunPassesDetectedExecutableToBuildStartAndSpawn(t *testing.T) {
 	if a.seenStart.Executable != selected {
 		t.Fatalf("BuildStart executable = %q, want %q", a.seenStart.Executable, selected)
 	}
+	if got := a.seenStart.Env["PATH"]; got != launchPath {
+		t.Fatalf("BuildStart PATH = %q, want %q", got, launchPath)
+	}
 	if got := running.Command().Executable; got != selected {
 		t.Fatalf("spawn executable = %q, want %q", got, selected)
+	}
+	if got, ok := envListValue(running.Command().Env, "PATH"); !ok || got != launchPath {
+		t.Fatalf("spawn PATH = %q ok=%v, want %q; env=%v", got, ok, launchPath, running.Command().Env)
 	}
 
 	go func() {

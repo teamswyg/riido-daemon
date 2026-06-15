@@ -35,11 +35,14 @@ func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask: %v", err)
 	}
-	if req == nil || req.ID != "task-a" || req.Provider != "codex" {
+	if req == nil || req.ID != "asn-1" || req.Provider != "codex" {
 		t.Fatalf("request = %+v", req)
 	}
 	if got := req.Metadata[MetadataAssignmentID]; got != "asn-1" {
 		t.Fatalf("assignment metadata = %q", got)
+	}
+	if got := req.Metadata[controlplane.MetadataTaskID]; got != "task-a" {
+		t.Fatalf("task metadata = %q", got)
 	}
 	if got := req.Metadata["workspace_id"]; got != "component-1" {
 		t.Fatalf("workspace_id = %q", got)
@@ -240,6 +243,138 @@ func TestPlaneDeliversCancellationFromPollResponse(t *testing.T) {
 	}
 }
 
+func TestPlaneKeepsSameTaskAssignmentsIndependent(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	first := assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "first",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	}
+	second := first
+	second.ID = "asn-2"
+	second.Prompt = "second"
+	second.LeaseToken = "lease-2"
+	fake.enqueue(first)
+	fake.enqueue(second)
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	req1, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask first: %v", err)
+	}
+	req2, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask second: %v", err)
+	}
+	if req1 == nil || req2 == nil || req1.ID != first.ID || req2.ID != second.ID {
+		t.Fatalf("claims = %+v / %+v", req1, req2)
+	}
+	if req1.Metadata[controlplane.MetadataTaskID] != first.TaskID || req2.Metadata[controlplane.MetadataTaskID] != second.TaskID {
+		t.Fatalf("logical task metadata lost: %+v / %+v", req1.Metadata, req2.Metadata)
+	}
+	if err := plane.StartTask(context.Background(), req1.ID); err != nil {
+		t.Fatalf("StartTask first: %v", err)
+	}
+	if err := plane.StartTask(context.Background(), req2.ID); err != nil {
+		t.Fatalf("StartTask second: %v", err)
+	}
+	cancel1, err := plane.WatchCancellation(context.Background(), req1.ID)
+	if err != nil {
+		t.Fatalf("WatchCancellation first: %v", err)
+	}
+	cancel2, err := plane.WatchCancellation(context.Background(), req2.ID)
+	if err != nil {
+		t.Fatalf("WatchCancellation second: %v", err)
+	}
+
+	if err := plane.Heartbeat(context.Background(), controlplane.RuntimeHeartbeat{
+		RuntimeID:      RuntimeIDForAgent("daemon-1", AgentBinding{AgentID: "jykim1", RuntimeProvider: "codex"}),
+		RunningTaskIDs: []string{req1.ID, req2.ID},
+	}); err != nil {
+		t.Fatalf("Heartbeat: %v", err)
+	}
+	heartbeats := fake.heartbeatsFor("jykim1")
+	if len(heartbeats) != 1 || strings.Join(heartbeats[0].ActiveAssignmentIDs, ",") != "asn-1,asn-2" {
+		t.Fatalf("heartbeats = %+v", heartbeats)
+	}
+	if err := plane.ReportEvent(context.Background(), req1.ID, agentbridge.Event{Kind: agentbridge.EventProgress, Text: "first progress"}); err != nil {
+		t.Fatalf("ReportEvent first: %v", err)
+	}
+	if err := plane.ReportEvent(context.Background(), req2.ID, agentbridge.Event{Kind: agentbridge.EventProgress, Text: "second progress"}); err != nil {
+		t.Fatalf("ReportEvent second: %v", err)
+	}
+	if last := fake.events[len(fake.events)-1]; last.AssignmentID != second.ID || last.TaskID != second.TaskID {
+		t.Fatalf("second event identity = %+v", last)
+	}
+
+	fake.cancelNext(second.AgentID, second)
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask cancel poll: %v", err)
+	}
+	if req != nil {
+		t.Fatalf("cancel poll should not claim new task: %+v", req)
+	}
+	select {
+	case cause := <-cancel2:
+		if cause == nil || !strings.Contains(cause.Error(), second.ID) {
+			t.Fatalf("second cancel cause = %v", cause)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timeout waiting for second cancellation")
+	}
+	if _, ok := <-cancel2; ok {
+		t.Fatal("second cancellation watcher should close after cancel")
+	}
+	select {
+	case cause, ok := <-cancel1:
+		t.Fatalf("first watcher should remain independent, cause=%v ok=%v", cause, ok)
+	case <-time.After(20 * time.Millisecond):
+	}
+}
+
+func TestPlaneClosesCancellationWatcherOnComplete(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "complete",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	cancelCh, err := plane.WatchCancellation(context.Background(), req.ID)
+	if err != nil {
+		t.Fatalf("WatchCancellation: %v", err)
+	}
+	if err := plane.CompleteTask(context.Background(), req.ID, agentbridge.Result{Status: agentbridge.ResultCompleted, Output: "ok"}); err != nil {
+		t.Fatalf("CompleteTask: %v", err)
+	}
+	select {
+	case _, ok := <-cancelCh:
+		if ok {
+			t.Fatal("completion should close watcher without cancellation cause")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timeout waiting for watcher close")
+	}
+}
+
 func TestPlaneDeliversCancellationFromUnrefreshedHeartbeat(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	first := assignmentcontract.Assignment{
@@ -309,7 +444,7 @@ func TestPlaneClaimsActiveAssignmentAfterLocalStateLoss(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask active: %v", err)
 	}
-	if req == nil || req.ID != active.TaskID || req.Metadata[MetadataAssignmentID] != active.ID {
+	if req == nil || req.ID != active.ID || req.Metadata[MetadataAssignmentID] != active.ID {
 		t.Fatalf("active claim = %+v", req)
 	}
 	if !req.AllowExperimentalRuntime {
@@ -347,7 +482,7 @@ func TestPlanePollsOnlyRuntimeScopedAgent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask jykim2: %v", err)
 	}
-	if req == nil || req.ID != "task-b" || req.Metadata[MetadataAgentID] != "jykim2" {
+	if req == nil || req.ID != "asn-2" || req.Metadata[MetadataAgentID] != "jykim2" {
 		t.Fatalf("jykim2 claim = %+v", req)
 	}
 }
@@ -372,7 +507,7 @@ func TestPlaneSendsBearerToken(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask with token: %v", err)
 	}
-	if req == nil || req.ID != "task-a" {
+	if req == nil || req.ID != "asn-1" {
 		t.Fatalf("request = %+v", req)
 	}
 }
@@ -407,8 +542,65 @@ func TestPlaneSendsDeviceCredentialHeaders(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask with device credential: %v", err)
 	}
-	if req == nil || req.ID != "task-a" {
+	if req == nil || req.ID != "asn-1" {
 		t.Fatalf("request = %+v", req)
+	}
+}
+
+func TestPlaneRetriesTransientPoll(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.failNext("/v1/agents/jykim1/poll", 1, http.StatusServiceUnavailable)
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "hello",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask should retry transient poll: %v", err)
+	}
+	if req == nil || req.ID != "asn-1" {
+		t.Fatalf("request = %+v", req)
+	}
+	if got := fake.requestCount("/v1/agents/jykim1/poll"); got != 2 {
+		t.Fatalf("poll request count = %d, want 2", got)
+	}
+}
+
+func TestPlaneDoesNotRetryEventPostWithoutIdempotency(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "hello",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	fake.failNext("/v1/agents/jykim1/events", 1, http.StatusServiceUnavailable)
+	err = plane.ReportEvent(context.Background(), req.ID, agentbridge.Event{Kind: agentbridge.EventProgress, Text: "progress"})
+	if err == nil || !strings.Contains(err.Error(), "503") {
+		t.Fatalf("ReportEvent should return first transient event failure without retry, got %v", err)
+	}
+	if got := fake.requestCount("/v1/agents/jykim1/events"); got != 1 {
+		t.Fatalf("event request count = %d, want 1", got)
 	}
 }
 
@@ -737,7 +929,7 @@ func TestPlaneClaimsDynamicAgentBinding(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask: %v", err)
 	}
-	if req == nil || req.ID != "task-a" || req.Provider != "codex" || req.Metadata[MetadataAgentID] != "jykim1" {
+	if req == nil || req.ID != "asn-1" || req.Provider != "codex" || req.Metadata[MetadataAgentID] != "jykim1" {
 		t.Fatalf("dynamic claim = %+v", req)
 	}
 	if err := plane.StartTask(context.Background(), req.ID); err != nil {
@@ -813,6 +1005,9 @@ type fakeAssignmentServer struct {
 	activeByAgent      map[string]assignmentcontract.Assignment
 	cancelByAgent      map[string]assignmentcontract.Assignment
 	staleHeartbeatIDs  map[string]bool
+	requestCounts      map[string]int
+	transientFailures  map[string]int
+	transientStatuses  map[string]int
 	bindings           []assignmentcontract.AgentRuntimeBinding
 	runtimeSnapshots   []DeviceRuntimeSnapshotSyncRequest
 	events             []assignmentcontract.AgentEventRequest
@@ -828,6 +1023,9 @@ func newFakeAssignmentServer(t *testing.T) *fakeAssignmentServer {
 		activeByAgent:      map[string]assignmentcontract.Assignment{},
 		cancelByAgent:      map[string]assignmentcontract.Assignment{},
 		staleHeartbeatIDs:  map[string]bool{},
+		requestCounts:      map[string]int{},
+		transientFailures:  map[string]int{},
+		transientStatuses:  map[string]int{},
 	}
 	f.server = httptest.NewServer(http.HandlerFunc(f.handle))
 	t.Cleanup(f.server.Close)
@@ -857,13 +1055,32 @@ func (f *fakeAssignmentServer) activeNext(agentID string, assignment assignmentc
 	f.assignmentsByID[assignment.ID] = assignment
 }
 
+func (f *fakeAssignmentServer) failNext(path string, count, status int) {
+	f.transientFailures[path] = count
+	f.transientStatuses[path] = status
+}
+
+func (f *fakeAssignmentServer) requestCount(path string) int {
+	return f.requestCounts[path]
+}
+
 func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
+	f.requestCounts[r.URL.Path]++
 	if f.deviceSecret != "" && (r.Header.Get("X-Riido-Device-Id") != f.deviceID || r.Header.Get("X-Riido-Device-Secret") != f.deviceSecret) {
 		http.Error(w, "missing device credential", http.StatusUnauthorized)
 		return
 	}
 	if f.bearerToken != "" && r.Header.Get("Authorization") != "Bearer "+f.bearerToken {
 		http.Error(w, "missing bearer token", http.StatusUnauthorized)
+		return
+	}
+	if f.transientFailures[r.URL.Path] > 0 {
+		f.transientFailures[r.URL.Path]--
+		status := f.transientStatuses[r.URL.Path]
+		if status == 0 {
+			status = http.StatusServiceUnavailable
+		}
+		http.Error(w, "transient failure", status)
 		return
 	}
 	if strings.Trim(r.URL.Path, "/") == "v1/daemon/agent-bindings" {

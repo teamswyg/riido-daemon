@@ -101,13 +101,13 @@ func TestSessionStdoutStderrBurstNoDeadlock(t *testing.T) {
 
 	// Burst feed stdout + stderr concurrently.
 	go func() {
-		for i := 0; i < burstChunks/2; i++ {
+		for range burstChunks / 2 {
 			running.EmitStdout([]byte("s"))
 		}
 		running.EmitStdout([]byte("DONE"))
 	}()
 	go func() {
-		for i := 0; i < burstChunks/2; i++ {
+		for range burstChunks / 2 {
 			running.EmitStderr([]byte("e"))
 		}
 	}()
@@ -165,7 +165,7 @@ func TestSessionCancelDuringBurstDoesNotDeadlock(t *testing.T) {
 	burstDone := make(chan struct{})
 	go func() {
 		defer close(burstDone)
-		for i := 0; i < burstChunks; i++ {
+		for range burstChunks {
 			// Allow EmitStdout to recover from a closed channel after
 			// cancellation by guarding with recover().
 			func() {
@@ -210,7 +210,7 @@ func TestSessionGoroutineCleanupAfterCompletion(t *testing.T) {
 	time.Sleep(20 * time.Millisecond)
 	baseline := runtime.NumGoroutine()
 
-	for cycle := 0; cycle < 5; cycle++ {
+	for cycle := range 5 {
 		fake := process.NewFake()
 		fake.NextRunning = process.NewFakeRunning()
 		sess, err := Start(context.Background(), Config{

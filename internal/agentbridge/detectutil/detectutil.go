@@ -13,6 +13,7 @@ import (
 	"context"
 	"errors"
 	"io"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -112,6 +113,101 @@ func ResolveExecutableCandidates(name, envOverride string) []string {
 	}
 
 	return candidates
+}
+
+// LaunchPATH returns the PATH value provider child processes should inherit
+// when the caller has not supplied an explicit PATH. It uses the same augmented
+// search directories as executable detection so a GUI-launched daemon can both
+// find provider CLIs and let those CLIs find child tools such as git/node.
+func LaunchPATH() string {
+	return strings.Join(augmentedSearchDirs(), string(os.PathListSeparator))
+}
+
+// EnvMapWithLaunchPATH clones env and adds PATH when env does not already
+// contain an explicit PATH key.
+func EnvMapWithLaunchPATH(env map[string]string) map[string]string {
+	out := make(map[string]string, len(env)+1)
+	maps.Copy(out, env)
+	if envMapHasPATH(out) {
+		return out
+	}
+	if path := LaunchPATH(); path != "" {
+		out[pathEnvKey()] = path
+	}
+	return out
+}
+
+// EnvMapPATHValue returns the PATH-like value from env, if one is present.
+func EnvMapPATHValue(env map[string]string) string {
+	_, value, _ := envMapPATHEntry(env)
+	return value
+}
+
+// EnvListWithLaunchPATH clones env and appends PATH when env does not already
+// contain a PATH entry. The preferred value should normally come from
+// EnvMapWithLaunchPATH so adapter BuildStart and final process spawn share the
+// same frozen launch path.
+func EnvListWithLaunchPATH(env []string, preferred string) []string {
+	out := append([]string(nil), env...)
+	if envListHasPATH(out) {
+		return out
+	}
+	preferred = strings.TrimSpace(preferred)
+	if preferred == "" {
+		preferred = LaunchPATH()
+	}
+	if preferred != "" {
+		out = append(out, pathEnvKey()+"="+preferred)
+	}
+	return out
+}
+
+// EnvListWithLaunchPATHFromMap clones env and appends the frozen PATH value
+// from launchEnv when env does not already contain a PATH entry.
+func EnvListWithLaunchPATHFromMap(env []string, launchEnv map[string]string) []string {
+	out := append([]string(nil), env...)
+	if envListHasPATH(out) {
+		return out
+	}
+	key, value, ok := envMapPATHEntry(launchEnv)
+	if ok {
+		return append(out, key+"="+value)
+	}
+	if path := LaunchPATH(); path != "" {
+		out = append(out, pathEnvKey()+"="+path)
+	}
+	return out
+}
+
+func envMapHasPATH(env map[string]string) bool {
+	_, _, ok := envMapPATHEntry(env)
+	return ok
+}
+
+func envMapPATHEntry(env map[string]string) (string, string, bool) {
+	for key, value := range env {
+		if strings.EqualFold(key, pathEnvKey()) {
+			return key, value, true
+		}
+	}
+	return "", "", false
+}
+
+func envListHasPATH(env []string) bool {
+	for _, entry := range env {
+		key, _, ok := strings.Cut(entry, "=")
+		if ok && strings.EqualFold(key, pathEnvKey()) {
+			return true
+		}
+	}
+	return false
+}
+
+func pathEnvKey() string {
+	if runtime.GOOS == "windows" {
+		return "Path"
+	}
+	return "PATH"
 }
 
 // augmentedSearchDirs is the seam tests override; production resolution uses

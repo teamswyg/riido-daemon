@@ -304,6 +304,7 @@ func TestClaimTaskPersistsRuntimeLeaseMetadata(t *testing.T) {
 	}
 	if req == nil {
 		t.Fatal("ClaimTask returned nil request")
+		return
 	}
 	if req.Metadata[controlplane.MetadataRuntimeLeaseID] != "runtime-lease:codex-task:1" {
 		t.Fatalf("lease metadata missing: %+v", req.Metadata)
