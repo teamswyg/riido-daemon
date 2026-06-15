@@ -45,3 +45,73 @@ func TestRuntimeActorTaskStatusIncluded(t *testing.T) {
 	}
 	_ = strconv.Itoa // satisfy import if unused
 }
+
+func TestRuntimeActorStatusReplyWaitObservesStop(t *testing.T) {
+	a := &Actor{
+		cfg:       Config{RuntimeID: "rt-status-stop"},
+		statusCh:  make(chan chan statusReply, 1),
+		stoppedCh: make(chan struct{}),
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		status, err := a.Status(ctx)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		if status.RuntimeID != "rt-status-stop" || status.Health != "stopped" {
+			errCh <- errors.New("unexpected stopped status")
+			return
+		}
+		errCh <- nil
+	}()
+
+	select {
+	case <-a.statusCh:
+	case <-time.After(time.Second):
+		t.Fatal("Status did not enter reply wait")
+	}
+	close(a.stoppedCh)
+
+	if err := <-errCh; err != nil {
+		t.Fatalf("Status: %v", err)
+	}
+}
+
+func TestRuntimeActorHeartbeatReplyWaitObservesStop(t *testing.T) {
+	a := &Actor{
+		cfg:       Config{RuntimeID: "rt-heartbeat-stop"},
+		statusCh:  make(chan chan statusReply, 1),
+		stoppedCh: make(chan struct{}),
+	}
+
+	errCh := make(chan error, 1)
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		hb, err := a.HeartbeatPayload(ctx)
+		if err != nil {
+			errCh <- err
+			return
+		}
+		if hb.RuntimeID != "rt-heartbeat-stop" {
+			errCh <- errors.New("unexpected stopped heartbeat")
+			return
+		}
+		errCh <- nil
+	}()
+
+	select {
+	case <-a.statusCh:
+	case <-time.After(time.Second):
+		t.Fatal("HeartbeatPayload did not enter reply wait")
+	}
+	close(a.stoppedCh)
+
+	if err := <-errCh; err != nil {
+		t.Fatalf("HeartbeatPayload: %v", err)
+	}
+}

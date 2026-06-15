@@ -117,6 +117,8 @@ func (a *Actor) Status(ctx context.Context) (Status, error) {
 	select {
 	case res := <-reply:
 		return res.status, nil
+	case <-a.stoppedCh:
+		return Status{RuntimeID: a.cfg.RuntimeID, Health: "stopped"}, nil
 	case <-ctx.Done():
 		return Status{}, ctx.Err()
 	}
@@ -135,6 +137,8 @@ func (a *Actor) HeartbeatPayload(ctx context.Context) (Heartbeat, error) {
 	select {
 	case res := <-reply:
 		return res.hb, nil
+	case <-a.stoppedCh:
+		return Heartbeat{RuntimeID: a.cfg.RuntimeID}, nil
 	case <-ctx.Done():
 		return Heartbeat{}, ctx.Err()
 	}
