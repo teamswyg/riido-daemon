@@ -2,12 +2,15 @@ package runtimeactor
 
 import (
 	"context"
+	"errors"
 	"sync"
 	"testing"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
+	"github.com/teamswyg/riido-daemon/internal/process"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
 // TestStopIsIdempotentSerially: calling Stop a second time after the
@@ -113,4 +116,124 @@ func TestStopWhileSubmitInFlight(t *testing.T) {
 		}
 		cancel()
 	}
+}
+
+func TestStopLifecycleForcedEscalatesGracefulDrain(t *testing.T) {
+	proc := newBlockingKillProcess()
+	t.Cleanup(proc.unblock)
+
+	a, err := New(Config{
+		RuntimeID: "rt-stop-escalate",
+		Adapters: []agentbridge.Adapter{
+			&stubAdapter{name: "fake", detected: agentbridge.DetectResult{Available: true}},
+		},
+		Process:       proc,
+		MaxConcurrent: 1,
+		MailboxSize:   8,
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	if err := a.Start(context.Background()); err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+	t.Cleanup(func() {
+		ctx, cancel := lifecycle.DetachedShutdown(lifecycle.ShutdownForced, time.Second)
+		defer cancel()
+		_ = a.StopLifecycle(ctx)
+	})
+
+	submitCtx, submitCancel := context.WithTimeout(context.Background(), time.Second)
+	defer submitCancel()
+	if _, err := a.Submit(submitCtx, bridge.TaskRequest{ID: "t-stuck", Provider: "fake"}); err != nil {
+		t.Fatalf("Submit: %v", err)
+	}
+
+	graceCtx, graceCancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer graceCancel()
+	if err := a.Stop(graceCtx); !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("graceful Stop error = %v, want context deadline exceeded", err)
+	}
+	select {
+	case <-proc.running.KillRecv():
+	case <-time.After(time.Second):
+		t.Fatal("graceful Stop did not request provider kill")
+	}
+
+	forcedCtx, forcedCancel := lifecycle.DetachedShutdown(lifecycle.ShutdownForced, time.Second)
+	defer forcedCancel()
+	if err := a.StopLifecycle(forcedCtx); err != nil {
+		t.Fatalf("forced StopLifecycle: %v", err)
+	}
+}
+
+type blockingKillProcess struct {
+	running *blockingKillRunning
+}
+
+func newBlockingKillProcess() *blockingKillProcess {
+	return &blockingKillProcess{running: newBlockingKillRunning()}
+}
+
+func (p *blockingKillProcess) Start(_ context.Context, _ process.Command) (process.RunningProcess, error) {
+	return p.running, nil
+}
+
+func (p *blockingKillProcess) unblock() {
+	close(p.running.unblock)
+}
+
+type blockingKillRunning struct {
+	stdout  chan []byte
+	stderr  chan []byte
+	exited  chan process.ExitStatus
+	kill    chan struct{}
+	unblock chan struct{}
+}
+
+func newBlockingKillRunning() *blockingKillRunning {
+	return &blockingKillRunning{
+		stdout:  make(chan []byte),
+		stderr:  make(chan []byte),
+		exited:  make(chan process.ExitStatus),
+		kill:    make(chan struct{}, 1),
+		unblock: make(chan struct{}),
+	}
+}
+
+func (r *blockingKillRunning) Stdout() <-chan []byte {
+	return r.stdout
+}
+
+func (r *blockingKillRunning) Stderr() <-chan []byte {
+	return r.stderr
+}
+
+func (r *blockingKillRunning) Exited() <-chan process.ExitStatus {
+	return r.exited
+}
+
+func (r *blockingKillRunning) WriteStdin([]byte) error {
+	return nil
+}
+
+func (r *blockingKillRunning) CloseStdin() error {
+	return nil
+}
+
+func (r *blockingKillRunning) Kill(ctx context.Context) error {
+	select {
+	case r.kill <- struct{}{}:
+	default:
+	}
+	select {
+	case <-r.unblock:
+		return nil
+	case <-ctx.Done():
+		return ctx.Err()
+	}
+}
+
+func (r *blockingKillRunning) KillRecv() <-chan struct{} {
+	return r.kill
 }

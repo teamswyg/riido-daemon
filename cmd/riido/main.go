@@ -1174,6 +1174,6 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "  riido daemon health [--socket PATH]")
 	fmt.Fprintln(os.Stderr, "  riido daemon ready [--socket PATH]")
 	fmt.Fprintln(os.Stderr, "  riido daemon metrics [--socket PATH]")
-	fmt.Fprintln(os.Stderr, "  riido daemon stop [--socket PATH] [--pid-file PATH] [--timeout-seconds N]")
+	fmt.Fprintln(os.Stderr, "  riido daemon stop [--socket PATH] [--pid-file PATH] [--timeout-seconds N] [--force]")
 	fmt.Fprintln(os.Stderr, "  riido daemon logs --log-file PATH [--lines N]")
 }

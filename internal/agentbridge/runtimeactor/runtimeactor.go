@@ -30,6 +30,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/session"
 	"github.com/teamswyg/riido-daemon/internal/process"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
 const (
@@ -194,12 +195,11 @@ type Actor struct {
 	// public methods send to mailbox channels.
 	mailbox  chan envelope
 	statusCh chan chan statusReply
-	// stopReqCh: buffered, capacity 1. Stop callers do a non-blocking
-	// send; the actor goroutine receives once. Multiple Stop calls
-	// fall through the `default` branch of the send and become no-ops.
-	// This replaces the previous close(stopCh)+recover() pattern,
-	// eliminating the double-close panic recovery (audit H-1).
-	stopReqCh chan struct{}
+	// stopReqCh carries the requested shutdown authority level. Stop
+	// callers do a non-blocking send so repeated/concurrent stop requests
+	// stay idempotent; while draining, a forced request can still escalate
+	// a graceful shutdown.
+	stopReqCh chan lifecycle.ShutdownLevel
 	stoppedCh chan struct{}
 	stopErrCh chan error
 	startedCh chan struct{} // closed by Start once the actor loop is live
@@ -274,7 +274,7 @@ func New(cfg Config) (*Actor, error) {
 		cfg:       cfg,
 		mailbox:   make(chan envelope, cfg.MailboxSize),
 		statusCh:  make(chan chan statusReply, 4),
-		stopReqCh: make(chan struct{}, 1),
+		stopReqCh: make(chan lifecycle.ShutdownLevel, cfg.MailboxSize),
 		stoppedCh: make(chan struct{}),
 		stopErrCh: make(chan error, 1),
 		startedCh: make(chan struct{}),
@@ -332,8 +332,8 @@ func (a *Actor) run(caps []Capability) {
 				hb:     a.buildHeartbeat(inFlight),
 			}
 
-		case <-a.stopReqCh:
-			a.drainAndShutdown(inFlight, completeCh)
+		case level := <-a.stopReqCh:
+			a.drainAndShutdown(normalizeStopLevel(level), inFlight, completeCh)
 			close(a.stoppedCh)
 			return
 		}
@@ -519,15 +519,24 @@ func (a *Actor) buildHeartbeat(inFlight map[string]*runningTask) Heartbeat {
 	}
 }
 
-func (a *Actor) drainAndShutdown(inFlight map[string]*runningTask, completeCh <-chan string) {
+func (a *Actor) drainAndShutdown(level lifecycle.ShutdownLevel, inFlight map[string]*runningTask, completeCh <-chan string) {
 	for _, t := range inFlight {
 		t.handle.session.Cancel(ErrActorStopped)
+	}
+	if level.IsForced() {
+		a.stopErrCh <- nil
+		return
 	}
 	deadline := time.After(5 * time.Second)
 	for len(inFlight) > 0 {
 		select {
 		case id := <-completeCh:
 			delete(inFlight, id)
+		case next := <-a.stopReqCh:
+			if normalizeStopLevel(next).IsForced() {
+				a.stopErrCh <- nil
+				return
+			}
 		case <-deadline:
 			a.stopErrCh <- fmt.Errorf("runtimeactor: %d session(s) did not terminate", len(inFlight))
 			return
@@ -623,21 +632,23 @@ func (a *Actor) HeartbeatPayload(ctx context.Context) (Heartbeat, error) {
 }
 
 // Stop initiates graceful shutdown. Safe to call concurrently and
-// repeatedly: every Stop caller does a non-blocking send on the
-// buffered stopReqCh; the first send populates the channel's single
-// slot, the actor receives it once, and subsequent callers fall
-// through the default branch. No channel close, no recover() panic
-// guard — actor model purity (audit H-1).
+// repeatedly. When a lifecycle shutdown level is embedded in ctx, that
+// level is honored; otherwise Stop defaults to graceful shutdown.
 func (a *Actor) Stop(ctx context.Context) error {
+	return a.StopLifecycle(lifecycleStopContext(ctx))
+}
+
+// StopLifecycle initiates shutdown with an explicit lifecycle authority
+// level. Forced shutdown skips the graceful drain wait; a forced request can
+// also escalate an already-draining graceful stop.
+func (a *Actor) StopLifecycle(ctx lifecycle.Context) error {
 	select {
 	case <-a.stoppedCh:
 		return nil
 	default:
 	}
-	// Non-blocking request signal. The capacity-1 buffer absorbs the
-	// first sender; later senders see the slot taken and skip.
 	select {
-	case a.stopReqCh <- struct{}{}:
+	case a.stopReqCh <- normalizeStopLevel(ctx.ShutdownLevel()):
 	default:
 	}
 	select {
@@ -655,6 +666,22 @@ func (a *Actor) Stop(ctx context.Context) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	}
+}
+
+func lifecycleStopContext(ctx context.Context) lifecycle.Context {
+	lctx := lifecycle.FromContext(ctx)
+	level := normalizeStopLevel(lctx.ShutdownLevel())
+	if level != lctx.ShutdownLevel() {
+		return lctx.WithShutdownLevel(level)
+	}
+	return lctx
+}
+
+func normalizeStopLevel(level lifecycle.ShutdownLevel) lifecycle.ShutdownLevel {
+	if level.IsShutdown() {
+		return level
+	}
+	return lifecycle.ShutdownGraceful
 }
 
 // ----- helpers -----

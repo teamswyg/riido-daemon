@@ -168,6 +168,7 @@ only.
 | `--foreground` | false | run daemon in the current process |
 | `--lock-file` | `$HOME/.riido/.lock` | local singleton advisory lock |
 | `--timeout-seconds` | `5` for stop | graceful stop wait before kill |
+| `--force` | false | request forced daemon lifecycle shutdown before PID fallback |
 
 `cmd/riido` remains local-only. Health, ready, status, and metrics are exposed
 through local IPC subcommands, not public HTTP.
