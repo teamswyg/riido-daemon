@@ -14,7 +14,7 @@
 
 ## 0. 핵심 invariant
 
-1. **scheduler 는 capability 로만 분기한다.** provider binary version 문자열로 task dispatch 를 결정하지 않는다. `DetectedVersion` 은 fingerprint raw signal 일 뿐이다.
+1. **scheduler 는 capability 로만 분기한다.** provider binary version 문자열로 task dispatch 를 결정하지 않는다. `DetectedVersion` 은 fingerprint raw signal 일 뿐이며, SaaS runtime snapshot 의 `provider_version` 으로 전달되더라도 표시/진단용 projection 이지 eligibility 입력이 아니다.
 2. **provider-specific FSM 은 없다.** scheduling 은 task 요구 surface 와 runtime capability 의 boolean / compatibility envelope 를 비교한다. 실행 상태는 C1/C2 IR FSM 이 소유한다.
 3. **provider process 는 eligibility 통과 후에만 spawn 된다.** claim 된 task 가 요구 surface 를 만족하지 못하면 pre-submit 단계에서 `blocked` result 로 보고하고 process 를 시작하지 않는다.
 4. **experimental runtime 은 명시 opt-in 이 필요하다.** `RequiresExperimentalOptIn=true` runtime 은 task 가 `allow_experimental_runtime=true` 를 명시해야 local daemon scheduler 가 실행할 수 있다.

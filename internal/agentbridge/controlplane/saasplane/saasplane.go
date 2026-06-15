@@ -82,6 +82,7 @@ type RuntimeSnapshotRecord struct {
 	Kind                      string               `json:"kind"`
 	Availability              string               `json:"availability,omitempty"`
 	DetectionState            string               `json:"detection_state,omitempty"`
+	ProviderVersion           string               `json:"provider_version,omitempty"`
 	RequiresExperimentalOptIn bool                 `json:"requires_experimental_opt_in,omitempty"`
 	Models                    []RuntimeModelRecord `json:"models,omitempty"`
 }
@@ -216,6 +217,7 @@ func runtimeSnapshotFromRegistration(rt controlplane.RuntimeRegistration) (Runti
 		Kind:                      runtimeKindForProvider(provider),
 		Availability:              availability,
 		DetectionState:            detectionState,
+		ProviderVersion:           runtimeProviderVersion(rt, provider),
 		RequiresExperimentalOptIn: runtimeRequiresExperimentalOptIn(rt, provider),
 		Models:                    runtimeModels(rt.Models),
 	}, strings.TrimSpace(rt.DeviceName), true
@@ -250,6 +252,10 @@ func runtimeRequiresExperimentalOptIn(rt controlplane.RuntimeRegistration, provi
 	}
 	key := "provider." + provider + ".requires_experimental_opt_in"
 	return rt.Capabilities[key]
+}
+
+func runtimeProviderVersion(rt controlplane.RuntimeRegistration, provider string) string {
+	return strings.TrimSpace(rt.CapabilityAttributes["provider."+provider+".provider_version"])
 }
 
 func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat) error {

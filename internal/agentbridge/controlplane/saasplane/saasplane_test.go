@@ -443,6 +443,9 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 		Capabilities: map[string]bool{
 			"provider.codex.requires_experimental_opt_in": true,
 		},
+		CapabilityAttributes: map[string]string{
+			"provider.codex.provider_version": "codex-cli 0.133.0",
+		},
 	})
 	if err != nil {
 		t.Fatalf("RegisterRuntime: %v", err)
@@ -462,6 +465,7 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 		snapshot.Runtimes[0].Kind != "codex" ||
 		snapshot.Runtimes[0].Availability != "online" ||
 		snapshot.Runtimes[0].DetectionState != "detected" ||
+		snapshot.Runtimes[0].ProviderVersion != "codex-cli 0.133.0" ||
 		!snapshot.Runtimes[0].RequiresExperimentalOptIn {
 		t.Fatalf("snapshot runtimes = %+v", snapshot.Runtimes)
 	}
@@ -645,6 +649,9 @@ func TestPlaneHeartbeatRefreshesAggregatedRuntimeSnapshot(t *testing.T) {
 		Capabilities: map[string]bool{
 			"provider.codex.requires_experimental_opt_in": true,
 		},
+		CapabilityAttributes: map[string]string{
+			"provider.codex.provider_version": "codex-cli 0.133.0",
+		},
 	}); err != nil {
 		t.Fatalf("RegisterRuntime codex: %v", err)
 	}
@@ -680,7 +687,7 @@ func TestPlaneHeartbeatRefreshesAggregatedRuntimeSnapshot(t *testing.T) {
 		snapshot.Runtimes[1].RuntimeID != "daemon-1:cursor" {
 		t.Fatalf("heartbeat snapshot must aggregate sorted runtimes: %+v", snapshot.Runtimes)
 	}
-	if len(snapshot.Runtimes[0].Models) != 1 || snapshot.Runtimes[0].Models[0].ModelID != "gpt-5.5" || !snapshot.Runtimes[0].RequiresExperimentalOptIn {
+	if len(snapshot.Runtimes[0].Models) != 1 || snapshot.Runtimes[0].Models[0].ModelID != "gpt-5.5" || snapshot.Runtimes[0].ProviderVersion != "codex-cli 0.133.0" || !snapshot.Runtimes[0].RequiresExperimentalOptIn {
 		t.Fatalf("codex runtime facts lost in heartbeat snapshot: %+v", snapshot.Runtimes[0])
 	}
 
