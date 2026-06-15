@@ -28,6 +28,9 @@ meta model only through provider-specific SSOT
 - `internal/agentbridge/supervisor.DefaultMailboxSize`
 - `Q-RT-001` closes alongside `Q-MULTICA-005`
 - `Q-CTX-001`
+- `Q-RT-003` closed
+- C4 Provider Runtime / Adapter owns approval wait
+- EventIngestor does not own approval
 
 ## Parts
 

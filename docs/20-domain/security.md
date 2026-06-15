@@ -23,6 +23,8 @@ daemon 이 Codex 를 전권 host automation surface 로 실행할 때도 harness
 lease, heartbeat, and evidence stay daemon-owned. Claude / Cursor / OpenClaw 도 같은 메타 모델 아래에서 provider-specific trusted-runtime envelope 로만
 확장한다.
 
+- No user-global native config overlay
+
 ## Parts
 
 - [Part 01: 0. 핵심 invariant (단단히 박는다)](security/part-01.md)

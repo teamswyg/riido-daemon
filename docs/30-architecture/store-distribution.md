@@ -8,6 +8,7 @@ The original entrypoint remains here to preserve existing links.
 - `Q-CTX-005`
 - future desktop/app repository
 - public repositories never store secrets
+- user-selected/sandbox/security-scoped OS grant 와 App Review approval
 
 ## Parts
 

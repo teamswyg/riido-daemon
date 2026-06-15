@@ -9,6 +9,7 @@ The original entrypoint remains here to preserve existing links.
 - Store App repository / adapter ownership
 - provider process 를 직접 spawn 하지 않는다
 - provider CLI 를 bundle / download / silently install 하지 않는다
+- `Q-DIST-001` resolved / RESOLVED
 
 ## Parts
 

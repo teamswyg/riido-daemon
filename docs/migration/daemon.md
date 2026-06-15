@@ -12,6 +12,8 @@ The original entrypoint remains here to preserve existing links.
 - `required_surfaces=[worktree]`
 - `MISSING_REQUIRED_SURFACE:worktree`
 - Store App GUI must remain a client of C11/local API contracts
+- StoreChannelPolicyInput.StoreReviewApproved=true
+- RIID-4573
 
 ## Parts
 
