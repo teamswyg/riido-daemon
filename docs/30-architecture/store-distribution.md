@@ -1,6 +1,6 @@
 # Store Distribution Architecture SSOT
 
-This SSOT is split into focused parts so handwritten files stay below the repository line-count threshold.
+This SSOT is split into focused topic files so each reader can open the smallest relevant surface.
 The original entrypoint remains here to preserve existing links.
 
 ## Compatibility Markers
@@ -12,5 +12,5 @@ The original entrypoint remains here to preserve existing links.
 
 ## Parts
 
-- [Part 01: 0. 결정](store-distribution/part-01.md)
-- [Part 02: 3. Required daemon changes](store-distribution/part-02.md)
+- [Architecture](store-distribution/architecture.md)
+- [Daemon Changes](store-distribution/daemon-changes.md)

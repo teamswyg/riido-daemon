@@ -1,6 +1,6 @@
 # Riido Daemon Migration Plan
 
-This SSOT is split into focused parts so handwritten files stay below the repository line-count threshold.
+This SSOT is split into focused topic files so each reader can open the smallest relevant surface.
 The original entrypoint remains here to preserve existing links.
 
 ## Compatibility Markers
@@ -17,11 +17,11 @@ The original entrypoint remains here to preserve existing links.
 
 ## Parts
 
-- [Part 01: Goal](daemon/part-01.md)
-- [Part 02: RIID-4648 — distribution host integration domain](daemon/part-02.md)
-- [Part 03: RIID-4571 — macOS external Provider CLI entitlement/review closure](daemon/part-03.md)
-- [Part 04: RIID-4881 / RIID-4917 — Codex app-server auth and full-access harness correction](daemon/part-04.md)
-- [Part 05: RIID-4684 — riidoapi local API adapter migration](daemon/part-05.md)
-- [Part 06: RIID-4690 — full daemon lifecycle CLI wiring migration](daemon/part-06.md)
-- [Part 07: RIID-4847 — Figma coverage upstream provenance full mirror guard](daemon/part-07.md)
-- [Part 08: RIID-4917 — aggregated device/runtime snapshot heartbeat](daemon/part-08.md)
+- [Overview: Goal](daemon/overview.md)
+- [Distribution Host Integration](daemon/distribution-host-integration.md)
+- [macOS Provider CLI Review](daemon/macos-provider-cli-review.md)
+- [Codex Auth / Full Access](daemon/codex-auth-full-access.md)
+- [riidoapi Local API](daemon/riidoapi-local-api.md)
+- [Daemon Lifecycle CLI](daemon/daemon-lifecycle-cli.md)
+- [Figma Boundary Provenance](daemon/figma-boundary-provenance.md)
+- [Runtime Snapshot Heartbeat](daemon/runtime-snapshot-heartbeat.md)
