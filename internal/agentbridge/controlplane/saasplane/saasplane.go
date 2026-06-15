@@ -31,6 +31,11 @@ const (
 
 const runtimeSnapshotHeartbeatMinInterval = 4 * time.Second
 
+const (
+	jsonRequestMaxAttempts = 3
+	jsonRequestRetryBase   = 50 * time.Millisecond
+)
+
 // Live assistant-body streaming. Raw text deltas are never forwarded one line
 // per token (they are tiny, incoherent fragments). Instead the daemon
 // accumulates them per task and periodically forwards the FULL text-so-far as
@@ -96,7 +101,7 @@ type DeviceRuntimeSnapshotSyncRequest struct {
 	AppVersion        string                  `json:"app_version,omitempty"`
 	PID               int                     `json:"pid,omitempty"`
 	UptimeSeconds     int64                   `json:"uptime_seconds,omitempty"`
-	StartedAt         time.Time               `json:"started_at,omitempty"`
+	StartedAt         time.Time               `json:"started_at,omitzero"`
 	Runtimes          []RuntimeSnapshotRecord `json:"runtimes"`
 }
 
@@ -455,14 +460,15 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 	return nil, nil
 }
 
-func (p *Plane) WatchCancellation(ctx context.Context, taskID string) (<-chan error, error) {
-	taskID = strings.TrimSpace(taskID)
-	if taskID == "" {
-		return nil, errors.New("saasplane: empty taskID")
+func (p *Plane) WatchCancellation(ctx context.Context, executionID string) (<-chan error, error) {
+	executionID = strings.TrimSpace(executionID)
+	if executionID == "" {
+		return nil, errors.New("saasplane: empty executionID")
 	}
 	ch := make(chan error, 1)
 	err := p.withState(ctx, func(s *planeState) {
-		s.cancelWatchers[taskID] = ch
+		closeCancelWatcher(s, executionID)
+		s.cancelWatchers[executionID] = ch
 	})
 	if err != nil {
 		return nil, err
@@ -470,8 +476,8 @@ func (p *Plane) WatchCancellation(ctx context.Context, taskID string) (<-chan er
 	return ch, nil
 }
 
-func (p *Plane) StartTask(ctx context.Context, taskID string) error {
-	assignment, ok, err := p.assignmentForTask(ctx, taskID)
+func (p *Plane) StartTask(ctx context.Context, executionID string) error {
+	assignment, ok, err := p.assignmentForExecution(ctx, executionID)
 	if err != nil || !ok {
 		return err
 	}
@@ -485,13 +491,13 @@ func (p *Plane) StartTask(ctx context.Context, taskID string) error {
 	return err
 }
 
-func (p *Plane) ReportEvent(ctx context.Context, taskID string, ev agentbridge.Event) error {
-	assignment, ok, err := p.assignmentForTask(ctx, taskID)
+func (p *Plane) ReportEvent(ctx context.Context, executionID string, ev agentbridge.Event) error {
+	assignment, ok, err := p.assignmentForExecution(ctx, executionID)
 	if err != nil || !ok {
 		return err
 	}
 	if ev.Kind == agentbridge.EventTextDelta {
-		return p.accumulatePartialBody(ctx, assignment, ev.Text)
+		return p.accumulatePartialBody(ctx, assignment, executionID, ev.Text)
 	}
 	req, ok := eventRequestFromAgentEvent(assignment, ev)
 	if !ok {
@@ -505,7 +511,7 @@ func (p *Plane) ReportEvent(ctx context.Context, taskID string, ev agentbridge.E
 // body and, on a debounce boundary (time or character growth), forwards the
 // full text-so-far as one tagged progress line. Raw per-delta fragments are
 // never forwarded on their own.
-func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignmentcontract.Assignment, delta string) error {
+func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignmentcontract.Assignment, executionID, delta string) error {
 	if delta == "" {
 		return nil
 	}
@@ -515,10 +521,10 @@ func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignment
 	)
 	now := time.Now()
 	if err := p.withState(ctx, func(s *planeState) {
-		st := s.partialBodies[assignment.TaskID]
+		st := s.partialBodies[executionID]
 		if st == nil {
 			st = &partialBodyState{}
-			s.partialBodies[assignment.TaskID] = st
+			s.partialBodies[executionID] = st
 		}
 		st.text += delta
 		grown := len(st.text) - st.lastFlushedLen
@@ -555,8 +561,8 @@ func (p *Plane) postPartialBody(ctx context.Context, assignment assignmentcontra
 	return err
 }
 
-func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge.Result) error {
-	assignment, ok, err := p.assignmentForTask(ctx, taskID)
+func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentbridge.Result) error {
+	assignment, ok, err := p.assignmentForExecution(ctx, executionID)
 	if err != nil || !ok {
 		return err
 	}
@@ -571,7 +577,7 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 	// message (which the client renders as a generic status label).
 	if message == "" && res.Status == agentbridge.ResultCompleted {
 		if stateErr := p.withState(ctx, func(s *planeState) {
-			if st := s.partialBodies[taskID]; st != nil {
+			if st := s.partialBodies[executionID]; st != nil {
 				message = st.text
 			}
 		}); stateErr != nil {
@@ -589,10 +595,10 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 		return err
 	}
 	return p.withState(ctx, func(s *planeState) {
-		delete(s.assignmentsByTask, taskID)
-		delete(s.runtimeIDsByTask, taskID)
-		delete(s.cancelWatchers, taskID)
-		delete(s.partialBodies, taskID)
+		closeCancelWatcher(s, executionID)
+		delete(s.assignmentsByExecution, executionID)
+		delete(s.runtimeIDsByExecution, executionID)
+		delete(s.partialBodies, executionID)
 	})
 }
 
@@ -620,46 +626,80 @@ func (p *Plane) postAgentEvent(ctx context.Context, assignment assignmentcontrac
 }
 
 func (p *Plane) postJSON(ctx context.Context, path string, in, out any) error {
-	ctx, cancel := context.WithTimeout(ctx, p.cfg.RequestTimeout)
-	defer cancel()
 	body, err := json.Marshal(in)
 	if err != nil {
 		return err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, p.cfg.BaseURL+path, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	if p.cfg.DeviceSecret != "" {
-		req.Header.Set("X-Riido-Device-Id", p.cfg.DeviceID)
-		req.Header.Set("X-Riido-Device-Secret", p.cfg.DeviceSecret)
-	}
-	if p.cfg.BearerToken != "" {
-		req.Header.Set("Authorization", "Bearer "+p.cfg.BearerToken)
-	}
-	resp, err := p.client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		return fmt.Errorf("saasplane: %s returned %s: %s", path, resp.Status, strings.TrimSpace(string(b)))
-	}
-	if out == nil {
-		return nil
-	}
-	return json.NewDecoder(resp.Body).Decode(out)
+	return p.doJSON(ctx, http.MethodPost, path, body, out)
 }
 
 func (p *Plane) getJSON(ctx context.Context, path string, out any) error {
+	return p.doJSON(ctx, http.MethodGet, path, nil, out)
+}
+
+func (p *Plane) doJSON(ctx context.Context, method, path string, body []byte, out any) error {
 	ctx, cancel := context.WithTimeout(ctx, p.cfg.RequestTimeout)
 	defer cancel()
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, p.cfg.BaseURL+path, nil)
-	if err != nil {
-		return err
+
+	attempts := 1
+	if retryableJSONRequest(method, path) {
+		attempts = jsonRequestMaxAttempts
 	}
+
+	var lastErr error
+	for attempt := 1; attempt <= attempts; attempt++ {
+		var reader io.Reader
+		if body != nil {
+			reader = bytes.NewReader(body)
+		}
+		req, err := http.NewRequestWithContext(ctx, method, p.cfg.BaseURL+path, reader)
+		if err != nil {
+			return err
+		}
+		if method == http.MethodPost {
+			req.Header.Set("Content-Type", "application/json")
+		}
+		p.attachAuthHeaders(req)
+		resp, err := p.client.Do(req)
+		if err != nil {
+			if ctx.Err() != nil {
+				return ctx.Err()
+			}
+			lastErr = err
+			if attempt < attempts {
+				if waitErr := waitJSONRetry(ctx, attempt); waitErr != nil {
+					return waitErr
+				}
+				continue
+			}
+			return err
+		}
+
+		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+			if out == nil {
+				_ = resp.Body.Close()
+				return nil
+			}
+			err = json.NewDecoder(resp.Body).Decode(out)
+			_ = resp.Body.Close()
+			return err
+		}
+
+		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
+		_ = resp.Body.Close()
+		lastErr = fmt.Errorf("saasplane: %s returned %s: %s", path, resp.Status, strings.TrimSpace(string(b)))
+		if attempt < attempts && retryableHTTPStatus(resp.StatusCode) {
+			if waitErr := waitJSONRetry(ctx, attempt); waitErr != nil {
+				return waitErr
+			}
+			continue
+		}
+		return lastErr
+	}
+	return lastErr
+}
+
+func (p *Plane) attachAuthHeaders(req *http.Request) {
 	if p.cfg.DeviceSecret != "" {
 		req.Header.Set("X-Riido-Device-Id", p.cfg.DeviceID)
 		req.Header.Set("X-Riido-Device-Secret", p.cfg.DeviceSecret)
@@ -667,35 +707,60 @@ func (p *Plane) getJSON(ctx context.Context, path string, out any) error {
 	if p.cfg.BearerToken != "" {
 		req.Header.Set("Authorization", "Bearer "+p.cfg.BearerToken)
 	}
-	resp, err := p.client.Do(req)
-	if err != nil {
-		return err
+}
+
+func retryableJSONRequest(method, path string) bool {
+	if method == http.MethodGet {
+		return true
 	}
-	defer resp.Body.Close()
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
-		return fmt.Errorf("saasplane: %s returned %s: %s", path, resp.Status, strings.TrimSpace(string(b)))
+	if method != http.MethodPost {
+		return false
 	}
-	if out == nil {
+	return strings.HasSuffix(path, "/poll") ||
+		strings.HasSuffix(path, "/heartbeat") ||
+		path == "/v1/daemon/runtime-snapshot"
+}
+
+func retryableHTTPStatus(status int) bool {
+	switch status {
+	case http.StatusRequestTimeout,
+		http.StatusTooManyRequests,
+		http.StatusBadGateway,
+		http.StatusServiceUnavailable,
+		http.StatusGatewayTimeout:
+		return true
+	default:
+		return false
+	}
+}
+
+func waitJSONRetry(ctx context.Context, attempt int) error {
+	wait := time.Duration(attempt) * jsonRequestRetryBase
+	timer := time.NewTimer(wait)
+	defer timer.Stop()
+	select {
+	case <-timer.C:
 		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	}
-	return json.NewDecoder(resp.Body).Decode(out)
 }
 
 func (p *Plane) saveAssignmentRuntime(ctx context.Context, assignment assignmentcontract.Assignment, runtimeID string) error {
 	return p.withState(ctx, func(s *planeState) {
-		s.assignmentsByTask[assignment.TaskID] = assignment
+		executionID := assignmentExecutionID(assignment)
+		s.assignmentsByExecution[executionID] = assignment
 		if runtimeID != "" {
-			s.runtimeIDsByTask[assignment.TaskID] = runtimeID
+			s.runtimeIDsByExecution[executionID] = runtimeID
 		}
 	})
 }
 
-func (p *Plane) assignmentForTask(ctx context.Context, taskID string) (assignmentcontract.Assignment, bool, error) {
+func (p *Plane) assignmentForExecution(ctx context.Context, executionID string) (assignmentcontract.Assignment, bool, error) {
 	var assignment assignmentcontract.Assignment
 	var ok bool
 	err := p.withState(ctx, func(s *planeState) {
-		assignment, ok = s.assignmentsByTask[taskID]
+		assignment, ok = s.assignmentsByExecution[executionID]
 	})
 	return assignment, ok, err
 }
@@ -709,22 +774,22 @@ func (p *Plane) agentBindings(ctx context.Context) ([]assignmentcontract.AgentRu
 }
 
 func (p *Plane) activeAssignmentIDsForHeartbeat(ctx context.Context, agentID string, runningTaskIDs []string) ([]string, error) {
-	var tasks []string
+	var executions []string
 	seen := map[string]bool{}
-	for _, taskID := range runningTaskIDs {
-		taskID = strings.TrimSpace(taskID)
-		if taskID != "" && !seen[taskID] {
-			seen[taskID] = true
-			tasks = append(tasks, taskID)
+	for _, executionID := range runningTaskIDs {
+		executionID = strings.TrimSpace(executionID)
+		if executionID != "" && !seen[executionID] {
+			seen[executionID] = true
+			executions = append(executions, executionID)
 		}
 	}
-	if len(tasks) == 0 {
+	if len(executions) == 0 {
 		return nil, nil
 	}
 	var ids []string
 	err := p.withState(ctx, func(s *planeState) {
-		for _, taskID := range tasks {
-			assignment := s.assignmentsByTask[taskID]
+		for _, executionID := range executions {
+			assignment := s.assignmentsByExecution[executionID]
 			if assignment.AgentID != agentID || assignment.ID == "" {
 				continue
 			}
@@ -738,14 +803,14 @@ func (p *Plane) activeAssignmentIDsForHeartbeat(ctx context.Context, agentID str
 }
 
 func (p *Plane) activeAssignmentsByAgentForHeartbeat(ctx context.Context, runningTaskIDs []string) (map[string][]string, error) {
-	tasks := normalizedTaskIDs(runningTaskIDs)
-	if len(tasks) == 0 {
+	executions := normalizedExecutionIDs(runningTaskIDs)
+	if len(executions) == 0 {
 		return nil, nil
 	}
 	byAgent := map[string][]string{}
 	err := p.withState(ctx, func(s *planeState) {
-		for _, taskID := range tasks {
-			assignment := s.assignmentsByTask[taskID]
+		for _, executionID := range executions {
+			assignment := s.assignmentsByExecution[executionID]
 			if assignment.AgentID == "" || assignment.ID == "" {
 				continue
 			}
@@ -757,14 +822,7 @@ func (p *Plane) activeAssignmentsByAgentForHeartbeat(ctx context.Context, runnin
 
 func (p *Plane) deliverCancel(ctx context.Context, assignment assignmentcontract.Assignment) error {
 	return p.withState(ctx, func(s *planeState) {
-		ch := s.cancelWatchers[assignment.TaskID]
-		if ch == nil {
-			return
-		}
-		select {
-		case ch <- fmt.Errorf("saas assignment %s cancelled", assignment.ID):
-		default:
-		}
+		sendAndCloseCancelWatcher(s, assignmentExecutionID(assignment), fmt.Errorf("saas assignment %s cancelled", assignment.ID))
 	})
 }
 
@@ -784,34 +842,26 @@ func (p *Plane) deliverUnrefreshedHeartbeatCancels(ctx context.Context, requeste
 			if assignmentID == "" || refreshed[assignmentID] {
 				continue
 			}
-			for taskID, assignment := range s.assignmentsByTask {
-				if assignment.ID != assignmentID {
-					continue
-				}
-				if ch := s.cancelWatchers[taskID]; ch != nil {
-					select {
-					case ch <- fmt.Errorf("saas assignment %s heartbeat lease stale", assignment.ID):
-					default:
-					}
-				}
-				delete(s.assignmentsByTask, taskID)
-				delete(s.runtimeIDsByTask, taskID)
-				break
+			if assignment, ok := s.assignmentsByExecution[assignmentID]; ok {
+				sendAndCloseCancelWatcher(s, assignmentID, fmt.Errorf("saas assignment %s heartbeat lease stale", assignment.ID))
+				delete(s.assignmentsByExecution, assignmentID)
+				delete(s.runtimeIDsByExecution, assignmentID)
+				delete(s.partialBodies, assignmentID)
 			}
 		}
 	})
 }
 
 type planeState struct {
-	assignmentsByTask       map[string]assignmentcontract.Assignment
-	runtimeIDsByTask        map[string]string
+	assignmentsByExecution  map[string]assignmentcontract.Assignment
+	runtimeIDsByExecution   map[string]string
 	cancelWatchers          map[string]chan error
 	registeredRuntimes      map[string]RuntimeSnapshotRecord
 	registeredDeviceName    string
 	lastRuntimeSnapshotSync time.Time
-	// partialBodies accumulates each task's assistant text deltas between
+	// partialBodies accumulates each execution's assistant text deltas between
 	// flushes so the daemon can forward a coherent evolving body instead of
-	// per-token fragments. Keyed by task ID.
+	// per-token fragments. Keyed by execution ID.
 	partialBodies map[string]*partialBodyState
 }
 
@@ -831,11 +881,11 @@ type stateOp struct {
 
 func (p *Plane) loop() {
 	state := planeState{
-		assignmentsByTask:  map[string]assignmentcontract.Assignment{},
-		runtimeIDsByTask:   map[string]string{},
-		cancelWatchers:     map[string]chan error{},
-		registeredRuntimes: map[string]RuntimeSnapshotRecord{},
-		partialBodies:      map[string]*partialBodyState{},
+		assignmentsByExecution: map[string]assignmentcontract.Assignment{},
+		runtimeIDsByExecution:  map[string]string{},
+		cancelWatchers:         map[string]chan error{},
+		registeredRuntimes:     map[string]RuntimeSnapshotRecord{},
+		partialBodies:          map[string]*partialBodyState{},
 	}
 	defer close(p.done)
 	for op := range p.ops {
@@ -871,15 +921,17 @@ func (p *Plane) withState(ctx context.Context, fn func(*planeState)) error {
 }
 
 func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge.TaskRequest {
+	executionID := assignmentExecutionID(assignment)
 	metadata := map[string]string{
-		MetadataAssignmentID:    assignment.ID,
-		MetadataAgentID:         assignment.AgentID,
-		MetadataComponentID:     assignment.ComponentID,
-		MetadataLeaseToken:      assignment.LeaseToken,
-		MetadataModelID:         assignment.ModelID,
-		MetadataRuntimeProvider: assignment.RuntimeProvider,
-		"workspace_id":          textutil.FirstNonEmptyTrimmed(assignment.ComponentID, assignment.TaskID),
-		"run_id":                assignment.ID,
+		MetadataAssignmentID:        assignment.ID,
+		MetadataAgentID:             assignment.AgentID,
+		MetadataComponentID:         assignment.ComponentID,
+		MetadataLeaseToken:          assignment.LeaseToken,
+		MetadataModelID:             assignment.ModelID,
+		MetadataRuntimeProvider:     assignment.RuntimeProvider,
+		controlplane.MetadataTaskID: assignment.TaskID,
+		"workspace_id":              textutil.FirstNonEmptyTrimmed(assignment.ComponentID, assignment.TaskID),
+		"run_id":                    executionID,
 	}
 	prompt, systemPrompt, telemetryPlacement, instructionPlacement := agentbridge.ApplyRuntimeInstructionContract(assignment.RuntimeProvider, assignment.Prompt, "", assignment.AgentInstruction)
 	metadata[agentbridge.MetadataTelemetryContract] = telemetryPlacement
@@ -887,7 +939,7 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		metadata[agentbridge.MetadataAgentInstruction] = instructionPlacement
 	}
 	return &bridge.TaskRequest{
-		ID:                       assignment.TaskID,
+		ID:                       executionID,
 		Provider:                 bridge.Provider(assignment.RuntimeProvider),
 		Model:                    providerModelOverride(assignment.RuntimeProvider, assignment.ModelID),
 		Prompt:                   prompt,
@@ -989,7 +1041,7 @@ func (p *Plane) runtimeIDForAssignment(ctx context.Context, assignment assignmen
 	if p.dynamicBindingsEnabled() {
 		var runtimeID string
 		err := p.withState(ctx, func(s *planeState) {
-			runtimeID = s.runtimeIDsByTask[assignment.TaskID]
+			runtimeID = s.runtimeIDsByExecution[assignmentExecutionID(assignment)]
 		})
 		if err != nil {
 			return "", err
@@ -1036,16 +1088,43 @@ func (p *Plane) dynamicBindingsEnabled() bool {
 	return len(p.cfg.Agents) == 0
 }
 
-func normalizedTaskIDs(in []string) []string {
+func assignmentExecutionID(assignment assignmentcontract.Assignment) string {
+	return textutil.FirstNonEmptyTrimmed(assignment.ID, assignment.TaskID)
+}
+
+func sendAndCloseCancelWatcher(s *planeState, executionID string, cause error) {
+	ch := s.cancelWatchers[executionID]
+	if ch == nil {
+		return
+	}
+	if cause != nil {
+		select {
+		case ch <- cause:
+		default:
+		}
+	}
+	closeCancelWatcher(s, executionID)
+}
+
+func closeCancelWatcher(s *planeState, executionID string) {
+	ch := s.cancelWatchers[executionID]
+	if ch == nil {
+		return
+	}
+	close(ch)
+	delete(s.cancelWatchers, executionID)
+}
+
+func normalizedExecutionIDs(in []string) []string {
 	seen := map[string]bool{}
 	out := make([]string, 0, len(in))
-	for _, taskID := range in {
-		taskID = strings.TrimSpace(taskID)
-		if taskID == "" || seen[taskID] {
+	for _, executionID := range in {
+		executionID = strings.TrimSpace(executionID)
+		if executionID == "" || seen[executionID] {
 			continue
 		}
-		seen[taskID] = true
-		out = append(out, taskID)
+		seen[executionID] = true
+		out = append(out, executionID)
 	}
 	return out
 }

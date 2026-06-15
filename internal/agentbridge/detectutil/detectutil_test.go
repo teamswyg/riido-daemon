@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 )
 
@@ -102,6 +103,72 @@ func TestResolveExecutableFindsToolOutsideProcessPATH(t *testing.T) {
 	}
 }
 
+func TestLaunchPATHUsesAugmentedSearchDirs(t *testing.T) {
+	firstDir := t.TempDir()
+	secondDir := t.TempDir()
+	restore := augmentedSearchDirs
+	augmentedSearchDirs = func() []string { return []string{firstDir, secondDir} }
+	t.Cleanup(func() { augmentedSearchDirs = restore })
+
+	got := LaunchPATH()
+	want := firstDir + string(os.PathListSeparator) + secondDir
+	if got != want {
+		t.Fatalf("LaunchPATH = %q, want %q", got, want)
+	}
+}
+
+func TestEnvMapWithLaunchPATHAddsFrozenPath(t *testing.T) {
+	binDir := t.TempDir()
+	restore := augmentedSearchDirs
+	augmentedSearchDirs = func() []string { return []string{binDir} }
+	t.Cleanup(func() { augmentedSearchDirs = restore })
+
+	got := EnvMapWithLaunchPATH(map[string]string{"RIIDO_TEST": "1"})
+	if got["RIIDO_TEST"] != "1" {
+		t.Fatalf("existing env value missing: %+v", got)
+	}
+	if path := EnvMapPATHValue(got); path != binDir {
+		t.Fatalf("PATH = %q, want %q", path, binDir)
+	}
+}
+
+func TestEnvMapWithLaunchPATHPreservesExplicitPath(t *testing.T) {
+	got := EnvMapWithLaunchPATH(map[string]string{pathEnvKey(): "/custom/bin"})
+	if path := EnvMapPATHValue(got); path != "/custom/bin" {
+		t.Fatalf("PATH = %q, want explicit value", path)
+	}
+}
+
+func TestEnvListWithLaunchPATHFromMapUsesFrozenPath(t *testing.T) {
+	got := EnvListWithLaunchPATHFromMap(
+		[]string{"RIIDO_TEST=1"},
+		map[string]string{pathEnvKey(): "/frozen/bin"},
+	)
+	path, ok := envListValue(got, pathEnvKey())
+	if !ok || path != "/frozen/bin" {
+		t.Fatalf("spawn PATH = %q ok=%v, env=%v", path, ok, got)
+	}
+}
+
+func TestEnvListWithLaunchPATHFromMapPreservesSpawnPath(t *testing.T) {
+	got := EnvListWithLaunchPATHFromMap(
+		[]string{pathEnvKey() + "=/spawn/bin"},
+		map[string]string{pathEnvKey(): "/frozen/bin"},
+	)
+	path, ok := envListValue(got, pathEnvKey())
+	if !ok || path != "/spawn/bin" {
+		t.Fatalf("spawn PATH = %q ok=%v, env=%v", path, ok, got)
+	}
+}
+
+func TestEnvListWithLaunchPATHFromMapPreservesExplicitEmptyPath(t *testing.T) {
+	got := EnvListWithLaunchPATHFromMap(nil, map[string]string{pathEnvKey(): ""})
+	path, ok := envListValue(got, pathEnvKey())
+	if !ok || path != "" {
+		t.Fatalf("spawn PATH = %q ok=%v, env=%v", path, ok, got)
+	}
+}
+
 func TestProductionSearchDirsIncludesLoginShellAndWellKnown(t *testing.T) {
 	home := t.TempDir()
 	loginDir := t.TempDir()
@@ -155,6 +222,16 @@ func TestLoginShellPATHDirsCached(t *testing.T) {
 
 func containsDir(dirs []string, want string) bool {
 	return slices.Contains(dirs, want)
+}
+
+func envListValue(env []string, wantKey string) (string, bool) {
+	for _, entry := range env {
+		key, value, ok := strings.Cut(entry, "=")
+		if ok && strings.EqualFold(key, wantKey) {
+			return value, true
+		}
+	}
+	return "", false
 }
 
 func writeExecutable(t *testing.T, path, output string) string {

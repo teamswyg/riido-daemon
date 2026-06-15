@@ -40,7 +40,7 @@ func TestRuntimeActorStopReleasesAllGoroutines(t *testing.T) {
 	time.Sleep(20 * time.Millisecond)
 	baseline := runtime.NumGoroutine()
 
-	for cycle := 0; cycle < 3; cycle++ {
+	for cycle := range 3 {
 		proc := newFakeProcess()
 		a, err := New(Config{
 			RuntimeID: "rt-leak",
@@ -58,7 +58,7 @@ func TestRuntimeActorStopReleasesAllGoroutines(t *testing.T) {
 		}
 
 		// Run a couple of tasks per cycle.
-		for i := 0; i < 2; i++ {
+		for i := range 2 {
 			h, err := a.Submit(context.Background(), bridge.TaskRequest{
 				ID: "t-" + strconv.Itoa(cycle) + "-" + strconv.Itoa(i), Provider: "fake",
 			})
@@ -153,7 +153,7 @@ func TestRuntimeActorStopCascadesToProcesses(t *testing.T) {
 		MaxConcurrent: 3,
 	})
 
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		_, err := a.Submit(context.Background(), bridge.TaskRequest{ID: "t-" + strconv.Itoa(i), Provider: "fake"})
 		if err != nil {
 			t.Fatal(err)
@@ -167,7 +167,7 @@ func TestRuntimeActorStopCascadesToProcesses(t *testing.T) {
 		_ = a.Stop(ctx)
 	}()
 
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		r := p.at(i)
 		if r == nil {
 			t.Fatalf("running #%d missing", i)

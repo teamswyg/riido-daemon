@@ -70,7 +70,7 @@ func parseVersion(s string) ([3]int, bool) {
 
 // compareVersions returns -1, 0, +1.
 func compareVersions(a, b [3]int) int {
-	for i := 0; i < 3; i++ {
+	for i := range 3 {
 		if a[i] < b[i] {
 			return -1
 		}

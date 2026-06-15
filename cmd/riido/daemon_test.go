@@ -102,7 +102,7 @@ func TestDaemonForegroundStartsAndExposesStatus(t *testing.T) {
 	t.Setenv(envTaskQueueDir, "")
 	t.Setenv(envTaskReportDir, "")
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 
 	errCh := make(chan error, 1)
@@ -262,7 +262,7 @@ func TestDaemonStartHoldsSingletonLock(t *testing.T) {
 	t.Setenv(envTaskQueueDir, "")
 	t.Setenv(envTaskReportDir, "")
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	errCh := make(chan error, 1)
 	go func() {
@@ -299,7 +299,7 @@ func TestDaemonHealthEndpoint(t *testing.T) {
 	lockPath := daemonLockPath(t)
 	t.Setenv(envTaskQueueDir, "")
 	t.Setenv(envTaskReportDir, "")
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	go func() {
 		_ = runDaemonWithContext(ctx, []string{"start", "--foreground", "--socket", sock, "--lock-file", lockPath})
