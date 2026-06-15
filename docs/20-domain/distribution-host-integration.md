@@ -3,6 +3,11 @@
 This SSOT is split into focused parts so handwritten files stay below the repository line-count threshold.
 The original entrypoint remains here to preserve existing links.
 
+## Compatibility Markers
+
+- `Q-CTX-005`
+- Store App repository / adapter ownership
+
 ## Parts
 
 - [Part 01: 0. 핵심 invariant](distribution-host-integration/part-01.md)

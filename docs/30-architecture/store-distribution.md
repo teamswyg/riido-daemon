@@ -3,6 +3,11 @@
 This SSOT is split into focused parts so handwritten files stay below the repository line-count threshold.
 The original entrypoint remains here to preserve existing links.
 
+## Compatibility Markers
+
+- `Q-CTX-005`
+- future desktop/app repository
+
 ## Parts
 
 - [Part 01: 0. 결정](store-distribution/part-01.md)
