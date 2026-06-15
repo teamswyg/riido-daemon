@@ -448,6 +448,9 @@ func TestSupervisorClaimsTaskAndReportsResult(t *testing.T) {
 	if _, ok := registered[0].Capabilities["provider.fake.supports_worktree"]; !ok {
 		t.Fatalf("registered runtime missing worktree support flag: %+v", registered[0].Capabilities)
 	}
+	if registered[0].CapabilityAttributes["provider.fake.provider_version"] == "" {
+		t.Fatalf("registered runtime missing provider version attribute: %+v", registered[0].CapabilityAttributes)
+	}
 }
 
 func TestSupervisorDispatchesTaskToSelectedRuntimeActor(t *testing.T) {

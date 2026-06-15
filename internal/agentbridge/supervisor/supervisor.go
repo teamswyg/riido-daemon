@@ -251,6 +251,7 @@ func (a *Actor) register(ctx context.Context, status runtimeactor.Status) error 
 		attrs[prefix+"protocol_version"] = c.ProtocolVersion
 		attrs[prefix+"adapter_id"] = c.AdapterID
 		attrs[prefix+"adapter_version"] = c.AdapterVersion
+		attrs[prefix+"provider_version"] = c.Version
 	}
 	reg := controlplane.RuntimeRegistration{
 		DaemonID:             a.cfg.DaemonID,
