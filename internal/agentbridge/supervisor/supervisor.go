@@ -29,6 +29,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/policy"
 	"github.com/teamswyg/riido-daemon/internal/scheduling"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
@@ -88,7 +89,7 @@ type Actor struct {
 	cfg Config
 
 	mailbox   chan envelope
-	stopReqCh chan struct{}
+	stopReqCh chan lifecycle.ShutdownLevel
 	stoppedCh chan struct{}
 	stopErrCh chan error
 }
@@ -193,7 +194,7 @@ func New(cfg Config) (*Actor, error) {
 	return &Actor{
 		cfg:       cfg,
 		mailbox:   make(chan envelope, cfg.MailboxSize),
-		stopReqCh: make(chan struct{}, 1),
+		stopReqCh: make(chan lifecycle.ShutdownLevel, cfg.MailboxSize),
 		stoppedCh: make(chan struct{}),
 		stopErrCh: make(chan error, 1),
 	}, nil
@@ -304,12 +305,16 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 		select {
 		case <-ctx.Done():
 			stopErr = ctx.Err()
-			a.shutdown(context.Background(), runtimes, inFlight)
+			shutdownCtx, cancel := supervisorShutdownContext(lifecycle.FromContext(ctx).ShutdownLevel())
+			a.shutdown(shutdownCtx, runtimes, inFlight)
+			cancel()
 			a.stopErrCh <- stopErr
 			return
 
-		case <-a.stopReqCh:
-			a.shutdown(context.Background(), runtimes, inFlight)
+		case level := <-a.stopReqCh:
+			shutdownCtx, cancel := supervisorShutdownContext(a.drainStopLevel(level))
+			a.shutdown(shutdownCtx, runtimes, inFlight)
+			cancel()
 			a.stopErrCh <- nil
 			return
 
@@ -1013,35 +1018,40 @@ func (a *Actor) forwardCancellation(ctx context.Context, taskID string) {
 	}
 }
 
-func (a *Actor) shutdown(ctx context.Context, runtimes []*runtimeactor.Actor, inFlight map[string]*runningTask) {
+func (a *Actor) shutdown(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, inFlight map[string]*runningTask) {
+	stdCtx := ctx.Context()
 	finishedAt := time.Now().UTC()
 	for taskID, task := range inFlight {
-		_ = task.runtime.Cancel(ctx, task.taskID, ErrStopped.Error())
-		res := a.recordTerminalResult(ctx, task, agentbridge.Result{
+		_ = task.runtime.Cancel(stdCtx, task.taskID, ErrStopped.Error())
+		res := a.recordTerminalResult(stdCtx, task, agentbridge.Result{
 			Status:     agentbridge.ResultCancelled,
 			Error:      ErrStopped.Error(),
 			FinishedAt: finishedAt,
 		})
-		_ = a.cfg.Reporter.CompleteTask(controlplane.ContextWithTaskReport(ctx, task.report), task.taskID, res)
+		_ = a.cfg.Reporter.CompleteTask(controlplane.ContextWithTaskReport(stdCtx, task.report), task.taskID, res)
 		delete(inFlight, taskID)
 	}
 	for _, rt := range runtimes {
-		status, err := rt.Status(ctx)
+		status, err := rt.Status(stdCtx)
 		if err != nil || status.RuntimeID == "" {
 			continue
 		}
-		_ = a.cfg.Source.DeregisterRuntime(ctx, status.RuntimeID)
+		_ = a.cfg.Source.DeregisterRuntime(stdCtx, status.RuntimeID)
 	}
 }
 
 func (a *Actor) Stop(ctx context.Context) error {
+	return a.StopLifecycle(supervisorStopContext(ctx))
+}
+
+func (a *Actor) StopLifecycle(ctx lifecycle.Context) error {
 	select {
 	case <-a.stoppedCh:
 		return nil
 	default:
 	}
 	select {
-	case a.stopReqCh <- struct{}{}:
+	case a.stopReqCh <- normalizeSupervisorStopLevel(ctx.ShutdownLevel()):
 	default:
 	}
 	select {
@@ -1055,4 +1065,46 @@ func (a *Actor) Stop(ctx context.Context) error {
 	case <-ctx.Done():
 		return ctx.Err()
 	}
+}
+
+func (a *Actor) drainStopLevel(level lifecycle.ShutdownLevel) lifecycle.ShutdownLevel {
+	level = normalizeSupervisorStopLevel(level)
+	for {
+		select {
+		case next := <-a.stopReqCh:
+			if next.AtLeast(level) {
+				level = normalizeSupervisorStopLevel(next)
+			}
+		default:
+			return level
+		}
+	}
+}
+
+func supervisorStopContext(ctx context.Context) lifecycle.Context {
+	lctx := lifecycle.FromContext(ctx)
+	level := normalizeSupervisorStopLevel(lctx.ShutdownLevel())
+	if level != lctx.ShutdownLevel() {
+		return lctx.WithShutdownLevel(level)
+	}
+	return lctx
+}
+
+func supervisorShutdownContext(level lifecycle.ShutdownLevel) (lifecycle.Context, context.CancelFunc) {
+	level = normalizeSupervisorStopLevel(level)
+	return lifecycle.DetachedShutdown(level, supervisorShutdownTimeout(level))
+}
+
+func supervisorShutdownTimeout(level lifecycle.ShutdownLevel) time.Duration {
+	if level.IsForced() {
+		return time.Second
+	}
+	return 5 * time.Second
+}
+
+func normalizeSupervisorStopLevel(level lifecycle.ShutdownLevel) lifecycle.ShutdownLevel {
+	if level.IsShutdown() {
+		return level
+	}
+	return lifecycle.ShutdownGraceful
 }

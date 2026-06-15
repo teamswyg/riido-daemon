@@ -21,7 +21,9 @@ import (
 
 // daemonRequest is the JSON envelope read off the socket.
 type daemonRequest struct {
-	Method string `json:"method"`
+	Method        string `json:"method"`
+	ShutdownLevel string `json:"shutdown_level,omitempty"`
+	Force         bool   `json:"force,omitempty"`
 }
 
 func handleDaemonConn(conn net.Conn, flags startFlags, settings daemonSettings, startedAt time.Time, runtimes []*runtimeactor.Actor, shutdownCh chan<- lifecycle.ShutdownLevel, log logging.Logger) {
@@ -52,13 +54,14 @@ func handleDaemonConn(conn net.Conn, flags startFlags, settings daemonSettings, 
 	case "metrics":
 		writeMetrics(conn, runtimes)
 	case "shutdown":
-		writeShutdownAck(conn)
+		level := req.lifecycleShutdownLevel()
+		writeShutdownAck(conn, level)
 		// Non-blocking signal — repeated shutdown requests are harmless.
 		select {
-		case shutdownCh <- lifecycle.ShutdownGraceful:
+		case shutdownCh <- level:
 		default:
 		}
-		log.Printf("shutdown request received")
+		log.Printf("shutdown request received level=%s", level)
 	default:
 		if err := writeDaemonJSON(conn, map[string]any{"error": "unknown method", "method": req.Method}); err != nil {
 			log.Printf("write unknown-method response: %v", err)
@@ -70,10 +73,25 @@ func writeDaemonJSON(conn net.Conn, value any) error {
 	return json.NewEncoder(conn).Encode(value)
 }
 
-func writeShutdownAck(conn net.Conn) {
+func (r daemonRequest) lifecycleShutdownLevel() lifecycle.ShutdownLevel {
+	if r.Force {
+		return lifecycle.ShutdownForced
+	}
+	switch strings.ToLower(strings.TrimSpace(r.ShutdownLevel)) {
+	case "", lifecycle.ShutdownGraceful.String():
+		return lifecycle.ShutdownGraceful
+	case lifecycle.ShutdownForced.String():
+		return lifecycle.ShutdownForced
+	default:
+		return lifecycle.ShutdownGraceful
+	}
+}
+
+func writeShutdownAck(conn net.Conn, level lifecycle.ShutdownLevel) {
 	_ = writeDaemonJSON(conn, map[string]string{
 		"schema_version": DaemonStatusSchemaVersion,
 		"shutdown":       "accepted",
+		"shutdown_level": level.String(),
 	})
 }
 
@@ -272,6 +290,7 @@ func runDaemonStop(args []string) error {
 	socket := ""
 	pidFile := ""
 	timeoutSeconds := 5
+	force := false
 	for i := 0; i < len(args); i++ {
 		switch args[i] {
 		case "--socket":
@@ -296,6 +315,8 @@ func runDaemonStop(args []string) error {
 				return daemonWrapf(ErrDaemonUsage, "stop.parse-flags", err, "--timeout-seconds must be positive int: %v", args[i])
 			}
 			timeoutSeconds = v
+		case "--force":
+			force = true
 		case "--help", "-h":
 			printUsage()
 			return nil
@@ -308,10 +329,14 @@ func runDaemonStop(args []string) error {
 	}
 
 	timeout := time.Duration(timeoutSeconds) * time.Second
+	level := lifecycle.ShutdownGraceful
+	if force {
+		level = lifecycle.ShutdownForced
+	}
 
 	// 1. Socket shutdown first (preferred — cooperative, no signals).
 	if socket != "" {
-		if ok := tryShutdownViaSocket(socket, timeout); ok {
+		if ok := tryShutdownViaSocket(socket, timeout, level); ok {
 			return nil
 		}
 	}
@@ -331,13 +356,17 @@ func runDaemonStop(args []string) error {
 // reports true so the operator doesn't see a redundant SIGTERM fallback
 // when there's nothing to stop. The caller decides whether to follow up
 // with a PID-file fallback.
-func tryShutdownViaSocket(socket string, timeout time.Duration) bool {
+func tryShutdownViaSocket(socket string, timeout time.Duration, level lifecycle.ShutdownLevel) bool {
 	conn, err := net.DialTimeout("unix", socket, 500*time.Millisecond)
 	if err != nil {
 		return false
 	}
 	_ = conn.SetDeadline(time.Now().Add(1 * time.Second))
-	if err := json.NewEncoder(conn).Encode(daemonRequest{Method: "shutdown"}); err != nil {
+	if err := json.NewEncoder(conn).Encode(daemonRequest{
+		Method:        "shutdown",
+		ShutdownLevel: level.String(),
+		Force:         level.IsForced(),
+	}); err != nil {
 		_ = conn.Close()
 		return false
 	}

@@ -48,7 +48,8 @@ desktop helper can read or invoke through local IPC/CLI:
 
 - `riido daemon status|health|ready|metrics` expose current daemon status,
   readiness, PID, uptime, profile, device name, and runtime snapshots
-- `riido daemon stop` performs cooperative local shutdown with PID fallback
+- `riido daemon stop` performs cooperative local shutdown with PID fallback;
+  `--force` requests forced lifecycle authority before PID fallback
 - `riido daemon start` starts the local daemon process
 
 There is no separate `riido daemon restart` command today. A desktop helper may

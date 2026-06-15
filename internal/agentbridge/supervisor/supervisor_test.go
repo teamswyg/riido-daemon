@@ -20,6 +20,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/policy"
 	"github.com/teamswyg/riido-daemon/internal/process"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
 type stubAdapter struct {
@@ -111,6 +112,23 @@ func (r *reporterProbe) ReportEvent(_ context.Context, _ string, ev agentbridge.
 func (r *reporterProbe) CompleteTask(_ context.Context, _ string, res agentbridge.Result) error {
 	r.results <- res
 	return nil
+}
+
+type lifecycleReporterProbe struct {
+	*reporterProbe
+	completeLevels chan lifecycle.ShutdownLevel
+}
+
+func newLifecycleReporterProbe() *lifecycleReporterProbe {
+	return &lifecycleReporterProbe{
+		reporterProbe:  newReporterProbe(),
+		completeLevels: make(chan lifecycle.ShutdownLevel, 4),
+	}
+}
+
+func (r *lifecycleReporterProbe) CompleteTask(ctx context.Context, taskID string, res agentbridge.Result) error {
+	r.completeLevels <- lifecycle.FromContext(ctx).ShutdownLevel()
+	return r.reporterProbe.CompleteTask(ctx, taskID, res)
 }
 
 func startRuntime(t *testing.T, fake *process.Fake) *runtimeactor.Actor {
@@ -1119,6 +1137,73 @@ func TestSupervisorStopArchivesInFlightWorkspace(t *testing.T) {
 		}
 	})
 	assertRunEvent(t, events, ir.EventWorkdirArchived, nil)
+}
+
+func TestSupervisorStopLifecyclePropagatesForcedLevel(t *testing.T) {
+	source := controlplane.NewMemorySource()
+	source.Enqueue(bridge.TaskRequest{
+		ID:       "t-forced-stop",
+		Provider: "fake",
+		Prompt:   "x",
+		Metadata: map[string]string{
+			MetadataWorkspaceID: "ws-forced-stop",
+			MetadataRunID:       "run-forced-stop",
+		},
+	})
+
+	reporter := newLifecycleReporterProbe()
+	fake := process.NewFake()
+	running := process.NewFakeRunning()
+	fake.NextRunning = running
+	rt := startRuntime(t, fake)
+
+	actor, err := New(Config{
+		DaemonID:           "daemon-forced-stop",
+		RiidoDaemonVersion: "riido-agentd v1.2.3",
+		Runtime:            rt,
+		Source:             source,
+		Reporter:           reporter,
+		Workdir:            workdir.NewFSAdapter(t.TempDir()),
+		PollEvery:          10 * time.Millisecond,
+		HeartbeatEvery:     time.Hour,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := actor.Start(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+
+	select {
+	case <-reporter.started:
+	case <-time.After(2 * time.Second):
+		t.Fatal("task was not claimed")
+	}
+	select {
+	case <-running.StartedRecv():
+	case <-time.After(2 * time.Second):
+		t.Fatal("provider process was not spawned")
+	}
+
+	shutdownCtx, cancel := lifecycle.DetachedShutdown(lifecycle.ShutdownForced, 2*time.Second)
+	defer cancel()
+	if err := actor.StopLifecycle(shutdownCtx); err != nil {
+		t.Fatalf("StopLifecycle: %v", err)
+	}
+
+	select {
+	case level := <-reporter.completeLevels:
+		if level != lifecycle.ShutdownForced {
+			t.Fatalf("CompleteTask lifecycle level = %s, want %s", level, lifecycle.ShutdownForced)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("shutdown result was not reported")
+	}
+	select {
+	case <-running.KillRecv():
+	case <-time.After(2 * time.Second):
+		t.Fatal("provider process was not killed on forced supervisor stop")
+	}
 }
 
 func TestSupervisorWorkdirRequiresWorkspaceID(t *testing.T) {

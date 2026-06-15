@@ -21,8 +21,10 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/saasplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/taskdbplane"
+	"github.com/teamswyg/riido-daemon/internal/logging"
 	"github.com/teamswyg/riido-daemon/internal/policy"
 	"github.com/teamswyg/riido-daemon/internal/taskdb"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
 // daemonSocketPath returns a short Unix socket path. macOS SUN_PATH is
@@ -401,6 +403,73 @@ func TestDaemonStopSignalsPidFile(t *testing.T) {
 		}
 	case <-time.After(3 * time.Second):
 		t.Fatal("shim did not exit after daemon stop")
+	}
+}
+
+func TestDaemonShutdownRequestCarriesForcedLevel(t *testing.T) {
+	server, client := net.Pipe()
+	shutdownCh := make(chan lifecycle.ShutdownLevel, 1)
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		handleDaemonConn(server, startFlags{}, daemonSettings{}, time.Now(), nil, shutdownCh, logging.NewWriterLogger(io.Discard))
+	}()
+	t.Cleanup(func() { _ = client.Close() })
+	_ = client.SetDeadline(time.Now().Add(time.Second))
+
+	if err := json.NewEncoder(client).Encode(daemonRequest{Method: "shutdown", ShutdownLevel: "forced"}); err != nil {
+		t.Fatalf("encode shutdown request: %v", err)
+	}
+	var ack map[string]string
+	if err := json.NewDecoder(client).Decode(&ack); err != nil {
+		t.Fatalf("decode shutdown ack: %v", err)
+	}
+	if ack["shutdown"] != "accepted" || ack["shutdown_level"] != lifecycle.ShutdownForced.String() {
+		t.Fatalf("shutdown ack = %+v", ack)
+	}
+	select {
+	case level := <-shutdownCh:
+		if level != lifecycle.ShutdownForced {
+			t.Fatalf("shutdown level = %s, want %s", level, lifecycle.ShutdownForced)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("shutdown level was not delivered")
+	}
+	<-done
+}
+
+func TestTryShutdownViaSocketSendsForcedLevel(t *testing.T) {
+	sock := daemonSocketPath(t)
+	ln, err := net.Listen("unix", sock)
+	if err != nil {
+		t.Fatalf("listen: %v", err)
+	}
+	t.Cleanup(func() { _ = ln.Close() })
+
+	received := make(chan daemonRequest, 1)
+	go func() {
+		conn, err := ln.Accept()
+		if err != nil {
+			return
+		}
+		defer conn.Close()
+		var req daemonRequest
+		_ = json.NewDecoder(conn).Decode(&req)
+		received <- req
+		writeShutdownAck(conn, req.lifecycleShutdownLevel())
+		_ = ln.Close()
+	}()
+
+	if ok := tryShutdownViaSocket(sock, time.Second, lifecycle.ShutdownForced); !ok {
+		t.Fatal("forced shutdown socket request did not complete")
+	}
+	select {
+	case req := <-received:
+		if req.Method != "shutdown" || !req.Force || req.ShutdownLevel != lifecycle.ShutdownForced.String() {
+			t.Fatalf("shutdown request = %+v", req)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("shutdown request was not received")
 	}
 }
 

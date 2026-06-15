@@ -114,6 +114,7 @@ go run ./cmd/riido bridge providers
 go run ./cmd/riido daemon start --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid --log-file /tmp/riido-agentd.log
 go run ./cmd/riido daemon status --socket /tmp/riido-agentd.sock
 go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid
+go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid --force
 ```
 
 `riido daemon ...`은 12-factor env로 task source를 선택합니다.

@@ -334,6 +334,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	_ = os.Remove(flags.socket)
 
 	startedAt := time.Now()
+	shutdownLevel := normalizeDaemonShutdownLevel(ctx.ShutdownLevel())
 
 	rtActors, err := newDaemonRuntimeActors(settings, builtinDaemonAdapters())
 	if err != nil {
@@ -350,7 +351,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 		startedRuntimes = append(startedRuntimes, rt)
 	}
 	defer func() {
-		shutdownCtx, cancel := lifecycle.DetachedShutdown(lifecycle.ShutdownGraceful, 5*time.Second)
+		shutdownCtx, cancel := lifecycle.DetachedShutdown(shutdownLevel, daemonShutdownTimeout(shutdownLevel))
 		defer cancel()
 		stopRuntimeActors(shutdownCtx, rtActors, log)
 	}()
@@ -383,10 +384,10 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 		return daemonWrapf(ErrDaemonSupervisor, "serve.start-supervisor", err, "supervisor.Start")
 	}
 	defer func() {
-		shutdownCtx, cancel := lifecycle.DetachedShutdown(lifecycle.ShutdownGraceful, 5*time.Second)
+		shutdownCtx, cancel := lifecycle.DetachedShutdown(shutdownLevel, daemonShutdownTimeout(shutdownLevel))
 		defer cancel()
-		if err := supActor.Stop(shutdownCtx.Context()); err != nil {
-			log.Printf("supervisor stop error: %v", err)
+		if err := supActor.StopLifecycle(shutdownCtx); err != nil {
+			log.Printf("supervisor stop error level=%s: %v", shutdownCtx.ShutdownLevel(), err)
 		}
 	}()
 	log.Printf("supervisor started workdir_root=%s control_plane=%s queue_dir=%s report_dir=%s", settings.WorkdirRoot, controlPlaneKind, settings.TaskQueueDir, settings.TaskReportDir)
@@ -406,20 +407,23 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	// requests together. The shutdown channel is buffered so the
 	// handler's non-blocking send can never deadlock if multiple
 	// clients race a stop request.
-	signalCtx, stop := lifecycle.Notify(ctx.WithShutdownLevel(lifecycle.ShutdownGraceful), daemonInterruptSignals()...)
+	signalCtx, stop := lifecycle.Notify(ctx.WithShutdownLevel(shutdownLevel), daemonInterruptSignals()...)
 	defer stop()
 
-	shutdownCh := make(chan lifecycle.ShutdownLevel, 1)
-	done := make(chan struct{})
+	shutdownCh := make(chan lifecycle.ShutdownLevel, 8)
+	done := make(chan lifecycle.ShutdownLevel, 1)
 	go func() {
+		var level lifecycle.ShutdownLevel
 		select {
 		case <-signalCtx.Done():
-			log.Printf("daemon shutdown requested level=%s source=signal", signalCtx.ShutdownLevel())
-		case level := <-shutdownCh:
+			level = normalizeDaemonShutdownLevel(signalCtx.ShutdownLevel())
+			log.Printf("daemon shutdown requested level=%s source=signal", level)
+		case level = <-shutdownCh:
+			level = normalizeDaemonShutdownLevel(level)
 			log.Printf("daemon shutdown requested level=%s source=socket", level)
 		}
+		done <- level
 		_ = ln.Close()
-		close(done)
 	}()
 
 	log.Printf("daemon listening on %s", flags.socket)
@@ -427,7 +431,8 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 		conn, err := ln.Accept()
 		if err != nil {
 			select {
-			case <-done:
+			case level := <-done:
+				shutdownLevel = level
 				log.Printf("daemon shutting down")
 				return nil
 			default:
@@ -545,10 +550,24 @@ func daemonToolStartGate(settings daemonSettings) agentbridge.ToolStartGate {
 
 func stopRuntimeActors(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, log logging.Logger) {
 	for _, rt := range runtimes {
-		if err := rt.Stop(ctx.Context()); err != nil {
+		if err := rt.StopLifecycle(ctx); err != nil {
 			log.Printf("runtimeactor stop error level=%s: %v", ctx.ShutdownLevel(), err)
 		}
 	}
+}
+
+func daemonShutdownTimeout(level lifecycle.ShutdownLevel) time.Duration {
+	if level.IsForced() {
+		return time.Second
+	}
+	return 5 * time.Second
+}
+
+func normalizeDaemonShutdownLevel(level lifecycle.ShutdownLevel) lifecycle.ShutdownLevel {
+	if level.IsShutdown() {
+		return level
+	}
+	return lifecycle.ShutdownGraceful
 }
 
 func providerRuntimeID(daemonID, provider string) string {
