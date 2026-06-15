@@ -11,6 +11,7 @@ The original entrypoint remains here to preserve existing links.
 - `supports_worktree=false`
 - `required_surfaces=[worktree]`
 - `MISSING_REQUIRED_SURFACE:worktree`
+- Store App GUI must remain a client of C11/local API contracts
 
 ## Parts
 

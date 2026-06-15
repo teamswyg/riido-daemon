@@ -7,6 +7,7 @@ The original entrypoint remains here to preserve existing links.
 
 - `Q-CTX-005`
 - future desktop/app repository
+- public repositories never store secrets
 
 ## Parts
 
