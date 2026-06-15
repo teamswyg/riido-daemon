@@ -17,6 +17,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
+	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 const (
@@ -207,7 +208,7 @@ func sortedRuntimeSnapshots(in map[string]RuntimeSnapshotRecord) []RuntimeSnapsh
 
 func runtimeSnapshotFromRegistration(rt controlplane.RuntimeRegistration) (RuntimeSnapshotRecord, string, bool) {
 	runtimeID := strings.TrimSpace(rt.RuntimeID)
-	provider := providerFromRuntimeID(firstNonEmpty(rt.Provider, runtimeID))
+	provider := providerFromRuntimeID(textutil.FirstNonEmptyTrimmed(rt.Provider, runtimeID))
 	if runtimeID == "" || provider == "" {
 		return RuntimeSnapshotRecord{}, "", false
 	}
@@ -357,7 +358,7 @@ func (p *Plane) postRuntimeSnapshot(ctx context.Context, runtimes []RuntimeSnaps
 	return p.postJSON(ctx, "/v1/daemon/runtime-snapshot", DeviceRuntimeSnapshotSyncRequest{
 		DaemonID:          p.cfg.DaemonID,
 		DeviceID:          p.cfg.DeviceID,
-		DeviceDisplayName: firstNonEmpty(deviceName, p.cfg.DeviceID),
+		DeviceDisplayName: textutil.FirstNonEmptyTrimmed(deviceName, p.cfg.DeviceID),
 		Profile:           p.cfg.Profile,
 		AppVersion:        p.cfg.AppVersion,
 		PID:               p.cfg.PID,
@@ -877,7 +878,7 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		MetadataLeaseToken:      assignment.LeaseToken,
 		MetadataModelID:         assignment.ModelID,
 		MetadataRuntimeProvider: assignment.RuntimeProvider,
-		"workspace_id":          firstNonEmpty(assignment.ComponentID, assignment.TaskID),
+		"workspace_id":          textutil.FirstNonEmptyTrimmed(assignment.ComponentID, assignment.TaskID),
 		"run_id":                assignment.ID,
 	}
 	prompt, systemPrompt, telemetryPlacement, instructionPlacement := agentbridge.ApplyRuntimeInstructionContract(assignment.RuntimeProvider, assignment.Prompt, "", assignment.AgentInstruction)
@@ -957,7 +958,7 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		req.Message = ev.Text
 	case agentbridge.EventError:
 		req.EventType = assignmentcontract.EventProviderError
-		req.Message = firstNonEmpty(ev.Err, ev.Text)
+		req.Message = textutil.FirstNonEmptyTrimmed(ev.Err, ev.Text)
 	default:
 		return req, false
 	}
@@ -1056,13 +1057,4 @@ func runtimeKindForProvider(provider string) string {
 	default:
 		return strings.TrimSpace(provider)
 	}
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if trimmed := strings.TrimSpace(value); trimmed != "" {
-			return trimmed
-		}
-	}
-	return ""
 }

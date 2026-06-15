@@ -23,6 +23,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/taskdb"
 	"github.com/teamswyg/riido-daemon/internal/validation"
+	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 const StatusSchemaVersion = "riido-api-status.v1"
@@ -328,8 +329,8 @@ func (s Server) validateTask(params json.RawMessage) (ValidateResponse, error) {
 		commandID = validationCommandID(taskID, now)
 	}
 	timeout := time.Duration(req.TimeoutSeconds) * time.Second
-	actor := defaultString(req.Actor, "daemon")
-	source := defaultString(req.Source, "riido-api")
+	actor := textutil.Default(req.Actor, "daemon")
+	source := textutil.Default(req.Source, "riido-api")
 	result, err := validation.RunCommand(context.Background(), validation.CommandRequest{
 		Command:        req.Command,
 		Workdir:        req.Workdir,
@@ -668,14 +669,6 @@ func validationTransitionForResult(result string) (task.TaskState, ir.EventType)
 		return task.StatePatchReady, ir.EventValidationPassed
 	}
 	return task.StateFailed, ir.EventValidationFailed
-}
-
-func defaultString(value string, fallback string) string {
-	value = strings.TrimSpace(value)
-	if value == "" {
-		return fallback
-	}
-	return value
 }
 
 func rawParams(params any) (json.RawMessage, error) {

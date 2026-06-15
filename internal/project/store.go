@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/teamswyg/riido-daemon/pkg/util/fileutil"
 )
 
 const StateSchemaVersion = "riido-project-state.v1"
@@ -136,27 +138,8 @@ func SaveState(path string, state StateFile) error {
 	if path == "" {
 		return fmt.Errorf("state path is empty")
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("create state directory: %w", err)
-	}
-	tmp, err := os.CreateTemp(filepath.Dir(path), ".workspace-state-*.tmp")
-	if err != nil {
-		return fmt.Errorf("create state temp file: %w", err)
-	}
-	tmpPath := tmp.Name()
-	defer os.Remove(tmpPath)
-
-	encoder := json.NewEncoder(tmp)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(state); err != nil {
-		tmp.Close()
-		return fmt.Errorf("encode state file: %w", err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("close state temp file: %w", err)
-	}
-	if err := os.Rename(tmpPath, path); err != nil {
-		return fmt.Errorf("replace state file: %w", err)
+	if err := fileutil.WriteJSONAtomic(path, state); err != nil {
+		return fmt.Errorf("save state file: %w", err)
 	}
 	return nil
 }

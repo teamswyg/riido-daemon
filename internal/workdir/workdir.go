@@ -36,6 +36,8 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/teamswyg/riido-daemon/pkg/util/fileutil"
 )
 
 const (
@@ -832,26 +834,7 @@ func sortNativeConfigFiles(files []nativeConfigFileHash) {
 }
 
 func writeJSONAtomic(path string, value any) error {
-	data, err := json.MarshalIndent(value, "", "  ")
-	if err != nil {
-		return err
-	}
-	data = append(data, '\n')
-	dir := filepath.Dir(path)
-	tmp, err := os.CreateTemp(dir, ".tmp-"+filepath.Base(path)+"-*")
-	if err != nil {
-		return err
-	}
-	tmpName := tmp.Name()
-	defer os.Remove(tmpName)
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmpName, path)
+	return fileutil.WriteJSONAtomic(path, value)
 }
 
 func renderRuntimeConfig(cfg RuntimeConfig) string {

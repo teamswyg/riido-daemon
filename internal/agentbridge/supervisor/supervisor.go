@@ -29,6 +29,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/policy"
 	"github.com/teamswyg/riido-daemon/internal/scheduling"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
+	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 var ErrStopped = errors.New("supervisor: stopped")
@@ -816,7 +817,7 @@ func providerEventDraft(ev agentbridge.Event) (ir.EventType, map[string]any, boo
 	case agentbridge.EventToolApprovalNeeded:
 		return ir.EventApprovalRequested, map[string]any{
 			"approvalID": ev.Tool.ID,
-			"kind":       firstNonEmptyString(ev.Tool.Kind, "tool"),
+			"kind":       textutil.FirstNonEmpty(ev.Tool.Kind, "tool"),
 			"payload":    toolPayload(ev.Tool),
 		}, true
 	case agentbridge.EventUsageDelta:
@@ -858,13 +859,13 @@ func terminalResultDraft(res agentbridge.Result) (ir.EventType, map[string]any) 
 		}
 	case agentbridge.ResultCancelled:
 		return ir.EventTaskCancelled, map[string]any{
-			"reason":  firstNonEmptyString(res.Error, "provider run cancelled"),
+			"reason":  textutil.FirstNonEmpty(res.Error, "provider run cancelled"),
 			"byActor": "daemon",
 		}
 	case agentbridge.ResultTimeout:
 		payload := map[string]any{
 			"fromState": "Running",
-			"limit":     firstNonEmptyString(res.Error, "timeout"),
+			"limit":     textutil.FirstNonEmpty(res.Error, "timeout"),
 		}
 		if !res.StartedAt.IsZero() && !res.FinishedAt.IsZero() {
 			payload["elapsed"] = res.FinishedAt.Sub(res.StartedAt).String()
@@ -873,7 +874,7 @@ func terminalResultDraft(res agentbridge.Result) (ir.EventType, map[string]any) 
 	default:
 		return ir.EventTaskFailed, map[string]any{
 			"category": taskFailureCategory(status),
-			"reason":   firstNonEmptyString(res.Error, string(status)),
+			"reason":   textutil.FirstNonEmpty(res.Error, string(status)),
 			"terminal": true,
 		}
 	}
@@ -911,13 +912,6 @@ func usagePayload(usage agentbridge.Usage) map[string]any {
 		"cacheReadTokens":  usage.CacheReadTokens,
 		"cacheWriteTokens": usage.CacheWriteTokens,
 	}
-}
-
-func firstNonEmptyString(value, fallback string) string {
-	if strings.TrimSpace(value) != "" {
-		return value
-	}
-	return fallback
 }
 
 func (e *workspaceEventContext) draft(eventType ir.EventType, nativeConfigVersion string, payload map[string]any) ingest.Draft {
