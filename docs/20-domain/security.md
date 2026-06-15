@@ -1,6 +1,6 @@
 # Security / Policy SSOT
 
-This SSOT is split into focused parts so handwritten files stay below the repository line-count threshold.
+This SSOT is split into focused topic files so each reader can open the smallest relevant surface.
 The original entrypoint remains here to preserve existing links.
 
 ## Compatibility Markers
@@ -27,6 +27,6 @@ lease, heartbeat, and evidence stay daemon-owned. Claude / Cursor / OpenClaw 도
 
 ## Parts
 
-- [Part 01: 0. 핵심 invariant (단단히 박는다)](security/part-01.md)
-- [Part 02: 3.1 T-CFG native config overlay decision](security/part-02.md)
-- [Part 03: 5.1 코드 집행 위치](security/part-03.md)
+- [Invariants](security/invariants.md)
+- [Native Config Overlay](security/native-config-overlay.md)
+- [Enforcement Locations](security/enforcement-locations.md)

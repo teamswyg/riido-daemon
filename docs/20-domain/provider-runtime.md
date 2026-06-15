@@ -1,6 +1,6 @@
 # Provider Runtime / Adapter SSOT
 
-This SSOT is split into focused parts so handwritten files stay below the repository line-count threshold.
+This SSOT is split into focused topic files so each reader can open the smallest relevant surface.
 The original entrypoint remains here to preserve existing links.
 
 ## Compatibility Markers
@@ -34,11 +34,11 @@ meta model only through provider-specific SSOT
 
 ## Parts
 
-- [Part 01: Part 01](provider-runtime/part-01.md)
-- [Part 02: 0. Public Migration Status](provider-runtime/part-02.md)
-- [Part 03: Part 03](provider-runtime/part-03.md)
-- [Part 04: 1. 책임 한 줄](provider-runtime/part-04.md)
-- [Part 05: 4.1 허용 필드 (어댑터가 채울 수 있는 것)](provider-runtime/part-05.md)
-- [Part 06: 6. raw → draft 변환 규칙 (어댑터 ACL)](provider-runtime/part-06.md)
-- [Part 07: 7.7 RuntimeActor boundary](provider-runtime/part-07.md)
-- [Part 08: 12. version-affecting changes](provider-runtime/part-08.md)
+- [Overview](provider-runtime/overview.md)
+- [Public Migration Status](provider-runtime/public-migration-status.md)
+- [Integration Gates](provider-runtime/integration-gates.md)
+- [Runtime Responsibility](provider-runtime/runtime-responsibility.md)
+- [Adapter Draft Fields](provider-runtime/adapter-draft-fields.md)
+- [Adapter ACL](provider-runtime/adapter-acl.md)
+- [RuntimeActor Boundary](provider-runtime/runtime-actor-boundary.md)
+- [Versioning](provider-runtime/versioning.md)
