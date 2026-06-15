@@ -20,6 +20,14 @@ caller arguments
   hidden fallback
 - Other providers should follow the same full-access/trusted-runtime
 meta model only through provider-specific SSOT
+- `internal/process.DefaultStdoutBuffer`
+- `internal/process.DefaultStderrBuffer`
+- `internal/agentbridge/session.DefaultEventBuffer`
+- `internal/agentbridge/session.DefaultResultBuffer`
+- `internal/agentbridge/runtimeactor.DefaultMailboxSize`
+- `internal/agentbridge/supervisor.DefaultMailboxSize`
+- `Q-RT-001` closes alongside `Q-MULTICA-005`
+- `Q-CTX-001`
 
 ## Parts
 
