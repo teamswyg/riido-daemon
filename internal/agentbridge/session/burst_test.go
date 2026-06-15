@@ -1,6 +1,7 @@
 package session
 
 import (
+	"bytes"
 	"context"
 	"runtime"
 	"strings"
@@ -22,10 +23,19 @@ func (a *burstAdapter) Name() string { return "burst" }
 func (a *burstAdapter) Detect(_ context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return agentbridge.DetectResult{Available: true}, nil
 }
+
 func (a *burstAdapter) BuildStart(_ agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return agentbridge.StartCommand{}, nil
 }
-func (a *burstAdapter) NewParser() agentbridge.Parser { return &burstParser{} }
+
+func (a *burstAdapter) NewParser() agentbridge.Parser {
+	done := a.done
+	if len(done) == 0 {
+		done = []byte("DONE")
+	}
+	return &burstParser{done: done}
+}
+
 func (a *burstAdapter) Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
 	if raw.Type == "sentinel" {
 		return []agentbridge.Event{{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultCompleted}}}, nil, nil
@@ -37,14 +47,17 @@ func (a *burstAdapter) Translate(raw agentbridge.RawEvent) ([]agentbridge.Event,
 }
 func (a *burstAdapter) BlockedArgs() []string { return nil }
 
-type burstParser struct{}
+type burstParser struct {
+	done []byte
+}
 
 func (p *burstParser) FeedStdout(chunk []byte) ([]agentbridge.RawEvent, error) {
-	if string(chunk) == "DONE" {
+	if bytes.Equal(chunk, p.done) {
 		return []agentbridge.RawEvent{{Source: agentbridge.RawSourceStdout, Type: "sentinel", Bytes: chunk}}, nil
 	}
 	return []agentbridge.RawEvent{{Source: agentbridge.RawSourceStdout, Type: "chunk", Bytes: chunk}}, nil
 }
+
 func (p *burstParser) FeedStderr(chunk []byte) ([]agentbridge.RawEvent, error) {
 	return []agentbridge.RawEvent{{Source: agentbridge.RawSourceStderr, Type: "chunk", Bytes: chunk}}, nil
 }

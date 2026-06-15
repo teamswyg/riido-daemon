@@ -166,6 +166,7 @@ func validateHelperRuntimeAppDataRoot(channel DistributionChannel, root AppDataR
 		return fmt.Errorf("helper app data root channel %q does not match runtime channel %q", root.Channel, channel)
 	}
 	switch channel {
+	case DistributionChannelDeveloperID, DistributionChannelDevLocal:
 	case DistributionChannelMacAppStore:
 		if root.Scope != AppDataRootAppGroup && root.Scope != AppDataRootSandboxContainer {
 			return fmt.Errorf("mac-app-store helper requires app-group or sandbox-container app data root, got %q", root.Scope)

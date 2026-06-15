@@ -60,12 +60,18 @@ func handleDaemonConn(conn net.Conn, flags startFlags, settings daemonSettings, 
 		}
 		log.Printf("shutdown request received")
 	default:
-		_ = json.NewEncoder(conn).Encode(map[string]any{"error": "unknown method", "method": req.Method})
+		if err := writeDaemonJSON(conn, map[string]any{"error": "unknown method", "method": req.Method}); err != nil {
+			log.Printf("write unknown-method response: %v", err)
+		}
 	}
 }
 
+func writeDaemonJSON(conn net.Conn, value any) error {
+	return json.NewEncoder(conn).Encode(value)
+}
+
 func writeShutdownAck(conn net.Conn) {
-	_ = json.NewEncoder(conn).Encode(map[string]string{
+	_ = writeDaemonJSON(conn, map[string]string{
 		"schema_version": DaemonStatusSchemaVersion,
 		"shutdown":       "accepted",
 	})
@@ -94,11 +100,11 @@ func writeStatus(conn net.Conn, flags startFlags, settings daemonSettings, start
 		Runtimes:       obs.runtimes,
 		StartedAt:      startedAt.UTC().Format(time.RFC3339Nano),
 	}
-	_ = json.NewEncoder(conn).Encode(s)
+	_ = writeDaemonJSON(conn, s)
 }
 
 func writeHealth(conn net.Conn) {
-	_ = json.NewEncoder(conn).Encode(map[string]string{
+	_ = writeDaemonJSON(conn, map[string]string{
 		"schema_version": DaemonStatusSchemaVersion,
 		"health":         "ok",
 	})
@@ -106,7 +112,7 @@ func writeHealth(conn net.Conn) {
 
 func writeReady(conn net.Conn, runtimes []*runtimeactor.Actor) {
 	obs := observeDaemon(runtimes)
-	_ = json.NewEncoder(conn).Encode(map[string]any{
+	_ = writeDaemonJSON(conn, map[string]any{
 		"schema_version":     DaemonStatusSchemaVersion,
 		"health":             "ok",
 		"ready":              obs.ready,
@@ -118,7 +124,7 @@ func writeReady(conn net.Conn, runtimes []*runtimeactor.Actor) {
 
 func writeMetrics(conn net.Conn, runtimes []*runtimeactor.Actor) {
 	obs := observeDaemon(runtimes)
-	_ = json.NewEncoder(conn).Encode(map[string]any{
+	_ = writeDaemonJSON(conn, map[string]any{
 		"schema_version": DaemonStatusSchemaVersion,
 		"metrics":        obs.metrics,
 	})
@@ -244,7 +250,7 @@ func defaultDaemonLockPath() (string, error) {
 	return filepath.Join(home, ".riido", ".lock"), nil
 }
 
-func daemonCall(sock string, method string) error {
+func daemonCall(sock, method string) error {
 	conn, err := net.DialTimeout("unix", sock, 2*time.Second)
 	if err != nil {
 		return daemonWrapf(ErrDaemonSocket, "ipc.call.dial", err, "dial %s", sock)

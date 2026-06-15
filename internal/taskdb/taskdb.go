@@ -461,7 +461,7 @@ func recountCommandReceipts(db *TaskDB) {
 	}
 }
 
-func replayExistingTaskTransition(db TaskDB, input TaskTransitionInput, actor string, source string) (TaskTransitionRecord, TaskCommandReceiptRecord, bool, error) {
+func replayExistingTaskTransition(db TaskDB, input TaskTransitionInput, actor, source string) (TaskTransitionRecord, TaskCommandReceiptRecord, bool, error) {
 	receipt, found, err := findCommandReceiptByCommandID(db, input.Guard.CommandID)
 	if err != nil || !found {
 		return TaskTransitionRecord{}, TaskCommandReceiptRecord{}, found, err
@@ -497,7 +497,7 @@ func replayExistingTaskTransition(db TaskDB, input TaskTransitionInput, actor st
 	return transition, receipt, true, nil
 }
 
-func replayExistingTaskEvidence(db TaskDB, input TaskEvidenceInput, actor string, source string) (TaskEvidenceRecord, TaskCommandReceiptRecord, bool, error) {
+func replayExistingTaskEvidence(db TaskDB, input TaskEvidenceInput, actor, source string) (TaskEvidenceRecord, TaskCommandReceiptRecord, bool, error) {
 	receipt, found, err := findCommandReceiptByCommandID(db, input.Guard.CommandID)
 	if err != nil || !found {
 		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, found, err
@@ -548,7 +548,7 @@ func replayExistingTaskEvidence(db TaskDB, input TaskEvidenceInput, actor string
 	return evidence, receipt, true, nil
 }
 
-func validateCommandReceiptReplay(receipt TaskCommandReceiptRecord, kind string, taskID string, actor string, source string, guard TaskMutationGuardInput) error {
+func validateCommandReceiptReplay(receipt TaskCommandReceiptRecord, kind, taskID, actor, source string, guard TaskMutationGuardInput) error {
 	if receipt.Kind != kind {
 		return commandReplayMismatch(receipt.CommandID, "kind")
 	}
@@ -614,18 +614,18 @@ func findEvidenceByID(evidenceRecords []TaskEvidenceRecord, id string) (TaskEvid
 	return TaskEvidenceRecord{}, false
 }
 
-func commandReplayMismatch(commandID string, field string) error {
+func commandReplayMismatch(commandID, field string) error {
 	return taskDBErrorf(ErrTaskDBReplay, "receipt.replay", "command_id %s replay mismatch on %s", commandID, field)
 }
 
-func replayStringFieldMatches(existing string, expected string, required bool) bool {
+func replayStringFieldMatches(existing, expected string, required bool) bool {
 	if existing == expected {
 		return true
 	}
 	return existing == "" && !required
 }
 
-func buildTaskCommandReceipt(db TaskDB, taskRecord TaskRecord, kind string, actor string, source string, guard TaskMutationGuardInput, now time.Time, ordinal int) (TaskCommandReceiptRecord, error) {
+func buildTaskCommandReceipt(db TaskDB, taskRecord TaskRecord, kind, actor, source string, guard TaskMutationGuardInput, now time.Time, ordinal int) (TaskCommandReceiptRecord, error) {
 	provider := textutil.FirstNonEmpty(guard.Provider, taskRecord.RecommendedProvider)
 	provider = textutil.FirstNonEmpty(provider, db.RecommendedProvider)
 	decisionLLM := textutil.FirstNonEmpty(guard.DecisionLLM, taskRecord.RecommendedDecisionLLM)
@@ -692,20 +692,16 @@ func evidenceID(taskID string, now time.Time, ordinal int) string {
 	return fmt.Sprintf("evidence:%s:%s:%04d", taskID, now.UTC().Format("20060102T150405.000000000Z"), ordinal)
 }
 
-func commandReceiptID(taskID string, kind string, now time.Time, ordinal int) string {
+func commandReceiptID(taskID, kind string, now time.Time, ordinal int) string {
 	return fmt.Sprintf("receipt:%s:%s:%s:%04d", kind, taskID, now.UTC().Format("20060102T150405.000000000Z"), ordinal)
 }
 
-func generatedCommandID(taskID string, kind string, now time.Time, ordinal int) string {
+func generatedCommandID(taskID, kind string, now time.Time, ordinal int) string {
 	return fmt.Sprintf("command:%s:%s:%s:%04d", kind, taskID, now.UTC().Format("20060102T150405.000000000Z"), ordinal)
 }
 
 func timestamp(now time.Time) string {
 	return now.UTC().Format(time.RFC3339Nano)
-}
-
-func isKnownTaskState(value task.TaskState) bool {
-	return value.Code().IsKnown()
 }
 
 func normalizeEvidenceResult(result string, exitCode int) string {

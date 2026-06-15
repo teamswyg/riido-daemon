@@ -84,6 +84,7 @@ func (a *trackingAdapter) Name() string { return "tracking" }
 func (a *trackingAdapter) Detect(_ context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return agentbridge.DetectResult{Available: true}, nil
 }
+
 func (a *trackingAdapter) BuildStart(_ agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return agentbridge.StartCommand{}, nil
 }

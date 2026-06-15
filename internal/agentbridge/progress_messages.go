@@ -3,6 +3,7 @@ package agentbridge
 import (
 	"encoding/json"
 	"fmt"
+	"maps"
 	"regexp"
 	"strconv"
 	"strings"
@@ -126,9 +127,7 @@ func normalizeProgressArgsForCode(code int, args map[string]string) map[string]s
 		return args
 	}
 	out := make(map[string]string, len(args))
-	for key, value := range args {
-		out[key] = value
-	}
+	maps.Copy(out, args)
 	out["label"] = normalized
 	return out
 }
@@ -192,12 +191,12 @@ func classifyLegacyProgressMessage(message string) (int, string, map[string]stri
 }
 
 func splitLegacyProgress(message, marker string) (string, string, bool) {
-	idx := strings.Index(message, marker)
-	if idx < 0 {
+	before, after, ok := strings.Cut(message, marker)
+	if !ok {
 		return "", "", false
 	}
-	label := strings.TrimSpace(message[:idx])
-	detail := strings.TrimSpace(message[idx+len(marker):])
+	label := strings.TrimSpace(before)
+	detail := strings.TrimSpace(after)
 	if label == "" || detail == "" {
 		return "", "", false
 	}

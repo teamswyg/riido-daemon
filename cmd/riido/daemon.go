@@ -207,7 +207,11 @@ func runDaemonStartForeground(ctx lifecycle.Context, flags startFlags) error {
 	if err != nil {
 		return daemonWrapf(ErrDaemonLock, "start.acquire-lock", err, "acquire daemon singleton lock %s", flags.lockFile)
 	}
-	defer lock.Release()
+	defer func() {
+		if releaseErr := lock.Release(); releaseErr != nil {
+			_, _ = os.Stderr.WriteString("riido daemon: release lock: " + releaseErr.Error() + "\n")
+		}
+	}()
 
 	logSink, closeLog, err := openLogSink(flags.logFile)
 	if err != nil {
@@ -547,7 +551,7 @@ func stopRuntimeActors(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, lo
 	}
 }
 
-func providerRuntimeID(daemonID string, provider string) string {
+func providerRuntimeID(daemonID, provider string) string {
 	if provider == "" {
 		return daemonID
 	}

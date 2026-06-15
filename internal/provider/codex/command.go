@@ -21,9 +21,11 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-const Name = "codex"
-const DefaultExecutable = "codex"
-const FullAccessSandboxMode = "danger-full-access"
+const (
+	Name                  = "codex"
+	DefaultExecutable     = "codex"
+	FullAccessSandboxMode = "danger-full-access"
+)
 
 // BlockedArgs are protocol-critical flags the adapter sets itself.
 // --listen is the load-bearing one: caller-supplied --listen would let
@@ -105,14 +107,14 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 	}, nil
 }
 
-func filterCustomArgs(custom []string) (kept []string, dropped []string) {
+func filterCustomArgs(custom []string) (kept, dropped []string) {
 	kept, dropped = agentbridge.FilterBlockedArgs(custom, BlockedArgs())
 	kept, dropped = filterConfigOverrideArgs(kept, dropped)
 	kept, dropped = filterSandboxOverrideArgs(kept, dropped)
 	return filterUnsafeBypassArgs(kept, dropped)
 }
 
-func filterConfigOverrideArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
+func filterConfigOverrideArgs(custom, dropped []string) (kept, allDropped []string) {
 	blocked := make(map[string]struct{}, len(SecurityCriticalArgs()))
 	for _, arg := range SecurityCriticalArgs() {
 		blocked[arg] = struct{}{}
@@ -141,7 +143,7 @@ func filterConfigOverrideArgs(custom []string, dropped []string) (kept []string,
 	return kept, allDropped
 }
 
-func filterSandboxOverrideArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
+func filterSandboxOverrideArgs(custom, dropped []string) (kept, allDropped []string) {
 	blocked := make(map[string]struct{}, len(SandboxOverrideArgs()))
 	for _, arg := range SandboxOverrideArgs() {
 		blocked[arg] = struct{}{}
@@ -167,7 +169,7 @@ func filterSandboxOverrideArgs(custom []string, dropped []string) (kept []string
 	return kept, allDropped
 }
 
-func filterUnsafeBypassArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
+func filterUnsafeBypassArgs(custom, dropped []string) (kept, allDropped []string) {
 	blocked := make(map[string]struct{}, len(UnsafeBypassArgs()))
 	for _, arg := range UnsafeBypassArgs() {
 		blocked[arg] = struct{}{}

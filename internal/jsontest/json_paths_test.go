@@ -21,7 +21,8 @@ type jsonPathNested struct {
 }
 
 func TestStructJSONPaths(t *testing.T) {
-	got := StructJSONPaths(reflect.TypeOf(jsonPathFixture{}))
+	_ = jsonPathFixture{private: "hidden"}
+	got := StructJSONPaths(reflect.TypeFor[jsonPathFixture]())
 	want := []string{
 		"name",
 		"nested",

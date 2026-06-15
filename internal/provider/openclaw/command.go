@@ -23,8 +23,10 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-const Name = "openclaw"
-const DefaultExecutable = "openclaw"
+const (
+	Name              = "openclaw"
+	DefaultExecutable = "openclaw"
+)
 
 // BlockedArgs lists the protocol-critical flags this adapter sets itself.
 // Callers cannot override these via CustomArgs.

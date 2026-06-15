@@ -16,8 +16,10 @@ const MaxLineBytes = 10 * 1024 * 1024
 // that some launchers prepend to a line (e.g. when the daemon piped
 // stderr through a script that echoed "stderr: ..."). The parser
 // strips them so the translator sees the clean payload.
-var stdoutStreamPrefixes = []string{"stdout: ", "STDOUT: "}
-var stderrStreamPrefixes = []string{"stderr: ", "STDERR: "}
+var (
+	stdoutStreamPrefixes = []string{"stdout: ", "STDOUT: "}
+	stderrStreamPrefixes = []string{"stderr: ", "STDERR: "}
+)
 
 // parser is the Claude stream-json line scanner. State is owned by the
 // single goroutine that calls FeedStdout/FeedStderr/Close. No mutex.

@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
@@ -153,12 +154,7 @@ func TestLoginShellPATHDirsCached(t *testing.T) {
 }
 
 func containsDir(dirs []string, want string) bool {
-	for _, d := range dirs {
-		if d == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(dirs, want)
 }
 
 func writeExecutable(t *testing.T, path, output string) string {

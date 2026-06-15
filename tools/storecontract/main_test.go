@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 )
 
@@ -498,7 +499,7 @@ func writeContract(t *testing.T, root string, value contract) {
 	writeFile(t, filepath.Join(root, "packaging/store/riido_daemon_store_distribution.riido.json"), string(data))
 }
 
-func writeFile(t *testing.T, path string, contents string) {
+func writeFile(t *testing.T, path, contents string) {
 	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
@@ -519,10 +520,5 @@ func removeString(items []string, unwanted string) []string {
 }
 
 func hasError(errors []string, wanted string) bool {
-	for _, err := range errors {
-		if err == wanted {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(errors, wanted)
 }

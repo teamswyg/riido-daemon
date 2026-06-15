@@ -45,7 +45,7 @@ func main() {
 	}
 }
 
-func run(kind string, specPath string, templatePath string, outPath string) error {
+func run(kind, specPath, templatePath, outPath string) error {
 	if kind != "native-config-plan" {
 		return fmt.Errorf("riidogen: unsupported kind %q", kind)
 	}

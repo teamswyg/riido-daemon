@@ -434,7 +434,7 @@ func waitForAPI(t *testing.T, socketPath string) {
 	t.Fatalf("riido API did not become ready at %s", socketPath)
 }
 
-func sameStrings(got []string, want []string) bool {
+func sameStrings(got, want []string) bool {
 	if len(got) != len(want) {
 		return false
 	}

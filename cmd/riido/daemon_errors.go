@@ -18,7 +18,7 @@ var (
 	ErrDaemonControlPlane = failure.NewSentinel(daemonErrorLayer, "control-plane")
 )
 
-func daemonErrorf(kind failure.Sentinel, op string, format string, args ...any) error {
+func daemonErrorf(kind failure.Sentinel, op, format string, args ...any) error {
 	return failure.New(kind, op, failure.Format(format, args...))
 }
 

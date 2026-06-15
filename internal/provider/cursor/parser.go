@@ -11,8 +11,10 @@ const MaxLineBytes = 10 * 1024 * 1024
 
 // Cursor wrappers sometimes prefix output lines with "stdout:" / "stderr:"
 // from upstream scripts. We strip those before parsing JSON.
-var stdoutPrefixes = []string{"stdout: ", "STDOUT: "}
-var stderrPrefixes = []string{"stderr: ", "STDERR: "}
+var (
+	stdoutPrefixes = []string{"stdout: ", "STDOUT: "}
+	stderrPrefixes = []string{"stderr: ", "STDERR: "}
+)
 
 type parser struct {
 	stdoutBuf []byte

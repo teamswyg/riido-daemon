@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -29,6 +30,7 @@ func (a *stubAdapter) Name() string { return a.name }
 func (a *stubAdapter) Detect(context.Context, agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return agentbridge.DetectResult{Available: true, Version: "1.0", Executable: a.name}, nil
 }
+
 func (a *stubAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	cmd := agentbridge.StartCommand{Executable: a.name}
 	if version := req.Metadata[MetadataNativeConfigVersion]; version != "" {
@@ -93,22 +95,19 @@ func readNativeConfigManifest(t *testing.T, path string) workdir.NativeConfigMan
 }
 
 func containsString(values []string, want string) bool {
-	for _, value := range values {
-		if value == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(values, want)
 }
 
 func (r *reporterProbe) StartTask(_ context.Context, taskID string) error {
 	r.started <- taskID
 	return nil
 }
+
 func (r *reporterProbe) ReportEvent(_ context.Context, _ string, ev agentbridge.Event) error {
 	r.events <- ev
 	return nil
 }
+
 func (r *reporterProbe) CompleteTask(_ context.Context, _ string, res agentbridge.Result) error {
 	r.results <- res
 	return nil
@@ -119,7 +118,7 @@ func startRuntime(t *testing.T, fake *process.Fake) *runtimeactor.Actor {
 	return startNamedRuntime(t, fake, "rt-local", "fake")
 }
 
-func startNamedRuntime(t *testing.T, fake *process.Fake, runtimeID string, provider string) *runtimeactor.Actor {
+func startNamedRuntime(t *testing.T, fake *process.Fake, runtimeID, provider string) *runtimeactor.Actor {
 	t.Helper()
 	rt, err := runtimeactor.New(runtimeactor.Config{
 		RuntimeID:     runtimeID,
@@ -197,6 +196,7 @@ func (s *idlePollSource) DeregisterRuntime(context.Context, string) error { retu
 func (s *idlePollSource) Heartbeat(context.Context, controlplane.RuntimeHeartbeat) error {
 	return nil
 }
+
 func (s *idlePollSource) ClaimTask(_ context.Context, runtimeID string) (*bridge.TaskRequest, error) {
 	select {
 	case s.claims <- runtimeID:
@@ -204,6 +204,7 @@ func (s *idlePollSource) ClaimTask(_ context.Context, runtimeID string) (*bridge
 	}
 	return nil, nil
 }
+
 func (s *idlePollSource) WatchCancellation(context.Context, string) (<-chan error, error) {
 	return make(chan error), nil
 }
@@ -1160,6 +1161,7 @@ func (s *cancelSource) DeregisterRuntime(context.Context, string) error { return
 func (s *cancelSource) Heartbeat(context.Context, controlplane.RuntimeHeartbeat) error {
 	return nil
 }
+
 func (s *cancelSource) ClaimTask(context.Context, string) (*bridge.TaskRequest, error) {
 	if s.req.ID == "" {
 		return nil, nil
@@ -1168,6 +1170,7 @@ func (s *cancelSource) ClaimTask(context.Context, string) (*bridge.TaskRequest, 
 	s.req = bridge.TaskRequest{}
 	return &req, nil
 }
+
 func (s *cancelSource) WatchCancellation(context.Context, string) (<-chan error, error) {
 	return s.cancel, nil
 }

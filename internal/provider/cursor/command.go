@@ -29,8 +29,10 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/policy"
 )
 
-const Name = "cursor"
-const DefaultExecutable = "cursor-agent"
+const (
+	Name              = "cursor"
+	DefaultExecutable = "cursor-agent"
+)
 
 func BlockedArgs() []string {
 	return providercap.ProtocolCriticalArgs(providercap.ProtocolCursorAgentStreamJSON)

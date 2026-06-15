@@ -1,6 +1,9 @@
 package hostintegration
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 func TestResolveHelperRuntimePlanMacAppStoreUsesSandboxedLoginItem(t *testing.T) {
 	root := mustDarwinStoreAppDataRoot(t, DistributionChannelMacAppStore)
@@ -276,10 +279,5 @@ func mustDarwinStoreAppDataRoot(t *testing.T, channel DistributionChannel) AppDa
 }
 
 func hasReviewSurface(surfaces []string, wanted string) bool {
-	for _, surface := range surfaces {
-		if surface == wanted {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(surfaces, wanted)
 }

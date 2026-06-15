@@ -56,7 +56,7 @@ func TestGoldenFullResultJSON(t *testing.T) {
 			}
 		}
 	}
-	if !(saw.session && saw.usage && saw.text && saw.result) {
+	if !saw.session || !saw.usage || !saw.text || !saw.result {
 		t.Fatalf("full_result coverage gap: %+v", saw)
 	}
 }
@@ -96,7 +96,7 @@ func TestGoldenNDJSONResultJSONL(t *testing.T) {
 			}
 		}
 	}
-	if !(saw.session && saw.text && saw.log && saw.usage) {
+	if !saw.session || !saw.text || !saw.log || !saw.usage {
 		t.Fatalf("ndjson_result coverage gap: %+v", saw)
 	}
 }

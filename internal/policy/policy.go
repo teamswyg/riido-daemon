@@ -206,10 +206,10 @@ func normalizeTrustTier(tier TrustTier) TrustTier {
 	return tier
 }
 
-func deny(code string, reason string) Decision {
+func deny(code, reason string) Decision {
 	return Decision{Allowed: false, Code: code, Reason: reason}
 }
 
-func interruptAndBlock(code string, reason string) ToolUseDecision {
+func interruptAndBlock(code, reason string) ToolUseDecision {
 	return ToolUseDecision{Action: ToolUseActionInterruptAndBlock, Code: code, Reason: reason}
 }

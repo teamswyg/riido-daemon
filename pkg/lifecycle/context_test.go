@@ -26,8 +26,8 @@ func TestContextRoundTripThroughStdlibContext(t *testing.T) {
 }
 
 func TestContextDoesNotImplementStdlibContext(t *testing.T) {
-	stdlibContext := reflect.TypeOf((*context.Context)(nil)).Elem()
-	if reflect.TypeOf(Context{}).Implements(stdlibContext) {
+	stdlibContext := reflect.TypeFor[context.Context]()
+	if reflect.TypeFor[Context]().Implements(stdlibContext) {
 		t.Fatal("lifecycle.Context must require explicit Context() conversion")
 	}
 }

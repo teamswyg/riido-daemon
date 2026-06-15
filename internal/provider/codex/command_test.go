@@ -303,7 +303,7 @@ func TestSandboxOverrideArgsCoverDaemonOwnedSandboxSelection(t *testing.T) {
 	}
 }
 
-func assertArgPair(t *testing.T, args []string, key string, value string) {
+func assertArgPair(t *testing.T, args []string, key, value string) {
 	t.Helper()
 	for i := 0; i+1 < len(args); i++ {
 		if args[i] == key && args[i+1] == value {
@@ -313,7 +313,7 @@ func assertArgPair(t *testing.T, args []string, key string, value string) {
 	t.Fatalf("missing arg pair %s %s in %v", key, value, args)
 }
 
-func assertArgBefore(t *testing.T, args []string, before string, after string) {
+func assertArgBefore(t *testing.T, args []string, before, after string) {
 	t.Helper()
 	beforeIndex := -1
 	afterIndex := -1

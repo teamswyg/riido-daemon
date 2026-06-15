@@ -243,7 +243,8 @@ func wellKnownInstallDirs() []string {
 	if err != nil || strings.TrimSpace(home) == "" {
 		return dirs
 	}
-	dirs = append(dirs,
+	dirs = append(
+		dirs,
 		filepath.Join(home, ".local", "bin"),
 		filepath.Join(home, "bin"),
 		filepath.Join(home, ".npm-global", "bin"),
@@ -290,7 +291,8 @@ func windowsWellKnownDirs() []string {
 	if err != nil || strings.TrimSpace(home) == "" {
 		return dirs
 	}
-	dirs = append(dirs,
+	dirs = append(
+		dirs,
 		filepath.Join(home, ".cargo", "bin"),
 		filepath.Join(home, ".bun", "bin"),
 		filepath.Join(home, "go", "bin"),

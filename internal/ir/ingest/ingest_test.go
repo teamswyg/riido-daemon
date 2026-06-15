@@ -3,6 +3,7 @@ package ingest
 import (
 	"context"
 	"errors"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -222,7 +223,6 @@ func TestAppendRedactsSecretsAndAppendsAuditEvent(t *testing.T) {
 			t.Fatalf("redacted fields %v missing %q", redactedFields, want)
 		}
 	}
-
 }
 
 func TestNewUUID7EventIDShape(t *testing.T) {
@@ -248,19 +248,9 @@ func sequentialEventIDs(ids ...string) func(time.Time) (string, error) {
 }
 
 func containsString(values []string, want string) bool {
-	for _, value := range values {
-		if value == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(values, want)
 }
 
 func containsInt(values []int, want int) bool {
-	for _, value := range values {
-		if value == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(values, want)
 }

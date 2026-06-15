@@ -3,6 +3,7 @@ package hostintegration
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -135,9 +136,7 @@ func (s ConsentState) GrantedProviders() []capability.ProviderKind {
 			providers = append(providers, provider)
 		}
 	}
-	sort.Slice(providers, func(i, j int) bool {
-		return providers[i] < providers[j]
-	})
+	slices.Sort(providers)
 	return providers
 }
 

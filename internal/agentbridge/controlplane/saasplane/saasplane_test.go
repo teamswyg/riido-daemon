@@ -858,7 +858,7 @@ func (f *fakeAssignmentServer) activeNext(agentID string, assignment assignmentc
 }
 
 func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
-	if f.deviceSecret != "" && (r.Header.Get("X-Riido-Device-ID") != f.deviceID || r.Header.Get("X-Riido-Device-Secret") != f.deviceSecret) {
+	if f.deviceSecret != "" && (r.Header.Get("X-Riido-Device-Id") != f.deviceID || r.Header.Get("X-Riido-Device-Secret") != f.deviceSecret) {
 		http.Error(w, "missing device credential", http.StatusUnauthorized)
 		return
 	}
