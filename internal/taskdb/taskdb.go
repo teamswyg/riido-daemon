@@ -199,10 +199,10 @@ func ApplyGuardedTaskTransition(existing TaskDB, input TaskTransitionInput, now 
 	if input.TaskID == "" {
 		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBInput, "transition.validate", "task id is empty")
 	}
-	if !isKnownTaskState(input.ToState) {
+	if !input.ToState.Code().IsKnown() {
 		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBState, "transition.validate", "unknown target state: %s", input.ToState)
 	}
-	if !input.Event.IsTransition() {
+	if !input.Event.Code().IsTransition() {
 		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBState, "transition.validate", "event %q is not a transition event", input.Event)
 	}
 	db := normalizeTaskDB(existing)
@@ -226,7 +226,7 @@ func ApplyGuardedTaskTransition(existing TaskDB, input TaskTransitionInput, now 
 		return db, replayedTransition, replayedReceipt, nil
 	}
 	from := db.Tasks[index].State
-	if !task.ValidateTransition(from, input.ToState, input.Event) {
+	if !task.ValidateTransitionCode(from.Code(), input.ToState.Code(), input.Event.Code()) {
 		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBState, "transition.apply", "illegal task transition: %s --%s--> %s", from, input.Event, input.ToState)
 	}
 	stamp := timestamp(now)
@@ -337,11 +337,11 @@ func AddGuardedTaskEvidence(existing TaskDB, input TaskEvidenceInput, now time.T
 }
 
 func ParseTaskState(value string) (task.TaskState, error) {
-	candidate := task.TaskState(value)
-	if !isKnownTaskState(candidate) {
+	code := task.ParseTaskStateCode(value)
+	if !code.IsKnown() {
 		return "", taskDBErrorf(ErrTaskDBState, "parse-state", "unknown task state: %s", value)
 	}
-	return candidate, nil
+	return code.TaskState(), nil
 }
 
 func DefaultTaskDBPath() (string, error) {
@@ -705,12 +705,7 @@ func timestamp(now time.Time) string {
 }
 
 func isKnownTaskState(value task.TaskState) bool {
-	for _, state := range task.AllStates() {
-		if state == value {
-			return true
-		}
-	}
-	return false
+	return value.Code().IsKnown()
 }
 
 func normalizeEvidenceResult(result string, exitCode int) string {

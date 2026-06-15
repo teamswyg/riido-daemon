@@ -215,8 +215,8 @@ func reconcileExpiredRuntimeLeases(db taskdb.TaskDB, registry RuntimeLeaseRegist
 			changed = changed || released
 			continue
 		}
-		switch record.State {
-		case task.StatePreparing, task.StateRunning:
+		switch record.State.Code() {
+		case task.TaskStateCodePreparing, task.TaskStateCodeRunning:
 			updated, err := applyExpiredRuntimeHandoff(db, record, lease, now)
 			if err != nil {
 				return taskdb.TaskDB{}, RuntimeLeaseRegistry{}, false, err
@@ -224,7 +224,7 @@ func reconcileExpiredRuntimeLeases(db taskdb.TaskDB, registry RuntimeLeaseRegist
 			db = updated
 			registry, _ = releaseRuntimeLease(registry, lease.TaskID, now)
 			changed = true
-		case task.StateClaimed:
+		case task.TaskStateCodeClaimed:
 			updated, err := applyTransition(db, record, task.StateFailed, ir.EventTaskFailed, "runtime lease expired before provider execution", "lease-expired:"+lease.LeaseID+":failed", now)
 			if err != nil {
 				return taskdb.TaskDB{}, RuntimeLeaseRegistry{}, false, err
@@ -232,7 +232,7 @@ func reconcileExpiredRuntimeLeases(db taskdb.TaskDB, registry RuntimeLeaseRegist
 			db = updated
 			registry, _ = releaseRuntimeLease(registry, lease.TaskID, now)
 			changed = true
-		case task.StateNeedsInput:
+		case task.TaskStateCodeNeedsInput:
 			updated, err := applyTransition(db, record, task.StateTimedOut, ir.EventTaskTimedOut, "runtime lease expired while waiting for input", "lease-expired:"+lease.LeaseID+":timed-out", now)
 			if err != nil {
 				return taskdb.TaskDB{}, RuntimeLeaseRegistry{}, false, err
@@ -240,7 +240,7 @@ func reconcileExpiredRuntimeLeases(db taskdb.TaskDB, registry RuntimeLeaseRegist
 			db = updated
 			registry, _ = releaseRuntimeLease(registry, lease.TaskID, now)
 			changed = true
-		case task.StateQueued, task.StateCreated, task.StateBlocked, task.StateValidating, task.StatePatchReady, task.StateHumanReview, task.StateReworkQueued, task.StateCompleted, task.StateFailed, task.StateCancelled, task.StateTimedOut:
+		case task.TaskStateCodeQueued, task.TaskStateCodeCreated, task.TaskStateCodeBlocked, task.TaskStateCodeValidating, task.TaskStateCodePatchReady, task.TaskStateCodeHumanReview, task.TaskStateCodeReworkQueued, task.TaskStateCodeCompleted, task.TaskStateCodeFailed, task.TaskStateCodeCancelled, task.TaskStateCodeTimedOut:
 			var released bool
 			registry, released = releaseRuntimeLease(registry, lease.TaskID, now)
 			changed = changed || released

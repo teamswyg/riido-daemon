@@ -371,7 +371,7 @@ func (p *Plane) withDB(ctx context.Context, taskID string, mutator func(taskdb.T
 func claimCandidates(db taskdb.TaskDB) []taskdb.TaskRecord {
 	out := make([]taskdb.TaskRecord, 0, len(db.Tasks))
 	for _, record := range db.Tasks {
-		if record.State == task.StateQueued {
+		if record.State.Code() == task.TaskStateCodeQueued {
 			out = append(out, record)
 		}
 	}
@@ -416,10 +416,10 @@ func ensurePreparing(db taskdb.TaskDB, taskID string, now time.Time) (taskdb.Tas
 	if !ok {
 		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "ensure-preparing", "task %s not found", taskID)
 	}
-	switch record.State {
-	case task.StatePreparing, task.StateRunning, task.StateNeedsInput, task.StateBlocked, task.StateValidating, task.StatePatchReady, task.StateHumanReview:
+	switch record.State.Code() {
+	case task.TaskStateCodePreparing, task.TaskStateCodeRunning, task.TaskStateCodeNeedsInput, task.TaskStateCodeBlocked, task.TaskStateCodeValidating, task.TaskStateCodePatchReady, task.TaskStateCodeHumanReview:
 		return db, nil
-	case task.StateClaimed:
+	case task.TaskStateCodeClaimed:
 		return applyTransition(db, record, task.StatePreparing, ir.EventWorkdirPreparing, "workspace preparation started", "preparing", now)
 	default:
 		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "ensure-preparing", "cannot start task %s from state %s", taskID, record.State)
@@ -431,10 +431,10 @@ func ensureRunning(db taskdb.TaskDB, taskID string, now time.Time) (taskdb.TaskD
 	if !ok {
 		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "ensure-running", "task %s not found", taskID)
 	}
-	switch record.State {
-	case task.StateRunning, task.StateNeedsInput, task.StateBlocked, task.StateValidating, task.StatePatchReady, task.StateHumanReview:
+	switch record.State.Code() {
+	case task.TaskStateCodeRunning, task.TaskStateCodeNeedsInput, task.TaskStateCodeBlocked, task.TaskStateCodeValidating, task.TaskStateCodePatchReady, task.TaskStateCodeHumanReview:
 		return db, nil
-	case task.StateClaimed:
+	case task.TaskStateCodeClaimed:
 		var err error
 		db, err = applyTransition(db, record, task.StatePreparing, ir.EventWorkdirPreparing, "workspace preparation started", "preparing", now)
 		if err != nil {
@@ -442,7 +442,7 @@ func ensureRunning(db taskdb.TaskDB, taskID string, now time.Time) (taskdb.TaskD
 		}
 		record, _ = findTask(db, taskID)
 		fallthrough
-	case task.StatePreparing:
+	case task.TaskStateCodePreparing:
 		return applyTransition(db, record, task.StateRunning, ir.EventRunStarted, "provider process started", "run-started", now)
 	default:
 		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "ensure-running", "cannot run task %s from state %s", taskID, record.State)
@@ -457,13 +457,14 @@ func applyTerminalResult(db taskdb.TaskDB, taskID string, res agentbridge.Result
 	if record.State.IsTerminal() {
 		return db, nil
 	}
+	recordState := record.State.Code()
 	status := res.Status
 	if status == "" {
 		status = agentbridge.ResultCompleted
 	}
 	switch status {
 	case agentbridge.ResultCompleted:
-		if record.State == task.StateValidating || record.State == task.StatePatchReady || record.State == task.StateHumanReview {
+		if recordState == task.TaskStateCodeValidating || recordState == task.TaskStateCodePatchReady || recordState == task.TaskStateCodeHumanReview {
 			return db, nil
 		}
 		var err error
@@ -481,18 +482,19 @@ func applyTerminalResult(db taskdb.TaskDB, taskID string, res agentbridge.Result
 		}
 		return applyTransition(db, record, task.StateFailed, ir.EventTaskFailed, resultReason(res, "provider timed out before running"), "failed-timeout-before-running", now)
 	case agentbridge.ResultBlocked:
-		if record.State == task.StateBlocked {
+		if recordState == task.TaskStateCodeBlocked {
 			return db, nil
 		}
-		if record.State == task.StateClaimed {
+		if recordState == task.TaskStateCodeClaimed {
 			var err error
 			db, err = ensurePreparing(db, taskID, now)
 			if err != nil {
 				return taskdb.TaskDB{}, err
 			}
 			record, _ = findTask(db, taskID)
+			recordState = record.State.Code()
 		}
-		if record.State == task.StatePreparing || record.State == task.StateRunning {
+		if recordState == task.TaskStateCodePreparing || recordState == task.TaskStateCodeRunning {
 			return applyTransition(db, record, task.StateBlocked, ir.EventBlockerRaised, resultReason(res, "runtime eligibility blocked task"), "blocked", now)
 		}
 		return applyTransition(db, record, task.StateFailed, ir.EventTaskFailed, resultReason(res, "runtime eligibility blocked task from invalid state"), "failed:blocked-invalid-state", now)
@@ -649,8 +651,8 @@ func runtimeCapabilityForProvider(rec controlplane.RegisteredRuntime, provider s
 }
 
 func timeoutCanOriginate(state task.TaskState) bool {
-	switch state {
-	case task.StateRunning, task.StateNeedsInput, task.StateBlocked, task.StateValidating, task.StateHumanReview:
+	switch state.Code() {
+	case task.TaskStateCodeRunning, task.TaskStateCodeNeedsInput, task.TaskStateCodeBlocked, task.TaskStateCodeValidating, task.TaskStateCodeHumanReview:
 		return true
 	default:
 		return false
