@@ -11,6 +11,7 @@ import (
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 type capabilityProfile struct {
@@ -67,7 +68,7 @@ func reconcileProviderCapability(runtimeID, provider string, res agentbridge.Det
 		blocked = append(blocked, providercap.CompatibilityReason{
 			Code:    "DETECTION_UNAVAILABLE",
 			Subject: provider,
-			Detail:  firstNonEmpty(res.Reason, "provider detect reported unavailable"),
+			Detail:  textutil.FirstNonEmpty(res.Reason, "provider detect reported unavailable"),
 		})
 	} else if len(missing) > 0 {
 		degraded = append(degraded, providercap.CompatibilityReason{
@@ -292,11 +293,4 @@ func copyMetadata(in map[string]string) map[string]string {
 		out[k] = v
 	}
 	return out
-}
-
-func firstNonEmpty(value, fallback string) string {
-	if value != "" {
-		return value
-	}
-	return fallback
 }

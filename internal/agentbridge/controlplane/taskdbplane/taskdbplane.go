@@ -9,11 +9,6 @@ package taskdbplane
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"os"
-	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -26,9 +21,9 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/supervisor"
-	c9lock "github.com/teamswyg/riido-daemon/internal/lock"
 	"github.com/teamswyg/riido-daemon/internal/scheduling"
 	"github.com/teamswyg/riido-daemon/internal/taskdb"
+	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 const (
@@ -91,10 +86,10 @@ type Plane struct {
 func New(path string) (*Plane, error) {
 	path = strings.TrimSpace(path)
 	if path == "" {
-		return nil, errors.New("taskdbplane: empty task DB path")
+		return nil, planeErrorf(ErrTaskDBPlaneInput, "new", "empty task DB path")
 	}
 	if _, err := taskdb.LoadTaskDBOrEmpty(path); err != nil {
-		return nil, err
+		return nil, planeWrapf(ErrTaskDBPlanePersistence, "new.load-task-db", err, "load task DB")
 	}
 	registryPath := runtimeRegistryPath(path)
 	leasePath := runtimeLeaseRegistryPath(path)
@@ -120,7 +115,7 @@ func (p *Plane) RegisterRuntime(ctx context.Context, rt controlplane.RuntimeRegi
 	default:
 	}
 	if rt.RuntimeID == "" {
-		return errors.New("taskdbplane: empty RuntimeID")
+		return planeErrorf(ErrTaskDBPlaneRuntime, "register-runtime", "empty RuntimeID")
 	}
 	return p.withFileLock(ctx, func() error {
 		if err := p.reloadRuntimeRegistry(); err != nil {
@@ -141,7 +136,7 @@ func (p *Plane) DeregisterRuntime(ctx context.Context, runtimeID string) error {
 	default:
 	}
 	if runtimeID == "" {
-		return errors.New("taskdbplane: empty RuntimeID")
+		return planeErrorf(ErrTaskDBPlaneRuntime, "deregister-runtime", "empty RuntimeID")
 	}
 	return p.withFileLock(ctx, func() error {
 		if err := p.reloadRuntimeRegistry(); err != nil {
@@ -164,7 +159,7 @@ func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat)
 		}
 		rec, ok := p.runtimes[hb.RuntimeID]
 		if !ok {
-			return fmt.Errorf("taskdbplane: heartbeat for unknown runtime %q", hb.RuntimeID)
+			return planeErrorf(ErrTaskDBPlaneRuntime, "heartbeat", "heartbeat for unknown runtime %q", hb.RuntimeID)
 		}
 		rec.LastHeartbeat = p.now().UTC()
 		applyHeartbeat(&rec.RuntimeRegistration, hb)
@@ -191,7 +186,7 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 	default:
 	}
 	if runtimeID == "" {
-		return nil, errors.New("taskdbplane: empty RuntimeID")
+		return nil, planeErrorf(ErrTaskDBPlaneRuntime, "claim-task", "empty RuntimeID")
 	}
 	var req *bridge.TaskRequest
 	err := p.withFileLock(ctx, func() error {
@@ -208,7 +203,7 @@ func (p *Plane) claimTaskLocked(runtimeID string) (*bridge.TaskRequest, error) {
 	}
 	db, err := taskdb.LoadTaskDBOrEmpty(p.path)
 	if err != nil {
-		return nil, err
+		return nil, planeWrapf(ErrTaskDBPlanePersistence, "claim-task.load-task-db", err, "load task DB")
 	}
 	leases, err := loadRuntimeLeaseRegistryOrEmpty(p.leasePath)
 	if err != nil {
@@ -221,7 +216,7 @@ func (p *Plane) claimTaskLocked(runtimeID string) (*bridge.TaskRequest, error) {
 	}
 	if changed {
 		if err := taskdb.SaveTaskDB(p.path, db); err != nil {
-			return nil, err
+			return nil, planeWrapf(ErrTaskDBPlanePersistence, "claim-task.save-task-db", err, "save task DB after lease reconciliation")
 		}
 		if err := saveRuntimeLeaseRegistry(p.leasePath, p.path, leases, now); err != nil {
 			return nil, err
@@ -268,7 +263,7 @@ func (p *Plane) claimTaskLocked(runtimeID string) (*bridge.TaskRequest, error) {
 			return nil, err
 		}
 		if err := taskdb.SaveTaskDB(p.path, updated); err != nil {
-			return nil, err
+			return nil, planeWrapf(ErrTaskDBPlanePersistence, "claim-task.save-task-db", err, "save claimed task DB")
 		}
 		req := taskRequestFromRecord(p.path, record, provider, prompt, lease)
 		return &req, nil
@@ -317,7 +312,7 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 		now := p.now().UTC()
 		db, err := taskdb.LoadTaskDB(p.path)
 		if err != nil {
-			return err
+			return planeWrapf(ErrTaskDBPlanePersistence, "complete-task.load-task-db", err, "load task DB")
 		}
 		updated, err := applyTerminalResult(db, taskID, res, now)
 		if err != nil {
@@ -335,7 +330,7 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 			}
 		}
 		if err := taskdb.SaveTaskDB(p.path, updated); err != nil {
-			return err
+			return planeWrapf(ErrTaskDBPlanePersistence, "complete-task.save-task-db", err, "save task DB")
 		}
 		leases, changed := releaseRuntimeLease(leases, taskID, now)
 		if !changed {
@@ -350,7 +345,7 @@ func (p *Plane) withDB(ctx context.Context, taskID string, mutator func(taskdb.T
 		now := p.now().UTC()
 		db, err := taskdb.LoadTaskDB(p.path)
 		if err != nil {
-			return err
+			return planeWrapf(ErrTaskDBPlanePersistence, "with-db.load-task-db", err, "load task DB")
 		}
 		updated, err := mutator(db, now)
 		if err != nil {
@@ -366,7 +361,10 @@ func (p *Plane) withDB(ctx context.Context, taskID string, mutator func(taskdb.T
 				return err
 			}
 		}
-		return taskdb.SaveTaskDB(p.path, updated)
+		if err := taskdb.SaveTaskDB(p.path, updated); err != nil {
+			return planeWrapf(ErrTaskDBPlanePersistence, "with-db.save-task-db", err, "save task DB")
+		}
+		return nil
 	})
 }
 
@@ -416,7 +414,7 @@ func taskRequestFromRecord(path string, record taskdb.TaskRecord, provider strin
 func ensurePreparing(db taskdb.TaskDB, taskID string, now time.Time) (taskdb.TaskDB, error) {
 	record, ok := findTask(db, taskID)
 	if !ok {
-		return taskdb.TaskDB{}, fmt.Errorf("taskdbplane: task %s not found", taskID)
+		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "ensure-preparing", "task %s not found", taskID)
 	}
 	switch record.State {
 	case task.StatePreparing, task.StateRunning, task.StateNeedsInput, task.StateBlocked, task.StateValidating, task.StatePatchReady, task.StateHumanReview:
@@ -424,14 +422,14 @@ func ensurePreparing(db taskdb.TaskDB, taskID string, now time.Time) (taskdb.Tas
 	case task.StateClaimed:
 		return applyTransition(db, record, task.StatePreparing, ir.EventWorkdirPreparing, "workspace preparation started", "preparing", now)
 	default:
-		return taskdb.TaskDB{}, fmt.Errorf("taskdbplane: cannot start task %s from state %s", taskID, record.State)
+		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "ensure-preparing", "cannot start task %s from state %s", taskID, record.State)
 	}
 }
 
 func ensureRunning(db taskdb.TaskDB, taskID string, now time.Time) (taskdb.TaskDB, error) {
 	record, ok := findTask(db, taskID)
 	if !ok {
-		return taskdb.TaskDB{}, fmt.Errorf("taskdbplane: task %s not found", taskID)
+		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "ensure-running", "task %s not found", taskID)
 	}
 	switch record.State {
 	case task.StateRunning, task.StateNeedsInput, task.StateBlocked, task.StateValidating, task.StatePatchReady, task.StateHumanReview:
@@ -447,14 +445,14 @@ func ensureRunning(db taskdb.TaskDB, taskID string, now time.Time) (taskdb.TaskD
 	case task.StatePreparing:
 		return applyTransition(db, record, task.StateRunning, ir.EventRunStarted, "provider process started", "run-started", now)
 	default:
-		return taskdb.TaskDB{}, fmt.Errorf("taskdbplane: cannot run task %s from state %s", taskID, record.State)
+		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "ensure-running", "cannot run task %s from state %s", taskID, record.State)
 	}
 }
 
 func applyTerminalResult(db taskdb.TaskDB, taskID string, res agentbridge.Result, now time.Time) (taskdb.TaskDB, error) {
 	record, ok := findTask(db, taskID)
 	if !ok {
-		return taskdb.TaskDB{}, fmt.Errorf("taskdbplane: task %s not found", taskID)
+		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "apply-terminal-result", "task %s not found", taskID)
 	}
 	if record.State.IsTerminal() {
 		return db, nil
@@ -506,7 +504,7 @@ func applyTerminalResult(db taskdb.TaskDB, taskID string, res agentbridge.Result
 func applyTransition(db taskdb.TaskDB, record taskdb.TaskRecord, to task.TaskState, event ir.EventType, reason string, commandSuffix string, now time.Time) (taskdb.TaskDB, error) {
 	approvalID := approvalIDForTask(db, record.ID)
 	if requiresApproval(db, record) && approvalID == "" {
-		return taskdb.TaskDB{}, fmt.Errorf("taskdbplane: task %s requires approval_id before %s", record.ID, event)
+		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "apply-transition", "task %s requires approval_id before %s", record.ID, event)
 	}
 	updated, _, _, err := taskdb.ApplyGuardedTaskTransition(db, taskdb.TaskTransitionInput{
 		TaskID:  record.ID,
@@ -542,15 +540,15 @@ func findTask(db taskdb.TaskDB, taskID string) (taskdb.TaskRecord, bool) {
 }
 
 func providerFor(db taskdb.TaskDB, record taskdb.TaskRecord) string {
-	return firstNonEmpty(record.RecommendedProvider, db.RecommendedProvider)
+	return textutil.FirstNonEmptyTrimmed(record.RecommendedProvider, db.RecommendedProvider)
 }
 
 func decisionLLMFor(db taskdb.TaskDB, record taskdb.TaskRecord) string {
-	return firstNonEmpty(record.RecommendedDecisionLLM, db.RecommendedDecisionLLM)
+	return textutil.FirstNonEmptyTrimmed(record.RecommendedDecisionLLM, db.RecommendedDecisionLLM)
 }
 
 func promptFor(record taskdb.TaskRecord) string {
-	return firstNonEmpty(record.HarnessNextDirection, record.Title)
+	return textutil.FirstNonEmptyTrimmed(record.HarnessNextDirection, record.Title)
 }
 
 func requiresApproval(db taskdb.TaskDB, record taskdb.TaskRecord) bool {
@@ -650,385 +648,6 @@ func runtimeCapabilityForProvider(rec controlplane.RegisteredRuntime, provider s
 	}, true
 }
 
-func (p *Plane) saveRuntimeRegistry() error {
-	registry := RuntimeRegistry{
-		SchemaVersion: RuntimeRegistrySchemaVersion,
-		TaskDBPath:    p.path,
-		UpdatedAt:     p.now().UTC(),
-		Runtimes:      sortedRuntimeRegistry(p.runtimes),
-	}
-	return writeJSONAtomic(p.registryPath, registry)
-}
-
-func (p *Plane) reloadRuntimeRegistry() error {
-	runtimes, err := loadRuntimeRegistryOrEmpty(p.registryPath)
-	if err != nil {
-		return err
-	}
-	p.runtimes = runtimes
-	return nil
-}
-
-func sortedRuntimeRegistry(runtimes map[string]controlplane.RegisteredRuntime) []controlplane.RegisteredRuntime {
-	ids := make([]string, 0, len(runtimes))
-	for id := range runtimes {
-		ids = append(ids, id)
-	}
-	sort.Strings(ids)
-	out := make([]controlplane.RegisteredRuntime, 0, len(ids))
-	for _, id := range ids {
-		out = append(out, runtimes[id])
-	}
-	return out
-}
-
-func loadRuntimeRegistryOrEmpty(path string) (map[string]controlplane.RegisteredRuntime, error) {
-	body, err := os.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return map[string]controlplane.RegisteredRuntime{}, nil
-	}
-	if err != nil {
-		return nil, fmt.Errorf("taskdbplane: read runtime registry: %w", err)
-	}
-	var registry RuntimeRegistry
-	if err := json.Unmarshal(body, &registry); err != nil {
-		return nil, fmt.Errorf("taskdbplane: decode runtime registry: %w", err)
-	}
-	if registry.SchemaVersion != RuntimeRegistrySchemaVersion {
-		return nil, fmt.Errorf("taskdbplane: runtime registry schema mismatch: got %q want %q", registry.SchemaVersion, RuntimeRegistrySchemaVersion)
-	}
-	out := make(map[string]controlplane.RegisteredRuntime, len(registry.Runtimes))
-	for _, runtime := range registry.Runtimes {
-		if runtime.RuntimeID != "" {
-			out[runtime.RuntimeID] = runtime
-		}
-	}
-	return out, nil
-}
-
-func applyHeartbeat(reg *controlplane.RuntimeRegistration, hb controlplane.RuntimeHeartbeat) {
-	if hb.RuntimeID != "" {
-		reg.RuntimeID = hb.RuntimeID
-	}
-	if hb.DeviceName != "" {
-		reg.DeviceName = hb.DeviceName
-	}
-	reg.UptimeSeconds = hb.UptimeSeconds
-	reg.SlotLimit = hb.SlotLimit
-	reg.SlotsInUse = hb.SlotsInUse
-	reg.RunningTaskIDs = append([]string(nil), hb.RunningTaskIDs...)
-	sort.Strings(reg.RunningTaskIDs)
-}
-
-func loadRuntimeLeaseRegistryOrEmpty(path string) (RuntimeLeaseRegistry, error) {
-	body, err := os.ReadFile(path)
-	if errors.Is(err, os.ErrNotExist) {
-		return RuntimeLeaseRegistry{
-			SchemaVersion: RuntimeLeaseRegistrySchemaVersion,
-			Leases:        []RuntimeLeaseRecord{},
-		}, nil
-	}
-	if err != nil {
-		return RuntimeLeaseRegistry{}, fmt.Errorf("taskdbplane: read runtime lease registry: %w", err)
-	}
-	var registry RuntimeLeaseRegistry
-	if err := json.Unmarshal(body, &registry); err != nil {
-		return RuntimeLeaseRegistry{}, fmt.Errorf("taskdbplane: decode runtime lease registry: %w", err)
-	}
-	if registry.SchemaVersion != RuntimeLeaseRegistrySchemaVersion {
-		return RuntimeLeaseRegistry{}, fmt.Errorf("taskdbplane: runtime lease registry schema mismatch: got %q want %q", registry.SchemaVersion, RuntimeLeaseRegistrySchemaVersion)
-	}
-	if registry.Leases == nil {
-		registry.Leases = []RuntimeLeaseRecord{}
-	}
-	return registry, nil
-}
-
-func saveRuntimeLeaseRegistry(path string, taskDBPath string, registry RuntimeLeaseRegistry, now time.Time) error {
-	registry.SchemaVersion = RuntimeLeaseRegistrySchemaVersion
-	registry.TaskDBPath = taskDBPath
-	registry.UpdatedAt = now.UTC()
-	sort.Slice(registry.Leases, func(i, j int) bool {
-		if registry.Leases[i].TaskID != registry.Leases[j].TaskID {
-			return registry.Leases[i].TaskID < registry.Leases[j].TaskID
-		}
-		return registry.Leases[i].FencingToken < registry.Leases[j].FencingToken
-	})
-	return writeJSONAtomic(path, registry)
-}
-
-func acquireRuntimeLease(registry RuntimeLeaseRegistry, taskID string, runtimeID string, capabilityFingerprint string, now time.Time, ttl time.Duration) (RuntimeLeaseRegistry, RuntimeLeaseRecord, bool) {
-	if ttl <= 0 {
-		ttl = defaultRuntimeLeaseTTL
-	}
-	idx := runtimeLeaseIndex(registry.Leases, taskID)
-	if idx >= 0 {
-		existing := registry.Leases[idx]
-		if existing.isActive(now) {
-			if existing.RuntimeID != runtimeID || existing.CapabilityFingerprint != capabilityFingerprint {
-				return registry, RuntimeLeaseRecord{}, false
-			}
-			existing.LeaseUntil = now.Add(ttl)
-			registry.Leases[idx] = existing
-			return registry, existing, true
-		}
-		lease := RuntimeLeaseRecord{
-			LeaseID:               runtimeLeaseID(taskID, existing.FencingToken+1),
-			TaskID:                taskID,
-			RuntimeID:             runtimeID,
-			CapabilityFingerprint: capabilityFingerprint,
-			ClaimedAt:             now,
-			LeaseUntil:            now.Add(ttl),
-			FencingToken:          existing.FencingToken + 1,
-		}
-		registry.Leases[idx] = lease
-		return registry, lease, true
-	}
-	lease := RuntimeLeaseRecord{
-		LeaseID:               runtimeLeaseID(taskID, 1),
-		TaskID:                taskID,
-		RuntimeID:             runtimeID,
-		CapabilityFingerprint: capabilityFingerprint,
-		ClaimedAt:             now,
-		LeaseUntil:            now.Add(ttl),
-		FencingToken:          1,
-	}
-	registry.Leases = append(registry.Leases, lease)
-	return registry, lease, true
-}
-
-func releaseRuntimeLease(registry RuntimeLeaseRegistry, taskID string, now time.Time) (RuntimeLeaseRegistry, bool) {
-	idx := runtimeLeaseIndex(registry.Leases, taskID)
-	if idx < 0 {
-		return registry, false
-	}
-	if registry.Leases[idx].ReleasedAt != nil {
-		return registry, false
-	}
-	releasedAt := now.UTC()
-	registry.Leases[idx].ReleasedAt = &releasedAt
-	return registry, true
-}
-
-func refreshRuntimeLeases(registry RuntimeLeaseRegistry, rec controlplane.RegisteredRuntime, taskIDs []string, now time.Time, ttl time.Duration) (RuntimeLeaseRegistry, bool) {
-	if ttl <= 0 {
-		ttl = defaultRuntimeLeaseTTL
-	}
-	changed := false
-	for _, taskID := range normalizedTaskIDs(taskIDs) {
-		idx := runtimeLeaseIndex(registry.Leases, taskID)
-		if idx < 0 {
-			continue
-		}
-		lease := registry.Leases[idx]
-		if !lease.isActive(now) || lease.RuntimeID != rec.RuntimeID {
-			continue
-		}
-		if !runtimeHasCapabilityFingerprint(rec, lease.CapabilityFingerprint) {
-			continue
-		}
-		lease.LeaseUntil = now.Add(ttl)
-		registry.Leases[idx] = lease
-		changed = true
-	}
-	return registry, changed
-}
-
-func reconcileExpiredRuntimeLeases(db taskdb.TaskDB, registry RuntimeLeaseRegistry, now time.Time) (taskdb.TaskDB, RuntimeLeaseRegistry, bool, error) {
-	changed := false
-	for _, lease := range append([]RuntimeLeaseRecord(nil), registry.Leases...) {
-		if lease.ReleasedAt != nil || !lease.isExpired(now) {
-			continue
-		}
-		record, ok := findTask(db, lease.TaskID)
-		if !ok {
-			var released bool
-			registry, released = releaseRuntimeLease(registry, lease.TaskID, now)
-			changed = changed || released
-			continue
-		}
-		switch record.State {
-		case task.StatePreparing, task.StateRunning:
-			updated, err := applyExpiredRuntimeHandoff(db, record, lease, now)
-			if err != nil {
-				return taskdb.TaskDB{}, RuntimeLeaseRegistry{}, false, err
-			}
-			db = updated
-			registry, _ = releaseRuntimeLease(registry, lease.TaskID, now)
-			changed = true
-		case task.StateClaimed:
-			updated, err := applyTransition(db, record, task.StateFailed, ir.EventTaskFailed, "runtime lease expired before provider execution", "lease-expired:"+lease.LeaseID+":failed", now)
-			if err != nil {
-				return taskdb.TaskDB{}, RuntimeLeaseRegistry{}, false, err
-			}
-			db = updated
-			registry, _ = releaseRuntimeLease(registry, lease.TaskID, now)
-			changed = true
-		case task.StateNeedsInput:
-			updated, err := applyTransition(db, record, task.StateTimedOut, ir.EventTaskTimedOut, "runtime lease expired while waiting for input", "lease-expired:"+lease.LeaseID+":timed-out", now)
-			if err != nil {
-				return taskdb.TaskDB{}, RuntimeLeaseRegistry{}, false, err
-			}
-			db = updated
-			registry, _ = releaseRuntimeLease(registry, lease.TaskID, now)
-			changed = true
-		case task.StateQueued, task.StateCreated, task.StateBlocked, task.StateValidating, task.StatePatchReady, task.StateHumanReview, task.StateReworkQueued, task.StateCompleted, task.StateFailed, task.StateCancelled, task.StateTimedOut:
-			var released bool
-			registry, released = releaseRuntimeLease(registry, lease.TaskID, now)
-			changed = changed || released
-		}
-	}
-	return db, registry, changed, nil
-}
-
-func applyExpiredRuntimeHandoff(db taskdb.TaskDB, record taskdb.TaskRecord, lease RuntimeLeaseRecord, now time.Time) (taskdb.TaskDB, error) {
-	updated, err := applyTransition(db, record, task.StateBlocked, ir.EventBlockerRaised, "runtime lease expired; requeue for another runtime", "lease-expired:"+lease.LeaseID+":blocked", now)
-	if err != nil {
-		return taskdb.TaskDB{}, err
-	}
-	blocked, ok := findTask(updated, record.ID)
-	if !ok {
-		return taskdb.TaskDB{}, fmt.Errorf("taskdbplane: task %s not found after lease expiry block", record.ID)
-	}
-	return applyTransition(updated, blocked, task.StateQueued, ir.EventBlockerResolvedRequeue, "runtime lease expired; handoff queued", "lease-expired:"+lease.LeaseID+":requeue", now)
-}
-
-func requireActiveRuntimeLease(registry RuntimeLeaseRegistry, taskID string, now time.Time, report controlplane.TaskReportContext) (RuntimeLeaseRecord, error) {
-	idx := runtimeLeaseIndex(registry.Leases, taskID)
-	if idx < 0 {
-		return RuntimeLeaseRecord{}, fmt.Errorf("taskdbplane: task %s has no runtime lease", taskID)
-	}
-	lease := registry.Leases[idx]
-	if !lease.isActive(now) {
-		return RuntimeLeaseRecord{}, fmt.Errorf("taskdbplane: task %s runtime lease is not active", taskID)
-	}
-	if report.RuntimeLeaseID == "" {
-		return RuntimeLeaseRecord{}, fmt.Errorf("taskdbplane: task %s report missing runtime lease id", taskID)
-	}
-	if lease.LeaseID != report.RuntimeLeaseID {
-		return RuntimeLeaseRecord{}, fmt.Errorf("taskdbplane: task %s runtime lease id mismatch", taskID)
-	}
-	if !report.RuntimeFencingTokenSet {
-		return RuntimeLeaseRecord{}, fmt.Errorf("taskdbplane: task %s report missing runtime fencing token", taskID)
-	}
-	if lease.FencingToken != report.RuntimeFencingToken {
-		return RuntimeLeaseRecord{}, fmt.Errorf("taskdbplane: task %s runtime fencing token mismatch", taskID)
-	}
-	if report.RuntimeCapabilityFingerprint != "" && lease.CapabilityFingerprint != report.RuntimeCapabilityFingerprint {
-		return RuntimeLeaseRecord{}, fmt.Errorf("taskdbplane: task %s runtime capability fingerprint mismatch", taskID)
-	}
-	return lease, nil
-}
-
-func (r RuntimeLeaseRecord) isActive(now time.Time) bool {
-	return r.ReleasedAt == nil && !r.LeaseUntil.IsZero() && !now.After(r.LeaseUntil)
-}
-
-func (r RuntimeLeaseRecord) isExpired(now time.Time) bool {
-	return r.ReleasedAt == nil && !r.LeaseUntil.IsZero() && now.After(r.LeaseUntil)
-}
-
-func runtimeLeaseIndex(leases []RuntimeLeaseRecord, taskID string) int {
-	for i, lease := range leases {
-		if lease.TaskID == taskID {
-			return i
-		}
-	}
-	return -1
-}
-
-func runtimeLeaseID(taskID string, fencingToken int64) string {
-	return fmt.Sprintf("runtime-lease:%s:%d", taskID, fencingToken)
-}
-
-func runtimeHasCapabilityFingerprint(rec controlplane.RegisteredRuntime, fingerprint string) bool {
-	if strings.TrimSpace(fingerprint) == "" {
-		return true
-	}
-	for key, value := range rec.CapabilityAttributes {
-		if strings.HasPrefix(key, "provider.") && strings.HasSuffix(key, ".capability_fingerprint") && value == fingerprint {
-			return true
-		}
-	}
-	return false
-}
-
-func normalizedTaskIDs(ids []string) []string {
-	seen := map[string]bool{}
-	out := make([]string, 0, len(ids))
-	for _, id := range ids {
-		trimmed := strings.TrimSpace(id)
-		if trimmed == "" || seen[trimmed] {
-			continue
-		}
-		seen[trimmed] = true
-		out = append(out, trimmed)
-	}
-	sort.Strings(out)
-	return out
-}
-
-func taskDBChanged(before, after taskdb.TaskDB, taskID string) bool {
-	if len(before.Transitions) != len(after.Transitions) || len(before.CommandReceipts) != len(after.CommandReceipts) {
-		return true
-	}
-	beforeRecord, beforeOK := findTask(before, taskID)
-	afterRecord, afterOK := findTask(after, taskID)
-	if beforeOK != afterOK {
-		return true
-	}
-	if !beforeOK {
-		return false
-	}
-	return beforeRecord.State != afterRecord.State ||
-		beforeRecord.UpdatedAt != afterRecord.UpdatedAt ||
-		beforeRecord.TransitionCount != afterRecord.TransitionCount ||
-		beforeRecord.CommandReceiptCount != afterRecord.CommandReceiptCount
-}
-
-func runtimeRegistryPath(taskDBPath string) string {
-	if strings.HasSuffix(taskDBPath, ".json") {
-		return strings.TrimSuffix(taskDBPath, ".json") + ".runtimes.json"
-	}
-	return taskDBPath + ".runtimes.json"
-}
-
-func runtimeLeaseRegistryPath(taskDBPath string) string {
-	if strings.HasSuffix(taskDBPath, ".json") {
-		return strings.TrimSuffix(taskDBPath, ".json") + ".leases.json"
-	}
-	return taskDBPath + ".leases.json"
-}
-
-func (p *Plane) withFileLock(ctx context.Context, fn func() error) error {
-	return c9lock.WithFile(ctx, p.lockPath, fn)
-}
-
-func writeJSONAtomic(path string, value any) error {
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("taskdbplane: create runtime registry dir: %w", err)
-	}
-	data, err := json.MarshalIndent(value, "", "  ")
-	if err != nil {
-		return err
-	}
-	data = append(data, '\n')
-	tmp, err := os.CreateTemp(filepath.Dir(path), ".tmp-"+filepath.Base(path)+"-*")
-	if err != nil {
-		return err
-	}
-	tmpName := tmp.Name()
-	defer os.Remove(tmpName)
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmpName, path)
-}
-
 func timeoutCanOriginate(state task.TaskState) bool {
 	switch state {
 	case task.StateRunning, task.StateNeedsInput, task.StateBlocked, task.StateValidating, task.StateHumanReview:
@@ -1039,14 +658,5 @@ func timeoutCanOriginate(state task.TaskState) bool {
 }
 
 func resultReason(res agentbridge.Result, fallback string) string {
-	return firstNonEmpty(res.Error, res.Output, fallback)
-}
-
-func firstNonEmpty(values ...string) string {
-	for _, value := range values {
-		if trimmed := strings.TrimSpace(value); trimmed != "" {
-			return trimmed
-		}
-	}
-	return ""
+	return textutil.FirstNonEmptyTrimmed(res.Error, res.Output, fallback)
 }

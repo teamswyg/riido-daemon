@@ -31,6 +31,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
+	"github.com/teamswyg/riido-daemon/pkg/util/fileutil"
 )
 
 const (
@@ -184,7 +185,7 @@ func (s *MemorySource) Registered() []RegisteredRuntime {
 
 func (s *MemorySource) RegisterRuntime(_ context.Context, rt RuntimeRegistration) error {
 	if rt.RuntimeID == "" {
-		return errors.New("controlplane: empty RuntimeID")
+		return controlPlaneErrorf(ErrControlPlaneRuntime, "memory.register-runtime", "empty RuntimeID")
 	}
 	s.runtimes[rt.RuntimeID] = &RegisteredRuntime{
 		RuntimeRegistration: rt,
@@ -195,7 +196,7 @@ func (s *MemorySource) RegisterRuntime(_ context.Context, rt RuntimeRegistration
 
 func (s *MemorySource) DeregisterRuntime(_ context.Context, runtimeID string) error {
 	if _, ok := s.runtimes[runtimeID]; !ok {
-		return fmt.Errorf("controlplane: unknown runtime %q", runtimeID)
+		return controlPlaneErrorf(ErrControlPlaneRuntime, "memory.deregister-runtime", "unknown runtime %q", runtimeID)
 	}
 	delete(s.runtimes, runtimeID)
 	return nil
@@ -204,7 +205,7 @@ func (s *MemorySource) DeregisterRuntime(_ context.Context, runtimeID string) er
 func (s *MemorySource) Heartbeat(_ context.Context, hb RuntimeHeartbeat) error {
 	r, ok := s.runtimes[hb.RuntimeID]
 	if !ok {
-		return fmt.Errorf("controlplane: heartbeat for unknown runtime %q", hb.RuntimeID)
+		return controlPlaneErrorf(ErrControlPlaneRuntime, "memory.heartbeat", "heartbeat for unknown runtime %q", hb.RuntimeID)
 	}
 	r.LastHeartbeat = s.now()
 	applyHeartbeat(&r.RuntimeRegistration, hb)
@@ -222,7 +223,7 @@ func (s *MemorySource) ClaimTask(_ context.Context, _ string) (*bridge.TaskReque
 
 func (s *MemorySource) WatchCancellation(_ context.Context, taskID string) (<-chan error, error) {
 	if taskID == "" {
-		return nil, errors.New("controlplane: empty taskID")
+		return nil, controlPlaneErrorf(ErrControlPlaneInput, "memory.watch-cancellation", "empty taskID")
 	}
 	ch := make(chan error, 1)
 	s.cancelChs[taskID] = ch
@@ -330,10 +331,10 @@ type FileReporter struct {
 
 func NewFileReporter(dir string) (*FileReporter, error) {
 	if dir == "" {
-		return nil, errors.New("controlplane: empty report dir")
+		return nil, controlPlaneErrorf(ErrControlPlaneInput, "file-reporter.new", "empty report dir")
 	}
 	if err := os.MkdirAll(dir, 0o755); err != nil {
-		return nil, fmt.Errorf("controlplane: create report dir: %w", err)
+		return nil, controlPlaneWrapf(ErrControlPlaneReporter, "file-reporter.new", err, "create report dir")
 	}
 	return &FileReporter{dir: dir, now: time.Now}, nil
 }
@@ -357,19 +358,19 @@ func (r *FileReporter) appendRecord(ctx context.Context, rec FileReportRecord) e
 	default:
 	}
 	if rec.TaskID == "" {
-		return errors.New("controlplane: empty taskID")
+		return controlPlaneErrorf(ErrControlPlaneInput, "file-reporter.append", "empty taskID")
 	}
 	path := r.reportPath(rec.TaskID)
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0o644)
 	if err != nil {
-		return fmt.Errorf("controlplane: open report file: %w", err)
+		return controlPlaneWrapf(ErrControlPlaneReporter, "file-reporter.append", err, "open report file")
 	}
 	if err := json.NewEncoder(f).Encode(rec); err != nil {
 		_ = f.Close()
-		return fmt.Errorf("controlplane: encode report record: %w", err)
+		return controlPlaneWrapf(ErrControlPlaneReporter, "file-reporter.append", err, "encode report record")
 	}
 	if err := f.Close(); err != nil {
-		return fmt.Errorf("controlplane: close report file: %w", err)
+		return controlPlaneWrapf(ErrControlPlaneReporter, "file-reporter.append", err, "close report file")
 	}
 	return nil
 }
@@ -395,10 +396,10 @@ type FileQueueSource struct {
 func NewFileQueueSource(dir string) (*FileQueueSource, error) {
 	info, err := os.Stat(dir)
 	if err != nil {
-		return nil, fmt.Errorf("controlplane: stat queue dir: %w", err)
+		return nil, controlPlaneWrapf(ErrControlPlaneQueue, "file-queue.new", err, "stat queue dir")
 	}
 	if !info.IsDir() {
-		return nil, fmt.Errorf("controlplane: %s is not a directory", dir)
+		return nil, controlPlaneErrorf(ErrControlPlaneQueue, "file-queue.new", "%s is not a directory", dir)
 	}
 	return &FileQueueSource{dir: dir, now: time.Now}, nil
 }
@@ -410,7 +411,7 @@ func (s *FileQueueSource) RegisterRuntime(ctx context.Context, rt RuntimeRegistr
 	default:
 	}
 	if rt.RuntimeID == "" {
-		return errors.New("controlplane: empty RuntimeID")
+		return controlPlaneErrorf(ErrControlPlaneRuntime, "file-queue.register-runtime", "empty RuntimeID")
 	}
 	rec := RegisteredRuntime{
 		RuntimeRegistration: rt,
@@ -426,10 +427,10 @@ func (s *FileQueueSource) DeregisterRuntime(ctx context.Context, runtimeID strin
 	default:
 	}
 	if runtimeID == "" {
-		return errors.New("controlplane: empty RuntimeID")
+		return controlPlaneErrorf(ErrControlPlaneRuntime, "file-queue.deregister-runtime", "empty RuntimeID")
 	}
 	if err := os.Remove(s.runtimePath(runtimeID)); err != nil && !errors.Is(err, fs.ErrNotExist) {
-		return fmt.Errorf("controlplane: deregister runtime: %w", err)
+		return controlPlaneWrapf(ErrControlPlaneRegistry, "file-queue.deregister-runtime", err, "deregister runtime")
 	}
 	return nil
 }
@@ -441,12 +442,12 @@ func (s *FileQueueSource) Heartbeat(ctx context.Context, hb RuntimeHeartbeat) er
 	default:
 	}
 	if hb.RuntimeID == "" {
-		return errors.New("controlplane: empty RuntimeID")
+		return controlPlaneErrorf(ErrControlPlaneRuntime, "file-queue.heartbeat", "empty RuntimeID")
 	}
 	path := s.runtimePath(hb.RuntimeID)
 	body, err := os.ReadFile(path)
 	if err != nil {
-		return fmt.Errorf("controlplane: read runtime registry: %w", err)
+		return controlPlaneWrapf(ErrControlPlaneRegistry, "file-queue.heartbeat", err, "read runtime registry")
 	}
 	rec, err := parseRuntimeRecord(body)
 	if err != nil {
@@ -465,7 +466,7 @@ func (s *FileQueueSource) ClaimTask(ctx context.Context, runtimeID string) (*bri
 	}
 	entries, err := os.ReadDir(s.dir)
 	if err != nil {
-		return nil, err
+		return nil, controlPlaneWrapf(ErrControlPlaneQueue, "file-queue.claim-task", err, "read queue dir")
 	}
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Name() < entries[j].Name() })
 	for _, e := range entries {
@@ -478,11 +479,11 @@ func (s *FileQueueSource) ClaimTask(ctx context.Context, runtimeID string) (*bri
 			if errors.Is(err, fs.ErrNotExist) {
 				continue
 			}
-			return nil, err
+			return nil, controlPlaneWrapf(ErrControlPlaneQueue, "file-queue.claim-task", err, "read task file")
 		}
 		var req bridge.TaskRequest
 		if err := json.Unmarshal(body, &req); err != nil {
-			return nil, fmt.Errorf("controlplane: parse %s: %w", path, err)
+			return nil, controlPlaneWrapf(ErrControlPlaneQueue, "file-queue.claim-task", err, "parse %s", path)
 		}
 		available, ok, err := s.runtimeProviderAvailable(runtimeID, string(req.Provider))
 		if err != nil {
@@ -506,8 +507,8 @@ func (s *FileQueueSource) ClaimTask(ctx context.Context, runtimeID string) (*bri
 			ClaimedAt:     s.now().UTC(),
 			Task:          req,
 		}
-		if err := writeJSONAtomic(claimPath, rec); err != nil {
-			return nil, fmt.Errorf("controlplane: write claim receipt: %w", err)
+		if err := fileutil.WriteJSONAtomic(claimPath, rec); err != nil {
+			return nil, controlPlaneWrapf(ErrControlPlanePersistence, "file-queue.claim-task", err, "write claim receipt")
 		}
 		return &req, nil
 	}
@@ -517,23 +518,23 @@ func (s *FileQueueSource) ClaimTask(ctx context.Context, runtimeID string) (*bri
 func (s *FileQueueSource) moveTaskToClaim(path, runtimeID string) (string, error) {
 	claimsDir := filepath.Join(s.dir, "claims")
 	if err := os.MkdirAll(claimsDir, 0o755); err != nil {
-		return "", fmt.Errorf("controlplane: create claims dir: %w", err)
+		return "", controlPlaneWrapf(ErrControlPlanePersistence, "file-queue.move-claim", err, "create claims dir")
 	}
 	runtimeHash := sha256.Sum256([]byte(runtimeID))
 	tmp, err := os.CreateTemp(claimsDir, fmt.Sprintf("%020d-%x-*.json", s.now().UTC().UnixNano(), runtimeHash[:4]))
 	if err != nil {
-		return "", fmt.Errorf("controlplane: reserve claim path: %w", err)
+		return "", controlPlaneWrapf(ErrControlPlanePersistence, "file-queue.move-claim", err, "reserve claim path")
 	}
 	claimPath := tmp.Name()
 	if err := tmp.Close(); err != nil {
 		_ = os.Remove(claimPath)
-		return "", fmt.Errorf("controlplane: close claim path reservation: %w", err)
+		return "", controlPlaneWrapf(ErrControlPlanePersistence, "file-queue.move-claim", err, "close claim path reservation")
 	}
 	if err := os.Remove(claimPath); err != nil {
-		return "", fmt.Errorf("controlplane: release claim path reservation: %w", err)
+		return "", controlPlaneWrapf(ErrControlPlanePersistence, "file-queue.move-claim", err, "release claim path reservation")
 	}
 	if err := os.Rename(path, claimPath); err != nil {
-		return "", err
+		return "", controlPlaneWrapf(ErrControlPlanePersistence, "file-queue.move-claim", err, "rename task to claim")
 	}
 	return claimPath, nil
 }
@@ -548,7 +549,7 @@ func (s *FileQueueSource) runtimeProviderAvailable(runtimeID, provider string) (
 		return true, false, nil
 	}
 	if err != nil {
-		return false, false, fmt.Errorf("controlplane: read runtime registry: %w", err)
+		return false, false, controlPlaneWrapf(ErrControlPlaneRegistry, "file-queue.runtime-provider-available", err, "read runtime registry")
 	}
 	rec, err := parseRuntimeRecord(body)
 	if err != nil {
@@ -582,7 +583,7 @@ func (s *FileQueueSource) runtimePath(runtimeID string) string {
 func parseRuntimeRecord(body []byte) (RegisteredRuntime, error) {
 	var rec RegisteredRuntime
 	if err := json.Unmarshal(body, &rec); err != nil {
-		return RegisteredRuntime{}, fmt.Errorf("controlplane: parse runtime registry: %w", err)
+		return RegisteredRuntime{}, controlPlaneWrapf(ErrControlPlaneRegistry, "runtime-registry.parse", err, "parse runtime registry")
 	}
 	return rec, nil
 }
@@ -602,31 +603,8 @@ func applyHeartbeat(reg *RuntimeRegistration, hb RuntimeHeartbeat) {
 }
 
 func (s *FileQueueSource) writeRuntimeRecord(rec RegisteredRuntime) error {
-	if err := os.MkdirAll(filepath.Join(s.dir, "runtimes"), 0o755); err != nil {
-		return fmt.Errorf("controlplane: create runtime registry dir: %w", err)
+	if err := fileutil.WriteJSONAtomic(s.runtimePath(rec.RuntimeID), rec); err != nil {
+		return controlPlaneWrapf(ErrControlPlaneRegistry, "file-queue.write-runtime", err, "write runtime registry")
 	}
-	return writeJSONAtomic(s.runtimePath(rec.RuntimeID), rec)
-}
-
-func writeJSONAtomic(path string, value any) error {
-	data, err := json.MarshalIndent(value, "", "  ")
-	if err != nil {
-		return err
-	}
-	data = append(data, '\n')
-	dir := filepath.Dir(path)
-	tmp, err := os.CreateTemp(dir, ".tmp-"+filepath.Base(path)+"-*")
-	if err != nil {
-		return err
-	}
-	tmpName := tmp.Name()
-	defer os.Remove(tmpName)
-	if _, err := tmp.Write(data); err != nil {
-		_ = tmp.Close()
-		return err
-	}
-	if err := tmp.Close(); err != nil {
-		return err
-	}
-	return os.Rename(tmpName, path)
+	return nil
 }

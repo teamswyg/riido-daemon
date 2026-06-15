@@ -17,6 +17,8 @@ import (
 
 	"github.com/teamswyg/riido-contracts/ir"
 	"github.com/teamswyg/riido-contracts/task"
+	"github.com/teamswyg/riido-daemon/pkg/util/fileutil"
+	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 const (
@@ -195,13 +197,13 @@ func ApplyTaskTransition(existing TaskDB, taskID string, to task.TaskState, even
 
 func ApplyGuardedTaskTransition(existing TaskDB, input TaskTransitionInput, now time.Time) (TaskDB, TaskTransitionRecord, TaskCommandReceiptRecord, error) {
 	if input.TaskID == "" {
-		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, fmt.Errorf("task id is empty")
+		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBInput, "transition.validate", "task id is empty")
 	}
 	if !isKnownTaskState(input.ToState) {
-		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, fmt.Errorf("unknown target state: %s", input.ToState)
+		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBState, "transition.validate", "unknown target state: %s", input.ToState)
 	}
 	if !input.Event.IsTransition() {
-		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, fmt.Errorf("event %q is not a transition event", input.Event)
+		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBState, "transition.validate", "event %q is not a transition event", input.Event)
 	}
 	db := normalizeTaskDB(existing)
 	index := -1
@@ -212,10 +214,10 @@ func ApplyGuardedTaskTransition(existing TaskDB, input TaskTransitionInput, now 
 		}
 	}
 	if index < 0 {
-		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, fmt.Errorf("task %s not found", input.TaskID)
+		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBState, "transition.find-task", "task %s not found", input.TaskID)
 	}
-	actor := defaultString(input.Actor, "human")
-	source := defaultString(input.Source, "riido-cli")
+	actor := textutil.FirstNonEmpty(input.Actor, "human")
+	source := textutil.FirstNonEmpty(input.Source, "riido-cli")
 	replayedTransition, replayedReceipt, replayed, err := replayExistingTaskTransition(db, input, actor, source)
 	if err != nil {
 		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, err
@@ -225,7 +227,7 @@ func ApplyGuardedTaskTransition(existing TaskDB, input TaskTransitionInput, now 
 	}
 	from := db.Tasks[index].State
 	if !task.ValidateTransition(from, input.ToState, input.Event) {
-		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, fmt.Errorf("illegal task transition: %s --%s--> %s", from, input.Event, input.ToState)
+		return TaskDB{}, TaskTransitionRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBState, "transition.apply", "illegal task transition: %s --%s--> %s", from, input.Event, input.ToState)
 	}
 	stamp := timestamp(now)
 	receipt, err := buildTaskCommandReceipt(db, db.Tasks[index], "transition", actor, source, input.Guard, now, len(db.CommandReceipts)+1)
@@ -266,10 +268,10 @@ func AddTaskEvidence(existing TaskDB, input TaskEvidenceInput, now time.Time) (T
 
 func AddGuardedTaskEvidence(existing TaskDB, input TaskEvidenceInput, now time.Time) (TaskDB, TaskEvidenceRecord, TaskCommandReceiptRecord, error) {
 	if input.TaskID == "" {
-		return TaskDB{}, TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, fmt.Errorf("task id is empty")
+		return TaskDB{}, TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBInput, "evidence.validate", "task id is empty")
 	}
 	if strings.TrimSpace(input.Command) == "" {
-		return TaskDB{}, TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, fmt.Errorf("evidence command is empty")
+		return TaskDB{}, TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBInput, "evidence.validate", "evidence command is empty")
 	}
 	db := normalizeTaskDB(existing)
 	index := -1
@@ -280,12 +282,12 @@ func AddGuardedTaskEvidence(existing TaskDB, input TaskEvidenceInput, now time.T
 		}
 	}
 	if index < 0 {
-		return TaskDB{}, TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, fmt.Errorf("task %s not found", input.TaskID)
+		return TaskDB{}, TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBState, "evidence.find-task", "task %s not found", input.TaskID)
 	}
 	stamp := timestamp(now)
 	taskRecord := db.Tasks[index]
-	actor := defaultString(input.Actor, "daemon")
-	source := defaultString(input.Source, "riido-cli")
+	actor := textutil.FirstNonEmpty(input.Actor, "daemon")
+	source := textutil.FirstNonEmpty(input.Source, "riido-cli")
 	replayedEvidence, replayedReceipt, replayed, err := replayExistingTaskEvidence(db, input, actor, source)
 	if err != nil {
 		return TaskDB{}, TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, err
@@ -298,9 +300,9 @@ func AddGuardedTaskEvidence(existing TaskDB, input TaskEvidenceInput, now time.T
 		return TaskDB{}, TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, err
 	}
 	evidenceResult := normalizeEvidenceResult(input.Result, input.ExitCode)
-	validationGate := defaultString(input.ValidationGate, TaskEvidenceValidationV1)
-	providerRunID := defaultString(input.ProviderRunID, receipt.CommandID)
-	providerRunResult := defaultString(input.ProviderRunResult, evidenceResult)
+	validationGate := textutil.FirstNonEmpty(input.ValidationGate, TaskEvidenceValidationV1)
+	providerRunID := textutil.FirstNonEmpty(input.ProviderRunID, receipt.CommandID)
+	providerRunResult := textutil.FirstNonEmpty(input.ProviderRunResult, evidenceResult)
 	evidence := TaskEvidenceRecord{
 		ID:                evidenceID(input.TaskID, now, len(db.Evidence)+1),
 		TaskID:            input.TaskID,
@@ -337,7 +339,7 @@ func AddGuardedTaskEvidence(existing TaskDB, input TaskEvidenceInput, now time.T
 func ParseTaskState(value string) (task.TaskState, error) {
 	candidate := task.TaskState(value)
 	if !isKnownTaskState(candidate) {
-		return "", fmt.Errorf("unknown task state: %s", value)
+		return "", taskDBErrorf(ErrTaskDBState, "parse-state", "unknown task state: %s", value)
 	}
 	return candidate, nil
 }
@@ -360,29 +362,10 @@ func LoadTaskDBOrEmpty(path string) (TaskDB, error) {
 
 func SaveTaskDB(path string, db TaskDB) error {
 	if path == "" {
-		return fmt.Errorf("task DB path is empty")
+		return taskDBErrorf(ErrTaskDBInput, "save", "task DB path is empty")
 	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return fmt.Errorf("create task DB directory: %w", err)
-	}
-	tmp, err := os.CreateTemp(filepath.Dir(path), ".task-db-*.tmp")
-	if err != nil {
-		return fmt.Errorf("create task DB temp file: %w", err)
-	}
-	tmpPath := tmp.Name()
-	defer os.Remove(tmpPath)
-
-	encoder := json.NewEncoder(tmp)
-	encoder.SetIndent("", "  ")
-	if err := encoder.Encode(normalizeTaskDB(db)); err != nil {
-		tmp.Close()
-		return fmt.Errorf("encode task DB: %w", err)
-	}
-	if err := tmp.Close(); err != nil {
-		return fmt.Errorf("close task DB temp file: %w", err)
-	}
-	if err := os.Rename(tmpPath, path); err != nil {
-		return fmt.Errorf("replace task DB: %w", err)
+	if err := fileutil.WriteJSONAtomic(path, normalizeTaskDB(db)); err != nil {
+		return taskDBWrapf(ErrTaskDBPersistence, "save", err, "save task DB")
 	}
 	return nil
 }
@@ -394,10 +377,10 @@ func LoadTaskDB(path string) (TaskDB, error) {
 		return db, err
 	}
 	if err := json.Unmarshal(data, &db); err != nil {
-		return db, fmt.Errorf("decode task DB: %w", err)
+		return db, taskDBWrapf(ErrTaskDBPersistence, "load.decode", err, "decode task DB")
 	}
 	if db.SchemaVersion != TaskDBSchemaVersion {
-		return db, fmt.Errorf("task DB schema mismatch: got %q want %q", db.SchemaVersion, TaskDBSchemaVersion)
+		return db, taskDBErrorf(ErrTaskDBSchema, "load.validate-schema", "task DB schema mismatch: got %q want %q", db.SchemaVersion, TaskDBSchemaVersion)
 	}
 	return normalizeTaskDB(db), nil
 }
@@ -487,11 +470,11 @@ func replayExistingTaskTransition(db TaskDB, input TaskTransitionInput, actor st
 		return TaskTransitionRecord{}, TaskCommandReceiptRecord{}, true, err
 	}
 	if receipt.TransitionID == "" {
-		return TaskTransitionRecord{}, TaskCommandReceiptRecord{}, true, fmt.Errorf("command_id %s replay cannot find linked transition id", receipt.CommandID)
+		return TaskTransitionRecord{}, TaskCommandReceiptRecord{}, true, taskDBErrorf(ErrTaskDBReplay, "transition.replay", "command_id %s replay cannot find linked transition id", receipt.CommandID)
 	}
 	transition, ok := findTransitionByID(db.Transitions, receipt.TransitionID)
 	if !ok {
-		return TaskTransitionRecord{}, TaskCommandReceiptRecord{}, true, fmt.Errorf("command_id %s replay cannot find transition %s", receipt.CommandID, receipt.TransitionID)
+		return TaskTransitionRecord{}, TaskCommandReceiptRecord{}, true, taskDBErrorf(ErrTaskDBReplay, "transition.replay", "command_id %s replay cannot find transition %s", receipt.CommandID, receipt.TransitionID)
 	}
 	if transition.TaskID != input.TaskID {
 		return TaskTransitionRecord{}, TaskCommandReceiptRecord{}, true, commandReplayMismatch(receipt.CommandID, "task_id")
@@ -523,11 +506,11 @@ func replayExistingTaskEvidence(db TaskDB, input TaskEvidenceInput, actor string
 		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, true, err
 	}
 	if receipt.EvidenceID == "" {
-		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, true, fmt.Errorf("command_id %s replay cannot find linked evidence id", receipt.CommandID)
+		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, true, taskDBErrorf(ErrTaskDBReplay, "evidence.replay", "command_id %s replay cannot find linked evidence id", receipt.CommandID)
 	}
 	evidence, ok := findEvidenceByID(db.Evidence, receipt.EvidenceID)
 	if !ok {
-		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, true, fmt.Errorf("command_id %s replay cannot find evidence %s", receipt.CommandID, receipt.EvidenceID)
+		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, true, taskDBErrorf(ErrTaskDBReplay, "evidence.replay", "command_id %s replay cannot find evidence %s", receipt.CommandID, receipt.EvidenceID)
 	}
 	if evidence.TaskID != input.TaskID {
 		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, true, commandReplayMismatch(receipt.CommandID, "task_id")
@@ -541,9 +524,9 @@ func replayExistingTaskEvidence(db TaskDB, input TaskEvidenceInput, actor string
 	if evidence.Result != normalizeEvidenceResult(input.Result, input.ExitCode) {
 		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, true, commandReplayMismatch(receipt.CommandID, "result")
 	}
-	validationGate := defaultString(input.ValidationGate, TaskEvidenceValidationV1)
-	providerRunID := defaultString(input.ProviderRunID, receipt.CommandID)
-	providerRunResult := defaultString(input.ProviderRunResult, evidence.Result)
+	validationGate := textutil.FirstNonEmpty(input.ValidationGate, TaskEvidenceValidationV1)
+	providerRunID := textutil.FirstNonEmpty(input.ProviderRunID, receipt.CommandID)
+	providerRunResult := textutil.FirstNonEmpty(input.ProviderRunResult, evidence.Result)
 	if !replayStringFieldMatches(evidence.ValidationGate, validationGate, input.ValidationGate != "") {
 		return TaskEvidenceRecord{}, TaskCommandReceiptRecord{}, true, commandReplayMismatch(receipt.CommandID, "validation_gate")
 	}
@@ -588,7 +571,7 @@ func validateCommandReceiptReplay(receipt TaskCommandReceiptRecord, kind string,
 		return commandReplayMismatch(receipt.CommandID, "decision_llm")
 	}
 	if receipt.GuardDecision != "accepted" {
-		return fmt.Errorf("command_id %s replay cannot reuse receipt with guard decision %s", receipt.CommandID, receipt.GuardDecision)
+		return taskDBErrorf(ErrTaskDBReplay, "receipt.replay", "command_id %s replay cannot reuse receipt with guard decision %s", receipt.CommandID, receipt.GuardDecision)
 	}
 	return nil
 }
@@ -605,7 +588,7 @@ func findCommandReceiptByCommandID(db TaskDB, commandID string) (TaskCommandRece
 			continue
 		}
 		if hasFound {
-			return TaskCommandReceiptRecord{}, true, fmt.Errorf("command_id %s is not unique in task DB", commandID)
+			return TaskCommandReceiptRecord{}, true, taskDBErrorf(ErrTaskDBReplay, "receipt.find-by-command-id", "command_id %s is not unique in task DB", commandID)
 		}
 		found = receipt
 		hasFound = true
@@ -632,7 +615,7 @@ func findEvidenceByID(evidenceRecords []TaskEvidenceRecord, id string) (TaskEvid
 }
 
 func commandReplayMismatch(commandID string, field string) error {
-	return fmt.Errorf("command_id %s replay mismatch on %s", commandID, field)
+	return taskDBErrorf(ErrTaskDBReplay, "receipt.replay", "command_id %s replay mismatch on %s", commandID, field)
 }
 
 func replayStringFieldMatches(existing string, expected string, required bool) bool {
@@ -643,10 +626,10 @@ func replayStringFieldMatches(existing string, expected string, required bool) b
 }
 
 func buildTaskCommandReceipt(db TaskDB, taskRecord TaskRecord, kind string, actor string, source string, guard TaskMutationGuardInput, now time.Time, ordinal int) (TaskCommandReceiptRecord, error) {
-	provider := defaultString(guard.Provider, taskRecord.RecommendedProvider)
-	provider = defaultString(provider, db.RecommendedProvider)
-	decisionLLM := defaultString(guard.DecisionLLM, taskRecord.RecommendedDecisionLLM)
-	decisionLLM = defaultString(decisionLLM, db.RecommendedDecisionLLM)
+	provider := textutil.FirstNonEmpty(guard.Provider, taskRecord.RecommendedProvider)
+	provider = textutil.FirstNonEmpty(provider, db.RecommendedProvider)
+	decisionLLM := textutil.FirstNonEmpty(guard.DecisionLLM, taskRecord.RecommendedDecisionLLM)
+	decisionLLM = textutil.FirstNonEmpty(decisionLLM, db.RecommendedDecisionLLM)
 	approvalID := strings.TrimSpace(guard.ApprovalID)
 	commandID := strings.TrimSpace(guard.CommandID)
 	if commandID == "" {
@@ -665,23 +648,23 @@ func buildTaskCommandReceipt(db TaskDB, taskRecord TaskRecord, kind string, acto
 		ApprovalID:             approvalID,
 		DecisionGate:           db.DecisionGate,
 		RequiresHumanApproval:  requiresHumanApproval,
-		RecommendedProvider:    defaultString(taskRecord.RecommendedProvider, db.RecommendedProvider),
-		RecommendedDecisionLLM: defaultString(taskRecord.RecommendedDecisionLLM, db.RecommendedDecisionLLM),
+		RecommendedProvider:    textutil.FirstNonEmpty(taskRecord.RecommendedProvider, db.RecommendedProvider),
+		RecommendedDecisionLLM: textutil.FirstNonEmpty(taskRecord.RecommendedDecisionLLM, db.RecommendedDecisionLLM),
 		HarnessNextDirection:   taskRecord.HarnessNextDirection,
 		ReplayPolicy:           TaskCommandReplayPolicyV1,
 		RecordedAt:             timestamp(now),
 	}
 	if requiresHumanApproval && approvalID == "" {
-		return TaskCommandReceiptRecord{}, fmt.Errorf("task %s requires approval_id before %s mutation", taskRecord.ID, kind)
+		return TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBGuard, "receipt.build", "task %s requires approval_id before %s mutation", taskRecord.ID, kind)
 	}
 	if provider == "" {
-		return TaskCommandReceiptRecord{}, fmt.Errorf("task %s has no provider for %s mutation", taskRecord.ID, kind)
+		return TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBGuard, "receipt.build", "task %s has no provider for %s mutation", taskRecord.ID, kind)
 	}
 	if !providerCandidateAvailable(db.ProviderCandidates, provider) {
-		return TaskCommandReceiptRecord{}, fmt.Errorf("provider %s is not an available orchestration candidate for task %s", provider, taskRecord.ID)
+		return TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBGuard, "receipt.build", "provider %s is not an available orchestration candidate for task %s", provider, taskRecord.ID)
 	}
 	if receipt.RecommendedDecisionLLM != "" && decisionLLM != receipt.RecommendedDecisionLLM {
-		return TaskCommandReceiptRecord{}, fmt.Errorf("decision LLM %s does not match recommended decision LLM %s for task %s", decisionLLM, receipt.RecommendedDecisionLLM, taskRecord.ID)
+		return TaskCommandReceiptRecord{}, taskDBErrorf(ErrTaskDBGuard, "receipt.build", "decision LLM %s does not match recommended decision LLM %s for task %s", decisionLLM, receipt.RecommendedDecisionLLM, taskRecord.ID)
 	}
 	receipt.GuardDecision = "accepted"
 	receipt.GuardReason = "approval_id and orchestration provider candidate accepted"
@@ -719,13 +702,6 @@ func generatedCommandID(taskID string, kind string, now time.Time, ordinal int) 
 
 func timestamp(now time.Time) string {
 	return now.UTC().Format(time.RFC3339Nano)
-}
-
-func defaultString(value, fallback string) string {
-	if strings.TrimSpace(value) == "" {
-		return fallback
-	}
-	return value
 }
 
 func isKnownTaskState(value task.TaskState) bool {

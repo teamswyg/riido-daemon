@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -12,6 +11,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/policy"
+	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 const (
@@ -126,10 +126,10 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	if policyBundlePath != "" {
 		bundle, err := policy.LoadPolicyBundleFile(policyBundlePath)
 		if err != nil {
-			return daemonSettings{}, err
+			return daemonSettings{}, daemonWrapf(ErrDaemonConfig, "settings.load-policy-bundle", err, "load policy bundle file")
 		}
 		if policyBundleVersion != "" && policyBundleVersion != bundle.Version {
-			return daemonSettings{}, fmt.Errorf("%s=%q does not match %s version %q", envPolicyBundle, policyBundleVersion, envPolicyBundlePath, bundle.Version)
+			return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-policy-bundle", "%s=%q does not match %s version %q", envPolicyBundle, policyBundleVersion, envPolicyBundlePath, bundle.Version)
 		}
 		policyBundleDoc = bundle
 		policyBundleVersion = bundle.Version
@@ -146,30 +146,30 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		taskReportDir = filepath.Join(taskQueueDir, "reports")
 	}
 	if taskDBSourcePath != "" && taskQueueDir != "" {
-		return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envTaskDBSourcePath, envTaskQueueDir)
+		return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-control-plane", "%s cannot be combined with %s", envTaskDBSourcePath, envTaskQueueDir)
 	}
 	if taskDBSourcePath != "" && taskReportDir != "" {
-		return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envTaskDBSourcePath, envTaskReportDir)
+		return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-control-plane", "%s cannot be combined with %s", envTaskDBSourcePath, envTaskReportDir)
 	}
 	if saaSURL != "" {
 		if taskQueueDir != "" {
-			return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envSaaSURL, envTaskQueueDir)
+			return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-control-plane", "%s cannot be combined with %s", envSaaSURL, envTaskQueueDir)
 		}
 		if taskReportDir != "" {
-			return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envSaaSURL, envTaskReportDir)
+			return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-control-plane", "%s cannot be combined with %s", envSaaSURL, envTaskReportDir)
 		}
 		if taskDBSourcePath != "" {
-			return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envSaaSURL, envTaskDBSourcePath)
+			return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-control-plane", "%s cannot be combined with %s", envSaaSURL, envTaskDBSourcePath)
 		}
 		if deviceID == "" || deviceSecret == "" {
-			return daemonSettings{}, fmt.Errorf("%s requires %s/%s", envSaaSURL, envDeviceID, envDeviceSecret)
+			return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-device-credentials", "%s requires %s/%s", envSaaSURL, envDeviceID, envDeviceSecret)
 		}
 	}
 	if deviceID == "" && deviceSecret != "" {
-		return daemonSettings{}, fmt.Errorf("%s requires %s", envDeviceSecret, envDeviceID)
+		return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-device-credentials", "%s requires %s", envDeviceSecret, envDeviceID)
 	}
 	if deviceID != "" && deviceSecret == "" {
-		return daemonSettings{}, fmt.Errorf("%s requires %s", envDeviceID, envDeviceSecret)
+		return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-device-credentials", "%s requires %s", envDeviceID, envDeviceSecret)
 	}
 	workdirRetention, err := parseOptionalDurationSeconds(getenv(envWorkdirRetentionSeconds), envWorkdirRetentionSeconds)
 	if err != nil {
@@ -180,7 +180,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		return daemonSettings{}, err
 	}
 	if workdirCleanupEvery > 0 && workdirRetention <= 0 {
-		return daemonSettings{}, fmt.Errorf("%s requires %s", envWorkdirCleanupIntervalSeconds, envWorkdirRetentionSeconds)
+		return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-workdir-retention", "%s requires %s", envWorkdirCleanupIntervalSeconds, envWorkdirRetentionSeconds)
 	}
 	if workdirRetention > 0 && workdirCleanupEvery <= 0 {
 		workdirCleanupEvery = time.Hour
@@ -194,7 +194,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 		return daemonSettings{}, err
 	}
 	if idlePollEvery < pollEvery {
-		return daemonSettings{}, fmt.Errorf("%s must be greater than or equal to %s", envDaemonIdlePollIntervalSeconds, envDaemonPollIntervalSeconds)
+		return daemonSettings{}, daemonErrorf(ErrDaemonConfig, "settings.validate-intervals", "%s must be greater than or equal to %s", envDaemonIdlePollIntervalSeconds, envDaemonPollIntervalSeconds)
 	}
 	heartbeatEvery, err := parseOptionalPositiveDurationSeconds(getenv(envDaemonHeartbeatSeconds), envDaemonHeartbeatSeconds, 5*time.Second)
 	if err != nil {
@@ -203,8 +203,8 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 
 	return daemonSettings{
 		DaemonID:             defaultDaemonID(getenv(envDaemonID), deviceID),
-		DaemonVersion:        firstNonEmpty(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
-		Profile:              firstNonEmpty(getenv(envDaemonProfile), "local"),
+		DaemonVersion:        textutil.Default(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
+		Profile:              textutil.Default(getenv(envDaemonProfile), "local"),
 		ServerURL:            strings.TrimSpace(getenv(envServerURL)),
 		DeviceID:             deviceID,
 		DeviceSecret:         deviceSecret,
@@ -232,7 +232,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 func defaultAgentDaemonWorkdirRoot(userHome func() (string, error)) (string, error) {
 	home, err := userHome()
 	if err != nil {
-		return "", err
+		return "", daemonWrapf(ErrDaemonIO, "settings.default-workdir.user-home", err, "resolve user home")
 	}
 	root, err := hostintegration.DefaultAppDataRoot(hostintegration.AppDataRootInput{
 		Channel:  hostintegration.DistributionChannelDevLocal,
@@ -240,16 +240,9 @@ func defaultAgentDaemonWorkdirRoot(userHome func() (string, error)) (string, err
 		UserHome: home,
 	})
 	if err != nil {
-		return "", err
+		return "", daemonWrapf(ErrDaemonConfig, "settings.default-workdir.app-data-root", err, "resolve default app data root")
 	}
 	return root.WorkdirRoot(), nil
-}
-
-func firstNonEmpty(value, fallback string) string {
-	if trimmed := strings.TrimSpace(value); trimmed != "" {
-		return trimmed
-	}
-	return fallback
 }
 
 func defaultDaemonID(configuredDaemonID string, deviceID string) string {
@@ -269,7 +262,7 @@ func parseOptionalNonNegativeInt(raw, name string) (int, error) {
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil || n < 0 {
-		return 0, fmt.Errorf("%s must be a non-negative integer", name)
+		return 0, daemonWrapf(ErrDaemonConfig, "settings.parse-non-negative-int", err, "%s must be a non-negative integer", name)
 	}
 	return n, nil
 }
@@ -289,7 +282,7 @@ func parseOptionalPositiveDurationSeconds(raw, name string, fallback time.Durati
 	}
 	n, err := strconv.Atoi(raw)
 	if err != nil || n <= 0 {
-		return 0, fmt.Errorf("%s must be a positive integer", name)
+		return 0, daemonWrapf(ErrDaemonConfig, "settings.parse-positive-int", err, "%s must be a positive integer", name)
 	}
 	return time.Duration(n) * time.Second, nil
 }

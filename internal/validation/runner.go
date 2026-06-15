@@ -9,6 +9,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 const (
@@ -87,8 +89,8 @@ func RunCommand(ctx context.Context, req CommandRequest, now time.Time) (Command
 		Workdir:           workdir,
 		ExitCode:          exitCode,
 		Result:            result,
-		ValidationGate:    defaultString(req.ValidationGate, DefaultGate),
-		ProviderRunID:     providerRunID(defaultString(req.Provider, "local"), commandID),
+		ValidationGate:    textutil.Default(req.ValidationGate, DefaultGate),
+		ProviderRunID:     providerRunID(textutil.Default(req.Provider, "local"), commandID),
 		ProviderRunResult: result,
 		Summary:           summary,
 		StartedAt:         started.Format(time.RFC3339Nano),
@@ -133,13 +135,6 @@ func summarize(command string, exitCode int, output []byte, runErr error) string
 		return fmt.Sprintf("validation command exited %d: %s", exitCode, command)
 	}
 	return fmt.Sprintf("validation command exited %d: %s: %s", exitCode, command, trimmed)
-}
-
-func defaultString(value string, fallback string) string {
-	if strings.TrimSpace(value) == "" {
-		return fallback
-	}
-	return strings.TrimSpace(value)
 }
 
 func sanitizeID(value string) string {
