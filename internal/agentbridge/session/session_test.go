@@ -27,6 +27,7 @@ func (a *recordingAdapter) Name() string { return a.name }
 func (a *recordingAdapter) Detect(_ context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return agentbridge.DetectResult{Available: true}, nil
 }
+
 func (a *recordingAdapter) BuildStart(_ agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return a.startCmd, nil
 }
@@ -37,6 +38,7 @@ func (a *recordingAdapter) Translate(raw agentbridge.RawEvent) ([]agentbridge.Ev
 	}
 	return nil, nil, nil
 }
+
 func (a *recordingAdapter) BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
 	if a.inputFn != nil {
 		return a.inputFn(cmd)
@@ -57,10 +59,12 @@ func (p *recordingParser) FeedStdout(chunk []byte) ([]agentbridge.RawEvent, erro
 	p.stdoutChunks = append(p.stdoutChunks, append([]byte(nil), chunk...))
 	return []agentbridge.RawEvent{{Source: agentbridge.RawSourceStdout, Type: "chunk", Bytes: chunk}}, nil
 }
+
 func (p *recordingParser) FeedStderr(chunk []byte) ([]agentbridge.RawEvent, error) {
 	p.stderrChunks = append(p.stderrChunks, append([]byte(nil), chunk...))
 	return []agentbridge.RawEvent{{Source: agentbridge.RawSourceStderr, Type: "stderr-chunk", Bytes: chunk}}, nil
 }
+
 func (p *recordingParser) Close() ([]agentbridge.RawEvent, error) {
 	p.closed = true
 	return nil, nil

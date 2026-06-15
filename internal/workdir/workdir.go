@@ -33,6 +33,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -270,7 +271,10 @@ func (a *FSAdapter) Prepare(id TaskID) (Workspace, error) {
 		"run_id":       runID,
 		"created_at":   time.Now().UTC().Format(time.RFC3339Nano),
 	}
-	metaBytes, _ := json.Marshal(meta)
+	metaBytes, err := json.Marshal(meta)
+	if err != nil {
+		return Workspace{}, fmt.Errorf("workdir: marshal gc meta: %w", err)
+	}
 	if err := os.WriteFile(filepath.Join(ws.Root, ".gc_meta.json"), metaBytes, 0o644); err != nil {
 		return Workspace{}, fmt.Errorf("workdir: write gc meta: %w", err)
 	}
@@ -499,8 +503,7 @@ func renderProviderNativeConfigArtifacts(plan ProviderNativeConfigPlan) []native
 		}
 	}
 	for _, path := range plan.HookFiles {
-		switch path {
-		case ".riido/hooks/claude-audit-hook.sh":
+		if path == ".riido/hooks/claude-audit-hook.sh" {
 			artifacts = append(artifacts, nativeConfigArtifact{
 				Path:    path,
 				Content: []byte(claudeAuditHookScript()),
@@ -516,7 +519,7 @@ type ProviderConfigPlanOptions struct {
 	NativeConfigHomeMode string
 }
 
-func ResolveProviderConfigPlan(provider string, nativeHookMode string) (ProviderNativeConfigPlan, error) {
+func ResolveProviderConfigPlan(provider, nativeHookMode string) (ProviderNativeConfigPlan, error) {
 	return ResolveProviderConfigPlanWithOptions(provider, ProviderConfigPlanOptions{
 		NativeHookMode: nativeHookMode,
 	})
@@ -670,10 +673,8 @@ func safeJoin(root, rel string) (string, error) {
 	if clean == "." || clean == ".." || strings.HasPrefix(clean, ".."+string(os.PathSeparator)) {
 		return "", fmt.Errorf("workdir: relative path escapes root: %s", rel)
 	}
-	for _, part := range strings.Split(filepath.ToSlash(clean), "/") {
-		if part == ".." {
-			return "", fmt.Errorf("workdir: relative path escapes root: %s", rel)
-		}
+	if slices.Contains(strings.Split(filepath.ToSlash(clean), "/"), "..") {
+		return "", fmt.Errorf("workdir: relative path escapes root: %s", rel)
 	}
 	return filepath.Join(root, clean), nil
 }

@@ -1,0 +1,121 @@
+version: "2"
+run:
+  go: "1.26"
+  tests: true
+linters:
+  default: all
+  disable:
+    - depguard
+    - containedctx
+    - contextcheck
+    - dogsled
+    - dupl
+    - embeddedstructfieldcheck
+    - err113
+    - errname
+    - exhaustruct
+    - forbidigo
+    - forcetypeassert
+    - funlen
+    - funcorder
+    - gochecknoglobals
+    - gocognit
+    - goconst
+    - godoclint
+    - godox
+    - godot
+    - goheader
+    - gosec
+    - gomoddirectives
+    - gomodguard
+    - inamedparam
+    - interfacebloat
+    - intrange
+    - ireturn
+    - lll
+    - maintidx
+    - mnd
+    - modernize
+    - musttag
+    - nestif
+    - nilnil
+    - nlreturn
+    - noctx
+    - noinlineerr
+    - nonamedreturns
+    - paralleltest
+    - perfsprint
+    - prealloc
+    - recvcheck
+    - revive
+    - tagalign
+    - tagliatelle
+    - testpackage
+    - tparallel
+    - unparam
+    - usetesting
+    - varnamelen
+    - wrapcheck
+    - wsl
+    - wsl_v5
+  settings:
+    cyclop:
+      max-complexity: 150
+    dupl:
+      threshold: 150
+    exhaustive:
+      default-signifies-exhaustive: true
+    gocognit:
+      min-complexity: 35
+    gocyclo:
+      min-complexity: 150
+    maintidx:
+      under: 12
+    misspell:
+      locale: US
+      ignore-rules:
+        - cancelled
+        - cancelling
+        - Cancelled
+    nolintlint:
+      require-explanation: true
+      require-specific: true
+      allow-unused: false
+  exclusions:
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - linters:
+          - cyclop
+          - exhaustive
+          - errchkjson
+          - gocyclo
+          - gosec
+          - maintidx
+        path: _test\.go
+      - linters:
+          - gosec
+        path: ^tools/
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - gofumpt
+    - goimports
+  settings:
+    gofumpt:
+      extra-rules: true
+  exclusions:
+    paths:
+      - third_party$
+      - builtin$
+      - examples$

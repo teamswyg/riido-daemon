@@ -2,6 +2,7 @@ package scheduling
 
 import (
 	"fmt"
+	"slices"
 	"sort"
 	"strings"
 
@@ -68,35 +69,35 @@ type Eligibility struct {
 }
 
 // EvaluateCapability applies the C5 pre-submit scheduling gate.
-func EvaluateCapability(req TaskRequirements, cap RuntimeCapability) Eligibility {
+func EvaluateCapability(req TaskRequirements, candidate RuntimeCapability) Eligibility {
 	out := Eligibility{
 		Eligible:              true,
-		RuntimeID:             cap.RuntimeID,
-		CapabilityFingerprint: cap.CapabilityFingerprint,
+		RuntimeID:             candidate.RuntimeID,
+		CapabilityFingerprint: candidate.CapabilityFingerprint,
 	}
-	if req.Provider != "" && req.Provider != cap.Provider {
-		out.add("PROVIDER_MISMATCH", "", fmt.Sprintf("task provider %q does not match runtime provider %q", req.Provider, cap.Provider))
+	if req.Provider != "" && req.Provider != candidate.Provider {
+		out.add("PROVIDER_MISMATCH", "", fmt.Sprintf("task provider %q does not match runtime provider %q", req.Provider, candidate.Provider))
 	}
-	if !cap.Available {
-		out.add("PROVIDER_UNAVAILABLE", "", fmt.Sprintf("provider %q is unavailable", cap.Provider))
+	if !candidate.Available {
+		out.add("PROVIDER_UNAVAILABLE", "", fmt.Sprintf("provider %q is unavailable", candidate.Provider))
 	}
-	if cap.CompatibilityStatus == capability.CompatBlocked {
-		out.add("COMPATIBILITY_BLOCKED", "", fmt.Sprintf("provider %q compatibility is blocked", cap.Provider))
+	if candidate.CompatibilityStatus == capability.CompatBlocked {
+		out.add("COMPATIBILITY_BLOCKED", "", fmt.Sprintf("provider %q compatibility is blocked", candidate.Provider))
 	}
-	if cap.RequiresExperimentalOptIn && !req.AllowExperimentalRuntime {
-		out.add("EXPERIMENTAL_RUNTIME_REQUIRES_OPT_IN", "", fmt.Sprintf("provider %q requires allow_experimental_runtime", cap.Provider))
+	if candidate.RequiresExperimentalOptIn && !req.AllowExperimentalRuntime {
+		out.add("EXPERIMENTAL_RUNTIME_REQUIRES_OPT_IN", "", fmt.Sprintf("provider %q requires allow_experimental_runtime", candidate.Provider))
 	}
-	if cap.SlotLimit > 0 && cap.SlotsInUse >= cap.SlotLimit {
-		out.add("SLOT_EXHAUSTED", "", fmt.Sprintf("runtime %q has no free execution slots", cap.RuntimeID))
+	if candidate.SlotLimit > 0 && candidate.SlotsInUse >= candidate.SlotLimit {
+		out.add("SLOT_EXHAUSTED", "", fmt.Sprintf("runtime %q has no free execution slots", candidate.RuntimeID))
 	}
 	for _, surface := range NormalizeRequiredSurfaces(req.RequiredSurfaces) {
-		supported, known := supportsSurface(cap, surface)
+		supported, known := supportsSurface(candidate, surface)
 		if !known {
 			out.add("UNKNOWN_REQUIRED_SURFACE", surface, fmt.Sprintf("unknown required surface %q", surface))
 			continue
 		}
 		if !supported {
-			out.add("MISSING_REQUIRED_SURFACE", surface, fmt.Sprintf("provider %q does not support required surface %q", cap.Provider, surface))
+			out.add("MISSING_REQUIRED_SURFACE", surface, fmt.Sprintf("provider %q does not support required surface %q", candidate.Provider, surface))
 		}
 	}
 	return out
@@ -138,28 +139,28 @@ func NormalizeRequiredSurfaces(in []RequiredSurface) []RequiredSurface {
 		seen[normalized] = true
 		out = append(out, normalized)
 	}
-	sort.Slice(out, func(i, j int) bool { return out[i] < out[j] })
+	slices.Sort(out)
 	return out
 }
 
-func supportsSurface(cap RuntimeCapability, surface RequiredSurface) (bool, bool) {
+func supportsSurface(candidate RuntimeCapability, surface RequiredSurface) (bool, bool) {
 	switch surface {
 	case SurfaceStructuredEventStream:
-		return cap.SupportsStreaming, true
+		return candidate.SupportsStreaming, true
 	case SurfaceSessionResume:
-		return cap.SupportsResume, true
+		return candidate.SupportsResume, true
 	case SurfaceSystemPrompt:
-		return cap.SupportsSystem, true
+		return candidate.SupportsSystem, true
 	case SurfaceMaxTurns:
-		return cap.SupportsMaxTurns, true
+		return candidate.SupportsMaxTurns, true
 	case SurfaceMCP:
-		return cap.SupportsMCP, true
+		return candidate.SupportsMCP, true
 	case SurfaceToolHooks:
-		return cap.SupportsToolHooks, true
+		return candidate.SupportsToolHooks, true
 	case SurfaceUsage:
-		return cap.SupportsUsage, true
+		return candidate.SupportsUsage, true
 	case SurfaceWorktree:
-		return cap.SupportsWorktree, true
+		return candidate.SupportsWorktree, true
 	default:
 		return false, false
 	}

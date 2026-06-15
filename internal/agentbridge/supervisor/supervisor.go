@@ -528,7 +528,7 @@ func taskRequirements(req *bridge.TaskRequest) scheduling.TaskRequirements {
 		surfaces = append(surfaces, scheduling.RequiredSurface(surface))
 	}
 	if req.Metadata != nil {
-		for _, surface := range strings.Split(req.Metadata[MetadataRequiredSurfaces], ",") {
+		for surface := range strings.SplitSeq(req.Metadata[MetadataRequiredSurfaces], ",") {
 			surfaces = append(surfaces, scheduling.RequiredSurface(surface))
 		}
 	}

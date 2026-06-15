@@ -64,11 +64,11 @@ type Error struct {
 	cause    error
 }
 
-func New(sentinel Sentinel, op string, message string) error {
+func New(sentinel Sentinel, op, message string) error {
 	return &Error{sentinel: sentinel, op: op, message: message}
 }
 
-func Wrap(sentinel Sentinel, op string, message string, cause error) error {
+func Wrap(sentinel Sentinel, op, message string, cause error) error {
 	if cause == nil {
 		return New(sentinel, op, message)
 	}
@@ -158,15 +158,20 @@ func sentinelMatches(sentinel Sentinel, target error) bool {
 	if target == nil {
 		return false
 	}
-	switch t := target.(type) {
-	case Sentinel:
-		return sentinel == t
-	case *Sentinel:
-		return t != nil && sentinel == *t
-	case Classified:
-		return sentinel.Layer() == t.Layer() && sentinel.Kind() == t.Kind()
-	default:
-		return false
+	{
+		var t Sentinel
+		var t1 *Sentinel
+		var t2 Classified
+		switch {
+		case errors.As(target, &t):
+			return sentinel == t
+		case errors.As(target, &t1):
+			return t1 != nil && sentinel == *t1
+		case errors.As(target, &t2):
+			return sentinel.Layer() == t2.Layer() && sentinel.Kind() == t2.Kind()
+		default:
+			return false
+		}
 	}
 }
 

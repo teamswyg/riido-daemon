@@ -8,6 +8,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -207,7 +208,8 @@ func validateChannels(channels []channel) []string {
 		if len(item.ForbiddenSurfaces) == 0 {
 			problems = append(problems, fmt.Sprintf("channel %q forbidden_surfaces must not be empty", item.ID))
 		}
-		problems = append(problems, requireForbiddenSurfaces(item,
+		problems = append(problems, requireForbiddenSurfaces(
+			item,
 			"bundled-provider-cli",
 			"silent-provider-install",
 			"external-tcp-listener",
@@ -231,14 +233,16 @@ func validateDeveloperIDSurfaces(item channel) []string {
 		return nil
 	}
 	var problems []string
-	problems = append(problems, requireRuntimeContract(item,
+	problems = append(problems, requireRuntimeContract(
+		item,
 		"local-helper-broker",
 		"explicit-consent",
 		"unix-socket",
 		"user-application-support",
 		"self-managed",
 	)...)
-	problems = append(problems, requireRequiredSurfaces(item,
+	problems = append(problems, requireRequiredSurfaces(
+		item,
 		"developer-id-signing",
 		"notarization",
 		"user-consented-background-helper",
@@ -252,14 +256,16 @@ func validateMacAppStoreSurfaces(item channel) []string {
 		return nil
 	}
 	var problems []string
-	problems = append(problems, requireRuntimeContract(item,
+	problems = append(problems, requireRuntimeContract(
+		item,
 		"sandboxed-login-item-helper",
 		"explicit-consent-and-store-review",
 		"unix-socket",
 		"app-group-or-sandbox-container",
 		"app-store-managed",
 	)...)
-	problems = append(problems, requireRequiredSurfaces(item,
+	problems = append(problems, requireRequiredSurfaces(
+		item,
 		"app-sandbox",
 		"app-group-or-container-ipc",
 		"security-scoped-workspace-grant",
@@ -271,7 +277,8 @@ func validateMacAppStoreSurfaces(item channel) []string {
 		"review-demo-mode",
 	)...)
 	problems = append(problems, requireRequiredSurfaces(item, storeReviewSubmissionRequiredSurfaces...)...)
-	problems = append(problems, requireForbiddenSurfaces(item,
+	problems = append(problems, requireForbiddenSurfaces(
+		item,
 		"direct-launchagent-install",
 		"self-updater",
 		"third-party-installer",
@@ -286,14 +293,16 @@ func validateMSIXSurfaces(item channel) []string {
 	switch item.ID {
 	case "msix-sideload":
 		var problems []string
-		problems = append(problems, requireRuntimeContract(item,
+		problems = append(problems, requireRuntimeContract(
+			item,
 			"msix-packaged-helper-broker",
 			"explicit-consent",
 			"windows-named-pipe",
 			"windows-package-local-data",
 			"self-managed",
 		)...)
-		problems = append(problems, requireRequiredSurfaces(item,
+		problems = append(problems, requireRequiredSurfaces(
+			item,
 			"signed-msix-package",
 			"package-identity",
 			"windows-desktop-target-device-family",
@@ -301,20 +310,23 @@ func validateMSIXSurfaces(item channel) []string {
 			"package-local-data",
 			"user-consented-background-helper",
 		)...)
-		problems = append(problems, requireForbiddenSurfaces(item,
+		problems = append(problems, requireForbiddenSurfaces(
+			item,
 			"windows-service-default",
 		)...)
 		return problems
 	case "msix-store":
 		var problems []string
-		problems = append(problems, requireRuntimeContract(item,
+		problems = append(problems, requireRuntimeContract(
+			item,
 			"msix-packaged-full-trust-helper-tray",
 			"explicit-consent-and-store-review",
 			"windows-named-pipe",
 			"windows-package-local-data",
 			"store-managed",
 		)...)
-		problems = append(problems, requireRequiredSurfaces(item,
+		problems = append(problems, requireRequiredSurfaces(
+			item,
 			"package-identity",
 			"windows-desktop-target-device-family",
 			"named-pipe-local-ipc",
@@ -326,7 +338,8 @@ func validateMSIXSurfaces(item channel) []string {
 			"privacy-policy",
 		)...)
 		problems = append(problems, requireRequiredSurfaces(item, storeReviewSubmissionRequiredSurfaces...)...)
-		problems = append(problems, requireForbiddenSurfaces(item,
+		problems = append(problems, requireForbiddenSurfaces(
+			item,
 			"windows-service-default",
 			"self-updater",
 		)...)
@@ -415,7 +428,7 @@ func validateRequiredNoticeTerms(repoRoot string, terms []string) []string {
 	return problems
 }
 
-func scanArtifactRoots(repoRoot string, roots []string, providerNames []string) []string {
+func scanArtifactRoots(repoRoot string, roots, providerNames []string) []string {
 	var problems []string
 	for _, root := range roots {
 		path := resolvePath(repoRoot, root)
@@ -483,12 +496,7 @@ func hasHardcodedUserPath(path string) bool {
 }
 
 func contains(items []string, wanted string) bool {
-	for _, item := range items {
-		if item == wanted {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(items, wanted)
 }
 
 func resolvePath(repoRoot, path string) string {

@@ -87,8 +87,8 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		d.observeEvents(events)
 		return events, cmds, err
 	}
-	if strings.HasPrefix(raw.Type, "notification:") {
-		method := strings.TrimPrefix(raw.Type, "notification:")
+	if after, ok := strings.CutPrefix(raw.Type, "notification:"); ok {
+		method := after
 		if method == "error" {
 			errText := codexNotificationErrorMessage(params(raw))
 			d.recordRuntimeError(errText)
@@ -162,6 +162,7 @@ func (d *protocolDriver) observeEvents(events []agentbridge.Event) {
 			if strings.TrimSpace(ev.Result.Output) != "" {
 				d.sawAssistantOutput = true
 			}
+		default:
 		}
 	}
 }

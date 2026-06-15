@@ -441,7 +441,7 @@ func (a *Actor) handleSubmit(
 	inFlight[msg.req.ID] = task
 
 	// Watcher uses Done() so we don't consume Result.
-	go func(id string, doneCh <-chan struct{}, stopped <-chan struct{}) {
+	go func(id string, doneCh, stopped <-chan struct{}) {
 		select {
 		case <-doneCh:
 		case <-stopped:

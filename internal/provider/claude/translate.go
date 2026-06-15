@@ -24,6 +24,7 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 			Kind: agentbridge.EventLog,
 			Text: string(raw.Bytes),
 		}}, nil, nil
+	case agentbridge.RawSourceStdout, agentbridge.RawSourceClose:
 	}
 
 	switch raw.Type {
@@ -148,8 +149,7 @@ func translateUserMessage(raw agentbridge.RawEvent) []agentbridge.Event {
 
 func translateControlRequest(raw agentbridge.RawEvent) []agentbridge.Event {
 	request, _ := raw.Payload["request"].(map[string]any)
-	switch stringField(request, "subtype") {
-	case "permission_request":
+	if stringField(request, "subtype") == "permission_request" {
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolApprovalNeeded,
 			Tool: agentbridge.ToolRef{

@@ -124,6 +124,7 @@ func (bridgeClaudeAdapter) Name() string { return claude.Name }
 func (bridgeClaudeAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return claude.Detect(ctx, env)
 }
+
 func (bridgeClaudeAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return claude.BuildStart(req, claude.StartOptions{PermissionMode: claude.PermissionModeApproval})
 }
@@ -149,6 +150,7 @@ func (bridgeCodexAdapter) Name() string { return codex.Name }
 func (bridgeCodexAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return codex.Detect(ctx, env)
 }
+
 func (bridgeCodexAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return codex.BuildStart(req, codex.StartOptions{})
 }
@@ -170,6 +172,7 @@ func (bridgeOpenClawAdapter) Name() string { return openclaw.Name }
 func (bridgeOpenClawAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return openclaw.Detect(ctx, env)
 }
+
 func (bridgeOpenClawAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return openclaw.BuildStart(req, openclaw.StartOptions{})
 }
@@ -185,6 +188,7 @@ func (bridgeCursorAdapter) Name() string { return cursor.Name }
 func (bridgeCursorAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return cursor.Detect(ctx, env)
 }
+
 func (bridgeCursorAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return cursor.BuildStart(req, cursor.StartOptions{})
 }

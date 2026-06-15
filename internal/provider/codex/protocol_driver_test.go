@@ -196,7 +196,8 @@ func TestCodexProtocolDriverApprovalRequestTranslatesToApprovalEvent(t *testing.
 	_ = d.OnStart(context.Background(), io)
 	_ = io.next(t, time.Second)
 
-	events, _, err := d.OnRaw(context.Background(),
+	events, _, err := d.OnRaw(
+		context.Background(),
 		makeServerRequest(42, "approve_command", map[string]any{"id": "cmd-1", "command": "ls"}),
 		io,
 	)
@@ -219,7 +220,8 @@ func TestCodexProtocolDriverTurnCompletedReturnsResult(t *testing.T) {
 	_ = d.OnStart(context.Background(), io)
 	_ = io.next(t, time.Second)
 
-	events, _, err := d.OnRaw(context.Background(),
+	events, _, err := d.OnRaw(
+		context.Background(),
 		makeNotification("turn_completed", map[string]any{"output": "all done"}),
 		io,
 	)
@@ -269,7 +271,8 @@ func TestCodexProtocolDriverErrorNotificationThenEmptyCompletionFails(t *testing
 	_ = d.OnStart(context.Background(), io)
 	_ = io.next(t, time.Second)
 
-	events, _, err := d.OnRaw(context.Background(),
+	events, _, err := d.OnRaw(
+		context.Background(),
 		makeNotification("error", map[string]any{"message": "failed to connect to websocket: 401 Unauthorized"}),
 		io,
 	)
@@ -280,7 +283,8 @@ func TestCodexProtocolDriverErrorNotificationThenEmptyCompletionFails(t *testing
 		t.Fatalf("expected non-terminal error event first, got %+v", events)
 	}
 
-	events, _, err = d.OnRaw(context.Background(),
+	events, _, err = d.OnRaw(
+		context.Background(),
 		makeNotification("turn_completed", map[string]any{"output": ""}),
 		io,
 	)
@@ -302,11 +306,13 @@ func TestCodexProtocolDriverErrorNotificationCanRecoverWithText(t *testing.T) {
 	_ = d.OnStart(context.Background(), io)
 	_ = io.next(t, time.Second)
 
-	_, _, _ = d.OnRaw(context.Background(),
+	_, _, _ = d.OnRaw(
+		context.Background(),
 		makeNotification("error", map[string]any{"message": "temporary stream disconnect"}),
 		io,
 	)
-	events, _, err := d.OnRaw(context.Background(),
+	events, _, err := d.OnRaw(
+		context.Background(),
 		makeNotification("agent_message", map[string]any{"text": "작업 완료"}),
 		io,
 	)
@@ -317,7 +323,8 @@ func TestCodexProtocolDriverErrorNotificationCanRecoverWithText(t *testing.T) {
 		t.Fatalf("expected text delta, got %+v", events)
 	}
 
-	events, _, err = d.OnRaw(context.Background(),
+	events, _, err = d.OnRaw(
+		context.Background(),
 		makeNotification("turn_completed", map[string]any{"output": ""}),
 		io,
 	)
@@ -336,7 +343,8 @@ func TestCodexProtocolDriverProcessExitAfterOnlyRuntimeErrorFails(t *testing.T) 
 	_ = d.OnStart(context.Background(), io)
 	_ = io.next(t, time.Second)
 
-	_, _, _ = d.OnRaw(context.Background(),
+	_, _, _ = d.OnRaw(
+		context.Background(),
 		makeNotification("error", map[string]any{"error": map[string]any{"message": "provider auth failed"}}),
 		io,
 	)
@@ -367,7 +375,8 @@ func TestCodexProtocolDriverProcessExitFailsPendingRequests(t *testing.T) {
 	_ = io.next(t, time.Second) // initialized
 	_ = io.next(t, time.Second) // thread/start → pending id=2
 
-	exitEvents, err := d.OnProcessExit(context.Background(),
+	exitEvents, err := d.OnProcessExit(
+		context.Background(),
 		agentbridge.ProcessExitStatus{Code: 137}, io,
 	)
 	if err != nil {
@@ -396,5 +405,5 @@ func TestCodexProtocolDriverImplementsSessionInterface(t *testing.T) {
 		t.Fatal("driver is nil")
 	}
 	// Compile-time check: assignable to agentbridge.ProtocolDriver.
-	var _ agentbridge.ProtocolDriver = d
+	_ = d
 }

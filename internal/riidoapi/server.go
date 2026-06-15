@@ -26,8 +26,10 @@ import (
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
-const StatusSchemaVersion = "riido-api-status.v1"
-const ReviewDemoSchemaVersion = "riido-api-review-demo.v1"
+const (
+	StatusSchemaVersion     = "riido-api-status.v1"
+	ReviewDemoSchemaVersion = "riido-api-review-demo.v1"
+)
 
 type LocalTransport string
 
@@ -504,7 +506,7 @@ func (s Server) applyTransition(params json.RawMessage) (TransitionResponse, err
 	}, nil
 }
 
-func (c Client) Request(ctx context.Context, method string, params any, out any) error {
+func (c Client) Request(ctx context.Context, method string, params, out any) error {
 	transport := normalizeLocalTransport(c.Transport)
 	if c.SocketPath == "" {
 		return errors.New("riido API socket path is empty")
@@ -608,7 +610,7 @@ func findTask(db taskdb.TaskDB, id string) (taskdb.TaskRecord, bool) {
 	return taskdb.TaskRecord{}, false
 }
 
-func validationProviderForTask(db taskdb.TaskDB, taskID string, requested string) (string, error) {
+func validationProviderForTask(db taskdb.TaskDB, taskID, requested string) (string, error) {
 	taskRecord, ok := findTask(db, taskID)
 	if !ok {
 		return "", fmt.Errorf("task %s not found", taskID)
@@ -629,7 +631,7 @@ func validationProviderForTask(db taskdb.TaskDB, taskID string, requested string
 	return provider, nil
 }
 
-func validateDecisionLLMForTask(db taskdb.TaskDB, taskID string, requested string) error {
+func validateDecisionLLMForTask(db taskdb.TaskDB, taskID, requested string) error {
 	requested = strings.TrimSpace(requested)
 	if requested == "" {
 		return nil

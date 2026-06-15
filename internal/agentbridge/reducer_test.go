@@ -177,7 +177,7 @@ func TestReduceToolApprovalDefaultRequiresHuman(t *testing.T) {
 func TestReduceToolApprovalExplicitApprover(t *testing.T) {
 	s := NewState()
 	approver := AutoApprover(func(tool ToolRef) bool { return tool.Kind == "read" })
-	s, cmds := Reduce(s, Event{Kind: EventToolApprovalNeeded, Tool: ToolRef{ID: "t1", ProviderRequestID: "r1", Kind: "read"}}, approver)
+	_, cmds := Reduce(s, Event{Kind: EventToolApprovalNeeded, Tool: ToolRef{ID: "t1", ProviderRequestID: "r1", Kind: "read"}}, approver)
 	if len(cmds) != 1 || cmds[0].Kind != CommandApproveTool || cmds[0].ToolID != "t1" || cmds[0].ProviderRequestID != "r1" {
 		t.Fatalf("expected approve t1, got %+v", cmds)
 	}

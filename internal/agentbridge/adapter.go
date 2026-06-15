@@ -127,7 +127,7 @@ const (
 //
 // Both the bare form (--flag value) and the equals form (--flag=value)
 // are recognized.
-func FilterBlockedArgs(custom []string, blocked []string) (kept []string, dropped []string) {
+func FilterBlockedArgs(custom, blocked []string) (kept, dropped []string) {
 	blockedSet := make(map[string]struct{}, len(blocked))
 	for _, b := range blocked {
 		blockedSet[b] = struct{}{}

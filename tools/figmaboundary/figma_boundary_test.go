@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -273,10 +274,8 @@ func requireContains(t *testing.T, body, want string) {
 
 func requireSliceContains(t *testing.T, items []string, want string) {
 	t.Helper()
-	for _, item := range items {
-		if item == want {
-			return
-		}
+	if slices.Contains(items, want) {
+		return
 	}
 	t.Fatalf("missing %q in %#v", want, items)
 }

@@ -65,17 +65,17 @@ func TestEvaluateCapabilityMissingRequiredWorktreeSurface(t *testing.T) {
 }
 
 func TestEvaluateCapabilityExperimentalRequiresOptIn(t *testing.T) {
-	cap := RuntimeCapability{
+	candidate := RuntimeCapability{
 		Provider:                  "codex",
 		Available:                 true,
 		CompatibilityStatus:       capability.CompatExperimental,
 		RequiresExperimentalOptIn: true,
 	}
-	withoutOptIn := EvaluateCapability(TaskRequirements{Provider: "codex"}, cap)
+	withoutOptIn := EvaluateCapability(TaskRequirements{Provider: "codex"}, candidate)
 	if withoutOptIn.Eligible {
 		t.Fatal("experimental runtime must require explicit opt-in")
 	}
-	withOptIn := EvaluateCapability(TaskRequirements{Provider: "codex", AllowExperimentalRuntime: true}, cap)
+	withOptIn := EvaluateCapability(TaskRequirements{Provider: "codex", AllowExperimentalRuntime: true}, candidate)
 	if !withOptIn.Eligible {
 		t.Fatalf("opt-in should allow experimental runtime: %+v", withOptIn)
 	}

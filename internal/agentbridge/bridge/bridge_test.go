@@ -23,6 +23,7 @@ func (a *stubAdapter) Name() string { return a.name }
 func (a *stubAdapter) Detect(_ context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return a.detected, nil
 }
+
 func (a *stubAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	a.seenStart = req
 	if a.startCommand.Executable != "" {

@@ -112,7 +112,7 @@ func loadRuntimeLeaseRegistryOrEmpty(path string) (RuntimeLeaseRegistry, error) 
 	return registry, nil
 }
 
-func saveRuntimeLeaseRegistry(path string, taskDBPath string, registry RuntimeLeaseRegistry, now time.Time) error {
+func saveRuntimeLeaseRegistry(path, taskDBPath string, registry RuntimeLeaseRegistry, now time.Time) error {
 	registry.SchemaVersion = RuntimeLeaseRegistrySchemaVersion
 	registry.TaskDBPath = taskDBPath
 	registry.UpdatedAt = now.UTC()
@@ -125,7 +125,7 @@ func saveRuntimeLeaseRegistry(path string, taskDBPath string, registry RuntimeLe
 	return writeJSONAtomic(path, registry)
 }
 
-func acquireRuntimeLease(registry RuntimeLeaseRegistry, taskID string, runtimeID string, capabilityFingerprint string, now time.Time, ttl time.Duration) (RuntimeLeaseRegistry, RuntimeLeaseRecord, bool) {
+func acquireRuntimeLease(registry RuntimeLeaseRegistry, taskID, runtimeID, capabilityFingerprint string, now time.Time, ttl time.Duration) (RuntimeLeaseRegistry, RuntimeLeaseRecord, bool) {
 	if ttl <= 0 {
 		ttl = defaultRuntimeLeaseTTL
 	}
@@ -240,7 +240,7 @@ func reconcileExpiredRuntimeLeases(db taskdb.TaskDB, registry RuntimeLeaseRegist
 			db = updated
 			registry, _ = releaseRuntimeLease(registry, lease.TaskID, now)
 			changed = true
-		case task.TaskStateCodeQueued, task.TaskStateCodeCreated, task.TaskStateCodeBlocked, task.TaskStateCodeValidating, task.TaskStateCodePatchReady, task.TaskStateCodeHumanReview, task.TaskStateCodeReworkQueued, task.TaskStateCodeCompleted, task.TaskStateCodeFailed, task.TaskStateCodeCancelled, task.TaskStateCodeTimedOut:
+		case task.TaskStateCodeUnknown, task.TaskStateCodeQueued, task.TaskStateCodeCreated, task.TaskStateCodeBlocked, task.TaskStateCodeValidating, task.TaskStateCodePatchReady, task.TaskStateCodeHumanReview, task.TaskStateCodeReworkQueued, task.TaskStateCodeCompleted, task.TaskStateCodeFailed, task.TaskStateCodeCancelled, task.TaskStateCodeTimedOut:
 			var released bool
 			registry, released = releaseRuntimeLease(registry, lease.TaskID, now)
 			changed = changed || released

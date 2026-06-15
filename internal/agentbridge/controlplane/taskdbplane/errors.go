@@ -13,7 +13,7 @@ var (
 	ErrTaskDBPlanePersistence = failure.NewSentinel(taskDBPlaneErrorLayer, "persistence")
 )
 
-func planeErrorf(kind failure.Sentinel, op string, format string, args ...any) error {
+func planeErrorf(kind failure.Sentinel, op, format string, args ...any) error {
 	return failure.New(kind, op, failure.Format(format, args...))
 }
 

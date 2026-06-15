@@ -837,7 +837,7 @@ func newTestPlane(t *testing.T, path string) *Plane {
 	return plane
 }
 
-func registerRuntimeForProvider(t *testing.T, plane *Plane, runtimeID string, provider string, slotLimit int, slotsInUse int) {
+func registerRuntimeForProvider(t *testing.T, plane *Plane, runtimeID, provider string, slotLimit, slotsInUse int) {
 	t.Helper()
 	prefix := "provider." + provider + "."
 	if err := plane.RegisterRuntime(context.Background(), controlplane.RuntimeRegistration{

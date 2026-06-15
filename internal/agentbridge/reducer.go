@@ -136,6 +136,7 @@ func Reduce(s State, e Event, approver AutoApprover) (State, []Command) {
 		}
 		phase := StateCompleted
 		switch status {
+		case ResultCompleted:
 		case ResultFailed, ResultBlocked, ResultAborted:
 			phase = StateFailed
 		case ResultCancelled:

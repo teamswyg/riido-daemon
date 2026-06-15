@@ -9,6 +9,7 @@ package taskdbplane
 
 import (
 	"context"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -386,7 +387,7 @@ func claimCandidates(db taskdb.TaskDB) []taskdb.TaskRecord {
 	return out
 }
 
-func taskRequestFromRecord(path string, record taskdb.TaskRecord, provider string, prompt string, lease RuntimeLeaseRecord) bridge.TaskRequest {
+func taskRequestFromRecord(path string, record taskdb.TaskRecord, provider, prompt string, lease RuntimeLeaseRecord) bridge.TaskRequest {
 	meta := map[string]string{
 		metadataTaskDB: path,
 	}
@@ -503,7 +504,7 @@ func applyTerminalResult(db taskdb.TaskDB, taskID string, res agentbridge.Result
 	}
 }
 
-func applyTransition(db taskdb.TaskDB, record taskdb.TaskRecord, to task.TaskState, event ir.EventType, reason string, commandSuffix string, now time.Time) (taskdb.TaskDB, error) {
+func applyTransition(db taskdb.TaskDB, record taskdb.TaskRecord, to task.TaskState, event ir.EventType, reason, commandSuffix string, now time.Time) (taskdb.TaskDB, error) {
 	approvalID := approvalIDForTask(db, record.ID)
 	if requiresApproval(db, record) && approvalID == "" {
 		return taskdb.TaskDB{}, planeErrorf(ErrTaskDBPlaneTaskState, "apply-transition", "task %s requires approval_id before %s", record.ID, event)
@@ -523,7 +524,7 @@ func applyTransition(db taskdb.TaskDB, record taskdb.TaskRecord, to task.TaskSta
 	return updated, nil
 }
 
-func guardFor(db taskdb.TaskDB, record taskdb.TaskRecord, suffix string, approvalID string) taskdb.TaskMutationGuardInput {
+func guardFor(db taskdb.TaskDB, record taskdb.TaskRecord, suffix, approvalID string) taskdb.TaskMutationGuardInput {
 	return taskdb.TaskMutationGuardInput{
 		CommandID:   commandIDPrefix + record.ID + ":" + suffix,
 		Provider:    providerFor(db, record),
@@ -558,8 +559,7 @@ func requiresApproval(db taskdb.TaskDB, record taskdb.TaskRecord) bool {
 }
 
 func approvalIDForTask(db taskdb.TaskDB, taskID string) string {
-	for i := len(db.CommandReceipts) - 1; i >= 0; i-- {
-		receipt := db.CommandReceipts[i]
+	for _, receipt := range slices.Backward(db.CommandReceipts) {
 		if receipt.TaskID == taskID && strings.TrimSpace(receipt.ApprovalID) != "" {
 			return strings.TrimSpace(receipt.ApprovalID)
 		}
@@ -579,12 +579,7 @@ func providerAvailable(db taskdb.TaskDB, provider string) bool {
 	return false
 }
 
-func (p *Plane) runtimeSelectedForTask(provider string, runtimeID string) bool {
-	_, ok := p.runtimeSelectionForTask(provider, runtimeID)
-	return ok
-}
-
-func (p *Plane) runtimeSelectionForTask(provider string, runtimeID string) (scheduling.RuntimeSelection, bool) {
+func (p *Plane) runtimeSelectionForTask(provider, runtimeID string) (scheduling.RuntimeSelection, bool) {
 	if len(p.runtimes) == 0 {
 		return scheduling.RuntimeSelection{Runtime: scheduling.RuntimeCapability{
 			RuntimeID: capability.RuntimeID(runtimeID),

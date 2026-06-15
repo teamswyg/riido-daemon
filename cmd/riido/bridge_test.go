@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -171,7 +172,7 @@ func TestCodexDaemonAdapterDoesNotDeriveDefaultCodexHomeFromHome(t *testing.T) {
 	}
 }
 
-func assertBridgeArgPair(t *testing.T, args []string, key string, value string) {
+func assertBridgeArgPair(t *testing.T, args []string, key, value string) {
 	t.Helper()
 	for i := 0; i+1 < len(args); i++ {
 		if args[i] == key && args[i+1] == value {
@@ -182,12 +183,7 @@ func assertBridgeArgPair(t *testing.T, args []string, key string, value string) 
 }
 
 func containsEnv(env []string, want string) bool {
-	for _, value := range env {
-		if value == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(env, want)
 }
 
 func TestBridgeUsageOnUnknownSubcommand(t *testing.T) {

@@ -3,6 +3,7 @@
 package lock
 
 import (
+	"errors"
 	"os"
 	"syscall"
 )
@@ -12,7 +13,7 @@ func tryLockFile(file *os.File, _ string) error {
 }
 
 func isLockBusy(err error) bool {
-	return err == syscall.EWOULDBLOCK || err == syscall.EAGAIN
+	return errors.Is(err, syscall.EWOULDBLOCK) || errors.Is(err, syscall.EAGAIN)
 }
 
 func unlockFile(file *os.File, _ string) error {

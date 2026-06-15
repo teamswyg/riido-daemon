@@ -105,7 +105,7 @@ func ClassifyToolUseSurface(tool agentbridge.ToolRef) (policy.ToolUseSurface, bo
 	return "", false
 }
 
-func matchesAny(kind string, name string, candidates ...string) bool {
+func matchesAny(kind, name string, candidates ...string) bool {
 	for _, candidate := range candidates {
 		normalized := normalizeToolToken(candidate)
 		if kind == normalized || name == normalized {
@@ -196,11 +196,7 @@ func commandContainsNetworkEgress(command string) bool {
 
 func commandTouchesProtectedPath(command string) bool {
 	normalized := strings.ToLower(command)
-	if !(strings.Contains(normalized, ".git") ||
-		strings.Contains(normalized, ".vscode") ||
-		strings.Contains(normalized, ".idea") ||
-		strings.Contains(normalized, ".husky") ||
-		strings.Contains(normalized, ".claude")) {
+	if !strings.Contains(normalized, ".git") && !strings.Contains(normalized, ".vscode") && !strings.Contains(normalized, ".idea") && !strings.Contains(normalized, ".husky") && !strings.Contains(normalized, ".claude") {
 		return false
 	}
 	for _, marker := range []string{">", " rm ", "rm -", " mv ", " cp ", "tee ", "sed -i", "perl -pi", "chmod ", "chown "} {

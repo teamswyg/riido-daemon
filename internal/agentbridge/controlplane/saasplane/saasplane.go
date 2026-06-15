@@ -619,7 +619,7 @@ func (p *Plane) postAgentEvent(ctx context.Context, assignment assignmentcontrac
 	return out, err
 }
 
-func (p *Plane) postJSON(ctx context.Context, path string, in any, out any) error {
+func (p *Plane) postJSON(ctx context.Context, path string, in, out any) error {
 	ctx, cancel := context.WithTimeout(ctx, p.cfg.RequestTimeout)
 	defer cancel()
 	body, err := json.Marshal(in)
@@ -632,7 +632,7 @@ func (p *Plane) postJSON(ctx context.Context, path string, in any, out any) erro
 	}
 	req.Header.Set("Content-Type", "application/json")
 	if p.cfg.DeviceSecret != "" {
-		req.Header.Set("X-Riido-Device-ID", p.cfg.DeviceID)
+		req.Header.Set("X-Riido-Device-Id", p.cfg.DeviceID)
 		req.Header.Set("X-Riido-Device-Secret", p.cfg.DeviceSecret)
 	}
 	if p.cfg.BearerToken != "" {
@@ -661,7 +661,7 @@ func (p *Plane) getJSON(ctx context.Context, path string, out any) error {
 		return err
 	}
 	if p.cfg.DeviceSecret != "" {
-		req.Header.Set("X-Riido-Device-ID", p.cfg.DeviceID)
+		req.Header.Set("X-Riido-Device-Id", p.cfg.DeviceID)
 		req.Header.Set("X-Riido-Device-Secret", p.cfg.DeviceSecret)
 	}
 	if p.cfg.BearerToken != "" {

@@ -282,7 +282,7 @@ func TestTranslateCurrentFullResultShape(t *testing.T) {
 			saw.result = ev.Result.Status == agentbridge.ResultCompleted && ev.Result.Output == "ok"
 		}
 	}
-	if !(saw.session && saw.usage && saw.text && saw.result) {
+	if !saw.session || !saw.usage || !saw.text || !saw.result {
 		t.Fatalf("current full_result shape coverage gap: %+v events=%+v", saw, evs)
 	}
 }

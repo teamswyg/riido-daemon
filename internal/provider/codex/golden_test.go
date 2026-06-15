@@ -84,7 +84,7 @@ func TestGoldenNormalRPC(t *testing.T) {
 			}
 		}
 	}
-	if !(saw.session && saw.lifecycle && saw.text && saw.reasoning && saw.toolStart && saw.toolDone && saw.usage && saw.result) {
+	if !saw.session || !saw.lifecycle || !saw.text || !saw.reasoning || !saw.toolStart || !saw.toolDone || !saw.usage || !saw.result {
 		t.Fatalf("normal_rpc coverage gap: %+v", saw)
 	}
 }

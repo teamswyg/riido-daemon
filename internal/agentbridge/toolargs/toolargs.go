@@ -5,6 +5,7 @@ package toolargs
 
 import (
 	"fmt"
+	"maps"
 	"sort"
 	"strings"
 
@@ -58,9 +59,7 @@ func Clone(args map[string]string) map[string]string {
 		return nil
 	}
 	out := make(map[string]string, len(args))
-	for key, value := range args {
-		out[key] = value
-	}
+	maps.Copy(out, args)
 	return out
 }
 
@@ -164,7 +163,7 @@ func flatten(out map[string]string, prefix string, value any, depth int) {
 	}
 }
 
-func add(out map[string]string, key string, value string) {
+func add(out map[string]string, key, value string) {
 	key = strings.TrimSpace(key)
 	if key == "" || len(out) >= maxArgs {
 		return
@@ -177,7 +176,7 @@ func add(out map[string]string, key string, value string) {
 	out[key] = truncate(value)
 }
 
-func joinKey(prefix string, key string) string {
+func joinKey(prefix, key string) string {
 	key = strings.TrimSpace(key)
 	if key == "" {
 		return prefix

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -170,7 +171,7 @@ func assertWorktreeProvider(t *testing.T, row providerEvidence) {
 	}
 }
 
-func assertCodexFullAccessHarness(t *testing.T, row providerEvidence, docText string, securityText string, runtimeText string, migrationText string) {
+func assertCodexFullAccessHarness(t *testing.T, row providerEvidence, docText, securityText, runtimeText, migrationText string) {
 	t.Helper()
 	if row.Provider != "codex" {
 		t.Fatalf("Codex harness assertion called with provider %q", row.Provider)
@@ -209,7 +210,7 @@ func assertCodexFullAccessHarness(t *testing.T, row providerEvidence, docText st
 	}
 }
 
-func assertOpenClawLimits(t *testing.T, row providerEvidence, docText string, runtimeText string) {
+func assertOpenClawLimits(t *testing.T, row providerEvidence, docText, runtimeText string) {
 	t.Helper()
 	if row.WorktreeSupport != "unsupported" {
 		t.Fatalf("OpenClaw worktree_support = %q, want unsupported", row.WorktreeSupport)
@@ -255,12 +256,7 @@ func assertOpenClawLimits(t *testing.T, row providerEvidence, docText string, ru
 }
 
 func hasString(items []string, want string) bool {
-	for _, item := range items {
-		if item == want {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(items, want)
 }
 
 func hasAny(items []string, wants ...string) bool {

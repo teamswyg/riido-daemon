@@ -249,24 +249,21 @@ func (p *TelemetryParser) Feed(text string) []Event {
 			p.buf = p.buf[start:]
 		}
 		afterStart := p.buf[len(telemetryLogStart):]
-		end := strings.Index(afterStart, telemetryLogEnd)
-		if end < 0 {
+		before, after, ok := strings.Cut(afterStart, telemetryLogEnd)
+		if !ok {
 			return out
 		}
-		message := strings.TrimSpace(afterStart[:end])
+		message := strings.TrimSpace(before)
 		if event, ok := progressEventFromTelemetryMessage(message); ok {
 			out = append(out, event)
 		}
-		p.buf = afterStart[end+len(telemetryLogEnd):]
+		p.buf = after
 	}
 }
 
 func suffixThatCanStartTag(s string) string {
-	max := len(telemetryLogStart) - 1
-	if len(s) < max {
-		max = len(s)
-	}
-	for n := max; n > 0; n-- {
+	limit := min(len(s), len(telemetryLogStart)-1)
+	for n := limit; n > 0; n-- {
 		if strings.HasSuffix(s, telemetryLogStart[:n]) {
 			return s[len(s)-n:]
 		}

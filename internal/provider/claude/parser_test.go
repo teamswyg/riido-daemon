@@ -59,7 +59,8 @@ func TestParserMultipleLinesInOneChunk(t *testing.T) {
 // A line split across chunks must produce one event after the newline arrives.
 func TestParserPartialLineAcrossChunks(t *testing.T) {
 	p := NewParser()
-	raws := feedStdoutAll(t, p,
+	raws := feedStdoutAll(
+		t, p,
 		`{"type":"sys`,
 		`tem","session_id":"x"}`+"\n",
 	)

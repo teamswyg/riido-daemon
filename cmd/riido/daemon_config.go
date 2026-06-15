@@ -75,7 +75,7 @@ func loadDaemonSettingsFromEnv(getenv func(string) string, hostname func() (stri
 	return loadDaemonSettingsFromEnvWithHome(getenv, hostname, os.UserHomeDir)
 }
 
-func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func() (string, error), userHome func() (string, error)) (daemonSettings, error) {
+func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, userHome func() (string, error)) (daemonSettings, error) {
 	deviceName := strings.TrimSpace(getenv(envDeviceName))
 	if deviceName == "" {
 		if host, err := hostname(); err == nil {
@@ -245,7 +245,7 @@ func defaultAgentDaemonWorkdirRoot(userHome func() (string, error)) (string, err
 	return root.WorkdirRoot(), nil
 }
 
-func defaultDaemonID(configuredDaemonID string, deviceID string) string {
+func defaultDaemonID(configuredDaemonID, deviceID string) string {
 	if daemonID := strings.TrimSpace(configuredDaemonID); daemonID != "" {
 		return daemonID
 	}

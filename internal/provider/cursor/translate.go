@@ -16,6 +16,7 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 	switch raw.Source {
 	case agentbridge.RawSourceStderr:
 		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: string(raw.Bytes)}}, nil, nil
+	case agentbridge.RawSourceStdout, agentbridge.RawSourceClose:
 	}
 
 	switch raw.Type {

@@ -19,6 +19,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"maps"
 	"sort"
 	"strings"
 	"time"
@@ -130,7 +131,7 @@ func (i *Ingestor) Append(ctx context.Context, draft Draft) (ir.CanonicalEvent, 
 	return ev, nil
 }
 
-func (i *Ingestor) eventFromDraft(draft Draft, occurredAt time.Time, eventType ir.EventType, payload map[string]any, unknown map[string]any) (ir.CanonicalEvent, error) {
+func (i *Ingestor) eventFromDraft(draft Draft, occurredAt time.Time, eventType ir.EventType, payload, unknown map[string]any) (ir.CanonicalEvent, error) {
 	eventID, err := i.cfg.NewEventID(occurredAt)
 	if err != nil {
 		return ir.CanonicalEvent{}, fmt.Errorf("ingest: new event id: %w", err)
@@ -206,9 +207,7 @@ func copyMap(in map[string]any) map[string]any {
 		return nil
 	}
 	out := make(map[string]any, len(in))
-	for k, v := range in {
-		out[k] = v
-	}
+	maps.Copy(out, in)
 	return out
 }
 
@@ -257,7 +256,7 @@ func (s redactionSummary) auditPayload(source ir.CanonicalEvent) map[string]any 
 	}
 }
 
-func redactDraftPayload(payload map[string]any, unknown map[string]any) (map[string]any, map[string]any, redactionSummary) {
+func redactDraftPayload(payload, unknown map[string]any) (map[string]any, map[string]any, redactionSummary) {
 	var summary redactionSummary
 	redactedPayload, payloadSummary := redactMap(payload, "payload")
 	redactedUnknown, unknownSummary := redactMap(unknown, "unknown")
@@ -346,7 +345,7 @@ func redactValue(value any, path string) (any, redactionSummary) {
 	}
 }
 
-func joinPath(prefix string, key string) string {
+func joinPath(prefix, key string) string {
 	if prefix == "" {
 		return key
 	}

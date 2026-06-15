@@ -65,7 +65,7 @@ func TestGoldenNormalJSONL(t *testing.T) {
 			}
 		}
 	}
-	if !(saw.session && saw.lifecycle && saw.text && saw.thinking && saw.toolStart && saw.toolDone && saw.usage && saw.result) {
+	if !saw.session || !saw.lifecycle || !saw.text || !saw.thinking || !saw.toolStart || !saw.toolDone || !saw.usage || !saw.result {
 		t.Fatalf("normal.jsonl coverage gap: %+v", saw)
 	}
 }

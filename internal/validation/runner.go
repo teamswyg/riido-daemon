@@ -119,12 +119,12 @@ func resultForExitCode(exitCode int) string {
 	return "failed"
 }
 
-func providerRunID(provider string, commandID string) string {
+func providerRunID(provider, commandID string) string {
 	return "provider-run:" + sanitizeID(provider) + ":" + sanitizeID(commandID)
 }
 
 func summarize(command string, exitCode int, output []byte, runErr error) string {
-	if runErr == context.DeadlineExceeded {
+	if errors.Is(runErr, context.DeadlineExceeded) {
 		return fmt.Sprintf("validation command timed out: %s", command)
 	}
 	trimmed := string(bytes.TrimSpace(output))

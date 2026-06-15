@@ -104,6 +104,7 @@ func (integrationAdapter) Name() string { return Name }
 func (integrationAdapter) Detect(_ context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return agentbridge.DetectResult{Available: true}, nil
 }
+
 func (integrationAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return BuildStart(req, StartOptions{})
 }

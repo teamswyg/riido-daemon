@@ -24,6 +24,7 @@ func (codexLikeAdapter) Name() string { return "codex-like" }
 func (codexLikeAdapter) Detect(_ context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return agentbridge.DetectResult{Available: true}, nil
 }
+
 func (codexLikeAdapter) BuildStart(_ agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return agentbridge.StartCommand{Executable: "codex-like"}, nil
 }

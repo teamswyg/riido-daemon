@@ -1084,7 +1084,7 @@ func printJSON(value any) error {
 	return encoder.Encode(value)
 }
 
-func validationProviderForTask(db taskdb.TaskDB, taskID string, requested string) (string, error) {
+func validationProviderForTask(db taskdb.TaskDB, taskID, requested string) (string, error) {
 	taskRecord, ok := findTaskRecord(db, taskID)
 	if !ok {
 		return "", fmt.Errorf("task %s not found", taskID)
@@ -1105,7 +1105,7 @@ func validationProviderForTask(db taskdb.TaskDB, taskID string, requested string
 	return provider, nil
 }
 
-func validateDecisionLLMForTask(db taskdb.TaskDB, taskID string, requested string) error {
+func validateDecisionLLMForTask(db taskdb.TaskDB, taskID, requested string) error {
 	if requested == "" {
 		return nil
 	}
