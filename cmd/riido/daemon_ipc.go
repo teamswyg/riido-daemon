@@ -77,14 +77,10 @@ func (r daemonRequest) lifecycleShutdownLevel() lifecycle.ShutdownLevel {
 	if r.Force {
 		return lifecycle.ShutdownForced
 	}
-	switch strings.ToLower(strings.TrimSpace(r.ShutdownLevel)) {
-	case "", lifecycle.ShutdownGraceful.String():
-		return lifecycle.ShutdownGraceful
-	case lifecycle.ShutdownForced.String():
-		return lifecycle.ShutdownForced
-	default:
-		return lifecycle.ShutdownGraceful
+	if level, ok := lifecycle.ParseShutdownLevel(r.ShutdownLevel); ok {
+		return lifecycle.NormalizeShutdownLevel(level)
 	}
+	return lifecycle.ShutdownGraceful
 }
 
 func writeShutdownAck(conn net.Conn, level lifecycle.ShutdownLevel) {

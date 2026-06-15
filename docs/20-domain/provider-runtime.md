@@ -528,6 +528,11 @@ RunReportedDone (provider 자기 보고)
 | ingest 가 `ProvideInput(handle, response)` 호출 | provider stdin / RPC 로 응답 전송. provider 가 응답을 받아 계속 진행하면 그 결과는 평소처럼 draft 로 흐른다. |
 | ingest 가 `ResolveApproval(approvalID, decision)` 호출 | provider approval 프로토콜 응답. Codex app-server `approval/resolved` 같은 메시지. |
 
+Shutdown authority (`none` → `graceful` → `forced`) and default shutdown
+timeouts are owned by `pkg/lifecycle`. RuntimeActor, SupervisorActor, and
+`cmd/riido daemon` must consume that model instead of redefining local stop
+level parsing or timeout policy.
+
 ### 5.5 idle watchdog semantic activity
 
 Idle watchdog 은 stdout byte activity 가 아니라 **provider 가 task 의미를 전진시킨 이벤트** 로만 갱신된다. 이 정의의 public daemon 구현은 `internal/agentbridge.EventKind.IsSemanticActivity()` 이다.

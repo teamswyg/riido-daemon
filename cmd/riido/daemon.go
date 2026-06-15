@@ -334,7 +334,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	_ = os.Remove(flags.socket)
 
 	startedAt := time.Now()
-	shutdownLevel := normalizeDaemonShutdownLevel(ctx.ShutdownLevel())
+	shutdownLevel := lifecycle.NormalizeShutdownLevel(ctx.ShutdownLevel())
 
 	rtActors, err := newDaemonRuntimeActors(settings, builtinDaemonAdapters())
 	if err != nil {
@@ -343,7 +343,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	startedRuntimes := make([]*runtimeactor.Actor, 0, len(rtActors))
 	for _, rt := range rtActors {
 		if err := rt.Start(ctx.Context()); err != nil {
-			shutdownCtx, cancel := lifecycle.DetachedShutdown(lifecycle.ShutdownForced, 5*time.Second)
+			shutdownCtx, cancel := lifecycle.DetachedDefaultShutdown(lifecycle.ShutdownForced)
 			stopRuntimeActors(shutdownCtx, startedRuntimes, log)
 			cancel()
 			return daemonWrapf(ErrDaemonRuntime, "serve.start-runtime", err, "runtimeactor.Start")
@@ -351,7 +351,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 		startedRuntimes = append(startedRuntimes, rt)
 	}
 	defer func() {
-		shutdownCtx, cancel := lifecycle.DetachedShutdown(shutdownLevel, daemonShutdownTimeout(shutdownLevel))
+		shutdownCtx, cancel := lifecycle.DetachedDefaultShutdown(shutdownLevel)
 		defer cancel()
 		stopRuntimeActors(shutdownCtx, rtActors, log)
 	}()
@@ -384,7 +384,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 		return daemonWrapf(ErrDaemonSupervisor, "serve.start-supervisor", err, "supervisor.Start")
 	}
 	defer func() {
-		shutdownCtx, cancel := lifecycle.DetachedShutdown(shutdownLevel, daemonShutdownTimeout(shutdownLevel))
+		shutdownCtx, cancel := lifecycle.DetachedDefaultShutdown(shutdownLevel)
 		defer cancel()
 		if err := supActor.StopLifecycle(shutdownCtx); err != nil {
 			log.Printf("supervisor stop error level=%s: %v", shutdownCtx.ShutdownLevel(), err)
@@ -416,10 +416,10 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 		var level lifecycle.ShutdownLevel
 		select {
 		case <-signalCtx.Done():
-			level = normalizeDaemonShutdownLevel(signalCtx.ShutdownLevel())
+			level = lifecycle.NormalizeShutdownLevel(signalCtx.ShutdownLevel())
 			log.Printf("daemon shutdown requested level=%s source=signal", level)
 		case level = <-shutdownCh:
-			level = normalizeDaemonShutdownLevel(level)
+			level = lifecycle.NormalizeShutdownLevel(level)
 			log.Printf("daemon shutdown requested level=%s source=socket", level)
 		}
 		done <- level
@@ -554,20 +554,6 @@ func stopRuntimeActors(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, lo
 			log.Printf("runtimeactor stop error level=%s: %v", ctx.ShutdownLevel(), err)
 		}
 	}
-}
-
-func daemonShutdownTimeout(level lifecycle.ShutdownLevel) time.Duration {
-	if level.IsForced() {
-		return time.Second
-	}
-	return 5 * time.Second
-}
-
-func normalizeDaemonShutdownLevel(level lifecycle.ShutdownLevel) lifecycle.ShutdownLevel {
-	if level.IsShutdown() {
-		return level
-	}
-	return lifecycle.ShutdownGraceful
 }
 
 func providerRuntimeID(daemonID, provider string) string {

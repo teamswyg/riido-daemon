@@ -333,7 +333,7 @@ func (a *Actor) run(caps []Capability) {
 			}
 
 		case level := <-a.stopReqCh:
-			a.drainAndShutdown(normalizeStopLevel(level), inFlight, completeCh)
+			a.drainAndShutdown(lifecycle.NormalizeShutdownLevel(level), inFlight, completeCh)
 			close(a.stoppedCh)
 			return
 		}
@@ -533,7 +533,7 @@ func (a *Actor) drainAndShutdown(level lifecycle.ShutdownLevel, inFlight map[str
 		case id := <-completeCh:
 			delete(inFlight, id)
 		case next := <-a.stopReqCh:
-			if normalizeStopLevel(next).IsForced() {
+			if lifecycle.NormalizeShutdownLevel(next).IsForced() {
 				a.stopErrCh <- nil
 				return
 			}
@@ -629,59 +629,6 @@ func (a *Actor) HeartbeatPayload(ctx context.Context) (Heartbeat, error) {
 	case <-ctx.Done():
 		return Heartbeat{}, ctx.Err()
 	}
-}
-
-// Stop initiates graceful shutdown. Safe to call concurrently and
-// repeatedly. When a lifecycle shutdown level is embedded in ctx, that
-// level is honored; otherwise Stop defaults to graceful shutdown.
-func (a *Actor) Stop(ctx context.Context) error {
-	return a.StopLifecycle(lifecycleStopContext(ctx))
-}
-
-// StopLifecycle initiates shutdown with an explicit lifecycle authority
-// level. Forced shutdown skips the graceful drain wait; a forced request can
-// also escalate an already-draining graceful stop.
-func (a *Actor) StopLifecycle(ctx lifecycle.Context) error {
-	select {
-	case <-a.stoppedCh:
-		return nil
-	default:
-	}
-	select {
-	case a.stopReqCh <- normalizeStopLevel(ctx.ShutdownLevel()):
-	default:
-	}
-	select {
-	case <-a.stoppedCh:
-		// stopErrCh holds the actor goroutine's exit error. Only one
-		// shutdown path writes it, so the first reader gets the real
-		// value; subsequent Stop callers reach this branch via
-		// stoppedCh and return nil (their work is already done).
-		select {
-		case err := <-a.stopErrCh:
-			return err
-		default:
-			return nil
-		}
-	case <-ctx.Done():
-		return ctx.Err()
-	}
-}
-
-func lifecycleStopContext(ctx context.Context) lifecycle.Context {
-	lctx := lifecycle.FromContext(ctx)
-	level := normalizeStopLevel(lctx.ShutdownLevel())
-	if level != lctx.ShutdownLevel() {
-		return lctx.WithShutdownLevel(level)
-	}
-	return lctx
-}
-
-func normalizeStopLevel(level lifecycle.ShutdownLevel) lifecycle.ShutdownLevel {
-	if level.IsShutdown() {
-		return level
-	}
-	return lifecycle.ShutdownGraceful
 }
 
 // ----- helpers -----
