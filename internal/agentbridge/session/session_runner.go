@@ -110,7 +110,7 @@ func (r *sessionRunner) loop() {
 }
 
 func (r *sessionRunner) finish() {
-	_ = r.proc.Kill(context.Background())
+	_ = killProcess(r.proc, r.cfg.ProcessKillTimeout)
 	drain(r.stdoutCh)
 	drain(r.stderrCh)
 	for _, ev := range cleanupTempFiles(r.cfg.TempFiles) {

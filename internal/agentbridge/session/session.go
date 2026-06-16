@@ -24,6 +24,9 @@ const (
 	DefaultEventBuffer = 256
 	// DefaultResultBuffer stores the single terminal result for a session.
 	DefaultResultBuffer = 1
+	// DefaultProcessKillTimeout bounds provider process kill calls made during
+	// session teardown and reducer-driven cancellation.
+	DefaultProcessKillTimeout = 5 * time.Second
 )
 
 // Config is the input to Start.
@@ -67,6 +70,10 @@ type Config struct {
 	// run is cancelled/timed out, so provider secrets/config do not linger in
 	// the task workdir or system temp directory.
 	TempFiles []string
+
+	// ProcessKillTimeout bounds RunningProcess.Kill calls. Zero defaults to
+	// DefaultProcessKillTimeout.
+	ProcessKillTimeout time.Duration
 
 	// now is injected for deterministic tests; defaults to time.Now.
 	Now func() time.Time
@@ -129,6 +136,9 @@ func Start(ctx context.Context, cfg Config) (*Session, error) {
 	}
 	if cfg.ResultBuffer <= 0 {
 		cfg.ResultBuffer = DefaultResultBuffer
+	}
+	if cfg.ProcessKillTimeout <= 0 {
+		cfg.ProcessKillTimeout = DefaultProcessKillTimeout
 	}
 
 	running, err := cfg.Process.Start(ctx, cfg.Spawn)
