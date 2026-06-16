@@ -99,16 +99,43 @@ func (p *Plane) claimTaskFromCandidates(ctx context.Context, runtimeID, provider
 	if len(candidates) == 1 {
 		return p.claimTaskFromCandidate(ctx, runtimeID, provider, candidates[0], p.cfg.LongPollWait)
 	}
+	return p.claimTaskFromCandidatesConcurrently(ctx, runtimeID, provider, candidates)
+}
+
+type claimCandidateResult struct {
+	request *bridge.TaskRequest
+	err     error
+}
+
+func (p *Plane) claimTaskFromCandidatesConcurrently(ctx context.Context, runtimeID, provider string, candidates []AgentBinding) (*bridge.TaskRequest, error) {
+	claimCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	results := make(chan claimCandidateResult, len(candidates))
 	for _, candidate := range candidates {
-		req, err := p.claimTaskFromCandidate(ctx, runtimeID, provider, candidate, 0)
-		if err != nil {
-			return nil, err
-		}
-		if req != nil {
-			return req, nil
+		go func() {
+			req, err := p.claimTaskFromCandidate(claimCtx, runtimeID, provider, candidate, p.cfg.LongPollWait)
+			results <- claimCandidateResult{request: req, err: err}
+		}()
+	}
+
+	for range candidates {
+		select {
+		case result := <-results:
+			if result.err != nil {
+				cancel()
+				return nil, result.err
+			}
+			if result.request != nil {
+				cancel()
+				return result.request, nil
+			}
+		case <-ctx.Done():
+			cancel()
+			return nil, ctx.Err()
 		}
 	}
-	return p.claimTaskFromCandidate(ctx, runtimeID, provider, candidates[0], p.cfg.LongPollWait)
+	return nil, nil
 }
 
 func (p *Plane) claimTaskFromCandidate(ctx context.Context, runtimeID, provider string, candidate AgentBinding, wait time.Duration) (*bridge.TaskRequest, error) {
