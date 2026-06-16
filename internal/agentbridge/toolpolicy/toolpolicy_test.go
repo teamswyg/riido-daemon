@@ -23,7 +23,12 @@ func TestClassifyToolUseSurfaceMapsProviderNeutralLabels(t *testing.T) {
 		{"secret token", agentbridge.ToolRef{Name: "Token"}, policy.ToolUseSecretExposure},
 		{"secret arg key", agentbridge.ToolRef{Name: "Read", Args: map[string]string{"api_token": "[redacted]"}}, policy.ToolUseSecretExposure},
 		{"secret redacted arg value", agentbridge.ToolRef{Name: "Read", Args: map[string]string{"note": "[redacted]"}}, policy.ToolUseSecretExposure},
+		{"secret env read shell command", agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "cat .env.local"}}, policy.ToolUseSecretExposure},
+		{"secret manager shell command", agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "aws secretsmanager get-secret-value --secret-id prod/api"}}, policy.ToolUseSecretExposure},
 		{"destructive shell command", agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "rm -rf .git"}}, policy.ToolUseDestructiveCommand},
+		{"protected env write", agentbridge.ToolRef{Name: "Write", Args: map[string]string{"file_path": ".env.production"}}, policy.ToolUseProtectedPathWrite},
+		{"protected ssh write", agentbridge.ToolRef{Name: "Write", Args: map[string]string{"path": "~/.ssh/config"}}, policy.ToolUseProtectedPathWrite},
+		{"protected env shell write", agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "printf TOKEN=x > .env"}}, policy.ToolUseProtectedPathWrite},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			got, ok := ClassifyToolUseSurface(tc.tool)
@@ -86,6 +91,13 @@ func TestPolicyToolStartGateBlocksClassifiedRiskWithoutApprovalPath(t *testing.T
 	}
 	if decision.Code != "TOOL_USE_NOT_IN_POLICY_BUNDLE" {
 		t.Fatalf("decision code = %q", decision.Code)
+	}
+	decision = gate(agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "cat .env.local"}})
+	if !decision.Block {
+		t.Fatalf("started secret exposure tool must block: %+v", decision)
+	}
+	if decision.Code != "TOOL_USE_NOT_IN_POLICY_BUNDLE" {
+		t.Fatalf("secret exposure decision code = %q", decision.Code)
 	}
 }
 

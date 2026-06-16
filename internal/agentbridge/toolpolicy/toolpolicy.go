@@ -94,6 +94,9 @@ func ClassifyToolUseSurface(tool agentbridge.ToolRef) (policy.ToolUseSurface, bo
 			if commandContainsNetworkEgress(command) {
 				return policy.ToolUseNetworkEgress, true
 			}
+			if commandExposesSecrets(command) {
+				return policy.ToolUseSecretExposure, true
+			}
 			if commandIsDestructive(command) {
 				return policy.ToolUseDestructiveCommand, true
 			}
