@@ -41,22 +41,22 @@ func (s Server) Serve(ctx context.Context) error {
 			}
 			return fmt.Errorf("accept riido API connection: %w", err)
 		}
-		go s.handleConn(conn)
+		go s.handleConn(ctx, conn)
 	}
 }
 
-func (s Server) handleConn(conn net.Conn) {
+func (s Server) handleConn(ctx context.Context, conn net.Conn) {
 	defer conn.Close()
 	var req requestEnvelope
 	if err := json.NewDecoder(conn).Decode(&req); err != nil {
 		_ = writeResponse(conn, responseEnvelope{OK: false, Error: fmt.Sprintf("decode request: %v", err)})
 		return
 	}
-	response := s.handleRequest(req)
+	response := s.handleRequest(ctx, req)
 	_ = writeResponse(conn, response)
 }
 
-func (s Server) handleRequest(req requestEnvelope) responseEnvelope {
+func (s Server) handleRequest(ctx context.Context, req requestEnvelope) responseEnvelope {
 	switch req.Method {
 	case "status":
 		db, err := taskdb.LoadTaskDBOrEmpty(s.config.TaskDBPath)
@@ -83,7 +83,7 @@ func (s Server) handleRequest(req requestEnvelope) responseEnvelope {
 		}
 		return okResponse(req.Method, response)
 	case "validate":
-		response, err := s.validateTask(req.Params)
+		response, err := s.validateTask(ctx, req.Params)
 		if err != nil {
 			return errorResponse(req.Method, err)
 		}
