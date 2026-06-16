@@ -119,6 +119,16 @@ func TestDaemonBackgroundStartLaunchesChildAndReturns(t *testing.T) {
 	if pid == os.Getpid() {
 		t.Fatalf("pid file holds parent's pid (%d) — daemon did not detach", pid)
 	}
+	identity, ok, err := loadDaemonPIDIdentity(pidPath)
+	if err != nil {
+		t.Fatalf("read pid identity: %v", err)
+	}
+	if !ok {
+		t.Fatal("pid identity sidecar missing")
+	}
+	if identity.SchemaVersion != daemonPIDIdentitySchemaVersion || identity.PID != pid || identity.Socket != sock {
+		t.Fatalf("pid identity = %+v, pid=%d socket=%s", identity, pid, sock)
+	}
 }
 
 func TestDaemonBackgroundStartRejectsExistingDaemon(t *testing.T) {

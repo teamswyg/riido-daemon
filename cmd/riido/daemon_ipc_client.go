@@ -170,5 +170,5 @@ func runDaemonStop(args []string) error {
 	if pidFile == "" {
 		return daemonErrorf(ErrDaemonSocket, "stop.socket-fallback", "daemon stop: socket %s did not respond and --pid-file is not provided", socket)
 	}
-	return stopViaPIDFile(pidFile, timeout)
+	return stopViaPIDFile(pidFile, timeout, level)
 }

@@ -40,10 +40,10 @@ func runDaemonStartForeground(ctx lifecycle.Context, flags startFlags) error {
 	defer closeLog()
 
 	if flags.pidFile != "" {
-		if err := os.WriteFile(flags.pidFile, []byte(strconv.Itoa(os.Getpid())), 0o644); err != nil {
+		if err := writeDaemonPIDFiles(flags.pidFile, flags.socket); err != nil {
 			return daemonWrapf(ErrDaemonIO, "start.write-pid", err, "write pid file")
 		}
-		defer func() { _ = os.Remove(flags.pidFile) }()
+		defer removeDaemonPIDFiles(flags.pidFile)
 	}
 
 	logSink.Printf("daemon starting id=%s profile=%s socket=%s pid=%d", settings.DaemonID, settings.Profile, flags.socket, os.Getpid())

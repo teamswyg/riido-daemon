@@ -142,7 +142,7 @@ func TestDaemonStopRejectsNonDaemonPidFile(t *testing.T) {
 	}
 
 	err := run([]string{"daemon", "stop", "--pid-file", pidPath, "--timeout-seconds", "1"})
-	if err == nil || !strings.Contains(err.Error(), "not a riido daemon foreground process") {
+	if err == nil || !strings.Contains(err.Error(), "pid identity") {
 		t.Fatalf("expected non-daemon pid rejection, got %v", err)
 	}
 
