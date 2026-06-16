@@ -27,7 +27,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	startedAt := time.Now()
 	shutdownLevel := lifecycle.NormalizeShutdownLevel(ctx.ShutdownLevel())
 
-	rtActors, err := newDaemonRuntimeActors(settings, builtinDaemonAdapters())
+	rtActors, err := newDaemonRuntimeActors(settings, builtinAgentAdapters())
 	if err != nil {
 		return err
 	}
@@ -171,13 +171,4 @@ func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter ag
 		ToolStartGate:       daemonToolStartGate(settings),
 		PolicyBundleVersion: settings.PolicyBundle,
 	})
-}
-
-func daemonRuntimeModels(provider string) []runtimeactor.RuntimeModel {
-	switch strings.TrimSpace(provider) {
-	case "codex":
-		return codexRuntimeModels(os.UserHomeDir)
-	default:
-		return nil
-	}
 }
