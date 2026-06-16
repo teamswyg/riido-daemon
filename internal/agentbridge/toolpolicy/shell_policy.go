@@ -31,10 +31,33 @@ func commandContainsNetworkEgress(command string) bool {
 
 func commandTouchesProtectedPath(command string) bool {
 	normalized := strings.ToLower(command)
-	if !strings.Contains(normalized, ".git") && !strings.Contains(normalized, ".vscode") && !strings.Contains(normalized, ".idea") && !strings.Contains(normalized, ".husky") && !strings.Contains(normalized, ".claude") {
+	if !commandMentionsProtectedPath(normalized) {
 		return false
 	}
 	for _, marker := range []string{">", " rm ", "rm -", " mv ", " cp ", "tee ", "sed -i", "perl -pi", "chmod ", "chown "} {
+		if strings.Contains(" "+normalized, marker) {
+			return true
+		}
+	}
+	return false
+}
+
+func commandExposesSecrets(command string) bool {
+	normalized := strings.ToLower(command)
+	for _, marker := range []string{
+		"aws secretsmanager get-secret-value",
+		"aws ssm get-parameter",
+		"gh auth token",
+		"security find-generic-password",
+	} {
+		if strings.Contains(normalized, marker) {
+			return true
+		}
+	}
+	if !commandMentionsSecretPath(normalized) {
+		return false
+	}
+	for _, marker := range []string{" cat ", " grep ", " rg ", " awk ", " sed ", " less ", " more ", " head ", " tail "} {
 		if strings.Contains(" "+normalized, marker) {
 			return true
 		}
@@ -73,10 +96,31 @@ func commandIsDestructive(command string) bool {
 	return false
 }
 
+func commandMentionsProtectedPath(command string) bool {
+	for _, token := range []string{".git", ".vscode", ".idea", ".husky", ".claude", ".env", ".aws", ".ssh", ".gnupg", ".docker/config.json", ".config/gh/hosts.yml"} {
+		if strings.Contains(command, token) {
+			return true
+		}
+	}
+	return false
+}
+
+func commandMentionsSecretPath(command string) bool {
+	for _, token := range []string{".env", ".aws/credentials", ".aws/config", ".ssh/", ".gnupg/", ".npmrc", ".pypirc", ".netrc", ".docker/config.json", ".config/gh/hosts.yml"} {
+		if strings.Contains(command, token) {
+			return true
+		}
+	}
+	return false
+}
+
 func isProtectedPath(path string) bool {
 	path = normalizePath(path)
 	if path == "" {
 		return false
+	}
+	if path == ".env" || strings.HasPrefix(path, ".env.") || strings.HasPrefix(path, ".env/") {
+		return true
 	}
 	for _, file := range []string{
 		".bash_profile",
@@ -85,10 +129,14 @@ func isProtectedPath(path string) bool {
 		".gitconfig",
 		".gitmodules",
 		".mcp.json",
+		".netrc",
+		".npmrc",
 		".profile",
+		".pypirc",
 		".ripgreprc",
 		".zprofile",
 		".zshrc",
+		"credentials",
 	} {
 		if path == file || strings.HasSuffix(path, "/"+file) {
 			return true
@@ -100,10 +148,16 @@ func isProtectedPath(path string) bool {
 		strings.HasPrefix(path, ".claude/worktrees/") {
 		return false
 	}
-	for _, dir := range []string{".git", ".vscode", ".idea", ".husky", ".claude"} {
+	for _, dir := range []string{".git", ".vscode", ".idea", ".husky", ".claude", ".aws", ".ssh", ".gnupg"} {
 		if path == dir || strings.HasPrefix(path, dir+"/") || strings.Contains(path, "/"+dir+"/") {
 			return true
 		}
+	}
+	if path == ".docker/config.json" || strings.HasSuffix(path, "/.docker/config.json") {
+		return true
+	}
+	if path == ".config/gh/hosts.yml" || strings.HasSuffix(path, "/.config/gh/hosts.yml") {
+		return true
 	}
 	return false
 }

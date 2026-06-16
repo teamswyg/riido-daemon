@@ -42,8 +42,11 @@ RIID-4652 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/agentbridge/toolargs` 와 `internal/agentbridge/toolpolicy` 다. 이 package
 들은 provider raw tool input 을 bounded/redacted `ToolRef.Args` 로 요약하고,
 provider-neutral `ToolRef` 를 C7 ToolUse risk surface 로 분류해 `AutoApprover` /
-`ToolStartGate` 를 구성한다. provider-native approval RPC/hook 실행 wiring 은 여전히
-후속 runtimeactor/provider-adapter migration slice 가 맡는다.
+`ToolStartGate` 를 구성한다. 이 slice 자체는 실행 wiring 을 소유하지 않고,
+RIID-4653 이후 session/runtimeactor/provider adapter slices 가 provider approval
+request 응답과 started-tool fail-closed gate 를 실행한다. provider-native hook/RPC 로
+tool 실행 **직전** 에 차단하는 pre-start interrupt 와 SaaS/web approval handoff 는
+여전히 후속 work unit 이 맡는다.
 
 RIID-4653 에서 public `riido-daemon` 으로 이동한 추가 구현 범위는
 `internal/agentbridge/session` 이다. 이 package 는 one-run session actor 로서
