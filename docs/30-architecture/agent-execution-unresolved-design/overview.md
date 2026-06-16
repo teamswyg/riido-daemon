@@ -63,7 +63,7 @@
 | R5 | cancellation watcher leak | watcher 가 task id map 에 저장되고 terminal cleanup 에서 close 되지 않음 | `ExecutionIdentity` keyed watcher registry + terminal close/release invariant |
 | D5 | desktop stop 이 stale PID 를 kill 할 수 있음 | **Resolved.** PID fallback 은 sidecar identity, socket, foreground daemon command line 검증이 없으면 fail-closed 한다. | PID identity probe 회귀 테스트 유지 |
 | D7 | Windows `.claim` stale lock | **Resolved.** Windows claim file 이 owner/refreshed_at metadata 를 쓰고 active holder 가 주기적으로 갱신한다. 오래된 legacy/metadata claim 만 회수한다. | claim metadata stale recovery 테스트 + Windows compile check 유지 |
-| F8 | sync preparation 이 poll/heartbeat path 를 막을 수 있음 | workspace/file preparation 이 runtime lifecycle 과 느슨하게 결합되어 있음 | async prep state 와 claim loop 분리를 별도 work unit 으로 유지 |
+| F8 | sync preparation 이 poll/heartbeat path 를 막을 수 있음 | **Resolved for supervisor claim/heartbeat loop.** Workspace materialization/provider submit 은 in-flight 등록 뒤 activation goroutine 에서 수행되고 결과만 actor mailbox 로 돌아온다. | slow worktree materialization 중 heartbeat 지속 회귀 테스트 유지 |
 | R1 | provider process per task cold start | one-shot run 만 모델링되고 conversational session 과 resume 정책이 없음 | provider session table 과 long-lived process policy 를 분리 |
 | Review | PID kill, cwd mismatch, multi-agent conflict, stale busy, SSE refetch dependency | runtime key, lifecycle, read-model update authority 가 레이어마다 다름 | assignment identity + FSM + client optimistic upsert + stale assignment reconciliation |
 

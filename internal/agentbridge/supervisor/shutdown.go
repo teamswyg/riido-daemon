@@ -14,6 +14,10 @@ func (a *Actor) shutdown(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, 
 	stdCtx := ctx.Context()
 	finishedAt := time.Now().UTC()
 	for taskID, task := range inFlight {
+		if task.cancel != nil {
+			task.cancel()
+			task.cancel = nil
+		}
 		_ = task.runtime.Cancel(stdCtx, task.taskID, ErrStopped.Error())
 		res := a.recordTerminalResult(stdCtx, task, agentbridge.Result{
 			Status:     agentbridge.ResultCancelled,

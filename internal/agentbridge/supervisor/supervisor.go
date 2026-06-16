@@ -91,9 +91,17 @@ type Actor struct {
 }
 
 type envelope struct {
-	taskEvent  *taskEventMsg
-	taskResult *taskResultMsg
-	cancel     *cancelMsg
+	taskActivation *taskActivationMsg
+	taskEvent      *taskEventMsg
+	taskResult     *taskResultMsg
+	cancel         *cancelMsg
+}
+
+type taskActivationMsg struct {
+	taskID   string
+	prepared *preparedWorkspace
+	handle   *runtimeactor.SessionHandle
+	err      error
 }
 
 type taskEventMsg struct {
@@ -116,6 +124,7 @@ type runningTask struct {
 	report  controlplane.TaskReportContext
 	runtime *runtimeactor.Actor
 	handle  *runtimeactor.SessionHandle
+	cancel  context.CancelFunc
 
 	workspace *workdir.Workspace
 	events    *workspaceEventContext

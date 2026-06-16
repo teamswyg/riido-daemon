@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -12,7 +13,6 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/scheduling"
-	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
 func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, status runtimeactor.Status, inFlight map[string]*runningTask) bool {
@@ -38,47 +38,42 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		})
 		return true
 	}
+	prepareCtx, cancel := context.WithCancel(ctx)
+	inFlight[req.ID] = &runningTask{taskID: req.ID, report: report, runtime: rt, cancel: cancel}
+	go a.prepareAndSubmit(prepareCtx, status, rt, req)
+	return true
+}
+
+func (a *Actor) prepareAndSubmit(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest) {
 	prepared, err := a.prepareWorkspace(ctx, status, req)
 	if err != nil {
-		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, agentbridge.Result{
-			Status: agentbridge.ResultFailed,
-			Error:  err.Error(),
-		})
-		return true
+		a.forwardActivation(taskActivationMsg{taskID: req.ID, err: err})
+		return
 	}
 	handle, err := rt.Submit(ctx, *req)
 	if err != nil {
-		res := agentbridge.Result{
-			Status: agentbridge.ResultFailed,
-			Error:  err.Error(),
-		}
-		if prepared != nil {
-			res = a.recordTerminalResult(ctx, &runningTask{
-				taskID:    req.ID,
-				report:    report,
-				runtime:   rt,
-				workspace: prepared.workspace,
-				events:    prepared.events,
-			}, res)
-		}
-		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, res)
-		return true
+		a.forwardActivation(taskActivationMsg{taskID: req.ID, prepared: prepared, err: err})
+		return
 	}
-	_ = a.cfg.Reporter.ReportEvent(reportCtx, req.ID, agentbridge.Event{
-		Kind:  agentbridge.EventLifecycle,
-		Phase: agentbridge.StateRunning,
-	})
-	var ws *workdir.Workspace
-	var events *workspaceEventContext
-	if prepared != nil {
-		ws = prepared.workspace
-		events = prepared.events
-	}
-	inFlight[req.ID] = &runningTask{taskID: req.ID, report: report, runtime: rt, handle: handle, workspace: ws, events: events}
+	a.forwardActivation(taskActivationMsg{taskID: req.ID, prepared: prepared, handle: handle})
+}
 
-	go a.forwardSession(req.ID, handle.Events(), handle.Result())
-	go a.forwardCancellation(ctx, req.ID)
-	return true
+func (a *Actor) forwardActivation(msg taskActivationMsg) {
+	select {
+	case a.mailbox <- envelope{taskActivation: &msg}:
+	case <-a.stoppedCh:
+	}
+}
+
+func resultForActivationError(err error) agentbridge.Result {
+	status := agentbridge.ResultFailed
+	if errors.Is(err, context.Canceled) || errors.Is(err, ErrStopped) {
+		status = agentbridge.ResultCancelled
+	}
+	return agentbridge.Result{
+		Status: status,
+		Error:  err.Error(),
+	}
 }
 
 func taskEligibility(status runtimeactor.Status, req *bridge.TaskRequest) scheduling.Eligibility {
