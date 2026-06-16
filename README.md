@@ -96,6 +96,10 @@ macOS/Linux 최신 release 설치:
 curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh
 ```
 
+`latest`는 GitHub Releases API에서 가장 최신 Riido release tag를 해석합니다.
+현재 공개 daemon release는 pre-release channel을 사용하므로 GitHub의 stable
+`/releases/latest` endpoint를 직접 사용하지 않습니다.
+
 특정 release 설치:
 
 ```bash
