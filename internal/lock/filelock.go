@@ -16,8 +16,9 @@ import (
 
 // FileLock is an exclusive advisory lock backed by the host OS lock primitive.
 type FileLock struct {
-	file *os.File
-	path string
+	file            *os.File
+	path            string
+	stopMaintenance func()
 }
 
 // AcquireFile waits until an exclusive lock can be acquired or ctx is done.
@@ -37,7 +38,7 @@ func AcquireFile(ctx context.Context, path string) (*FileLock, error) {
 	for {
 		err := tryLockFile(file, path)
 		if err == nil {
-			return &FileLock{file: file, path: path}, nil
+			return &FileLock{file: file, path: path, stopMaintenance: startLockMaintenance(path)}, nil
 		}
 		if !isLockBusy(err) {
 			_ = file.Close()
@@ -56,6 +57,10 @@ func AcquireFile(ctx context.Context, path string) (*FileLock, error) {
 func (l *FileLock) Release() error {
 	if l == nil || l.file == nil {
 		return nil
+	}
+	if l.stopMaintenance != nil {
+		l.stopMaintenance()
+		l.stopMaintenance = nil
 	}
 	err := unlockFile(l.file, l.path)
 	closeErr := l.file.Close()

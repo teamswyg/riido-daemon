@@ -75,6 +75,128 @@ func TestPlaneRetriesTransientPoll(t *testing.T) {
 	}
 }
 
+func TestPlaneRetriesTransientAgentBindings(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	fake.failNext("/v1/daemon/agent-bindings", 1, http.StatusBadGateway)
+	fake.bindings = []assignmentcontract.AgentRuntimeBinding{{
+		AgentID:         "jykim1",
+		DaemonID:        "daemon-1",
+		DeviceID:        "device-1",
+		RuntimeID:       "daemon-1:codex",
+		RuntimeProvider: "codex",
+	}}
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "dynamic binding task",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask should retry transient agent-bindings: %v", err)
+	}
+	if req == nil || req.ID != "asn-1" {
+		t.Fatalf("request = %+v", req)
+	}
+	if got := fake.requestCount("/v1/daemon/agent-bindings"); got != 2 {
+		t.Fatalf("agent-bindings request count = %d, want 2", got)
+	}
+}
+
+func TestPlaneRetriesTransientHeartbeat(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.failNext("/v1/agents/jykim1/heartbeat", 1, http.StatusGatewayTimeout)
+	agent := AgentBinding{AgentID: "jykim1", RuntimeProvider: "codex"}
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-1",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "hello",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{agent})
+	defer plane.Close()
+
+	runtimeID := RuntimeIDForAgent("daemon-1", agent)
+	req, err := plane.ClaimTask(context.Background(), runtimeID)
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	if err := plane.Heartbeat(context.Background(), controlplane.RuntimeHeartbeat{
+		RuntimeID:      runtimeID,
+		RunningTaskIDs: []string{req.ID},
+	}); err != nil {
+		t.Fatalf("Heartbeat should retry transient heartbeat: %v", err)
+	}
+	if got := fake.requestCount("/v1/agents/jykim1/heartbeat"); got != 2 {
+		t.Fatalf("heartbeat request count = %d, want 2", got)
+	}
+}
+
+func TestPlaneRetriesTransientRuntimeSnapshot(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	fake.failNext("/v1/daemon/runtime-snapshot", 1, http.StatusTooManyRequests)
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	err = plane.RegisterRuntime(context.Background(), controlplane.RuntimeRegistration{
+		DaemonID:  "daemon-1",
+		RuntimeID: "daemon-1:codex",
+		Provider:  "codex",
+	})
+	if err != nil {
+		t.Fatalf("RegisterRuntime should retry transient runtime snapshot: %v", err)
+	}
+	if got := fake.requestCount("/v1/daemon/runtime-snapshot"); got != 2 {
+		t.Fatalf("runtime snapshot request count = %d, want 2", got)
+	}
+}
+
+func TestPlaneDoesNotRetryPermanentPollFailure(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.failNext("/v1/agents/jykim1/poll", 1, http.StatusUnauthorized)
+	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
+	defer plane.Close()
+
+	_, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err == nil || !strings.Contains(err.Error(), "401") {
+		t.Fatalf("ClaimTask should return permanent auth failure without retry, got %v", err)
+	}
+	if got := fake.requestCount("/v1/agents/jykim1/poll"); got != 1 {
+		t.Fatalf("poll request count = %d, want 1", got)
+	}
+}
+
 func TestPlaneSendsLongPollWaitMsAndExtendsRequestTimeout(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	plane, err := New(Config{
