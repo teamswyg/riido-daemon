@@ -121,6 +121,7 @@ type cancelMsg struct {
 
 type runningTask struct {
 	taskID  string
+	ctx     context.Context
 	report  controlplane.TaskReportContext
 	runtime *runtimeactor.Actor
 	handle  *runtimeactor.SessionHandle
