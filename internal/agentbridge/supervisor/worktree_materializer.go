@@ -14,7 +14,10 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
 )
 
-var runAssignmentGitClone = defaultRunAssignmentGitClone
+var (
+	resolveAssignmentGitExecutable = detectutil.ResolveExecutable
+	runAssignmentGitClone          = defaultRunAssignmentGitClone
+)
 
 func materializeAssignmentWorktree(ctx context.Context, targetDir string, worktree *assignmentcontract.AssignmentWorktree) error {
 	if worktree == nil {
@@ -27,7 +30,7 @@ func materializeAssignmentWorktree(ctx context.Context, targetDir string, worktr
 	if cloneURL == "" {
 		return nil
 	}
-	git, ok := detectutil.ResolveExecutable("git", "")
+	git, ok := resolveAssignmentGitExecutable("git", "")
 	if !ok {
 		return errors.New("supervisor: git executable not found for assignment worktree")
 	}
@@ -64,7 +67,43 @@ func assignmentCloneURL(worktree *assignmentcontract.AssignmentWorktree) (string
 	if parsed.Scheme != "https" || !strings.EqualFold(parsed.Hostname(), "github.com") || parsed.User != nil {
 		return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
 	}
+	if parsed.RawQuery != "" || parsed.ForceQuery || parsed.Fragment != "" || parsed.RawFragment != "" {
+		return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
+	}
+	if !validGitHubRepositoryPath(parsed.Path) {
+		return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
+	}
 	return parsed.String(), nil
+}
+
+func validGitHubRepositoryPath(path string) bool {
+	parts := strings.Split(strings.Trim(path, "/"), "/")
+	if len(parts) != 2 {
+		return false
+	}
+	for _, part := range parts {
+		if !validGitHubRepositoryPart(part) {
+			return false
+		}
+	}
+	return true
+}
+
+func validGitHubRepositoryPart(part string) bool {
+	if part == "" || part == "." || part == ".." {
+		return false
+	}
+	for _, ch := range part {
+		switch {
+		case ch >= 'a' && ch <= 'z':
+		case ch >= 'A' && ch <= 'Z':
+		case ch >= '0' && ch <= '9':
+		case ch == '-' || ch == '_' || ch == '.':
+		default:
+			return false
+		}
+	}
+	return true
 }
 
 func redactedRepositoryURL(parsed *url.URL) string {
@@ -73,6 +112,14 @@ func redactedRepositoryURL(parsed *url.URL) string {
 	}
 	copyURL := *parsed
 	copyURL.User = nil
+	copyURL.RawQuery = ""
+	copyURL.ForceQuery = false
+	copyURL.Fragment = ""
+	copyURL.RawFragment = ""
+	copyURL.RawPath = ""
+	if !validGitHubRepositoryPath(copyURL.Path) {
+		copyURL.Path = "/redacted"
+	}
 	return copyURL.String()
 }
 

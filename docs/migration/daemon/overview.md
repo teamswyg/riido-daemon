@@ -166,3 +166,14 @@ the original `resume_session_id`.
 
 This slice does not add a durable run-attempt table, recovery mode enum, or web
 approval handoff. Those remain follow-up lifecycle/FSM work.
+
+### RIID-4964 — assignment worktree URL hardening
+
+This slice tightens public worktree materialization. The daemon accepts only
+`{owner}/{repo}` and `https://github.com/{owner}/{repo}` style public GitHub
+repository identifiers with no userinfo, query string, fragment, credential
+component, or extra path segments. Private worktrees still fail-closed until a
+token-reference broker exists.
+
+This slice does not add private repository credentials, signed clone URLs, or a
+new worktree contract field.

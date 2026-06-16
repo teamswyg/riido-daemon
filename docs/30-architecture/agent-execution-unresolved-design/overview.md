@@ -53,7 +53,7 @@
 
 | ID | 증상 | 구조 원인 | 설계 방향 |
 | --- | --- | --- | --- |
-| F3 | AI 가 실제 코드가 아닌 빈 temp folder 에서 작업 | repo/branch 가 prompt text 이고 daemon 의 `WorkspacePlan` 이 아님 | control-plane 이 assignment snapshot 에 repo ref 를 구조화하고 daemon 이 public repo clone/worktree 를 materialize |
+| F3 | AI 가 실제 코드가 아닌 빈 temp folder 에서 작업 | **Resolved for public GitHub repositories.** control-plane 이 assignment snapshot 의 `worktree` 에 repo/branch 를 구조화하고, daemon 이 task-scoped workdir 에 public GitHub repo 를 shallow clone 한다. private repo, userinfo, query/fragment token URL, non-repo URL 은 fail-closed 한다. | public clone/private fail-closed/redacted URL 회귀 테스트 유지; private auth 는 token-ref broker 후속 |
 | C1 | stop 이 일관된 상태가 아님 | stop intent, process kill, projection terminal state 가 분리됨 | assignment lifecycle FSM 에 `stop_requested`, `provider_cancel_requested`, terminal states 추가 |
 | S2/S4/S5 | server-side streaming cleanup 미완 | text delta/progress/final answer 가 같은 progress path 를 공유 | `StreamEnvelope` 를 `progress_event`, `answer_delta`, `final_answer` 로 분리 |
 | F4/F5 | provider child tools 가 `git`/`node` 를 못 찾음 | **Resolved for launch PATH and submit-time re-detect.** Detection uses augmented search dirs, launch PATH is frozen into adapter/spawn env, and unavailable capability is refreshed after TTL. | detectutil/runtimeactor PATH and TTL refresh 회귀 테스트 유지 |
