@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"strings"
+	"sync"
 	"testing"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
@@ -29,6 +30,7 @@ func newTestPlaneWithToken(t *testing.T, baseURL string, agents []AgentBinding, 
 type fakeAssignmentServer struct {
 	t            *testing.T
 	server       *httptest.Server
+	mu           sync.Mutex
 	bearerToken  string
 	deviceID     string
 	deviceSecret string
@@ -96,14 +98,20 @@ func (f *fakeAssignmentServer) failNext(path string, count, status int) {
 }
 
 func (f *fakeAssignmentServer) requestCount(path string) int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	return f.requestCounts[path]
 }
 
 func (f *fakeAssignmentServer) pollRequestsFor(agentID string) []assignmentcontract.PollRequest {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	return append([]assignmentcontract.PollRequest(nil), f.pollRequestsByAgent[agentID]...)
 }
 
 func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	f.requestCounts[r.URL.Path]++
 	if f.deviceSecret != "" && (r.Header.Get("X-Riido-Device-Id") != f.deviceID || r.Header.Get("X-Riido-Device-Secret") != f.deviceSecret) {
 		http.Error(w, "missing device credential", http.StatusUnauthorized)
