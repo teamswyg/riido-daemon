@@ -23,7 +23,7 @@ jobs:
   ownership-ssot:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.3
       - name: Verify Q-CTX-005 is closed in owning SSOT
         run: |
           if grep -q "Q-CTX-005" docs/50-roadmap/open-questions.md; then

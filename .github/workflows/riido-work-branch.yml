@@ -7,7 +7,7 @@ jobs:
   branch-name:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6.0.3
       - name: Verify PR branch came from Riido work unit branchName
         run: scripts/verify-riido-work-branch.sh "$GITHUB_HEAD_REF"
 
