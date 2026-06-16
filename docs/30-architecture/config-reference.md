@@ -90,6 +90,7 @@ tests by default and does not require provider CLIs or vendor credentials.
 | `RIIDO_WORKDIR_ROOT` | supervisor + workdir FS adapter | C11 dev-local app data workdir root | isolated run workdir root |
 | `RIIDO_WORKDIR_RETENTION_SECONDS` | daemon config + workdir cleanup | `0` | opt-in archived workdir TTL cleanup; zero disables cleanup and there is no default size/task-count cleanup |
 | `RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS` | daemon config + workdir cleanup | `3600` when retention is enabled | cleanup loop interval; invalid without retention |
+| `RIIDO_DAEMON_PPROF_ADDR` | daemon local diagnostics | empty, or `127.0.0.1:6061` when `RIIDO_DAEMON_PROFILE=development` | optional local-only pprof listener; accepts `off`/`disabled` to disable development default and rejects non-loopback hosts |
 | `RIIDO_POLICY_BUNDLE_PATH` | daemon config + policy loader | empty | optional `riido-policy-bundle.v1` file |
 | `RIIDO_POLICY_BUNDLE_VERSION` | daemon config/runtime/workdir | `policy-bundle.local.v0` | active policy version; must match file version when path is set |
 

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net"
 	"strconv"
 	"strings"
 	"time"
@@ -8,6 +9,8 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
+
+const defaultDevelopmentPprofAddr = "127.0.0.1:6061"
 
 func defaultDaemonID(configuredDaemonID, deviceID string) string {
 	if daemonID := strings.TrimSpace(configuredDaemonID); daemonID != "" {
@@ -49,6 +52,57 @@ func parseOptionalPositiveDurationSeconds(raw, name string, fallback time.Durati
 		return 0, daemonWrapf(ErrDaemonConfig, "settings.parse-positive-int", err, "%s must be a positive integer", name)
 	}
 	return time.Duration(n) * time.Second, nil
+}
+
+func parseDaemonPprofAddr(raw, profile string) (string, error) {
+	raw = strings.TrimSpace(raw)
+	if raw == "" {
+		if daemonProfileEnablesPprof(profile) {
+			return defaultDevelopmentPprofAddr, nil
+		}
+		return "", nil
+	}
+	switch strings.ToLower(raw) {
+	case "0", "false", "off", "disabled":
+		return "", nil
+	}
+	host, port, err := net.SplitHostPort(raw)
+	if err != nil {
+		if strings.HasPrefix(raw, ":") {
+			host = "127.0.0.1"
+			port = strings.TrimPrefix(raw, ":")
+		} else {
+			return "", daemonWrapf(ErrDaemonConfig, "settings.parse-pprof-addr", err, "%s must be a loopback host:port", envDaemonPprofAddr)
+		}
+	}
+	if strings.TrimSpace(port) == "" {
+		return "", daemonErrorf(ErrDaemonConfig, "settings.parse-pprof-addr", "%s requires a port", envDaemonPprofAddr)
+	}
+	host = strings.TrimSpace(host)
+	if host == "" {
+		host = "127.0.0.1"
+	}
+	if !daemonPprofHostIsLoopback(host) {
+		return "", daemonErrorf(ErrDaemonConfig, "settings.validate-pprof-addr", "%s must bind to localhost or a loopback address", envDaemonPprofAddr)
+	}
+	return net.JoinHostPort(host, port), nil
+}
+
+func daemonProfileEnablesPprof(profile string) bool {
+	switch strings.ToLower(strings.TrimSpace(profile)) {
+	case "dev", "development":
+		return true
+	default:
+		return false
+	}
+}
+
+func daemonPprofHostIsLoopback(host string) bool {
+	if strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(strings.Trim(host, "[]"))
+	return ip != nil && ip.IsLoopback()
 }
 
 func parseRuntimeAgents(raw string) []runtimeactor.AgentStatus {

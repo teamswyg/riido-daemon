@@ -26,6 +26,11 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 
 	startedAt := time.Now()
 	shutdownLevel := lifecycle.NormalizeShutdownLevel(ctx.ShutdownLevel())
+	stopPprof, _, err := startDaemonPprofServer(ctx, settings.PprofAddr, log)
+	if err != nil {
+		return err
+	}
+	defer stopPprof()
 
 	rtActors, err := newDaemonRuntimeActors(settings, builtinAgentAdapters())
 	if err != nil {
