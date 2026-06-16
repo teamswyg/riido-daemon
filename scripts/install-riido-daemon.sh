@@ -56,12 +56,26 @@ sha256_check() {
   fi
 }
 
-download_base_url() {
-  if [ "$version" = "latest" ]; then
-    echo "https://github.com/$repo/releases/latest/download"
-  else
-    echo "https://github.com/$repo/releases/download/$version"
+resolve_version() {
+  if [ "$version" != "latest" ]; then
+    echo "$version"
+    return
   fi
+
+  latest="$(curl -fsSL \
+    -H "Accept: application/vnd.github+json" \
+    "https://api.github.com/repos/$repo/releases?per_page=1" |
+    sed -n 's/^[[:space:]]*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' |
+    head -n 1)"
+  if [ -z "$latest" ]; then
+    echo "could not resolve latest riido-daemon release for $repo" >&2
+    exit 1
+  fi
+  echo "$latest"
+}
+
+download_base_url() {
+  echo "https://github.com/$repo/releases/download/$resolved_version"
 }
 
 need curl
@@ -73,6 +87,7 @@ fi
 os="$(detect_os)"
 arch="$(detect_arch)"
 asset="riido-daemon_${os}_${arch}.tar.gz"
+resolved_version="$(resolve_version)"
 base_url="$(download_base_url)"
 tmp_dir="$(mktemp -d)"
 trap 'rm -rf "$tmp_dir"' EXIT
@@ -86,4 +101,5 @@ tar -xzf "$tmp_dir/$asset" -C "$tmp_dir"
 install -m 0755 "$tmp_dir/riido" "$install_dir/riido"
 
 echo "riido-daemon installed: $install_dir/riido"
+echo "riido-daemon version: $resolved_version"
 echo "Add $install_dir to PATH or launch it from Riido Desktop."
