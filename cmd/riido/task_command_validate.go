@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/taskdb"
+	"github.com/teamswyg/riido-daemon/internal/taskvalidation"
 	"github.com/teamswyg/riido-daemon/internal/validation"
 )
 
@@ -37,34 +38,28 @@ func runTaskValidate(args []string, taskDBPath string) error {
 	if err != nil {
 		return err
 	}
-	providerForRun, err := validationProviderForTask(db, options.taskID, options.provider)
-	if err != nil {
-		return err
-	}
-	if err := validateDecisionLLMForTask(db, options.taskID, options.decisionLLM); err != nil {
-		return err
-	}
-	taskBeforeValidation, ok := findTaskRecord(db, options.taskID)
-	if !ok {
-		return fmt.Errorf("task %s not found", options.taskID)
-	}
 	now := time.Now()
-	if options.commandID == "" {
-		options.commandID = validationCommandID(options.taskID, now)
-	}
-	result, err := validation.RunCommand(context.Background(), validation.CommandRequest{
+	result, err := taskvalidation.Run(context.Background(), db, taskvalidation.Request{
+		TaskID:         options.taskID,
 		Command:        options.command,
 		Workdir:        options.workdir,
 		Timeout:        options.timeout,
-		CommandID:      options.commandID,
-		Provider:       providerForRun,
-		ValidationGate: options.validationGate,
+		Actor:          options.actor,
+		Source:         options.source,
 		Summary:        options.summary,
+		Provider:       options.provider,
+		DecisionLLM:    options.decisionLLM,
+		ApprovalID:     options.approvalID,
+		CommandID:      options.commandID,
+		ValidationGate: options.validationGate,
 	}, now)
 	if err != nil {
 		return err
 	}
-	return saveTaskValidationResult(db, taskBeforeValidation, options, providerForRun, result, now)
+	if err := taskdb.SaveTaskDB(options.taskDBPath, result.TaskDB); err != nil {
+		return err
+	}
+	return printTaskValidationResult(options.taskDBPath, result)
 }
 
 func parseTaskValidateCLI(args []string, taskDBPath string) (taskValidateCLI, error) {
@@ -127,44 +122,7 @@ func parseTaskValidateFlag(args []string, index *int, options *taskValidateCLI) 
 	return err
 }
 
-func saveTaskValidationResult(
-	db taskdb.TaskDB,
-	taskBeforeValidation taskdb.TaskRecord,
-	options taskValidateCLI,
-	providerForRun string,
-	result validation.CommandResult,
-	now time.Time,
-) error {
-	updated, evidence, receipt, err := taskdb.AddGuardedTaskEvidence(db, taskdb.TaskEvidenceInput{
-		TaskID:            options.taskID,
-		Command:           result.Command,
-		ExitCode:          result.ExitCode,
-		Result:            result.Result,
-		Actor:             options.actor,
-		Source:            options.source,
-		Summary:           result.Summary,
-		ValidationGate:    result.ValidationGate,
-		ProviderRunID:     result.ProviderRunID,
-		ProviderRunResult: result.ProviderRunResult,
-		Guard: taskdb.TaskMutationGuardInput{
-			CommandID:   options.commandID,
-			Provider:    providerForRun,
-			DecisionLLM: options.decisionLLM,
-			ApprovalID:  options.approvalID,
-		},
-	}, now)
-	if err != nil {
-		return err
-	}
-	transition, transitionReceipt, err := maybeApplyValidationTransition(
-		&updated, taskBeforeValidation, options, providerForRun, result, now,
-	)
-	if err != nil {
-		return err
-	}
-	if err := taskdb.SaveTaskDB(options.taskDBPath, updated); err != nil {
-		return err
-	}
+func printTaskValidationResult(taskDBPath string, result taskvalidation.Result) error {
 	return printJSON(struct {
 		OK                bool                             `json:"ok"`
 		TaskDBPath        string                           `json:"task_db_path"`
@@ -174,12 +132,12 @@ func saveTaskValidationResult(
 		Transition        *taskdb.TaskTransitionRecord     `json:"transition,omitempty"`
 		TransitionReceipt *taskdb.TaskCommandReceiptRecord `json:"transition_receipt,omitempty"`
 	}{
-		OK:                evidence.Result == "passed",
-		TaskDBPath:        options.taskDBPath,
-		Validation:        result,
-		Evidence:          evidence,
-		Receipt:           receipt,
-		Transition:        transition,
-		TransitionReceipt: transitionReceipt,
+		OK:                result.Evidence.Result == "passed",
+		TaskDBPath:        taskDBPath,
+		Validation:        result.Validation,
+		Evidence:          result.Evidence,
+		Receipt:           result.Receipt,
+		Transition:        result.Transition,
+		TransitionReceipt: result.TransitionReceipt,
 	})
 }
