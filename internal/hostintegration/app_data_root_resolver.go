@@ -7,48 +7,6 @@ import (
 	"strings"
 )
 
-// HostOS is the operating-system family that owns app data path semantics.
-type HostOS string
-
-const (
-	HostOSDarwin  HostOS = "darwin"
-	HostOSWindows HostOS = "windows"
-)
-
-// AppDataRootScope records why a root path is acceptable for a distribution
-// channel. Store channels must not silently fall back to unmanaged home paths.
-type AppDataRootScope string
-
-const (
-	AppDataRootUserApplicationSupport AppDataRootScope = "user-application-support"
-	AppDataRootSandboxContainer       AppDataRootScope = "sandbox-container"
-	AppDataRootAppGroup               AppDataRootScope = "app-group"
-	AppDataRootWindowsLocalAppData    AppDataRootScope = "windows-local-app-data"
-	AppDataRootWindowsPackageLocal    AppDataRootScope = "windows-package-local-data"
-)
-
-// AppDataRootInput is supplied by an OS adapter. C11 validates the selected
-// root; it does not inspect OS entitlements or call platform APIs itself.
-type AppDataRootInput struct {
-	Channel DistributionChannel
-	HostOS  HostOS
-
-	UserHome                    string
-	DarwinSandboxContainerRoot  string
-	DarwinAppGroupRoot          string
-	WindowsLocalAppDataRoot     string
-	WindowsPackageLocalDataRoot string
-}
-
-// AppDataRoot is the channel-approved local data root for Riido control-plane
-// state on a customer machine.
-type AppDataRoot struct {
-	Channel DistributionChannel
-	HostOS  HostOS
-	Scope   AppDataRootScope
-	Path    string
-}
-
 // DefaultAppDataRoot resolves the default app data root for a distribution
 // channel. Store-managed channels require adapter-provided container/package
 // roots and never derive from arbitrary user home scanning.
@@ -80,21 +38,6 @@ func DefaultAppDataRoot(in AppDataRootInput) (AppDataRoot, error) {
 		return windowsPackageLocalRoot(in)
 	default:
 		return AppDataRoot{}, fmt.Errorf("unsupported distribution channel %q", in.Channel)
-	}
-}
-
-// WorkdirRoot returns the C6 workdir root under the approved app data root.
-func (r AppDataRoot) WorkdirRoot() string {
-	return joinHostPath(r.HostOS, r.Path, "workspaces")
-}
-
-// Valid reports whether os is one of the SSOT-defined host OS values.
-func (os HostOS) Valid() bool {
-	switch os {
-	case HostOSDarwin, HostOSWindows:
-		return true
-	default:
-		return false
 	}
 }
 
@@ -162,27 +105,4 @@ func windowsPackageLocalRoot(in AppDataRootInput) (AppDataRoot, error) {
 		Scope:   AppDataRootWindowsPackageLocal,
 		Path:    root,
 	}, nil
-}
-
-func joinHostPath(os HostOS, elems ...string) string {
-	if os != HostOSWindows {
-		return filepath.Join(elems...)
-	}
-	return joinWindowsPath(elems...)
-}
-
-func joinWindowsPath(elems ...string) string {
-	var parts []string
-	for i, elem := range elems {
-		trimmed := strings.TrimSpace(elem)
-		if trimmed == "" {
-			continue
-		}
-		if i == 0 {
-			parts = append(parts, strings.TrimRight(trimmed, `\/`))
-			continue
-		}
-		parts = append(parts, strings.Trim(trimmed, `\/`))
-	}
-	return strings.Join(parts, `\`)
 }
