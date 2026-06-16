@@ -89,11 +89,12 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 		}
 	}
 	_, err = p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{
-		AssignmentID: assignment.ID,
-		TaskID:       assignment.TaskID,
-		State:        state,
-		EventType:    eventType,
-		Message:      message,
+		AssignmentID:      assignment.ID,
+		TaskID:            assignment.TaskID,
+		ProviderSessionID: res.SessionID,
+		State:             state,
+		EventType:         eventType,
+		Message:           message,
 	})
 	if err != nil {
 		return err

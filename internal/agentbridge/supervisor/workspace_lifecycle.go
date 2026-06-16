@@ -51,6 +51,9 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"workdirPath": ws.Workdir,
 		"taskID":      logicalTaskID,
 	})
+	if err := materializeAssignmentWorktree(ctx, ws.Workdir, req.Worktree); err != nil {
+		return nil, err
+	}
 	nativePlan := workdir.ProviderConfigPlan(string(req.Provider))
 	nativeHookMode := a.nativeHookMode(nativePlan)
 	nativeConfigHomeMode := a.nativeConfigHomeMode(nativePlan)

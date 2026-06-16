@@ -154,13 +154,13 @@ func indexAdapters(in []agentbridge.Adapter) map[string]agentbridge.Adapter {
 	return out
 }
 
-func capabilityForProvider(caps []Capability, provider string) (Capability, bool) {
-	for _, c := range caps {
+func capabilityIndexForProvider(caps []Capability, provider string) int {
+	for i, c := range caps {
 		if c.Provider == provider {
-			return c, true
+			return i
 		}
 	}
-	return Capability{}, false
+	return -1
 }
 
 func metaProfile(meta map[string]string) string {

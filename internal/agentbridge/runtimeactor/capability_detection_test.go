@@ -2,11 +2,13 @@ package runtimeactor
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 )
 
 func startActor(t *testing.T, cfg Config) (*Actor, *fakeProcess) {
@@ -64,6 +66,42 @@ func TestRuntimeActorDetectsCapabilitiesOnStart(t *testing.T) {
 	}
 	if names["missing"].Available || names["missing"].Reason != "not installed" {
 		t.Fatalf("missing capability: %+v", names["missing"])
+	}
+}
+
+func TestRuntimeActorRefreshesUnavailableCapabilityAfterTTL(t *testing.T) {
+	now := time.Date(2026, 6, 16, 12, 0, 0, 0, time.UTC)
+	provider := &stubAdapter{name: "late", detected: agentbridge.DetectResult{Available: false, Reason: "not installed"}}
+
+	a, p := startActor(t, Config{
+		Adapters:               []agentbridge.Adapter{provider},
+		CapabilityRefreshEvery: time.Second,
+		Now:                    func() time.Time { return now },
+	})
+
+	provider.detected = agentbridge.DetectResult{Available: true, Version: "1.2.3", Executable: "/usr/local/bin/late"}
+	_, err := a.Submit(context.Background(), bridge.TaskRequest{ID: "before-ttl", Provider: "late"})
+	if !errors.Is(err, ErrProviderUnavailable) {
+		t.Fatalf("submit before ttl should use cached unavailable capability, got %v", err)
+	}
+	if p.count() != 0 {
+		t.Fatalf("submit before ttl should not spawn provider, got %d", p.count())
+	}
+
+	now = now.Add(2 * time.Second)
+	if _, err := a.Submit(context.Background(), bridge.TaskRequest{ID: "after-ttl", Provider: "late"}); err != nil {
+		t.Fatalf("submit after ttl should refresh provider capability: %v", err)
+	}
+	if p.count() != 1 {
+		t.Fatalf("submit after ttl should spawn provider once, got %d", p.count())
+	}
+
+	status, err := a.Status(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(status.Capabilities) != 1 || !status.Capabilities[0].Available || status.Capabilities[0].Version != "1.2.3" {
+		t.Fatalf("refreshed capability not projected to status: %+v", status.Capabilities)
 	}
 }
 

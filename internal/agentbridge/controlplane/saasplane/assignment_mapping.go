@@ -12,6 +12,13 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		TaskID:       assignment.TaskID,
 	}
 	switch ev.Kind {
+	case agentbridge.EventSessionIdentified:
+		if ev.SessionID == "" {
+			return req, false
+		}
+		req.EventType = assignmentcontract.EventProviderSessionPinned
+		req.ProviderSessionID = ev.SessionID
+		req.Message = "provider session pinned"
 	case agentbridge.EventProgress:
 		req.EventType = assignmentcontract.EventRiidoLog
 		req.Message = ev.Text

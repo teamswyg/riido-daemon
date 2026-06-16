@@ -31,6 +31,10 @@ const (
 	// DefaultMailboxSize is the runtime actor mailbox size fixed by
 	// docs/20-domain/provider-runtime.md §7.5.
 	DefaultMailboxSize = 16
+	// DefaultCapabilityRefreshEvery bounds stale provider detection.
+	// A provider that was missing at daemon start can become available
+	// without requiring a daemon restart.
+	DefaultCapabilityRefreshEvery = 30 * time.Second
 )
 
 // ----- Errors -----
@@ -177,6 +181,10 @@ type Config struct {
 	PolicyBundleVersion string
 	// DetectEnv is passed to each adapter's Detect during Start.
 	DetectEnv agentbridge.DetectEnv
+	// CapabilityRefreshEvery bounds how long provider detection can stay
+	// cached before Submit re-checks the adapter. Set a negative value to
+	// disable submit-time refresh.
+	CapabilityRefreshEvery time.Duration
 	// Now is injected for deterministic tests; defaults to time.Now.
 	Now func() time.Time
 }
