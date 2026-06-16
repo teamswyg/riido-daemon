@@ -128,6 +128,11 @@ long-poll wait and extends the HTTP request timeout above that budget. This is
 not exposed as a public env knob; `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS`
 remains the local supervisor retry interval after an empty long-poll response,
 not the primary empty-poll cost control in SaaS mode.
+Dynamic SaaS runtime bindings from `/v1/daemon/agent-bindings` are cached in
+process for 5 seconds. Runtime registration/snapshot sync invalidates this
+cache, so newly detected provider facts are visible promptly, while idle claim
+loops do not turn binding discovery into a one-request-per-second control-plane
+read.
 The snapshot must preserve the local provider availability verdict: an explicitly
 false `provider.<name>.available` capability is projected as `offline` /
 `missing`, not normalized to `online` merely because the provider binary was
