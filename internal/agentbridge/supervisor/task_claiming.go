@@ -15,8 +15,8 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
-func (a *Actor) claimOne(ctx context.Context, rt *runtimeactor.Actor, status runtimeactor.Status, inFlight map[string]*runningTask) bool {
-	req, err := a.cfg.Source.ClaimTask(ctx, status.RuntimeID)
+func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, status runtimeactor.Status, inFlight map[string]*runningTask) bool {
+	req, err := a.cfg.Source.ClaimTask(claimCtx, status.RuntimeID)
 	if err != nil || req == nil {
 		return false
 	}

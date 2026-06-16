@@ -106,14 +106,26 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 	})
 }
 
-func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string) (assignmentcontract.PollResponse, error) {
+func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string, wait time.Duration) (assignmentcontract.PollResponse, error) {
 	var out assignmentcontract.PollResponse
 	err := p.postJSON(ctx, "/v1/agents/"+url.PathEscape(agentID)+"/poll", assignmentcontract.PollRequest{
 		DaemonID:  p.cfg.DaemonID,
 		DeviceID:  p.cfg.DeviceID,
 		RuntimeID: runtimeID,
+		WaitMs:    pollWaitMilliseconds(wait),
 	}, &out)
 	return out, err
+}
+
+func pollWaitMilliseconds(wait time.Duration) int {
+	if wait <= 0 {
+		return 0
+	}
+	milliseconds := wait.Milliseconds()
+	if milliseconds <= 0 {
+		return 1
+	}
+	return int(milliseconds)
 }
 
 func (p *Plane) postAgentEvent(ctx context.Context, assignment assignmentcontract.Assignment, req assignmentcontract.AgentEventRequest) (assignmentcontract.AgentEventResponse, error) {

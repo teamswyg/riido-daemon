@@ -21,6 +21,14 @@ daemon 은 그 server-side stale/cancel 판정을 인정하고 local provider ru
 cause 를 전달한다. progress/result report 는 `/v1/agents/{agent_id}/events` 로
 전송한다.
 
+Claim poll 은 shared `PollRequest.wait_ms` contract 를 사용해 기본 30 seconds
+long-poll 로 전송한다. Control plane 이 즉시 할당할 작업이 있으면 바로 응답하고,
+없으면 hold budget 내에서 `none` 으로 반환한다. 하나의 runtime 에 후보 agent 가
+여러 개 연결된 경우 daemon 은 모든 후보를 먼저 short poll 로 확인한 뒤, 빈 결과일
+때 첫 후보 하나에만 long-poll 을 건다. 이 규칙은 N 개 후보가 있을 때 supervisor
+claim loop 가 N x 30 seconds 동안 직렬로 묶이는 것을 막기 위한 adapter-local
+backpressure 정책이며, assignment ownership 자체는 계속 control-plane 이 결정한다.
+
 SaaS assignment FSM 은 `ready -> running -> terminal` 순서를 요구한다. Provider
 adapter 가 별도 running lifecycle event 를 내지 않더라도 supervisor 는 provider
 process submit 이 성공한 직후 `assignment_running` report 를 보장해야 한다. Terminal

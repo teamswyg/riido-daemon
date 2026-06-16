@@ -50,6 +50,7 @@ func (a *Actor) StopLifecycle(ctx lifecycle.Context) error {
 	case a.stopReqCh <- lifecycle.NormalizeShutdownLevel(ctx.ShutdownLevel()):
 	default:
 	}
+	a.cancelCurrentClaim()
 	select {
 	case <-a.stoppedCh:
 		select {

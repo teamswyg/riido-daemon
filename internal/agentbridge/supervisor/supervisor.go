@@ -9,8 +9,10 @@
 package supervisor
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/teamswyg/riido-contracts/metadatakeys"
@@ -83,6 +85,9 @@ type Actor struct {
 	stopReqCh chan lifecycle.ShutdownLevel
 	stoppedCh chan struct{}
 	stopErrCh chan error
+
+	claimMu     sync.Mutex
+	claimCancel context.CancelFunc
 }
 
 type envelope struct {

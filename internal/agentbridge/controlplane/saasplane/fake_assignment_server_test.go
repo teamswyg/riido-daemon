@@ -33,32 +33,34 @@ type fakeAssignmentServer struct {
 	deviceID     string
 	deviceSecret string
 
-	assignmentsByAgent map[string][]assignmentcontract.Assignment
-	assignmentsByID    map[string]assignmentcontract.Assignment
-	activeByAgent      map[string]assignmentcontract.Assignment
-	cancelByAgent      map[string]assignmentcontract.Assignment
-	staleHeartbeatIDs  map[string]bool
-	requestCounts      map[string]int
-	transientFailures  map[string]int
-	transientStatuses  map[string]int
-	bindings           []assignmentcontract.AgentRuntimeBinding
-	runtimeSnapshots   []DeviceRuntimeSnapshotSyncRequest
-	events             []assignmentcontract.AgentEventRequest
-	heartbeats         []assignmentcontract.AgentHeartbeatRequest
+	assignmentsByAgent  map[string][]assignmentcontract.Assignment
+	assignmentsByID     map[string]assignmentcontract.Assignment
+	activeByAgent       map[string]assignmentcontract.Assignment
+	cancelByAgent       map[string]assignmentcontract.Assignment
+	staleHeartbeatIDs   map[string]bool
+	requestCounts       map[string]int
+	transientFailures   map[string]int
+	transientStatuses   map[string]int
+	bindings            []assignmentcontract.AgentRuntimeBinding
+	pollRequestsByAgent map[string][]assignmentcontract.PollRequest
+	runtimeSnapshots    []DeviceRuntimeSnapshotSyncRequest
+	events              []assignmentcontract.AgentEventRequest
+	heartbeats          []assignmentcontract.AgentHeartbeatRequest
 }
 
 func newFakeAssignmentServer(t *testing.T) *fakeAssignmentServer {
 	t.Helper()
 	f := &fakeAssignmentServer{
-		t:                  t,
-		assignmentsByAgent: map[string][]assignmentcontract.Assignment{},
-		assignmentsByID:    map[string]assignmentcontract.Assignment{},
-		activeByAgent:      map[string]assignmentcontract.Assignment{},
-		cancelByAgent:      map[string]assignmentcontract.Assignment{},
-		staleHeartbeatIDs:  map[string]bool{},
-		requestCounts:      map[string]int{},
-		transientFailures:  map[string]int{},
-		transientStatuses:  map[string]int{},
+		t:                   t,
+		assignmentsByAgent:  map[string][]assignmentcontract.Assignment{},
+		assignmentsByID:     map[string]assignmentcontract.Assignment{},
+		activeByAgent:       map[string]assignmentcontract.Assignment{},
+		cancelByAgent:       map[string]assignmentcontract.Assignment{},
+		staleHeartbeatIDs:   map[string]bool{},
+		requestCounts:       map[string]int{},
+		transientFailures:   map[string]int{},
+		transientStatuses:   map[string]int{},
+		pollRequestsByAgent: map[string][]assignmentcontract.PollRequest{},
 	}
 	f.server = httptest.NewServer(http.HandlerFunc(f.handle))
 	t.Cleanup(f.server.Close)
@@ -95,6 +97,10 @@ func (f *fakeAssignmentServer) failNext(path string, count, status int) {
 
 func (f *fakeAssignmentServer) requestCount(path string) int {
 	return f.requestCounts[path]
+}
+
+func (f *fakeAssignmentServer) pollRequestsFor(agentID string) []assignmentcontract.PollRequest {
+	return append([]assignmentcontract.PollRequest(nil), f.pollRequestsByAgent[agentID]...)
 }
 
 func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
