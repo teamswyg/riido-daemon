@@ -20,6 +20,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 	if deviceName == "" {
 		deviceName = "localhost"
 	}
+	profile := textutil.Default(getenv(envDaemonProfile), "local")
 
 	workspaceCount, err := parseOptionalNonNegativeInt(getenv(envWorkspaceCount), envWorkspaceCount)
 	if err != nil {
@@ -135,11 +136,15 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 	if err != nil {
 		return daemonSettings{}, err
 	}
+	pprofAddr, err := parseDaemonPprofAddr(getenv(envDaemonPprofAddr), profile)
+	if err != nil {
+		return daemonSettings{}, err
+	}
 
 	return daemonSettings{
 		DaemonID:             defaultDaemonID(getenv(envDaemonID), deviceID),
 		DaemonVersion:        textutil.Default(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
-		Profile:              textutil.Default(getenv(envDaemonProfile), "local"),
+		Profile:              profile,
 		ServerURL:            strings.TrimSpace(getenv(envServerURL)),
 		DeviceID:             deviceID,
 		DeviceSecret:         deviceSecret,
@@ -158,6 +163,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 		HeartbeatEvery:       heartbeatEvery,
 		WorkdirRetention:     workdirRetention,
 		WorkdirCleanupEvery:  workdirCleanupEvery,
+		PprofAddr:            pprofAddr,
 		WorkspaceCount:       workspaceCount,
 		RuntimeMaxConcurrent: runtimeMaxConcurrent,
 		RuntimeAgents:        parseRuntimeAgents(getenv(envRuntimeAgents)),

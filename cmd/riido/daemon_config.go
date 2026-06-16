@@ -32,6 +32,7 @@ const (
 	envDaemonHeartbeatSeconds        = "RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS"
 	envWorkdirRetentionSeconds       = "RIIDO_WORKDIR_RETENTION_SECONDS"
 	envWorkdirCleanupIntervalSeconds = "RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS"
+	envDaemonPprofAddr               = "RIIDO_DAEMON_PPROF_ADDR"
 )
 
 type daemonSettings struct {
@@ -56,6 +57,7 @@ type daemonSettings struct {
 	HeartbeatEvery       time.Duration
 	WorkdirRetention     time.Duration
 	WorkdirCleanupEvery  time.Duration
+	PprofAddr            string
 	WorkspaceCount       int
 	RuntimeMaxConcurrent int
 	RuntimeAgents        []runtimeactor.AgentStatus
