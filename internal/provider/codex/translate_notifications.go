@@ -5,27 +5,27 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/toolargs"
 )
 
-func translateNotification(method string, p map[string]any) []agentbridge.Event {
+func translateNotification(method codexMethod, p map[string]any) []agentbridge.Event {
 	switch method {
-	case "thread_started", "thread_resumed":
+	case codexMethodThreadStarted, codexMethodThreadResumed:
 		return []agentbridge.Event{{Kind: agentbridge.EventSessionIdentified, SessionID: stringField(p, "thread_id")}}
 
-	case "thread/started", "thread/resumed":
+	case codexMethodThreadStartedSlash, codexMethodThreadResumedSlash:
 		return []agentbridge.Event{{Kind: agentbridge.EventSessionIdentified, SessionID: threadIDFromParams(p)}}
 
-	case "turn_started", "turn/started":
+	case codexMethodTurnStarted, codexMethodTurnStartedSlash:
 		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}
 
-	case "agent_message":
+	case codexMethodAgentMessage:
 		return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: stringField(p, "text")}}
 
-	case "item/agentMessage/delta":
+	case codexMethodItemAgentMessageDelta:
 		return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: stringField(p, "delta")}}
 
-	case "reasoning":
+	case codexMethodReasoning:
 		return []agentbridge.Event{{Kind: agentbridge.EventThinkingDelta, Text: stringField(p, "text")}}
 
-	case "command_execution_started":
+	case codexMethodCommandStarted:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolCallStarted,
 			Tool: agentbridge.ToolRef{
@@ -36,14 +36,14 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 			},
 		}}
 
-	case "command_execution_output":
+	case codexMethodCommandOutput:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolCallDelta,
 			Tool: agentbridge.ToolRef{ID: stringField(p, "id")},
 			Text: stringField(p, "chunk"),
 		}}
 
-	case "command_execution_completed":
+	case codexMethodCommandCompleted:
 		kind := agentbridge.EventToolCallCompleted
 		if intField(p, "exit_code") != 0 {
 			kind = agentbridge.EventToolCallFailed
@@ -53,7 +53,7 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 			Tool: agentbridge.ToolRef{ID: stringField(p, "id"), Kind: "shell"},
 		}}
 
-	case "apply_patch_started":
+	case codexMethodApplyPatchStart:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolCallStarted,
 			Tool: agentbridge.ToolRef{
@@ -63,13 +63,13 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 			},
 		}}
 
-	case "apply_patch_completed":
+	case codexMethodApplyPatchDone:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolCallCompleted,
 			Tool: agentbridge.ToolRef{ID: stringField(p, "id"), Kind: "patch_apply"},
 		}}
 
-	case "turn_completed", "turn/completed":
+	case codexMethodTurnCompleted, codexMethodTurnCompleteSlash:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventResult,
 			Result: agentbridge.Result{
@@ -78,7 +78,7 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 			},
 		}}
 
-	case "turn_error", "turn/error", "turn/failed":
+	case codexMethodTurnError, codexMethodTurnErrorSlash, codexMethodTurnFailedSlash:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventResult,
 			Result: agentbridge.Result{
@@ -87,7 +87,7 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 			},
 		}}
 
-	case "account/rateLimits/updated", "account_rate_limits_updated":
+	case codexMethodAccountRateLimitsUpdated, codexMethodAccountRateLimitsAlt:
 		// Codex app-server periodically reports current account rate-limit
 		// windows. Informational (not terminal) — surface as a clear log so it
 		// is no longer reported as an "unknown notification".
@@ -99,20 +99,20 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 	// they stop surfacing as "unknown notification" noise. Completion is NOT
 	// inferred here — that stays with turn/completed and thread/status/changed
 	// so a per-item completion can never truncate a live turn.
-	case "item/started", "item/updated", "item/completed",
-		"hook/started", "hook/completed",
-		"mcpServer/startupStatus/updated",
-		"remoteControl/status/changed":
-		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex " + method}}
+	case codexMethodItemStarted, codexMethodItemUpdated, codexMethodItemCompleted,
+		codexMethodHookStarted, codexMethodHookCompleted,
+		codexMethodMCPStartupStatusUpdated,
+		codexMethodRemoteControlChanged:
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex " + string(method)}}
 
-	case "usage":
+	case codexMethodUsage:
 		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: agentbridge.Usage{
 			PromptTokens:     intField(p, "input_tokens"),
 			CompletionTokens: intField(p, "output_tokens"),
 			ReasoningTokens:  intField(p, "reasoning_tokens"),
 		}}}
 
-	case "thread/tokenUsage/updated":
+	case codexMethodThreadTokenUsage:
 		total := mapField(mapField(p, "tokenUsage"), "total")
 		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: agentbridge.Usage{
 			PromptTokens:     intField(total, "inputTokens"),
@@ -120,14 +120,14 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 			ReasoningTokens:  intField(total, "reasoningOutputTokens"),
 			CacheReadTokens:  intField(total, "cachedInputTokens"),
 		}}}
+	default:
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown notification: " + string(method)}}
 	}
-
-	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown notification: " + method}}
 }
 
-func translateServerRequest(method string, p map[string]any) []agentbridge.Event {
+func translateServerRequest(method codexMethod, p map[string]any) []agentbridge.Event {
 	switch method {
-	case "approve_command":
+	case codexMethodApproveCommand:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolApprovalNeeded,
 			Tool: agentbridge.ToolRef{
@@ -137,7 +137,7 @@ func translateServerRequest(method string, p map[string]any) []agentbridge.Event
 				Args: toolargs.FromPairs("command", stringField(p, "command")),
 			},
 		}}
-	case "approve_patch":
+	case codexMethodApprovePatch:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolApprovalNeeded,
 			Tool: agentbridge.ToolRef{
@@ -147,8 +147,9 @@ func translateServerRequest(method string, p map[string]any) []agentbridge.Event
 				Args: toolargs.FromPairs("path", stringField(p, "path")),
 			},
 		}}
+	default:
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown server_request: " + string(method)}}
 	}
-	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown server_request: " + method}}
 }
 
 func params(raw agentbridge.RawEvent) map[string]any {

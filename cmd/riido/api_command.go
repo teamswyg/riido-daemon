@@ -23,18 +23,18 @@ func runAPI(args []string) error {
 		return err
 	}
 
-	switch args[0] {
-	case "status":
+	switch apiCommand(args[0]) {
+	case apiCommandStatus:
 		return runAPIStatus(args[1:], config)
-	case "tasks":
+	case apiCommandTasks:
 		return runAPITasks(args[1:], config)
-	case "review-demo":
+	case apiCommandReviewDemo:
 		return runAPIReviewDemo(args[1:], config)
-	case "transition":
+	case apiCommandTransition:
 		return runAPITransition(args[1:], config)
-	case "evidence":
+	case apiCommandEvidence:
 		return runAPIEvidence(args[1:], config)
-	case "validate":
+	case apiCommandValidate:
 		return runAPIValidate(args[1:], config)
 	default:
 		printUsage()
@@ -89,7 +89,7 @@ func parseAPIConnectionFlag(args []string, index *int, config *apiCLIConfig) (bo
 func requestAPI(
 	config apiCLIConfig,
 	timeout time.Duration,
-	method string,
+	method riidoapi.Method,
 	request any,
 	response any,
 ) error {
@@ -97,5 +97,5 @@ func requestAPI(
 	defer cancel()
 	client := riidoapi.NewClientWithTransport(config.transport, config.socketPath)
 	client.Timeout = timeout
-	return client.Request(ctx, method, request, response)
+	return client.Request(ctx, string(method), request, response)
 }

@@ -55,7 +55,7 @@ func serveRawMwsd(t *testing.T, socketPath string, respond func(method string) s
 				if err := json.NewDecoder(conn).Decode(&req); err != nil {
 					return
 				}
-				_, _ = conn.Write([]byte(respond(req.Method)))
+				_, _ = conn.Write([]byte(respond(string(req.Method))))
 			}(conn)
 		}
 	}()

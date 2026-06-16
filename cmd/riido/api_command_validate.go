@@ -32,7 +32,7 @@ func runAPIValidate(args []string, config apiCLIConfig) error {
 		timeout = time.Duration(request.TimeoutSeconds)*time.Second + 5*time.Second
 	}
 	var response riidoapi.ValidateResponse
-	if err := requestAPI(config, timeout, "validate", request, &response); err != nil {
+	if err := requestAPI(config, timeout, riidoapi.MethodValidate, request, &response); err != nil {
 		return err
 	}
 	return printJSON(response)

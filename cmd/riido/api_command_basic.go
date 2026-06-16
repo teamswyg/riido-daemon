@@ -16,7 +16,7 @@ func runAPIStatus(args []string, config apiCLIConfig) error {
 		return err
 	}
 	var status riidoapi.Status
-	if err := requestAPI(config, 5*time.Second, "status", nil, &status); err != nil {
+	if err := requestAPI(config, 5*time.Second, riidoapi.MethodStatus, nil, &status); err != nil {
 		return err
 	}
 	return printJSON(status)
@@ -31,7 +31,7 @@ func runAPITasks(args []string, config apiCLIConfig) error {
 		return err
 	}
 	var db taskdb.TaskDB
-	if err := requestAPI(config, 5*time.Second, "tasks", nil, &db); err != nil {
+	if err := requestAPI(config, 5*time.Second, riidoapi.MethodTasks, nil, &db); err != nil {
 		return err
 	}
 	return printJSON(db)

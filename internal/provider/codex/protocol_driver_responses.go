@@ -24,13 +24,13 @@ func (d *protocolDriver) failedEvents(message string) []agentbridge.Event {
 // idle status cannot end the run before any work happens; unknown statuses are
 // logged (never fail the run).
 func (d *protocolDriver) threadStatusEvents(p map[string]any) []agentbridge.Event {
-	status := strings.ToLower(strings.TrimSpace(codexThreadStatus(p)))
+	status := threadStatus(strings.ToLower(strings.TrimSpace(threadStatusFromPayload(p))))
 	switch {
 	case codexStatusIsError(status):
-		return d.failedEvents("codex thread status: " + status)
+		return d.failedEvents("codex thread status: " + string(status))
 	case codexStatusIsTerminal(status):
 		if !d.turnStarted {
-			return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex thread status: " + status + " (no active turn)"}}
+			return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex thread status: " + string(status) + " (no active turn)"}}
 		}
 		d.turnStarted = false
 		return []agentbridge.Event{{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultCompleted}}}
@@ -38,13 +38,13 @@ func (d *protocolDriver) threadStatusEvents(p map[string]any) []agentbridge.Even
 		d.turnStarted = true
 		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}
 	default:
-		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex thread status changed: " + status}}
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex thread status changed: " + string(status)}}
 	}
 }
 
-// codexThreadStatus extracts the status string from a thread/status/changed
+// threadStatusFromPayload extracts the status string from a thread/status/changed
 // payload, tolerating a few shapes (flat string, nested object, or "state").
-func codexThreadStatus(p map[string]any) string {
+func threadStatusFromPayload(p map[string]any) string {
 	if s := stringField(p, "status"); s != "" {
 		return s
 	}
@@ -57,28 +57,35 @@ func codexThreadStatus(p map[string]any) string {
 	return stringField(p, "state")
 }
 
-func codexStatusIsTerminal(status string) bool {
+func codexStatusIsTerminal(status threadStatus) bool {
 	switch status {
-	case "idle", "completed", "complete", "finished", "done", "ready", "succeeded":
+	case threadStatusIdle, threadStatusCompleted, threadStatusComplete, threadStatusFinished,
+		threadStatusDone, threadStatusReady, threadStatusSucceeded:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
-func codexStatusIsError(status string) bool {
+func codexStatusIsError(status threadStatus) bool {
 	switch status {
-	case "error", "errored", "failed", "aborted", "cancelled", "canceled", "interrupted":
+	case threadStatusError, threadStatusErrored, threadStatusFailed, threadStatusAborted,
+		threadStatusCancelled, threadStatusCanceled, threadStatusInterrupted:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
-func codexStatusIsActive(status string) bool {
+func codexStatusIsActive(status threadStatus) bool {
 	switch status {
-	case "running", "active", "in_progress", "working", "streaming", "thinking", "busy", "generating", "turn_running":
+	case threadStatusRunning, threadStatusActive, threadStatusInProgress, threadStatusWorking,
+		threadStatusStreaming, threadStatusThinking, threadStatusBusy, threadStatusGenerating,
+		threadStatusTurnRunning:
 		return true
+	default:
+		return false
 	}
-	return false
 }
 
 // --- handshake state machine (NOT a RunState FSM — just transport progress) ---
@@ -96,17 +103,17 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 	delete(d.pending, id)
 
 	switch pr.method {
-	case "initialize":
+	case codexMethodInitialize:
 		// Send "initialized" notification (no id, no response expected).
-		if err := d.sendNotification(ctx, io, "initialized", map[string]any{}); err != nil {
+		if err := d.sendNotification(ctx, io, codexMethodInitialized, map[string]any{}); err != nil {
 			return nil, nil, err
 		}
 		d.initialized = true
 		// Send thread/start (or thread/resume).
-		method := "thread/start"
+		method := codexMethodThreadStart
 		params := map[string]any{}
 		if d.req.ResumeSessionID != "" {
-			method = "thread/resume"
+			method = codexMethodThreadResume
 			params["threadId"] = d.req.ResumeSessionID
 		} else if d.req.Model != "" {
 			params["model"] = d.req.Model
@@ -115,7 +122,7 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 			return nil, nil, err
 		}
 
-	case "thread/start", "thread/resume":
+	case codexMethodThreadStart, codexMethodThreadResume:
 		result := mapField(raw.Payload, "result")
 		d.threadID = threadIDFromResult(result)
 		// Surface as an agentbridge SessionIdentified so downstream
@@ -137,32 +144,34 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 		if d.req.Model != "" {
 			params["model"] = d.req.Model
 		}
-		if _, err := d.sendRequest(ctx, io, "turn/start", params); err != nil {
+		if _, err := d.sendRequest(ctx, io, codexMethodTurnStart, params); err != nil {
 			return nil, nil, err
 		}
 		return events, nil, nil
 
-	case "turn/start":
+	case codexMethodTurnStart:
 		d.turnStarted = true
 		// The Codex server may emit turn_started notification later;
 		// translate handles that. Here we emit a Lifecycle so the
 		// reducer reflects "running" even if we never see the
 		// notification.
 		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}, nil, nil
+	default:
+		return nil, nil, nil
 	}
 	return nil, nil, nil
 }
 
 // --- transport helpers ---
 
-func (d *protocolDriver) sendRequest(ctx context.Context, io agentbridge.ProtocolIO, method string, params map[string]any) (int64, error) {
+func (d *protocolDriver) sendRequest(ctx context.Context, io agentbridge.ProtocolIO, method codexMethod, params map[string]any) (int64, error) {
 	d.nextID++
 	id := d.nextID
 	d.pending[id] = pendingRequest{method: method}
 	frame := map[string]any{
 		"jsonrpc": "2.0",
 		"id":      id,
-		"method":  method,
+		"method":  string(method),
 	}
 	if params != nil {
 		frame["params"] = params

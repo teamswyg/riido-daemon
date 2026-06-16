@@ -19,7 +19,7 @@ func runMwsd(args []string) error {
 		printUsage()
 		return nil
 	}
-	command := args[0]
+	command := mwsdCommand(args[0])
 	var socketPath string
 	var statePath string
 	var taskDBPath string
@@ -57,7 +57,7 @@ func runMwsd(args []string) error {
 		}
 		socketPath = defaultSocketPath
 	}
-	if command == "sync" {
+	if command == mwsdCommandSync {
 		if statePath == "" {
 			defaultStatePath, err := project.DefaultStatePath()
 			if err != nil {
@@ -79,13 +79,13 @@ func runMwsd(args []string) error {
 	client := mwsdbridge.NewClient(socketPath)
 
 	switch command {
-	case "snapshot":
+	case mwsdCommandSnapshot:
 		snapshot, err := client.FetchSnapshot(ctx)
 		if err != nil {
 			return err
 		}
 		return printJSON(snapshot)
-	case "projection":
+	case mwsdCommandProjection:
 		snapshot, err := client.FetchSnapshot(ctx)
 		if err != nil {
 			return err
@@ -95,7 +95,7 @@ func runMwsd(args []string) error {
 			return err
 		}
 		return printJSON(projection)
-	case "sync":
+	case mwsdCommandSync:
 		snapshot, err := client.FetchSnapshot(ctx)
 		if err != nil {
 			return err
@@ -145,21 +145,21 @@ func runMwsd(args []string) error {
 			Provider:    state.RecommendedProvider,
 			Diagnostics: state.Diagnostics,
 		})
-	case "orchestration":
+	case mwsdCommandOrchestration:
 		var orchestration mwsdbridge.OrchestrationSnapshot
-		if err := client.Request(ctx, "orchestration", &orchestration); err != nil {
+		if err := client.Request(ctx, string(mwsdbridge.MethodOrchestration), &orchestration); err != nil {
 			return err
 		}
 		return printJSON(orchestration)
-	case "projects":
+	case mwsdCommandProjects:
 		var projects mwsdbridge.ProjectRegistry
-		if err := client.Request(ctx, "projects", &projects); err != nil {
+		if err := client.Request(ctx, string(mwsdbridge.MethodProjects), &projects); err != nil {
 			return err
 		}
 		return printJSON(projects)
-	case "status":
+	case mwsdCommandStatus:
 		var status mwsdbridge.Status
-		if err := client.Request(ctx, "status", &status); err != nil {
+		if err := client.Request(ctx, string(mwsdbridge.MethodStatus), &status); err != nil {
 			return err
 		}
 		return printJSON(status)

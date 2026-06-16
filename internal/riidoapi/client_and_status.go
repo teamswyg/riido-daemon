@@ -84,7 +84,7 @@ func (c Client) Request(ctx context.Context, method string, params, out any) err
 	if err != nil {
 		return err
 	}
-	requestBody, err := json.Marshal(requestEnvelope{Method: method, Params: rawParams})
+	requestBody, err := json.Marshal(requestEnvelope{Method: Method(method), Params: rawParams})
 	if err != nil {
 		return fmt.Errorf("encode riido API request: %w", err)
 	}
@@ -111,7 +111,7 @@ func (c Client) Request(ctx context.Context, method string, params, out any) err
 		}
 		return fmt.Errorf("riido API %s failed", method)
 	}
-	if env.Method != method {
+	if env.Method != Method(method) {
 		return fmt.Errorf("riido API method mismatch: requested %s got %s", method, env.Method)
 	}
 	if err := json.Unmarshal(env.Data, out); err != nil {

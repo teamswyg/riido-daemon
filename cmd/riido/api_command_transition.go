@@ -27,7 +27,7 @@ func runAPITransition(args []string, config apiCLIConfig) error {
 		return fmt.Errorf("--event is required")
 	}
 	var response riidoapi.TransitionResponse
-	if err := requestAPI(config, 5*time.Second, "transition", request, &response); err != nil {
+	if err := requestAPI(config, 5*time.Second, riidoapi.MethodTransition, request, &response); err != nil {
 		return err
 	}
 	return printJSON(response)

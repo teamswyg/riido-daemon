@@ -21,18 +21,18 @@ func run(args []string) error {
 		printUsage()
 		return nil
 	}
-	switch args[0] {
-	case "mwsd":
+	switch mainCommand(args[0]) {
+	case mainCommandMwsd:
 		return runMwsd(args[1:])
-	case "task":
+	case mainCommandTask:
 		return runTask(args[1:])
-	case "serve":
+	case mainCommandServe:
 		return runServe(args[1:])
-	case "api":
+	case mainCommandAPI:
 		return runAPI(args[1:])
-	case "bridge":
+	case mainCommandBridge:
 		return runBridge(args[1:])
-	case "daemon":
+	case mainCommandDaemon:
 		return runDaemon(args[1:])
 	default:
 		printUsage()

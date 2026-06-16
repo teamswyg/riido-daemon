@@ -29,7 +29,7 @@ func tryShutdownViaSocket(socket string, timeout time.Duration, level lifecycle.
 	}
 	_ = conn.SetDeadline(time.Now().Add(1 * time.Second))
 	if err := json.NewEncoder(conn).Encode(daemonRequest{
-		Method:        "shutdown",
+		Method:        daemonMethodShutdown,
 		ShutdownLevel: level.String(),
 		Force:         level.IsForced(),
 	}); err != nil {

@@ -58,37 +58,37 @@ func (s Server) handleConn(ctx context.Context, conn net.Conn) {
 
 func (s Server) handleRequest(ctx context.Context, req requestEnvelope) responseEnvelope {
 	switch req.Method {
-	case "status":
+	case MethodStatus:
 		db, err := taskdb.LoadTaskDBOrEmpty(s.config.TaskDBPath)
 		if err != nil {
 			return errorResponse(req.Method, err)
 		}
 		return okResponse(req.Method, statusFromDB(s.config, db))
-	case "tasks":
+	case MethodTasks:
 		db, err := taskdb.LoadTaskDBOrEmpty(s.config.TaskDBPath)
 		if err != nil {
 			return errorResponse(req.Method, err)
 		}
 		return okResponse(req.Method, db)
-	case "transition":
+	case MethodTransition:
 		response, err := s.applyTransition(req.Params)
 		if err != nil {
 			return errorResponse(req.Method, err)
 		}
 		return okResponse(req.Method, response)
-	case "evidence":
+	case MethodEvidence:
 		response, err := s.addEvidence(req.Params)
 		if err != nil {
 			return errorResponse(req.Method, err)
 		}
 		return okResponse(req.Method, response)
-	case "validate":
+	case MethodValidate:
 		response, err := s.validateTask(ctx, req.Params)
 		if err != nil {
 			return errorResponse(req.Method, err)
 		}
 		return okResponse(req.Method, response)
-	case "review-demo":
+	case MethodReviewDemo:
 		response, err := s.evaluateReviewDemo(req.Params)
 		if err != nil {
 			return errorResponse(req.Method, err)

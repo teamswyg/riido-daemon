@@ -28,10 +28,10 @@ func runBridge(args []string) error {
 		printUsage()
 		return fmt.Errorf("missing bridge subcommand")
 	}
-	switch args[0] {
-	case "providers":
+	switch bridgeCommand(args[0]) {
+	case bridgeCommandProviders:
 		return runBridgeProviders(args[1:])
-	case "detect":
+	case bridgeCommandDetect:
 		return runBridgeDetect(args[1:])
 	default:
 		printUsage()
