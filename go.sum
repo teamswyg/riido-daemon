@@ -1,6 +1,2 @@
-github.com/teamswyg/riido-contracts v0.3.3 h1:Bagmvj3GLFFplNf/FaKKBViR+99jIJsTF/PRPwgReKc=
-github.com/teamswyg/riido-contracts v0.3.3/go.mod h1:UOHHonaAbnAICnQjdFJ+uuC05/lAb9j/L0iYf7f8I2M=
-github.com/teamswyg/riido-contracts v0.3.6-0.20260615101845-7995aabd2993 h1:uv7kXkl/dFfuJ0xG8/QjIy0piyw9kDpAyfdxocllUm4=
-github.com/teamswyg/riido-contracts v0.3.6-0.20260615101845-7995aabd2993/go.mod h1:UOHHonaAbnAICnQjdFJ+uuC05/lAb9j/L0iYf7f8I2M=
-github.com/teamswyg/riido-contracts v0.3.6-0.20260615124242-dadb6e73b0cf h1:GFDjuwNLeA3JPfXsPfPywikwtmqnytU7LIGIZFCkNBU=
-github.com/teamswyg/riido-contracts v0.3.6-0.20260615124242-dadb6e73b0cf/go.mod h1:UOHHonaAbnAICnQjdFJ+uuC05/lAb9j/L0iYf7f8I2M=
+github.com/teamswyg/riido-contracts v0.3.6 h1:DTIGNYLkdnYUb9z9/L7J0izgimG/F+lbVczeEZCuWBQ=
+github.com/teamswyg/riido-contracts v0.3.6/go.mod h1:E5jCTyS8E3DRpujkBn9kU1B+OImVDa/3T1rmxZmWRpA=

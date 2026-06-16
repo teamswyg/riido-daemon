@@ -2,6 +2,8 @@ package saasplane
 
 import (
 	"strings"
+
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 )
 
 func normalizedExecutionIDs(in []string) []string {
@@ -19,10 +21,10 @@ func normalizedExecutionIDs(in []string) []string {
 }
 
 func runtimeKindForProvider(provider string) string {
-	switch runtimeProviderID(strings.TrimSpace(provider)) {
-	case runtimeProviderClaude:
-		return string(runtimeProviderClaudeCode)
+	switch providercatalog.Normalize(provider) {
+	case providercatalog.KindClaude:
+		return string(providercatalog.KindClaudeCode)
 	default:
-		return strings.TrimSpace(provider)
+		return providercatalog.String(provider)
 	}
 }

@@ -16,12 +16,13 @@ import (
 	"fmt"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/policy"
 )
 
 // Name is the canonical adapter identifier.
-const Name = "claude"
+const Name = string(providercatalog.KindClaude)
 
 // DefaultExecutable is the binary name resolved on $PATH when no
 // explicit executable is configured.

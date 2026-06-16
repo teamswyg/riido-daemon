@@ -25,12 +25,13 @@ import (
 	"strconv"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/policy"
 )
 
 const (
-	Name              = "cursor"
+	Name              = string(providercatalog.KindCursor)
 	DefaultExecutable = "cursor-agent"
 )
 

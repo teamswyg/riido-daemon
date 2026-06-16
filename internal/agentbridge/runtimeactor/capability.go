@@ -10,6 +10,7 @@ import (
 	"time"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
@@ -99,7 +100,7 @@ func reconcileProviderCapability(runtimeID, provider string, res agentbridge.Det
 		SupportsPartialDeltas:         res.SupportsStreaming,
 		SupportsResume:                res.SupportsResume,
 		SupportsSessionID:             res.SupportsResume,
-		SupportsSessionPin:            provider == "codex",
+		SupportsSessionPin:            providercatalog.IsCodex(provider),
 		SupportsSystemPrompt:          res.SupportsSystem,
 		SupportsMaxTurns:              res.SupportsMaxTurns,
 		SupportsToolEvents:            res.SupportsToolHooks,

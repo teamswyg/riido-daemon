@@ -8,6 +8,7 @@ import (
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
@@ -153,7 +154,7 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 	return &bridge.TaskRequest{
 		ID:                       executionID,
 		Provider:                 bridge.Provider(assignment.RuntimeProvider),
-		Model:                    providerModelOverride(assignment.RuntimeProvider, assignment.ModelID),
+		Model:                    providercatalog.ModelOverride(assignment.RuntimeProvider, assignment.ModelID),
 		Prompt:                   prompt,
 		SystemPrompt:             systemPrompt,
 		AllowExperimentalRuntime: assignment.AllowExperimentalRuntime,
