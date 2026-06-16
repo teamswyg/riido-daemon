@@ -54,9 +54,18 @@ func assignmentCloneURL(worktree *assignmentcontract.AssignmentWorktree) (string
 	}
 	repoURL := strings.TrimSpace(worktree.RepositoryURL)
 	if repoURL == "" {
-		fullName := strings.Trim(strings.TrimSpace(worktree.RepositoryFullName), "/")
-		if fullName == "" {
+		rawFullName := strings.TrimSpace(worktree.RepositoryFullName)
+		if rawFullName == "" {
 			return "", nil
+		}
+		fullName := assignmentcontract.NormalizePublicGitHubRepositoryFullName(rawFullName)
+		if fullName == "" {
+			parsed := &url.URL{
+				Scheme: "https",
+				Host:   "github.com",
+				Path:   "/" + strings.Trim(rawFullName, "/"),
+			}
+			return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
 		}
 		repoURL = "https://github.com/" + fullName
 	}
@@ -64,46 +73,11 @@ func assignmentCloneURL(worktree *assignmentcontract.AssignmentWorktree) (string
 	if err != nil {
 		return "", fmt.Errorf("supervisor: invalid assignment repository_url: %w", err)
 	}
-	if parsed.Scheme != "https" || !strings.EqualFold(parsed.Hostname(), "github.com") || parsed.User != nil {
+	cloneURL := assignmentcontract.NormalizePublicGitHubRepositoryURL(repoURL)
+	if cloneURL == "" {
 		return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
 	}
-	if parsed.RawQuery != "" || parsed.ForceQuery || parsed.Fragment != "" || parsed.RawFragment != "" {
-		return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
-	}
-	if !validGitHubRepositoryPath(parsed.Path) {
-		return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
-	}
-	return parsed.String(), nil
-}
-
-func validGitHubRepositoryPath(path string) bool {
-	parts := strings.Split(strings.Trim(path, "/"), "/")
-	if len(parts) != 2 {
-		return false
-	}
-	for _, part := range parts {
-		if !validGitHubRepositoryPart(part) {
-			return false
-		}
-	}
-	return true
-}
-
-func validGitHubRepositoryPart(part string) bool {
-	if part == "" || part == "." || part == ".." {
-		return false
-	}
-	for _, ch := range part {
-		switch {
-		case ch >= 'a' && ch <= 'z':
-		case ch >= 'A' && ch <= 'Z':
-		case ch >= '0' && ch <= '9':
-		case ch == '-' || ch == '_' || ch == '.':
-		default:
-			return false
-		}
-	}
-	return true
+	return cloneURL, nil
 }
 
 func redactedRepositoryURL(parsed *url.URL) string {
@@ -117,7 +91,9 @@ func redactedRepositoryURL(parsed *url.URL) string {
 	copyURL.Fragment = ""
 	copyURL.RawFragment = ""
 	copyURL.RawPath = ""
-	if !validGitHubRepositoryPath(copyURL.Path) {
+	if fullName := assignmentcontract.NormalizePublicGitHubRepositoryFullName(copyURL.Path); fullName != "" {
+		copyURL.Path = "/" + fullName
+	} else {
 		copyURL.Path = "/redacted"
 	}
 	return copyURL.String()
