@@ -20,8 +20,15 @@ func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 		RuntimeProvider:  "codex",
 		Prompt:           "golang hello world quickly",
 		AgentInstruction: "write concise Korean progress updates",
-		State:            assignmentcontract.AssignmentQueued,
-		LeaseToken:       "lease-1",
+		ResumeSessionID:  "sess-prev",
+		Worktree: &assignmentcontract.AssignmentWorktree{
+			RepositoryFullName: "teamswyg/riido-daemon",
+			RepositoryURL:      "https://github.com/teamswyg/riido-daemon",
+			BranchName:         "RIID-4964-agent-profile-upload",
+			Source:             "connected_pull_request",
+		},
+		State:      assignmentcontract.AssignmentQueued,
+		LeaseToken: "lease-1",
 	})
 	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
 	defer plane.Close()
@@ -38,6 +45,12 @@ func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 	}
 	if got := req.Metadata[controlplane.MetadataTaskID]; got != "task-a" {
 		t.Fatalf("task metadata = %q", got)
+	}
+	if req.ResumeSessionID != "sess-prev" {
+		t.Fatalf("resume_session_id = %q", req.ResumeSessionID)
+	}
+	if req.Worktree == nil || req.Worktree.RepositoryFullName != "teamswyg/riido-daemon" || req.Worktree.BranchName != "RIID-4964-agent-profile-upload" {
+		t.Fatalf("worktree = %+v", req.Worktree)
 	}
 	if got := req.Metadata["workspace_id"]; got != "component-1" {
 		t.Fatalf("workspace_id = %q", got)
@@ -67,14 +80,30 @@ func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 	if err := plane.ReportEvent(context.Background(), req.ID, agentbridge.Event{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}); err != nil {
 		t.Fatalf("ReportEvent running: %v", err)
 	}
-	if err := plane.CompleteTask(context.Background(), req.ID, agentbridge.Result{Status: agentbridge.ResultCompleted, Output: "ok"}); err != nil {
+	if err := plane.ReportEvent(context.Background(), req.ID, agentbridge.Event{Kind: agentbridge.EventSessionIdentified, SessionID: "sess-1"}); err != nil {
+		t.Fatalf("ReportEvent session: %v", err)
+	}
+	if err := plane.CompleteTask(context.Background(), req.ID, agentbridge.Result{Status: agentbridge.ResultCompleted, Output: "ok", SessionID: "sess-1"}); err != nil {
 		t.Fatalf("CompleteTask: %v", err)
 	}
 
 	fake.assertEvent(t, assignmentcontract.EventAssignmentReady)
 	fake.assertEvent(t, assignmentcontract.EventRiidoLog)
 	fake.assertEvent(t, assignmentcontract.EventAssignmentRunning)
+	fake.assertEvent(t, assignmentcontract.EventProviderSessionPinned)
 	fake.assertEvent(t, assignmentcontract.EventAssignmentCompleted)
+	var sawPinned, sawCompleted bool
+	for _, event := range fake.events {
+		if event.EventType == assignmentcontract.EventProviderSessionPinned && event.ProviderSessionID == "sess-1" {
+			sawPinned = true
+		}
+		if event.EventType == assignmentcontract.EventAssignmentCompleted && event.ProviderSessionID == "sess-1" {
+			sawCompleted = true
+		}
+	}
+	if !sawPinned || !sawCompleted {
+		t.Fatalf("provider session id was not carried through events: %+v", fake.events)
+	}
 	heartbeats := fake.heartbeatsFor("jykim1")
 	if len(heartbeats) != 1 || len(heartbeats[0].ActiveAssignmentIDs) != 1 || heartbeats[0].ActiveAssignmentIDs[0] != "asn-1" {
 		t.Fatalf("heartbeats = %+v", heartbeats)
@@ -92,6 +121,7 @@ func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 		Prompt:                   "golang hello world quickly",
 		AgentInstruction:         "act as a backend reviewer",
 		AllowExperimentalRuntime: true,
+		ResumeSessionID:          "sess-prev",
 	}
 	req := taskRequestFromAssignment(assignment)
 	if req.Prompt != assignment.Prompt {
@@ -111,6 +141,9 @@ func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 	}
 	if req.Model != assignment.ModelID {
 		t.Fatalf("model_id was not copied from assignment: %q", req.Model)
+	}
+	if req.ResumeSessionID != assignment.ResumeSessionID {
+		t.Fatalf("resume_session_id was not copied from assignment: %q", req.ResumeSessionID)
 	}
 	if got := req.Metadata[MetadataModelID]; got != assignment.ModelID {
 		t.Fatalf("metadata model_id = %q, want %q", got, assignment.ModelID)

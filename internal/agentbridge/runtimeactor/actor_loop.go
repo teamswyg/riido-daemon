@@ -92,6 +92,9 @@ func New(cfg Config) (*Actor, error) {
 	if cfg.PolicyBundleVersion == "" {
 		cfg.PolicyBundleVersion = "policy-bundle.local.v0"
 	}
+	if cfg.CapabilityRefreshEvery == 0 {
+		cfg.CapabilityRefreshEvery = DefaultCapabilityRefreshEvery
+	}
 
 	a := &Actor{
 		cfg:       cfg,
@@ -110,6 +113,7 @@ func New(cfg Config) (*Actor, error) {
 // Detect error; per-provider Available=false reports do NOT abort.
 func (a *Actor) Start(ctx context.Context) error {
 	caps := make([]Capability, 0, len(a.cfg.Adapters))
+	detectedAt := make(map[string]time.Time, len(a.cfg.Adapters))
 	discoveredAt := a.cfg.Now()
 	for _, adapter := range a.cfg.Adapters {
 		res, err := adapter.Detect(ctx, a.cfg.DetectEnv)
@@ -121,15 +125,16 @@ func (a *Actor) Start(ctx context.Context) error {
 			return fmt.Errorf("runtimeactor: capability %s: %w", adapter.Name(), err)
 		}
 		caps = append(caps, capView)
+		detectedAt[adapter.Name()] = discoveredAt
 	}
 	a.startedAt = discoveredAt
-	go a.run(caps)
+	go a.run(caps, detectedAt)
 	close(a.startedCh)
 	return nil
 }
 
 // run is the actor loop. SOLE owner of in-flight map and per-task state.
-func (a *Actor) run(caps []Capability) {
+func (a *Actor) run(caps []Capability, detectedAt map[string]time.Time) {
 	adapters := indexAdapters(a.cfg.Adapters)
 	inFlight := map[string]*runningTask{}
 
@@ -140,7 +145,7 @@ func (a *Actor) run(caps []Capability) {
 		case env := <-a.mailbox:
 			switch {
 			case env.submit != nil:
-				h, err := a.handleSubmit(adapters, caps, inFlight, completeCh, env.submit)
+				h, err := a.handleSubmit(adapters, caps, detectedAt, inFlight, completeCh, env.submit)
 				env.submit.reply <- submitReply{handle: h, err: err}
 			case env.cancel != nil:
 				env.cancel.reply <- a.handleCancel(inFlight, env.cancel)

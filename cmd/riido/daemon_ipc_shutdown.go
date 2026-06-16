@@ -62,6 +62,9 @@ func stopViaPIDFile(pidFile string, timeout time.Duration) error {
 	if err != nil {
 		return daemonWrapf(ErrDaemonProcess, "stop.parse-pid", err, "parse pid")
 	}
+	if err := validateDaemonProcessIdentity(pid); err != nil {
+		return err
+	}
 	proc, err := os.FindProcess(pid)
 	if err != nil {
 		return daemonWrapf(ErrDaemonProcess, "stop.find-process", err, "find process %d", pid)

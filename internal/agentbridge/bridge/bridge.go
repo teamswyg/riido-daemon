@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"time"
 
+	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/process"
 )
@@ -38,6 +40,7 @@ type TaskRequest struct {
 	Timeout                  time.Duration
 	SemanticIdle             time.Duration
 	ResumeSessionID          string
+	Worktree                 *assignmentcontract.AssignmentWorktree
 	Env                      map[string]string
 	CustomArgs               []string
 	MCPConfig                []byte

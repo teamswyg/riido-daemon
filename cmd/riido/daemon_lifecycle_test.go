@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -123,9 +124,10 @@ func TestDaemonHealthEndpoint(t *testing.T) {
 	}
 }
 
-// TestDaemonStopSignalsPidFile spawns a sleep shim, writes its pid to a
-// pid file, and verifies `riido daemon stop` sends SIGTERM.
-func TestDaemonStopSignalsPidFile(t *testing.T) {
+// TestDaemonStopRejectsNonDaemonPidFile spawns a sleep shim, writes its pid to
+// a pid file, and verifies `riido daemon stop` refuses to signal a process
+// whose command line is not a riido daemon foreground process.
+func TestDaemonStopRejectsNonDaemonPidFile(t *testing.T) {
 	pidPath := filepath.Join(t.TempDir(), "agentd.pid")
 	shim := exec.Command("/bin/sleep", "30")
 	if err := shim.Start(); err != nil {
@@ -139,22 +141,14 @@ func TestDaemonStopSignalsPidFile(t *testing.T) {
 		t.Fatalf("write pid: %v", err)
 	}
 
-	if err := run([]string{"daemon", "stop", "--pid-file", pidPath, "--timeout-seconds", "2"}); err != nil {
-		t.Fatalf("stop: %v", err)
+	err := run([]string{"daemon", "stop", "--pid-file", pidPath, "--timeout-seconds", "1"})
+	if err == nil || !strings.Contains(err.Error(), "not a riido daemon foreground process") {
+		t.Fatalf("expected non-daemon pid rejection, got %v", err)
 	}
 
 	select {
 	case <-waitDone:
-		// process reaped; what matters is that it exited from the signal.
-		if shim.ProcessState == nil || shim.ProcessState.Success() {
-			// SIGTERM-killed processes report Success()==false. If
-			// Success() is true that means /bin/sleep exited normally
-			// (which means our stop didn't actually signal it).
-			if shim.ProcessState != nil && shim.ProcessState.Success() {
-				t.Fatalf("shim exited normally; daemon stop didn't signal it")
-			}
-		}
-	case <-time.After(3 * time.Second):
-		t.Fatal("shim did not exit after daemon stop")
+		t.Fatal("non-daemon pid was signaled")
+	case <-time.After(150 * time.Millisecond):
 	}
 }

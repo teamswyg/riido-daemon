@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-contracts/ir"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
@@ -17,11 +18,24 @@ import (
 )
 
 func TestSupervisorUsesLogicalTaskIDMetadataForWorkspace(t *testing.T) {
+	var gotCloneArgs []string
+	originalClone := runAssignmentGitClone
+	runAssignmentGitClone = func(_ context.Context, _ string, args []string) error {
+		gotCloneArgs = append([]string(nil), args...)
+		return nil
+	}
+	t.Cleanup(func() { runAssignmentGitClone = originalClone })
+
 	source := controlplane.NewMemorySource()
 	source.Enqueue(bridge.TaskRequest{
 		ID:       "asn-1",
 		Provider: "fake",
 		Prompt:   "hello",
+		Worktree: &assignmentcontract.AssignmentWorktree{
+			RepositoryFullName: "teamswyg/riido-daemon",
+			RepositoryURL:      "https://github.com/teamswyg/riido-daemon",
+			BranchName:         "RIID-4964-agent-profile-upload",
+		},
 		Metadata: map[string]string{
 			MetadataWorkspaceID:         "ws-1",
 			MetadataRunID:               "asn-1",
@@ -75,6 +89,9 @@ func TestSupervisorUsesLogicalTaskIDMetadataForWorkspace(t *testing.T) {
 		wantSuffix := filepath.Join("ws-1", "tasks", "task-a", "runs", "asn-1", "workdir")
 		if !strings.HasSuffix(res.Workdir, wantSuffix) {
 			t.Fatalf("workdir = %q, want suffix %q", res.Workdir, wantSuffix)
+		}
+		if len(gotCloneArgs) == 0 || gotCloneArgs[len(gotCloneArgs)-1] != res.Workdir {
+			t.Fatalf("clone args did not target prepared workdir: args=%#v workdir=%q", gotCloneArgs, res.Workdir)
 		}
 		events := readRunEvents(t, filepath.Join(filepath.Dir(res.Workdir), "ir", "events.jsonl"))
 		assertRunEvent(t, events, ir.EventRunReportedDone, func(ev ir.CanonicalEvent) {

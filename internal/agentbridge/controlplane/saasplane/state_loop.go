@@ -160,6 +160,16 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		Prompt:                   prompt,
 		SystemPrompt:             systemPrompt,
 		AllowExperimentalRuntime: assignment.AllowExperimentalRuntime,
+		ResumeSessionID:          assignment.ResumeSessionID,
+		Worktree:                 cloneAssignmentWorktree(assignment.Worktree),
 		Metadata:                 metadata,
 	}
+}
+
+func cloneAssignmentWorktree(worktree *assignmentcontract.AssignmentWorktree) *assignmentcontract.AssignmentWorktree {
+	if worktree == nil {
+		return nil
+	}
+	out := *worktree
+	return &out
 }
