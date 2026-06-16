@@ -51,6 +51,9 @@ type Config struct {
 	// ToolStartGate decides whether an already-started provider tool call must
 	// fail closed because the provider did not expose an approval round-trip.
 	ToolStartGate agentbridge.ToolStartGate
+	// ToolApprovalGate decides whether an approval request with no auto-approval
+	// command should fail closed in headless runs.
+	ToolApprovalGate agentbridge.ToolApprovalGate
 
 	// EventBuffer / ResultBuffer override default channel capacities.
 	EventBuffer  int

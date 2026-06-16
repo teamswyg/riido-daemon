@@ -114,6 +114,31 @@ func TestPolicyToolStartGateAllowsExplicitSurfaceAndUnclassifiedTools(t *testing
 	}
 }
 
+func TestPolicyToolApprovalGateBlocksClassifiedRiskWithoutApprovalPath(t *testing.T) {
+	gate := PolicyToolApprovalGate(testPolicyBundle(policy.AllowedSurfaceSet{}), policy.TrustTierHost)
+
+	decision := gate(agentbridge.ToolRef{Kind: "patch_apply"})
+	if !decision.Block {
+		t.Fatalf("headless patch approval must block: %+v", decision)
+	}
+	if decision.Code != "TOOL_USE_NOT_IN_POLICY_BUNDLE" {
+		t.Fatalf("decision code = %q", decision.Code)
+	}
+}
+
+func TestPolicyToolApprovalGateAllowsExplicitSurfaceAndUnclassifiedTools(t *testing.T) {
+	gate := PolicyToolApprovalGate(testPolicyBundle(policy.AllowedSurfaceSet{
+		ToolUse: []policy.ToolUseSurface{policy.ToolUseProtectedPathWrite},
+	}), policy.TrustTierHost)
+
+	if decision := gate(agentbridge.ToolRef{Kind: "patch_apply"}); decision.Block {
+		t.Fatalf("allowed patch surface should not block: %+v", decision)
+	}
+	if decision := gate(agentbridge.ToolRef{Kind: "read", Name: "Read"}); decision.Block {
+		t.Fatalf("unclassified read tool should not block: %+v", decision)
+	}
+}
+
 func TestDecisionForToolReturnsRequireApprovalWhenBundleDoesNotAllow(t *testing.T) {
 	decision, ok := DecisionForTool(testPolicyBundle(policy.AllowedSurfaceSet{}), policy.TrustTierHost, agentbridge.ToolRef{Kind: "patch_apply"})
 	if !ok {
@@ -126,6 +151,16 @@ func TestDecisionForToolReturnsRequireApprovalWhenBundleDoesNotAllow(t *testing.
 
 func TestDecisionForStartedToolInterruptsWhenBundleDoesNotAllow(t *testing.T) {
 	decision, ok := DecisionForStartedTool(testPolicyBundle(policy.AllowedSurfaceSet{}), policy.TrustTierHost, agentbridge.ToolRef{Kind: "patch_apply"})
+	if !ok {
+		t.Fatal("patch_apply should classify")
+	}
+	if decision.Action != policy.ToolUseActionInterruptAndBlock || decision.Code != "TOOL_USE_NOT_IN_POLICY_BUNDLE" {
+		t.Fatalf("decision = %+v", decision)
+	}
+}
+
+func TestDecisionForHeadlessApprovalInterruptsWhenBundleDoesNotAllow(t *testing.T) {
+	decision, ok := DecisionForHeadlessApproval(testPolicyBundle(policy.AllowedSurfaceSet{}), policy.TrustTierHost, agentbridge.ToolRef{Kind: "patch_apply"})
 	if !ok {
 		t.Fatal("patch_apply should classify")
 	}

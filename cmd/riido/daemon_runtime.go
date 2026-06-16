@@ -17,6 +17,10 @@ func daemonToolStartGate(settings daemonSettings) agentbridge.ToolStartGate {
 	return toolpolicy.PolicyToolStartGate(settings.PolicyBundleDoc, policy.TrustTierHost)
 }
 
+func daemonToolApprovalGate(settings daemonSettings) agentbridge.ToolApprovalGate {
+	return toolpolicy.PolicyToolApprovalGate(settings.PolicyBundleDoc, policy.TrustTierHost)
+}
+
 func stopRuntimeActors(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, log logging.Logger) {
 	for _, rt := range runtimes {
 		if err := rt.StopLifecycle(ctx); err != nil {

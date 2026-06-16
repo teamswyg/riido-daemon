@@ -99,12 +99,16 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 					task.workspace = msg.taskActivation.prepared.workspace
 					task.events = msg.taskActivation.prepared.events
 				}
+				if task.cancelCause != nil || task.ctx.Err() != nil {
+					a.cancelActivatedTask(ctx, task)
+					go a.forwardSession(task.taskID, task.handle.Events(), task.handle.Result())
+					continue
+				}
 				_ = a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, agentbridge.Event{
 					Kind:  agentbridge.EventLifecycle,
 					Phase: agentbridge.StateRunning,
 				})
 				go a.forwardSession(task.taskID, task.handle.Events(), task.handle.Result())
-				go a.forwardCancellation(task.ctx, task.taskID)
 			case msg.taskEvent != nil:
 				reportCtx := ctx
 				if task := inFlight[msg.taskEvent.taskID]; task != nil {
@@ -128,20 +132,33 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 				delete(inFlight, msg.taskResult.taskID)
 				resetTimer(poll, a.cfg.PollEvery)
 			case msg.cancel != nil:
-				if inFlight[msg.cancel.taskID] != nil {
-					reason := "cancelled"
-					if msg.cancel.cause != nil {
-						reason = msg.cancel.cause.Error()
+				if task := inFlight[msg.cancel.taskID]; task != nil {
+					task.cancelCause = cancellationCause(msg.cancel.cause)
+					if task.cancel != nil {
+						task.cancel()
+						task.cancel = nil
 					}
-					if inFlight[msg.cancel.taskID].cancel != nil {
-						inFlight[msg.cancel.taskID].cancel()
-						inFlight[msg.cancel.taskID].cancel = nil
+					if task.handle != nil {
+						_ = task.runtime.Cancel(ctx, task.taskID, task.cancelCause.Error())
 					}
-					_ = inFlight[msg.cancel.taskID].runtime.Cancel(ctx, msg.cancel.taskID, reason)
 				}
 			}
 		}
 	}
+}
+
+func (a *Actor) cancelActivatedTask(ctx context.Context, task *runningTask) {
+	if task.cancelCause == nil {
+		task.cancelCause = cancellationCause(task.ctx.Err())
+	}
+	_ = task.runtime.Cancel(ctx, task.taskID, task.cancelCause.Error())
+}
+
+func cancellationCause(cause error) error {
+	if cause != nil {
+		return cause
+	}
+	return context.Canceled
 }
 
 func stopTimer(t *time.Timer) {

@@ -88,17 +88,18 @@ func (a *Actor) handleSubmit(
 	spawnCommand.Env = detectutil.EnvListWithLaunchPATHFromMap(spawnCommand.Env, launchEnv)
 
 	sess, err := session.Start(msg.ctx, session.Config{
-		TaskID:         msg.req.ID,
-		RuntimeID:      a.cfg.RuntimeID,
-		Adapter:        adapter,
-		Process:        a.cfg.Process,
-		Spawn:          spawnCommand,
-		Request:        startReq,
-		HardTimeout:    timeout,
-		SemanticIdle:   idle,
-		AutoApprove:    a.cfg.AutoApprove,
-		ToolStartGate:  a.cfg.ToolStartGate,
-		ProtocolDriver: driver,
+		TaskID:           msg.req.ID,
+		RuntimeID:        a.cfg.RuntimeID,
+		Adapter:          adapter,
+		Process:          a.cfg.Process,
+		Spawn:            spawnCommand,
+		Request:          startReq,
+		HardTimeout:      timeout,
+		SemanticIdle:     idle,
+		AutoApprove:      a.cfg.AutoApprove,
+		ToolStartGate:    a.cfg.ToolStartGate,
+		ToolApprovalGate: a.cfg.ToolApprovalGate,
+		ProtocolDriver:   driver,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("runtimeactor: session.Start: %w", err)

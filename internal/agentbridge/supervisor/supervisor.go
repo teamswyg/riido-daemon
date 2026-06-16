@@ -120,12 +120,13 @@ type cancelMsg struct {
 }
 
 type runningTask struct {
-	taskID  string
-	ctx     context.Context
-	report  controlplane.TaskReportContext
-	runtime *runtimeactor.Actor
-	handle  *runtimeactor.SessionHandle
-	cancel  context.CancelFunc
+	taskID      string
+	ctx         context.Context
+	report      controlplane.TaskReportContext
+	runtime     *runtimeactor.Actor
+	handle      *runtimeactor.SessionHandle
+	cancel      context.CancelFunc
+	cancelCause error
 
 	workspace *workdir.Workspace
 	events    *workspaceEventContext
