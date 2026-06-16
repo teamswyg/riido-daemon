@@ -36,7 +36,7 @@ func (r *sessionRunner) applyEvents(events []agentbridge.Event, cmds []agentbrid
 	if slices.ContainsFunc(events, r.applyEvent) {
 		return
 	}
-	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds) {
+	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
 	}
 }
@@ -53,7 +53,7 @@ func (r *sessionRunner) applyEvent(ev agentbridge.Event) bool {
 		}
 		var cmds []agentbridge.Command
 		r.state, cmds = agentbridge.Reduce(r.state, expandedEvent, r.cfg.AutoApprove)
-		for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds) {
+		for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
 			r.emit(cmdEvent)
 		}
 	}
@@ -71,7 +71,7 @@ func (r *sessionRunner) blockStartedToolIfNeeded(ev agentbridge.Event) bool {
 	blockReason := toolBlockReason(decision)
 	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, []agentbridge.Command{
 		{Kind: agentbridge.CommandCancelProvider, Reason: blockReason},
-	}) {
+	}, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
 	}
 	r.emit(agentbridge.Event{Kind: agentbridge.EventWarning, Text: "tool use blocked by policy", Err: blockReason})
@@ -85,7 +85,7 @@ func (r *sessionRunner) blockStartedToolIfNeeded(ev agentbridge.Event) bool {
 	r.emit(blocked)
 	var cmds []agentbridge.Command
 	r.state, cmds = agentbridge.Reduce(r.state, blocked, r.cfg.AutoApprove)
-	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds) {
+	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
 	}
 	return true

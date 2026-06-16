@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/process"
@@ -32,12 +33,19 @@ func cleanupTempFiles(paths []string) []agentbridge.Event {
 	return out
 }
 
-func executeCommands(proc process.RunningProcess, adapter agentbridge.Adapter, cmds []agentbridge.Command) []agentbridge.Event {
+func executeCommands(
+	proc process.RunningProcess,
+	adapter agentbridge.Adapter,
+	cmds []agentbridge.Command,
+	killTimeout time.Duration,
+) []agentbridge.Event {
 	var out []agentbridge.Event
 	for _, c := range cmds {
 		switch c.Kind {
 		case agentbridge.CommandCancelProvider:
-			_ = proc.Kill(context.Background())
+			if err := killProcess(proc, killTimeout); err != nil {
+				out = append(out, agentbridge.Event{Kind: agentbridge.EventWarning, Text: "provider kill failed", Err: err.Error()})
+			}
 		case agentbridge.CommandWriteProviderInput:
 			if len(c.Input) > 0 {
 				if err := proc.WriteStdin(c.Input); err != nil {
@@ -70,6 +78,15 @@ func executeCommands(proc process.RunningProcess, adapter agentbridge.Adapter, c
 		}
 	}
 	return out
+}
+
+func killProcess(proc process.RunningProcess, timeout time.Duration) error {
+	if timeout <= 0 {
+		timeout = DefaultProcessKillTimeout
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+	return proc.Kill(ctx)
 }
 
 func decideStartedTool(gate agentbridge.ToolStartGate, tool agentbridge.ToolRef) agentbridge.ToolStartDecision {
