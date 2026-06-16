@@ -123,6 +123,11 @@ different customer PCs from colliding on a shared default like
 `agentd-local:codex`. Explicit `RIIDO_DAEMON_ID` remains supported for
 controlled diagnostic runs, but Desktop-launched SaaS runs should rely on the
 device-principal default.
+SaaS claim polling sends `PollRequest.wait_ms` with a built-in 30 seconds
+long-poll wait and extends the HTTP request timeout above that budget. This is
+not exposed as a public env knob; `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS`
+remains the local supervisor retry interval after an empty long-poll response,
+not the primary empty-poll cost control in SaaS mode.
 The snapshot must preserve the local provider availability verdict: an explicitly
 false `provider.<name>.available` capability is projected as `offline` /
 `missing`, not normalized to `online` merely because the provider binary was

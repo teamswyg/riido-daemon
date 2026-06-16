@@ -62,39 +62,20 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 		if err != nil {
 			return nil, err
 		}
+		candidates := make([]AgentBinding, 0, len(bindings))
 		for _, binding := range bindings {
 			if binding.RuntimeProvider != provider || strings.TrimSpace(binding.RuntimeID) != strings.TrimSpace(runtimeID) {
 				continue
 			}
-			poll, err := p.pollAgent(ctx, binding.AgentID, runtimeID)
-			if err != nil {
-				return nil, err
-			}
-			if poll.Assignment == nil {
-				continue
-			}
-			switch poll.Action {
-			case assignmentcontract.PollStart, assignmentcontract.PollActive:
-				assignment := *poll.Assignment
-				if assignment.RuntimeProvider != "" && assignment.RuntimeProvider != provider {
-					continue
-				}
-				if err := p.saveAssignmentRuntime(ctx, assignment, runtimeID); err != nil {
-					return nil, err
-				}
-				return taskRequestFromAssignment(assignment), nil
-			case assignmentcontract.PollCancel:
-				_ = p.deliverCancel(ctx, *poll.Assignment)
-				return nil, nil
-			case assignmentcontract.PollNone:
-				continue
-			default:
-				continue
-			}
+			candidates = append(candidates, AgentBinding{
+				AgentID:         binding.AgentID,
+				RuntimeProvider: binding.RuntimeProvider,
+			})
 		}
-		return nil, nil
+		return p.claimTaskFromCandidates(ctx, runtimeID, provider, candidates)
 	}
 	runtimeAgent, hasRuntimeAgent := agentFromRuntimeID(runtimeID)
+	candidates := make([]AgentBinding, 0, len(p.cfg.Agents))
 	for _, agent := range p.cfg.Agents {
 		if agent.RuntimeProvider != provider {
 			continue
@@ -102,33 +83,56 @@ func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRe
 		if hasRuntimeAgent && agent.AgentID != runtimeAgent {
 			continue
 		}
-		poll, err := p.pollAgent(ctx, agent.AgentID, runtimeID)
+		candidates = append(candidates, agent)
+	}
+	return p.claimTaskFromCandidates(ctx, runtimeID, provider, candidates)
+}
+
+func (p *Plane) claimTaskFromCandidates(ctx context.Context, runtimeID, provider string, candidates []AgentBinding) (*bridge.TaskRequest, error) {
+	if len(candidates) == 0 {
+		return nil, nil
+	}
+	if len(candidates) == 1 {
+		return p.claimTaskFromCandidate(ctx, runtimeID, provider, candidates[0], p.cfg.LongPollWait)
+	}
+	for _, candidate := range candidates {
+		req, err := p.claimTaskFromCandidate(ctx, runtimeID, provider, candidate, 0)
 		if err != nil {
 			return nil, err
 		}
-		if poll.Assignment == nil {
-			continue
-		}
-		switch poll.Action {
-		case assignmentcontract.PollStart, assignmentcontract.PollActive:
-			assignment := *poll.Assignment
-			if assignment.RuntimeProvider != "" && assignment.RuntimeProvider != provider {
-				continue
-			}
-			if err := p.saveAssignmentRuntime(ctx, assignment, runtimeID); err != nil {
-				return nil, err
-			}
-			return taskRequestFromAssignment(assignment), nil
-		case assignmentcontract.PollCancel:
-			_ = p.deliverCancel(ctx, *poll.Assignment)
-			return nil, nil
-		case assignmentcontract.PollNone:
-			continue
-		default:
-			continue
+		if req != nil {
+			return req, nil
 		}
 	}
-	return nil, nil
+	return p.claimTaskFromCandidate(ctx, runtimeID, provider, candidates[0], p.cfg.LongPollWait)
+}
+
+func (p *Plane) claimTaskFromCandidate(ctx context.Context, runtimeID, provider string, candidate AgentBinding, wait time.Duration) (*bridge.TaskRequest, error) {
+	poll, err := p.pollAgent(ctx, candidate.AgentID, runtimeID, wait)
+	if err != nil {
+		return nil, err
+	}
+	if poll.Assignment == nil {
+		return nil, nil
+	}
+	switch poll.Action {
+	case assignmentcontract.PollStart, assignmentcontract.PollActive:
+		assignment := *poll.Assignment
+		if assignment.RuntimeProvider != "" && assignment.RuntimeProvider != provider {
+			return nil, nil
+		}
+		if err := p.saveAssignmentRuntime(ctx, assignment, runtimeID); err != nil {
+			return nil, err
+		}
+		return taskRequestFromAssignment(assignment), nil
+	case assignmentcontract.PollCancel:
+		_ = p.deliverCancel(ctx, *poll.Assignment)
+		return nil, nil
+	case assignmentcontract.PollNone:
+		return nil, nil
+	default:
+		return nil, nil
+	}
 }
 
 func (p *Plane) WatchCancellation(ctx context.Context, executionID string) (<-chan error, error) {

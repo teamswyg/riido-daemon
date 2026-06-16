@@ -28,6 +28,11 @@ const (
 	jsonRequestRetryBase   = 50 * time.Millisecond
 )
 
+const (
+	defaultLongPollWait       = 30 * time.Second
+	longPollRequestTimeoutPad = 5 * time.Second
+)
+
 // Live assistant-body streaming. Raw text deltas are never forwarded one line
 // per token (they are tiny, incoherent fragments). Instead the daemon
 // accumulates them per task and periodically forwards the FULL text-so-far as
@@ -67,6 +72,7 @@ type Config struct {
 	BearerToken    string
 	HTTPClient     *http.Client
 	RequestTimeout time.Duration
+	LongPollWait   time.Duration
 }
 
 type RuntimeModelRecord struct {
@@ -139,8 +145,15 @@ func New(cfg Config) (*Plane, error) {
 	if len(cfg.Agents) == 0 && cfg.DeviceSecret == "" {
 		return nil, errors.New("saasplane: at least one static agent binding or a device credential is required")
 	}
+	if cfg.LongPollWait <= 0 {
+		cfg.LongPollWait = defaultLongPollWait
+	}
+	minRequestTimeout := cfg.LongPollWait + longPollRequestTimeoutPad
 	if cfg.RequestTimeout <= 0 {
-		cfg.RequestTimeout = 5 * time.Second
+		cfg.RequestTimeout = minRequestTimeout
+	}
+	if cfg.RequestTimeout < minRequestTimeout {
+		cfg.RequestTimeout = minRequestTimeout
 	}
 	client := cfg.HTTPClient
 	if client == nil {

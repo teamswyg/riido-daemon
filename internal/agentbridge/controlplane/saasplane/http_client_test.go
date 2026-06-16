@@ -75,6 +75,74 @@ func TestPlaneRetriesTransientPoll(t *testing.T) {
 	}
 }
 
+func TestPlaneSendsLongPollWaitMsAndExtendsRequestTimeout(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	plane, err := New(Config{
+		BaseURL:        fake.URL(),
+		DaemonID:       "daemon-1",
+		DeviceID:       "device-1",
+		Agents:         []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}},
+		RequestTimeout: time.Second,
+		LongPollWait:   2500 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	if req != nil {
+		t.Fatalf("empty fake queue should not claim task: %+v", req)
+	}
+	polls := fake.pollRequestsFor("jykim1")
+	if len(polls) != 1 {
+		t.Fatalf("poll requests = %+v", polls)
+	}
+	if polls[0].WaitMs != 2500 {
+		t.Fatalf("wait_ms = %d, want 2500", polls[0].WaitMs)
+	}
+	if plane.cfg.RequestTimeout != 7500*time.Millisecond {
+		t.Fatalf("request timeout = %s, want 7.5s", plane.cfg.RequestTimeout)
+	}
+}
+
+func TestPlaneDoesNotLongPollEveryStaticCandidateSerially(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	plane, err := New(Config{
+		BaseURL:  fake.URL(),
+		DaemonID: "daemon-1",
+		DeviceID: "device-1",
+		Agents: []AgentBinding{
+			{AgentID: "agent-a", RuntimeProvider: "codex"},
+			{AgentID: "agent-b", RuntimeProvider: "codex"},
+		},
+		LongPollWait: 2500 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	if req != nil {
+		t.Fatalf("empty fake queue should not claim task: %+v", req)
+	}
+	agentA := fake.pollRequestsFor("agent-a")
+	agentB := fake.pollRequestsFor("agent-b")
+	if len(agentA) != 2 || len(agentB) != 1 {
+		t.Fatalf("poll requests agent-a=%+v agent-b=%+v", agentA, agentB)
+	}
+	if agentA[0].WaitMs != 0 || agentA[1].WaitMs != 2500 || agentB[0].WaitMs != 0 {
+		t.Fatalf("unexpected wait_ms distribution agent-a=%+v agent-b=%+v", agentA, agentB)
+	}
+}
+
 func TestPlaneDoesNotRetryEventPostWithoutIdempotency(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.enqueue(assignmentcontract.Assignment{

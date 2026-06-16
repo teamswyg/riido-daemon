@@ -19,6 +19,7 @@ func (f *fakeAssignmentServer) handlePoll(w http.ResponseWriter, r *http.Request
 		http.Error(w, "missing poll identity", http.StatusBadRequest)
 		return
 	}
+	f.pollRequestsByAgent[agentID] = append(f.pollRequestsByAgent[agentID], req)
 	if cancel, ok := f.cancelByAgent[agentID]; ok {
 		delete(f.cancelByAgent, agentID)
 		f.assignmentsByID[cancel.ID] = cancel
