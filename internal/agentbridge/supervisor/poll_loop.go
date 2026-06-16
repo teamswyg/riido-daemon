@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
@@ -58,6 +59,49 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 
 		case msg := <-a.mailbox:
 			switch {
+			case msg.taskActivation != nil:
+				task := inFlight[msg.taskActivation.taskID]
+				if task == nil {
+					continue
+				}
+				reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
+				if msg.taskActivation.err != nil {
+					if task.cancel != nil {
+						task.cancel()
+						task.cancel = nil
+					}
+					res := resultForActivationError(msg.taskActivation.err)
+					if msg.taskActivation.prepared != nil {
+						task.workspace = msg.taskActivation.prepared.workspace
+						task.events = msg.taskActivation.prepared.events
+						res = a.recordTerminalResult(ctx, task, res)
+					}
+					_ = a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, res)
+					delete(inFlight, task.taskID)
+					resetTimer(poll, a.cfg.PollEvery)
+					continue
+				}
+				task.cancel = nil
+				if msg.taskActivation.handle == nil {
+					_ = a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, agentbridge.Result{
+						Status: agentbridge.ResultFailed,
+						Error:  "supervisor: runtime submit returned no session handle",
+					})
+					delete(inFlight, task.taskID)
+					resetTimer(poll, a.cfg.PollEvery)
+					continue
+				}
+				task.handle = msg.taskActivation.handle
+				if msg.taskActivation.prepared != nil {
+					task.workspace = msg.taskActivation.prepared.workspace
+					task.events = msg.taskActivation.prepared.events
+				}
+				_ = a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, agentbridge.Event{
+					Kind:  agentbridge.EventLifecycle,
+					Phase: agentbridge.StateRunning,
+				})
+				go a.forwardSession(task.taskID, task.handle.Events(), task.handle.Result())
+				go a.forwardCancellation(ctx, task.taskID)
 			case msg.taskEvent != nil:
 				reportCtx := ctx
 				if task := inFlight[msg.taskEvent.taskID]; task != nil {
@@ -81,6 +125,10 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 					reason := "cancelled"
 					if msg.cancel.cause != nil {
 						reason = msg.cancel.cause.Error()
+					}
+					if inFlight[msg.cancel.taskID].cancel != nil {
+						inFlight[msg.cancel.taskID].cancel()
+						inFlight[msg.cancel.taskID].cancel = nil
 					}
 					_ = inFlight[msg.cancel.taskID].runtime.Cancel(ctx, msg.cancel.taskID, reason)
 				}
