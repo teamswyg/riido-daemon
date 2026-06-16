@@ -57,7 +57,11 @@ func TestSupervisorHeartbeatContinuesDuringWorkspaceMaterialization(t *testing.T
 	unblockClone := make(chan struct{})
 	var unblockOnce sync.Once
 
+	originalGitResolver := resolveAssignmentGitExecutable
 	originalClone := runAssignmentGitClone
+	resolveAssignmentGitExecutable = func(string, string) (string, bool) {
+		return "/usr/bin/git", true
+	}
 	runAssignmentGitClone = func(ctx context.Context, _ string, _ []string) error {
 		close(cloneStarted)
 		defer close(cloneDone)
@@ -71,6 +75,7 @@ func TestSupervisorHeartbeatContinuesDuringWorkspaceMaterialization(t *testing.T
 	t.Cleanup(func() {
 		unblockOnce.Do(func() { close(unblockClone) })
 		runAssignmentGitClone = originalClone
+		resolveAssignmentGitExecutable = originalGitResolver
 	})
 
 	source := &heartbeatDuringPrepareSource{

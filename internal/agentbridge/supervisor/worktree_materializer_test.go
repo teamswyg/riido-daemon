@@ -22,14 +22,67 @@ func TestAssignmentCloneURLRejectsPrivateWorktree(t *testing.T) {
 }
 
 func TestAssignmentCloneURLRejectsUnsupportedRepositoryURL(t *testing.T) {
-	_, err := assignmentCloneURL(&assignmentcontract.AssignmentWorktree{
-		RepositoryURL: "https://token:secret@example.com/teamswyg/riido-daemon",
-	})
-	if err == nil {
-		t.Fatal("expected unsupported URL error")
+	tests := []struct {
+		name       string
+		repoURL    string
+		fullName   string
+		notContain []string
+	}{
+		{
+			name:       "userinfo",
+			repoURL:    "https://token:secret@example.com/teamswyg/riido-daemon",
+			notContain: []string{"secret", "token"},
+		},
+		{
+			name:       "query token",
+			repoURL:    "https://github.com/teamswyg/riido-daemon?token=secret",
+			notContain: []string{"secret", "token="},
+		},
+		{
+			name:    "empty force query",
+			repoURL: "https://github.com/teamswyg/riido-daemon?",
+		},
+		{
+			name:       "fragment token",
+			repoURL:    "https://github.com/teamswyg/riido-daemon#secret-token",
+			notContain: []string{"secret-token"},
+		},
+		{
+			name:    "missing repo path",
+			repoURL: "https://github.com",
+		},
+		{
+			name:     "full name query",
+			fullName: "teamswyg/riido-daemon?token=secret",
+			notContain: []string{
+				"secret",
+				"token=",
+			},
+		},
+		{
+			name:     "full name encoded query",
+			fullName: "teamswyg/riido-daemon%3Ftoken=secret",
+			notContain: []string{
+				"secret",
+				"token=",
+			},
+		},
 	}
-	if strings.Contains(err.Error(), "secret") || strings.Contains(err.Error(), "token") {
-		t.Fatalf("error leaked URL userinfo: %v", err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := assignmentCloneURL(&assignmentcontract.AssignmentWorktree{
+				RepositoryFullName: tt.fullName,
+				RepositoryURL:      tt.repoURL,
+			})
+			if err == nil {
+				t.Fatal("expected unsupported URL error")
+			}
+			for _, forbidden := range tt.notContain {
+				if strings.Contains(err.Error(), forbidden) {
+					t.Fatalf("error leaked sensitive URL component %q: %v", forbidden, err)
+				}
+			}
+		})
 	}
 }
 
