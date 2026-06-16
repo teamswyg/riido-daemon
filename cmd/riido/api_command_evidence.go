@@ -24,7 +24,7 @@ func runAPIEvidence(args []string, config apiCLIConfig) error {
 		return fmt.Errorf("--command is required")
 	}
 	var response riidoapi.EvidenceResponse
-	if err := requestAPI(config, 5*time.Second, "evidence", request, &response); err != nil {
+	if err := requestAPI(config, 5*time.Second, riidoapi.MethodEvidence, request, &response); err != nil {
 		return err
 	}
 	return printJSON(response)

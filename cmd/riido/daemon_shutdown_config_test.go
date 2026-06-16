@@ -24,7 +24,7 @@ func TestDaemonShutdownRequestCarriesForcedLevel(t *testing.T) {
 	t.Cleanup(func() { _ = client.Close() })
 	_ = client.SetDeadline(time.Now().Add(time.Second))
 
-	if err := json.NewEncoder(client).Encode(daemonRequest{Method: "shutdown", ShutdownLevel: "forced"}); err != nil {
+	if err := json.NewEncoder(client).Encode(daemonRequest{Method: daemonMethodShutdown, ShutdownLevel: "forced"}); err != nil {
 		t.Fatalf("encode shutdown request: %v", err)
 	}
 	var ack map[string]string
@@ -72,7 +72,7 @@ func TestTryShutdownViaSocketSendsForcedLevel(t *testing.T) {
 	}
 	select {
 	case req := <-received:
-		if req.Method != "shutdown" || !req.Force || req.ShutdownLevel != lifecycle.ShutdownForced.String() {
+		if req.Method != daemonMethodShutdown || !req.Force || req.ShutdownLevel != lifecycle.ShutdownForced.String() {
 			t.Fatalf("shutdown request = %+v", req)
 		}
 	case <-time.After(time.Second):

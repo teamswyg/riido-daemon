@@ -50,7 +50,7 @@ func ProgressEventMetadata(ev Event) map[string]string {
 		return nil
 	}
 	metadata := map[string]string{
-		ProgressMessageMetadataCode: strconv.Itoa(ev.ProgressCode),
+		ProgressMessageMetadataCode: strconv.Itoa(int(ev.ProgressCode)),
 	}
 	if strings.TrimSpace(ev.ProgressKey) != "" {
 		metadata[ProgressMessageMetadataKey] = strings.TrimSpace(ev.ProgressKey)
@@ -66,7 +66,7 @@ func ProgressEventMetadata(ev Event) map[string]string {
 	return metadata
 }
 
-func renderProgressMessage(code int, args map[string]string) (string, string, bool) {
+func renderProgressMessage(code ProgressCode, args map[string]string) (string, string, bool) {
 	for _, item := range progressMessageTemplates {
 		if item.Code != code {
 			continue
@@ -76,7 +76,7 @@ func renderProgressMessage(code int, args map[string]string) (string, string, bo
 	return "", "", false
 }
 
-func normalizeProgressArgsForCode(code int, args map[string]string) map[string]string {
+func normalizeProgressArgsForCode(code ProgressCode, args map[string]string) map[string]string {
 	if len(args) == 0 {
 		return args
 	}
@@ -94,15 +94,15 @@ func normalizeProgressArgsForCode(code int, args map[string]string) map[string]s
 	return out
 }
 
-func normalizeProgressLabelForCode(code int, label string) string {
+func normalizeProgressLabelForCode(code ProgressCode, label string) string {
 	switch code {
-	case 1101:
+	case ProgressCodeToolCollecting:
 		return trimProgressLabelSuffixes(label, " 수집 중", " 수집", " 조회 중", " 조회")
-	case 1102:
+	case ProgressCodeToolCollectionCompletedCount:
 		return trimProgressLabelSuffixes(label, " 조회 완료", " 완료", " 조회")
-	case 1103:
+	case ProgressCodeToolRunning:
 		return trimProgressLabelSuffixes(label, " 실행 중", " 진행 중", " 처리 중", " 실행", " 진행", " 처리")
-	case 1104:
+	case ProgressCodeToolCompleted:
 		return trimProgressLabelSuffixes(label, " 조회 완료", " 실행 완료", " 진행 완료", " 처리 완료", " 완료됨", " 완료", " 종료", " 끝남")
 	default:
 		return strings.TrimSpace(label)

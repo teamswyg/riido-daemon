@@ -24,42 +24,42 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 	case agentbridge.RawSourceStdout, agentbridge.RawSourceClose:
 	}
 
-	switch raw.Type {
-	case "malformed":
+	switch wireEventType(raw.Type) {
+	case wireEventMalformed:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventWarning,
 			Text: "malformed claude stream-json line",
 			Err:  string(raw.Bytes),
 		}}, nil, nil
 
-	case "system":
+	case wireEventSystem:
 		return translateSystem(raw), nil, nil
 
-	case "assistant":
+	case wireEventAssistant:
 		return translateAssistantMessage(raw), nil, nil
 
-	case "user":
+	case wireEventUser:
 		return translateUserMessage(raw), nil, nil
 
-	case "control_request":
+	case wireEventControl:
 		return translateControlRequest(raw), nil, nil
 
-	case "result":
+	case wireEventResult:
 		return translateResult(raw), nil, nil
 
-	case "log":
+	case wireEventLog:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventLog,
 			Text: stringField(raw.Payload, "message"),
 		}}, nil, nil
 
-	case "error":
+	case wireEventError:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventError,
 			Err:  stringField(raw.Payload, "message"),
 		}}, nil, nil
 
-	case "rate_limit_event", "rate_limit":
+	case wireEventRateLimitAlt, wireEventRateLimit:
 		// Claude Code emits rate_limit_event when the upstream account is being
 		// throttled. It is informational (the CLI keeps the session alive and
 		// retries), NOT terminal — surface it as a Warning so the run keeps its
@@ -100,12 +100,12 @@ func translateAssistantMessage(raw agentbridge.RawEvent) []agentbridge.Event {
 		if !ok {
 			continue
 		}
-		switch obj["type"] {
-		case "text":
+		switch wireContentType(stringField(obj, "type")) {
+		case wireContentText:
 			out = append(out, agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: stringField(obj, "text")})
-		case "thinking":
+		case wireContentThinking:
 			out = append(out, agentbridge.Event{Kind: agentbridge.EventThinkingDelta, Text: stringField(obj, "thinking")})
-		case "tool_use":
+		case wireContentToolUse:
 			out = append(out, agentbridge.Event{
 				Kind: agentbridge.EventToolCallStarted,
 				Tool: agentbridge.ToolRef{
@@ -115,6 +115,8 @@ func translateAssistantMessage(raw agentbridge.RawEvent) []agentbridge.Event {
 					Args: toolargs.FromValue(obj["input"]),
 				},
 			})
+		default:
+			continue
 		}
 	}
 	return out
@@ -129,7 +131,7 @@ func translateUserMessage(raw agentbridge.RawEvent) []agentbridge.Event {
 		if !ok {
 			continue
 		}
-		if obj["type"] == "tool_result" {
+		if wireContentType(stringField(obj, "type")) == wireContentToolResult {
 			isErr, _ := obj["is_error"].(bool)
 			kind := agentbridge.EventToolCallCompleted
 			if isErr {
@@ -146,7 +148,7 @@ func translateUserMessage(raw agentbridge.RawEvent) []agentbridge.Event {
 
 func translateControlRequest(raw agentbridge.RawEvent) []agentbridge.Event {
 	request, _ := raw.Payload["request"].(map[string]any)
-	if stringField(request, "subtype") == "permission_request" {
+	if wireControlSubtype(stringField(request, "subtype")) == wireControlPermissionRequest {
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolApprovalNeeded,
 			Tool: agentbridge.ToolRef{

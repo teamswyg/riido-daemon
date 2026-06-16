@@ -88,16 +88,25 @@ func timestamp(now time.Time) string {
 	return now.UTC().Format(time.RFC3339Nano)
 }
 
+type EvidenceResult string
+
+const (
+	EvidenceResultPassed  EvidenceResult = "passed"
+	EvidenceResultFailed  EvidenceResult = "failed"
+	EvidenceResultUnknown EvidenceResult = "unknown"
+)
+
 func normalizeEvidenceResult(result string, exitCode int) string {
-	switch strings.ToLower(strings.TrimSpace(result)) {
-	case "passed", "failed", "unknown":
-		return strings.ToLower(strings.TrimSpace(result))
+	normalized := EvidenceResult(strings.ToLower(strings.TrimSpace(result)))
+	switch normalized {
+	case EvidenceResultPassed, EvidenceResultFailed, EvidenceResultUnknown:
+		return string(normalized)
 	case "":
 		if exitCode == 0 {
-			return "passed"
+			return string(EvidenceResultPassed)
 		}
-		return "failed"
+		return string(EvidenceResultFailed)
 	default:
-		return "unknown"
+		return string(EvidenceResultUnknown)
 	}
 }

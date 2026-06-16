@@ -79,20 +79,20 @@ func runDaemonWithLifecycle(ctx lifecycle.Context, args []string) error {
 		printUsage()
 		return daemonErrorf(ErrDaemonUsage, "run", "missing daemon subcommand")
 	}
-	switch args[0] {
-	case "start":
+	switch daemonCommand(args[0]) {
+	case daemonCommandStart:
 		return runDaemonStart(ctx, args[1:])
-	case "status":
+	case daemonCommandStatus:
 		return runDaemonStatus(args[1:])
-	case "health":
+	case daemonCommandHealth:
 		return runDaemonHealth(args[1:])
-	case "ready":
+	case daemonCommandReady:
 		return runDaemonReady(args[1:])
-	case "metrics":
+	case daemonCommandMetrics:
 		return runDaemonMetrics(args[1:])
-	case "stop":
+	case daemonCommandStop:
 		return runDaemonStop(args[1:])
-	case "logs":
+	case daemonCommandLogs:
 		return runDaemonLogs(args[1:])
 	default:
 		printUsage()

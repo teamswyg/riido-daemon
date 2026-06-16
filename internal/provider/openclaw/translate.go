@@ -21,14 +21,14 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: string(raw.Bytes)}}, nil, nil
 	}
 	switch {
-	case raw.Type == "malformed":
+	case wireFrameType(raw.Type) == wireFrameMalformed:
 		return []agentbridge.Event{{Kind: agentbridge.EventWarning, Text: "malformed openclaw output", Err: string(raw.Bytes)}}, nil, nil
 
-	case raw.Type == "full_result":
+	case wireFrameType(raw.Type) == wireFrameFullResult:
 		return translateFullResult(raw.Payload), nil, nil
 
-	case strings.HasPrefix(raw.Type, "ndjson:"):
-		event := strings.TrimPrefix(raw.Type, "ndjson:")
+	case strings.HasPrefix(raw.Type, wireFrameNDJSONPrefix):
+		event := wireNDJSONEvent(strings.TrimPrefix(raw.Type, wireFrameNDJSONPrefix))
 		return translateNDJSON(event, raw.Payload), nil, nil
 	}
 	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "openclaw unknown frame: " + raw.Type}}, nil, nil
@@ -111,20 +111,20 @@ func fullResultText(p map[string]any) string {
 	return ""
 }
 
-func translateNDJSON(event string, p map[string]any) []agentbridge.Event {
+func translateNDJSON(event wireNDJSONEvent, p map[string]any) []agentbridge.Event {
 	switch event {
-	case "text":
+	case wireNDJSONText:
 		return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: stringField(p, "text")}}
-	case "log":
+	case wireNDJSONLog:
 		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: stringField(p, "message")}}
-	case "error":
+	case wireNDJSONError:
 		return []agentbridge.Event{{Kind: agentbridge.EventError, Err: stringField(p, "message")}}
-	case "session":
+	case wireNDJSONSession:
 		return []agentbridge.Event{{Kind: agentbridge.EventSessionIdentified, SessionID: stringField(p, "session_id")}}
-	case "usage":
+	case wireNDJSONUsage:
 		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: parseUsage(p)}}
 	}
-	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "openclaw ndjson unknown event: " + event}}
+	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "openclaw ndjson unknown event: " + string(event)}}
 }
 
 func parseUsage(m map[string]any) agentbridge.Usage {

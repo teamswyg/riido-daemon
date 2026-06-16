@@ -12,14 +12,14 @@ func translateResult(raw agentbridge.RawEvent) []agentbridge.Event {
 	if usage, ok := raw.Payload["usage"].(map[string]any); ok {
 		out = append(out, agentbridge.Event{Kind: agentbridge.EventUsageDelta, Usage: parseUsage(usage)})
 	}
-	subtype := stringField(raw.Payload, "subtype")
+	subtype := wireResultSubtype(stringField(raw.Payload, "subtype"))
 	status := agentbridge.ResultCompleted
 	switch subtype {
-	case "error", "error_during_execution":
+	case wireResultSubtypeError, wireResultSubtypeExecutionError:
 		status = agentbridge.ResultFailed
-	case "cancelled":
+	case wireResultSubtypeCancelled:
 		status = agentbridge.ResultCancelled
-	case "max_turns":
+	case wireResultSubtypeMaxTurns:
 		status = agentbridge.ResultBlocked
 	}
 	result := agentbridge.Result{

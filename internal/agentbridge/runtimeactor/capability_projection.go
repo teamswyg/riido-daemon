@@ -7,9 +7,17 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
+const (
+	providerKindClaude   providercap.ProviderKind = "claude"
+	providerKindCodex    providercap.ProviderKind = "codex"
+	providerKindOpenClaw providercap.ProviderKind = "openclaw"
+	providerKindCursor   providercap.ProviderKind = "cursor"
+)
+
 func profileForProvider(provider string) capabilityProfile {
-	switch provider {
-	case "claude":
+	providerKind := providercap.ProviderKind(provider)
+	switch providerKind {
+	case providerKindClaude:
 		return capabilityProfile{
 			protocolKind:              providercap.ProtocolClaudeStreamJSON,
 			protocolMaturity:          providercap.ProtocolMaturityStable,
@@ -20,7 +28,7 @@ func profileForProvider(provider string) capabilityProfile {
 			defaultSandboxMode:        "unknown",
 			defaultApprovalPolicy:     "on-request",
 		}
-	case "codex":
+	case providerKindCodex:
 		return capabilityProfile{
 			protocolKind:              providercap.ProtocolCodexAppServer,
 			protocolMaturity:          providercap.ProtocolMaturityExperimental,
@@ -32,7 +40,7 @@ func profileForProvider(provider string) capabilityProfile {
 			defaultSandboxMode:        "workspace-write",
 			defaultApprovalPolicy:     "on-request",
 		}
-	case "openclaw":
+	case providerKindOpenClaw:
 		return capabilityProfile{
 			protocolKind:          providercap.ProtocolOpenClawAgentJSON,
 			protocolMaturity:      providercap.ProtocolMaturityExperimental,
@@ -41,7 +49,7 @@ func profileForProvider(provider string) capabilityProfile {
 			defaultSandboxMode:    "unknown",
 			defaultApprovalPolicy: "unknown",
 		}
-	case "cursor":
+	case providerKindCursor:
 		return capabilityProfile{
 			protocolKind:          providercap.ProtocolCursorAgentStreamJSON,
 			protocolMaturity:      providercap.ProtocolMaturityExperimental,
@@ -53,7 +61,7 @@ func profileForProvider(provider string) capabilityProfile {
 		}
 	default:
 		return capabilityProfile{
-			protocolKind:          providercap.ProtocolKind(provider + "-unknown"),
+			protocolKind:          providercap.ProtocolKind(string(providerKind) + "-unknown"),
 			protocolMaturity:      providercap.ProtocolMaturityUnknown,
 			eventStreamFormat:     providercap.EventStreamFormatUnknown,
 			defaultSandboxMode:    "unknown",

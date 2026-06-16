@@ -17,7 +17,7 @@ func rawParams(params any) (json.RawMessage, error) {
 	return data, nil
 }
 
-func okResponse(method string, data any) responseEnvelope {
+func okResponse(method Method, data any) responseEnvelope {
 	payload, err := json.Marshal(data)
 	if err != nil {
 		return errorResponse(method, err)
@@ -29,7 +29,7 @@ func okResponse(method string, data any) responseEnvelope {
 	}
 }
 
-func errorResponse(method string, err error) responseEnvelope {
+func errorResponse(method Method, err error) responseEnvelope {
 	return responseEnvelope{
 		OK:     false,
 		Method: method,
@@ -43,13 +43,13 @@ func writeResponse(conn net.Conn, response responseEnvelope) error {
 }
 
 type requestEnvelope struct {
-	Method string          `json:"method"`
+	Method Method          `json:"method"`
 	Params json.RawMessage `json:"params,omitempty"`
 }
 
 type responseEnvelope struct {
 	OK     bool            `json:"ok"`
-	Method string          `json:"method"`
+	Method Method          `json:"method"`
 	Data   json.RawMessage `json:"data"`
 	Error  string          `json:"error"`
 }

@@ -15,9 +15,9 @@ import (
 
 // daemonRequest is the JSON envelope read off the socket.
 type daemonRequest struct {
-	Method        string `json:"method"`
-	ShutdownLevel string `json:"shutdown_level,omitempty"`
-	Force         bool   `json:"force,omitempty"`
+	Method        daemonMethod `json:"method"`
+	ShutdownLevel string       `json:"shutdown_level,omitempty"`
+	Force         bool         `json:"force,omitempty"`
 }
 
 func handleDaemonConn(conn net.Conn, flags startFlags, settings daemonSettings, startedAt time.Time, runtimes []*runtimeactor.Actor, shutdownCh chan<- lifecycle.ShutdownLevel, log logging.Logger) {
@@ -39,15 +39,15 @@ func handleDaemonConn(conn net.Conn, flags startFlags, settings daemonSettings, 
 	}
 	log.Printf("%s request received", req.Method)
 	switch req.Method {
-	case "status", "":
+	case daemonMethodStatus, daemonMethodDefault:
 		writeStatus(conn, flags, settings, startedAt, runtimes)
-	case "health":
+	case daemonMethodHealth:
 		writeHealth(conn)
-	case "ready":
+	case daemonMethodReady:
 		writeReady(conn, runtimes)
-	case "metrics":
+	case daemonMethodMetrics:
 		writeMetrics(conn, runtimes)
-	case "shutdown":
+	case daemonMethodShutdown:
 		level := req.lifecycleShutdownLevel()
 		writeShutdownAck(conn, level)
 		// Non-blocking signal — repeated shutdown requests are harmless.
@@ -57,7 +57,7 @@ func handleDaemonConn(conn net.Conn, flags startFlags, settings daemonSettings, 
 		}
 		log.Printf("shutdown request received level=%s", level)
 	default:
-		if err := writeDaemonJSON(conn, map[string]any{"error": "unknown method", "method": req.Method}); err != nil {
+		if err := writeDaemonJSON(conn, map[string]any{"error": "unknown method", "method": string(req.Method)}); err != nil {
 			log.Printf("write unknown-method response: %v", err)
 		}
 	}

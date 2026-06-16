@@ -34,26 +34,26 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 	}
 
 	switch {
-	case raw.Type == "malformed":
+	case rawFrameType(raw.Type) == rawFrameMalformed:
 		return []agentbridge.Event{{Kind: agentbridge.EventWarning, Text: "malformed codex json-rpc frame", Err: string(raw.Bytes)}}, nil, nil
 
-	case raw.Type == "error":
+	case rawFrameType(raw.Type) == rawFrameError:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventError,
 			Err:  errMessage(raw.Payload),
 		}}, nil, nil
 
-	case raw.Type == "response":
+	case rawFrameType(raw.Type) == rawFrameResponse:
 		// Plain RPC responses aren't run-scope events; the RPC actor
 		// resolves them. Emit a Log so observability is preserved.
 		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex rpc response"}}, nil, nil
 
-	case strings.HasPrefix(raw.Type, "notification:"):
-		method := strings.TrimPrefix(raw.Type, "notification:")
+	case strings.HasPrefix(raw.Type, rawFrameNotificationPrefix):
+		method := codexMethod(strings.TrimPrefix(raw.Type, rawFrameNotificationPrefix))
 		return translateNotification(method, params(raw)), nil, nil
 
-	case strings.HasPrefix(raw.Type, "server_request:"):
-		method := strings.TrimPrefix(raw.Type, "server_request:")
+	case strings.HasPrefix(raw.Type, rawFrameServerRequestPrefix):
+		method := codexMethod(strings.TrimPrefix(raw.Type, rawFrameServerRequestPrefix))
 		return translateServerRequest(method, params(raw)), nil, nil
 	}
 

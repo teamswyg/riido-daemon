@@ -66,10 +66,18 @@ func NewFakeRunning() *FakeRunning {
 }
 
 type fakeEmit struct {
-	kind   string
+	kind   fakeEmitKind
 	bytes  []byte
 	status ExitStatus
 }
+
+type fakeEmitKind int
+
+const (
+	fakeEmitStdout fakeEmitKind = iota + 1
+	fakeEmitStderr
+	fakeEmitExit
+)
 
 func (r *FakeRunning) Stdout() <-chan []byte     { return r.stdout }
 func (r *FakeRunning) Stderr() <-chan []byte     { return r.stderr }
@@ -109,18 +117,18 @@ func (r *FakeRunning) Kill(_ context.Context) error {
 	case r.kill <- struct{}{}:
 	default:
 	}
-	r.emitToActor(fakeEmit{kind: "exit", status: ExitStatus{Code: 137, Err: errors.New("killed")}})
+	r.emitToActor(fakeEmit{kind: fakeEmitExit, status: ExitStatus{Code: 137, Err: errors.New("killed")}})
 	return nil
 }
 
 // EmitStdout queues a stdout chunk for consumers of Stdout().
 func (r *FakeRunning) EmitStdout(b []byte) {
-	r.emitToActor(fakeEmit{kind: "stdout", bytes: append([]byte(nil), b...)})
+	r.emitToActor(fakeEmit{kind: fakeEmitStdout, bytes: append([]byte(nil), b...)})
 }
 
 // EmitStderr queues a stderr chunk.
 func (r *FakeRunning) EmitStderr(b []byte) {
-	r.emitToActor(fakeEmit{kind: "stderr", bytes: append([]byte(nil), b...)})
+	r.emitToActor(fakeEmit{kind: fakeEmitStderr, bytes: append([]byte(nil), b...)})
 }
 
 // EmitExit signals process termination and closes stdout/stderr/exited
@@ -128,7 +136,7 @@ func (r *FakeRunning) EmitStderr(b []byte) {
 // closure in one actor goroutine so burst tests can race Emit* and EmitExit
 // without racing close against send.
 func (r *FakeRunning) EmitExit(code int, err error) {
-	r.emitToActor(fakeEmit{kind: "exit", status: ExitStatus{Code: code, Err: err}})
+	r.emitToActor(fakeEmit{kind: fakeEmitExit, status: ExitStatus{Code: code, Err: err}})
 }
 
 func (r *FakeRunning) emitToActor(event fakeEmit) {
@@ -147,19 +155,19 @@ func (r *FakeRunning) emitToActor(event fakeEmit) {
 func (r *FakeRunning) runEmitActor() {
 	for event := range r.emit {
 		switch event.kind {
-		case "stdout":
+		case fakeEmitStdout:
 			select {
 			case <-r.done:
 				return
 			case r.stdout <- event.bytes:
 			}
-		case "stderr":
+		case fakeEmitStderr:
 			select {
 			case <-r.done:
 				return
 			case r.stderr <- event.bytes:
 			}
-		case "exit":
+		case fakeEmitExit:
 			r.exited <- event.status
 			close(r.stdout)
 			close(r.stderr)

@@ -19,9 +19,9 @@ func normalizedExecutionIDs(in []string) []string {
 }
 
 func runtimeKindForProvider(provider string) string {
-	switch strings.TrimSpace(provider) {
-	case "claude":
-		return "claude_code"
+	switch runtimeProviderID(strings.TrimSpace(provider)) {
+	case runtimeProviderClaude:
+		return string(runtimeProviderClaudeCode)
 	default:
 		return strings.TrimSpace(provider)
 	}

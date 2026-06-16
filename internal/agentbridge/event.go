@@ -58,7 +58,7 @@ type Event struct {
 	SessionID    string
 	Phase        RunState
 	Text         string
-	ProgressCode int
+	ProgressCode ProgressCode
 	ProgressKey  string
 	ProgressArgs map[string]string
 	Tool         ToolRef

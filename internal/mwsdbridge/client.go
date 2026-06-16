@@ -53,22 +53,22 @@ func DefaultSocketPath() (string, error) {
 // state projection.
 func (c Client) FetchSnapshot(ctx context.Context) (Snapshot, error) {
 	var snapshot Snapshot
-	if err := c.Request(ctx, "status", &snapshot.Status); err != nil {
+	if err := c.Request(ctx, string(MethodStatus), &snapshot.Status); err != nil {
 		return snapshot, err
 	}
-	if err := c.Request(ctx, "graph", &snapshot.Graph); err != nil {
+	if err := c.Request(ctx, string(MethodGraph), &snapshot.Graph); err != nil {
 		return snapshot, err
 	}
-	if err := c.Request(ctx, "domain", &snapshot.Domain); err != nil {
+	if err := c.Request(ctx, string(MethodDomain), &snapshot.Domain); err != nil {
 		return snapshot, err
 	}
-	if err := c.Request(ctx, "harness", &snapshot.Harness); err != nil {
+	if err := c.Request(ctx, string(MethodHarness), &snapshot.Harness); err != nil {
 		return snapshot, err
 	}
-	if err := c.Request(ctx, "orchestration", &snapshot.Orchestration); err != nil {
+	if err := c.Request(ctx, string(MethodOrchestration), &snapshot.Orchestration); err != nil {
 		return snapshot, err
 	}
-	if err := c.Request(ctx, "projects", &snapshot.Projects); err != nil {
+	if err := c.Request(ctx, string(MethodProjects), &snapshot.Projects); err != nil {
 		return snapshot, err
 	}
 	return snapshot, snapshot.Validate()
@@ -92,7 +92,7 @@ func (c Client) Request(ctx context.Context, method string, out any) error {
 	}
 	defer conn.Close()
 
-	body, err := json.Marshal(request{Method: method})
+	body, err := json.Marshal(request{Method: Method(method)})
 	if err != nil {
 		return fmt.Errorf("encode mwsd request: %w", err)
 	}
@@ -119,7 +119,7 @@ func (c Client) Request(ctx context.Context, method string, out any) error {
 		}
 		return fmt.Errorf("mwsd %s failed", method)
 	}
-	if env.Method != method {
+	if env.Method != Method(method) {
 		return fmt.Errorf("mwsd method mismatch: requested %s got %s", method, env.Method)
 	}
 	if err := json.Unmarshal(env.Data, out); err != nil {
@@ -129,12 +129,12 @@ func (c Client) Request(ctx context.Context, method string, out any) error {
 }
 
 type request struct {
-	Method string `json:"method"`
+	Method Method `json:"method"`
 }
 
 type responseEnvelope struct {
 	OK     bool            `json:"ok"`
-	Method string          `json:"method"`
+	Method Method          `json:"method"`
 	Data   json.RawMessage `json:"data"`
 	Error  string          `json:"error"`
 }

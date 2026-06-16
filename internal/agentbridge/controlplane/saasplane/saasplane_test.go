@@ -139,7 +139,7 @@ func TestPlaneReportsStructuredProgressMetadata(t *testing.T) {
 	if err := plane.ReportEvent(context.Background(), req.ID, agentbridge.Event{
 		Kind:         agentbridge.EventProgress,
 		Text:         "생각 중. . .",
-		ProgressCode: 1001,
+		ProgressCode: agentbridge.ProgressCodeAgentThinking,
 		ProgressKey:  "agent.thinking",
 	}); err != nil {
 		t.Fatalf("ReportEvent: %v", err)

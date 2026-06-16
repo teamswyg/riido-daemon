@@ -19,7 +19,7 @@ func runDaemonStatus(args []string) error {
 	if err != nil {
 		return err
 	}
-	return daemonCall(sock, "status")
+	return daemonCall(sock, daemonMethodStatus)
 }
 
 func runDaemonHealth(args []string) error {
@@ -27,7 +27,7 @@ func runDaemonHealth(args []string) error {
 	if err != nil {
 		return err
 	}
-	return daemonCall(sock, "health")
+	return daemonCall(sock, daemonMethodHealth)
 }
 
 func runDaemonReady(args []string) error {
@@ -35,7 +35,7 @@ func runDaemonReady(args []string) error {
 	if err != nil {
 		return err
 	}
-	return daemonCall(sock, "ready")
+	return daemonCall(sock, daemonMethodReady)
 }
 
 func runDaemonMetrics(args []string) error {
@@ -43,7 +43,7 @@ func runDaemonMetrics(args []string) error {
 	if err != nil {
 		return err
 	}
-	return daemonCall(sock, "metrics")
+	return daemonCall(sock, daemonMethodMetrics)
 }
 
 func requireSocketFlag(args []string) (string, error) {
@@ -93,7 +93,7 @@ func defaultDaemonLockPath() (string, error) {
 	return filepath.Join(home, ".riido", ".lock"), nil
 }
 
-func daemonCall(sock, method string) error {
+func daemonCall(sock string, method daemonMethod) error {
 	conn, err := net.DialTimeout("unix", sock, 2*time.Second)
 	if err != nil {
 		return daemonWrapf(ErrDaemonSocket, "ipc.call.dial", err, "dial %s", sock)

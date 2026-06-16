@@ -36,7 +36,7 @@ func runAPIReviewDemo(args []string, config apiCLIConfig) error {
 		return fmt.Errorf("--channel is required")
 	}
 	var response riidoapi.ReviewDemoResponse
-	if err := requestAPI(config, 5*time.Second, "review-demo", request, &response); err != nil {
+	if err := requestAPI(config, 5*time.Second, riidoapi.MethodReviewDemo, request, &response); err != nil {
 		return err
 	}
 	return printJSON(response)

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 const (
@@ -36,7 +37,7 @@ const (
 	// assistantPartialProgressCode is a sentinel progress code OUTSIDE the
 	// control-plane canonical template range (1001-1203), so the control-plane
 	// keeps the verbatim accumulated body instead of rendering a template.
-	assistantPartialProgressCode = 9001
+	assistantPartialProgressCode agentbridge.ProgressCode = 9001
 	// assistantPartialProgressKey is relayed verbatim to the client as the
 	// line's message_key so it can distinguish the evolving body from status
 	// narration lines.

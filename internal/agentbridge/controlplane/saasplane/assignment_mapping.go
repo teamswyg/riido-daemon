@@ -10,25 +10,35 @@ import (
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
+type runtimeProviderID string
+
+const (
+	runtimeProviderCodex      runtimeProviderID = "codex"
+	runtimeProviderClaude     runtimeProviderID = "claude"
+	runtimeProviderClaudeCode runtimeProviderID = "claude_code"
+	runtimeProviderOpenClaw   runtimeProviderID = "openclaw"
+	runtimeProviderCursor     runtimeProviderID = "cursor"
+)
+
 func providerModelOverride(runtimeProvider, modelID string) string {
 	modelID = strings.TrimSpace(modelID)
 	if modelID == "" {
 		return ""
 	}
-	switch strings.TrimSpace(runtimeProvider) {
-	case "codex":
+	switch runtimeProviderID(strings.TrimSpace(runtimeProvider)) {
+	case runtimeProviderCodex:
 		if modelID == "codex-default" {
 			return ""
 		}
-	case "claude", "claude_code":
+	case runtimeProviderClaude, runtimeProviderClaudeCode:
 		if modelID == "claude-default" {
 			return ""
 		}
-	case "openclaw":
+	case runtimeProviderOpenClaw:
 		if modelID == "openclaw-default" {
 			return ""
 		}
-	case "cursor":
+	case runtimeProviderCursor:
 		if modelID == "cursor-auto" {
 			return ""
 		}

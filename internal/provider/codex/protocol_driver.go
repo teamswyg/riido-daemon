@@ -48,7 +48,7 @@ type protocolDriver struct {
 }
 
 type pendingRequest struct {
-	method string
+	method codexMethod
 }
 
 // NewProtocolDriver returns a provider-neutral ProtocolDriver that drives the
@@ -62,7 +62,7 @@ func NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver
 
 // OnStart writes the initialize request.
 func (d *protocolDriver) OnStart(ctx context.Context, io agentbridge.ProtocolIO) error {
-	_, err := d.sendRequest(ctx, io, "initialize", map[string]any{
+	_, err := d.sendRequest(ctx, io, codexMethodInitialize, map[string]any{
 		"clientInfo": map[string]any{"name": "riido", "version": "0.0.0"},
 	})
 	return err
@@ -72,31 +72,31 @@ func (d *protocolDriver) OnStart(ctx context.Context, io agentbridge.ProtocolIO)
 // machine (for "response") or the existing Translate (for notifications
 // and server_requests).
 func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
-	if raw.Type == "response" {
+	if rawFrameType(raw.Type) == rawFrameResponse {
 		return d.handleResponse(ctx, raw, io)
 	}
-	if raw.Type == "error" {
+	if rawFrameType(raw.Type) == rawFrameError {
 		id, _ := rpcID(raw.Payload)
 		if pr, known := d.pending[id]; known {
 			delete(d.pending, id)
-			return d.failedEvents("codex " + pr.method + " rpc error: " + codexRPCErrorMessage(raw.Payload)), nil, nil
+			return d.failedEvents("codex " + string(pr.method) + " rpc error: " + codexRPCErrorMessage(raw.Payload)), nil, nil
 		}
 		d.recordRuntimeError(codexRPCErrorMessage(raw.Payload))
 		events, cmds, err := Translate(raw)
 		d.observeEvents(events)
 		return events, cmds, err
 	}
-	if after, ok := strings.CutPrefix(raw.Type, "notification:"); ok {
-		method := after
-		if method == "error" {
+	if after, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok {
+		method := codexMethod(after)
+		if method == codexMethodError {
 			errText := codexNotificationErrorMessage(params(raw))
 			d.recordRuntimeError(errText)
 			return []agentbridge.Event{{Kind: agentbridge.EventError, Err: errText}}, nil, nil
 		}
-		if method == "turn_started" || method == "turn/started" {
+		if method == codexMethodTurnStarted || method == codexMethodTurnStartedSlash {
 			d.turnStarted = true
 		}
-		if method == "turn_completed" || method == "turn/completed" {
+		if method == codexMethodTurnCompleted || method == codexMethodTurnCompleteSlash {
 			p := params(raw)
 			if d.lastRuntimeError != "" && !d.sawAssistantOutput && stringField(p, "output") == "" {
 				return d.failedEvents(d.lastRuntimeError), nil, nil
@@ -106,7 +106,7 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		// (the thread returns to a terminal/idle status) instead of
 		// turn/completed. Without this the run never receives a completion and
 		// fails with "codex unknown notification: thread/status/changed".
-		if method == "thread/status/changed" || method == "thread_status_changed" {
+		if method == codexMethodThreadStatusChanged || method == codexMethodThreadStatusAlt {
 			events := d.threadStatusEvents(params(raw))
 			d.observeEvents(events)
 			return events, nil, nil

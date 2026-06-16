@@ -8,10 +8,10 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-func (d *protocolDriver) sendNotification(ctx context.Context, io agentbridge.ProtocolIO, method string, params map[string]any) error {
+func (d *protocolDriver) sendNotification(ctx context.Context, io agentbridge.ProtocolIO, method codexMethod, params map[string]any) error {
 	frame := map[string]any{
 		"jsonrpc": "2.0",
-		"method":  method,
+		"method":  string(method),
 	}
 	if params != nil {
 		frame["params"] = params

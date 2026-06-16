@@ -16,14 +16,14 @@ func runTask(args []string) error {
 		return err
 	}
 
-	switch args[0] {
-	case "list":
+	switch taskCommand(args[0]) {
+	case taskCommandList:
 		return runTaskList(args[1:], taskDBPath)
-	case "transition":
+	case taskCommandTransition:
 		return runTaskTransition(args[1:], taskDBPath)
-	case "evidence":
+	case taskCommandEvidence:
 		return runTaskEvidence(args[1:], taskDBPath)
-	case "validate":
+	case taskCommandValidate:
 		return runTaskValidate(args[1:], taskDBPath)
 	default:
 		printUsage()
