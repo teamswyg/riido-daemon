@@ -160,10 +160,14 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		Prompt:                   prompt,
 		SystemPrompt:             systemPrompt,
 		AllowExperimentalRuntime: assignment.AllowExperimentalRuntime,
-		ResumeSessionID:          assignment.ResumeSessionID,
+		ResumeSessionID:          assignmentResumeSessionID(assignment),
 		Worktree:                 cloneAssignmentWorktree(assignment.Worktree),
 		Metadata:                 metadata,
 	}
+}
+
+func assignmentResumeSessionID(assignment assignmentcontract.Assignment) string {
+	return textutil.FirstNonEmptyTrimmed(assignment.ProviderSessionID, assignment.ResumeSessionID)
 }
 
 func cloneAssignmentWorktree(worktree *assignmentcontract.AssignmentWorktree) *assignmentcontract.AssignmentWorktree {

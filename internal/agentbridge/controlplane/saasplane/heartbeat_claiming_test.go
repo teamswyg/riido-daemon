@@ -70,6 +70,8 @@ func TestPlaneClaimsActiveAssignmentAfterLocalStateLoss(t *testing.T) {
 		State:                    assignmentcontract.AssignmentLeased,
 		LeaseToken:               "lease-active",
 		AllowExperimentalRuntime: true,
+		ResumeSessionID:          "sess-initial",
+		ProviderSessionID:        "sess-current",
 	}
 	fake.activeNext(active.AgentID, active)
 	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}})
@@ -84,6 +86,9 @@ func TestPlaneClaimsActiveAssignmentAfterLocalStateLoss(t *testing.T) {
 	}
 	if !req.AllowExperimentalRuntime {
 		t.Fatal("active assignment should preserve experimental opt-in")
+	}
+	if req.ResumeSessionID != active.ProviderSessionID {
+		t.Fatalf("active assignment resume_session_id = %q, want provider session %q", req.ResumeSessionID, active.ProviderSessionID)
 	}
 }
 

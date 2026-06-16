@@ -155,3 +155,14 @@ This slice does not move provider adapters, runtime/session/supervisor actors,
 C7 policy/security implementation, C11 host integration implementation,
 task DB/project/mwsd/local API packages, private infra, secrets, or local
 machine state.
+
+### RIID-4964 — active assignment resume recovery
+
+This slice closes the daemon side of the provider-session recovery path for
+locally lost in-flight state. When the control plane returns an active
+assignment that already has a pinned `provider_session_id`, the daemon now uses
+that provider session as `TaskRequest.ResumeSessionID` before falling back to
+the original `resume_session_id`.
+
+This slice does not add a durable run-attempt table, recovery mode enum, or web
+approval handoff. Those remain follow-up lifecycle/FSM work.
