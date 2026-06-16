@@ -23,7 +23,7 @@ const (
 
 const runtimeSnapshotHeartbeatMinInterval = 4 * time.Second
 
-const agentBindingCacheTTL = time.Second
+const agentBindingCacheTTL = 5 * time.Second
 
 const (
 	jsonRequestMaxAttempts = 3
