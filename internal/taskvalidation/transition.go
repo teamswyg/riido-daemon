@@ -1,9 +1,10 @@
-package main
+package taskvalidation
 
 import (
 	"fmt"
 	"time"
 
+	"github.com/teamswyg/riido-contracts/ir"
 	"github.com/teamswyg/riido-contracts/task"
 	"github.com/teamswyg/riido-daemon/internal/taskdb"
 	"github.com/teamswyg/riido-daemon/internal/validation"
@@ -12,7 +13,7 @@ import (
 func maybeApplyValidationTransition(
 	updated *taskdb.TaskDB,
 	taskBeforeValidation taskdb.TaskRecord,
-	options taskValidateCLI,
+	req Request,
 	providerForRun string,
 	result validation.CommandResult,
 	now time.Time,
@@ -22,17 +23,17 @@ func maybeApplyValidationTransition(
 	}
 	toState, eventType := validationTransitionForResult(result.Result)
 	nextDB, transition, receipt, err := taskdb.ApplyGuardedTaskTransition(*updated, taskdb.TaskTransitionInput{
-		TaskID:  options.taskID,
+		TaskID:  req.TaskID,
 		ToState: toState,
 		Event:   eventType,
-		Actor:   options.actor,
-		Source:  options.source,
+		Actor:   req.Actor,
+		Source:  req.Source,
 		Reason:  fmt.Sprintf("validation %s via %s", result.Result, result.ValidationGate),
 		Guard: taskdb.TaskMutationGuardInput{
-			CommandID:   options.commandID + ":transition",
+			CommandID:   req.CommandID + ":transition",
 			Provider:    providerForRun,
-			DecisionLLM: options.decisionLLM,
-			ApprovalID:  options.approvalID,
+			DecisionLLM: req.DecisionLLM,
+			ApprovalID:  req.ApprovalID,
 		},
 	}, now)
 	if err != nil {
@@ -40,4 +41,11 @@ func maybeApplyValidationTransition(
 	}
 	*updated = nextDB
 	return &transition, &receipt, nil
+}
+
+func validationTransitionForResult(result string) (task.TaskState, ir.EventType) {
+	if result == "passed" {
+		return task.StatePatchReady, ir.EventValidationPassed
+	}
+	return task.StateFailed, ir.EventValidationFailed
 }

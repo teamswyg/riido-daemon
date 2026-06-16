@@ -8,9 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/teamswyg/riido-contracts/task"
 	"github.com/teamswyg/riido-daemon/internal/taskdb"
-	"github.com/teamswyg/riido-daemon/internal/validation"
+	"github.com/teamswyg/riido-daemon/internal/taskvalidation"
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
@@ -39,100 +38,36 @@ func (s Server) validateTask(ctx context.Context, params json.RawMessage) (Valid
 	if err != nil {
 		return ValidateResponse{}, err
 	}
-	providerForRun, err := validationProviderForTask(db, taskID, req.Provider)
-	if err != nil {
-		return ValidateResponse{}, err
-	}
-	if err := validateDecisionLLMForTask(db, taskID, req.DecisionLLM); err != nil {
-		return ValidateResponse{}, err
-	}
-	taskBeforeValidation, ok := findTask(db, taskID)
-	if !ok {
-		return ValidateResponse{}, fmt.Errorf("task %s not found", taskID)
-	}
 
 	now := time.Now()
-	commandID := strings.TrimSpace(req.CommandID)
-	if commandID == "" {
-		commandID = validationCommandID(taskID, now)
-	}
-	timeout := time.Duration(req.TimeoutSeconds) * time.Second
-	actor := textutil.Default(req.Actor, "daemon")
-	source := textutil.Default(req.Source, "riido-api")
-	result, err := validation.RunCommand(ctx, validation.CommandRequest{
+	result, err := taskvalidation.Run(ctx, db, taskvalidation.Request{
+		TaskID:         taskID,
 		Command:        req.Command,
 		Workdir:        req.Workdir,
-		Timeout:        timeout,
-		CommandID:      commandID,
-		Provider:       providerForRun,
-		ValidationGate: req.ValidationGate,
+		Timeout:        time.Duration(req.TimeoutSeconds) * time.Second,
+		Actor:          textutil.Default(req.Actor, "daemon"),
+		Source:         textutil.Default(req.Source, "riido-api"),
 		Summary:        req.Summary,
+		Provider:       req.Provider,
+		DecisionLLM:    req.DecisionLLM,
+		ApprovalID:     req.ApprovalID,
+		CommandID:      req.CommandID,
+		ValidationGate: req.ValidationGate,
 	}, now)
 	if err != nil {
 		return ValidateResponse{}, err
 	}
-	updated, evidence, receipt, err := taskdb.AddGuardedTaskEvidence(db, taskdb.TaskEvidenceInput{
-		TaskID:            taskID,
-		Command:           result.Command,
-		ExitCode:          result.ExitCode,
-		Result:            result.Result,
-		Actor:             actor,
-		Source:            source,
-		Summary:           result.Summary,
-		ValidationGate:    result.ValidationGate,
-		ProviderRunID:     result.ProviderRunID,
-		ProviderRunResult: result.ProviderRunResult,
-		Guard: taskdb.TaskMutationGuardInput{
-			CommandID:   commandID,
-			Provider:    providerForRun,
-			DecisionLLM: req.DecisionLLM,
-			ApprovalID:  req.ApprovalID,
-		},
-	}, now)
-	if err != nil {
+	if err := taskdb.SaveTaskDB(s.config.TaskDBPath, result.TaskDB); err != nil {
 		return ValidateResponse{}, err
-	}
-
-	var transition *taskdb.TaskTransitionRecord
-	var transitionReceipt *taskdb.TaskCommandReceiptRecord
-	if taskBeforeValidation.State == task.StateValidating {
-		toState, eventType := validationTransitionForResult(result.Result)
-		nextDB, appliedTransition, appliedReceipt, err := taskdb.ApplyGuardedTaskTransition(updated, taskdb.TaskTransitionInput{
-			TaskID:  taskID,
-			ToState: toState,
-			Event:   eventType,
-			Actor:   actor,
-			Source:  source,
-			Reason:  fmt.Sprintf("validation %s via %s", result.Result, result.ValidationGate),
-			Guard: taskdb.TaskMutationGuardInput{
-				CommandID:   commandID + ":transition",
-				Provider:    providerForRun,
-				DecisionLLM: req.DecisionLLM,
-				ApprovalID:  req.ApprovalID,
-			},
-		}, now)
-		if err != nil {
-			return ValidateResponse{}, err
-		}
-		updated = nextDB
-		transition = &appliedTransition
-		transitionReceipt = &appliedReceipt
-	}
-	if err := taskdb.SaveTaskDB(s.config.TaskDBPath, updated); err != nil {
-		return ValidateResponse{}, err
-	}
-	record, ok := findTask(updated, taskID)
-	if !ok {
-		return ValidateResponse{}, fmt.Errorf("task %s not found after validation", taskID)
 	}
 	return ValidateResponse{
 		TaskDBPath:        s.config.TaskDBPath,
-		Task:              record,
-		Validation:        result,
-		Evidence:          evidence,
-		Receipt:           receipt,
-		Transition:        transition,
-		TransitionReceipt: transitionReceipt,
+		Task:              result.Task,
+		Validation:        result.Validation,
+		Evidence:          result.Evidence,
+		Receipt:           result.Receipt,
+		Transition:        result.Transition,
+		TransitionReceipt: result.TransitionReceipt,
 	}, nil
 }
 

@@ -106,15 +106,25 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 
 func filterCustomArgs(custom []string) (kept, dropped []string) {
 	kept, dropped = agentbridge.FilterBlockedArgs(custom, BlockedArgs())
-	kept, dropped = filterConfigOverrideArgs(kept, dropped)
-	kept, dropped = filterSandboxOverrideArgs(kept, dropped)
-	return filterUnsafeBypassArgs(kept, dropped)
+	for _, rule := range []customArgBlockRule{
+		{names: SecurityCriticalArgs(), dropsFollowingValue: true},
+		{names: SandboxOverrideArgs(), dropsFollowingValue: true},
+		{names: UnsafeBypassArgs()},
+	} {
+		kept, dropped = filterCustomArgsByRule(kept, dropped, rule)
+	}
+	return kept, dropped
 }
 
-func filterConfigOverrideArgs(custom, dropped []string) (kept, allDropped []string) {
-	blocked := make(map[string]struct{}, len(SecurityCriticalArgs()))
-	for _, arg := range SecurityCriticalArgs() {
-		blocked[arg] = struct{}{}
+type customArgBlockRule struct {
+	names               []string
+	dropsFollowingValue bool
+}
+
+func filterCustomArgsByRule(custom, dropped []string, rule customArgBlockRule) (kept, allDropped []string) {
+	blocked := make(map[string]struct{}, len(rule.names))
+	for _, name := range rule.names {
+		blocked[name] = struct{}{}
 	}
 
 	allDropped = append(allDropped, dropped...)
@@ -122,66 +132,17 @@ func filterConfigOverrideArgs(custom, dropped []string) (kept, allDropped []stri
 		arg := custom[i]
 		if _, isBlocked := blocked[arg]; isBlocked {
 			allDropped = append(allDropped, arg)
-			if (arg == "-c" || arg == "--config" || arg == "--enable" || arg == "--disable") && i+1 < len(custom) {
+			if rule.dropsFollowingValue && i+1 < len(custom) {
 				allDropped = append(allDropped, custom[i+1])
 				i++
 			}
 			continue
 		}
-		if strings.HasPrefix(arg, "-c=") ||
-			strings.HasPrefix(arg, "--config=") ||
-			strings.HasPrefix(arg, "--enable=") ||
-			strings.HasPrefix(arg, "--disable=") {
-			allDropped = append(allDropped, arg)
-			continue
-		}
-		kept = append(kept, arg)
-	}
-	return kept, allDropped
-}
-
-func filterSandboxOverrideArgs(custom, dropped []string) (kept, allDropped []string) {
-	blocked := make(map[string]struct{}, len(SandboxOverrideArgs()))
-	for _, arg := range SandboxOverrideArgs() {
-		blocked[arg] = struct{}{}
-	}
-
-	allDropped = append(allDropped, dropped...)
-	for i := 0; i < len(custom); i++ {
-		arg := custom[i]
-		if _, isBlocked := blocked[arg]; isBlocked {
-			allDropped = append(allDropped, arg)
-			if i+1 < len(custom) {
-				allDropped = append(allDropped, custom[i+1])
-				i++
+		if eq := strings.IndexByte(arg, '='); eq > 0 {
+			if _, isBlocked := blocked[arg[:eq]]; isBlocked {
+				allDropped = append(allDropped, arg)
+				continue
 			}
-			continue
-		}
-		if strings.HasPrefix(arg, "--sandbox=") || strings.HasPrefix(arg, "-s=") {
-			allDropped = append(allDropped, arg)
-			continue
-		}
-		kept = append(kept, arg)
-	}
-	return kept, allDropped
-}
-
-func filterUnsafeBypassArgs(custom, dropped []string) (kept, allDropped []string) {
-	blocked := make(map[string]struct{}, len(UnsafeBypassArgs()))
-	for _, arg := range UnsafeBypassArgs() {
-		blocked[arg] = struct{}{}
-	}
-
-	allDropped = append(allDropped, dropped...)
-	for _, arg := range custom {
-		if _, isBlocked := blocked[arg]; isBlocked {
-			allDropped = append(allDropped, arg)
-			continue
-		}
-		if strings.HasPrefix(arg, "--yolo=") ||
-			strings.HasPrefix(arg, "--dangerously-bypass-approvals-and-sandbox=") {
-			allDropped = append(allDropped, arg)
-			continue
 		}
 		kept = append(kept, arg)
 	}

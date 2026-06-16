@@ -28,6 +28,24 @@ func TestServerRejectsIllegalTransition(t *testing.T) {
 	}
 }
 
+func TestServerRejectsMissingApproval(t *testing.T) {
+	socketPath, _, stop := serveTestAPI(t)
+	defer stop()
+
+	client := NewClient(socketPath)
+	var response TransitionResponse
+	err := client.Request(context.Background(), "transition", TransitionRequest{
+		TaskID:    "task:test",
+		ToState:   string(task.StateQueued),
+		EventType: string(ir.EventTaskQueued),
+		Actor:     "human",
+		Source:    "test",
+	}, &response)
+	if err == nil {
+		t.Fatal("expected missing approval_id to be rejected")
+	}
+}
+
 func serveTestAPI(t *testing.T) (string, string, func()) {
 	t.Helper()
 	return serveTestAPIWithState(t, task.StateCreated)
