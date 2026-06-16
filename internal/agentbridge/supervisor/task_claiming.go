@@ -38,9 +38,9 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		})
 		return true
 	}
-	prepareCtx, cancel := context.WithCancel(ctx)
-	inFlight[req.ID] = &runningTask{taskID: req.ID, report: report, runtime: rt, cancel: cancel}
-	go a.prepareAndSubmit(prepareCtx, status, rt, req)
+	taskCtx, cancel := context.WithCancel(ctx)
+	inFlight[req.ID] = &runningTask{taskID: req.ID, ctx: taskCtx, report: report, runtime: rt, cancel: cancel}
+	go a.prepareAndSubmit(taskCtx, status, rt, req)
 	return true
 }
 

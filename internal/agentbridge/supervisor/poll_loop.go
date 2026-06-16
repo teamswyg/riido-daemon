@@ -81,12 +81,15 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 					resetTimer(poll, a.cfg.PollEvery)
 					continue
 				}
-				task.cancel = nil
 				if msg.taskActivation.handle == nil {
 					_ = a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, agentbridge.Result{
 						Status: agentbridge.ResultFailed,
 						Error:  "supervisor: runtime submit returned no session handle",
 					})
+					if task.cancel != nil {
+						task.cancel()
+						task.cancel = nil
+					}
 					delete(inFlight, task.taskID)
 					resetTimer(poll, a.cfg.PollEvery)
 					continue
@@ -101,7 +104,7 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 					Phase: agentbridge.StateRunning,
 				})
 				go a.forwardSession(task.taskID, task.handle.Events(), task.handle.Result())
-				go a.forwardCancellation(ctx, task.taskID)
+				go a.forwardCancellation(task.ctx, task.taskID)
 			case msg.taskEvent != nil:
 				reportCtx := ctx
 				if task := inFlight[msg.taskEvent.taskID]; task != nil {
@@ -116,6 +119,10 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 				if running != nil {
 					reportCtx = controlplane.ContextWithTaskReport(ctx, running.report)
 					res = a.recordTerminalResult(ctx, running, msg.taskResult.result)
+					if running.cancel != nil {
+						running.cancel()
+						running.cancel = nil
+					}
 				}
 				_ = a.cfg.Reporter.CompleteTask(reportCtx, msg.taskResult.taskID, res)
 				delete(inFlight, msg.taskResult.taskID)
