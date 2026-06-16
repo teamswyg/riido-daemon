@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 func progressArgString(value any) string {
@@ -24,18 +23,4 @@ func progressArgString(value any) string {
 	default:
 		return ""
 	}
-}
-
-func renderProgressTemplate(template string, args map[string]string) string {
-	return progressPlaceholderPattern.ReplaceAllStringFunc(template, func(match string) string {
-		parts := progressPlaceholderPattern.FindStringSubmatch(match)
-		if len(parts) != 2 {
-			return match
-		}
-		value := strings.TrimSpace(args[parts[1]])
-		if value == "" {
-			value = "not provided"
-		}
-		return value
-	})
 }

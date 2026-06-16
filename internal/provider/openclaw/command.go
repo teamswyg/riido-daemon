@@ -20,11 +20,12 @@ import (
 	"strings"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 const (
-	Name              = "openclaw"
+	Name              = string(providercatalog.KindOpenClaw)
 	DefaultExecutable = "openclaw"
 )
 

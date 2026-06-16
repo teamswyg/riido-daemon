@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/teamswyg/riido-contracts/ir"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
@@ -122,7 +123,7 @@ func (a *Actor) nativeHookMode(plan workdir.ProviderNativeConfigPlan) string {
 }
 
 func (a *Actor) nativeConfigHomeMode(plan workdir.ProviderNativeConfigPlan) string {
-	if plan.ProviderKind == "codex" && plan.ConfigHomeDir == ".codex" {
+	if providercatalog.IsCodex(plan.ProviderKind) && plan.ConfigHomeDir == ".codex" {
 		decision := policy.EvaluateNativeConfigFileWithBundle(a.cfg.PolicyBundle, policy.NativeConfigFileInput{
 			TrustTier: a.cfg.RuntimeTrustTier,
 			Surface:   policy.NativeConfigFileCodexTaskScopedHome,

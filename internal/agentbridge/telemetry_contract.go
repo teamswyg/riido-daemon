@@ -52,14 +52,6 @@ func placementForSection(section, placement string) string {
 	return placement
 }
 
-func normalizeProviderName(provider string) string {
-	provider = strings.TrimSpace(strings.ToLower(provider))
-	if provider == "" {
-		return "default"
-	}
-	return provider
-}
-
 func (p *TelemetryParser) Feed(text string) []Event {
 	if p == nil || text == "" {
 		return nil

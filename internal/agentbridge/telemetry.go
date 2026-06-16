@@ -3,6 +3,8 @@ package agentbridge
 import (
 	"errors"
 	"strings"
+
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 )
 
 const (
@@ -80,25 +82,25 @@ func ApplyRuntimeInstructionContract(provider, prompt, systemPrompt, agentInstru
 func RuntimeInstructionStrategies() []RuntimeInstructionStrategy {
 	strategies := []RuntimeInstructionStrategy{
 		{
-			Provider:                  "claude",
+			Provider:                  string(providercatalog.KindClaude),
 			AgentInstructionPlacement: TelemetryPlacementSystemPrompt,
 			TelemetryPlacement:        TelemetryPlacementSystemPrompt,
 			EffectivenessGate:         "opt-in-real-provider-probe",
 		},
 		{
-			Provider:                  "openclaw",
+			Provider:                  string(providercatalog.KindOpenClaw),
 			AgentInstructionPlacement: TelemetryPlacementSystemPromptInline,
 			TelemetryPlacement:        TelemetryPlacementSystemPromptInline,
 			EffectivenessGate:         "opt-in-real-provider-probe",
 		},
 		{
-			Provider:                  "codex",
+			Provider:                  string(providercatalog.KindCodex),
 			AgentInstructionPlacement: TelemetryPlacementPrompt,
 			TelemetryPlacement:        TelemetryPlacementPrompt,
 			EffectivenessGate:         "opt-in-real-provider-probe",
 		},
 		{
-			Provider:                  "cursor",
+			Provider:                  string(providercatalog.KindCursor),
 			AgentInstructionPlacement: TelemetryPlacementPrompt,
 			TelemetryPlacement:        TelemetryPlacementPrompt,
 			EffectivenessGate:         "opt-in-real-provider-probe",
@@ -110,7 +112,10 @@ func RuntimeInstructionStrategies() []RuntimeInstructionStrategy {
 }
 
 func RuntimeInstructionStrategyForProvider(provider string) RuntimeInstructionStrategy {
-	provider = normalizeProviderName(provider)
+	provider = string(providercatalog.Normalize(provider))
+	if provider == "" {
+		provider = "default"
+	}
 	for _, strategy := range RuntimeInstructionStrategies() {
 		if strategy.Provider == provider {
 			return strategy

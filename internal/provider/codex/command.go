@@ -15,11 +15,12 @@ import (
 	"strings"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 const (
-	Name                  = "codex"
+	Name                  = string(providercatalog.KindCodex)
 	DefaultExecutable     = "codex"
 	FullAccessSandboxMode = "danger-full-access"
 )

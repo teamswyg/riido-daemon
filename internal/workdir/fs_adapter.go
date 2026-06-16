@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/teamswyg/riido-contracts/metadatakeys"
 )
 
 // Archiver is an optional port implemented by adapters that can record
@@ -66,10 +68,10 @@ func (a *FSAdapter) Prepare(id TaskID) (Workspace, error) {
 	}
 
 	meta := map[string]any{
-		"workspace_id": id.Workspace,
-		"task_id":      id.Task,
-		"run_id":       runID,
-		"created_at":   time.Now().UTC().Format(time.RFC3339Nano),
+		metadatakeys.WorkspaceID.String(): id.Workspace,
+		metadatakeys.TaskID.String():      id.Task,
+		metadatakeys.RunID.String():       runID,
+		"created_at":                      time.Now().UTC().Format(time.RFC3339Nano),
 	}
 	metaBytes, err := json.Marshal(meta)
 	if err != nil {

@@ -4,20 +4,14 @@ import (
 	"maps"
 
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-const (
-	providerKindClaude   providercap.ProviderKind = "claude"
-	providerKindCodex    providercap.ProviderKind = "codex"
-	providerKindOpenClaw providercap.ProviderKind = "openclaw"
-	providerKindCursor   providercap.ProviderKind = "cursor"
-)
-
 func profileForProvider(provider string) capabilityProfile {
-	providerKind := providercap.ProviderKind(provider)
-	switch providerKind {
-	case providerKindClaude:
+	providerKind := providercatalog.Normalize(provider)
+	switch {
+	case providercatalog.IsClaudeFamily(provider):
 		return capabilityProfile{
 			protocolKind:              providercap.ProtocolClaudeStreamJSON,
 			protocolMaturity:          providercap.ProtocolMaturityStable,
@@ -28,7 +22,7 @@ func profileForProvider(provider string) capabilityProfile {
 			defaultSandboxMode:        "unknown",
 			defaultApprovalPolicy:     "on-request",
 		}
-	case providerKindCodex:
+	case providerKind == providercatalog.KindCodex:
 		return capabilityProfile{
 			protocolKind:              providercap.ProtocolCodexAppServer,
 			protocolMaturity:          providercap.ProtocolMaturityExperimental,
@@ -40,7 +34,7 @@ func profileForProvider(provider string) capabilityProfile {
 			defaultSandboxMode:        "workspace-write",
 			defaultApprovalPolicy:     "on-request",
 		}
-	case providerKindOpenClaw:
+	case providerKind == providercatalog.KindOpenClaw:
 		return capabilityProfile{
 			protocolKind:          providercap.ProtocolOpenClawAgentJSON,
 			protocolMaturity:      providercap.ProtocolMaturityExperimental,
@@ -49,7 +43,7 @@ func profileForProvider(provider string) capabilityProfile {
 			defaultSandboxMode:    "unknown",
 			defaultApprovalPolicy: "unknown",
 		}
-	case providerKindCursor:
+	case providerKind == providercatalog.KindCursor:
 		return capabilityProfile{
 			protocolKind:          providercap.ProtocolCursorAgentStreamJSON,
 			protocolMaturity:      providercap.ProtocolMaturityExperimental,

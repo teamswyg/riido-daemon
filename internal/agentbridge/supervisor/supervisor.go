@@ -13,6 +13,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/teamswyg/riido-contracts/metadatakeys"
+
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
@@ -31,23 +33,23 @@ const (
 )
 
 const (
-	MetadataWorkspaceID              = "workspace_id"
-	MetadataWorkspace                = "workspace"
-	MetadataRunID                    = "run_id"
-	MetadataAgentName                = "agent_name"
-	MetadataAgentIdentity            = "agent_identity"
-	MetadataWorkflow                 = "workflow"
-	MetadataWorkdirRoot              = "workdir_root"
-	MetadataWorkdir                  = "workdir"
-	MetadataOutputDir                = "output_dir"
-	MetadataLogsDir                  = "logs_dir"
-	MetadataArtifactsDir             = "artifacts_dir"
-	MetadataNativeConfig             = "native_config_dir"
-	MetadataNativeConfigHome         = "native_config_home"
-	MetadataIRDir                    = "ir_dir"
-	MetadataNativeConfigVersion      = "native_config_version"
-	MetadataRequiredSurfaces         = "required_surfaces"
-	MetadataAllowExperimentalRuntime = "allow_experimental_runtime"
+	MetadataWorkspaceID              = string(metadatakeys.WorkspaceID)
+	MetadataWorkspace                = string(metadatakeys.Workspace)
+	MetadataRunID                    = string(metadatakeys.RunID)
+	MetadataAgentName                = string(metadatakeys.AgentName)
+	MetadataAgentIdentity            = string(metadatakeys.AgentIdentity)
+	MetadataWorkflow                 = string(metadatakeys.Workflow)
+	MetadataWorkdirRoot              = string(metadatakeys.WorkdirRoot)
+	MetadataWorkdir                  = string(metadatakeys.Workdir)
+	MetadataOutputDir                = string(metadatakeys.OutputDir)
+	MetadataLogsDir                  = string(metadatakeys.LogsDir)
+	MetadataArtifactsDir             = string(metadatakeys.ArtifactsDir)
+	MetadataNativeConfig             = string(metadatakeys.NativeConfigDir)
+	MetadataNativeConfigHome         = string(metadatakeys.NativeConfigHome)
+	MetadataIRDir                    = string(metadatakeys.IRDir)
+	MetadataNativeConfigVersion      = string(metadatakeys.NativeConfigVersion)
+	MetadataRequiredSurfaces         = string(metadatakeys.RequiredSurfaces)
+	MetadataAllowExperimentalRuntime = string(metadatakeys.AllowExperimentalRuntime)
 )
 
 type Config struct {
