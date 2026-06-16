@@ -174,6 +174,7 @@ func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter ag
 		MaxConcurrent:       settings.RuntimeMaxConcurrent,
 		AutoApprove:         daemonToolAutoApprover(settings),
 		ToolStartGate:       daemonToolStartGate(settings),
+		ToolApprovalGate:    daemonToolApprovalGate(settings),
 		PolicyBundleVersion: settings.PolicyBundle,
 	})
 }

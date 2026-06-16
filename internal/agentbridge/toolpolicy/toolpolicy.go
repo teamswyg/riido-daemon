@@ -38,6 +38,24 @@ func PolicyToolStartGate(bundle policy.PolicyBundle, tier policy.TrustTier) agen
 	}
 }
 
+// PolicyToolApprovalGate returns a session ToolApprovalGate for headless runs.
+// Approval requests that are explicitly allowed by policy are approved by
+// PolicyAutoApprover; requests that are not allowed are blocked because no
+// human approval path exists in the daemon.
+func PolicyToolApprovalGate(bundle policy.PolicyBundle, tier policy.TrustTier) agentbridge.ToolApprovalGate {
+	return func(tool agentbridge.ToolRef) agentbridge.ToolStartDecision {
+		decision, ok := DecisionForHeadlessApproval(bundle, tier, tool)
+		if !ok || decision.Action == policy.ToolUseActionAllow {
+			return agentbridge.ToolStartDecision{}
+		}
+		return agentbridge.ToolStartDecision{
+			Block:  true,
+			Code:   decision.Code,
+			Reason: decision.Reason,
+		}
+	}
+}
+
 // DecisionForTool classifies tool and evaluates the C7 ToolUseSecurityGate
 // decision for provider approval flows.
 func DecisionForTool(bundle policy.PolicyBundle, tier policy.TrustTier, tool agentbridge.ToolRef) (policy.ToolUseDecision, bool) {
@@ -56,6 +74,20 @@ func DecisionForTool(bundle policy.PolicyBundle, tier policy.TrustTier, tool age
 // ToolUseSecurityGate decision for ToolCallStarted events where the provider
 // has not offered a human approval round-trip.
 func DecisionForStartedTool(bundle policy.PolicyBundle, tier policy.TrustTier, tool agentbridge.ToolRef) (policy.ToolUseDecision, bool) {
+	surface, ok := ClassifyToolUseSurface(tool)
+	if !ok {
+		return policy.ToolUseDecision{}, false
+	}
+	return policy.EvaluateToolUseWithBundle(bundle, policy.ToolUseInput{
+		TrustTier:              tier,
+		Surface:                surface,
+		HumanApprovalAvailable: false,
+	}), true
+}
+
+// DecisionForHeadlessApproval evaluates a provider approval request in a daemon
+// execution where no human approval round-trip is available.
+func DecisionForHeadlessApproval(bundle policy.PolicyBundle, tier policy.TrustTier, tool agentbridge.ToolRef) (policy.ToolUseDecision, bool) {
 	surface, ok := ClassifyToolUseSurface(tool)
 	if !ok {
 		return policy.ToolUseDecision{}, false

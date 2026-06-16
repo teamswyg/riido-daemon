@@ -102,6 +102,29 @@ func TestDaemonToolStartGateUsesActivePolicyBundle(t *testing.T) {
 	}
 }
 
+func TestDaemonToolApprovalGateUsesActivePolicyBundle(t *testing.T) {
+	settings := daemonSettings{PolicyBundleDoc: policy.PolicyBundle{
+		SchemaVersion:  policy.BundleSchemaVersion,
+		Version:        "policy-bundle.tool-approval.v1",
+		EffectiveSince: time.Date(2026, 5, 27, 0, 0, 0, 0, time.UTC),
+		TrustTierPolicies: map[policy.TrustTier]policy.TrustTierPolicy{
+			policy.TrustTierHost: {
+				AllowedSurfaces: policy.AllowedSurfaceSet{
+					ToolUse: []policy.ToolUseSurface{policy.ToolUseNetworkEgress},
+				},
+			},
+		},
+	}}
+	gate := daemonToolApprovalGate(settings)
+
+	if decision := gate(agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "curl https://example.com"}}); decision.Block {
+		t.Fatalf("allowed network approval should not block: %+v", decision)
+	}
+	if decision := gate(agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "cat .env.local"}}); !decision.Block {
+		t.Fatalf("unallowed secret exposure approval should block: %+v", decision)
+	}
+}
+
 func writePolicyBundleFile(t *testing.T, version string) string {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "policy-bundle.riido.json")

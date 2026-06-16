@@ -40,6 +40,7 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 	}
 	taskCtx, cancel := context.WithCancel(ctx)
 	inFlight[req.ID] = &runningTask{taskID: req.ID, ctx: taskCtx, report: report, runtime: rt, cancel: cancel}
+	go a.forwardCancellation(taskCtx, req.ID)
 	go a.prepareAndSubmit(taskCtx, status, rt, req)
 	return true
 }

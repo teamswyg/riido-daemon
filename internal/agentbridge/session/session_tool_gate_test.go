@@ -72,6 +72,67 @@ func TestSessionToolStartGateBlocksStartedTool(t *testing.T) {
 	}
 }
 
+func TestSessionToolApprovalGateBlocksHeadlessApproval(t *testing.T) {
+	fake := process.NewFake()
+	running := process.NewFakeRunning()
+	fake.NextRunning = running
+	parser := &recordingParser{}
+	adapter := &recordingAdapter{
+		name:   "fake",
+		parser: parser,
+		translateFn: func(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
+			if string(raw.Bytes) == "APPROVAL" {
+				return []agentbridge.Event{{
+					Kind: agentbridge.EventToolApprovalNeeded,
+					Tool: agentbridge.ToolRef{ID: "approval-1", Kind: "patch_apply"},
+				}}, nil, nil
+			}
+			return nil, nil, nil
+		},
+	}
+
+	sess, err := Start(context.Background(), Config{
+		TaskID:    "task-tool-approval-block",
+		RuntimeID: "rt-1",
+		Adapter:   adapter,
+		Process:   fake,
+		Spawn:     process.Command{Executable: "fake"},
+		ToolApprovalGate: func(tool agentbridge.ToolRef) agentbridge.ToolStartDecision {
+			if tool.ID != "approval-1" {
+				t.Fatalf("unexpected tool: %+v", tool)
+			}
+			return agentbridge.ToolStartDecision{Block: true, Code: "TOOL_USE_NOT_IN_POLICY_BUNDLE", Reason: "no headless approval path"}
+		},
+	})
+	if err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+
+	running.EmitStdout([]byte("APPROVAL"))
+	select {
+	case <-running.KillRecv():
+	case <-time.After(time.Second):
+		t.Fatal("expected provider kill after headless approval block")
+	}
+	res := waitResult(t, sess, 2*time.Second)
+	if res.Status != agentbridge.ResultBlocked {
+		t.Fatalf("result: %+v", res)
+	}
+	if res.Error != "TOOL_USE_NOT_IN_POLICY_BUNDLE: no headless approval path" {
+		t.Fatalf("block error: %q", res.Error)
+	}
+	events := drainEvents(t, sess, time.Second)
+	var sawWarning bool
+	for _, ev := range events {
+		if ev.Kind == agentbridge.EventWarning && ev.Text == "tool approval unavailable in headless run" {
+			sawWarning = true
+		}
+	}
+	if !sawWarning {
+		t.Fatalf("missing headless approval warning in events: %+v", events)
+	}
+}
+
 func TestSessionRemovesTempFilesAfterProcessExit(t *testing.T) {
 	tempFile, err := os.CreateTemp(t.TempDir(), "mcp-*.json")
 	if err != nil {

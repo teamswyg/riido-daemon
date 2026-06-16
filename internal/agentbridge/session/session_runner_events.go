@@ -53,6 +53,9 @@ func (r *sessionRunner) applyEvent(ev agentbridge.Event) bool {
 		}
 		var cmds []agentbridge.Command
 		r.state, cmds = agentbridge.Reduce(r.state, expandedEvent, r.cfg.AutoApprove)
+		if r.blockPendingApprovalIfNeeded(expandedEvent, cmds) {
+			return true
+		}
 		for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
 			r.emit(cmdEvent)
 		}
@@ -89,6 +92,43 @@ func (r *sessionRunner) blockStartedToolIfNeeded(ev agentbridge.Event) bool {
 		r.emit(cmdEvent)
 	}
 	return true
+}
+
+func (r *sessionRunner) blockPendingApprovalIfNeeded(ev agentbridge.Event, cmds []agentbridge.Command) bool {
+	if ev.Kind != agentbridge.EventToolApprovalNeeded || hasApproveToolCommand(cmds) {
+		return false
+	}
+	decision := decideApprovalTool(r.cfg.ToolApprovalGate, ev.Tool)
+	if !decision.Block {
+		return false
+	}
+	blockReason := toolBlockReason(decision)
+	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, []agentbridge.Command{
+		{Kind: agentbridge.CommandCancelProvider, Reason: blockReason},
+	}, r.cfg.ProcessKillTimeout) {
+		r.emit(cmdEvent)
+	}
+	r.emit(agentbridge.Event{Kind: agentbridge.EventWarning, Text: "tool approval unavailable in headless run", Err: blockReason})
+	blocked := agentbridge.Event{
+		Kind: agentbridge.EventResult,
+		Result: agentbridge.Result{
+			Status: agentbridge.ResultBlocked,
+			Error:  blockReason,
+		},
+	}
+	r.emit(blocked)
+	var resultCmds []agentbridge.Command
+	r.state, resultCmds = agentbridge.Reduce(r.state, blocked, r.cfg.AutoApprove)
+	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, resultCmds, r.cfg.ProcessKillTimeout) {
+		r.emit(cmdEvent)
+	}
+	return true
+}
+
+func hasApproveToolCommand(cmds []agentbridge.Command) bool {
+	return slices.ContainsFunc(cmds, func(cmd agentbridge.Command) bool {
+		return cmd.Kind == agentbridge.CommandApproveTool
+	})
 }
 
 func (r *sessionRunner) feed(raws []agentbridge.RawEvent) {
