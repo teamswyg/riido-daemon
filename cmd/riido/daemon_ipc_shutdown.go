@@ -53,7 +53,7 @@ func tryShutdownViaSocket(socket string, timeout time.Duration, level lifecycle.
 	return false
 }
 
-func stopViaPIDFile(pidFile string, timeout time.Duration) error {
+func stopViaPIDFile(pidFile string, timeout time.Duration, level lifecycle.ShutdownLevel) error {
 	raw, err := os.ReadFile(pidFile)
 	if err != nil {
 		return daemonWrapf(ErrDaemonIO, "stop.read-pid-file", err, "read pid file")
@@ -62,7 +62,17 @@ func stopViaPIDFile(pidFile string, timeout time.Duration) error {
 	if err != nil {
 		return daemonWrapf(ErrDaemonProcess, "stop.parse-pid", err, "parse pid")
 	}
-	if err := validateDaemonProcessIdentity(pid); err != nil {
+	identity, ok, err := loadDaemonPIDIdentity(pidFile)
+	if err != nil {
+		return daemonWrapf(ErrDaemonIO, "stop.read-pid-identity", err, "read pid identity")
+	}
+	if !ok {
+		return daemonErrorf(ErrDaemonProcess, "stop.verify-pid", "daemon pid identity %s is missing; refusing PID fallback", daemonPIDIdentityPath(pidFile))
+	}
+	if identity.Socket != "" && tryShutdownViaSocket(identity.Socket, timeout, level) {
+		return nil
+	}
+	if err := validateDaemonProcessIdentity(pid, identity); err != nil {
 		return err
 	}
 	proc, err := os.FindProcess(pid)
