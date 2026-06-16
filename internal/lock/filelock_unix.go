@@ -23,3 +23,7 @@ func unlockFile(file *os.File, _ string) error {
 func cleanupLockFile(string) error {
 	return nil
 }
+
+func startLockMaintenance(string) func() {
+	return nil
+}

@@ -41,12 +41,12 @@
 
 | 관찰 | 현재 코드 / SSOT | 구조적 의미 |
 | --- | --- | --- |
-| SaaS assignment id 는 metadata 로 보존하지만 `TaskRequest.ID` 는 `assignment.TaskID` 다. | `internal/agentbridge/controlplane/saasplane/saasplane.go` `taskRequestFromAssignment` | assignment 와 runtime run 이 1:1 key 로 고정되지 않는다. |
-| `saasplane` state 는 `assignmentsByTask`, `runtimeIDsByTask`, `cancelWatchers`, `partialBodies` 를 모두 task id 로 저장한다. | `saasplane.go` `planeState`, `saveAssignmentRuntime`, `WatchCancellation`, `CompleteTask` | 같은 task 에 여러 active assignment 가 생기면 마지막 assignment 가 이전 watcher/runtime mapping 을 덮어쓴다. |
-| supervisor `inFlight` map 과 duplicate guard 는 `req.ID` 기준이다. | `internal/agentbridge/supervisor/supervisor.go` `claimOne` | 같은 task 의 agent 교체/동시 assignment/retry attempt 가 독립 실행으로 모델링되지 않는다. |
-| runtimeactor heartbeat 와 cancel surface 는 `RunningTaskIDs` / `Cancel(taskID)` 이다. | `internal/agentbridge/runtimeactor/runtimeactor.go` `Heartbeat`, `Cancel` | heartbeat 에서 server-side active assignment refresh 를 task id 로 역변환해야 한다. |
+| SaaS assignment id 는 execution id 로 우선 사용되고 logical `task_id` 는 metadata 로 보존된다. | `internal/agentbridge/controlplane/saasplane/runtime_id.go` `assignmentExecutionID`, `taskRequestFromAssignment` | 같은 task 에 여러 assignment 가 붙어도 daemon 실행 key 가 충돌하지 않는다. |
+| `saasplane` state 는 `assignmentsByExecution`, `runtimeIDsByExecution`, `cancelWatchers`, `partialBodies` 를 execution id 로 저장한다. | `state_loop.go` `planeState`, `saveAssignmentRuntime`, `WatchCancellation`, `CompleteTask` | watcher/runtime/partial-body cleanup 은 terminal path 에서 assignment 단위로 수렴한다. |
+| supervisor `inFlight` map 과 duplicate guard 는 `TaskRequest.ID` 기준이며, SaaS adapter 는 그 값을 execution id 로 채운다. | `internal/agentbridge/supervisor/supervisor.go` `claimOne`, `saasplane/state_loop.go` `taskRequestFromAssignment` | agent 교체/동시 assignment/retry attempt 는 logical task metadata 와 분리된 실행 단위로 모델링된다. |
+| runtimeactor heartbeat 는 `RunningTaskIDs` 를 유지하지만 daemon adapter 가 execution id 를 assignment id 로 매핑한다. | `saasplane/http_client.go` `activeAssignmentIDsForHeartbeat` | heartbeat 는 task id 역변환 없이 active assignment refresh 요청을 만든다. |
 | workspace SSOT 는 per-run workdir, repo cache 분리, `run_id` 를 이미 정의한다. | `docs/20-domain/workspace.md` | 도메인 방향은 맞지만 SaaS assignment DTO 가 repo/workspace plan 을 구조화하지 않아 구현이 prompt 에 기대게 된다. |
-| process spawn 은 child env override 만 받는다. override 가 없으면 parent env 를 상속한다. | `internal/process/processexec/processexec.go` `Start`, `mergeEnv` | provider detect 가 찾은 PATH/toolchain 환경이 launch 때 명시적으로 freeze 되지 않는다. |
+| provider spawn 은 `detectutil` 의 augmented/frozen launch PATH 를 `StartRequest.Env` 와 process env 에 동일하게 주입한다. | `runtimeactor/actor_submit.go`, `detectutil.EnvMapWithLaunchPATH`, `detectutil.EnvListWithLaunchPATHFromMap` | GUI/launchd 최소 PATH 에서도 provider child tool 탐색 surface 가 detect/launch 사이에 갈라지지 않는다. |
 | C7 security 는 approval decision vocabulary 를 갖고 있으나 headless web approval handoff 는 아직 runtime lifecycle 과 연결되지 않았다. | `docs/20-domain/security.md` §6 | "승인 필요"가 provider wait 상태인지, task needs-input 인지, fail-closed 인지 레이어마다 해석될 수 있다. |
 
 ## 2. 미해결 항목별 구조 원인
@@ -56,12 +56,14 @@
 | F3 | AI 가 실제 코드가 아닌 빈 temp folder 에서 작업 | repo/branch 가 prompt text 이고 daemon 의 `WorkspacePlan` 이 아님 | control-plane 이 assignment snapshot 에 repo ref 를 구조화하고 daemon 이 public repo clone/worktree 를 materialize |
 | C1 | stop 이 일관된 상태가 아님 | stop intent, process kill, projection terminal state 가 분리됨 | assignment lifecycle FSM 에 `stop_requested`, `provider_cancel_requested`, terminal states 추가 |
 | S2/S4/S5 | server-side streaming cleanup 미완 | text delta/progress/final answer 가 같은 progress path 를 공유 | `StreamEnvelope` 를 `progress_event`, `answer_delta`, `final_answer` 로 분리 |
-| F4/F5 | provider child tools 가 `git`/`node` 를 못 찾음 | detection executable 과 launch PATH/env 가 따로 움직임 | `RuntimeLaunchEnvelope` 에 executable, PATH, toolchain probe result, TTL 을 고정 |
+| F4/F5 | provider child tools 가 `git`/`node` 를 못 찾음 | **Resolved for launch PATH and submit-time re-detect.** Detection uses augmented search dirs, launch PATH is frozen into adapter/spawn env, and unavailable capability is refreshed after TTL. | detectutil/runtimeactor PATH and TTL refresh 회귀 테스트 유지 |
 | F6 | headless tool approvals blocked | approval policy 가 C7 decision 으로는 있으나 SaaS approval round-trip 이 없음 | safe auto-approve allowlist + web approval request/decision event 추가 |
-| F7 | transient network error 재시도 없음 | saasplane HTTP transport 가 retry taxonomy 를 갖지 않음 | idempotent endpoint 별 retry/backoff wrapper 와 permanent/transient error type 분리 |
+| F7 | transient network error 재시도 없음 | **Resolved for SaaS safe/idempotent JSON transport.** Event POST 는 idempotency key 가 없어 의도적으로 재시도하지 않는다. | `poll`, `heartbeat`, `agent-bindings`, `runtime-snapshot` transient retry + permanent 4xx no-retry 회귀 테스트 유지 |
 | R4 | daemon restart 후 처음부터 반복 | provider session id / run attempt / recovery policy 가 durable assignment 와 분리 | assignment run table 에 `provider_session_id`, `attempt`, `recovery_mode` 기록 |
 | R5 | cancellation watcher leak | watcher 가 task id map 에 저장되고 terminal cleanup 에서 close 되지 않음 | `ExecutionIdentity` keyed watcher registry + terminal close/release invariant |
-| D5/D7/F8 | desktop stop/orphan/stale lock/sync block | process identity, lock owner, sync preparation 이 runtime lifecycle 밖에 있음 | host lifecycle adapter 에 PID identity probe, lock lease, async prep state 추가 |
+| D5 | desktop stop 이 stale PID 를 kill 할 수 있음 | **Resolved.** PID fallback 은 sidecar identity, socket, foreground daemon command line 검증이 없으면 fail-closed 한다. | PID identity probe 회귀 테스트 유지 |
+| D7 | Windows `.claim` stale lock | **Resolved.** Windows claim file 이 owner/refreshed_at metadata 를 쓰고 active holder 가 주기적으로 갱신한다. 오래된 legacy/metadata claim 만 회수한다. | claim metadata stale recovery 테스트 + Windows compile check 유지 |
+| F8 | sync preparation 이 poll/heartbeat path 를 막을 수 있음 | workspace/file preparation 이 runtime lifecycle 과 느슨하게 결합되어 있음 | async prep state 와 claim loop 분리를 별도 work unit 으로 유지 |
 | R1 | provider process per task cold start | one-shot run 만 모델링되고 conversational session 과 resume 정책이 없음 | provider session table 과 long-lived process policy 를 분리 |
 | Review | PID kill, cwd mismatch, multi-agent conflict, stale busy, SSE refetch dependency | runtime key, lifecycle, read-model update authority 가 레이어마다 다름 | assignment identity + FSM + client optimistic upsert + stale assignment reconciliation |
 
