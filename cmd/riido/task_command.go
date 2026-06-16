@@ -47,7 +47,7 @@ func runTaskList(args []string, taskDBPath string) error {
 			return fmt.Errorf("unknown argument: %s", args[index])
 		}
 	}
-	db, err := taskdb.LoadTaskDB(taskDBPath)
+	db, err := taskdb.LoadTaskDBOrEmpty(taskDBPath)
 	if err != nil {
 		return err
 	}
