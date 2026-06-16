@@ -2,9 +2,11 @@ package riidoapi
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 
 	"github.com/teamswyg/riido-contracts/ir"
 	"github.com/teamswyg/riido-contracts/task"
@@ -81,6 +83,37 @@ func TestServerReviewDemoIgnoresNonStoreManagedChannel(t *testing.T) {
 	}
 	if len(response.Surfaces) != 0 {
 		t.Fatalf("non-store channel should not expose synthetic surfaces: %#v", response.Surfaces)
+	}
+}
+
+func TestServerValidateUsesCallerContext(t *testing.T) {
+	_, taskDBPath, stop := serveTestAPIWithState(t, task.StateValidating)
+	defer stop()
+
+	params, err := json.Marshal(ValidateRequest{
+		TaskID:         "task:test",
+		Command:        "sleep 2",
+		TimeoutSeconds: 30,
+		ApprovalID:     "approval:test:validate-cancel",
+		CommandID:      "command:test:validate-cancel",
+	})
+	if err != nil {
+		t.Fatalf("marshal validate params: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	started := time.Now()
+	response, err := NewServer(Config{TaskDBPath: taskDBPath}).validateTask(ctx, params)
+	if err != nil {
+		t.Fatalf("validateTask returned error: %v", err)
+	}
+	if elapsed := time.Since(started); elapsed > 500*time.Millisecond {
+		t.Fatalf("validateTask ignored caller context: elapsed=%s", elapsed)
+	}
+	if response.Validation.Result != "failed" || response.Validation.ExitCode == 0 {
+		t.Fatalf("canceled validation should be recorded as failed: %#v", response.Validation)
 	}
 }
 

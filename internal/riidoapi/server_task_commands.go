@@ -14,7 +14,7 @@ import (
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
-func (s Server) validateTask(params json.RawMessage) (ValidateResponse, error) {
+func (s Server) validateTask(ctx context.Context, params json.RawMessage) (ValidateResponse, error) {
 	var req ValidateRequest
 	if len(params) == 0 {
 		return ValidateResponse{}, errors.New("validate params are required")
@@ -59,7 +59,7 @@ func (s Server) validateTask(params json.RawMessage) (ValidateResponse, error) {
 	timeout := time.Duration(req.TimeoutSeconds) * time.Second
 	actor := textutil.Default(req.Actor, "daemon")
 	source := textutil.Default(req.Source, "riido-api")
-	result, err := validation.RunCommand(context.Background(), validation.CommandRequest{
+	result, err := validation.RunCommand(ctx, validation.CommandRequest{
 		Command:        req.Command,
 		Workdir:        req.Workdir,
 		Timeout:        timeout,
