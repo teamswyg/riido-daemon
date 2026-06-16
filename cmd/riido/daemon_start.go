@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"io"
 	"net"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	c9lock "github.com/teamswyg/riido-daemon/internal/lock"
@@ -20,13 +22,6 @@ func runDaemonStartForeground(ctx lifecycle.Context, flags startFlags) error {
 	settings, err := loadDaemonSettings()
 	if err != nil {
 		return err
-	}
-	if flags.lockFile == "" {
-		lockPath, err := defaultDaemonLockPath()
-		if err != nil {
-			return err
-		}
-		flags.lockFile = lockPath
 	}
 	lock, err := c9lock.AcquireFile(ctx.Context(), flags.lockFile)
 	if err != nil {
@@ -71,7 +66,11 @@ func runDaemonStartForeground(ctx lifecycle.Context, flags startFlags) error {
 // We intentionally do NOT double-fork. macOS launchd / systemd / install
 // scripts prefer to manage foreground processes themselves; this wrapper
 // is for ad-hoc CLI invocation only.
-func runDaemonStartBackground(_ lifecycle.Context, flags startFlags) error {
+func runDaemonStartBackground(ctx lifecycle.Context, flags startFlags) error {
+	if err := ensureDaemonStartLockAvailable(ctx, flags.lockFile); err != nil {
+		return err
+	}
+
 	childArgs := []string{"daemon", "start", "--foreground", "--socket", flags.socket}
 	if flags.pidFile != "" {
 		childArgs = append(childArgs, "--pid-file", flags.pidFile)
@@ -131,9 +130,52 @@ func runDaemonStartBackground(_ lifecycle.Context, flags startFlags) error {
 				continue
 			}
 			_ = conn.Close()
+			if err := ensureDaemonSocketOwnedByChild(flags, cmd.Process.Pid); err != nil {
+				_ = cmd.Process.Kill()
+				return err
+			}
 			return nil
 		}
 	}
+}
+
+func ensureDaemonStartLockAvailable(ctx lifecycle.Context, lockFile string) error {
+	probeCtx, cancel := context.WithTimeout(ctx.Context(), 100*time.Millisecond)
+	defer cancel()
+
+	lock, err := c9lock.AcquireFile(probeCtx, lockFile)
+	if err != nil {
+		return daemonWrapf(ErrDaemonLock, "background.preflight-lock", err, "daemon already running or starting; singleton lock %s is held", lockFile)
+	}
+	if err := lock.Release(); err != nil {
+		return daemonWrapf(ErrDaemonLock, "background.preflight-lock", err, "release daemon singleton probe lock %s", lockFile)
+	}
+	return nil
+}
+
+func ensureDaemonSocketOwnedByChild(flags startFlags, childPID int) error {
+	if flags.pidFile == "" {
+		return nil
+	}
+	raw, err := os.ReadFile(flags.pidFile)
+	if err != nil {
+		return daemonWrapf(ErrDaemonIO, "background.verify-child-pid", err, "read daemon pid file")
+	}
+	pid, err := strconv.Atoi(strings.TrimSpace(string(raw)))
+	if err != nil {
+		return daemonWrapf(ErrDaemonIO, "background.verify-child-pid", err, "parse daemon pid file")
+	}
+	if pid != childPID {
+		return daemonErrorf(
+			ErrDaemonLock,
+			"background.verify-child-pid",
+			"daemon socket %s is already served by pid %d; spawned child pid %d",
+			flags.socket,
+			pid,
+			childPID,
+		)
+	}
+	return nil
 }
 
 // openLogSink returns a Logger port for structured log lines. When

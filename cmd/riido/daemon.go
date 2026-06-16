@@ -162,6 +162,13 @@ func runDaemonStart(ctx lifecycle.Context, args []string) error {
 		}
 		flags.socket = def
 	}
+	if flags.lockFile == "" {
+		lockPath, err := defaultDaemonLockPath()
+		if err != nil {
+			return err
+		}
+		flags.lockFile = lockPath
+	}
 	if flags.foreground {
 		return runDaemonStartForeground(ctx, flags)
 	}

@@ -121,6 +121,36 @@ func TestDaemonBackgroundStartLaunchesChildAndReturns(t *testing.T) {
 	}
 }
 
+func TestDaemonBackgroundStartRejectsExistingDaemon(t *testing.T) {
+	sock := daemonSocketPath(t)
+	lockPath := daemonLockPath(t)
+	pidPath := filepath.Join(t.TempDir(), "agentd.pid")
+	logPath := filepath.Join(t.TempDir(), "agentd.log")
+
+	startArgs := []string{
+		"daemon", "start",
+		"--socket", sock,
+		"--pid-file", pidPath,
+		"--log-file", logPath,
+		"--lock-file", lockPath,
+	}
+	if err := run(startArgs); err != nil {
+		t.Fatalf("first background start: %v", err)
+	}
+	t.Cleanup(func() {
+		_ = run([]string{"daemon", "stop", "--socket", sock, "--pid-file", pidPath, "--timeout-seconds", "3"})
+	})
+
+	firstPID := readDaemonPIDFile(t, pidPath)
+	err := run(startArgs)
+	if err == nil {
+		t.Fatal("expected duplicate background start to fail while singleton daemon is running")
+	}
+	if secondPID := readDaemonPIDFile(t, pidPath); secondPID != firstPID {
+		t.Fatalf("pid file changed after duplicate start: first=%d second=%d", firstPID, secondPID)
+	}
+}
+
 // TestDaemonBackgroundLogFileReceivesChildOutput: the child's structured
 // log should land in --log-file passed at start.
 func TestDaemonBackgroundLogFileReceivesChildOutput(t *testing.T) {
@@ -158,4 +188,17 @@ func TestDaemonBackgroundLogFileReceivesChildOutput(t *testing.T) {
 	}
 	body, _ := os.ReadFile(logPath)
 	t.Fatalf("log file %s did not receive daemon output. content:\n%s", logPath, body)
+}
+
+func readDaemonPIDFile(t *testing.T, path string) int {
+	t.Helper()
+	pidBytes, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("read pid file: %v", err)
+	}
+	pid, err := strconv.Atoi(strings.TrimSpace(string(pidBytes)))
+	if err != nil || pid <= 0 {
+		t.Fatalf("invalid pid: %q (err=%v)", pidBytes, err)
+	}
+	return pid
 }
