@@ -72,6 +72,8 @@ type planeState struct {
 	registeredRuntimes      map[string]RuntimeSnapshotRecord
 	registeredDeviceName    string
 	lastRuntimeSnapshotSync time.Time
+	agentBindingsCache      []assignmentcontract.AgentRuntimeBinding
+	agentBindingsCachedAt   time.Time
 	// partialBodies accumulates each execution's assistant text deltas between
 	// flushes so the daemon can forward a coherent evolving body instead of
 	// per-token fragments. Keyed by execution ID.

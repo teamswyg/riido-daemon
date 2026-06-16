@@ -23,6 +23,8 @@ const (
 
 const runtimeSnapshotHeartbeatMinInterval = 4 * time.Second
 
+const agentBindingCacheTTL = time.Second
+
 const (
 	jsonRequestMaxAttempts = 3
 	jsonRequestRetryBase   = 50 * time.Millisecond

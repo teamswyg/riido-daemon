@@ -31,7 +31,7 @@ func (p *Plane) postRuntimeSnapshot(ctx context.Context, runtimes []RuntimeSnaps
 	var out struct {
 		SchemaVersion string `json:"schema_version"`
 	}
-	return p.postJSON(ctx, "/v1/daemon/runtime-snapshot", DeviceRuntimeSnapshotSyncRequest{
+	if err := p.postJSON(ctx, "/v1/daemon/runtime-snapshot", DeviceRuntimeSnapshotSyncRequest{
 		DaemonID:          p.cfg.DaemonID,
 		DeviceID:          p.cfg.DeviceID,
 		DeviceDisplayName: textutil.FirstNonEmptyTrimmed(deviceName, p.cfg.DeviceID),
@@ -41,7 +41,11 @@ func (p *Plane) postRuntimeSnapshot(ctx context.Context, runtimes []RuntimeSnaps
 		UptimeSeconds:     p.daemonUptimeSeconds(),
 		StartedAt:         p.cfg.StartedAt,
 		Runtimes:          runtimes,
-	}, &out)
+	}, &out); err != nil {
+		return err
+	}
+	p.invalidateAgentBindingsCache(ctx)
+	return nil
 }
 
 func (p *Plane) daemonUptimeSeconds() int64 {
