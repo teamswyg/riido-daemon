@@ -3,10 +3,14 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
@@ -34,6 +38,74 @@ func TestBuildDaemonControlPlaneUsesSaaS(t *testing.T) {
 	defer plane.Close()
 	if _, ok := reporter.(*saasplane.Plane); !ok {
 		t.Fatalf("reporter type = %T", reporter)
+	}
+}
+
+func TestBuildDaemonControlPlaneSaaSUsesDefaultLongPollWait(t *testing.T) {
+	pollSeen := make(chan assignmentcontract.PollRequest, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == http.MethodGet && r.URL.Path == "/v1/daemon/agent-bindings":
+			writeDaemonRuntimeTestJSON(t, w, saasplane.AgentRuntimeBindingListResponse{
+				SchemaVersion: assignmentcontract.SchemaVersion,
+				Bindings: []assignmentcontract.AgentRuntimeBinding{{
+					AgentID:         "agent-long",
+					DaemonID:        "device-1",
+					DeviceID:        "device-1",
+					RuntimeID:       "device-1:codex",
+					RuntimeProvider: "codex",
+				}},
+			})
+		case r.Method == http.MethodPost && r.URL.Path == "/v1/agents/agent-long/poll":
+			var req assignmentcontract.PollRequest
+			if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+				t.Fatalf("poll request decode: %v", err)
+			}
+			pollSeen <- req
+			writeDaemonRuntimeTestJSON(t, w, assignmentcontract.PollResponse{
+				SchemaVersion: assignmentcontract.SchemaVersion,
+				Action:        assignmentcontract.PollNone,
+			})
+		default:
+			http.NotFound(w, r)
+		}
+	}))
+	t.Cleanup(server.Close)
+
+	source, reporter, kind, err := buildDaemonControlPlane(daemonSettings{
+		DaemonID:     "device-1",
+		DeviceName:   "device-1",
+		SaaSURL:      server.URL,
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	}, time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		if closer, ok := source.(interface{ Close() }); ok {
+			closer.Close()
+		}
+	})
+	sourcePlane, sourceOK := source.(*saasplane.Plane)
+	reporterPlane, reporterOK := reporter.(*saasplane.Plane)
+	if kind != "saas" || !sourceOK || !reporterOK || sourcePlane != reporterPlane {
+		t.Fatalf("control plane kind/source/reporter = %q %T %T", kind, source, reporter)
+	}
+	req, err := source.ClaimTask(context.Background(), "device-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	if req != nil {
+		t.Fatalf("empty fake server should not claim task: %+v", req)
+	}
+	select {
+	case poll := <-pollSeen:
+		if poll.WaitMs != 30000 {
+			t.Fatalf("wait_ms = %d, want 30000", poll.WaitMs)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("timed out waiting for poll request")
 	}
 }
 
@@ -81,6 +153,14 @@ func TestNewDaemonRuntimeActorsUsesProviderSlotsForDynamicSaaSBindings(t *testin
 		if len(status.Capabilities) != 1 || status.Capabilities[0].Provider != provider {
 			t.Fatalf("runtime %s capabilities = %+v", status.RuntimeID, status.Capabilities)
 		}
+	}
+}
+
+func writeDaemonRuntimeTestJSON(t *testing.T, w http.ResponseWriter, value any) {
+	t.Helper()
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(value); err != nil {
+		t.Fatalf("write json: %v", err)
 	}
 }
 

@@ -153,6 +153,99 @@ func TestPlaneClaimsDynamicAgentBinding(t *testing.T) {
 	}
 }
 
+func TestPlaneCachesDynamicAgentBindingsAcrossClaimWave(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	fake.bindings = []assignmentcontract.AgentRuntimeBinding{
+		{
+			AgentID:         "agent-codex",
+			DaemonID:        "daemon-1",
+			DeviceID:        "device-1",
+			RuntimeID:       "daemon-1:codex",
+			RuntimeProvider: "codex",
+		},
+		{
+			AgentID:         "agent-cursor",
+			DaemonID:        "daemon-1",
+			DeviceID:        "device-1",
+			RuntimeID:       "daemon-1:cursor",
+			RuntimeProvider: "cursor",
+		},
+	}
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	for _, runtimeID := range []string{"daemon-1:codex", "daemon-1:cursor"} {
+		req, err := plane.ClaimTask(context.Background(), runtimeID)
+		if err != nil {
+			t.Fatalf("ClaimTask %s: %v", runtimeID, err)
+		}
+		if req != nil {
+			t.Fatalf("empty queue should not claim task: %+v", req)
+		}
+	}
+	if got := fake.requestCount("/v1/daemon/agent-bindings"); got != 1 {
+		t.Fatalf("agent-bindings request count = %d, want 1", got)
+	}
+	if got := len(fake.pollRequestsFor("agent-codex")); got != 1 {
+		t.Fatalf("agent-codex poll count = %d, want 1", got)
+	}
+	if got := len(fake.pollRequestsFor("agent-cursor")); got != 1 {
+		t.Fatalf("agent-cursor poll count = %d, want 1", got)
+	}
+	if err := plane.RegisterRuntime(context.Background(), controlplane.RuntimeRegistration{
+		DaemonID:  "daemon-1",
+		RuntimeID: "daemon-1:codex",
+		Provider:  "codex",
+	}); err != nil {
+		t.Fatalf("RegisterRuntime: %v", err)
+	}
+	if _, err := plane.ClaimTask(context.Background(), "daemon-1:codex"); err != nil {
+		t.Fatalf("ClaimTask after runtime snapshot: %v", err)
+	}
+	if got := fake.requestCount("/v1/daemon/agent-bindings"); got != 2 {
+		t.Fatalf("agent-bindings request count after runtime snapshot = %d, want 2", got)
+	}
+}
+
+func TestPlaneCachesEmptyDynamicAgentBindingsAcrossClaimWave(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	for _, runtimeID := range []string{"daemon-1:codex", "daemon-1:cursor"} {
+		req, err := plane.ClaimTask(context.Background(), runtimeID)
+		if err != nil {
+			t.Fatalf("ClaimTask %s: %v", runtimeID, err)
+		}
+		if req != nil {
+			t.Fatalf("empty binding list should not claim task: %+v", req)
+		}
+	}
+	if got := fake.requestCount("/v1/daemon/agent-bindings"); got != 1 {
+		t.Fatalf("empty agent-bindings request count = %d, want 1", got)
+	}
+}
+
 func TestPlaneRejectsMissingBearerToken(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.bearerToken = "secret"
