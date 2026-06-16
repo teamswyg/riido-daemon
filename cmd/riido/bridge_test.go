@@ -91,7 +91,7 @@ func TestBridgeDetectIncludesEachProvider(t *testing.T) {
 }
 
 func TestRegisteredAdaptersBuildStartForDaemonRuntime(t *testing.T) {
-	for _, adapter := range registeredAdapters() {
+	for _, adapter := range builtinAgentAdapters() {
 		cmd, err := adapter.BuildStart(agentbridge.StartRequest{
 			TaskID: "task-" + adapter.Name(),
 			Prompt: "do the thing",
