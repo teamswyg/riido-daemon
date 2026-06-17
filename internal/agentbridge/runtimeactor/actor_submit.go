@@ -176,6 +176,30 @@ func (a *Actor) detectCapability(ctx context.Context, adapter agentbridge.Adapte
 	return buildRuntimeCapability(a.cfg.RuntimeID, adapter.Name(), res, a.cfg.PolicyBundleVersion, now)
 }
 
+func (a *Actor) refreshDueCapabilities(
+	ctx context.Context,
+	adapters map[string]agentbridge.Adapter,
+	caps []Capability,
+	detectedAt map[string]time.Time,
+) {
+	for idx := range caps {
+		capView := caps[idx]
+		if !a.capabilityRefreshDue(capView, detectedAt[capView.Provider]) {
+			continue
+		}
+		adapter, ok := adapters[capView.Provider]
+		if !ok {
+			continue
+		}
+		refreshed, err := a.detectCapability(ctx, adapter)
+		if err != nil {
+			continue
+		}
+		caps[idx] = refreshed
+		detectedAt[capView.Provider] = a.cfg.Now()
+	}
+}
+
 func (a *Actor) handleCancel(inFlight map[string]*runningTask, msg *cancelMsg) error {
 	task, ok := inFlight[msg.taskID]
 	if !ok {

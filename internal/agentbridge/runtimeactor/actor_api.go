@@ -108,7 +108,7 @@ func (a *Actor) Cancel(ctx context.Context, taskID, reason string) error {
 func (a *Actor) Status(ctx context.Context) (Status, error) {
 	reply := make(chan statusReply, 1)
 	select {
-	case a.statusCh <- reply:
+	case a.statusCh <- statusMsg{ctx: ctx, reply: reply}:
 	case <-a.stoppedCh:
 		return Status{RuntimeID: a.cfg.RuntimeID, Health: "stopped"}, nil
 	case <-ctx.Done():
@@ -128,7 +128,7 @@ func (a *Actor) Status(ctx context.Context) (Status, error) {
 func (a *Actor) HeartbeatPayload(ctx context.Context) (Heartbeat, error) {
 	reply := make(chan statusReply, 1)
 	select {
-	case a.statusCh <- reply:
+	case a.statusCh <- statusMsg{ctx: ctx, reply: reply}:
 	case <-a.stoppedCh:
 		return Heartbeat{RuntimeID: a.cfg.RuntimeID}, nil
 	case <-ctx.Done():

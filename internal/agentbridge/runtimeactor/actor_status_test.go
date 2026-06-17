@@ -49,7 +49,7 @@ func TestRuntimeActorTaskStatusIncluded(t *testing.T) {
 func TestRuntimeActorStatusReplyWaitObservesStop(t *testing.T) {
 	a := &Actor{
 		cfg:       Config{RuntimeID: "rt-status-stop"},
-		statusCh:  make(chan chan statusReply, 1),
+		statusCh:  make(chan statusMsg, 1),
 		stoppedCh: make(chan struct{}),
 	}
 
@@ -84,7 +84,7 @@ func TestRuntimeActorStatusReplyWaitObservesStop(t *testing.T) {
 func TestRuntimeActorHeartbeatReplyWaitObservesStop(t *testing.T) {
 	a := &Actor{
 		cfg:       Config{RuntimeID: "rt-heartbeat-stop"},
-		statusCh:  make(chan chan statusReply, 1),
+		statusCh:  make(chan statusMsg, 1),
 		stoppedCh: make(chan struct{}),
 	}
 

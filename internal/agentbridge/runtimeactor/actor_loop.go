@@ -17,7 +17,7 @@ type Actor struct {
 	// Single owning goroutine writes to capabilities/inFlight/...; all
 	// public methods send to mailbox channels.
 	mailbox  chan envelope
-	statusCh chan chan statusReply
+	statusCh chan statusMsg
 	// stopReqCh carries the requested shutdown authority level. Stop
 	// callers do a non-blocking send so repeated/concurrent stop requests
 	// stay idempotent; while draining, a forced request can still escalate
@@ -50,6 +50,11 @@ type cancelMsg struct {
 	taskID string
 	reason string
 	reply  chan error
+}
+
+type statusMsg struct {
+	ctx   context.Context
+	reply chan statusReply
 }
 
 type statusReply struct {
@@ -99,7 +104,7 @@ func New(cfg Config) (*Actor, error) {
 	a := &Actor{
 		cfg:       cfg,
 		mailbox:   make(chan envelope, cfg.MailboxSize),
-		statusCh:  make(chan chan statusReply, 4),
+		statusCh:  make(chan statusMsg, 4),
 		stopReqCh: make(chan lifecycle.ShutdownLevel, cfg.MailboxSize),
 		stoppedCh: make(chan struct{}),
 		stopErrCh: make(chan error, 1),
@@ -154,8 +159,9 @@ func (a *Actor) run(caps []Capability, detectedAt map[string]time.Time) {
 		case taskID := <-completeCh:
 			delete(inFlight, taskID)
 
-		case reply := <-a.statusCh:
-			reply <- statusReply{
+		case msg := <-a.statusCh:
+			a.refreshDueCapabilities(msg.ctx, adapters, caps, detectedAt)
+			msg.reply <- statusReply{
 				status: a.buildStatus(caps, inFlight),
 				hb:     a.buildHeartbeat(inFlight),
 			}
