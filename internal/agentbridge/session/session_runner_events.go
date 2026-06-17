@@ -103,6 +103,9 @@ func (r *sessionRunner) blockPendingApprovalIfNeeded(ev agentbridge.Event, cmds 
 	if ev.Kind != agentbridge.EventToolApprovalNeeded || hasApproveToolCommand(cmds) {
 		return false
 	}
+	if r.resolvePendingApprovalIfAvailable(ev.Tool) {
+		return r.state.Terminal
+	}
 	decision := decideApprovalTool(r.cfg.ToolApprovalGate, ev.Tool)
 	if !decision.Block {
 		return false

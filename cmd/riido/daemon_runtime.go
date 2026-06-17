@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/toolpolicy"
 	"github.com/teamswyg/riido-daemon/internal/logging"
@@ -19,6 +20,11 @@ func daemonToolStartGate(settings daemonSettings) agentbridge.ToolStartGate {
 
 func daemonToolApprovalGate(settings daemonSettings) agentbridge.ToolApprovalGate {
 	return toolpolicy.PolicyToolApprovalGate(settings.PolicyBundleDoc, policy.TrustTierHost)
+}
+
+func daemonToolApprovalResolver(reporter controlplane.TaskReporterPort) agentbridge.ToolApprovalResolver {
+	resolver, _ := reporter.(agentbridge.ToolApprovalResolver)
+	return resolver
 }
 
 func stopRuntimeActors(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, log logging.Logger) {

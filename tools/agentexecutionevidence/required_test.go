@@ -28,10 +28,11 @@ var requiredRisks = []string{
 	"terminal-late-progress-fence",
 	"generated-fsm-conformance",
 	"web-approval-contract",
+	"web-approval-session-resolver",
+	"web-approval-round-trip",
 }
 
 var requiredRemainingBoundaries = []string{
 	"private-repo-auth",
-	"web-approval-round-trip",
 	"client-desktop-consumption",
 }

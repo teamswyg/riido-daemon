@@ -55,6 +55,9 @@ type Config struct {
 	// ToolApprovalGate decides whether an approval request with no auto-approval
 	// command should fail closed in headless runs.
 	ToolApprovalGate agentbridge.ToolApprovalGate
+	// ToolApprovalResolver connects provider-native approval requests to an
+	// external human decision loop. Nil preserves the headless fail-closed gate.
+	ToolApprovalResolver agentbridge.ToolApprovalResolver
 
 	// EventBuffer / ResultBuffer override default channel capacities.
 	EventBuffer  int

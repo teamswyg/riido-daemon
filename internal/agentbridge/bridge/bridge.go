@@ -72,6 +72,8 @@ type Config struct {
 	// ToolApprovalGate is the headless fail-closed policy for approval requests
 	// that were not auto-approved.
 	ToolApprovalGate agentbridge.ToolApprovalGate
+	// ToolApprovalResolver is the optional external human decision loop.
+	ToolApprovalResolver agentbridge.ToolApprovalResolver
 }
 
 // Client is the registry + runner.
@@ -82,9 +84,10 @@ type Client struct {
 		timeout      time.Duration
 		semanticIdle time.Duration
 	}
-	autoApprove      agentbridge.AutoApprover
-	toolStartGate    agentbridge.ToolStartGate
-	toolApprovalGate agentbridge.ToolApprovalGate
+	autoApprove          agentbridge.AutoApprover
+	toolStartGate        agentbridge.ToolStartGate
+	toolApprovalGate     agentbridge.ToolApprovalGate
+	toolApprovalResolver agentbridge.ToolApprovalResolver
 }
 
 // New constructs a Client. At least one adapter is required.
@@ -93,11 +96,12 @@ func New(cfg Config) (*Client, error) {
 		return nil, errors.New("bridge: at least one adapter is required")
 	}
 	c := &Client{
-		adapters:         make(map[Provider]agentbridge.Adapter, len(cfg.Adapters)),
-		process:          cfg.Process,
-		autoApprove:      cfg.AutoApprove,
-		toolStartGate:    cfg.ToolStartGate,
-		toolApprovalGate: cfg.ToolApprovalGate,
+		adapters:             make(map[Provider]agentbridge.Adapter, len(cfg.Adapters)),
+		process:              cfg.Process,
+		autoApprove:          cfg.AutoApprove,
+		toolStartGate:        cfg.ToolStartGate,
+		toolApprovalGate:     cfg.ToolApprovalGate,
+		toolApprovalResolver: cfg.ToolApprovalResolver,
 	}
 	c.defaults.timeout = cfg.DefaultTimeout
 	c.defaults.semanticIdle = cfg.DefaultSemanticIdle

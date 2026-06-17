@@ -95,6 +95,7 @@ func retryableJSONRequest(method, path string) bool {
 	return strings.HasSuffix(path, "/poll") ||
 		strings.HasSuffix(path, "/heartbeat") ||
 		strings.HasSuffix(path, "/events") ||
+		strings.Contains(path, "/tool-approvals") ||
 		path == "/v1/daemon/runtime-snapshot"
 }
 

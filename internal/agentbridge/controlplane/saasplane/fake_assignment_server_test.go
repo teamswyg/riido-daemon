@@ -48,6 +48,10 @@ type fakeAssignmentServer struct {
 	runtimeSnapshots    []DeviceRuntimeSnapshotSyncRequest
 	events              []assignmentcontract.AgentEventRequest
 	heartbeats          []assignmentcontract.AgentHeartbeatRequest
+	toolApprovals       []assignmentcontract.ToolApprovalRequest
+	toolApprovalWaits   []assignmentcontract.ToolApprovalWaitRequest
+	toolDecision        *assignmentcontract.ToolApprovalDecision
+	toolApprovalStatus  assignmentcontract.ApprovalStatus
 }
 
 func newFakeAssignmentServer(t *testing.T) *fakeAssignmentServer {
@@ -164,7 +168,7 @@ func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	parts := strings.Split(strings.Trim(r.URL.Path, "/"), "/")
-	if len(parts) != 4 || parts[0] != "v1" || parts[1] != "agents" {
+	if len(parts) < 4 || parts[0] != "v1" || parts[1] != "agents" {
 		http.NotFound(w, r)
 		return
 	}
@@ -174,6 +178,14 @@ func (f *fakeAssignmentServer) handle(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
+	if parts[3] == "tool-approvals" {
+		f.handleToolApprovals(w, r, agentID, parts[4:])
+		return
+	}
+	if len(parts) != 4 {
+		http.NotFound(w, r)
+		return
+	}
 	switch parts[3] {
 	case "poll":
 		f.handlePoll(w, r, agentID)

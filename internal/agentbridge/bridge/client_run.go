@@ -67,19 +67,20 @@ func (c *Client) Run(ctx context.Context, req TaskRequest) (*Session, error) {
 	spawnProcess.Env = detectutil.EnvListWithLaunchPATHFromMap(spawnProcess.Env, launchEnv)
 
 	cfg := session.Config{
-		TaskID:           req.ID,
-		RuntimeID:        string(req.Provider),
-		Adapter:          adapter,
-		Process:          c.process,
-		Spawn:            spawnProcess,
-		Request:          startReq,
-		HardTimeout:      firstNonZero(req.Timeout, c.defaults.timeout),
-		SemanticIdle:     firstNonZero(req.SemanticIdle, c.defaults.semanticIdle),
-		AutoApprove:      c.autoApprove,
-		ToolStartGate:    c.toolStartGate,
-		ToolApprovalGate: c.toolApprovalGate,
-		ProtocolDriver:   driver,
-		TempFiles:        spawnCmd.TempFiles,
+		TaskID:               req.ID,
+		RuntimeID:            string(req.Provider),
+		Adapter:              adapter,
+		Process:              c.process,
+		Spawn:                spawnProcess,
+		Request:              startReq,
+		HardTimeout:          firstNonZero(req.Timeout, c.defaults.timeout),
+		SemanticIdle:         firstNonZero(req.SemanticIdle, c.defaults.semanticIdle),
+		AutoApprove:          c.autoApprove,
+		ToolStartGate:        c.toolStartGate,
+		ToolApprovalGate:     c.toolApprovalGate,
+		ToolApprovalResolver: c.toolApprovalResolver,
+		ProtocolDriver:       driver,
+		TempFiles:            spawnCmd.TempFiles,
 	}
 	inner, err := session.Start(ctx, cfg)
 	if err != nil {
