@@ -200,6 +200,7 @@ func (p *Plane) WatchCancellation(ctx context.Context, executionID string) (<-ch
 	if err != nil {
 		return nil, err
 	}
+	go p.closeCancelWatcherWhenContextDone(ctx, executionID, ch)
 	return ch, nil
 }
 
