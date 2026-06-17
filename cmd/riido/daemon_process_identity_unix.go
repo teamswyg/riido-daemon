@@ -74,7 +74,7 @@ func daemonCommandLineMatchesPIDIdentity(command string, identity daemonPIDIdent
 	if socket == "" {
 		return false
 	}
-	return strings.Contains(command, "--socket "+socket) || strings.Contains(command, "--socket="+socket)
+	return daemonCommandFieldsContainSocket(strings.Fields(command), socket)
 }
 
 func daemonCommandBinaryLooksLikeSelf(argv0 string) bool {
@@ -89,4 +89,16 @@ func daemonCommandBinaryLooksLikeSelf(argv0 string) bool {
 
 func fieldsAfterContain(fields []string, want string) bool {
 	return slices.Contains(fields, want)
+}
+
+func daemonCommandFieldsContainSocket(fields []string, socket string) bool {
+	for i, field := range fields {
+		if field == "--socket" {
+			return i+1 < len(fields) && fields[i+1] == socket
+		}
+		if value, ok := strings.CutPrefix(field, "--socket="); ok {
+			return value == socket
+		}
+	}
+	return false
 }

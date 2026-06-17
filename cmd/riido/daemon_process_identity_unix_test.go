@@ -24,4 +24,10 @@ func TestDaemonCommandLineMatchesPIDIdentityRequiresSocket(t *testing.T) {
 	if daemonCommandLineMatchesPIDIdentity("/tmp/riido daemon start --socket /tmp/riido-a.sock", identity) {
 		t.Fatalf("pid identity must require daemon start --foreground")
 	}
+	if daemonCommandLineMatchesPIDIdentity("/tmp/riido daemon start --foreground --socket /tmp/riido-a.sock.bak", identity) {
+		t.Fatalf("pid identity socket must match an exact argv field")
+	}
+	if !daemonCommandLineMatchesPIDIdentity("/tmp/riido daemon start --foreground --socket=/tmp/riido-a.sock", identity) {
+		t.Fatalf("expected --socket=value form to match pid identity")
+	}
 }
