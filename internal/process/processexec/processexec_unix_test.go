@@ -32,8 +32,11 @@ func TestGracefulKillUsesSIGTERMBeforeForcedTimeout(t *testing.T) {
 
 	select {
 	case status := <-proc.Exited():
-		if status.Code != 143 {
-			t.Fatalf("expected SIGTERM exit code 143 before forced timeout, got %+v", status)
+		if status.Code == 137 {
+			t.Fatalf("expected graceful SIGTERM path before forced timeout, got SIGKILL status %+v", status)
+		}
+		if status.Code != 0 && status.Code != 143 {
+			t.Fatalf("expected shell trap exit 0 or SIGTERM exit 143, got %+v", status)
 		}
 	case <-time.After(3 * time.Second):
 		t.Fatal("process group did not exit after graceful Kill")
