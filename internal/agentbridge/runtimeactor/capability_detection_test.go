@@ -105,6 +105,37 @@ func TestRuntimeActorRefreshesUnavailableCapabilityAfterTTL(t *testing.T) {
 	}
 }
 
+func TestRuntimeActorStatusRefreshesUnavailableCapabilityAfterTTL(t *testing.T) {
+	now := time.Date(2026, 6, 16, 12, 0, 0, 0, time.UTC)
+	provider := &stubAdapter{name: "late-status", detected: agentbridge.DetectResult{Available: false, Reason: "not installed"}}
+
+	a, _ := startActor(t, Config{
+		Adapters:               []agentbridge.Adapter{provider},
+		CapabilityRefreshEvery: time.Second,
+		Now:                    func() time.Time { return now },
+	})
+
+	provider.detected = agentbridge.DetectResult{Available: true, Version: "2.0.0", Executable: "/usr/local/bin/late-status"}
+	status, err := a.Status(context.Background())
+	if err != nil {
+		t.Fatalf("Status before ttl: %v", err)
+	}
+	if len(status.Capabilities) != 1 || status.Capabilities[0].Available {
+		t.Fatalf("status before ttl should keep cached unavailable capability: %+v", status.Capabilities)
+	}
+
+	now = now.Add(2 * time.Second)
+	status, err = a.Status(context.Background())
+	if err != nil {
+		t.Fatalf("Status after ttl: %v", err)
+	}
+	if len(status.Capabilities) != 1 ||
+		!status.Capabilities[0].Available ||
+		status.Capabilities[0].Version != "2.0.0" {
+		t.Fatalf("status after ttl did not refresh capability: %+v", status.Capabilities)
+	}
+}
+
 func TestRuntimeActorReconcilesDetectResultToProviderCapability(t *testing.T) {
 	fixedNow := time.Date(2026, 5, 24, 10, 0, 0, 0, time.UTC)
 	claudeLike := &stubAdapter{name: "claude", detected: agentbridge.DetectResult{
