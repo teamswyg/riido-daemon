@@ -129,7 +129,14 @@ func (f *codexHandshakeFixture) startTurn() {
 	if !turnResolved || !sawLifecycle {
 		f.t.Fatalf("turn/start chain: resolved=%v lifecycle=%v", turnResolved, sawLifecycle)
 	}
-	<-turnReply
+	select {
+	case result := <-turnReply:
+		if result.Err != nil {
+			f.t.Fatalf("turn/start err: %v", result.Err)
+		}
+	case <-time.After(time.Second):
+		f.t.Fatal("turn/start reply not delivered")
+	}
 }
 
 func (f *codexHandshakeFixture) streamAgentMessage() {
