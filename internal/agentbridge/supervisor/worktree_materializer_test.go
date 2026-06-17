@@ -3,6 +3,7 @@ package supervisor
 import (
 	"context"
 	"errors"
+	"os"
 	"reflect"
 	"strings"
 	"testing"
@@ -121,5 +122,52 @@ func TestMaterializeAssignmentWorktreeRunsShallowBranchClone(t *testing.T) {
 	}
 	if !reflect.DeepEqual(gotArgs, wantArgs) {
 		t.Fatalf("clone args = %#v, want %#v", gotArgs, wantArgs)
+	}
+}
+
+func TestDefaultRunAssignmentGitClonePassesNonInteractiveEnv(t *testing.T) {
+	if os.Getenv("RIIDO_TEST_GIT_CLONE_HELPER") == "1" {
+		outPath := os.Getenv("RIIDO_TEST_GIT_CLONE_HELPER_OUT")
+		payload := strings.Join([]string{
+			"prompt=" + os.Getenv("GIT_TERMINAL_PROMPT"),
+			"path=" + os.Getenv("PATH"),
+			"args=" + strings.Join(os.Args, "\n"),
+		}, "\n")
+		if err := os.WriteFile(outPath, []byte(payload), 0o600); err != nil {
+			t.Fatalf("write helper output: %v", err)
+		}
+		os.Exit(0)
+	}
+
+	outPath := t.TempDir() + "/git-env.txt"
+	t.Setenv("RIIDO_TEST_GIT_CLONE_HELPER", "1")
+	t.Setenv("RIIDO_TEST_GIT_CLONE_HELPER_OUT", outPath)
+
+	err := defaultRunAssignmentGitClone(context.Background(), os.Args[0], []string{
+		"-test.run=TestDefaultRunAssignmentGitClonePassesNonInteractiveEnv",
+		"--",
+		"clone",
+		"--depth=1",
+		"https://github.com/teamswyg/riido-daemon",
+		"/tmp/riido-workdir",
+	})
+	if err != nil {
+		t.Fatalf("defaultRunAssignmentGitClone: %v", err)
+	}
+	raw, err := os.ReadFile(outPath)
+	if err != nil {
+		t.Fatalf("read helper output: %v", err)
+	}
+	got := string(raw)
+	if !strings.Contains(got, "prompt=0") {
+		t.Fatalf("GIT_TERMINAL_PROMPT was not disabled: %s", got)
+	}
+	if !strings.Contains(got, "path=") || strings.Contains(got, "path=\n") {
+		t.Fatalf("PATH was not inherited for git child process: %s", got)
+	}
+	for _, want := range []string{"clone", "--depth=1", "https://github.com/teamswyg/riido-daemon", "/tmp/riido-workdir"} {
+		if !strings.Contains(got, want) {
+			t.Fatalf("helper args missing %q: %s", want, got)
+		}
 	}
 }
