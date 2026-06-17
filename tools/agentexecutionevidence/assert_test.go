@@ -2,6 +2,7 @@ package agentexecutionevidence
 
 import (
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -52,8 +53,8 @@ func assertExternalEvidence(t *testing.T, ev externalEvidence, docText string) {
 		t.Fatalf("external evidence %s status = %q", ev.Risk, ev.Status)
 	}
 	assertRiskKnown(t, ev.Risk)
-	if ev.Repo != "riido-control-plane" {
-		t.Fatalf("external evidence repo must be named at repo boundary, got %q", ev.Repo)
+	if !slices.Contains([]string{"riido-control-plane", "riido-contracts"}, ev.Repo) {
+		t.Fatalf("external evidence repo must stay at an allowed repo boundary, got %q", ev.Repo)
 	}
 	if strings.Contains(ev.Test, "/") || strings.Contains(ev.Test, "internal/") {
 		t.Fatalf("external evidence must not reference private package paths: %+v", ev)

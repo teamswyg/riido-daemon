@@ -188,6 +188,8 @@ human status table cannot drift from local daemon test evidence.
 | Windows stale claim recovery | `internal/lock.TestReclaimStaleLockClaimRemovesOldClaim` |
 | Windows fresh claim retained | `internal/lock.TestReclaimStaleLockClaimKeepsFreshClaim` |
 | cancellation during workspace prepare | `internal/agentbridge/supervisor.TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart` |
+| generated FSM conformance | `riido-contracts TestVerifyGeneratedFSMFiles` |
+| generated FSM daemon consumption | `internal/contractscompat.TestContractsBaseline` |
 
 ## 7. Current Daemon Slice Status
 
@@ -225,6 +227,6 @@ human status table cannot drift from local daemon test evidence.
 - client/desktop 의 optimistic cache, active stream subscription 소비, update/quit
   handoff. daemon 과 control-plane 이 필요한 서버 응답은 제공하지만 UI 소비는
   client/desktop ownership 이다.
-- `ExecutionIdentity`, `WorkspacePlan`, stream envelope, lifecycle FSM 의 더 넓은
-  contracts/codegen 승격. 현재 runtime path 는 동작하지만 generated FSM
-  conformance 로 완전히 고정된 상태는 아니다.
+- `WorkspacePlan`, stream envelope, approval request/decision DTO 의 더 넓은
+  contracts/codegen 승격. assignment/task generated FSM conformance 는
+  `riido-contracts` 의 `fsmgen` 과 daemon `contractscompat` 테스트로 고정되었다.
