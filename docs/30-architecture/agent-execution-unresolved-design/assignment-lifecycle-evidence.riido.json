@@ -148,6 +148,13 @@
       "package": "./internal/agentbridge/supervisor",
       "test": "TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart",
       "proves": "cancellation during workspace preparation stops before provider runtime start"
+    },
+    {
+      "risk": "generated-fsm-daemon-consumption",
+      "status": "verified",
+      "package": "./internal/contractscompat",
+      "test": "TestContractsBaseline",
+      "proves": "daemon consumes contracts generated assignment and task FSM service providers"
     }
   ],
   "external_evidence": [
@@ -171,6 +178,13 @@
       "repo": "riido-control-plane",
       "test": "TestC2LateRuntimeProgressDoesNotReactivateStoppedThread",
       "proves": "late runtime progress cannot reactivate stopped task thread projection"
+    },
+    {
+      "risk": "generated-fsm-conformance",
+      "status": "verified",
+      "repo": "riido-contracts",
+      "test": "TestVerifyGeneratedFSMFiles",
+      "proves": "contracts fsmgen verifies generated FSM drift and conformance from Common Lisp metadata"
     }
   ],
   "remaining_boundaries": [
@@ -191,12 +205,6 @@
       "owner": "client/desktop",
       "current_handling": "server exposes active stream handoff but UI consumption is outside daemon ownership",
       "required_next_artifact": "client active stream subscription and desktop update/quit handoff"
-    },
-    {
-      "id": "generated-fsm-conformance",
-      "owner": "contracts/daemon",
-      "current_handling": "runtime path is covered by targeted tests",
-      "required_next_artifact": "generated FSM/enum conformance from contracts SSOT"
     }
   ]
 }

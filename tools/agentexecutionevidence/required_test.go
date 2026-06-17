@@ -21,14 +21,15 @@ var requiredRisks = []string{
 	"windows-stale-claim-recovery",
 	"windows-fresh-claim-retained",
 	"workspace-prepare-cancel-fence",
+	"generated-fsm-daemon-consumption",
 	"private-repo-url-redaction",
 	"active-stream-handoff",
 	"terminal-late-progress-fence",
+	"generated-fsm-conformance",
 }
 
 var requiredRemainingBoundaries = []string{
 	"private-repo-auth",
 	"web-approval-round-trip",
 	"client-desktop-consumption",
-	"generated-fsm-conformance",
 }
