@@ -46,4 +46,7 @@ func TestPlaneCompleteTaskReportsBlockedFailureMetadata(t *testing.T) {
 	if got := last.Metadata[metadatakeys.AssignmentFailureCategory.String()]; got != "provider_blocked" {
 		t.Fatalf("failure category metadata = %q", got)
 	}
+	if got := last.Metadata[metadatakeys.AssignmentEventKey.String()]; got == "" {
+		t.Fatalf("assignment event key metadata missing: %+v", last.Metadata)
+	}
 }

@@ -169,6 +169,10 @@ func (p *Plane) postAgentEvent(ctx context.Context, assignment assignmentcontrac
 		return out, err
 	}
 	req.RuntimeID = runtimeID
+	req.Metadata, err = p.assignmentEventMetadata(ctx, assignment, req.Metadata)
+	if err != nil {
+		return out, err
+	}
 	err = p.postJSON(ctx, "/v1/agents/"+url.PathEscape(assignment.AgentID)+"/events", req, &out)
 	return out, err
 }

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+	"github.com/teamswyg/riido-contracts/metadatakeys"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 )
@@ -322,7 +323,7 @@ func TestPlaneLongPollsStaticCandidatesConcurrently(t *testing.T) {
 	}
 }
 
-func TestPlaneDoesNotRetryEventPostWithoutIdempotency(t *testing.T) {
+func TestPlaneRetriesTransientEventPostWithIdempotencyKey(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.enqueue(assignmentcontract.Assignment{
 		ID:              "asn-1",
@@ -343,11 +344,17 @@ func TestPlaneDoesNotRetryEventPostWithoutIdempotency(t *testing.T) {
 	}
 	fake.failNext("/v1/agents/jykim1/events", 1, http.StatusServiceUnavailable)
 	err = plane.ReportEvent(context.Background(), req.ID, agentbridge.Event{Kind: agentbridge.EventProgress, Text: "progress"})
-	if err == nil || !strings.Contains(err.Error(), "503") {
-		t.Fatalf("ReportEvent should return first transient event failure without retry, got %v", err)
+	if err != nil {
+		t.Fatalf("ReportEvent should retry transient event failure: %v", err)
 	}
-	if got := fake.requestCount("/v1/agents/jykim1/events"); got != 1 {
-		t.Fatalf("event request count = %d, want 1", got)
+	if got := fake.requestCount("/v1/agents/jykim1/events"); got != 2 {
+		t.Fatalf("event request count = %d, want 2", got)
+	}
+	if len(fake.events) != 1 {
+		t.Fatalf("events = %+v, want one committed event", fake.events)
+	}
+	if got := fake.events[0].Metadata[metadatakeys.AssignmentEventKey.String()]; got == "" {
+		t.Fatalf("assignment event key metadata missing: %+v", fake.events[0].Metadata)
 	}
 }
 
