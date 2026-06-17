@@ -23,6 +23,15 @@ func TestContractsBaseline(t *testing.T) {
 	if assignment.GeneratedAssignmentFSMServiceProvider().AssignmentFSM().Name() != "assignment" {
 		t.Fatal("assignment FSM service provider must return the generated assignment FSM")
 	}
+	if assignment.ApprovalTimeoutTerminalStatus != assignment.ApprovalTimedOut {
+		t.Fatal("approval timeout must resolve to the timed_out terminal status")
+	}
+	if !assignment.ApprovalTimedOut.IsTerminal() || assignment.ApprovalPending.IsTerminal() {
+		t.Fatal("approval terminal predicates drifted")
+	}
+	if assignment.ApprovalDecisionDeny.Code() != assignment.ApprovalDecisionCodeDeny {
+		t.Fatal("approval decision enum drifted")
+	}
 	if !ir.EventTaskQueued.IsTransition() {
 		t.Fatal("TaskQueued must remain a transition event")
 	}

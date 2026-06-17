@@ -155,6 +155,13 @@
       "package": "./internal/contractscompat",
       "test": "TestContractsBaseline",
       "proves": "daemon consumes contracts generated assignment and task FSM service providers"
+    },
+    {
+      "risk": "web-approval-contract-consumption",
+      "status": "verified",
+      "package": "./internal/contractscompat",
+      "test": "TestContractsBaseline",
+      "proves": "daemon consumes contracts tool approval timeout status and decision vocabulary"
     }
   ],
   "external_evidence": [
@@ -185,6 +192,13 @@
       "repo": "riido-contracts",
       "test": "TestVerifyGeneratedFSMFiles",
       "proves": "contracts fsmgen verifies generated FSM drift and conformance from Common Lisp metadata"
+    },
+    {
+      "risk": "web-approval-contract",
+      "status": "verified",
+      "repo": "riido-contracts",
+      "test": "TestAssignmentContractToolApprovalWireShape",
+      "proves": "contracts owns the tool approval request/decision/result DTO wire shape"
     }
   ],
   "remaining_boundaries": [
@@ -197,8 +211,8 @@
     {
       "id": "web-approval-round-trip",
       "owner": "contracts/control-plane/client",
-      "current_handling": "daemon-local policy gate blocks non-allowed headless approvals",
-      "required_next_artifact": "approval request/decision DTO and terminal timeout state"
+      "current_handling": "contracts approval DTO vocabulary exists; daemon-local policy gate still blocks non-allowed headless approvals",
+      "required_next_artifact": "control-plane approval endpoints and client-visible decision flow"
     },
     {
       "id": "client-desktop-consumption",
