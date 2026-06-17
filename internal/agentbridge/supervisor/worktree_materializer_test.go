@@ -20,6 +20,9 @@ func TestAssignmentCloneURLRejectsPrivateWorktree(t *testing.T) {
 	if err == nil || !strings.Contains(err.Error(), "private assignment worktree requires git credentials") {
 		t.Fatalf("expected private repository fail-closed error, got %v", err)
 	}
+	if !errors.Is(err, errAssignmentWorktreeBlocked) {
+		t.Fatalf("private repository error is not classified as blocked: %v", err)
+	}
 }
 
 func TestAssignmentCloneURLRejectsUnsupportedRepositoryURL(t *testing.T) {
@@ -77,6 +80,9 @@ func TestAssignmentCloneURLRejectsUnsupportedRepositoryURL(t *testing.T) {
 			})
 			if err == nil {
 				t.Fatal("expected unsupported URL error")
+			}
+			if !errors.Is(err, errAssignmentWorktreeBlocked) {
+				t.Fatalf("unsupported repository error is not classified as blocked: %v", err)
 			}
 			for _, forbidden := range tt.notContain {
 				if strings.Contains(err.Error(), forbidden) {
