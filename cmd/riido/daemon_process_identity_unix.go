@@ -47,12 +47,31 @@ func daemonProcessCommandLine(pid int) (string, error) {
 	return "", lastErr
 }
 
-func daemonCommandLineLooksLikeSelf(command string) bool {
+func daemonCommandLineMatchesPIDIdentity(command string, identity daemonPIDIdentity) bool {
 	fields := strings.Fields(command)
-	if len(fields) == 0 {
+	if len(fields) == 0 || !daemonCommandBinaryMatchesPIDIdentity(fields[0], identity) {
 		return false
 	}
-	if !daemonCommandBinaryLooksLikeSelf(fields[0]) {
+	if !daemonCommandLineLooksLikeForegroundStart(fields) {
+		return false
+	}
+	socket := strings.TrimSpace(identity.Socket)
+	if socket == "" {
+		return false
+	}
+	return daemonCommandFieldsContainSocket(fields, socket)
+}
+
+func daemonCommandBinaryMatchesPIDIdentity(argv0 string, identity daemonPIDIdentity) bool {
+	expected := strings.TrimSpace(identity.Executable)
+	if expected == "" {
+		return daemonCommandBinaryLooksLikeSelf(argv0)
+	}
+	return filepath.Clean(argv0) == filepath.Clean(expected)
+}
+
+func daemonCommandLineLooksLikeForegroundStart(fields []string) bool {
+	if len(fields) == 0 {
 		return false
 	}
 	for i, field := range fields {
@@ -64,17 +83,6 @@ func daemonCommandLineLooksLikeSelf(command string) bool {
 		}
 	}
 	return false
-}
-
-func daemonCommandLineMatchesPIDIdentity(command string, identity daemonPIDIdentity) bool {
-	if !daemonCommandLineLooksLikeSelf(command) {
-		return false
-	}
-	socket := strings.TrimSpace(identity.Socket)
-	if socket == "" {
-		return false
-	}
-	return daemonCommandFieldsContainSocket(strings.Fields(command), socket)
 }
 
 func daemonCommandBinaryLooksLikeSelf(argv0 string) bool {
