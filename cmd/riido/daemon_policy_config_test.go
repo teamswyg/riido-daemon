@@ -122,6 +122,8 @@ func TestDaemonToolApprovalGateUsesActivePolicyBundle(t *testing.T) {
 	}
 	if decision := gate(agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "cat .env.local"}}); !decision.Block {
 		t.Fatalf("unallowed secret exposure approval should block: %+v", decision)
+	} else if decision.Code != "approval_timeout" {
+		t.Fatalf("unallowed secret exposure approval code = %q", decision.Code)
 	}
 }
 

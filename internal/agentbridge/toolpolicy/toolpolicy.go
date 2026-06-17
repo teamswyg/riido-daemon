@@ -11,6 +11,11 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/policy"
 )
 
+const (
+	headlessApprovalTimeoutCode   = "approval_timeout"
+	headlessApprovalTimeoutReason = "tool approval requires human decision but no headless approval path is available"
+)
+
 // PolicyAutoApprover returns a session AutoApprover backed by the active C7
 // policy bundle. Unknown or unclassified tools remain on the human approval
 // path; only an explicit policy allow can auto-approve.
@@ -48,10 +53,14 @@ func PolicyToolApprovalGate(bundle policy.PolicyBundle, tier policy.TrustTier) a
 		if !ok || decision.Action == policy.ToolUseActionAllow {
 			return agentbridge.ToolStartDecision{}
 		}
+		reason := strings.TrimSpace(decision.Reason)
+		if reason == "" {
+			reason = headlessApprovalTimeoutReason
+		}
 		return agentbridge.ToolStartDecision{
 			Block:  true,
-			Code:   decision.Code,
-			Reason: decision.Reason,
+			Code:   headlessApprovalTimeoutCode,
+			Reason: reason,
 		}
 	}
 }
