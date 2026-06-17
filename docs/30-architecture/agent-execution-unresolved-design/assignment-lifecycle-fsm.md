@@ -176,6 +176,18 @@ human status table cannot drift from local daemon test evidence.
 | stale PID kill refusal | `cmd/riido.TestDaemonStopRejectsNonDaemonPidFile` |
 | active stream handoff response | `riido-control-plane TestHTTPAIAgentClientDevelopmentV2WorkspaceScopedCreateAndThreadStream` |
 | terminal/late progress fence | `riido-control-plane TestC2LateRuntimeProgressDoesNotReactivateStoppedThread` |
+| launch PATH freeze | `internal/agentbridge/runtimeactor.TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn` |
+| unavailable capability TTL re-detect | `internal/agentbridge/runtimeactor.TestRuntimeActorRefreshesUnavailableCapabilityAfterTTL` |
+| transient poll retry | `internal/agentbridge/controlplane/saasplane.TestPlaneRetriesTransientPoll` |
+| transient agent bindings retry | `internal/agentbridge/controlplane/saasplane.TestPlaneRetriesTransientAgentBindings` |
+| transient heartbeat retry | `internal/agentbridge/controlplane/saasplane.TestPlaneRetriesTransientHeartbeat` |
+| transient runtime snapshot retry | `internal/agentbridge/controlplane/saasplane.TestPlaneRetriesTransientRuntimeSnapshot` |
+| permanent poll failure no-retry | `internal/agentbridge/controlplane/saasplane.TestPlaneDoesNotRetryPermanentPollFailure` |
+| idempotent event POST retry | `internal/agentbridge/controlplane/saasplane.TestPlaneRetriesTransientEventPostWithIdempotencyKey` |
+| headless risky tool fail-closed | `internal/agentbridge/toolpolicy.TestPolicyToolStartGateBlocksClassifiedRiskWithoutApprovalPath` |
+| Windows stale claim recovery | `internal/lock.TestReclaimStaleLockClaimRemovesOldClaim` |
+| Windows fresh claim retained | `internal/lock.TestReclaimStaleLockClaimKeepsFreshClaim` |
+| cancellation during workspace prepare | `internal/agentbridge/supervisor.TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart` |
 
 ## 7. Current Daemon Slice Status
 
