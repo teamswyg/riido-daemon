@@ -8,6 +8,7 @@ import (
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+	"github.com/teamswyg/riido-contracts/metadatakeys"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
@@ -95,6 +96,7 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 		State:             state,
 		EventType:         eventType,
 		Message:           message,
+		Metadata:          terminalResultMetadata(res),
 	})
 	if err != nil {
 		return err
@@ -105,6 +107,35 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 		delete(s.runtimeIDsByExecution, executionID)
 		delete(s.partialBodies, executionID)
 	})
+}
+
+func terminalResultMetadata(res agentbridge.Result) map[string]string {
+	status := res.Status
+	if status == "" {
+		status = agentbridge.ResultCompleted
+	}
+	metadata := map[string]string{
+		metadatakeys.AssignmentResultStatus.String(): string(status),
+	}
+	if category := terminalFailureCategory(status); category != "" {
+		metadata[metadatakeys.AssignmentFailureCategory.String()] = category
+	}
+	return metadata
+}
+
+func terminalFailureCategory(status agentbridge.ResultStatus) string {
+	switch status {
+	case agentbridge.ResultBlocked:
+		return "provider_blocked"
+	case agentbridge.ResultAborted:
+		return "process_aborted"
+	case agentbridge.ResultTimeout:
+		return "provider_timeout"
+	case agentbridge.ResultFailed:
+		return "provider_result_failed"
+	default:
+		return ""
+	}
 }
 
 func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string, wait time.Duration) (assignmentcontract.PollResponse, error) {
