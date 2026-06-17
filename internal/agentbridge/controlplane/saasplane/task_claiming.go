@@ -13,6 +13,11 @@ import (
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
+const (
+	recoveryMetadataKey    = "recovery"
+	recoveryFreshStartCode = "fresh_start_refused"
+)
+
 func runtimeSnapshotFromHeartbeat(hb controlplane.RuntimeHeartbeat) (RuntimeSnapshotRecord, bool) {
 	runtimeID := strings.TrimSpace(hb.RuntimeID)
 	provider := providerFromRuntimeID(runtimeID)
@@ -152,6 +157,12 @@ func (p *Plane) claimTaskFromCandidate(ctx context.Context, runtimeID, provider 
 		if assignment.RuntimeProvider != "" && assignment.RuntimeProvider != provider {
 			return nil, nil
 		}
+		if poll.Action == assignmentcontract.PollActive && assignmentResumeSessionID(assignment) == "" {
+			if err := p.failUnresumableActiveAssignment(ctx, assignment); err != nil {
+				return nil, err
+			}
+			return nil, nil
+		}
 		if err := p.saveAssignmentRuntime(ctx, assignment, runtimeID); err != nil {
 			return nil, err
 		}
@@ -164,6 +175,20 @@ func (p *Plane) claimTaskFromCandidate(ctx context.Context, runtimeID, provider 
 	default:
 		return nil, nil
 	}
+}
+
+func (p *Plane) failUnresumableActiveAssignment(ctx context.Context, assignment assignmentcontract.Assignment) error {
+	_, err := p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{
+		AssignmentID: assignment.ID,
+		TaskID:       assignment.TaskID,
+		State:        assignmentcontract.AssignmentFailed,
+		EventType:    assignmentcontract.EventAssignmentFailed,
+		Message:      "recovery requires provider session id; refusing fresh start",
+		Metadata: map[string]string{
+			recoveryMetadataKey: recoveryFreshStartCode,
+		},
+	})
+	return err
 }
 
 func (p *Plane) WatchCancellation(ctx context.Context, executionID string) (<-chan error, error) {
