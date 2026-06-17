@@ -1,6 +1,7 @@
 package toolpolicy
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -121,8 +122,11 @@ func TestPolicyToolApprovalGateBlocksClassifiedRiskWithoutApprovalPath(t *testin
 	if !decision.Block {
 		t.Fatalf("headless patch approval must block: %+v", decision)
 	}
-	if decision.Code != "TOOL_USE_NOT_IN_POLICY_BUNDLE" {
+	if decision.Code != "approval_timeout" {
 		t.Fatalf("decision code = %q", decision.Code)
+	}
+	if !strings.Contains(decision.Reason, "no approval path") {
+		t.Fatalf("decision reason = %q", decision.Reason)
 	}
 }
 
