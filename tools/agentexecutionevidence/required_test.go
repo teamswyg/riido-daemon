@@ -22,10 +22,12 @@ var requiredRisks = []string{
 	"windows-fresh-claim-retained",
 	"workspace-prepare-cancel-fence",
 	"generated-fsm-daemon-consumption",
+	"web-approval-contract-consumption",
 	"private-repo-url-redaction",
 	"active-stream-handoff",
 	"terminal-late-progress-fence",
 	"generated-fsm-conformance",
+	"web-approval-contract",
 }
 
 var requiredRemainingBoundaries = []string{
