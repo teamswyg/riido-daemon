@@ -142,6 +142,11 @@ Retry 는 "다시 실행"이 아니라 "같은 assignment/run identity 에서 �
 
 ## 6. Verification Plan
 
+Executable evidence manifest:
+[`assignment-lifecycle-evidence.riido.json`](assignment-lifecycle-evidence.riido.json).
+The manifest is verified by `go test ./tools/agentexecutionevidence` so the
+human status table cannot drift from local daemon test evidence.
+
 | Test | Repo | 증명 |
 | --- | --- | --- |
 | two assignments same task run independently | `riido-daemon` | same `task_id`, different `assignment_id` 가 in-flight/watcher/heartbeat 충돌 없이 동작 |
