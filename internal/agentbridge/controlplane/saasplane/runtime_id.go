@@ -7,7 +7,6 @@ import (
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
-	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 const runtimeIDAgentMarker = "agent"
@@ -87,5 +86,5 @@ func agentFromRuntimeID(runtimeID string) (string, bool) {
 }
 
 func assignmentExecutionID(assignment assignmentcontract.Assignment) string {
-	return textutil.FirstNonEmptyTrimmed(assignment.ID, assignment.TaskID)
+	return assignmentcontract.ExecutionIDFromAssignment(assignment)
 }
