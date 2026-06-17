@@ -159,11 +159,27 @@ func TestStopLifecycleForcedEscalatesGracefulDrain(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("graceful Stop did not request provider kill")
 	}
+	select {
+	case level := <-proc.running.KillLevelRecv():
+		if level != lifecycle.ShutdownGraceful {
+			t.Fatalf("initial kill level = %s, want %s", level, lifecycle.ShutdownGraceful)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("graceful Stop did not carry provider kill level")
+	}
 
 	forcedCtx, forcedCancel := lifecycle.DetachedShutdown(lifecycle.ShutdownForced, time.Second)
 	defer forcedCancel()
 	if err := a.StopLifecycle(forcedCtx); err != nil {
 		t.Fatalf("forced StopLifecycle: %v", err)
+	}
+	select {
+	case level := <-proc.running.KillLevelRecv():
+		if level != lifecycle.ShutdownForced {
+			t.Fatalf("escalated kill level = %s, want %s", level, lifecycle.ShutdownForced)
+		}
+	case <-time.After(time.Second):
+		t.Fatal("forced StopLifecycle did not escalate provider kill level")
 	}
 }
 

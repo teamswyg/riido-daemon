@@ -1,6 +1,7 @@
 package session
 
 import (
+	"context"
 	"slices"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -33,10 +34,14 @@ func (r *sessionRunner) resetIdle() {
 }
 
 func (r *sessionRunner) applyEvents(events []agentbridge.Event, cmds []agentbridge.Command) {
+	r.applyEventsWithContext(r.ctx, events, cmds)
+}
+
+func (r *sessionRunner) applyEventsWithContext(ctx context.Context, events []agentbridge.Event, cmds []agentbridge.Command) {
 	if slices.ContainsFunc(events, r.applyEvent) {
 		return
 	}
-	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
+	for _, cmdEvent := range executeCommands(ctx, r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
 	}
 }
@@ -56,7 +61,7 @@ func (r *sessionRunner) applyEvent(ev agentbridge.Event) bool {
 		if r.blockPendingApprovalIfNeeded(expandedEvent, cmds) {
 			return true
 		}
-		for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
+		for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
 			r.emit(cmdEvent)
 		}
 	}
@@ -72,7 +77,7 @@ func (r *sessionRunner) blockStartedToolIfNeeded(ev agentbridge.Event) bool {
 		return false
 	}
 	blockReason := toolBlockReason(decision)
-	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, []agentbridge.Command{
+	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, []agentbridge.Command{
 		{Kind: agentbridge.CommandCancelProvider, Reason: blockReason},
 	}, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
@@ -88,7 +93,7 @@ func (r *sessionRunner) blockStartedToolIfNeeded(ev agentbridge.Event) bool {
 	r.emit(blocked)
 	var cmds []agentbridge.Command
 	r.state, cmds = agentbridge.Reduce(r.state, blocked, r.cfg.AutoApprove)
-	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
+	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
 	}
 	return true
@@ -103,7 +108,7 @@ func (r *sessionRunner) blockPendingApprovalIfNeeded(ev agentbridge.Event, cmds 
 		return false
 	}
 	blockReason := toolBlockReason(decision)
-	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, []agentbridge.Command{
+	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, []agentbridge.Command{
 		{Kind: agentbridge.CommandCancelProvider, Reason: blockReason},
 	}, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
@@ -119,7 +124,7 @@ func (r *sessionRunner) blockPendingApprovalIfNeeded(ev agentbridge.Event, cmds 
 	r.emit(blocked)
 	var resultCmds []agentbridge.Command
 	r.state, resultCmds = agentbridge.Reduce(r.state, blocked, r.cfg.AutoApprove)
-	for _, cmdEvent := range executeCommands(r.proc, r.cfg.Adapter, resultCmds, r.cfg.ProcessKillTimeout) {
+	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, resultCmds, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
 	}
 	return true
@@ -153,5 +158,9 @@ func (r *sessionRunner) translateRaw(raw agentbridge.RawEvent) ([]agentbridge.Ev
 }
 
 func (r *sessionRunner) emitAndTerminate(synthetic agentbridge.Event) {
-	r.applyEvents([]agentbridge.Event{synthetic}, nil)
+	r.emitAndTerminateWithContext(r.ctx, synthetic)
+}
+
+func (r *sessionRunner) emitAndTerminateWithContext(ctx context.Context, synthetic agentbridge.Event) {
+	r.applyEventsWithContext(ctx, []agentbridge.Event{synthetic}, nil)
 }

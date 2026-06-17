@@ -47,6 +47,7 @@ type submitReply struct {
 }
 
 type cancelMsg struct {
+	ctx    context.Context
 	taskID string
 	reason string
 	reply  chan error

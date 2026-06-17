@@ -9,6 +9,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/process"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
 func cleanupTempFiles(paths []string) []agentbridge.Event {
@@ -34,6 +35,7 @@ func cleanupTempFiles(paths []string) []agentbridge.Event {
 }
 
 func executeCommands(
+	ctx context.Context,
 	proc process.RunningProcess,
 	adapter agentbridge.Adapter,
 	cmds []agentbridge.Command,
@@ -43,7 +45,7 @@ func executeCommands(
 	for _, c := range cmds {
 		switch c.Kind {
 		case agentbridge.CommandCancelProvider:
-			if err := killProcess(proc, killTimeout); err != nil {
+			if err := killProcess(ctx, proc, killTimeout); err != nil {
 				out = append(out, agentbridge.Event{Kind: agentbridge.EventWarning, Text: "provider kill failed", Err: err.Error()})
 			}
 		case agentbridge.CommandWriteProviderInput:
@@ -80,13 +82,14 @@ func executeCommands(
 	return out
 }
 
-func killProcess(proc process.RunningProcess, timeout time.Duration) error {
+func killProcess(ctx context.Context, proc process.RunningProcess, timeout time.Duration) error {
 	if timeout <= 0 {
 		timeout = DefaultProcessKillTimeout
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	level := lifecycle.FromContext(ctx).ShutdownLevel()
+	killCtx, cancel := lifecycle.DetachedShutdown(lifecycle.NormalizeShutdownLevel(level), timeout)
 	defer cancel()
-	return proc.Kill(ctx)
+	return proc.Kill(killCtx.Context())
 }
 
 func decideStartedTool(gate agentbridge.ToolStartGate, tool agentbridge.ToolRef) agentbridge.ToolStartDecision {

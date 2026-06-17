@@ -25,6 +25,7 @@ import (
 	"sync"
 
 	"github.com/teamswyg/riido-daemon/internal/process"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
 // New returns a process.Process that spawns via os/exec.
@@ -67,7 +68,7 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 		return nil, err
 	}
 
-	go r.killOnContext(cmdCtx.Done())
+	go r.killOnContext(cmdCtx)
 	go r.waitExit()
 
 	return r, nil
@@ -109,7 +110,8 @@ type execRunning struct {
 	stdin     io.WriteCloser
 	stdinOnce sync.Once
 	stdinMu   *sync.Mutex
-	killOnce  sync.Once
+	termOnce  sync.Once
+	forceOnce sync.Once
 	done      chan struct{}
 }
 
@@ -151,36 +153,51 @@ func (r *execRunning) CloseStdin() error {
 	return err
 }
 
-func (r *execRunning) Kill(_ context.Context) error {
+func (r *execRunning) Kill(ctx context.Context) error {
+	lctx := lifecycle.StopContext(ctx)
+	if lctx.ShutdownLevel().IsForced() {
+		r.forceTerminateProcessGroup()
+		r.cancel()
+		return nil
+	}
+	r.gracefulTerminateProcessGroup()
+	select {
+	case <-r.done:
+	case <-lctx.Done():
+		r.forceTerminateProcessGroup()
+	}
 	r.cancel()
-	r.terminateProcessGroup()
 	return nil
 }
 
-func (r *execRunning) killOnContext(ctxDone <-chan struct{}) {
+func (r *execRunning) killOnContext(ctx context.Context) {
 	select {
-	case <-ctxDone:
-		r.terminateProcessGroup()
+	case <-ctx.Done():
+		_ = r.Kill(ctx)
 	case <-r.done:
 	}
 }
 
-func (r *execRunning) terminateProcessGroup() {
-	r.killOnce.Do(func() {
-		terminateCommand(r.cmd)
+func (r *execRunning) gracefulTerminateProcessGroup() {
+	r.termOnce.Do(func() {
+		gracefulTerminateCommand(r.cmd)
+	})
+}
+
+func (r *execRunning) forceTerminateProcessGroup() {
+	r.forceOnce.Do(func() {
+		forceTerminateCommand(r.cmd)
 	})
 }
 
 func (r *execRunning) waitExit() {
 	err := r.cmd.Wait()
 	close(r.done)
+	r.cancel()
 	close(r.stdout)
 	close(r.stderr)
 	code := r.cmd.ProcessState.ExitCode()
-	if code < 0 && err != nil {
-		// Negative exit code = killed by signal; preserve err.
-		code = 137 // conventional kill-via-SIGKILL exit code
-	}
+	code = normalizeExitCode(code, err)
 	r.exited <- process.ExitStatus{Code: code, Err: err}
 	close(r.exited)
 }

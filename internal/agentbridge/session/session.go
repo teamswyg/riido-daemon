@@ -16,6 +16,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/process"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
 const (
@@ -87,10 +88,15 @@ type Config struct {
 type Session struct {
 	events chan agentbridge.Event
 	result chan agentbridge.Result
-	cancel chan error
+	cancel chan cancelRequest
 	done   chan struct{}
 
 	running process.RunningProcess
+}
+
+type cancelRequest struct {
+	ctx   context.Context
+	cause error
 }
 
 // Events returns the event stream. It is closed when the session terminates.
@@ -108,8 +114,20 @@ func (s *Session) Done() <-chan struct{} { return s.done }
 // Cancel signals the session to terminate as ResultCancelled. Cause may
 // be nil. Safe to call from any goroutine.
 func (s *Session) Cancel(cause error) {
+	s.CancelWithContext(context.Background(), cause)
+}
+
+// CancelWithContext signals the session to terminate while preserving
+// lifecycle authority such as graceful vs forced shutdown.
+func (s *Session) CancelWithContext(ctx context.Context, cause error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	if lifecycle.FromContext(ctx).ShutdownLevel().IsForced() && s.running != nil {
+		go func() { _ = s.running.Kill(ctx) }()
+	}
 	select {
-	case s.cancel <- cause:
+	case s.cancel <- cancelRequest{ctx: ctx, cause: cause}:
 	default:
 	}
 }
@@ -152,7 +170,7 @@ func Start(ctx context.Context, cfg Config) (*Session, error) {
 	sess := &Session{
 		events:  make(chan agentbridge.Event, cfg.EventBuffer),
 		result:  make(chan agentbridge.Result, cfg.ResultBuffer),
-		cancel:  make(chan error, 1),
+		cancel:  make(chan cancelRequest, 1),
 		done:    make(chan struct{}),
 		running: running,
 	}

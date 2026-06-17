@@ -209,7 +209,7 @@ func (a *Actor) handleCancel(inFlight map[string]*runningTask, msg *cancelMsg) e
 	if msg.reason == "" {
 		cause = errors.New("cancelled")
 	}
-	task.handle.session.Cancel(cause)
+	task.handle.session.CancelWithContext(msg.ctx, cause)
 	return nil
 }
 

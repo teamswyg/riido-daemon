@@ -23,12 +23,12 @@ func (r *sessionRunner) closeProtocol() {
 	}
 }
 
-func (r *sessionRunner) cancel(cause error) {
+func (r *sessionRunner) cancel(req cancelRequest) {
 	reason := "cancelled"
-	if cause != nil {
-		reason = cause.Error()
+	if req.cause != nil {
+		reason = req.cause.Error()
 	}
-	r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventCancellation, Err: reason})
+	r.emitAndTerminateWithContext(req.ctx, agentbridge.Event{Kind: agentbridge.EventCancellation, Err: reason})
 }
 
 func (r *sessionRunner) consumeStdout(chunk []byte, ok bool) {
