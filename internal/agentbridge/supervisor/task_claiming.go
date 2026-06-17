@@ -145,6 +145,9 @@ func taskRequirements(req *bridge.TaskRequest) scheduling.TaskRequirements {
 			surfaces = append(surfaces, scheduling.RequiredSurface(surface))
 		}
 	}
+	if req.Worktree != nil {
+		surfaces = append(surfaces, scheduling.SurfaceWorktree)
+	}
 	return scheduling.TaskRequirements{
 		Provider:                 capability.ProviderKind(req.Provider),
 		RequiredSurfaces:         scheduling.NormalizeRequiredSurfaces(surfaces),

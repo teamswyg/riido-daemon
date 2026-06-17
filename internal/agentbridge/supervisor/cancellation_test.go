@@ -196,9 +196,10 @@ func TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart(t *
 
 	source := &cancelSource{
 		req: bridge.TaskRequest{
-			ID:       "t-cancel-prepare",
-			Provider: "fake",
-			Prompt:   "x",
+			ID:                       "t-cancel-prepare",
+			Provider:                 "codex",
+			Prompt:                   "x",
+			AllowExperimentalRuntime: true,
 			Worktree: &assignmentcontract.AssignmentWorktree{
 				RepositoryFullName: "teamswyg/riido-daemon",
 				RepositoryURL:      "https://github.com/teamswyg/riido-daemon",
@@ -216,7 +217,7 @@ func TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart(t *
 	fake := process.NewFake()
 	running := process.NewFakeRunning()
 	fake.NextRunning = running
-	rt := startRuntime(t, fake)
+	rt := startNamedRuntime(t, fake, "rt-codex", "codex")
 
 	actor, err := New(Config{
 		DaemonID:       "daemon-1",
