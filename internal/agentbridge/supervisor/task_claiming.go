@@ -71,6 +71,9 @@ func resultForActivationError(err error) agentbridge.Result {
 	if errors.Is(err, context.Canceled) || errors.Is(err, ErrStopped) {
 		status = agentbridge.ResultCancelled
 	}
+	if errors.Is(err, errAssignmentWorktreeBlocked) {
+		status = agentbridge.ResultBlocked
+	}
 	return agentbridge.Result{
 		Status: status,
 		Error:  err.Error(),

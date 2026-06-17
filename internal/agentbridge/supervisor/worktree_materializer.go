@@ -19,6 +19,8 @@ var (
 	runAssignmentGitClone          = defaultRunAssignmentGitClone
 )
 
+var errAssignmentWorktreeBlocked = errors.New("supervisor: assignment worktree blocked")
+
 func materializeAssignmentWorktree(ctx context.Context, targetDir string, worktree *assignmentcontract.AssignmentWorktree) error {
 	if worktree == nil {
 		return nil
@@ -50,7 +52,7 @@ func assignmentCloneURL(worktree *assignmentcontract.AssignmentWorktree) (string
 		return "", nil
 	}
 	if worktree.IsPrivate {
-		return "", errors.New("supervisor: private assignment worktree requires git credentials")
+		return "", fmt.Errorf("%w: private assignment worktree requires git credentials", errAssignmentWorktreeBlocked)
 	}
 	repoURL := strings.TrimSpace(worktree.RepositoryURL)
 	if repoURL == "" {
@@ -65,17 +67,17 @@ func assignmentCloneURL(worktree *assignmentcontract.AssignmentWorktree) (string
 				Host:   "github.com",
 				Path:   "/" + strings.Trim(rawFullName, "/"),
 			}
-			return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
+			return "", fmt.Errorf("%w: unsupported assignment repository_url %q", errAssignmentWorktreeBlocked, redactedRepositoryURL(parsed))
 		}
 		repoURL = "https://github.com/" + fullName
 	}
 	parsed, err := url.Parse(repoURL)
 	if err != nil {
-		return "", fmt.Errorf("supervisor: invalid assignment repository_url: %w", err)
+		return "", fmt.Errorf("%w: invalid assignment repository_url: %w", errAssignmentWorktreeBlocked, err)
 	}
 	cloneURL := assignmentcontract.NormalizePublicGitHubRepositoryURL(repoURL)
 	if cloneURL == "" {
-		return "", fmt.Errorf("supervisor: unsupported assignment repository_url %q", redactedRepositoryURL(parsed))
+		return "", fmt.Errorf("%w: unsupported assignment repository_url %q", errAssignmentWorktreeBlocked, redactedRepositoryURL(parsed))
 	}
 	return cloneURL, nil
 }
