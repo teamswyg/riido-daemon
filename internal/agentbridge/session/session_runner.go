@@ -93,8 +93,8 @@ func (r *sessionRunner) loop() {
 		select {
 		case <-r.ctx.Done():
 			r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventCancellation, Err: r.ctx.Err().Error()})
-		case cause := <-r.sess.cancel:
-			r.cancel(cause)
+		case req := <-r.sess.cancel:
+			r.cancel(req)
 		case <-r.hardC:
 			r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
 		case <-r.idleC:
@@ -110,7 +110,7 @@ func (r *sessionRunner) loop() {
 }
 
 func (r *sessionRunner) finish() {
-	_ = killProcess(r.proc, r.cfg.ProcessKillTimeout)
+	_ = killProcess(r.ctx, r.proc, r.cfg.ProcessKillTimeout)
 	drain(r.stdoutCh)
 	drain(r.stderrCh)
 	for _, ev := range cleanupTempFiles(r.cfg.TempFiles) {

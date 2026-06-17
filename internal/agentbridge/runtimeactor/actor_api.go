@@ -29,8 +29,10 @@ func (a *Actor) buildHeartbeat(inFlight map[string]*runningTask) Heartbeat {
 }
 
 func (a *Actor) drainAndShutdown(level lifecycle.ShutdownLevel, inFlight map[string]*runningTask, completeCh <-chan string) {
+	shutdownCtx, cancel := lifecycle.DetachedDefaultShutdown(level)
+	defer cancel()
 	for _, t := range inFlight {
-		t.handle.session.Cancel(ErrActorStopped)
+		t.handle.session.CancelWithContext(shutdownCtx.Context(), ErrActorStopped)
 	}
 	if level.IsForced() {
 		a.stopErrCh <- nil
@@ -43,6 +45,11 @@ func (a *Actor) drainAndShutdown(level lifecycle.ShutdownLevel, inFlight map[str
 			delete(inFlight, id)
 		case next := <-a.stopReqCh:
 			if lifecycle.NormalizeShutdownLevel(next).IsForced() {
+				forcedCtx, forcedCancel := lifecycle.DetachedDefaultShutdown(lifecycle.ShutdownForced)
+				for _, t := range inFlight {
+					t.handle.session.CancelWithContext(forcedCtx.Context(), ErrActorStopped)
+				}
+				forcedCancel()
 				a.stopErrCh <- nil
 				return
 			}
@@ -88,7 +95,7 @@ func (a *Actor) Submit(ctx context.Context, req bridge.TaskRequest) (*SessionHan
 func (a *Actor) Cancel(ctx context.Context, taskID, reason string) error {
 	reply := make(chan error, 1)
 	select {
-	case a.mailbox <- envelope{cancel: &cancelMsg{taskID: taskID, reason: reason, reply: reply}}:
+	case a.mailbox <- envelope{cancel: &cancelMsg{ctx: ctx, taskID: taskID, reason: reason, reply: reply}}:
 	case <-a.stoppedCh:
 		return ErrActorStopped
 	case <-ctx.Done():
