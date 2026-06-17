@@ -113,6 +113,44 @@ func (f *fakeAssignmentServer) handleEvents(w http.ResponseWriter, r *http.Reque
 	})
 }
 
+func (f *fakeAssignmentServer) handleToolApprovals(w http.ResponseWriter, r *http.Request, _ string, parts []string) {
+	switch {
+	case len(parts) == 0:
+		var req assignmentcontract.ToolApprovalRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		f.toolApprovals = append(f.toolApprovals, req)
+		writeJSON(w, assignmentcontract.ToolApprovalCreateResponse{
+			SchemaVersion: assignmentcontract.SchemaVersion,
+			Approval:      req,
+		})
+	case len(parts) == 2 && parts[1] == "wait":
+		var req assignmentcontract.ToolApprovalWaitRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		f.toolApprovalWaits = append(f.toolApprovalWaits, req)
+		status := f.toolApprovalStatus
+		if status == "" {
+			status = assignmentcontract.ApprovalApproved
+		}
+		writeJSON(w, assignmentcontract.ToolApprovalWaitResponse{
+			SchemaVersion: assignmentcontract.SchemaVersion,
+			Result: assignmentcontract.ToolApprovalResult{
+				ApprovalID:   parts[0],
+				AssignmentID: req.AssignmentID,
+				Status:       status,
+			},
+			Decision: f.toolDecision,
+		})
+	default:
+		http.NotFound(w, r)
+	}
+}
+
 func (f *fakeAssignmentServer) assertEvent(t *testing.T, eventType string) {
 	t.Helper()
 	for _, ev := range f.events {

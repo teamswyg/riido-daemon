@@ -177,6 +177,8 @@ type Config struct {
 	// ToolApprovalGate is forwarded to each session for headless approval
 	// requests that were not auto-approved.
 	ToolApprovalGate agentbridge.ToolApprovalGate
+	// ToolApprovalResolver is forwarded to each session for SaaS/web approval.
+	ToolApprovalResolver agentbridge.ToolApprovalResolver
 	// PolicyBundleVersion is the active policy bundle version used as a
 	// CapabilityFingerprint input. Until C7 grows a policy loader, the
 	// daemon supplies a Factor-12 env value and this default keeps local

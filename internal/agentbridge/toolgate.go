@@ -1,5 +1,7 @@
 package agentbridge
 
+import "context"
+
 // ToolStartGate decides what to do when a provider reports that a tool call
 // has started but no provider approval round-trip is available at that point.
 // Nil means do not block started tool calls.
@@ -9,6 +11,15 @@ type ToolStartGate func(tool ToolRef) ToolStartDecision
 // but the embedding runtime has no human approval round-trip for this run.
 // Nil means leave the run waiting for approval.
 type ToolApprovalGate func(tool ToolRef) ToolStartDecision
+
+type ToolApprovalResolver interface {
+	ResolveToolApproval(ctx context.Context, executionID string, tool ToolRef) (ToolApprovalResolution, error)
+}
+
+type ToolApprovalResolution struct {
+	Approved bool
+	Reason   string
+}
 
 // ToolStartDecision is the provider-neutral session decision for a started
 // tool call. The session actor only knows whether to block and what to report;

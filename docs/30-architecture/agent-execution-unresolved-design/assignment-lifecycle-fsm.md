@@ -192,6 +192,8 @@ human status table cannot drift from local daemon test evidence.
 | generated FSM daemon consumption | `internal/contractscompat.TestContractsBaseline` |
 | web approval DTO contract | `riido-contracts TestAssignmentContractToolApprovalWireShape` |
 | web approval daemon contract consumption | `internal/contractscompat.TestContractsBaseline` |
+| web approval session resolver | `internal/agentbridge/session.TestSessionResolverApprovalWritesProviderInput` |
+| web approval SaaS round-trip | `internal/agentbridge/controlplane/saasplane.TestResolveToolApprovalCreatesAndWaitsForDecision` |
 
 ## 7. Current Daemon Slice Status
 
@@ -224,10 +226,9 @@ human status table cannot drift from local daemon test evidence.
 
 - private repository auth 방식. 현재는 token broker 없이 private repo 를 실행하지
   않는 fail-closed 가 의도된 동작이다.
-- web approval request/decision round-trip. daemon-local policy gate 는 동작하지만
-  SaaS 사용자 승인 endpoint/client flow 는 아직 lifecycle contract 가 아니다.
-  approval request/decision DTO 와 timeout terminal status 는 `riido-contracts` 로
-  승격되었고 daemon/control-plane 이 compat test 로 소비한다.
+- web approval request/decision round-trip 은 SaaS plane resolver 와 control-plane
+  approval endpoint 로 연결되었다. daemon-local policy gate 는 SaaS resolver 가 없거나
+  resolver 오류가 난 경우의 fail-closed fallback 으로 남는다.
 - client/desktop 의 optimistic cache, active stream subscription 소비, update/quit
   handoff. daemon 과 control-plane 이 필요한 서버 응답은 제공하지만 UI 소비는
   client/desktop ownership 이다.

@@ -32,7 +32,12 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	}
 	defer stopPprof()
 
-	rtActors, err := newDaemonRuntimeActors(settings, builtinAgentAdapters())
+	taskSource, taskReporter, controlPlaneKind, err := buildDaemonControlPlane(settings, startedAt)
+	if err != nil {
+		return err
+	}
+
+	rtActors, err := newDaemonRuntimeActors(settings, builtinAgentAdapters(), daemonToolApprovalResolver(taskReporter))
 	if err != nil {
 		return err
 	}
@@ -54,10 +59,6 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 
 	log.Printf("runtimeactors started: %d providers", len(rtActors))
 
-	taskSource, taskReporter, controlPlaneKind, err := buildDaemonControlPlane(settings, startedAt)
-	if err != nil {
-		return err
-	}
 	workdirAdapter := workdir.NewFSAdapter(settings.WorkdirRoot)
 	supActor, err := supervisor.New(supervisor.Config{
 		DaemonID:            settings.DaemonID,
@@ -143,14 +144,14 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	}
 }
 
-func newDaemonRuntimeActors(settings daemonSettings, adapters []agentbridge.Adapter) ([]*runtimeactor.Actor, error) {
+func newDaemonRuntimeActors(settings daemonSettings, adapters []agentbridge.Adapter, resolver agentbridge.ToolApprovalResolver) ([]*runtimeactor.Actor, error) {
 	out := make([]*runtimeactor.Actor, 0, len(adapters))
 	for _, adapter := range adapters {
 		name := strings.TrimSpace(adapter.Name())
 		if name == "" {
 			return nil, daemonErrorf(ErrDaemonRuntime, "runtime.new", "runtimeactor.New: adapter name is required")
 		}
-		rt, err := newDaemonRuntimeActor(settings, providerRuntimeID(settings.DaemonID, name), adapter, settings.RuntimeAgents)
+		rt, err := newDaemonRuntimeActor(settings, providerRuntimeID(settings.DaemonID, name), adapter, settings.RuntimeAgents, resolver)
 		if err != nil {
 			return nil, daemonWrapf(ErrDaemonRuntime, "runtime.new", err, "runtimeactor.New(%s)", name)
 		}
@@ -162,19 +163,20 @@ func newDaemonRuntimeActors(settings daemonSettings, adapters []agentbridge.Adap
 	return out, nil
 }
 
-func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter agentbridge.Adapter, agents []runtimeactor.AgentStatus) (*runtimeactor.Actor, error) {
+func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter agentbridge.Adapter, agents []runtimeactor.AgentStatus, resolver agentbridge.ToolApprovalResolver) (*runtimeactor.Actor, error) {
 	return runtimeactor.New(runtimeactor.Config{
-		RuntimeID:           runtimeID,
-		Owner:               settings.RuntimeOwner,
-		DeviceName:          settings.DeviceName,
-		Agents:              agents,
-		Models:              daemonRuntimeModels(adapter.Name()),
-		Adapters:            []agentbridge.Adapter{adapter},
-		Process:             processexec.New(),
-		MaxConcurrent:       settings.RuntimeMaxConcurrent,
-		AutoApprove:         daemonToolAutoApprover(settings),
-		ToolStartGate:       daemonToolStartGate(settings),
-		ToolApprovalGate:    daemonToolApprovalGate(settings),
-		PolicyBundleVersion: settings.PolicyBundle,
+		RuntimeID:            runtimeID,
+		Owner:                settings.RuntimeOwner,
+		DeviceName:           settings.DeviceName,
+		Agents:               agents,
+		Models:               daemonRuntimeModels(adapter.Name()),
+		Adapters:             []agentbridge.Adapter{adapter},
+		Process:              processexec.New(),
+		MaxConcurrent:        settings.RuntimeMaxConcurrent,
+		AutoApprove:          daemonToolAutoApprover(settings),
+		ToolStartGate:        daemonToolStartGate(settings),
+		ToolApprovalGate:     daemonToolApprovalGate(settings),
+		ToolApprovalResolver: resolver,
+		PolicyBundleVersion:  settings.PolicyBundle,
 	})
 }

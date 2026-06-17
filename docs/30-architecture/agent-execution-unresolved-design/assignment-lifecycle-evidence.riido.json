@@ -162,6 +162,20 @@
       "package": "./internal/contractscompat",
       "test": "TestContractsBaseline",
       "proves": "daemon consumes contracts tool approval timeout status and decision vocabulary"
+    },
+    {
+      "risk": "web-approval-session-resolver",
+      "status": "verified",
+      "package": "./internal/agentbridge/session",
+      "test": "TestSessionResolverApprovalWritesProviderInput",
+      "proves": "session approval resolver decisions are converted into provider approve commands without falling through to the headless gate"
+    },
+    {
+      "risk": "web-approval-round-trip",
+      "status": "verified",
+      "package": "./internal/agentbridge/controlplane/saasplane",
+      "test": "TestResolveToolApprovalCreatesAndWaitsForDecision",
+      "proves": "SaaS plane creates a control-plane tool approval and waits for the client decision before returning a provider-neutral approval resolution"
     }
   ],
   "external_evidence": [
@@ -207,12 +221,6 @@
       "owner": "contracts/control-plane/infra policy",
       "current_handling": "private repositories fail closed without token broker",
       "required_next_artifact": "token-ref auth design and contract; raw token remains outside public daemon SSOT"
-    },
-    {
-      "id": "web-approval-round-trip",
-      "owner": "contracts/control-plane/client",
-      "current_handling": "contracts approval DTO vocabulary exists; daemon-local policy gate still blocks non-allowed headless approvals",
-      "required_next_artifact": "control-plane approval endpoints and client-visible decision flow"
     },
     {
       "id": "client-desktop-consumption",

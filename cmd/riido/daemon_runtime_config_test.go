@@ -122,7 +122,7 @@ func TestNewDaemonRuntimeActorsUsesProviderSlotsForDynamicSaaSBindings(t *testin
 	runtimes, err := newDaemonRuntimeActors(settings, []agentbridge.Adapter{
 		daemonTestAdapter{name: "codex"},
 		daemonTestAdapter{name: "claude"},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}

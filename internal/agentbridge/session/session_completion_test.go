@@ -176,3 +176,79 @@ func TestSessionAutoApprovalWritesProviderInput(t *testing.T) {
 	}
 	_ = drainEvents(t, sess, time.Second)
 }
+
+func TestSessionResolverApprovalWritesProviderInput(t *testing.T) {
+	fake := process.NewFake()
+	running := process.NewFakeRunning()
+	fake.NextRunning = running
+	adapter := &recordingAdapter{
+		name:   "fake",
+		parser: &recordingParser{},
+		translateFn: func(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
+			switch string(raw.Bytes) {
+			case "ASK":
+				return []agentbridge.Event{{
+					Kind: agentbridge.EventToolApprovalNeeded,
+					Tool: agentbridge.ToolRef{ID: "tool-1", Kind: "patch_apply", ProviderRequestID: "req-1"},
+				}}, nil, nil
+			case "DONE":
+				return []agentbridge.Event{{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultCompleted}}}, nil, nil
+			default:
+				return nil, nil, nil
+			}
+		},
+		inputFn: func(cmd agentbridge.Command) ([]byte, error) {
+			if cmd.Kind != agentbridge.CommandApproveTool || cmd.ToolID != "tool-1" || cmd.ProviderRequestID != "req-1" {
+				t.Fatalf("unexpected provider input command: %+v", cmd)
+			}
+			return []byte("approve:req-1\n"), nil
+		},
+	}
+
+	sess, err := Start(context.Background(), Config{
+		TaskID:    "assignment-1",
+		RuntimeID: "rt-1",
+		Adapter:   adapter,
+		Process:   fake,
+		Spawn:     process.Command{Executable: "fake"},
+		ToolApprovalGate: func(agentbridge.ToolRef) agentbridge.ToolStartDecision {
+			t.Fatal("resolver-approved request should not reach headless gate")
+			return agentbridge.ToolStartDecision{}
+		},
+		ToolApprovalResolver: resolverFunc(func(_ context.Context, executionID string, tool agentbridge.ToolRef) (agentbridge.ToolApprovalResolution, error) {
+			if executionID != "assignment-1" || tool.ID != "tool-1" {
+				t.Fatalf("resolver input execution=%s tool=%+v", executionID, tool)
+			}
+			return agentbridge.ToolApprovalResolution{Approved: true}, nil
+		}),
+	})
+	if err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+
+	running.EmitStdout([]byte("ASK"))
+	select {
+	case got := <-running.StdinRecv():
+		if string(got) != "approve:req-1\n" {
+			t.Fatalf("provider input = %q", got)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("provider input was not written")
+	}
+
+	go func() {
+		running.EmitStdout([]byte("DONE"))
+		running.EmitExit(0, nil)
+	}()
+	res := waitResult(t, sess, 2*time.Second)
+	if res.Status != agentbridge.ResultCompleted {
+		t.Fatalf("result: %+v", res)
+	}
+	_ = drainEvents(t, sess, time.Second)
+}
+
+type resolverFunc func(context.Context, string, agentbridge.ToolRef) (agentbridge.ToolApprovalResolution, error)
+
+func (f resolverFunc) ResolveToolApproval(ctx context.Context, executionID string, tool agentbridge.ToolRef) (agentbridge.ToolApprovalResolution, error) {
+	return f(ctx, executionID, tool)
+}
