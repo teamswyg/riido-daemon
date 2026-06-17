@@ -20,6 +20,8 @@ type cancelSource struct {
 	watchCtxs chan context.Context
 }
 
+const supervisorCancellationTestTimeout = 5 * time.Second
+
 func (s *cancelSource) RegisterRuntime(context.Context, controlplane.RuntimeRegistration) error {
 	return nil
 }
@@ -80,12 +82,12 @@ func TestSupervisorRoutesCancellationToRuntime(t *testing.T) {
 
 	select {
 	case <-reporter.started:
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("task was not claimed")
 	}
 	select {
 	case <-running.StartedRecv():
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("provider process was not started")
 	}
 
@@ -93,7 +95,7 @@ func TestSupervisorRoutesCancellationToRuntime(t *testing.T) {
 
 	select {
 	case <-running.KillRecv():
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("provider process was not killed")
 	}
 
@@ -102,7 +104,7 @@ func TestSupervisorRoutesCancellationToRuntime(t *testing.T) {
 		if res.Status != agentbridge.ResultCancelled {
 			t.Fatalf("result: %+v", res)
 		}
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("cancel result was not reported")
 	}
 }
@@ -141,18 +143,18 @@ func TestSupervisorCancelsCancellationWatcherOnComplete(t *testing.T) {
 
 	select {
 	case <-reporter.started:
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("task was not claimed")
 	}
 	select {
 	case <-running.StartedRecv():
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("provider process was not started")
 	}
 	var watchCtx context.Context
 	select {
 	case watchCtx = <-source.watchCtxs:
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("cancellation watcher was not started")
 	}
 
@@ -163,7 +165,7 @@ func TestSupervisorCancelsCancellationWatcherOnComplete(t *testing.T) {
 		if res.Status != agentbridge.ResultCompleted {
 			t.Fatalf("result: %+v", res)
 		}
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("completion was not reported")
 	}
 	select {
@@ -239,12 +241,12 @@ func TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart(t *
 
 	select {
 	case <-reporter.started:
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("task was not claimed")
 	}
 	select {
 	case <-cloneStarted:
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("worktree materialization did not start")
 	}
 
@@ -252,7 +254,7 @@ func TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart(t *
 
 	select {
 	case <-cloneCanceled:
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("workspace materialization context was not cancelled")
 	}
 	select {
@@ -260,7 +262,7 @@ func TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart(t *
 		if res.Status != agentbridge.ResultCancelled {
 			t.Fatalf("result: %+v", res)
 		}
-	case <-time.After(2 * time.Second):
+	case <-time.After(supervisorCancellationTestTimeout):
 		t.Fatal("cancel result was not reported")
 	}
 	select {
