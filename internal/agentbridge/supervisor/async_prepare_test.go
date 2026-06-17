@@ -80,9 +80,10 @@ func TestSupervisorHeartbeatContinuesDuringWorkspaceMaterialization(t *testing.T
 
 	source := &heartbeatDuringPrepareSource{
 		req: bridge.TaskRequest{
-			ID:       "asn-slow-prepare",
-			Provider: "fake",
-			Prompt:   "slow prepare",
+			ID:                       "asn-slow-prepare",
+			Provider:                 "codex",
+			Prompt:                   "slow prepare",
+			AllowExperimentalRuntime: true,
 			Worktree: &assignmentcontract.AssignmentWorktree{
 				RepositoryFullName: "teamswyg/riido-daemon",
 				RepositoryURL:      "https://github.com/teamswyg/riido-daemon",
@@ -99,7 +100,7 @@ func TestSupervisorHeartbeatContinuesDuringWorkspaceMaterialization(t *testing.T
 	reporter := newReporterProbe()
 	fake := process.NewFake()
 	fake.NextRunning = process.NewFakeRunning()
-	rt := startRuntime(t, fake)
+	rt := startNamedRuntime(t, fake, "rt-codex", "codex")
 
 	actor, err := New(Config{
 		DaemonID:       "daemon-1",

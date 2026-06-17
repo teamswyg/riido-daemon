@@ -28,9 +28,10 @@ func TestSupervisorUsesLogicalTaskIDMetadataForWorkspace(t *testing.T) {
 
 	source := controlplane.NewMemorySource()
 	source.Enqueue(bridge.TaskRequest{
-		ID:       "asn-1",
-		Provider: "fake",
-		Prompt:   "hello",
+		ID:                       "asn-1",
+		Provider:                 "codex",
+		Prompt:                   "hello",
+		AllowExperimentalRuntime: true,
 		Worktree: &assignmentcontract.AssignmentWorktree{
 			RepositoryFullName: "teamswyg/riido-daemon",
 			RepositoryURL:      "https://github.com/teamswyg/riido-daemon",
@@ -47,7 +48,7 @@ func TestSupervisorUsesLogicalTaskIDMetadataForWorkspace(t *testing.T) {
 	fake := process.NewFake()
 	running := process.NewFakeRunning()
 	fake.NextRunning = running
-	rt := startRuntime(t, fake)
+	rt := startNamedRuntime(t, fake, "rt-codex", "codex")
 
 	actor, err := New(Config{
 		DaemonID:       "daemon-1",
@@ -107,9 +108,10 @@ func TestSupervisorUsesLogicalTaskIDMetadataForWorkspace(t *testing.T) {
 func TestSupervisorBlocksPrivateAssignmentWorktreeBeforeProviderStart(t *testing.T) {
 	source := controlplane.NewMemorySource()
 	source.Enqueue(bridge.TaskRequest{
-		ID:       "asn-private",
-		Provider: "fake",
-		Prompt:   "fix private repo",
+		ID:                       "asn-private",
+		Provider:                 "codex",
+		Prompt:                   "fix private repo",
+		AllowExperimentalRuntime: true,
 		Worktree: &assignmentcontract.AssignmentWorktree{
 			RepositoryFullName: "teamswyg/private-repo",
 			RepositoryURL:      "https://github.com/teamswyg/private-repo",
@@ -127,7 +129,7 @@ func TestSupervisorBlocksPrivateAssignmentWorktreeBeforeProviderStart(t *testing
 	fake := process.NewFake()
 	running := process.NewFakeRunning()
 	fake.NextRunning = running
-	rt := startRuntime(t, fake)
+	rt := startNamedRuntime(t, fake, "rt-codex", "codex")
 
 	actor, err := New(Config{
 		DaemonID:       "daemon-1",
@@ -173,6 +175,72 @@ func TestSupervisorBlocksPrivateAssignmentWorktreeBeforeProviderStart(t *testing
 	select {
 	case <-running.StartedRecv():
 		t.Fatal("provider process should not start for blocked private worktree")
+	case <-time.After(100 * time.Millisecond):
+	}
+}
+
+func TestSupervisorBlocksWorktreeWhenRuntimeSurfaceUnsupported(t *testing.T) {
+	source := controlplane.NewMemorySource()
+	source.Enqueue(bridge.TaskRequest{
+		ID:       "asn-worktree-unsupported",
+		Provider: "fake",
+		Prompt:   "fix repo",
+		Worktree: &assignmentcontract.AssignmentWorktree{
+			RepositoryFullName: "teamswyg/riido-daemon",
+			RepositoryURL:      "https://github.com/teamswyg/riido-daemon",
+			BranchName:         "main",
+		},
+	})
+
+	reporter := newReporterProbe()
+	fake := process.NewFake()
+	running := process.NewFakeRunning()
+	fake.NextRunning = running
+	rt := startRuntime(t, fake)
+
+	actor, err := New(Config{
+		DaemonID:       "daemon-1",
+		Runtime:        rt,
+		Source:         source,
+		Reporter:       reporter,
+		PollEvery:      10 * time.Millisecond,
+		HeartbeatEvery: time.Hour,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := actor.Start(context.Background()); err != nil {
+		t.Fatalf("supervisor Start: %v", err)
+	}
+	t.Cleanup(func() {
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+		defer cancel()
+		_ = actor.Stop(ctx)
+	})
+
+	select {
+	case taskID := <-reporter.started:
+		if taskID != "asn-worktree-unsupported" {
+			t.Fatalf("started execution: %q", taskID)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("task was not claimed")
+	}
+
+	select {
+	case res := <-reporter.results:
+		if res.Status != agentbridge.ResultBlocked {
+			t.Fatalf("result status = %s, want %s; result=%+v", res.Status, agentbridge.ResultBlocked, res)
+		}
+		if !strings.Contains(res.Error, "MISSING_REQUIRED_SURFACE:worktree") {
+			t.Fatalf("result error should explain missing worktree surface: %q", res.Error)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("blocked result was not reported")
+	}
+	select {
+	case <-running.StartedRecv():
+		t.Fatal("provider process should not start when worktree surface is unsupported")
 	case <-time.After(100 * time.Millisecond):
 	}
 }
