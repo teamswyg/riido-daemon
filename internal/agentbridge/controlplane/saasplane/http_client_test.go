@@ -2,6 +2,7 @@ package saasplane
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 	"testing"
@@ -75,6 +76,49 @@ func TestPlaneRetriesTransientPoll(t *testing.T) {
 	}
 }
 
+func TestPlaneRetriesTransientPollTransportError(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-transport",
+		TaskID:          "task-a",
+		ComponentID:     "component-1",
+		AgentID:         "jykim1",
+		RuntimeProvider: "codex",
+		Prompt:          "hello",
+		State:           assignmentcontract.AssignmentQueued,
+		LeaseToken:      "lease-1",
+	})
+	transport := &transientTransport{
+		failures: 1,
+		next:     fake.server.Client().Transport,
+	}
+	plane, err := New(Config{
+		BaseURL:    fake.URL(),
+		DaemonID:   "daemon-1",
+		DeviceID:   "device-1",
+		Agents:     []AgentBinding{{AgentID: "jykim1", RuntimeProvider: "codex"}},
+		HTTPClient: &http.Client{Transport: transport},
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask should retry transient transport error: %v", err)
+	}
+	if req == nil || req.ID != "asn-transport" {
+		t.Fatalf("request = %+v", req)
+	}
+	if got := fake.requestCount("/v1/agents/jykim1/poll"); got != 1 {
+		t.Fatalf("server poll request count = %d, want 1 after one client-side transport failure", got)
+	}
+	if transport.failures != 0 {
+		t.Fatalf("transport failures remaining = %d, want 0", transport.failures)
+	}
+}
+
 func TestPlaneRetriesTransientAgentBindings(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.deviceID = "device-1"
@@ -118,6 +162,19 @@ func TestPlaneRetriesTransientAgentBindings(t *testing.T) {
 	if got := fake.requestCount("/v1/daemon/agent-bindings"); got != 2 {
 		t.Fatalf("agent-bindings request count = %d, want 2", got)
 	}
+}
+
+type transientTransport struct {
+	failures int
+	next     http.RoundTripper
+}
+
+func (t *transientTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	if t.failures > 0 {
+		t.failures--
+		return nil, errors.New("temporary transport failure")
+	}
+	return t.next.RoundTrip(req)
 }
 
 func TestPlaneRetriesTransientHeartbeat(t *testing.T) {
