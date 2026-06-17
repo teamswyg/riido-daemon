@@ -7,15 +7,11 @@ import (
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+	"github.com/teamswyg/riido-contracts/metadatakeys"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
-)
-
-const (
-	recoveryMetadataKey    = "recovery"
-	recoveryFreshStartCode = "fresh_start_refused"
 )
 
 func runtimeSnapshotFromHeartbeat(hb controlplane.RuntimeHeartbeat) (RuntimeSnapshotRecord, bool) {
@@ -185,7 +181,7 @@ func (p *Plane) failUnresumableActiveAssignment(ctx context.Context, assignment 
 		EventType:    assignmentcontract.EventAssignmentFailed,
 		Message:      "recovery requires provider session id; refusing fresh start",
 		Metadata: map[string]string{
-			recoveryMetadataKey: recoveryFreshStartCode,
+			metadatakeys.AssignmentRecovery.String(): assignmentcontract.RecoveryFreshStartRefused.String(),
 		},
 	})
 	return err

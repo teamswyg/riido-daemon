@@ -7,6 +7,7 @@ import (
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+	"github.com/teamswyg/riido-contracts/metadatakeys"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 )
 
@@ -121,7 +122,7 @@ func TestPlaneFailsActiveAssignmentWithoutSessionAfterLocalStateLoss(t *testing.
 	event := fake.events[0]
 	if event.EventType != assignmentcontract.EventAssignmentFailed ||
 		event.State != assignmentcontract.AssignmentFailed ||
-		event.Metadata[recoveryMetadataKey] != recoveryFreshStartCode {
+		event.Metadata[metadatakeys.AssignmentRecovery.String()] != assignmentcontract.RecoveryFreshStartRefused.String() {
 		t.Fatalf("recovery failure event = %+v", event)
 	}
 	if !strings.Contains(event.Message, "refusing fresh start") {
