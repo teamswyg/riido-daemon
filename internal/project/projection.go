@@ -5,15 +5,6 @@
 // shape Riido can use for project/task orchestration.
 package project
 
-type RepositoryHealth string
-
-const (
-	RepositoryReady          RepositoryHealth = "ready"
-	RepositoryMissingLocal   RepositoryHealth = "missing-local"
-	RepositoryMissingGit     RepositoryHealth = "missing-git"
-	RepositoryRemoteMismatch RepositoryHealth = "remote-mismatch"
-)
-
 // WorkspaceProjection is a deterministic view of the Mac mini control-plane
 // state that Riido can consume without knowing mwsd's raw response envelopes.
 type WorkspaceProjection struct {
@@ -52,65 +43,4 @@ func (p WorkspaceProjection) Ready() bool {
 		}
 	}
 	return true
-}
-
-type Project struct {
-	ID            string           `json:"id"`
-	Owner         string           `json:"owner"`
-	Visibility    string           `json:"visibility"`
-	SSOTScope     string           `json:"ssot_scope"`
-	LocalPath     string           `json:"local_path"`
-	Remote        string           `json:"remote"`
-	Role          string           `json:"role"`
-	Consumes      []string         `json:"consumes"`
-	Health        RepositoryHealth `json:"health"`
-	LocalPresent  bool             `json:"local_present"`
-	GitPresent    bool             `json:"git_present"`
-	RemoteMatches bool             `json:"remote_matches"`
-}
-
-type ProviderCandidate struct {
-	ID               string `json:"id"`
-	SourceWorkflow   string `json:"source_workflow"`
-	Available        bool   `json:"available"`
-	ApprovalRequired bool   `json:"approval_required"`
-}
-
-type NextAction struct {
-	Direction             string `json:"direction"`
-	CommandSurface        string `json:"command_surface"`
-	Reason                string `json:"reason"`
-	RequiresHumanApproval bool   `json:"requires_human_approval"`
-}
-
-type ProviderRunSummary struct {
-	ID        string `json:"id"`
-	Direction string `json:"direction"`
-	Source    string `json:"source"`
-	Provider  string `json:"provider"`
-	Command   string `json:"command"`
-	Result    string `json:"result"`
-}
-
-// DocumentTaskLink is the first deterministic bridge from document SSOT to
-// Riido task identity. It is not yet a persisted task row; it is the stable
-// source mapping the future task store can consume.
-type DocumentTaskLink struct {
-	TaskID                 string `json:"task_id"`
-	DocumentID             string `json:"document_id"`
-	DocumentPath           string `json:"document_path"`
-	Title                  string `json:"title"`
-	Status                 string `json:"status"`
-	Owner                  string `json:"owner"`
-	ProjectID              string `json:"project_id"`
-	RecommendedProvider    string `json:"recommended_provider"`
-	RecommendedDecisionLLM string `json:"recommended_decision_llm"`
-	RequiresHumanApproval  bool   `json:"requires_human_approval"`
-	HarnessNextDirection   string `json:"harness_next_direction"`
-}
-
-type ProjectionDiagnostic struct {
-	Severity string `json:"severity"`
-	Code     string `json:"code"`
-	Message  string `json:"message"`
 }
