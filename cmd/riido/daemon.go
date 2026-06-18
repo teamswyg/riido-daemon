@@ -79,6 +79,10 @@ func runDaemonWithLifecycle(ctx lifecycle.Context, args []string) error {
 		printUsage()
 		return daemonErrorf(ErrDaemonUsage, "run", "missing daemon subcommand")
 	}
+	if isHelpArg(args[0]) {
+		printUsage()
+		return nil
+	}
 	switch daemonCommand(args[0]) {
 	case daemonCommandStart:
 		return runDaemonStart(ctx, args[1:])
@@ -142,7 +146,7 @@ func parseStartFlags(args []string) (startFlags, error) {
 			out.lockFile = args[i]
 		case "--help", "-h":
 			printUsage()
-			return out, nil
+			return out, errCLIHelp
 		default:
 			return out, daemonErrorf(ErrDaemonUsage, "start.parse-flags", "unknown argument: %s", args[i])
 		}
@@ -152,6 +156,9 @@ func parseStartFlags(args []string) (startFlags, error) {
 
 func runDaemonStart(ctx lifecycle.Context, args []string) error {
 	flags, err := parseStartFlags(args)
+	if isCLIHelp(err) {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
