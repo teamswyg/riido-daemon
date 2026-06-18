@@ -2,6 +2,8 @@ package session
 
 import (
 	"context"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -45,7 +47,7 @@ func protocolDriverExitHandler(
 ) ([]agentbridge.Event, error) {
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventError,
-		Err:  "driver: 1 pending request cancelled due to process exit code " + itoa(status.Code),
+		Err:  "driver: 1 pending request cancelled due to process exit code " + strconv.Itoa(status.Code),
 	}}, nil
 }
 
@@ -53,7 +55,7 @@ func watchDriverError(sess *Session) <-chan struct{} {
 	gotDriverError := make(chan struct{}, 1)
 	go func() {
 		for ev := range sess.Events() {
-			if ev.Kind == agentbridge.EventError && bytesContain([]byte(ev.Err), "driver:") {
+			if ev.Kind == agentbridge.EventError && strings.Contains(ev.Err, "driver:") {
 				gotDriverError <- struct{}{}
 				return
 			}

@@ -3,6 +3,7 @@ package session
 import (
 	"context"
 	"errors"
+	"strings"
 	"testing"
 	"time"
 
@@ -41,7 +42,7 @@ func TestSessionProtocolDriverOnStartErrorTerminatesFailed(t *testing.T) {
 		if res.Status != agentbridge.ResultFailed {
 			t.Fatalf("status: %s", res.Status)
 		}
-		if res.Error == "" || !bytesContain([]byte(res.Error), "init handshake failed") {
+		if res.Error == "" || !strings.Contains(res.Error, "init handshake failed") {
 			t.Fatalf("result error: %q", res.Error)
 		}
 	case <-time.After(2 * time.Second):
@@ -54,41 +55,4 @@ func TestSessionProtocolDriverOnStartErrorTerminatesFailed(t *testing.T) {
 		defer func() { _ = recover() }()
 		running.EmitExit(0, nil)
 	}()
-}
-
-// --- helpers ---
-
-func bytesContain(b []byte, sub string) bool {
-	if len(sub) > len(b) {
-		return false
-	}
-	for i := 0; i+len(sub) <= len(b); i++ {
-		if string(b[i:i+len(sub)]) == sub {
-			return true
-		}
-	}
-	return false
-}
-
-func itoa(n int) string {
-	if n == 0 {
-		return "0"
-	}
-	neg := false
-	if n < 0 {
-		neg = true
-		n = -n
-	}
-	var buf [20]byte
-	i := len(buf)
-	for n > 0 {
-		i--
-		buf[i] = byte('0' + n%10)
-		n /= 10
-	}
-	if neg {
-		i--
-		buf[i] = '-'
-	}
-	return string(buf[i:])
 }
