@@ -16,6 +16,26 @@ func recountCommandReceipts(db *taskdb.TaskDB) {
 	}
 }
 
+func recountTransitions(db *taskdb.TaskDB) {
+	counts := make(map[string]int, len(db.Tasks))
+	for _, transition := range db.Transitions {
+		counts[transition.TaskID]++
+	}
+	for index := range db.Tasks {
+		db.Tasks[index].TransitionCount = counts[db.Tasks[index].ID]
+	}
+}
+
+func recountEvidence(db *taskdb.TaskDB) {
+	counts := make(map[string]int, len(db.Tasks))
+	for _, evidence := range db.Evidence {
+		counts[evidence.TaskID]++
+	}
+	for index := range db.Tasks {
+		db.Tasks[index].EvidenceCount = counts[db.Tasks[index].ID]
+	}
+}
+
 func hasTransition(transitions []taskdb.TaskTransitionRecord, id string) bool {
 	for _, transition := range transitions {
 		if transition.ID == id {
