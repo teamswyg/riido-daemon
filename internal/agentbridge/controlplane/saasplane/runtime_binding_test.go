@@ -217,6 +217,55 @@ func TestPlaneCachesDynamicAgentBindingsAcrossClaimWave(t *testing.T) {
 	}
 }
 
+func TestPlaneLongPollsOnlyOneDynamicCandidatePerRuntime(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.deviceID = "device-1"
+	fake.deviceSecret = "rdev-secret"
+	fake.bindings = []assignmentcontract.AgentRuntimeBinding{
+		{
+			AgentID:         "agent-riido-codex",
+			DaemonID:        "daemon-1",
+			DeviceID:        "device-1",
+			RuntimeID:       "daemon-1:codex",
+			RuntimeProvider: "codex",
+		},
+		{
+			AgentID:         "agent-youngsil-codex",
+			DaemonID:        "daemon-1",
+			DeviceID:        "device-1",
+			RuntimeID:       "daemon-1:codex",
+			RuntimeProvider: "codex",
+		},
+	}
+	plane, err := New(Config{
+		BaseURL:      fake.URL(),
+		DaemonID:     "daemon-1",
+		DeviceID:     "device-1",
+		DeviceSecret: "rdev-secret",
+		LongPollWait: 2500 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("New: %v", err)
+	}
+	defer plane.Close()
+
+	req, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil {
+		t.Fatalf("ClaimTask: %v", err)
+	}
+	if req != nil {
+		t.Fatalf("empty queue should not claim task: %+v", req)
+	}
+	riidoPolls := fake.pollRequestsFor("agent-riido-codex")
+	youngsilPolls := fake.pollRequestsFor("agent-youngsil-codex")
+	if len(riidoPolls) != 2 || len(youngsilPolls) != 1 {
+		t.Fatalf("poll requests riido=%+v youngsil=%+v", riidoPolls, youngsilPolls)
+	}
+	if riidoPolls[0].WaitMs != 0 || riidoPolls[1].WaitMs != 2500 || youngsilPolls[0].WaitMs != 0 {
+		t.Fatalf("unexpected wait_ms riido=%+v youngsil=%+v", riidoPolls, youngsilPolls)
+	}
+}
+
 func TestPlaneCachesEmptyDynamicAgentBindingsAcrossClaimWave(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	fake.deviceID = "device-1"

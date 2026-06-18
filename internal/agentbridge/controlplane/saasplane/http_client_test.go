@@ -289,7 +289,7 @@ func TestPlaneSendsLongPollWaitMsAndExtendsRequestTimeout(t *testing.T) {
 	}
 }
 
-func TestPlaneLongPollsStaticCandidatesConcurrently(t *testing.T) {
+func TestPlaneShortPollsAllCandidatesThenLongPollsOne(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	plane, err := New(Config{
 		BaseURL:  fake.URL(),
@@ -315,10 +315,10 @@ func TestPlaneLongPollsStaticCandidatesConcurrently(t *testing.T) {
 	}
 	agentA := fake.pollRequestsFor("agent-a")
 	agentB := fake.pollRequestsFor("agent-b")
-	if len(agentA) != 1 || len(agentB) != 1 {
+	if len(agentA) != 2 || len(agentB) != 1 {
 		t.Fatalf("poll requests agent-a=%+v agent-b=%+v", agentA, agentB)
 	}
-	if agentA[0].WaitMs != 2500 || agentB[0].WaitMs != 2500 {
+	if agentA[0].WaitMs != 0 || agentB[0].WaitMs != 0 || agentA[1].WaitMs != 2500 {
 		t.Fatalf("unexpected wait_ms distribution agent-a=%+v agent-b=%+v", agentA, agentB)
 	}
 }
