@@ -12,8 +12,6 @@
 package codex
 
 import (
-	"strings"
-
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
 	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -31,46 +29,6 @@ const (
 // adapter's JSON-RPC-over-stdio contract.
 func BlockedArgs() []string {
 	return providercap.ProtocolCriticalArgs(providercap.ProtocolCodexAppServer)
-}
-
-// UnsafeBypassArgs are provider-native approval-bypass flags covered by
-// docs/20-domain/security.md §5. The daemon does not expose an allow path for
-// these free-form CustomArgs. Boolean equals-forms such as --yolo=true are the
-// same unsafe surface.
-//
-// Codex `--sandbox danger-full-access` is deliberately not in this list: it is
-// the daemon-owned provider full-access runtime envelope, not a caller-owned
-// bypass flag.
-func UnsafeBypassArgs() []string {
-	return []string{
-		"--yolo",
-		"--dangerously-bypass-approvals-and-sandbox",
-	}
-}
-
-// SandboxOverrideArgs are Codex sandbox-selection flags. The daemon owns the
-// provider trust envelope, so caller CustomArgs may not override it.
-func SandboxOverrideArgs() []string {
-	return []string{"--sandbox", "-s"}
-}
-
-// SecurityCriticalArgs are Codex app-server flags that can rewrite the
-// daemon-owned launch/trust shape. They are distinct from protocol-critical
-// args: --listen protects transport shape, while these protect C4/C7 runtime
-// policy decisions from caller-provided config overlays.
-func SecurityCriticalArgs() []string {
-	return []string{
-		"-c",
-		"--config",
-		"--enable",
-		"--disable",
-	}
-}
-
-// StartOptions carries Codex-specific knobs.
-type StartOptions struct {
-	// Executable overrides the binary path. Falls back to DefaultExecutable.
-	Executable string
 }
 
 // BuildStart turns an agentbridge.StartRequest + Codex options into a
@@ -103,49 +61,4 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 		StdinMode:   agentbridge.StdinPipe,
 		DroppedArgs: dropped,
 	}, nil
-}
-
-func filterCustomArgs(custom []string) (kept, dropped []string) {
-	kept, dropped = agentbridge.FilterBlockedArgs(custom, BlockedArgs())
-	for _, rule := range []customArgBlockRule{
-		{names: SecurityCriticalArgs(), dropsFollowingValue: true},
-		{names: SandboxOverrideArgs(), dropsFollowingValue: true},
-		{names: UnsafeBypassArgs()},
-	} {
-		kept, dropped = filterCustomArgsByRule(kept, dropped, rule)
-	}
-	return kept, dropped
-}
-
-type customArgBlockRule struct {
-	names               []string
-	dropsFollowingValue bool
-}
-
-func filterCustomArgsByRule(custom, dropped []string, rule customArgBlockRule) (kept, allDropped []string) {
-	blocked := make(map[string]struct{}, len(rule.names))
-	for _, name := range rule.names {
-		blocked[name] = struct{}{}
-	}
-
-	allDropped = append(allDropped, dropped...)
-	for i := 0; i < len(custom); i++ {
-		arg := custom[i]
-		if _, isBlocked := blocked[arg]; isBlocked {
-			allDropped = append(allDropped, arg)
-			if rule.dropsFollowingValue && i+1 < len(custom) {
-				allDropped = append(allDropped, custom[i+1])
-				i++
-			}
-			continue
-		}
-		if eq := strings.IndexByte(arg, '='); eq > 0 {
-			if _, isBlocked := blocked[arg[:eq]]; isBlocked {
-				allDropped = append(allDropped, arg)
-				continue
-			}
-		}
-		kept = append(kept, arg)
-	}
-	return kept, allDropped
 }
