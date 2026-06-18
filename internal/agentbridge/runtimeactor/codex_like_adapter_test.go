@@ -34,3 +34,7 @@ func (codexLikeAdapter) BlockedArgs() []string { return nil }
 func (codexLikeAdapter) NewProtocolDriver(_ agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	return &codexLikeDriver{pending: map[int64]string{}}, nil
 }
+
+// Compile-time guarantee: the test-only adapter satisfies the optional
+// interface RuntimeActor will probe for.
+var _ agentbridge.ProtocolDriverProvider = codexLikeAdapter{}
