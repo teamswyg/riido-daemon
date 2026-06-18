@@ -34,3 +34,17 @@ func (s *runtimeRoutingSource) DeregisterRuntime(_ context.Context, runtimeID st
 func (s *runtimeRoutingSource) Heartbeat(_ context.Context, _ controlplane.RuntimeHeartbeat) error {
 	return nil
 }
+
+func (s *runtimeRoutingSource) ClaimTask(_ context.Context, runtimeID string) (*bridge.TaskRequest, error) {
+	queue := s.claims[runtimeID]
+	if len(queue) == 0 {
+		return nil, nil
+	}
+	req := queue[0]
+	s.claims[runtimeID] = queue[1:]
+	return &req, nil
+}
+
+func (s *runtimeRoutingSource) WatchCancellation(_ context.Context, _ string) (<-chan error, error) {
+	return make(chan error), nil
+}
