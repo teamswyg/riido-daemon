@@ -38,6 +38,24 @@ func completeFakeProcess(running *process.FakeRunning) {
 	}()
 }
 
+func expectProcessStarted(t *testing.T, running *process.FakeRunning, msg string) {
+	t.Helper()
+	select {
+	case <-running.StartedRecv():
+	case <-time.After(2 * time.Second):
+		t.Fatal(msg)
+	}
+}
+
+func expectProcessKilled(t *testing.T, running *process.FakeRunning, msg string) {
+	t.Helper()
+	select {
+	case <-running.KillRecv():
+	case <-time.After(2 * time.Second):
+		t.Fatal(msg)
+	}
+}
+
 func assertProcessDoesNotStart(t *testing.T, running *process.FakeRunning, msg string) {
 	t.Helper()
 	select {
