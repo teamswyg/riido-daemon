@@ -2,6 +2,7 @@ package session
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -27,7 +28,7 @@ func TestSessionCallsProtocolDriverOnStart(t *testing.T) {
 
 	select {
 	case b := <-running.StdinRecv():
-		if !bytesContain(b, "initialize") {
+		if !strings.Contains(string(b), "initialize") {
 			t.Fatalf("OnStart stdin: %q", b)
 		}
 	case <-time.After(time.Second):
