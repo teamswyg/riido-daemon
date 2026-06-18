@@ -2,57 +2,34 @@
 
 package workdir
 
-import "strings"
-
 const (
 	NativeConfigPlanSchemaVersion     = "{{ .SchemaVersion }}"
 	NativeConfigManifestSchemaVersion = "{{ .ManifestSchemaVersion }}"
 	NativeConfigManifestPath          = "{{ .Default.ManifestFile }}"
 )
 
-var defaultProviderConfigPlan = ProviderNativeConfigPlan{
-	ProviderKind:           {{ json .Default.ProviderKind }},
-	PrimaryInstructionFile: {{ json .Default.PrimaryInstructionFile }},
-	ManifestFile:           {{ json .Default.ManifestFile }},
-	HookMode:               {{ json .Default.HookMode }},
-	ConfigHomeDir:          {{ json .Default.ConfigHomeDir }},
-	ProviderSettingsFiles:  {{ goStringSlice .Default.ProviderSettingsFiles }},
-	HookFiles:              {{ goStringSlice .Default.HookFiles }},
-	ExtraFiles:             {{ goStringSlice .Default.ExtraFiles }},
-}
+var defaultProviderConfigPlan = providerNativeConfigPlan(
+	{{ json .Default.ProviderKind }},
+	{{ json .Default.PrimaryInstructionFile }},
+	{{ json .Default.ManifestFile }},
+	{{ json .Default.HookMode }},
+	{{ json .Default.ConfigHomeDir }},
+	{{ goStringSlice .Default.ProviderSettingsFiles }},
+	{{ goStringSlice .Default.HookFiles }},
+	{{ goStringSlice .Default.ExtraFiles }},
+)
 
 var providerConfigPlans = map[string]ProviderNativeConfigPlan{
 {{- range .Providers }}
-	{{ json .ProviderKind }}: {
-		ProviderKind:           {{ json .ProviderKind }},
-		PrimaryInstructionFile: {{ json .PrimaryInstructionFile }},
-		ManifestFile:           {{ json .ManifestFile }},
-		HookMode:               {{ json .HookMode }},
-		ConfigHomeDir:          {{ json .ConfigHomeDir }},
-		ProviderSettingsFiles:  {{ goStringSlice .ProviderSettingsFiles }},
-		HookFiles:              {{ goStringSlice .HookFiles }},
-		ExtraFiles:             {{ goStringSlice .ExtraFiles }},
-	},
+	{{ json .ProviderKind }}: providerNativeConfigPlan(
+		{{ json .ProviderKind }},
+		{{ json .PrimaryInstructionFile }},
+		{{ json .ManifestFile }},
+		{{ json .HookMode }},
+		{{ json .ConfigHomeDir }},
+		{{ goStringSlice .ProviderSettingsFiles }},
+		{{ goStringSlice .HookFiles }},
+		{{ goStringSlice .ExtraFiles }},
+	),
 {{- end }}
-}
-
-// ProviderConfigPlan returns the provider-native config files currently
-// materialized by C6. Unknown providers fall back to the generic AGENTS.md
-// primary instruction file.
-func ProviderConfigPlan(provider string) ProviderNativeConfigPlan {
-	provider = strings.TrimSpace(strings.ToLower(provider))
-	if plan, ok := providerConfigPlans[provider]; ok {
-		return cloneProviderNativeConfigPlan(plan)
-	}
-	plan := cloneProviderNativeConfigPlan(defaultProviderConfigPlan)
-	plan.ProviderKind = provider
-	return plan
-}
-
-func cloneProviderNativeConfigPlan(in ProviderNativeConfigPlan) ProviderNativeConfigPlan {
-	out := in
-	out.ProviderSettingsFiles = append([]string(nil), in.ProviderSettingsFiles...)
-	out.HookFiles = append([]string(nil), in.HookFiles...)
-	out.ExtraFiles = append([]string(nil), in.ExtraFiles...)
-	return out
 }
