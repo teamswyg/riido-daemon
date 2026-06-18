@@ -2,95 +2,72 @@
 
 package workdir
 
-import "strings"
-
 const (
 	NativeConfigPlanSchemaVersion     = "riido-native-config-plan.v1"
 	NativeConfigManifestSchemaVersion = "riido-native-config-manifest.v1"
 	NativeConfigManifestPath          = ".riido/native-config-manifest.json"
 )
 
-var defaultProviderConfigPlan = ProviderNativeConfigPlan{
-	ProviderKind:           "",
-	PrimaryInstructionFile: "AGENTS.md",
-	ManifestFile:           ".riido/native-config-manifest.json",
-	HookMode:               "instruction-only",
-	ConfigHomeDir:          "",
-	ProviderSettingsFiles:  nil,
-	HookFiles:              nil,
-	ExtraFiles:             nil,
-}
+var defaultProviderConfigPlan = providerNativeConfigPlan(
+	"",
+	"AGENTS.md",
+	".riido/native-config-manifest.json",
+	"instruction-only",
+	"",
+	nil,
+	nil,
+	nil,
+)
 
 var providerConfigPlans = map[string]ProviderNativeConfigPlan{
-	"claude": {
-		ProviderKind:           "claude",
-		PrimaryInstructionFile: "CLAUDE.md",
-		ManifestFile:           ".riido/native-config-manifest.json",
-		HookMode:               "claude-command-hooks",
-		ConfigHomeDir:          "",
-		ProviderSettingsFiles:  []string{".claude/settings.json"},
-		HookFiles:              []string{".riido/hooks/claude-audit-hook.sh"},
-		ExtraFiles:             nil,
-	},
-	"codex": {
-		ProviderKind:           "codex",
-		PrimaryInstructionFile: "AGENTS.md",
-		ManifestFile:           ".riido/native-config-manifest.json",
-		HookMode:               "instruction-only",
-		ConfigHomeDir:          "",
-		ProviderSettingsFiles:  nil,
-		HookFiles:              nil,
-		ExtraFiles:             nil,
-	},
-	"cursor": {
-		ProviderKind:           "cursor",
-		PrimaryInstructionFile: "AGENTS.md",
-		ManifestFile:           ".riido/native-config-manifest.json",
-		HookMode:               "instruction-only",
-		ConfigHomeDir:          "",
-		ProviderSettingsFiles:  nil,
-		HookFiles:              nil,
-		ExtraFiles:             nil,
-	},
-	"gemini": {
-		ProviderKind:           "gemini",
-		PrimaryInstructionFile: "GEMINI.md",
-		ManifestFile:           ".riido/native-config-manifest.json",
-		HookMode:               "instruction-only",
-		ConfigHomeDir:          "",
-		ProviderSettingsFiles:  nil,
-		HookFiles:              nil,
-		ExtraFiles:             nil,
-	},
-	"openclaw": {
-		ProviderKind:           "openclaw",
-		PrimaryInstructionFile: "AGENTS.md",
-		ManifestFile:           ".riido/native-config-manifest.json",
-		HookMode:               "instruction-only",
-		ConfigHomeDir:          "",
-		ProviderSettingsFiles:  nil,
-		HookFiles:              nil,
-		ExtraFiles:             nil,
-	},
-}
-
-// ProviderConfigPlan returns the provider-native config files currently
-// materialized by C6. Unknown providers fall back to the generic AGENTS.md
-// primary instruction file.
-func ProviderConfigPlan(provider string) ProviderNativeConfigPlan {
-	provider = strings.TrimSpace(strings.ToLower(provider))
-	if plan, ok := providerConfigPlans[provider]; ok {
-		return cloneProviderNativeConfigPlan(plan)
-	}
-	plan := cloneProviderNativeConfigPlan(defaultProviderConfigPlan)
-	plan.ProviderKind = provider
-	return plan
-}
-
-func cloneProviderNativeConfigPlan(in ProviderNativeConfigPlan) ProviderNativeConfigPlan {
-	out := in
-	out.ProviderSettingsFiles = append([]string(nil), in.ProviderSettingsFiles...)
-	out.HookFiles = append([]string(nil), in.HookFiles...)
-	out.ExtraFiles = append([]string(nil), in.ExtraFiles...)
-	return out
+	"claude": providerNativeConfigPlan(
+		"claude",
+		"CLAUDE.md",
+		".riido/native-config-manifest.json",
+		"claude-command-hooks",
+		"",
+		[]string{".claude/settings.json"},
+		[]string{".riido/hooks/claude-audit-hook.sh"},
+		nil,
+	),
+	"codex": providerNativeConfigPlan(
+		"codex",
+		"AGENTS.md",
+		".riido/native-config-manifest.json",
+		"instruction-only",
+		"",
+		nil,
+		nil,
+		nil,
+	),
+	"cursor": providerNativeConfigPlan(
+		"cursor",
+		"AGENTS.md",
+		".riido/native-config-manifest.json",
+		"instruction-only",
+		"",
+		nil,
+		nil,
+		nil,
+	),
+	"gemini": providerNativeConfigPlan(
+		"gemini",
+		"GEMINI.md",
+		".riido/native-config-manifest.json",
+		"instruction-only",
+		"",
+		nil,
+		nil,
+		nil,
+	),
+	"openclaw": providerNativeConfigPlan(
+		"openclaw",
+		"AGENTS.md",
+		".riido/native-config-manifest.json",
+		"instruction-only",
+		"",
+		nil,
+		nil,
+		nil,
+	),
 }
