@@ -1,24 +1,6 @@
-// Package openclaw owns the C4 run-scope adapter for the OpenClaw CLI.
-//
-// Spawn shape:
-//
-//	openclaw agent --local --json --session-id <id> --message <prompt>
-//
-// OpenClaw is the volatile one: flag sets can change between versions, so:
-//   - We require an explicit session id. StartOptions.SessionID wins;
-//     otherwise ResolveSessionID maps provider-neutral ResumeSessionID
-//     or TaskID to --session-id. Empty fallback is never allowed.
-//   - When the caller passes a SystemPrompt, we inline it into --message
-//     because not every OpenClaw build supports --system-prompt.
-//   - Model is treated as an agent/profile name, not an LLM identifier.
 package openclaw
 
 import (
-	"crypto/sha256"
-	"errors"
-	"fmt"
-	"strings"
-
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
 	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -61,118 +43,14 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 		exe = DefaultExecutable
 	}
 
-	message := buildMessage(req.SystemPrompt, req.Prompt)
-
-	args := []string{
-		"agent",
-		"--local",
-		"--json",
-		"--session-id", sessionID,
-	}
-	if req.Model != "" {
-		args = append(args, "--model", req.Model)
-	}
-	args = append(args, "--message", message)
-
-	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, BlockedArgs())
-	args = append(args, kept...)
-
-	env := make([]string, 0, len(req.Env))
-	for k, v := range req.Env {
-		env = append(env, fmt.Sprintf("%s=%s", k, v))
-	}
+	args, dropped := buildCommandArgs(req, sessionID)
 
 	return agentbridge.StartCommand{
 		Executable:  exe,
 		Args:        args,
-		Env:         env,
+		Env:         buildEnv(req.Env),
 		Dir:         req.Cwd,
 		StdinMode:   agentbridge.StdinNone,
 		DroppedArgs: dropped,
 	}, nil
-}
-
-// ResolveSessionID maps the provider-neutral start request onto
-// OpenClaw's mandatory --session-id. ResumeSessionID preserves a
-// provider session, while TaskID gives first-run tasks a deterministic,
-// provider-safe session id without inventing provider state.
-func ResolveSessionID(req agentbridge.StartRequest) (string, error) {
-	if strings.TrimSpace(req.ResumeSessionID) != "" {
-		return req.ResumeSessionID, nil
-	}
-	if strings.TrimSpace(req.TaskID) != "" {
-		return sessionIDFromTaskID(req.TaskID), nil
-	}
-	return "", errors.New("openclaw: SessionID is required (set ResumeSessionID or TaskID)")
-}
-
-func sessionIDFromTaskID(taskID string) string {
-	taskID = strings.TrimSpace(taskID)
-	if isOpenClawSessionID(taskID) {
-		return taskID
-	}
-
-	var b strings.Builder
-	lastDash := false
-	for _, r := range taskID {
-		if isOpenClawSessionRune(r) {
-			b.WriteRune(r)
-			lastDash = false
-			continue
-		}
-		if !lastDash {
-			b.WriteByte('-')
-			lastDash = true
-		}
-	}
-	slug := strings.Trim(b.String(), "-_")
-	if slug == "" {
-		slug = "task"
-	}
-	sum := sha256.Sum256([]byte(taskID))
-	hash := fmt.Sprintf("%x", sum[:6])
-	const maxSessionIDLen = 80
-	maxSlugLen := maxSessionIDLen - len("riido--") - len(hash)
-	if len(slug) > maxSlugLen {
-		slug = strings.Trim(slug[:maxSlugLen], "-_")
-		if slug == "" {
-			slug = "task"
-		}
-	}
-	return fmt.Sprintf("riido-%s-%s", slug, hash)
-}
-
-func isOpenClawSessionID(s string) bool {
-	if s == "" {
-		return false
-	}
-	for i, r := range s {
-		if i == 0 && !isOpenClawSessionStartRune(r) {
-			return false
-		}
-		if !isOpenClawSessionRune(r) {
-			return false
-		}
-	}
-	return true
-}
-
-func isOpenClawSessionStartRune(r rune) bool {
-	return (r >= 'a' && r <= 'z') || (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9')
-}
-
-func isOpenClawSessionRune(r rune) bool {
-	return isOpenClawSessionStartRune(r) || r == '-' || r == '_'
-}
-
-// buildMessage inlines the system prompt above the user prompt when both
-// are present, separated by a blank line. When system prompt is empty,
-// the user prompt is returned verbatim.
-func buildMessage(systemPrompt, userPrompt string) string {
-	system := strings.TrimSpace(systemPrompt)
-	user := strings.TrimSpace(userPrompt)
-	if system == "" {
-		return userPrompt
-	}
-	return system + "\n\n" + user
 }
