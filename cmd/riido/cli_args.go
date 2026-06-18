@@ -12,6 +12,10 @@ func isCLIHelp(err error) bool {
 	return errors.Is(err, errCLIHelp)
 }
 
+func isHelpArg(arg string) bool {
+	return arg == "--help" || arg == "-h"
+}
+
 func cliRequiredArg(args []string, index *int, flag, noun string) (string, error) {
 	*index++
 	if *index >= len(args) {

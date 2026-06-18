@@ -15,48 +15,50 @@ import (
 )
 
 func runDaemonStatus(args []string) error {
-	sock, err := requireSocketFlag(args)
-	if err != nil {
-		return err
-	}
-	return daemonCall(sock, daemonMethodStatus)
+	return runDaemonSocketCommand(args, daemonMethodStatus)
 }
 
 func runDaemonHealth(args []string) error {
-	sock, err := requireSocketFlag(args)
-	if err != nil {
-		return err
-	}
-	return daemonCall(sock, daemonMethodHealth)
+	return runDaemonSocketCommand(args, daemonMethodHealth)
 }
 
 func runDaemonReady(args []string) error {
-	sock, err := requireSocketFlag(args)
-	if err != nil {
-		return err
-	}
-	return daemonCall(sock, daemonMethodReady)
+	return runDaemonSocketCommand(args, daemonMethodReady)
 }
 
 func runDaemonMetrics(args []string) error {
+	return runDaemonSocketCommand(args, daemonMethodMetrics)
+}
+
+func runDaemonSocketCommand(args []string, method daemonMethod) error {
 	sock, err := requireSocketFlag(args)
+	if isCLIHelp(err) {
+		return nil
+	}
 	if err != nil {
 		return err
 	}
-	return daemonCall(sock, daemonMethodMetrics)
+	return daemonCall(sock, method)
 }
 
 func requireSocketFlag(args []string) (string, error) {
-	for i := 0; i < len(args); i++ {
-		if args[i] == "--socket" {
-			i++
-			if i >= len(args) {
-				return "", daemonErrorf(ErrDaemonUsage, "ipc.parse-socket", "--socket requires a path")
-			}
-			return args[i], nil
-		}
+	if len(args) == 0 {
+		return defaultAgentDaemonSocket()
 	}
-	return defaultAgentDaemonSocket()
+	if isHelpArg(args[0]) {
+		printUsage()
+		return "", errCLIHelp
+	}
+	if args[0] != "--socket" {
+		return "", daemonErrorf(ErrDaemonUsage, "ipc.parse-socket", "unknown argument: %s", args[0])
+	}
+	if len(args) < 2 {
+		return "", daemonErrorf(ErrDaemonUsage, "ipc.parse-socket", "--socket requires a path")
+	}
+	if len(args) > 2 {
+		return "", daemonErrorf(ErrDaemonUsage, "ipc.parse-socket", "unknown argument: %s", args[2])
+	}
+	return args[1], nil
 }
 
 func defaultAgentDaemonSocket() (string, error) {
