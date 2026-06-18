@@ -2,14 +2,11 @@ package runtimeactor
 
 import (
 	"context"
-	"encoding/json"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
-	"github.com/teamswyg/riido-daemon/internal/process"
 )
 
 // TestRuntimeActorRunsCodexWithProtocolDriver is the M-9 integration
@@ -66,62 +63,3 @@ func TestRuntimeActorRunsCodexWithProtocolDriver(t *testing.T) {
 	}
 	t.Fatal("RunningSessions never returned to 0")
 }
-
-// driveCodexServer simulates the codex app-server: it reads stdin
-// frames and emits the matching JSON-RPC responses on stdout.
-func driveCodexServer(t *testing.T, r *process.FakeRunning) {
-	t.Helper()
-	go func() {
-		seenInitialize := false
-		seenThread := false
-		seenTurn := false
-		for {
-			select {
-			case frame, ok := <-r.StdinRecv():
-				if !ok {
-					return
-				}
-				s := string(frame)
-				switch {
-				case strings.Contains(s, `"method":"initialize"`):
-					seenInitialize = true
-					r.EmitStdout(jsonRPCResponse(1, map[string]any{"server": "codex-like"}))
-				case strings.Contains(s, `"method":"thread/start"`):
-					if !seenInitialize {
-						return
-					}
-					seenThread = true
-					r.EmitStdout(jsonRPCResponse(2, map[string]any{"thread_id": "th-1"}))
-				case strings.Contains(s, `"method":"turn/start"`):
-					if !seenThread {
-						return
-					}
-					seenTurn = true
-					r.EmitStdout(jsonRPCResponse(3, map[string]any{}))
-					// Then emit turn_completed notification.
-					r.EmitStdout(jsonRPCNotification("turn_completed", map[string]any{"output": "all done"}))
-				default:
-					_ = seenTurn // unused in failure paths
-				}
-			case <-time.After(3 * time.Second):
-				return
-			}
-		}
-	}()
-}
-
-func jsonRPCResponse(id int64, result map[string]any) []byte {
-	m := map[string]any{"jsonrpc": "2.0", "id": id, "result": result}
-	b, _ := json.Marshal(m)
-	return append(b, '\n')
-}
-
-func jsonRPCNotification(method string, params map[string]any) []byte {
-	m := map[string]any{"jsonrpc": "2.0", "method": method, "params": params}
-	b, _ := json.Marshal(m)
-	return append(b, '\n')
-}
-
-// Compile-time guarantee: the test-only adapter satisfies the optional
-// interface RuntimeActor will probe for.
-var _ agentbridge.ProtocolDriverProvider = codexLikeAdapter{}
