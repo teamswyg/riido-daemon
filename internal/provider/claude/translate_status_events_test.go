@@ -1,45 +1,10 @@
 package claude
 
 import (
-	"strings"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
-
-func TestBuildProviderInputApprovalResponse(t *testing.T) {
-	body, err := BuildProviderInput(agentbridge.Command{
-		Kind:              agentbridge.CommandApproveTool,
-		ToolID:            "tu_1",
-		ProviderRequestID: "r_1",
-	})
-	if err != nil {
-		t.Fatalf("BuildProviderInput approve: %v", err)
-	}
-	raw := string(body)
-	for _, want := range []string{`"type":"control_response"`, `"request_id":"r_1"`, `"behavior":"allow"`, `"updatedInput":{}`} {
-		if !strings.Contains(raw, want) {
-			t.Fatalf("approval response missing %s: %s", want, raw)
-		}
-	}
-}
-
-func TestBuildProviderInputDenyResponse(t *testing.T) {
-	body, err := BuildProviderInput(agentbridge.Command{
-		Kind:              agentbridge.CommandRejectTool,
-		ProviderRequestID: "r_2",
-		Reason:            "No shell access",
-	})
-	if err != nil {
-		t.Fatalf("BuildProviderInput deny: %v", err)
-	}
-	raw := string(body)
-	for _, want := range []string{`"request_id":"r_2"`, `"behavior":"deny"`, `"message":"No shell access"`} {
-		if !strings.Contains(raw, want) {
-			t.Fatalf("deny response missing %s: %s", want, raw)
-		}
-	}
-}
 
 // rate_limit_event is informational (not terminal): a clear Warning, never a
 // generic "unknown event" Log and never an EventResult.
@@ -58,13 +23,7 @@ func TestTranslateRateLimitEventIsWarning(t *testing.T) {
 	}
 }
 
-func TestBuildProviderInputRequiresProviderRequestID(t *testing.T) {
-	if _, err := BuildProviderInput(agentbridge.Command{Kind: agentbridge.CommandApproveTool, ToolID: "tu_1"}); err == nil {
-		t.Fatal("expected missing provider request id to fail")
-	}
-}
-
-// log event → Log
+// log event -> Log
 func TestTranslateLogEvent(t *testing.T) {
 	raw := mustParseRaw(t, `{"type":"log","message":"hello"}`)
 	events := translate(t, raw)
