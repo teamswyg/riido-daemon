@@ -1,0 +1,41 @@
+{
+  "schema_version": "riido-shutdown-authority.v1",
+  "id": "provider-runtime-cancel-interrupt-input",
+  "title": "Cancel, Interrupt, And Input",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md",
+  "workflow": ".github/workflows/shutdown-authority.yml",
+  "evidence_artifact": "shutdown-authority-evidence",
+  "sources": {
+    "levels": "pkg/lifecycle/shutdown_level.go",
+    "timeouts": "pkg/lifecycle/shutdown.go"
+  },
+  "external_signals": [
+    {"signal": "ingest calls Cancel(handle)", "action": "Provider process SIGTERM -> drain -> SIGKILL fallback. Remaining drafts drain before close."},
+    {"signal": "local daemon stop / supervisor context cancel", "action": "RunController treats in-flight provider run as cancelled, requests process cancel, records TaskCancelled transition event and best-effort WorkdirArchived, then deregisters runtime."},
+    {"signal": "ingest calls Interrupt(handle)", "action": "Provider-side interrupt message, such as Claude interrupt or Codex turn/interrupt; process remains alive."},
+    {"signal": "ingest calls ProvideInput(handle, response)", "action": "Send response through provider stdin / RPC; resulting provider output flows as drafts."},
+    {"signal": "ingest calls ResolveApproval(approvalID, decision)", "action": "Send provider approval protocol response, such as Codex app-server approval/resolved."}
+  ],
+  "levels": [
+    {"name": "none", "const": "ShutdownNone", "order": 0},
+    {"name": "graceful", "const": "ShutdownGraceful", "order": 1},
+    {"name": "forced", "const": "ShutdownForced", "order": 2}
+  ],
+  "timeouts": [
+    {"const": "DefaultGracefulShutdownTimeout", "duration": "5s"},
+    {"const": "DefaultForcedShutdownTimeout", "duration": "1s"}
+  ],
+  "consumer_requirements": [
+    {"file": "cmd/riido/daemon_ipc_request.go", "contains": "lifecycle.ParseShutdownLevel", "reason": "IPC shutdown requests parse the shared lifecycle vocabulary"},
+    {"file": "cmd/riido/daemon_supervisor_start.go", "contains": "lifecycle.DetachedDefaultShutdown", "reason": "supervisor stop uses shared default timeout policy"},
+    {"file": "internal/agentbridge/runtimeactor/stop.go", "contains": "lifecycle.NormalizeShutdownLevel", "reason": "runtime actor normalizes shutdown authority"},
+    {"file": "internal/agentbridge/supervisor/stop.go", "contains": "lifecycle.NormalizeShutdownLevel", "reason": "supervisor actor normalizes shutdown authority"},
+    {"file": "internal/agentbridge/session/process_kill.go", "contains": "lifecycle.DetachedShutdown", "reason": "provider process kill receives lifecycle timeout and authority"}
+  ],
+  "assertions": [
+    "shutdown authority vocabulary is owned by pkg/lifecycle",
+    "shutdown authority order is none < graceful < forced",
+    "default shutdown timeout policy is owned by pkg/lifecycle",
+    "daemon, supervisor, runtime actor, and session process kill consume lifecycle instead of redefining authority"
+  ]
+}

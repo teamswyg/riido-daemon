@@ -1,0 +1,40 @@
+name: shutdown-authority
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/shutdown-authority.yml"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.riido.json"
+      - "pkg/lifecycle/**"
+      - "cmd/riido/daemon_*"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/agentbridge/supervisor/**"
+      - "internal/agentbridge/session/**"
+      - "tools/shutdownauthority/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  shutdown-authority-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify shutdown authority
+        run: |
+          mkdir -p out
+          go test ./tools/shutdownauthority -count=1
+          go run ./tools/shutdownauthority \
+            -check-doc \
+            -evidence-out out/shutdown-authority-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: shutdown-authority-evidence
+          path: out/shutdown-authority-evidence.json
+          if-no-files-found: error
