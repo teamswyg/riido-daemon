@@ -13,6 +13,7 @@
     "docs/30-architecture/loop-engineering/provider-draft-mapping.riido.json",
     "docs/30-architecture/loop-engineering/terminal-result-mapping.riido.json",
     "docs/30-architecture/loop-engineering/shutdown-authority.riido.json",
+    "docs/30-architecture/loop-engineering/approval-wait-timeout.riido.json",
     "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
     "docs/30-architecture/loop-engineering/store-distribution.riido.json",
     "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",

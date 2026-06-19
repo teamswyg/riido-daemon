@@ -25,7 +25,7 @@ required_files=(
   docs/30-architecture/runtime-secret-private-evidence.riido.json
   docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md
   docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json
-  docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.riido.json docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.riido.json docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.riido.json docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json
   docs/30-architecture/figma-ai-agent-daemon-boundary.md
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -60,15 +60,12 @@ for key in "${env_keys[@]}"; do
   grep -q "$key" docs/30-architecture/config-reference.md
 done
 scripts/verify-go-dependencies.sh
-go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity ./tools/eventauthority ./tools/providerdraftmapping ./tools/terminalresultmapping ./tools/shutdownauthority -count=1
+go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity ./tools/eventauthority ./tools/providerdraftmapping ./tools/terminalresultmapping ./tools/shutdownauthority ./tools/approvaltimeout -count=1
 go run ./tools/loopevidence -check
 go run ./tools/docmap -check
-go run ./tools/repoverification -check-doc
-go run ./tools/semanticeventactivity -check-doc
-go run ./tools/eventauthority -check-doc
-go run ./tools/providerdraftmapping -check-doc
-go run ./tools/terminalresultmapping -check-doc
-go run ./tools/shutdownauthority -check-doc
+for tool in repoverification semanticeventactivity eventauthority providerdraftmapping terminalresultmapping shutdownauthority approvaltimeout; do
+  go run "./tools/$tool" -check-doc
+done
 go run ./tools/redactiondrift
 go run ./tools/providerintegrationevidence -check-doc
 go run ./tools/runtimesecretevidence -check-doc

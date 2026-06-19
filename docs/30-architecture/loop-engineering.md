@@ -147,6 +147,23 @@
   - `command`: go run ./tools/shutdownauthority -check-doc -evidence-out /tmp/shutdown-authority-evidence.json; proves shutdown authority manifest matches lifecycle source and consumers
   - `workflow`: .github/workflows/shutdown-authority.yml; proves public CI uploads shutdown authority evidence
 
+### approval-wait-timeout
+
+- Owner: `tools/approvaltimeout and approval-wait-timeout workflow`
+- Observe: Approval wait timeout ownership was prose-only while the rule spans provider draft mapping, semantic activity, session clocks, and reducer timeout behavior.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md`
+- Hypothesis: A manifest can prove approval requests map to ApprovalRequested, reset SemanticIdle, remain bounded by session timers, and reduce timeout to provider cancellation.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json`
+- Execute: Read idle-watchdog and provider-event-draft manifests, scan session timer/reducer sources, and upload approval timeout evidence.
+  - Artifacts: `tools/approvaltimeout`, `.github/workflows/approval-wait-timeout.yml`
+- Evaluate: The verifier rejects manifest drift, source ownership drift, and generated doc drift.
+  - Artifacts: `tools/approvaltimeout/run_test.go`
+- Retrospective: Approval wait timeout docs are generated while existing session/reducer code remains the implementation evidence.
+  - Artifacts: `internal/agentbridge/session/session_tool_approval_resolver.go`, `internal/agentbridge/reducer_result_events.go`
+- Evidence:
+  - `command`: go run ./tools/approvaltimeout -check-doc -evidence-out /tmp/approval-wait-timeout-evidence.json; proves approval wait timeout manifest matches related manifests and runtime sources
+  - `workflow`: .github/workflows/approval-wait-timeout.yml; proves public CI uploads approval wait timeout evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`
