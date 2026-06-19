@@ -1,0 +1,59 @@
+{
+  "schema_version": "riido-validation-evidence.v1",
+  "id": "validation-evidence",
+  "title": "Validation Evidence",
+  "generated_doc": "docs/20-domain/validation.md",
+  "workflow": ".github/workflows/validation-evidence.yml",
+  "evidence_artifact": "validation-evidence",
+  "purpose": "Prove the daemon-side validation truth source, command gate, and transition mapping without claiming task FSM or security policy ownership.",
+  "facts": [
+    {"name": "agent completion is not final completion", "summary": "Provider completed result moves task DB work to Validating, not Completed.", "source_checks": ["complete-to-validating-test", "completed-result-transition"]},
+    {"name": "daemon measured exit code is truth source", "summary": "Validation command is executed by the daemon through /bin/sh -lc and exit code maps to passed or failed.", "source_checks": ["shell-command", "exit-zero-passed", "exit-nonzero-failed", "runner-success-test", "runner-failure-test"]},
+    {"name": "deterministic gate defaults", "summary": "Default gate is deterministic-command-exit-code.v1 and default timeout is five minutes.", "source_checks": ["default-gate", "default-timeout"]},
+    {"name": "timeout is failed evidence", "summary": "Validation timeout records exit code 124 and therefore failed.", "source_checks": ["timeout-exit-code", "nonzero-result-failed"]},
+    {"name": "guarded evidence mutation", "summary": "Validation appends guarded task evidence using command id, provider, decision LLM, and approval id.", "source_checks": ["guarded-evidence-call", "approval-guard-field", "approval-required-test"]},
+    {"name": "passed transition mapping", "summary": "Passed validation from Validating appends ValidationPassed and moves to PatchReady.", "source_checks": ["passed-transition-code", "patch-ready-test"]},
+    {"name": "failed transition mapping", "summary": "Failed validation from Validating appends ValidationFailed and moves to Failed.", "source_checks": ["failed-transition-code", "failed-test"]},
+    {"name": "non-validating tasks keep state", "summary": "Validation evidence can be recorded for non-Validating tasks, but no transition is appended.", "source_checks": ["non-validating-test"]},
+    {"name": "local API uses same runner", "summary": "The validate API delegates to taskvalidation.Run and persists the resulting task DB.", "source_checks": ["api-run-call", "api-save-call", "api-validate-test", "api-context-test"]}
+  ],
+  "boundaries": [
+    {"name": "task FSM and IR catalog", "owner": "riido-contracts", "summary": "Task states and validation event vocabulary are imported contracts, not defined here."},
+    {"name": "security policy selection", "owner": "C7 Security / Policy", "summary": "Validation executes requested rules; it does not define protected paths, secret-scan policy, or diff policy."},
+    {"name": "provider runtime execution", "owner": "C4 Provider Runtime", "summary": "Validation runs deterministic commands and records evidence; provider process/session ownership stays outside C8."},
+    {"name": "final completion approval", "owner": "task lifecycle and approval policy", "summary": "PatchReady to Completed is outside validation's sole authority."}
+  ],
+  "absent_surfaces": [
+    {"name": "validation direct completed transition", "scope": ["internal/taskvalidation", "cmd/riido/task_command_validate.go", "cmd/riido/task_validate_parse.go", "cmd/riido/task_validate_output.go", "cmd/riido/task_validate_flags.go", "cmd/riido/task_validate_options.go", "cmd/riido/api_command_validate.go", "cmd/riido/api_command_validate_flags.go", "internal/riidoapi/server_validate.go"], "tokens": ["StateCompleted", "EventTaskCompleted", "Completed"], "reason": "validation must not directly mark task completion"}
+  ],
+  "source_checks": [
+    {"name": "complete-to-validating-test", "file": "internal/agentbridge/controlplane/taskdbplane/task_complete_completed_test.go", "contains": "want Validating"},
+    {"name": "completed-result-transition", "file": "internal/agentbridge/controlplane/taskdbplane/task_terminal_completed.go", "contains": "applyTransition(db, record, task.StateValidating, ir.EventRunReportedDone"},
+    {"name": "shell-command", "file": "internal/validation/execute.go", "contains": "exec.CommandContext(runCtx, \"/bin/sh\", \"-lc\", req.Command)"},
+    {"name": "exit-zero-passed", "file": "internal/validation/exit_result.go", "contains": "if exitCode == 0"},
+    {"name": "exit-nonzero-failed", "file": "internal/validation/runner_test.go", "contains": "exit 7"},
+    {"name": "runner-success-test", "file": "internal/validation/runner_test.go", "contains": "TestRunCommandRecordsSuccessfulValidation"},
+    {"name": "runner-failure-test", "file": "internal/validation/runner_test.go", "contains": "TestRunCommandRecordsFailedValidation"},
+    {"name": "default-gate", "file": "internal/validation/model.go", "contains": "DefaultGate    = \"deterministic-command-exit-code.v1\""},
+    {"name": "default-timeout", "file": "internal/validation/model.go", "contains": "DefaultTimeout = 5 * time.Minute"},
+    {"name": "timeout-exit-code", "file": "internal/validation/exit_result.go", "contains": "return 124"},
+    {"name": "nonzero-result-failed", "file": "internal/validation/exit_result.go", "contains": "return \"failed\""},
+    {"name": "guarded-evidence-call", "file": "internal/taskvalidation/run_evidence.go", "contains": "taskdb.AddGuardedTaskEvidence"},
+    {"name": "approval-guard-field", "file": "internal/taskvalidation/run_evidence.go", "contains": "ApprovalID:  req.ApprovalID"},
+    {"name": "approval-required-test", "file": "cmd/riido/task_validate_approval_test.go", "contains": "TestTaskValidateRequiresApprovalBeforeExecution"},
+    {"name": "passed-transition-code", "file": "internal/taskvalidation/transition.go", "contains": "return task.StatePatchReady, ir.EventValidationPassed"},
+    {"name": "patch-ready-test", "file": "cmd/riido/task_validate_patch_ready_test.go", "contains": "TestTaskValidateTransitionsValidatingTaskToPatchReady"},
+    {"name": "failed-transition-code", "file": "internal/taskvalidation/transition.go", "contains": "return task.StateFailed, ir.EventValidationFailed"},
+    {"name": "failed-test", "file": "cmd/riido/task_validate_failed_test.go", "contains": "TestTaskValidateTransitionsValidatingTaskToFailed"},
+    {"name": "non-validating-test", "file": "cmd/riido/task_validate_non_validating_test.go", "contains": "TestTaskValidateDoesNotTransitionNonValidatingTask"},
+    {"name": "api-run-call", "file": "internal/riidoapi/server_validate.go", "contains": "taskvalidation.Run(ctx, db, validationRunRequest(req), time.Now())"},
+    {"name": "api-save-call", "file": "internal/riidoapi/server_validate.go", "contains": "taskdb.SaveTaskDB(s.config.TaskDBPath, result.TaskDB)"},
+    {"name": "api-validate-test", "file": "internal/riidoapi/server_validate_command_test.go", "contains": "TestServerValidatesTaskAndTransitionsFromValidating"},
+    {"name": "api-context-test", "file": "internal/riidoapi/server_validation_test.go", "contains": "TestServerValidateUsesCallerContext"}
+  ],
+  "assertions": [
+    "Validation reader doc must be generated from this manifest.",
+    "Every implemented fact must point at local source evidence.",
+    "Validation must not directly claim final Completed authority."
+  ]
+}

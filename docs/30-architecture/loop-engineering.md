@@ -273,6 +273,23 @@
   - `command`: go run ./tools/saasassignment -check-doc -evidence-out /tmp/saas-assignment-source-evidence.json; proves SaaS assignment source manifest matches generated docs, source checks, and absent surface rules
   - `workflow`: .github/workflows/saas-assignment-source.yml; proves public CI uploads SaaS assignment source evidence
 
+### validation-evidence
+
+- Owner: `C8 validation`
+- Observe: Validation.md described command execution, evidence, and transitions as prose while source evidence lived in validation, taskvalidation, taskdbplane, cmd, and local API packages.
+  - Artifacts: `docs/20-domain/validation.md`
+- Hypothesis: A manifest can generate the reader doc and prove daemon-measured exit code truth, guarded evidence mutation, transition mapping, and absent direct completion authority.
+  - Artifacts: `docs/20-domain/validation.riido.json`
+- Execute: Run validationevidence to check generated docs, source checks, absent direct-completion surfaces, and compact evidence output.
+  - Artifacts: `tools/validationevidence`, `.github/workflows/validation-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source checks, unknown fact references, and validation code that directly claims Completed authority.
+  - Artifacts: `tools/validationevidence/run_test.go`
+- Retrospective: Validation knowledge becomes executable evidence instead of a manually edited C8 policy page.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/validationevidence -check-doc -evidence-out /tmp/validation-evidence.json; proves validation manifest matches generated docs, local source evidence, and absent completion authority
+  - `workflow`: .github/workflows/validation-evidence.yml; proves public CI uploads validation evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

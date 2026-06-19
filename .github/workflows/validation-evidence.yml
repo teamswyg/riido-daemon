@@ -1,0 +1,40 @@
+name: validation-evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/validation-evidence.yml"
+      - "docs/20-domain/validation.md"
+      - "docs/20-domain/validation.riido.json"
+      - "internal/validation/**"
+      - "internal/taskvalidation/**"
+      - "internal/riidoapi/**"
+      - "cmd/riido/task_validate*.go"
+      - "cmd/riido/api_command_validate*.go"
+      - "tools/validationevidence/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  validation-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify validation evidence
+        run: |
+          mkdir -p out
+          go test ./tools/validationevidence -count=1
+          go run ./tools/validationevidence \
+            -check-doc \
+            -evidence-out out/validation-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-evidence
+          path: out/validation-evidence.json
+          if-no-files-found: error

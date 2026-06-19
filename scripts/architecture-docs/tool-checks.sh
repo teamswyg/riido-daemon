@@ -24,6 +24,7 @@ tool_tests=(
   ./tools/compatibilitygate
   ./tools/runtimeupgrade
   ./tools/saasassignment
+  ./tools/validationevidence
 )
 
 doc_tools=(
@@ -39,6 +40,7 @@ doc_tools=(
   sessionlifecycle
   runtimeupgrade
   saasassignment
+  validationevidence
 )
 
 go test "${tool_tests[@]}" -count=1
