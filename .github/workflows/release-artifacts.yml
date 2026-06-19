@@ -2,36 +2,13 @@ name: release-artifacts
 
 on:
   pull_request:
-    paths:
-      - ".github/workflows/release-artifacts.yml"
-      - "scripts/install-riido-daemon.sh"
-      - "cmd/riido/**"
-      - "internal/**"
-      - "docs/20-domain/distribution-host-integration.md"
-      - "docs/20-domain/distribution-host-integration/**"
-      - "docs/30-architecture/release-artifacts.md"
-      - "docs/30-architecture/store-distribution.md"
-      - "go.mod"
-      - "go.sum"
+    paths: [".github/workflows/release-artifacts.yml", "scripts/**", "cmd/riido/**", "internal/**", "docs/20-domain/**", "docs/30-architecture/**", "go.mod", "go.sum"]
   push:
-    branches:
-      - "**"
-    tags:
-      - "v*"
-    paths:
-      - ".github/workflows/release-artifacts.yml"
-      - "scripts/install-riido-daemon.sh"
-      - "cmd/riido/**"
-      - "internal/**"
-      - "docs/20-domain/distribution-host-integration.md"
-      - "docs/20-domain/distribution-host-integration/**"
-      - "docs/30-architecture/release-artifacts.md"
-      - "docs/30-architecture/store-distribution.md"
-      - "go.mod"
-      - "go.sum"
+    branches: ["**"]
+    tags: ["v*"]
+    paths: [".github/workflows/release-artifacts.yml", "scripts/**", "cmd/riido/**", "internal/**", "docs/20-domain/**", "docs/30-architecture/**", "go.mod", "go.sum"]
 
-permissions:
-  contents: write
+permissions: { contents: write }
 
 jobs:
   build:
@@ -40,25 +17,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - goos: darwin
-            goarch: amd64
-            format: tar
-          - goos: darwin
-            goarch: arm64
-            format: tar
-          - goos: linux
-            goarch: amd64
-            format: tar
-          - goos: linux
-            goarch: arm64
-            format: tar
-          - goos: windows
-            goarch: amd64
-            format: zip
-          - goos: windows
-            goarch: arm64
-            format: zip
+        target:
+          - darwin/amd64/tar
+          - darwin/arm64/tar
+          - linux/amd64/tar
+          - linux/arm64/tar
+          - windows/amd64/zip
+          - windows/arm64/zip
     steps:
       - uses: actions/checkout@v6.0.3
 
@@ -68,13 +33,7 @@ jobs:
           cache: false
 
       - name: Verify no non-Riido Go dependencies
-        run: |
-          allowed="github.com/teamswyg/riido-contracts"
-          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
-          if [ -n "$disallowed" ]; then
-            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
-            exit 1
-          fi
+        run: scripts/verify-go-dependencies.sh
 
       - name: Test
         run: go test ./...
@@ -82,38 +41,14 @@ jobs:
       - name: Build package
         shell: bash
         env:
-          GOOS: ${{ matrix.goos }}
-          GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: "0"
-        run: |
-          set -euo pipefail
-          version="${GITHUB_REF_NAME:-pull-request}"
-          out_dir="dist/${GOOS}_${GOARCH}"
-          package_dir="$RUNNER_TEMP/package-${GOOS}-${GOARCH}"
-          mkdir -p "$out_dir" "$package_dir"
-
-          binary="riido"
-          if [ "$GOOS" = "windows" ]; then
-            binary="riido.exe"
-          fi
-
-          go build -trimpath -ldflags "-s -w" -o "$package_dir/$binary" ./cmd/riido
-          cp LICENSE NOTICE.md "$package_dir/"
-          printf '%s\n' "$version" > "$package_dir/VERSION"
-
-          if [ "${{ matrix.format }}" = "zip" ]; then
-            asset="riido-daemon_${GOOS}_${GOARCH}.zip"
-            (cd "$package_dir" && zip -qr "$GITHUB_WORKSPACE/$out_dir/$asset" .)
-          else
-            asset="riido-daemon_${GOOS}_${GOARCH}.tar.gz"
-            tar -C "$package_dir" -czf "$out_dir/$asset" .
-          fi
+        run: scripts/build-release-package.sh "${{ matrix.target }}"
 
       - name: Upload package artifact
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: riido-daemon-${{ matrix.goos }}-${{ matrix.goarch }}
-          path: dist/${{ matrix.goos }}_${{ matrix.goarch }}/*
+          name: ${{ env.RIIDO_RELEASE_ARTIFACT_NAME }}
+          path: ${{ env.RIIDO_RELEASE_ARTIFACT_PATH }}
           if-no-files-found: error
 
   release:
@@ -127,34 +62,9 @@ jobs:
           merge-multiple: true
 
       - name: Generate checksums
-        shell: bash
-        run: |
-          set -euo pipefail
-          cd dist
-          sha256sum riido-daemon_* > SHA256SUMS
+        run: scripts/publish-release-artifacts.sh checksum
 
       - name: Publish GitHub Release
-        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-          notes_file="$RUNNER_TEMP/riido-daemon-release-notes.md"
-          cat > "$notes_file" <<EOF
-          riido-daemon ${GITHUB_REF_NAME} binary release.
-
-          Install on macOS/Linux:
-
-          \`\`\`bash
-          curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh
-          \`\`\`
-
-          Desktop/MSIX consumers should download the matching GitHub Release
-          asset into app user data and launch it without requiring
-          administrator privileges.
-          EOF
-          gh release create "$GITHUB_REF_NAME" dist/* \
-            --repo "$GITHUB_REPOSITORY" \
-            --title "riido-daemon $GITHUB_REF_NAME" \
-            --notes-file "$notes_file" \
-            --prerelease
+        run: scripts/publish-release-artifacts.sh release
