@@ -1,10 +1,59 @@
 {
+  "schema_version": "riido-loop.v1",
   "id": "security-redaction",
-  "owner": "event-ingestor, toolargs, and redactiondrift workflows",
-  "observation": {"summary": "Secret redaction decisions are observed through C7 policy, ToolRef args, and C2 EventIngestor tests.", "artifacts": ["docs/20-domain/security-redaction.md"]},
-  "hypothesis": {"summary": "Security docs must not redefine redaction markers outside the redaction SSOT.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
-  "execution": {"summary": "Run redaction/audit tests, toolargs/toolpolicy tests, and the doc drift verifier.", "artifacts": [".github/workflows/event-ingestor.yml", ".github/workflows/toolargs-toolpolicy.yml", "tools/redactiondrift"]},
-  "evaluation": {"summary": "Tests prove marker generation, safe-value behavior, second-pass redaction, PolicyViolationDetected audit append, and no marker/catalog redefinition outside the SSOT.", "artifacts": ["internal/policy/redaction_test.go", "internal/ir/ingest/event_redaction_test.go", "tools/redactiondrift/run_test.go"]},
-  "retrospective": {"summary": "When security hub docs need redaction details, they link to the redaction SSOT instead of restating marker/catalog rules.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
-  "evidence": [{"kind": "command", "ref": "go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1", "proves": "redaction behavior is executable"}, {"kind": "command", "ref": "go run ./tools/redactiondrift", "proves": "security docs do not redefine redaction marker/catalog details outside the SSOT"}]
+  "owner": "daemon/security",
+  "observation": {
+    "summary": "Secret redaction behavior was executable through C7 policy, ToolRef.Args, C2 EventIngestor, and redactiondrift checks, but the redaction docs were still reader-authored markdown.",
+    "artifacts": [
+      "docs/20-domain/security-redaction.md",
+      "internal/policy/redaction.go",
+      "tools/redactiondrift"
+    ]
+  },
+  "hypothesis": {
+    "summary": "A security-redaction manifest plus detail fragments can generate the reader docs while checking implementation anchors for markers, risk surfaces, audit payloads, and drift boundaries.",
+    "artifacts": [
+      "docs/20-domain/security-redaction.riido.json",
+      "docs/20-domain/security-redaction/markers.riido.json"
+    ]
+  },
+  "execution": {
+    "summary": "Generate C7 redaction docs from structured responsibilities, invariants, detail fragments, and source checks, while keeping redactiondrift as the security hub boundary verifier.",
+    "artifacts": [
+      "tools/securityredactiondocs",
+      "tools/redactiondrift",
+      ".github/workflows/security-redaction-docs.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, invalid fragments, missing workflow artifacts, and missing source anchors for marker formats, secret exposure risk, and PolicyViolationDetected audit append.",
+    "artifacts": [
+      "docs/20-domain/security-redaction.md",
+      "internal/ir/ingest/event_redaction_test.go",
+      "tools/securityredactiondocs/run_test.go"
+    ]
+  },
+  "retrospective": {
+    "summary": "Redaction knowledge remains readable, but the editable surface is now the executable ontology and evidence-producing verifier rather than hand-maintained markdown.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/securityredactiondocs -check-doc -evidence-out /tmp/security-redaction-docs.json",
+      "proves": "security redaction reader docs are generated and implementation source anchors still exist"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/redactiondrift",
+      "proves": "security hub docs do not redefine redaction marker or catalog details outside the SSOT"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/security-redaction-docs.yml",
+      "proves": "public CI uploads security redaction doc evidence"
+    }
+  ]
 }

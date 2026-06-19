@@ -24,6 +24,23 @@ required_files=(
   docs/20-domain/locking/adjacent-contracts.md
   docs/20-domain/locking/adjacent-contracts.riido.json
   .github/workflows/locking-docs.yml
+  docs/20-domain/security-redaction.md
+  docs/20-domain/security-redaction.riido.json
+  docs/20-domain/security-redaction/audit-event.md
+  docs/20-domain/security-redaction/audit-event.riido.json
+  docs/20-domain/security-redaction/execution-responsibility.md
+  docs/20-domain/security-redaction/execution-responsibility.riido.json
+  docs/20-domain/security-redaction/failure.md
+  docs/20-domain/security-redaction/failure.riido.json
+  docs/20-domain/security-redaction/markers.md
+  docs/20-domain/security-redaction/markers.riido.json
+  docs/20-domain/security-redaction/pattern-catalog.md
+  docs/20-domain/security-redaction/pattern-catalog.riido.json
+  docs/20-domain/security-redaction/verification-gates.md
+  docs/20-domain/security-redaction/verification-gates.riido.json
+  docs/20-domain/security-redaction/versioning.md
+  docs/20-domain/security-redaction/versioning.riido.json
+  .github/workflows/security-redaction-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -121,6 +138,7 @@ required_files=(
   docs/30-architecture/loop-engineering/context-map-docs.riido.json
   docs/30-architecture/loop-engineering/provider-public-migration-docs.riido.json
   docs/30-architecture/loop-engineering/locking-docs.riido.json
+  docs/30-architecture/loop-engineering/security-redaction.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json
