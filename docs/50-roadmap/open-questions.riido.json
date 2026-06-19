@@ -1,0 +1,69 @@
+{
+  "schema_version": "riido-roadmap-open-questions.v1",
+  "id": "daemon-open-questions",
+  "title": "Open Questions",
+  "generated_doc": "docs/50-roadmap/open-questions.md",
+  "workflow": ".github/workflows/roadmap-docs.yml",
+  "evidence_artifact": "roadmap-docs",
+  "riido_task": "RIID-4711 `[Daemon] Architecture SSOT docs migration`",
+  "intro": [
+    "This registry owns public daemon unresolved questions that are referenced by domain SSOT docs.",
+    "Closed implementation decisions should move into the owning domain or architecture document instead of staying here."
+  ],
+  "questions": [
+    {
+      "id": "Q-DIST-003",
+      "area": "Consent storage",
+      "question": "Should `ConsentLedger` persist only as local JSON append log or also use OS secure storage?",
+      "current_handling": "Pure model is public; durable OS adapter remains future work."
+    },
+    {
+      "id": "Q-EXEC-001",
+      "area": "Agent execution workspace",
+      "question": "Should private repo auth use a GitHub App installation token, a user PAT broker, or an org-level deploy key?",
+      "current_handling": "Public repo materialization only; private repo execution fails closed without logging credentials."
+    },
+    {
+      "id": "Q-EXEC-002",
+      "area": "Provider lifecycle",
+      "question": "Should long-lived provider processes be provider default or conversational-task opt-in?",
+      "current_handling": "One-shot process remains default; explicit provider session id enables resume."
+    },
+    {
+      "id": "Q-EXEC-003",
+      "area": "Headless approval",
+      "question": "What timeout and terminal state should web approval use?",
+      "current_handling": "Default proposal is `blocked` with `approval_timeout`."
+    },
+    {
+      "id": "Q-EXEC-004",
+      "area": "Assignment DTO",
+      "question": "Should `WorkspacePlan` be inline in the assignment snapshot or referenced by execution plan id?",
+      "current_handling": "Minimal inline snapshot is the current proposal."
+    },
+    {
+      "id": "Q-EXEC-005",
+      "area": "Streaming",
+      "question": "How long should live answer deltas be retained?",
+      "current_handling": "Final answer is durable; deltas remain bounded/ephemeral."
+    },
+    {
+      "id": "Q-GATE-001",
+      "area": "Real CLI CI",
+      "question": "Should provider real-CLI integration run on a scheduled public workflow?",
+      "current_handling": "Default PR CI stays deterministic; scheduled/manual integration can be added without bundled CLIs."
+    }
+  ],
+  "promotion_rule": "Questions that require shared DTO/schema changes must first be evaluated under the `riido-contracts` promotion rule.",
+  "source_checks": [
+    {"name": "distribution-consent-open-question", "file": "docs/20-domain/distribution-host-integration/store-channel-policy/open-questions.riido.json", "contains": "Q-DIST-003"},
+    {"name": "agent-execution-governance", "file": "docs/30-architecture/agent-execution-unresolved-design/governance.riido.json", "contains": "Q-EXEC-005"},
+    {"name": "provider-real-cli-observation", "file": "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json", "contains": "scheduled/manual evidence artifact"},
+    {"name": "contracts-promotion-rule", "file": "docs/readme/document-map.riido.json", "contains": "same fact in multiple repos must be promoted to riido-contracts instead of copied"}
+  ],
+  "assertions": [
+    "open questions must be generated from the registry instead of hand-authored markdown",
+    "shared DTO/schema questions must route through the riido-contracts promotion rule before implementation",
+    "resolved decisions must move into the owning generated domain or architecture SSOT"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "roadmap-docs",
+  "owner": "daemon/planning",
+  "observation": {
+    "summary": "The public open-question roadmap was still a reader-authored markdown table while domain docs already referenced individual question IDs.",
+    "artifacts": ["docs/50-roadmap/open-questions.md", "docs/20-domain/distribution-host-integration/store-channel-policy/open-questions.riido.json"]
+  },
+  "hypothesis": {
+    "summary": "An open-question registry can generate the roadmap table and source-check the domain evidence that owns each unresolved decision area.",
+    "artifacts": ["docs/50-roadmap/open-questions.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate roadmap markdown from a typed question registry with source checks for distribution, execution, real-CLI observation, and contracts promotion.",
+    "artifacts": ["tools/roadmapdocs", ".github/workflows/roadmap-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, duplicate question IDs, missing promotion anchors, and missing workflow evidence upload.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "Roadmap knowledge becomes executable evidence, leaving migration history as the only registered manual documentation debt.",
+    "artifacts": ["docs/executable-knowledge.md", "docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/roadmapdocs -check-doc -evidence-out /tmp/roadmap-docs.json",
+      "proves": "open questions are generated from a registry and source anchors remain present"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/roadmap-docs.yml",
+      "proves": "public CI uploads roadmap registry evidence"
+    }
+  ]
+}

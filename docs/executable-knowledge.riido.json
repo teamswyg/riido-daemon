@@ -13,13 +13,6 @@
       "reason": "migration history is still kept as reader-authored slice notes",
       "next_artifact": "promote migration slices into generated migration ledger and retired-boundary evidence",
       "path_prefixes": ["docs/migration/"]
-    },
-    {
-      "id": "roadmap-manual-surface",
-      "owner": "daemon/planning",
-      "reason": "open questions are still reader-authored and not derived from an executable backlog model",
-      "next_artifact": "promote roadmap questions into generated open-question registry",
-      "path_prefixes": ["docs/50-roadmap/"]
     }
   ],
   "assertions": [
