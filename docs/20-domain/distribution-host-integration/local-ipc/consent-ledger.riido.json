@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-distribution-host-local-ipc-detail.v1",
+  "id": "consent-ledger",
+  "title": "ConsentLedger",
+  "generated_doc": "docs/20-domain/distribution-host-integration/local-ipc/consent-ledger.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/hostintegration.ConsentLedger` and `ConsentRecord` model explicit user intent as append-only facts. The current allow/deny view is derived as `ConsentState`."},
+    {"kind": "table", "columns": ["Consent", "Meaning", "When absent"], "rows": [
+      ["`background-helper`", "Helper/login item/startup task may run after app close", "Helper autostart is blocked"],
+      ["`provider-execute:<provider>`", "A provider CLI may be executed", "Detection may happen, execution is blocked"],
+      ["`workspace-access:<workspace-id>`", "A selected workspace root may be accessed", "Task materialization is blocked"],
+      ["`telemetry-sync`", "SaaS progress/result metadata sync is allowed", "Local-only mode"],
+      ["`review-demo-mode`", "Review/demo mode may run without provider installation", "Only real provider status is shown"]
+    ]},
+    {"kind": "ordered", "items": [
+      "`provider-execute` requires a provider subject and must not include a workspace id.",
+      "`workspace-access` requires a workspace id subject and must not include a provider.",
+      "`background-helper`, `telemetry-sync`, and `review-demo-mode` are global consents and must not include provider or workspace subjects.",
+      "`revoked` is a new fact, not deletion. Only the reduced current view becomes false."
+    ]}
+  ]
+}

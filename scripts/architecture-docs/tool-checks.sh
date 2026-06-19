@@ -16,6 +16,7 @@ tool_tests=(
   ./tools/providerruntimeboundarydocs
   ./tools/workspacenativeconfigdocs
   ./tools/distributionhostinvariantsdocs
+  ./tools/distributionhostlocalipcdocs
   ./tools/redactiondrift
   ./tools/providerintegrationevidence
   ./tools/providermigrationdocs
@@ -68,6 +69,7 @@ doc_tools=(
   providerruntimeboundarydocs
   workspacenativeconfigdocs
   distributionhostinvariantsdocs
+  distributionhostlocalipcdocs
   semanticeventactivity
   eventauthority
   providerdraftmapping

@@ -1,0 +1,58 @@
+name: distribution-host-local-ipc-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/distribution-host-local-ipc-docs.yml"
+      - "docs/20-domain/distribution-host-integration/local-ipc.md"
+      - "docs/20-domain/distribution-host-integration/local-ipc.riido.json"
+      - "docs/20-domain/distribution-host-integration/local-ipc/**"
+      - "docs/20-domain/distribution-host-integration/invariants**"
+      - "docs/20-domain/distribution-host-integration/store-channel-policy/**"
+      - "docs/30-architecture/store-distribution**"
+      - "tools/distributionhostlocalipcdocs/**"
+      - "internal/hostintegration/**"
+      - "internal/riidoapi/**"
+      - "cmd/riido/daemon_ipc*.go"
+      - "packaging/store/**"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/distribution-host-local-ipc-docs.yml"
+      - "docs/20-domain/distribution-host-integration/local-ipc.md"
+      - "docs/20-domain/distribution-host-integration/local-ipc.riido.json"
+      - "docs/20-domain/distribution-host-integration/local-ipc/**"
+      - "docs/20-domain/distribution-host-integration/invariants**"
+      - "docs/20-domain/distribution-host-integration/store-channel-policy/**"
+      - "docs/30-architecture/store-distribution**"
+      - "tools/distributionhostlocalipcdocs/**"
+      - "internal/hostintegration/**"
+      - "internal/riidoapi/**"
+      - "cmd/riido/daemon_ipc*.go"
+      - "packaging/store/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  distribution-host-local-ipc-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify distribution host local IPC docs
+        run: |
+          mkdir -p out
+          go run ./tools/distributionhostlocalipcdocs \
+            -check-doc \
+            -evidence-out out/distribution-host-local-ipc-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: distribution-host-local-ipc-docs
+          path: out/*.json
+          if-no-files-found: error

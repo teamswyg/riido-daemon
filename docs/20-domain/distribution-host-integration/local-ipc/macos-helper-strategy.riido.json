@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-distribution-host-local-ipc-detail.v1",
+  "id": "macos-helper-strategy",
+  "title": "macOS App Store Helper Strategy",
+  "generated_doc": "docs/20-domain/distribution-host-integration/local-ipc/macos-helper-strategy.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`mac-app-store` separates the sandboxed Store App from a bundle-internal helper/login item. The Store App owns onboarding and controls; the helper owns local-only IPC and task execution orchestration."},
+    {"kind": "ordered", "items": [
+      "The helper role is `sandboxed-login-item-helper` and startup registration uses `SMAppService` / Login Item style mechanisms.",
+      "Background execution requires both `background-helper` consent and Store review approval.",
+      "Direct LaunchAgent install, self-updater, shared-location install, standalone code download, and provider CLI bundling are forbidden.",
+      "App data root must be an app group or sandbox container; user home Application Support fallback is rejected.",
+      "Local IPC is a helper-owned Unix domain socket under the app group or sandbox container root.",
+      "Workspace access reaches C6 only when a security-scoped grant and `workspace-access:<workspace-id>` consent are both active.",
+      "Review notes must explain helper purpose, Login Item consent UX, App Sandbox entitlement use, security-scoped workspace grants, provider CLI non-bundling, review/demo mode, and privacy metadata allowlisting."
+    ]},
+    {"kind": "paragraph", "text": "`internal/hostintegration.ResolveHelperRuntimePlan` computes the role, startup registration, background rule, workspace grant requirement, update rule, and review-note surfaces. OS API calls, entitlements, and bookmark bytes remain adapter-owned."}
+  ]
+}

@@ -8,16 +8,16 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 183 |
+| Generated reader docs | 189 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 113 |
+| Registered manual docs | 107 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 46 |
+| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 40 |
 | `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
 | `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
 | `readme-manual-surface` | daemon/repo-docs | promote remaining docs/readme guides into doc-map or verification SSOT | 4 |
@@ -26,7 +26,6 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Directory | Matched docs |
 | --- | ---: |
-| `docs/20-domain/distribution-host-integration` | 10 |
 | `docs/20-domain/security` | 10 |
 | `docs/20-domain/workspace` | 10 |
 | `docs/20-domain/provider-runtime` | 9 |
@@ -38,16 +37,17 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `docs/migration/daemon/figma-boundary-provenance` | 6 |
 | `docs/20-domain` | 5 |
 | `docs/migration/daemon/codex-auth-full-access` | 5 |
+| `docs/migration/daemon/runtime-snapshot-heartbeat` | 5 |
 
 ## Manual Samples
 
 | Group | Path |
 | --- | --- |
 | `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/local-ipc.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/local-ipc/consent-ledger.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/local-ipc/endpoint-model.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/local-ipc/macos-external-provider-cli.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/store-channel-policy.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/store-channel-policy/open-questions.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/store-channel-policy/review-demo-mode.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/store-channel-policy/versioning.md` |
 | `roadmap-manual-surface` | `docs/50-roadmap/open-questions.md` |
 | `migration-history-manual-surface` | `docs/migration/cli.md` |
 | `migration-history-manual-surface` | `docs/migration/cli/cli-daemon-split.md` |
