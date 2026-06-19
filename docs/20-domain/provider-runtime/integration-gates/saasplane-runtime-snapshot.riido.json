@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "saasplane-runtime-snapshot",
+  "title": "SaaS Runtime Snapshot Semantics",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/saasplane-runtime-snapshot.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "SaaS runtime snapshot reporting is a device-level full set, not a single-runtime patch."},
+    {"kind": "bullets", "items": [
+      "RegisterRuntime and heartbeat refresh post the accumulated runtime set sorted by RuntimeID.",
+      "Undetected providers remain present as `detection_state=missing` and `availability=offline`.",
+      "The control-plane device projection response shape is still owned by `riido-control-plane`."
+    ]}
+  ]
+}

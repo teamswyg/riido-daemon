@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "saasplane-scope",
+  "title": "SaaS Plane Migration Scope",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/saasplane-scope.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`saasplane` adapts SaaS assignment HTTP APIs into the provider-neutral TaskSourcePort and TaskReporterPort."},
+    {"kind": "bullets", "items": [
+      "It uses the shared `riido-contracts/assignment` surface.",
+      "It translates polling, heartbeat, assignment events, tool approval, and runtime snapshot calls.",
+      "Control-plane HTTP handlers, stores, authZ, metrics, persistence, Terraform, and deploy evidence remain outside this public daemon repo."
+    ]}
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "daemon-lifecycle-adapter",
+  "title": "Daemon Lifecycle Adapter Scope",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`cmd/riido daemon ...` composes provider adapters, runtime actors, supervisor, and control-plane adapters into one local process."},
+    {"kind": "bullets", "items": [
+      "The local daemon exposes status, health, ready, and metrics JSON on the local IPC endpoint.",
+      "It owns lifecycle wiring, runtime actor startup, and local socket readiness.",
+      "Provider CLI bundling, server HTTP/SSE, Terraform/AWS/deploy evidence, and private machine state remain outside this context."
+    ]}
+  ]
+}

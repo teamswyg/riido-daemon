@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "riidoapi-local-api",
+  "title": "Local API Adapter Scope",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/riidoapi-local-api.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/riidoapi` owns the local IPC envelope and transport for daemon-local integrations."},
+    {"kind": "bullets", "items": [
+      "The local API supports Unix socket and Windows named-pipe transport surfaces.",
+      "It calls public task DB guarded mutation and validation APIs.",
+      "Provider runtime execution and remote server HTTP/SSE transport remain outside this local API adapter."
+    ]}
+  ]
+}

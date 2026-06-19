@@ -1,0 +1,67 @@
+{
+  "schema_version": "riido-provider-integration-gate-docs.v1",
+  "id": "provider-integration-gate-docs",
+  "title": "Provider Runtime / Adapter SSOT: Integration Gates",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates.md",
+  "workflow": ".github/workflows/provider-integration-gate-docs.yml",
+  "evidence_artifact": "provider-integration-gate-docs",
+  "summary": [
+    "This SSOT fixes the provider-runtime integration gate boundary as generated documentation, source anchors, and CI evidence.",
+    "The gates describe which public daemon packages own local runtime scope, SaaS adapter scope, task DB scope, local API scope, project sync scope, and real provider evidence."
+  ],
+  "detail_pages": [
+    {"id": "cursor-real-cli", "title": "Cursor Real CLI Gate", "path": "integration-gates/cursor-real-cli.md"},
+    {"id": "provider-validation-matrix", "title": "Provider Validation Matrix", "path": "integration-gates/provider-validation-matrix.md"},
+    {"id": "supervisor-scope", "title": "Supervisor Migration Scope", "path": "integration-gates/supervisor-scope.md"},
+    {"id": "taskdbplane-scope", "title": "Task DB Plane Migration Scope", "path": "integration-gates/taskdbplane-scope.md"},
+    {"id": "riidoapi-local-api", "title": "Local API Adapter Scope", "path": "integration-gates/riidoapi-local-api.md"},
+    {"id": "mwsd-project-sync", "title": "MWSD And Project Sync Scope", "path": "integration-gates/mwsd-project-sync.md"},
+    {"id": "saasplane-scope", "title": "SaaS Plane Migration Scope", "path": "integration-gates/saasplane-scope.md"},
+    {"id": "saasplane-runtime-snapshot", "title": "SaaS Runtime Snapshot Semantics", "path": "integration-gates/saasplane-runtime-snapshot.md"},
+    {"id": "daemon-lifecycle-adapter", "title": "Daemon Lifecycle Adapter Scope", "path": "integration-gates/daemon-lifecycle-adapter.md"}
+  ],
+  "related_pages": [
+    {"id": "integration-matrix", "title": "Architecture Integration Matrix", "path": "../../30-architecture/integration-matrix.md"},
+    {"id": "provider-real-cli-observation", "title": "Provider Real CLI Observation", "path": "../../30-architecture/provider-real-cli-observation.md"}
+  ],
+  "fragments": {
+    "cursor-real-cli": "integration-gates/cursor-real-cli.riido.json",
+    "provider-validation-matrix": "integration-gates/provider-validation-matrix.riido.json",
+    "supervisor-scope": "integration-gates/supervisor-scope.riido.json",
+    "taskdbplane-scope": "integration-gates/taskdbplane-scope.riido.json",
+    "riidoapi-local-api": "integration-gates/riidoapi-local-api.riido.json",
+    "mwsd-project-sync": "integration-gates/mwsd-project-sync.riido.json",
+    "saasplane-scope": "integration-gates/saasplane-scope.riido.json",
+    "saasplane-runtime-snapshot": "integration-gates/saasplane-runtime-snapshot.riido.json",
+    "daemon-lifecycle-adapter": "integration-gates/daemon-lifecycle-adapter.riido.json"
+  },
+  "source_checks": [
+    {"name": "cursor-workspace-trust", "file": "internal/provider/cursor/command_workspace.go", "contains": "args = append(args, \"--workspace\", cwd)"},
+    {"name": "cursor-integration-artifact", "file": "internal/provider/cursor/integration_test.go", "contains": "cursor artifact content"},
+    {"name": "cursor-no-default-yolo", "file": "cmd/riido/bridge_adapter_start_test.go", "contains": "cursor daemon adapter must not default to --yolo"},
+    {"name": "provider-validation-matrix", "file": "docs/30-architecture/provider-validation-matrix.riido.json", "contains": "supports_worktree=false"},
+    {"name": "integration-matrix-tool", "file": "tools/integrationmatrix/run.go", "contains": "integration-matrix-docs: clean"},
+    {"name": "supervisor-actor", "file": "internal/agentbridge/supervisor/actor.go", "contains": "type Actor struct"},
+    {"name": "taskdbplane-package", "file": "internal/agentbridge/controlplane/taskdbplane/taskdbplane.go", "contains": "Package taskdbplane adapts riido-task-db.v1"},
+    {"name": "taskdb-idempotent-replay", "file": "internal/taskdb/taskdb.go", "contains": "command-id-idempotent-replay.v1"},
+    {"name": "taskdbplane-fencing", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go", "contains": "runtime fencing token mismatch"},
+    {"name": "riidoapi-local-transport", "file": "internal/riidoapi/transport_type.go", "contains": "LocalTransportWindowsNamedPipe"},
+    {"name": "riidoapi-guarded-transition", "file": "internal/riidoapi/server_transition.go", "contains": "ApplyGuardedTaskTransition"},
+    {"name": "mwsdbridge-acl", "file": "internal/mwsdbridge/client.go", "contains": "macmini-workspace daemon"},
+    {"name": "project-taskdb-sync", "file": "internal/project/taskdbsync.go", "contains": "SyncTaskDBFromState"},
+    {"name": "saasplane-ports", "file": "internal/agentbridge/controlplane/saasplane/plane.go", "contains": "Plane implements TaskSourcePort and TaskReporterPort"},
+    {"name": "saasplane-shared-contract", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_contract_test.go", "contains": "riido-ai-server.v1"},
+    {"name": "saasplane-runtime-snapshot-full-set", "file": "internal/agentbridge/controlplane/saasplane/runtime_snapshot_full_set_test.go", "contains": "full accumulated set"},
+    {"name": "saasplane-runtime-snapshot-missing", "file": "internal/agentbridge/controlplane/saasplane/runtime_snapshot_all_missing_test.go", "contains": "final snapshot must carry all four providers"},
+    {"name": "daemon-status-model", "file": "cmd/riido/daemon_foreground_status_model_test.go", "contains": "daemonStatusJSON"},
+    {"name": "daemon-health-endpoint", "file": "cmd/riido/daemon_health_endpoint_test.go", "contains": "TestDaemonHealthEndpoint"},
+    {"name": "daemon-ready-endpoint", "file": "cmd/riido/daemon_ready_endpoint_test.go", "contains": "TestDaemonReadyEndpoint"}
+  ],
+  "assertions": [
+    "Provider integration gates distinguish deterministic CI evidence from opt-in real provider CLI evidence.",
+    "SaaS completed assignment evidence is not filesystem side-effect evidence without the daemon-selected workdir artifact.",
+    "Runtime snapshot reporting is a device-level full set; missing providers remain explicit runtime rows.",
+    "Public daemon adapters own local ports only; server HTTP/SSE, infra, Terraform, and deploy evidence stay outside this repo.",
+    "TaskDB, MWSD, local API, SaaS plane, supervisor, and daemon lifecycle scopes are independent gate surfaces."
+  ]
+}

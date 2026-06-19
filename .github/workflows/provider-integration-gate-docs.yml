@@ -1,0 +1,74 @@
+name: provider-integration-gate-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/provider-integration-gate-docs.yml"
+      - "docs/20-domain/provider-runtime/integration-gates.md"
+      - "docs/20-domain/provider-runtime/integration-gates.riido.json"
+      - "docs/20-domain/provider-runtime/integration-gates/**"
+      - "docs/30-architecture/integration-matrix**"
+      - "docs/30-architecture/provider-validation-matrix**"
+      - "docs/30-architecture/provider-real-cli-observation**"
+      - "tools/providerintegrationgatedocs/**"
+      - "tools/integrationmatrix/**"
+      - "tools/providerintegrationevidence/**"
+      - "internal/agentbridge/**"
+      - "internal/provider/**"
+      - "internal/riidoapi/**"
+      - "internal/mwsdbridge/**"
+      - "internal/project/**"
+      - "internal/taskdb/**"
+      - "cmd/riido/**"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/provider-integration-gate-docs.yml"
+      - "docs/20-domain/provider-runtime/integration-gates.md"
+      - "docs/20-domain/provider-runtime/integration-gates.riido.json"
+      - "docs/20-domain/provider-runtime/integration-gates/**"
+      - "docs/30-architecture/integration-matrix**"
+      - "docs/30-architecture/provider-validation-matrix**"
+      - "docs/30-architecture/provider-real-cli-observation**"
+      - "tools/providerintegrationgatedocs/**"
+      - "tools/integrationmatrix/**"
+      - "tools/providerintegrationevidence/**"
+      - "internal/agentbridge/**"
+      - "internal/provider/**"
+      - "internal/riidoapi/**"
+      - "internal/mwsdbridge/**"
+      - "internal/project/**"
+      - "internal/taskdb/**"
+      - "cmd/riido/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  provider-integration-gate-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify provider integration gate docs
+        run: |
+          mkdir -p out
+          go run ./tools/providerintegrationgatedocs \
+            -check-doc \
+            -evidence-out out/provider-integration-gate-docs.json
+          go run ./tools/integrationmatrix \
+            -check-doc \
+            -evidence-out out/integration-matrix-docs.json
+          go run ./tools/providerintegrationevidence \
+            -check-doc \
+            -evidence-out out/provider-real-cli-observation.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-integration-gate-docs
+          path: out/*.json
+          if-no-files-found: error
