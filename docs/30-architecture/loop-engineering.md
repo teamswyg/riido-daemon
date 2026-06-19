@@ -1025,6 +1025,23 @@
   - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/overview.riido.json -check-doc -evidence-out /tmp/migration-daemon-overview-docs.json; proves daemon overview migration docs are generated and source anchors remain present
   - `workflow`: .github/workflows/migration-daemon-overview-docs.yml; proves public CI uploads daemon overview migration evidence
 
+### migration-daemon-riidoapi-local-api-docs
+
+- Owner: `daemon/migration`
+- Observe: riidoapi local API migration notes still described local IPC, CLI bridge, and mwsd projection slices as reader-authored prose while active facts already lived in provider integration gates and public workflow checks.
+  - Artifacts: `docs/migration/daemon/riidoapi-local-api.md`, `docs/migration/daemon/riidoapi-local-api/4684-local-api-adapter.md`
+- Hypothesis: A focused migration-docs manifest can generate the riidoapi local API migration slice while leaving RIID-4689 owned by the existing saasassignment generator.
+  - Artifacts: `docs/migration/daemon/riidoapi-local-api.riido.json`
+- Execute: Generate the riidoapi local API entrypoint and local adapter pages from fragments with source checks for riidoapi local-only gates, CLI behavior, mwsd/project gates, provider integration scope, and SaaS assignment ownership.
+  - Artifacts: `tools/migrationdocs`, `.github/workflows/migration-daemon-riidoapi-local-api-docs.yml`
+- Evaluate: The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing anchors for local API, CLI, mwsd, and SaaS assignment boundaries.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The riidoapi local API migration slice now becomes an executable ledger while preserving separate generator ownership for SaaS assignment polling.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/riidoapi-local-api.riido.json -check-doc -evidence-out /tmp/migration-daemon-riidoapi-local-api-docs.json; proves riidoapi local API migration docs are generated and source anchors remain present
+  - `workflow`: .github/workflows/migration-daemon-riidoapi-local-api-docs.yml; proves public CI uploads riidoapi local API migration evidence
+
 ### workspace-invariants-docs
 
 - Owner: `daemon/workspace`

@@ -1,0 +1,51 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-daemon-riidoapi-local-api-docs",
+  "title": "Riido Daemon Migration Plan: riidoapi Local API",
+  "workflow": ".github/workflows/migration-daemon-riidoapi-local-api-docs.yml",
+  "evidence_artifact": "migration-daemon-riidoapi-local-api-docs",
+  "expected_page_count": 4,
+  "fragments": [
+    "riidoapi-local-api/root.riido.json",
+    "riidoapi-local-api/4684-local-api-adapter.riido.json",
+    "riidoapi-local-api/4685-task-api-bridge-cli.riido.json",
+    "riidoapi-local-api/4686-mwsdbridge-project-sync.riido.json"
+  ],
+  "source_checks": [
+    {
+      "name": "riidoapi-local-api-scope",
+      "file": "docs/20-domain/provider-runtime/integration-gates/riidoapi-local-api.riido.json",
+      "contains": "`internal/riidoapi` owns the local IPC envelope and transport"
+    },
+    {
+      "name": "riidoapi-workflow-boundary",
+      "file": ".github/workflows/riidoapi.yml",
+      "contains": "Verify riidoapi local-only gate"
+    },
+    {
+      "name": "cli-workflow-behavior",
+      "file": ".github/workflows/cli.yml",
+      "contains": "riido bridge <providers|detect>"
+    },
+    {
+      "name": "mwsd-project-workflow",
+      "file": ".github/workflows/mwsd-project.yml",
+      "contains": "mwsd/project migration must not depend on private daemon/server packages"
+    },
+    {
+      "name": "mwsd-project-integration-gate",
+      "file": "docs/20-domain/provider-runtime/integration-gates/mwsd-project-sync.riido.json",
+      "contains": "`mwsdbridge` is the anti-corruption layer"
+    },
+    {
+      "name": "saas-assignment-generated-migration",
+      "file": "docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json",
+      "contains": "docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md"
+    }
+  ],
+  "assertions": [
+    "riidoapi local API migration notes are generated from fragments instead of hand-authored markdown",
+    "local API and CLI claims must remain anchored to workflow and provider-runtime gate evidence",
+    "SaaS assignment polling stays owned by the existing saasassignment generator"
+  ]
+}
