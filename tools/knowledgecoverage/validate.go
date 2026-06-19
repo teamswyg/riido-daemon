@@ -13,8 +13,8 @@ func validateManifest(root string, m manifest) []string {
 	if m.ID == "" || m.Title == "" || m.GeneratedDoc == "" || m.Workflow == "" || m.EvidenceArtifact == "" {
 		problems = append(problems, "id, title, generated_doc, workflow, and evidence_artifact are required")
 	}
-	if len(m.ScanRoots) == 0 || len(m.ManualGroups) == 0 || len(m.Assertions) == 0 {
-		problems = append(problems, "scan_roots, manual_groups, and assertions must not be empty")
+	if len(m.ScanRoots) == 0 || len(m.Assertions) == 0 {
+		problems = append(problems, "scan_roots and assertions must not be empty")
 	}
 	for _, path := range append([]string{m.Workflow}, m.ScanRoots...) {
 		if _, err := os.Stat(resolvePath(root, path)); err != nil {

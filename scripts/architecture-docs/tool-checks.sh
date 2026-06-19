@@ -31,6 +31,7 @@ tool_tests=(
   ./tools/integrationmatrix
   ./tools/moduledecomposition
   ./tools/storedistributiondocs
+  ./tools/agentexecutiondesign
   ./tools/runtimeupgrade
   ./tools/localdaemoncontract
   ./tools/runtimeeligibility
@@ -66,6 +67,7 @@ doc_tools=(
   integrationmatrix
   moduledecomposition
   storedistributiondocs
+  agentexecutiondesign
   figmaboundarydocs
   localdaemoncontract
   runtimeeligibility

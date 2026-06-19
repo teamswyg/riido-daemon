@@ -1,0 +1,36 @@
+{
+  "identity_fields": [
+    {"field": "assignment_id", "meaning": "primary execution id for in-flight, watcher, heartbeat, report"},
+    {"field": "task_id", "meaning": "client/read-model grouping id"},
+    {"field": "component_id", "meaning": "workspace/task thread projection scope"},
+    {"field": "agent_id", "meaning": "assigned agent profile/runtime binding id"},
+    {"field": "runtime_id", "meaning": "daemon runtime actor id"},
+    {"field": "run_id", "meaning": "local workdir/IR run id; defaults to assignment_id"},
+    {"field": "attempt", "meaning": "same-assignment retry attempt number"},
+    {"field": "provider_session_id", "meaning": "provider-native resume id stored as durable event"}
+  ],
+  "identity_rules": [
+    "daemon run tables, watchers, and stream buffers key by assignment_id or run_id",
+    "heartbeat reports active_assignment_ids directly",
+    "task-id cancel is compatibility-only; actor boundaries consume execution id",
+    "user-facing task thread keeps task id and reads assignment lifecycle projection"
+  ],
+  "workspace_fields": [
+    {"field": "source_kind", "phase": "P0", "rule": "empty, git_public, git_private_unsupported, git_private_token_ref"},
+    {"field": "repo_url", "phase": "P0 public", "rule": "public clone URL only"},
+    {"field": "repo_full_name", "phase": "P0", "rule": "stable display/diagnostic id"},
+    {"field": "branch_name", "phase": "P0", "rule": "Riido task branch or selected branch"},
+    {"field": "commit_sha", "phase": "P1", "rule": "exact checkout when present"},
+    {"field": "visibility", "phase": "P0", "rule": "public, private, unknown"},
+    {"field": "auth_mode", "phase": "P0", "rule": "none, unsupported, token_ref"},
+    {"field": "auth_ref", "phase": "P2 private", "rule": "secret broker reference, never raw token"}
+  ],
+  "launch_fields": [
+    {"field": "selected_executable", "owner": "daemon C4", "rule": "adapter-selected absolute executable path"},
+    {"field": "path", "owner": "daemon C4", "rule": "login-shell PATH plus known install dirs and policy env"},
+    {"field": "env", "owner": "daemon C4/C7", "rule": "sanitized child process env"},
+    {"field": "cwd", "owner": "daemon C6", "rule": "prepared workdir"},
+    {"field": "toolchain_probe", "owner": "daemon C4", "rule": "git, node, package manager availability"},
+    {"field": "approval_policy", "owner": "daemon C7 + contracts", "rule": "auto-approve, approval-required, fail-closed surfaces"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": "riido-agent-execution-design-docs.v1",
+  "id": "agent-execution-design-docs",
+  "title": "Agent Execution Design SSOT",
+  "generated_doc": "docs/30-architecture/agent-execution-unresolved-design.md",
+  "workflow": ".github/workflows/agent-execution-design-docs.yml",
+  "evidence_artifact": "agent-execution-design-docs",
+  "riido_task": "RIID-4964",
+  "assignment_fsm_doc": "agent-execution-unresolved-design/assignment-lifecycle-fsm.md",
+  "evidence_manifest": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json",
+  "fragments": {
+    "overview": "agent-execution-unresolved-design/overview.riido.json",
+    "risk_model": "agent-execution-unresolved-design/risk-model.riido.json",
+    "execution_model": "agent-execution-unresolved-design/execution-model.riido.json",
+    "lifecycle_model": "agent-execution-unresolved-design/lifecycle-model.riido.json",
+    "governance": "agent-execution-unresolved-design/governance.riido.json"
+  }
+}
