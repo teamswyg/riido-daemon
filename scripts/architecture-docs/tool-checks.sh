@@ -23,6 +23,7 @@ tool_tests=(
   ./tools/branchgate
   ./tools/compatibilitygate
   ./tools/clisurface
+  ./tools/configreference
   ./tools/executablesearchpath
   ./tools/runtimeupgrade
   ./tools/localdaemoncontract
@@ -52,6 +53,7 @@ doc_tools=(
   sessionlifecycle
   runtimeupgrade
   clisurface
+  configreference
   executablesearchpath
   localdaemoncontract
   runtimeeligibility

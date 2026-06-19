@@ -1,0 +1,70 @@
+{
+  "schema_version": "riido-config-reference-evidence.v1",
+  "id": "config-reference-evidence",
+  "title": "Daemon Config Reference Evidence",
+  "generated_doc": "docs/30-architecture/config-reference.md",
+  "workflow": ".github/workflows/config-reference-evidence.yml",
+  "evidence_artifact": "config-reference-evidence",
+  "purpose": "Keeps the public riido-daemon env and flag catalog generated from a manifest and verified against daemon config source constants.",
+  "daemon_env_source": "cmd/riido/daemon_config.go",
+  "sections": [
+    {"title": "Naming rules", "path": "config-reference/naming-rules.md"},
+    {"title": "Provider executable overrides", "path": "config-reference/provider-executable-overrides.md"},
+    {"title": "Executable search path", "path": "config-reference/executable-search-path.md"},
+    {"title": "Test integration gate", "path": "config-reference/test-integration-gate.md"},
+    {"title": "Daemon identity and runtime config", "path": "config-reference/daemon-identity-runtime-config.md"},
+    {"title": "Task source selection", "path": "config-reference/task-source-selection.md"},
+    {"title": "SaaS device principal", "path": "config-reference/saas-device-principal.md"},
+    {"title": "SaaS polling and binding behavior", "path": "config-reference/saas-polling-runtime-bindings.md"},
+    {"title": "Agent instruction placement", "path": "config-reference/agent-instruction-placement.md"},
+    {"title": "Local daemon flags", "path": "config-reference/local-daemon-flags.md"},
+    {"title": "Change procedure", "path": "config-reference/change-procedure.md"}
+  ],
+  "daemon_env_vars": [
+    {"name": "RIIDO_DAEMON_ID", "consumer": "daemon identity", "default": "RIIDO_DEVICE_ID in SaaS mode, else agentd-local", "meaning": "stable daemon/runtime slot id"},
+    {"name": "RIIDO_DAEMON_VERSION", "consumer": "daemon config and supervisor events", "default": "riido-agentd v0.0.0", "meaning": "daemon binary version label"},
+    {"name": "RIIDO_DAEMON_PROFILE", "consumer": "daemon status and diagnostics", "default": "local", "meaning": "user-facing daemon profile; dev/development enables loopback pprof by default"},
+    {"name": "RIIDO_SERVER_URL", "consumer": "daemon status", "default": "empty", "meaning": "display-only server URL unless SaaS source is configured"},
+    {"name": "RIIDO_DEVICE_ID", "consumer": "saasplane", "default": "empty", "meaning": "device principal id"},
+    {"name": "RIIDO_DEVICE_SECRET", "consumer": "saasplane", "default": "empty", "meaning": "sent only as X-Riido-Device-Secret"},
+    {"name": "RIIDO_DEVICE_NAME", "consumer": "daemon status", "default": "hostname or localhost", "meaning": "device display name"},
+    {"name": "RIIDO_RUNTIME_OWNER", "consumer": "daemon status", "default": "$USER or local", "meaning": "runtime owner display name"},
+    {"name": "RIIDO_RUNTIME_AGENTS", "consumer": "daemon status", "default": "empty list", "meaning": "comma-separated attached agent names"},
+    {"name": "RIIDO_WORKSPACE_COUNT", "consumer": "daemon status", "default": "0", "meaning": "non-negative display count"},
+    {"name": "RIIDO_RUNTIME_MAX_CONCURRENT", "consumer": "runtime actor slot pool", "default": "4", "meaning": "max concurrent sessions per provider"},
+    {"name": "RIIDO_WORKDIR_ROOT", "consumer": "supervisor and workdir FS adapter", "default": "C11 app data root", "meaning": "isolated run workdir root"},
+    {"name": "RIIDO_POLICY_BUNDLE_VERSION", "consumer": "config/runtime/workdir", "default": "policy-bundle.local.v0", "meaning": "active policy version"},
+    {"name": "RIIDO_POLICY_BUNDLE_PATH", "consumer": "policy loader", "default": "empty", "meaning": "optional riido-policy-bundle.v1 file"},
+    {"name": "RIIDO_TASK_QUEUE_DIR", "consumer": "file queue source", "default": "empty", "meaning": "provider-neutral task JSON files"},
+    {"name": "RIIDO_TASK_REPORT_DIR", "consumer": "file reporter", "default": "RIIDO_TASK_QUEUE_DIR/reports", "meaning": "JSONL report output"},
+    {"name": "RIIDO_TASK_DB_SOURCE_PATH", "consumer": "taskdbplane", "default": "empty", "meaning": "local riido-task-db.v1 production source"},
+    {"name": "RIIDO_SAAS_URL", "consumer": "saasplane", "default": "empty", "meaning": "SaaS assignment polling endpoint"},
+    {"name": "RIIDO_DAEMON_POLL_INTERVAL_SECONDS", "consumer": "supervisor", "default": "1", "meaning": "active claim polling interval"},
+    {"name": "RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS", "consumer": "supervisor", "default": "5", "meaning": "idle retry interval; must be >= active interval"},
+    {"name": "RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS", "consumer": "supervisor", "default": "5", "meaning": "runtime heartbeat interval"},
+    {"name": "RIIDO_WORKDIR_RETENTION_SECONDS", "consumer": "workdir cleanup", "default": "0", "meaning": "archived workdir TTL cleanup; zero disables"},
+    {"name": "RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS", "consumer": "workdir cleanup", "default": "3600 with retention", "meaning": "cleanup loop interval"},
+    {"name": "RIIDO_DAEMON_PPROF_ADDR", "consumer": "local diagnostics", "default": "empty, or dev default 127.0.0.1:6061", "meaning": "loopback-only pprof listener"}
+  ],
+  "coverage_anchors": [
+    {"name": "RIIDO_CLAUDE_PATH", "file": "internal/provider/claude/detect.go", "contains": "RIIDO_CLAUDE_PATH", "meaning": "provider executable override"},
+    {"name": "RIIDO_CODEX_PATH", "file": "internal/provider/codex/detect.go", "contains": "RIIDO_CODEX_PATH", "meaning": "provider executable override"},
+    {"name": "RIIDO_OPENCLAW_PATH", "file": "internal/provider/openclaw/detect_config.go", "contains": "RIIDO_OPENCLAW_PATH", "meaning": "provider executable override"},
+    {"name": "RIIDO_CURSOR_PATH", "file": "internal/provider/cursor/constants.go", "contains": "RIIDO_CURSOR_PATH", "meaning": "provider executable override"},
+    {"name": "AGENTBRIDGE_INTEGRATION", "file": "internal/provider/claude/integration_gate_test.go", "contains": "AGENTBRIDGE_INTEGRATION", "meaning": "real provider CLI integration opt-in"}
+  ],
+  "source_checks": [
+    {"name": "daemon-settings-loads-env", "file": "cmd/riido/daemon_config_env.go", "contains": "loadDaemonSettingsFromEnvWithHome"},
+    {"name": "identity-defaults-tested", "file": "cmd/riido/daemon_settings_identity_test.go", "contains": "TestLoadDaemonSettingsReadsIdentity"},
+    {"name": "task-source-conflicts-tested", "file": "cmd/riido/daemon_settings_task_source_test.go", "contains": "TestLoadDaemonSettingsRejectsTaskDBSourceWithFileQueue"},
+    {"name": "timing-settings-tested", "file": "cmd/riido/daemon_settings_timing_test.go", "contains": "TestLoadDaemonSettingsReadsQueueAndTiming"},
+    {"name": "pprof-loopback-tested", "file": "cmd/riido/daemon_pprof_test.go", "contains": "TestLoadDaemonSettingsRejectsNonLoopbackPprofAddr"},
+    {"name": "workdir-cleanup-tested", "file": "cmd/riido/daemon_settings_workdir_test.go", "contains": "TestLoadDaemonSettingsRejectsCleanupIntervalWithoutRetention"}
+  ],
+  "assertions": [
+    "SaaS server RIIDO_AI_SERVER_* variables belong to riido-control-plane",
+    "private deploy-time evidence paths belong to riido-infra",
+    "new env vars or flags must update config-reference and parser tests in the same PR",
+    "workdir cleanup has no default size/task-count cleanup"
+  ]
+}

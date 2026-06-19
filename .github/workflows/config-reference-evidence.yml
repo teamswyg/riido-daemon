@@ -1,0 +1,49 @@
+name: config-reference-evidence
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/config-reference-evidence.yml"
+      - "cmd/riido/daemon_config*.go"
+      - "cmd/riido/daemon_settings*.go"
+      - "cmd/riido/daemon_pprof_test.go"
+      - "docs/30-architecture/config-reference.md"
+      - "docs/30-architecture/config-reference.riido.json"
+      - "tools/configreference/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/config-reference-evidence.yml"
+      - "cmd/riido/daemon_config*.go"
+      - "cmd/riido/daemon_settings*.go"
+      - "cmd/riido/daemon_pprof_test.go"
+      - "docs/30-architecture/config-reference.md"
+      - "docs/30-architecture/config-reference.riido.json"
+      - "tools/configreference/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  config-reference-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify config reference evidence
+        run: |
+          mkdir -p out
+          go test ./tools/configreference ./cmd/riido -count=1
+          go run ./tools/configreference \
+            -check-doc \
+            -evidence-out out/config-reference-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: config-reference-evidence
+          path: out/config-reference-evidence.json
+          if-no-files-found: error
