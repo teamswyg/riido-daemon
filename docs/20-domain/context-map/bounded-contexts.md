@@ -1,0 +1,17 @@
+# Bounded Contexts
+
+[Back to context-map.md](../context-map.md)
+
+| ID | Context | Public daemon owner |
+| --- | --- | --- |
+| C1 | Task Lifecycle | `github.com/teamswyg/riido-contracts/task`; daemon mutates local rows through `internal/taskdb` only |
+| C2 | IR Event Log | `github.com/teamswyg/riido-contracts/ir`; daemon-side append/redaction boundary is `internal/ir/ingest` |
+| C3 | Provider Capability | `github.com/teamswyg/riido-contracts/provider/capability`; daemon provider adapters produce detected snapshots |
+| C4 | Provider Runtime / Adapter | `internal/agentbridge`, `internal/agentbridge/session`, `internal/provider/{claude,codex,openclaw,cursor}` |
+| C5 | Runtime Scheduling | `internal/scheduling`, `internal/agentbridge/runtimeactor`, `internal/agentbridge/supervisor`, `internal/agentbridge/controlplane/taskdbplane` |
+| C6 | Workspace / Native Config | `internal/workdir` |
+| C7 | Security / Policy | `internal/policy` |
+| C8 | Validation | `internal/validation` |
+| C9 | Locking / Lease Primitive | `internal/lock` plus task DB sidecar leases |
+| C10 | SaaS Control Plane Adapter | daemon-side polling/reporting adapter in `internal/agentbridge/controlplane/saasplane`; server behavior remains in `riido-control-plane` |
+| C11 | Distribution / Host Integration | `internal/hostintegration`, `internal/riidoapi`, `packaging/store`, `tools/storecontract` |

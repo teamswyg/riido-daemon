@@ -1,0 +1,12 @@
+# ACL Locations
+
+[Back to context-map.md](../context-map.md)
+
+| ACL | Input | Output |
+| --- | --- | --- |
+| Provider adapter ACL | Claude/Codex/OpenClaw/Cursor raw stdout or RPC events | `agentbridge.RawEvent`, `CanonicalEvent` drafts, provider-neutral result state |
+| Event ingestor ACL | provider-neutral event drafts and unknown fields | validated/redacted `riido-contracts/ir` envelopes |
+| SaaS polling ACL | assignment polling DTOs from `riido-contracts/assignment` | `agentbridge.TaskRequest` and reporter events |
+| Task DB ACL | local `riido-task-db.v1` records | `TaskSourcePort` claims and guarded task mutations |
+| mwsd bridge ACL | mwsd socket JSON contracts | project/task DB projection records |
+| Host integration ACL | OS/store facts, external tool paths, consent/grants | provider-neutral routing status, local IPC endpoints, app/workdir roots |
