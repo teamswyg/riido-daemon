@@ -1,0 +1,36 @@
+{
+  "id": "assignment-fsm-evidence",
+  "owner": "contracts assignment FSM",
+  "observation": {
+    "summary": "Assignment lifecycle FSM page claimed generated contracts ownership but carried hand-maintained Mermaid and state metadata that drifted from the contracts generated assignment FSM.",
+    "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md"]
+  },
+  "hypothesis": {
+    "summary": "A daemon-side tool can read riido-contracts GeneratedAssignmentFSM and regenerate the reader diagram and state metadata from the actual SPI.",
+    "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json"]
+  },
+  "execution": {
+    "summary": "Run assignmentfsm to render Mermaid, validate contracts consumption checks, and reject stale hand-written state tokens.",
+    "artifacts": ["tools/assignmentfsm", ".github/workflows/assignment-fsm-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing daemon contracts consumption evidence, missing external fsmgen conformance evidence, and stale non-contract state names.",
+    "artifacts": ["tools/assignmentfsm/run_test.go", "tools/assignmentfsm/fsm_snapshot_test.go"]
+  },
+  "retrospective": {
+    "summary": "Assignment FSM reader docs now follow the contracts generated FSM instead of preserving a separate manual lifecycle model.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/assignmentfsm -check-doc -evidence-out /tmp/assignment-fsm-evidence.json",
+      "proves": "assignment FSM reader doc matches the contracts generated FSM and local/external consumption evidence"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/assignment-fsm-evidence.yml",
+      "proves": "public CI uploads assignment FSM evidence"
+    }
+  ]
+}

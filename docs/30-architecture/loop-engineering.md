@@ -375,6 +375,23 @@
   - `command`: go run ./tools/fullaccessharness -check-doc -evidence-out /tmp/full-access-harness-evidence.json; proves full-access harness manifest matches generated docs, source evidence, and absent unsafe/default policy surfaces
   - `workflow`: .github/workflows/full-access-harness-evidence.yml; proves public CI uploads full-access harness evidence
 
+### assignment-fsm-evidence
+
+- Owner: `contracts assignment FSM`
+- Observe: Assignment lifecycle FSM page claimed generated contracts ownership but carried hand-maintained Mermaid and state metadata that drifted from the contracts generated assignment FSM.
+  - Artifacts: `docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md`
+- Hypothesis: A daemon-side tool can read riido-contracts GeneratedAssignmentFSM and regenerate the reader diagram and state metadata from the actual SPI.
+  - Artifacts: `docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json`
+- Execute: Run assignmentfsm to render Mermaid, validate contracts consumption checks, and reject stale hand-written state tokens.
+  - Artifacts: `tools/assignmentfsm`, `.github/workflows/assignment-fsm-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, missing daemon contracts consumption evidence, missing external fsmgen conformance evidence, and stale non-contract state names.
+  - Artifacts: `tools/assignmentfsm/run_test.go`, `tools/assignmentfsm/fsm_snapshot_test.go`
+- Retrospective: Assignment FSM reader docs now follow the contracts generated FSM instead of preserving a separate manual lifecycle model.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/assignmentfsm -check-doc -evidence-out /tmp/assignment-fsm-evidence.json; proves assignment FSM reader doc matches the contracts generated FSM and local/external consumption evidence
+  - `workflow`: .github/workflows/assignment-fsm-evidence.yml; proves public CI uploads assignment FSM evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

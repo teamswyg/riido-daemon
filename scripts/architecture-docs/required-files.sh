@@ -55,7 +55,10 @@ required_files=(
   docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json
   docs/30-architecture/figma-ai-agent-daemon-boundary.md
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
+  docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
+  docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
+  docs/30-architecture/loop-engineering/assignment-fsm-evidence.riido.json
   docs/30-architecture/riido-work-branch-gate.md
   docs/30-architecture/riido-work-branch-gate.riido.json
   docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md
@@ -65,6 +68,7 @@ required_files=(
   .github/workflows/tool-use-gate-evidence.yml
   .github/workflows/native-config-mcp-evidence.yml
   .github/workflows/full-access-harness-evidence.yml
+  .github/workflows/assignment-fsm-evidence.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml
 )
