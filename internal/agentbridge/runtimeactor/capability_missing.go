@@ -5,7 +5,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-func missingCapabilities(res agentbridge.DetectResult) []providercap.CapabilityName {
+func missingCapabilities(res agentbridge.DetectResult, profile capabilityProfile) []providercap.CapabilityName {
 	checks := []struct {
 		name providercap.CapabilityName
 		ok   bool
@@ -17,6 +17,7 @@ func missingCapabilities(res agentbridge.DetectResult) []providercap.CapabilityN
 		{"mcp", res.SupportsMCP},
 		{"tool-hooks", res.SupportsToolHooks},
 		{"usage", res.SupportsUsage},
+		{"worktree", profile.supportsWorktree},
 	}
 	out := []providercap.CapabilityName{}
 	for _, check := range checks {

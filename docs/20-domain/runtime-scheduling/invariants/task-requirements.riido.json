@@ -1,0 +1,117 @@
+{
+  "schema_version": "riido-task-requirements.v1",
+  "id": "task-requirements-evidence",
+  "title": "Task Requirement Model Evidence",
+  "generated_doc": "docs/20-domain/runtime-scheduling/invariants/task-requirements.md",
+  "workflow": ".github/workflows/task-requirements-evidence.yml",
+  "evidence_artifact": "task-requirements-evidence",
+  "purpose": "Proves provider-neutral task required surfaces from executable scheduling behavior, runtime capability projection, and request ingress code.",
+  "surfaces": [
+    {
+      "name": "structured-event-stream",
+      "meaning": "stdout/RPC에서 구조화된 event stream을 받을 수 있어야 한다.",
+      "capability_flag": "SupportsStructuredEventStream",
+      "scheduling_constant": "SurfaceStructuredEventStream",
+      "candidate_field": "SupportsStreaming",
+      "source_checks": ["surface-structured-constant", "surface-structured-support"]
+    },
+    {
+      "name": "session-resume",
+      "meaning": "session/thread resume이 가능해야 한다.",
+      "capability_flag": "SupportsResume",
+      "scheduling_constant": "SurfaceSessionResume",
+      "candidate_field": "SupportsResume",
+      "source_checks": ["surface-session-constant", "surface-session-support"]
+    },
+    {
+      "name": "system-prompt",
+      "meaning": "system/developer instruction을 native surface로 전달할 수 있어야 한다.",
+      "capability_flag": "SupportsSystemPrompt",
+      "scheduling_constant": "SurfaceSystemPrompt",
+      "candidate_field": "SupportsSystem",
+      "source_checks": ["surface-system-constant", "surface-system-support"]
+    },
+    {
+      "name": "max-turns",
+      "meaning": "turn limit을 native surface로 전달할 수 있어야 한다.",
+      "capability_flag": "SupportsMaxTurns",
+      "scheduling_constant": "SurfaceMaxTurns",
+      "candidate_field": "SupportsMaxTurns",
+      "source_checks": ["surface-max-turns-constant", "surface-max-turns-support"]
+    },
+    {
+      "name": "mcp",
+      "meaning": "MCP config/tool bridge를 지원해야 한다.",
+      "capability_flag": "SupportsMCP",
+      "scheduling_constant": "SurfaceMCP",
+      "candidate_field": "SupportsMCP",
+      "source_checks": ["surface-mcp-constant", "surface-mcp-support"]
+    },
+    {
+      "name": "tool-hooks",
+      "meaning": "tool/hook event surface를 지원해야 한다.",
+      "capability_flag": "SupportsHookEvents",
+      "scheduling_constant": "SurfaceToolHooks",
+      "candidate_field": "SupportsToolHooks",
+      "source_checks": ["surface-tool-hooks-constant", "surface-tool-hooks-support"]
+    },
+    {
+      "name": "usage",
+      "meaning": "token usage metric을 제공해야 한다.",
+      "capability_flag": "SupportsUsageMetrics",
+      "scheduling_constant": "SurfaceUsage",
+      "candidate_field": "SupportsUsage",
+      "source_checks": ["surface-usage-constant", "surface-usage-support"]
+    },
+    {
+      "name": "worktree",
+      "meaning": "daemon이 선택한 task-scoped workdir/worktree를 provider 실행 표면으로 전달할 수 있어야 한다.",
+      "capability_flag": "SupportsWorktree",
+      "scheduling_constant": "SurfaceWorktree",
+      "candidate_field": "SupportsWorktree",
+      "source_checks": ["surface-worktree-constant", "surface-worktree-support", "runtimeactor-worktree-missing", "supervisor-worktree-gate-test"]
+    }
+  ],
+  "inputs": [
+    {
+      "name": "TaskRequest.RequiredSurfaces",
+      "summary": "Go request surface is converted into scheduling.TaskRequirements.",
+      "source_checks": ["task-request-required-surfaces"]
+    },
+    {
+      "name": "metadata.required_surfaces",
+      "summary": "legacy/local metadata uses the contracts metadata key vocabulary and is normalized into the same model.",
+      "source_checks": ["metadata-key-ssot", "metadata-required-surfaces"]
+    }
+  ],
+  "source_checks": [
+    {"name": "surface-structured-constant", "file": "internal/scheduling/surface.go", "contains": "SurfaceStructuredEventStream RequiredSurface = \"structured-event-stream\""},
+    {"name": "surface-session-constant", "file": "internal/scheduling/surface.go", "contains": "SurfaceSessionResume         RequiredSurface = \"session-resume\""},
+    {"name": "surface-system-constant", "file": "internal/scheduling/surface.go", "contains": "SurfaceSystemPrompt          RequiredSurface = \"system-prompt\""},
+    {"name": "surface-max-turns-constant", "file": "internal/scheduling/surface.go", "contains": "SurfaceMaxTurns              RequiredSurface = \"max-turns\""},
+    {"name": "surface-mcp-constant", "file": "internal/scheduling/surface.go", "contains": "SurfaceMCP                   RequiredSurface = \"mcp\""},
+    {"name": "surface-tool-hooks-constant", "file": "internal/scheduling/surface.go", "contains": "SurfaceToolHooks             RequiredSurface = \"tool-hooks\""},
+    {"name": "surface-usage-constant", "file": "internal/scheduling/surface.go", "contains": "SurfaceUsage                 RequiredSurface = \"usage\""},
+    {"name": "surface-worktree-constant", "file": "internal/scheduling/surface.go", "contains": "SurfaceWorktree              RequiredSurface = \"worktree\""},
+    {"name": "surface-structured-support", "file": "internal/scheduling/surface_support.go", "contains": "case SurfaceStructuredEventStream:"},
+    {"name": "surface-session-support", "file": "internal/scheduling/surface_support.go", "contains": "case SurfaceSessionResume:"},
+    {"name": "surface-system-support", "file": "internal/scheduling/surface_support.go", "contains": "case SurfaceSystemPrompt:"},
+    {"name": "surface-max-turns-support", "file": "internal/scheduling/surface_support.go", "contains": "case SurfaceMaxTurns:"},
+    {"name": "surface-mcp-support", "file": "internal/scheduling/surface_support.go", "contains": "case SurfaceMCP:"},
+    {"name": "surface-tool-hooks-support", "file": "internal/scheduling/surface_support.go", "contains": "case SurfaceToolHooks:"},
+    {"name": "surface-usage-support", "file": "internal/scheduling/surface_support.go", "contains": "case SurfaceUsage:"},
+    {"name": "surface-worktree-support", "file": "internal/scheduling/surface_support.go", "contains": "case SurfaceWorktree:"},
+    {"name": "runtimeactor-worktree-missing", "file": "internal/agentbridge/runtimeactor/capability_missing.go", "contains": "{\"worktree\", profile.supportsWorktree}"},
+    {"name": "supervisor-worktree-gate-test", "file": "internal/agentbridge/supervisor/task_routing_surface_gate_test.go", "contains": "MISSING_REQUIRED_SURFACE:worktree"},
+    {"name": "task-request-required-surfaces", "file": "internal/agentbridge/supervisor/task_requirements.go", "contains": "for _, surface := range req.RequiredSurfaces"},
+    {"name": "metadata-key-ssot", "file": "internal/agentbridge/supervisor/metadata_keys.go", "contains": "MetadataRequiredSurfaces         = string(metadatakeys.RequiredSurfaces)"},
+    {"name": "metadata-required-surfaces", "file": "internal/agentbridge/supervisor/task_requirements.go", "contains": "meta[MetadataRequiredSurfaces]"},
+    {"name": "unknown-fail-closed", "file": "internal/scheduling/eligibility_reasons.go", "contains": "UNKNOWN_REQUIRED_SURFACE"}
+  ],
+  "assertions": [
+    "required surface names are provider-neutral and must map to a scheduling capability field",
+    "unknown required surfaces fail closed instead of being treated as supported",
+    "reader documentation is generated from this manifest",
+    "worktree support is part of both scheduling eligibility and runtime missing-capability evidence"
+  ]
+}

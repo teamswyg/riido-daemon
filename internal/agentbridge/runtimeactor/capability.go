@@ -10,7 +10,7 @@ import (
 
 func reconcileProviderCapability(runtimeID, provider string, res agentbridge.DetectResult, policyBundleVersion string, discoveredAt time.Time) (providercap.ProviderCapability, error) {
 	profile := profileForProvider(provider)
-	missing := missingCapabilities(res)
+	missing := missingCapabilities(res, profile)
 	blocked := []providercap.CompatibilityReason{}
 	degraded := []providercap.CompatibilityReason{}
 	if !res.Available {
