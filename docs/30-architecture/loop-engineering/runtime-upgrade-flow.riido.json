@@ -1,0 +1,31 @@
+{
+  "id": "runtime-upgrade-flow-evidence",
+  "owner": "daemon architecture",
+  "observation": {
+    "summary": "runtime-upgrade-flow.md described no-silent-upgrade behavior as prose while implemented and reserved evidence were mixed together."
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and separate implemented runtime pin evidence from reserved active-drift cancellation evidence."
+  },
+  "execution": {
+    "summary": "Run runtimeupgrade to check generated docs, source evidence, and reserved evidence requirements."
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, source drift, unknown references, implemented rows without source checks, and reserved rows pretending to be implemented."
+  },
+  "retrospective": {
+    "summary": "Runtime upgrade knowledge now exposes the exact remaining evidence gaps instead of hiding them in narrative prose."
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/runtimeupgrade -check-doc -evidence-out /tmp/runtime-upgrade-flow-evidence.json",
+      "proves": "runtime upgrade manifest matches generated reader docs and local source evidence"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/runtime-upgrade-flow.yml",
+      "proves": "public CI uploads runtime upgrade flow evidence"
+    }
+  ]
+}
