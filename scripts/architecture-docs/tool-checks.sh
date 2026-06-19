@@ -18,6 +18,7 @@ tool_tests=(
   ./tools/provideradapteracldocs
   ./tools/providerintegrationgatedocs
   ./tools/providerruntimeboundarydocs
+  ./tools/workspacedocs
   ./tools/workspaceinvariantsdocs
   ./tools/workspacenativeconfigdocs
   ./tools/distributionhostdocs
@@ -78,6 +79,7 @@ doc_tools=(
   provideradapteracldocs
   providerintegrationgatedocs
   providerruntimeboundarydocs
+  workspacedocs
   workspaceinvariantsdocs
   workspacenativeconfigdocs
   distributionhostdocs
