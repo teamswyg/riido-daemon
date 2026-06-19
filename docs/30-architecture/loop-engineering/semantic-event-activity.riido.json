@@ -1,0 +1,10 @@
+{
+  "id": "semantic-event-activity",
+  "owner": "tools/semanticeventactivity and semantic-event-activity workflow",
+  "observation": {"summary": "Idle watchdog semantic activity was described in Markdown while runtime classification lived in EventKind.IsSemanticActivity.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json"]},
+  "hypothesis": {"summary": "A manifest that lists semantic and non-semantic event kinds can prove the reader doc and runtime classification stay aligned.", "artifacts": ["tools/semanticeventactivity/validate_test.go"]},
+  "execution": {"summary": "Compare manifest categories against internal/agentbridge.EventKind.IsSemanticActivity and upload classification evidence.", "artifacts": [".github/workflows/semantic-event-activity.yml", "tools/semanticeventactivity"]},
+  "evaluation": {"summary": "The verifier rejects unknown event kinds, category drift, duplicate event kinds, and generated doc drift.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md"]},
+  "retrospective": {"summary": "Idle watchdog reader docs are generated from a manifest and runtime classification is now an evidence boundary.", "artifacts": ["internal/agentbridge/event_kind_catalog.go"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/semanticeventactivity -check-doc -evidence-out /tmp/semantic-event-activity-evidence.json", "proves": "semantic activity manifest matches runtime event classification"}, {"kind": "workflow", "ref": ".github/workflows/semantic-event-activity.yml", "proves": "public CI uploads semantic event classification evidence"}]
+}

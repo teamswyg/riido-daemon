@@ -20,6 +20,8 @@ required_files=(
   docs/30-architecture/provider-real-cli-observation.riido.json
   docs/30-architecture/runtime-secret-private-evidence.md
   docs/30-architecture/runtime-secret-private-evidence.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md
+  docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json
   docs/30-architecture/figma-ai-agent-daemon-boundary.md
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -31,8 +33,7 @@ for path in "${required_files[@]}"; do
   test -f "$path"
 done
 
-scripts/verify-riido-work-branch.sh \
-  "A-40-AI-Agent-SSOT-Riido-작업-branchName-사용-강제"
+scripts/verify-riido-work-branch.sh "A-40-AI-Agent-SSOT-Riido-작업-branchName-사용-강제"
 
 if scripts/verify-riido-work-branch.sh "codex/not-allowed"; then
   echo "namespaced helper branch unexpectedly passed"
@@ -51,7 +52,6 @@ if [ -n "$stale" ]; then
   printf 'Stale or cross-boundary architecture wording:\n%s\n' "$stale"
   exit 1
 fi
-
 env_keys=(
   RIIDO_CLAUDE_PATH RIIDO_CODEX_PATH RIIDO_OPENCLAW_PATH RIIDO_CURSOR_PATH
   AGENTBRIDGE_INTEGRATION RIIDO_TASK_QUEUE_DIR RIIDO_TASK_DB_SOURCE_PATH
@@ -64,10 +64,11 @@ done
 
 scripts/verify-go-dependencies.sh
 
-go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification -count=1
+go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity -count=1
 go run ./tools/loopevidence -check
 go run ./tools/docmap -check
 go run ./tools/repoverification -check-doc
+go run ./tools/semanticeventactivity -check-doc
 go run ./tools/redactiondrift
 go run ./tools/providerintegrationevidence -check-doc
 go run ./tools/runtimesecretevidence -check-doc
