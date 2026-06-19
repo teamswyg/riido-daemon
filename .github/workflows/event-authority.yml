@@ -1,0 +1,37 @@
+name: event-authority
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/event-authority.yml"
+      - "docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md"
+      - "docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json"
+      - "internal/ir/ingest/draft.go"
+      - "internal/ir/ingest/event_from_draft.go"
+      - "tools/eventauthority/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  event-authority-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify event authority
+        run: |
+          mkdir -p out
+          go test ./tools/eventauthority -count=1
+          go run ./tools/eventauthority \
+            -check-doc \
+            -evidence-out out/event-authority-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: event-authority-evidence
+          path: out/event-authority-evidence.json
+          if-no-files-found: error

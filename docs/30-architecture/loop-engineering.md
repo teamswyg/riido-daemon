@@ -79,6 +79,23 @@
   - `command`: go run ./tools/semanticeventactivity -check-doc -evidence-out /tmp/semantic-event-activity-evidence.json; proves semantic activity manifest matches runtime event classification
   - `workflow`: .github/workflows/semantic-event-activity.yml; proves public CI uploads semantic event classification evidence
 
+### event-authority
+
+- Owner: `tools/eventauthority and event-authority workflow`
+- Observe: EventIngestor append authority was described in Markdown while Draft and CanonicalEvent construction lived in Go source.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json`
+- Hypothesis: A manifest can prove which fields are draft-supplied and which are assigned by EventIngestor by reading Go AST source.
+  - Artifacts: `tools/eventauthority/validate_test.go`
+- Execute: Compare manifest authority fields with internal/ir/ingest Draft and CanonicalEvent builder source and upload field-level evidence.
+  - Artifacts: `.github/workflows/event-authority.yml`, `tools/eventauthority`
+- Evaluate: The verifier rejects generated doc drift, ingestor-assigned fields exposed in Draft, missing draft fields, and missing CanonicalEvent builder assignments.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md`
+- Retrospective: Event append authority reader docs are generated, while Draft and builder source remain the runtime evidence boundary.
+  - Artifacts: `internal/ir/ingest/draft.go`, `internal/ir/ingest/event_from_draft.go`
+- Evidence:
+  - `command`: go run ./tools/eventauthority -check-doc -evidence-out /tmp/event-authority-evidence.json; proves event authority manifest matches Draft and CanonicalEvent builder source
+  - `workflow`: .github/workflows/event-authority.yml; proves public CI uploads event authority field evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

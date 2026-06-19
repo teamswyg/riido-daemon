@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 set -euo pipefail
-
 required_files=(
   docs/20-domain/context-map.md
   docs/README.md
@@ -8,6 +7,8 @@ required_files=(
   docs/readme/document-map.riido.json
   docs/readme/verification.md
   docs/readme/verification.riido.json
+  docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md
+  docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json
   docs/30-architecture/module-decomposition.md
   docs/30-architecture/cli-surface.md
   docs/30-architecture/config-reference.md
@@ -28,13 +29,10 @@ required_files=(
   docs/30-architecture/riido-work-branch-gate.md
   docs/50-roadmap/open-questions.md
 )
-
 for path in "${required_files[@]}"; do
   test -f "$path"
 done
-
 scripts/verify-riido-work-branch.sh "A-40-AI-Agent-SSOT-Riido-작업-branchName-사용-강제"
-
 if scripts/verify-riido-work-branch.sh "codex/not-allowed"; then
   echo "namespaced helper branch unexpectedly passed"
   exit 1
@@ -57,7 +55,6 @@ env_keys=(
   AGENTBRIDGE_INTEGRATION RIIDO_TASK_QUEUE_DIR RIIDO_TASK_DB_SOURCE_PATH
   RIIDO_SAAS_URL RIIDO_POLICY_BUNDLE_PATH
 )
-
 for key in "${env_keys[@]}"; do
   grep -q "$key" docs/30-architecture/config-reference.md
 done
@@ -65,10 +62,12 @@ done
 scripts/verify-go-dependencies.sh
 
 go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity -count=1
+go test ./tools/eventauthority -count=1
 go run ./tools/loopevidence -check
 go run ./tools/docmap -check
 go run ./tools/repoverification -check-doc
 go run ./tools/semanticeventactivity -check-doc
+go run ./tools/eventauthority -check-doc
 go run ./tools/redactiondrift
 go run ./tools/providerintegrationevidence -check-doc
 go run ./tools/runtimesecretevidence -check-doc
