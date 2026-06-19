@@ -18,6 +18,7 @@
     "docs/30-architecture/loop-engineering/draft-field-surface.riido.json",
     "docs/30-architecture/loop-engineering/session-lifecycle.riido.json",
     "docs/30-architecture/loop-engineering/branch-gate.riido.json",
+    "docs/30-architecture/loop-engineering/compatibility-gate.riido.json",
     "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
     "docs/30-architecture/loop-engineering/store-distribution.riido.json",
     "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",

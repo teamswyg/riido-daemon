@@ -1,0 +1,40 @@
+name: compatibility-gate
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/compatibility-gate.yml"
+      - "docs/30-architecture/compatibility-gate.md"
+      - "docs/30-architecture/compatibility-gate.riido.json"
+      - "internal/agentbridge/detectutil/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/hostintegration/**"
+      - "internal/policy/**"
+      - "internal/scheduling/**"
+      - "tools/compatibilitygate/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  compatibility-gate-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify compatibility gate
+        run: |
+          mkdir -p out
+          go test ./tools/compatibilitygate -count=1
+          go run ./tools/compatibilitygate \
+            -check-doc \
+            -evidence-out out/compatibility-gate-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: compatibility-gate-evidence
+          path: out/compatibility-gate-evidence.json
+          if-no-files-found: error

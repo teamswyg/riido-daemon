@@ -232,6 +232,18 @@
   - `command`: go run ./tools/branchgate -check-doc -check-script -evidence-out /tmp/branch-gate-evidence.json; proves branch gate doc/script and examples match the manifest
   - `workflow`: .github/workflows/branch-gate-evidence.yml; proves public CI uploads branch gate evidence
 
+### compatibility-gate-evidence
+
+- Owner: `daemon architecture`
+- Observe: compatibility-gate.md described a pre-execute safety gate as prose while runtime evidence lived across detectutil, hostintegration, policy, scheduling, and runtimeactor.
+- Hypothesis: A manifest can generate the reader doc and prove every gate input, step, and failure semantic points at source or test evidence.
+- Execute: Run compatibilitygate to check generated docs, source evidence, and publish a compact evidence artifact.
+- Evaluate: The verifier rejects generated doc drift, source drift, duplicate source checks, unknown source references, and unproved gate rows.
+- Retrospective: Compatibility gate knowledge becomes executable evidence rather than a manual architecture note.
+- Evidence:
+  - `command`: go run ./tools/compatibilitygate -check-doc -evidence-out /tmp/compatibility-gate-evidence.json; proves compatibility gate manifest matches generated reader docs and local source evidence
+  - `workflow`: .github/workflows/compatibility-gate.yml; proves public CI uploads compatibility gate evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`
