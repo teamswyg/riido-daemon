@@ -53,6 +53,13 @@ required_files=(
   docs/30-architecture/release-artifacts/review-boundary.md
   .github/workflows/release-artifact-docs.yml
   docs/30-architecture/integration-matrix.md
+  docs/30-architecture/integration-matrix.riido.json
+  docs/30-architecture/integration-matrix/assertions.md
+  docs/30-architecture/integration-matrix/change-procedure.md
+  docs/30-architecture/integration-matrix/gate-policy.md
+  docs/30-architecture/integration-matrix/instruction-effectiveness.md
+  docs/30-architecture/integration-matrix/provider-matrix.md
+  .github/workflows/integration-matrix-docs.yml
   docs/30-architecture/compatibility-gate.md
   docs/30-architecture/compatibility-gate.riido.json
   docs/30-architecture/runtime-upgrade-flow.md
@@ -63,6 +70,7 @@ required_files=(
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json
   docs/30-architecture/loop-engineering/release-artifact-docs.riido.json
+  docs/30-architecture/loop-engineering/integration-matrix-docs.riido.json
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
   docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json

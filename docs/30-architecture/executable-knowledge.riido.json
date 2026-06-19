@@ -30,20 +30,6 @@
       ]
     },
     {
-      "id": "integration-matrix",
-      "owner": "provider integration matrix",
-      "reason": "provider integration knowledge remains a reader-authored matrix",
-      "next_artifact": "promote provider capability matrix into executable manifest and provider observation evidence",
-      "paths": [
-        "docs/30-architecture/integration-matrix.md",
-        "docs/30-architecture/integration-matrix/assertions.md",
-        "docs/30-architecture/integration-matrix/change-procedure.md",
-        "docs/30-architecture/integration-matrix/gate-policy.md",
-        "docs/30-architecture/integration-matrix/instruction-effectiveness.md",
-        "docs/30-architecture/integration-matrix/provider-matrix.md"
-      ]
-    },
-    {
       "id": "module-decomposition",
       "owner": "package architecture",
       "reason": "package/import architecture remains hand-authored instead of derived from source imports",

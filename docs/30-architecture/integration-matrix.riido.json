@@ -1,0 +1,61 @@
+{
+  "schema_version": "riido-integration-matrix-docs.v1",
+  "id": "architecture-provider-integration-matrix",
+  "title": "Provider Integration Matrix",
+  "generated_doc": "docs/30-architecture/integration-matrix.md",
+  "workflow": ".github/workflows/integration-matrix-docs.yml",
+  "evidence_artifact": "integration-matrix-docs",
+  "riido_task": "RIID-4711",
+  "purpose": "Generate provider integration reader docs from executable provider validation and observation manifests.",
+  "provider_validation_manifest": "docs/30-architecture/provider-validation-matrix.riido.json",
+  "real_cli_observation_manifest": "docs/30-architecture/provider-real-cli-observation.riido.json",
+  "security_decision_ref": "docs/20-domain/security.md §4.3",
+  "security_decision_link": "../20-domain/security.md",
+  "gate_policy": [
+    "AGENTBRIDGE_INTEGRATION=1 must be set, otherwise the test skips.",
+    "The provider executable must be discoverable or explicitly configured with RIIDO_<PROVIDER>_PATH, otherwise the test skips.",
+    "The adapter Detect result must be available, otherwise the test skips with the detect reason.",
+    "After all gates pass, a failed prompt roundtrip is a real integration failure."
+  ],
+  "instruction_probe": {
+    "public_ci": "go test ./internal/agentbridge",
+    "builder": "BuildInstructionEffectivenessProbe",
+    "validator": "ValidateInstructionEffectivenessOutput",
+    "providers": [
+      {"provider": "claude", "marker": "RIIDO_INSTRUCTION_ACK:claude", "surface": "system-prompt"},
+      {"provider": "codex", "marker": "RIIDO_INSTRUCTION_ACK:codex", "surface": "prompt prefix"},
+      {"provider": "openclaw", "marker": "RIIDO_INSTRUCTION_ACK:openclaw", "surface": "system-prompt-inline"},
+      {"provider": "cursor", "marker": "RIIDO_INSTRUCTION_ACK:cursor", "surface": "prompt prefix"}
+    ]
+  },
+  "change_procedure": [
+    "Update the provider test and this matrix in the same PR when real CLI behavior changes.",
+    "New providers must add deterministic public tests before optional real-CLI integration.",
+    "New providers must define instruction placement and an effectiveness probe marker.",
+    "A detected provider with a failed roundtrip is a failure, not a skip."
+  ],
+  "detail_docs": [
+    {"title": "Gate Policy", "path": "docs/30-architecture/integration-matrix/gate-policy.md"},
+    {"title": "Provider Matrix", "path": "docs/30-architecture/integration-matrix/provider-matrix.md"},
+    {"title": "Integration Assertions", "path": "docs/30-architecture/integration-matrix/assertions.md"},
+    {"title": "Agent Instruction Effectiveness Probe", "path": "docs/30-architecture/integration-matrix/instruction-effectiveness.md"},
+    {"title": "Change Procedure", "path": "docs/30-architecture/integration-matrix/change-procedure.md"}
+  ],
+  "source_checks": [
+    {"name": "provider-validation-manifest", "file": "docs/30-architecture/provider-validation-matrix.riido.json", "contains": "SaaS completed thread evidence is not filesystem side-effect evidence"},
+    {"name": "openclaw-worktree-gate", "file": "docs/30-architecture/provider-validation-matrix/openclaw.riido.json", "contains": "MISSING_REQUIRED_SURFACE:worktree"},
+    {"name": "codex-full-access-envelope", "file": "docs/30-architecture/provider-validation-matrix/codex.riido.json", "contains": "danger-full-access app-server --listen stdio://"},
+    {"name": "instruction-builder", "file": "internal/agentbridge/telemetry_probe.go", "contains": "BuildInstructionEffectivenessProbe"},
+    {"name": "instruction-validator", "file": "internal/agentbridge/telemetry_probe.go", "contains": "ValidateInstructionEffectivenessOutput"},
+    {"name": "instruction-probe-public-ci", "file": "internal/agentbridge/telemetry_probe_contract_test.go", "contains": "TestBuildInstructionEffectivenessProbePlacesMarkerByProvider"},
+    {"name": "real-cli-observation-workflow", "file": ".github/workflows/provider-real-cli-observation.yml", "contains": "-run-integration"}
+  ],
+  "assertions": [
+    "Public pull-request CI proves deterministic adapter behavior only; real provider CLI execution remains opt-in.",
+    "`PASS` means the provider produced the evidence named in provider-validation-matrix.riido.json.",
+    "A skipped integration test, detected binary, or SaaS completed thread alone is not filesystem side-effect evidence.",
+    "SaaS completion alone must not be treated as filesystem side-effect evidence.",
+    "OpenClaw supports text completion but remains supports_worktree=false for worktree-required routing.",
+    "Provider full-access/trusted modes must be explicit daemon-owned launch envelopes."
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "integration-matrix-docs",
+  "owner": "provider integration matrix",
+  "observation": {
+    "summary": "Provider integration docs were reader-authored even though provider validation and real CLI observation manifests already held the executable facts.",
+    "artifacts": ["docs/30-architecture/integration-matrix.md", "docs/30-architecture/provider-validation-matrix.riido.json"]
+  },
+  "hypothesis": {
+    "summary": "An integration matrix generator can render provider gate policy, matrix rows, assertions, instruction probes, and change procedure from provider validation manifests.",
+    "artifacts": ["docs/30-architecture/integration-matrix.riido.json", "docs/30-architecture/provider-real-cli-observation.riido.json"]
+  },
+  "execution": {
+    "summary": "Run integrationmatrix to check generated docs and upload evidence in public CI.",
+    "artifacts": ["tools/integrationmatrix", ".github/workflows/integration-matrix-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects reader doc drift and the architecture coverage tool no longer classifies integration-matrix as manual debt.",
+    "artifacts": ["docs/30-architecture/executable-knowledge.md"]
+  },
+  "retrospective": {
+    "summary": "Provider integration knowledge becomes a generated projection of provider manifests instead of a separate matrix interpretation surface.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/integrationmatrix -check-doc -evidence-out /tmp/integration-matrix-docs.json",
+      "proves": "provider integration docs are generated from integration and provider validation manifests"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/integration-matrix-docs.yml",
+      "proves": "public CI uploads integration matrix docs evidence"
+    }
+  ]
+}
