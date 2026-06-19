@@ -1,0 +1,12 @@
+{
+  "schema_version": "riido-security-invariant-detail.v1",
+  "id": "trust-tier",
+  "title": "Security Invariants: Trust Tier",
+  "generated_doc": "docs/20-domain/security/invariants/trust-tier.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Trust tier means the isolation level of the runtime execution environment."},
+    {"kind": "table", "columns": ["Tier", "Meaning", "Unsafe bypass possible?"], "rows": [["`Host`", "daemon runs directly on user/operator host OS", "never"], ["`IsolatedContainer`", "OS-level container isolation such as Docker, containerd, or Podman", "only when policy bundle explicitly allows"], ["`EphemeralVM`", "one-shot VM per task", "only when policy bundle explicitly allows"], ["`CIControlledRunner`", "CI-managed isolated runner", "only when policy bundle explicitly allows and CI isolation is verified"], ["`Unknown`", "trust tier cannot be determined", "never"]]},
+    {"kind": "heading", "text": "Rules"},
+    {"kind": "ordered", "items": ["Trust tier is decided from external signals during runtime registration.", "Signals combine self-reporting, such as wrapper manifest or runtime env, with verifiable facts, such as cgroup or namespace isolation detection.", "`Unknown` is rejected by capability gate G-S1.", "Trust tier is not an input to `ProviderCapability` / `CapabilityFingerprint`, but changing it triggers capability reevaluation."]}
+  ]
+}
