@@ -1,0 +1,33 @@
+{
+  "schema_version": "riido-assignment-fsm-evidence.v1",
+  "id": "assignment-fsm-evidence",
+  "title": "Assignment Lifecycle FSM Evidence",
+  "generated_doc": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md",
+  "workflow": ".github/workflows/assignment-fsm-evidence.yml",
+  "evidence_artifact": "assignment-fsm-evidence",
+  "source_package": "github.com/teamswyg/riido-contracts/assignment",
+  "evidence_manifest": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json",
+  "purpose": "Generates the reader-facing assignment lifecycle diagram from the contracts generated FSM SPI instead of hand-maintained Mermaid.",
+  "source_checks": [
+    {"name": "daemon-consumes-generated-fsm", "file": "internal/contractscompat/contractscompat_test.go", "contains": "assignment.GeneratedAssignmentFSM()"},
+    {"name": "daemon-consumes-service-provider", "file": "internal/contractscompat/contractscompat_test.go", "contains": "assignment.GeneratedAssignmentFSMServiceProvider().AssignmentFSM().Name()"},
+    {"name": "queued-to-leased-contract-check", "file": "internal/contractscompat/contractscompat_test.go", "contains": "CanTransition(assignment.AssignmentStateCodeQueued, assignment.AssignmentStateCodeLeased)"},
+    {"name": "contracts-fsm-conformance-external", "file": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence/external.riido.json", "contains": "TestVerifyGeneratedFSMFiles"},
+    {"name": "local-platform-fsm-consumption", "file": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence/local-platform.riido.json", "contains": "generated-fsm-daemon-consumption"}
+  ],
+  "forbidden_doc_tokens": [
+    "preparing_workspace",
+    "waiting_approval",
+    "stop_requested",
+    "provider_cancel_requested",
+    "blocked"
+  ],
+  "related_sections": [
+    {"title": "Stream envelope", "path": "stream-envelope.md"},
+    {"title": "Retry and recovery policy", "path": "retry-recovery-policy.md"},
+    {"title": "Repo ownership", "path": "repo-ownership.md"},
+    {"title": "Implementation slices", "path": "implementation-slices.md"},
+    {"title": "Verification evidence", "path": "verification-evidence.md"},
+    {"title": "Current daemon slice status", "path": "current-daemon-slice-status.md"}
+  ]
+}

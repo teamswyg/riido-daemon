@@ -39,7 +39,7 @@
     {"topic": "process lifecycle evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md", "docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.riido.json"]},
     {"topic": "draft field surface evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md", "docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md", "docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json"]},
     {"topic": "session lifecycle evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md", "docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json"]},
-    {"topic": "Figma boundary and unresolved execution design", "docs": ["docs/30-architecture/figma-ai-agent-daemon-boundary.md", "docs/30-architecture/agent-execution-unresolved-design.md"]},
+    {"topic": "Figma boundary and unresolved execution design", "docs": ["docs/30-architecture/figma-ai-agent-daemon-boundary.md", "docs/30-architecture/agent-execution-unresolved-design.md", "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md", "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json"]},
     {"topic": "migration history and open questions", "docs": ["docs/migration/daemon.md", "docs/migration/cli.md", "docs/50-roadmap/open-questions.md"]}
   ],
   "repos": [

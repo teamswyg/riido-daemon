@@ -30,6 +30,7 @@ tool_tests=(
   ./tools/toolusegateevidence
   ./tools/nativeconfigmcp
   ./tools/fullaccessharness
+  ./tools/assignmentfsm
 )
 
 doc_tools=(
@@ -51,6 +52,7 @@ doc_tools=(
   toolusegateevidence
   nativeconfigmcp
   fullaccessharness
+  assignmentfsm
 )
 
 go test "${tool_tests[@]}" -count=1
