@@ -1,0 +1,17 @@
+# SaaS Polling And Runtime Bindings
+
+[Back to Daemon Config Reference](../config-reference.md)
+
+SaaS claim polling sends `PollRequest.wait_ms` with a built-in 30 second
+long-poll wait and extends HTTP timeout beyond that budget. This is not exposed
+as public env. `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS` remains the local
+supervisor retry interval after empty long-poll responses.
+
+Dynamic runtime bindings from `/v1/daemon/agent-bindings` are cached for 5
+seconds. Runtime registration/snapshot sync invalidates the cache so new
+provider facts appear promptly without making idle claim loops perform a
+one-request-per-second control-plane read.
+
+Runtime snapshots preserve local provider availability: explicit
+`provider.<name>.available=false` projects as `offline` or `missing`, not
+`online` merely because a binary was observed.
