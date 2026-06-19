@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "id": "figma-onboarding-settings-boundaries",
+  "title": "Figma Onboarding Settings Boundaries",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/figma-onboarding-settings-boundaries.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Onboarding, settings, and provider distribution choices become runtime input only after upstream validation."},
+    {"kind": "bullets", "items": [
+      "Provider CLI distribution, auth, team selection, and installation state are not interpreted from Figma forms by C4.",
+      "The runtime reads executable, provider kind, instruction, model, cwd, env, and capability fingerprint fields.",
+      "Missing provider setup must surface as runtime evidence, not be silently substituted by UI assumptions."
+    ]}
+  ]
+}

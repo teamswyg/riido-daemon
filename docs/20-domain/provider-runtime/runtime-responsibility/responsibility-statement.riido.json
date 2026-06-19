@@ -1,0 +1,15 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "id": "responsibility-statement",
+  "title": "Responsibility Statement",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/responsibility-statement.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The provider runtime owns the boundary between a provider CLI process and Riido's canonical event system."},
+    {"kind": "bullets", "items": [
+      "Start a provider process from an already-approved runtime assignment input.",
+      "Manage provider session shape, stdin/stdout/stderr, parser, and raw event envelope.",
+      "Normalize raw provider output into provider event drafts for the supervisor."
+    ]},
+    {"kind": "paragraph", "text": "The runtime must not decide business policy, mutate canonical IR directly, or infer UI semantics from Figma/client screens."}
+  ]
+}

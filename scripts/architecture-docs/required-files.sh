@@ -56,6 +56,25 @@ required_files=(
   docs/20-domain/security/invariants/policy-targets.md
   docs/20-domain/security/invariants/policy-targets.riido.json
   .github/workflows/security-invariants-docs.yml
+  docs/20-domain/provider-runtime/runtime-responsibility.md
+  docs/20-domain/provider-runtime/runtime-responsibility.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/responsibility-statement.md
+  docs/20-domain/provider-runtime/runtime-responsibility/responsibility-statement.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/agent-client-nonresponsibilities.md
+  docs/20-domain/provider-runtime/runtime-responsibility/agent-client-nonresponsibilities.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/figma-task-runtime-boundaries.md
+  docs/20-domain/provider-runtime/runtime-responsibility/figma-task-runtime-boundaries.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/figma-onboarding-settings-boundaries.md
+  docs/20-domain/provider-runtime/runtime-responsibility/figma-onboarding-settings-boundaries.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/domain-nonresponsibilities.md
+  docs/20-domain/provider-runtime/runtime-responsibility/domain-nonresponsibilities.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/c3-c4-boundary.md
+  docs/20-domain/provider-runtime/runtime-responsibility/c3-c4-boundary.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/trusted-runtime-envelope.md
+  docs/20-domain/provider-runtime/runtime-responsibility/trusted-runtime-envelope.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/provider-adapter-port.md
+  docs/20-domain/provider-runtime/runtime-responsibility/provider-adapter-port.riido.json
+  .github/workflows/provider-runtime-responsibility-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -156,6 +175,7 @@ required_files=(
   docs/30-architecture/loop-engineering/locking-docs.riido.json
   docs/30-architecture/loop-engineering/security-redaction.riido.json
   docs/30-architecture/loop-engineering/security-invariants-docs.riido.json
+  docs/30-architecture/loop-engineering/provider-runtime-responsibility-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

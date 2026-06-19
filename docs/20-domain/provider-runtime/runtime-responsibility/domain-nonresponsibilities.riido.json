@@ -1,0 +1,15 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "id": "domain-nonresponsibilities",
+  "title": "Domain Nonresponsibilities",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/domain-nonresponsibilities.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Provider runtime is an adapter boundary, not the domain system of record."},
+    {"kind": "bullets", "items": [
+      "It does not append canonical IR events or own the task event log envelope.",
+      "It does not create or update ProviderCapability; it consumes capability data and computes local compatibility evidence.",
+      "It does not lease tasks, heartbeat assignments, write workdir config as policy, or judge validation outcomes."
+    ]},
+    {"kind": "paragraph", "text": "Those responsibilities stay in contracts, scheduling, policy, and control-plane layers."}
+  ]
+}

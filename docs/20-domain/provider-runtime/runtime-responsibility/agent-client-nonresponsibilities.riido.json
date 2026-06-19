@@ -1,0 +1,15 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "id": "agent-client-nonresponsibilities",
+  "title": "Agent Client Nonresponsibilities",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/agent-client-nonresponsibilities.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Agent profile, presentation, and device listing behavior live outside the provider runtime."},
+    {"kind": "bullets", "items": [
+      "The runtime consumes assigned run input after the control plane has selected the agent/device/provider.",
+      "The runtime may translate instruction, model, and capability values into provider arguments.",
+      "The runtime does not create agent records, render participants, or own profile thumbnail state."
+    ]},
+    {"kind": "paragraph", "text": "This prevents client UX fields from becoming implicit process execution policy."}
+  ]
+}

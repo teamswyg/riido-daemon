@@ -1,0 +1,58 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-docs.v1",
+  "id": "provider-runtime-responsibility-docs",
+  "title": "Provider Runtime / Adapter SSOT: Runtime Responsibility",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility.md",
+  "workflow": ".github/workflows/provider-runtime-responsibility-docs.yml",
+  "evidence_artifact": "provider-runtime-responsibility-docs",
+  "summary": [
+    "This SSOT fixes the C4 Provider Runtime / Adapter responsibility boundary as generated documentation, source anchors, and CI evidence.",
+    "The provider runtime owns process/session/raw provider event normalization. It does not own canonical IR persistence, task leasing, client profile presentation, policy interpretation, or Figma UI semantics."
+  ],
+  "detail_pages": [
+    {"id": "responsibility-statement", "title": "Responsibility Statement", "path": "runtime-responsibility/responsibility-statement.md"},
+    {"id": "agent-client-nonresponsibilities", "title": "Agent Client Nonresponsibilities", "path": "runtime-responsibility/agent-client-nonresponsibilities.md"},
+    {"id": "figma-task-runtime-boundaries", "title": "Figma Task Runtime Boundaries", "path": "runtime-responsibility/figma-task-runtime-boundaries.md"},
+    {"id": "figma-onboarding-settings-boundaries", "title": "Figma Onboarding Settings Boundaries", "path": "runtime-responsibility/figma-onboarding-settings-boundaries.md"},
+    {"id": "domain-nonresponsibilities", "title": "Domain Nonresponsibilities", "path": "runtime-responsibility/domain-nonresponsibilities.md"},
+    {"id": "c3-c4-boundary", "title": "C3 / C4 Boundary", "path": "runtime-responsibility/c3-c4-boundary.md"},
+    {"id": "trusted-runtime-envelope", "title": "Trusted Runtime Envelope", "path": "runtime-responsibility/trusted-runtime-envelope.md"},
+    {"id": "provider-adapter-port", "title": "Provider Adapter Port", "path": "runtime-responsibility/provider-adapter-port.md"}
+  ],
+  "related_pages": [
+    {"id": "provider-event-draft", "title": "Provider Event Draft", "path": "runtime-responsibility/provider-event-draft.md"}
+  ],
+  "fragments": {
+    "responsibility-statement": "runtime-responsibility/responsibility-statement.riido.json",
+    "agent-client-nonresponsibilities": "runtime-responsibility/agent-client-nonresponsibilities.riido.json",
+    "figma-task-runtime-boundaries": "runtime-responsibility/figma-task-runtime-boundaries.riido.json",
+    "figma-onboarding-settings-boundaries": "runtime-responsibility/figma-onboarding-settings-boundaries.riido.json",
+    "domain-nonresponsibilities": "runtime-responsibility/domain-nonresponsibilities.riido.json",
+    "c3-c4-boundary": "runtime-responsibility/c3-c4-boundary.riido.json",
+    "trusted-runtime-envelope": "runtime-responsibility/trusted-runtime-envelope.riido.json",
+    "provider-adapter-port": "runtime-responsibility/provider-adapter-port.riido.json"
+  },
+  "source_checks": [
+    {"name": "agentbridge-c4-ownership", "file": "internal/agentbridge/state.go", "contains": "Package agentbridge is the ACL between provider CLI processes"},
+    {"name": "agentbridge-not-capability-owner", "file": "internal/agentbridge/state.go", "contains": "Provider capability model (ProviderCapability/Fingerprint)"},
+    {"name": "provider-import-forbidden", "file": "internal/agentbridge/state.go", "contains": "MUST NOT import any provider/<name> package"},
+    {"name": "adapter-interface", "file": "internal/agentbridge/adapter.go", "contains": "type Adapter interface"},
+    {"name": "adapter-translator-only", "file": "internal/agentbridge/adapter.go", "contains": "Adapters are translators, not state owners"},
+    {"name": "provider-event-draft", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "func providerEventDraft"},
+    {"name": "runtime-lease-pin", "file": "internal/scheduling/lease.go", "contains": "(RuntimeID, CapabilityFingerprint) pair IS the runtime pin"},
+    {"name": "runtime-capability-subset", "file": "internal/scheduling/requirements.go", "contains": "intentionally excludes process/runtime details"},
+    {"name": "capability-fingerprint-reconciliation", "file": "internal/agentbridge/runtimeactor/capability.go", "contains": "ComputeCapabilityFingerprint"},
+    {"name": "codex-full-access-envelope", "file": "internal/provider/codex/command.go", "contains": "codex --sandbox danger-full-access app-server --listen"},
+    {"name": "codex-sandbox-override-test", "file": "internal/provider/codex/command_sandbox_override_test.go", "contains": "TestBuildStartUsesOnlyDaemonGeneratedSandboxSelection"},
+    {"name": "claude-permission-required", "file": "internal/provider/claude/permission_policy.go", "contains": "PermissionMode is required"},
+    {"name": "claude-bypass-host-test", "file": "internal/provider/claude/command_permission_test.go", "contains": "bypassPermissions on Host trust tier must be rejected"},
+    {"name": "assignment-execution-key", "file": "internal/agentbridge/runtimeactor/assignment_identity_test.go", "contains": "TestRuntimeActorUsesAssignmentIDAsExecutionKey"}
+  ],
+  "assertions": [
+    "C4 owns provider process/session/raw event normalization, not canonical IR persistence.",
+    "Agent client and Figma UI concepts are upstream inputs, not runtime adapter responsibilities.",
+    "ProviderCapability and CapabilityFingerprint stay in contracts/C3; C4 consumes them read-only.",
+    "Runtime reuse is pinned by RuntimeID plus CapabilityFingerprint, never by provider name alone.",
+    "Trusted runtime envelopes are provider-specific and require tests before promotion."
+  ]
+}
