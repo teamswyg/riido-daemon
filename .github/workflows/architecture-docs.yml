@@ -5,17 +5,11 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/architecture-docs.yml"
-      - "docs/20-domain/context-map.md"
-      - "docs/20-domain/context-map/**"
-      - "docs/20-domain/provider-runtime.md"
-      - "docs/20-domain/provider-runtime/**"
-      - "docs/20-domain/security.md"
+      - "docs/20-domain/**"
       - "docs/30-architecture/**"
-      - "docs/50-roadmap/open-questions.md"
-      - "docs/migration/daemon.md"
-      - "docs/migration/daemon/figma-boundary-provenance.md"
-      - "docs/migration/daemon/figma-boundary-provenance/**"
-      - "docs/migration/cli.md"
+      - "docs/50-roadmap/**"
+      - "docs/migration/**"
+      - "scripts/verify-architecture-docs.sh"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/figmaboundary/**"
       - "tools/agentexecutionevidence/**"
@@ -23,17 +17,11 @@ on:
   pull_request:
     paths:
       - ".github/workflows/architecture-docs.yml"
-      - "docs/20-domain/context-map.md"
-      - "docs/20-domain/context-map/**"
-      - "docs/20-domain/provider-runtime.md"
-      - "docs/20-domain/provider-runtime/**"
-      - "docs/20-domain/security.md"
+      - "docs/20-domain/**"
       - "docs/30-architecture/**"
-      - "docs/50-roadmap/open-questions.md"
-      - "docs/migration/daemon.md"
-      - "docs/migration/daemon/figma-boundary-provenance.md"
-      - "docs/migration/daemon/figma-boundary-provenance/**"
-      - "docs/migration/cli.md"
+      - "docs/50-roadmap/**"
+      - "docs/migration/**"
+      - "scripts/verify-architecture-docs.sh"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/figmaboundary/**"
       - "tools/agentexecutionevidence/**"
@@ -48,56 +36,5 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
-      - name: Verify architecture SSOT files exist
-        run: |
-          test -f docs/20-domain/context-map.md
-          test -f docs/30-architecture/module-decomposition.md
-          test -f docs/30-architecture/cli-surface.md
-          test -f docs/30-architecture/config-reference.md
-          test -f docs/30-architecture/integration-matrix.md
-          test -f docs/30-architecture/compatibility-gate.md
-          test -f docs/30-architecture/runtime-upgrade-flow.md
-          test -f docs/30-architecture/figma-ai-agent-daemon-boundary.md
-          test -f docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
-          test -f docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
-          test -f docs/30-architecture/riido-work-branch-gate.md
-          test -f docs/50-roadmap/open-questions.md
-      - name: Verify Riido work branch gate
-        run: |
-          scripts/verify-riido-work-branch.sh "A-40-AI-Agent-SSOT-Riido-작업-branchName-사용-강제"
-          if scripts/verify-riido-work-branch.sh "codex/not-allowed"; then
-            echo "namespaced helper branch unexpectedly passed"
-            exit 1
-          fi
-          if scripts/verify-riido-work-branch.sh "feature-branch"; then
-            echo "non-Riido branch unexpectedly passed"
-            exit 1
-          fi
-      - name: Verify split-repo wording
-        run: |
-          stale="$(grep -R --line-number -E '후속 architecture-doc migration|architecture-doc migration slice|github.com/teamswyg/riido_daemon|cmd/riido_ai_server|internal/riidoaiserver|terraform/' docs/20-domain docs/30-architecture docs/50-roadmap || true)"
-          if [ -n "$stale" ]; then
-            printf 'Stale or cross-boundary architecture wording:\n%s\n' "$stale"
-            exit 1
-          fi
-      - name: Verify config reference covers daemon env surface
-        run: |
-          for key in RIIDO_CLAUDE_PATH RIIDO_CODEX_PATH RIIDO_OPENCLAW_PATH RIIDO_CURSOR_PATH AGENTBRIDGE_INTEGRATION RIIDO_TASK_QUEUE_DIR RIIDO_TASK_DB_SOURCE_PATH RIIDO_SAAS_URL RIIDO_POLICY_BUNDLE_PATH; do
-            grep -q "$key" docs/30-architecture/config-reference.md
-          done
-      - name: Verify no non-Riido Go dependencies
-        run: |
-          allowed="github.com/teamswyg/riido-contracts"
-          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
-          if [ -n "$disallowed" ]; then
-            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
-            exit 1
-          fi
-      - name: Verify Figma AI Agent daemon boundary
-        run: go test ./tools/figmaboundary -count=1
-      - name: Verify provider validation matrix
-        run: go test ./tools/providervalidation -count=1
-      - name: Verify agent execution evidence manifest
-        run: go test ./tools/agentexecutionevidence -count=1
-      - name: Test
-        run: go test ./...
+      - name: Verify architecture docs
+        run: scripts/verify-architecture-docs.sh
