@@ -341,6 +341,23 @@
   - `command`: go run ./tools/toolusegateevidence -check-doc -evidence-out /tmp/tool-use-gate-evidence.json; proves tool-use gate manifest matches generated docs, source evidence, and absent boundary rules
   - `workflow`: .github/workflows/tool-use-gate-evidence.yml; proves public CI uploads tool-use gate evidence
 
+### native-config-mcp-evidence
+
+- Owner: `C7 security policy`
+- Observe: Native config and MCP lifecycle rules were described as prose while evidence lived across policy, supervisor, workdir, provider adapters, and session cleanup code.
+  - Artifacts: `docs/20-domain/security/enforcement-locations/native-config-and-mcp.md`
+- Hypothesis: A manifest can generate the reader doc and prove native hook policy, Codex config-home denial, and MCP temp-file cleanup from source references.
+  - Artifacts: `docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json`
+- Execute: Run nativeconfigmcp to check generated docs, source checks, and absent policy/adapter boundary leaks.
+  - Artifacts: `tools/nativeconfigmcp`, `.github/workflows/native-config-mcp-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source evidence, workdir policy decisions, Codex task-scoped home invention, and raw MCP JSON argument leaks.
+  - Artifacts: `tools/nativeconfigmcp/run_test.go`
+- Retrospective: Native config and MCP lifecycle knowledge becomes executable evidence instead of a manually edited policy note.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/nativeconfigmcp -check-doc -evidence-out /tmp/native-config-mcp-evidence.json; proves native config/MCP manifest matches generated docs, source evidence, and absent boundary rules
+  - `workflow`: .github/workflows/native-config-mcp-evidence.yml; proves public CI uploads native config/MCP evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

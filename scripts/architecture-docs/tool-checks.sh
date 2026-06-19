@@ -28,6 +28,7 @@ tool_tests=(
   ./tools/validationevidence
   ./tools/policybundleevidence
   ./tools/toolusegateevidence
+  ./tools/nativeconfigmcp
 )
 
 doc_tools=(
@@ -47,6 +48,7 @@ doc_tools=(
   validationevidence
   policybundleevidence
   toolusegateevidence
+  nativeconfigmcp
 )
 
 go test "${tool_tests[@]}" -count=1
