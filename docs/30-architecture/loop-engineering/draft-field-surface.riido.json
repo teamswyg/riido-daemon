@@ -1,0 +1,39 @@
+{
+  "id": "draft-field-surface",
+  "owner": "tools/draftfields and draft-fields workflow",
+  "observation": {
+    "summary": "Allowed and forbidden provider draft fields were reader-only prose while adapter authority is enforced in code.",
+    "artifacts": [
+      "docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md",
+      "docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md"
+    ]
+  },
+  "hypothesis": {
+    "summary": "A single manifest can generate the field docs, separate implemented fields from reserved vocabulary, and prove forbidden authority fields do not leak into draft construction.",
+    "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json"]
+  },
+  "execution": {
+    "summary": "Scan allowed source evidence, forbidden draft scope tokens, and generated docs.",
+    "artifacts": ["tools/draftfields", ".github/workflows/draft-fields.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects missing implemented field evidence, reserved fields with fake source claims, forbidden token leaks, and generated doc drift.",
+    "artifacts": ["tools/draftfields/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Draft field reader docs now come from executable field surface ontology instead of manual prose.",
+    "artifacts": ["internal/agentbridge/supervisor/provider_event_draft.go"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/draftfields -check-doc -evidence-out /tmp/draft-fields-evidence.json",
+      "proves": "draft field surface and authority boundary remain executable"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/draft-fields.yml",
+      "proves": "public CI uploads draft field surface evidence"
+    }
+  ]
+}
