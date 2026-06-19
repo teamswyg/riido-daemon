@@ -1,0 +1,34 @@
+# Validation Gates
+
+[Back to Riido CLI Migration Plan](../cli.md)
+
+Required before a CLI migration PR is mergeable:
+
+```bash
+go test ./...
+go list -m all
+go build ./cmd/riido
+go run ./cmd/riido --help
+go run ./cmd/riido bridge providers
+```
+
+Architecture-doc migration PRs must also pass:
+
+```bash
+test -f docs/30-architecture/cli-surface.md
+go test ./...
+go build -o /tmp/riido ./cmd/riido
+go run ./cmd/riido --help
+go run ./cmd/riido bridge providers
+```
+
+RIID-4686 adds a fake-local-socket mwsd/project gate for `riido mwsd projection`
+and `riido mwsd sync`. RIID-4690 restores focused daemon lifecycle checks:
+
+```bash
+go test ./cmd/riido -run 'TestDaemon|TestLoadDaemon|TestBuildDaemon|TestForeground|TestDaemonBackground' -count=1
+go build ./cmd/riido
+```
+
+Commands that need a daemon, mwsd socket, provider CLI, or local app state must
+be black-box smoke tests with explicit skip conditions.

@@ -1,0 +1,9 @@
+# Open Follow-Ups
+
+[Back to Riido CLI Migration Plan](../cli.md)
+
+| Follow-up | Repository |
+| --- | --- |
+| Promote shared DTOs only when needed by multiple repos. | `riido-contracts` / RIID-4637 |
+| Keep SaaS server commands out of the local CLI binary. | `riido-control-plane` / RIID-4638 |
+| Keep deploy/apply commands in private automation. | `riido-infra` / RIID-4639 |
