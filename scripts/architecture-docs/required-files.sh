@@ -26,6 +26,15 @@ required_files=(
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json
+  docs/20-domain/provider-runtime/public-migration-status.md
+  docs/20-domain/provider-runtime/public-migration-status.riido.json
+  docs/20-domain/provider-runtime/public-migration-status/scope-boundaries.md
+  docs/20-domain/provider-runtime/public-migration-status/core-packages.md
+  docs/20-domain/provider-runtime/public-migration-status/claude.md
+  docs/20-domain/provider-runtime/public-migration-status/codex.md
+  docs/20-domain/provider-runtime/public-migration-status/openclaw.md
+  docs/20-domain/provider-runtime/public-migration-status/cursor.md
+  .github/workflows/provider-public-migration-docs.yml
   docs/20-domain/security/enforcement-locations/native-config-and-mcp.md
   docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json
   docs/20-domain/security/enforcement-locations/tool-use-gates.md
@@ -97,6 +106,7 @@ required_files=(
   docs/30-architecture/loop-engineering.md
   docs/30-architecture/loop-engineering.riido.json
   docs/30-architecture/loop-engineering/context-map-docs.riido.json
+  docs/30-architecture/loop-engineering/provider-public-migration-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

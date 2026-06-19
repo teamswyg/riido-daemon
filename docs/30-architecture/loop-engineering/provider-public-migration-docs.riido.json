@@ -1,0 +1,50 @@
+{
+  "schema_version": "riido-loop.v1",
+  "id": "provider-public-migration-docs",
+  "owner": "daemon/domain",
+  "observation": {
+    "summary": "repo-wide coverage still counted provider public migration status as manual provider-runtime ontology surface",
+    "artifacts": [
+      "docs/executable-knowledge.md",
+      "docs/20-domain/provider-runtime/public-migration-status.md"
+    ]
+  },
+  "hypothesis": {
+    "summary": "migration status can be represented as a generated manifest that verifies package, workflow, and provider evidence paths",
+    "artifacts": [
+      "docs/20-domain/provider-runtime/public-migration-status.riido.json"
+    ]
+  },
+  "execution": {
+    "summary": "generate public migration reader docs from provider/core migration rows and provider package artifacts",
+    "artifacts": [
+      "tools/providermigrationdocs",
+      ".github/workflows/provider-public-migration-docs.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "the verifier rejects doc drift, duplicate provider ids, row shape drift, and missing package/workflow evidence",
+    "artifacts": [
+      "docs/20-domain/provider-runtime/public-migration-status.md",
+      "docs/20-domain/provider-runtime/public-migration-status/codex.md"
+    ]
+  },
+  "retrospective": {
+    "summary": "public migration status should stay a compact evidence registry rather than a reader-authored historical note",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/providermigrationdocs -check-doc -evidence-out /tmp/provider-public-migration-docs.json",
+      "proves": "provider public migration docs are generated and package/workflow evidence paths still exist"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/provider-public-migration-docs.yml",
+      "proves": "public CI uploads provider public migration evidence"
+    }
+  ]
+}

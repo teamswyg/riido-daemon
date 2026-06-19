@@ -79,6 +79,23 @@
   - `command`: go run ./tools/contextmapdocs -check-doc -evidence-out /tmp/context-map-docs.json; proves context-map docs are generated from bounded-context SSOT fragments
   - `workflow`: .github/workflows/context-map-docs.yml; proves public CI uploads context-map docs evidence
 
+### provider-public-migration-docs
+
+- Owner: `daemon/domain`
+- Observe: repo-wide coverage still counted provider public migration status as manual provider-runtime ontology surface
+  - Artifacts: `docs/executable-knowledge.md`, `docs/20-domain/provider-runtime/public-migration-status.md`
+- Hypothesis: migration status can be represented as a generated manifest that verifies package, workflow, and provider evidence paths
+  - Artifacts: `docs/20-domain/provider-runtime/public-migration-status.riido.json`
+- Execute: generate public migration reader docs from provider/core migration rows and provider package artifacts
+  - Artifacts: `tools/providermigrationdocs`, `.github/workflows/provider-public-migration-docs.yml`
+- Evaluate: the verifier rejects doc drift, duplicate provider ids, row shape drift, and missing package/workflow evidence
+  - Artifacts: `docs/20-domain/provider-runtime/public-migration-status.md`, `docs/20-domain/provider-runtime/public-migration-status/codex.md`
+- Retrospective: public migration status should stay a compact evidence registry rather than a reader-authored historical note
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/providermigrationdocs -check-doc -evidence-out /tmp/provider-public-migration-docs.json; proves provider public migration docs are generated and package/workflow evidence paths still exist
+  - `workflow`: .github/workflows/provider-public-migration-docs.yml; proves public CI uploads provider public migration evidence
+
 ### semantic-event-activity
 
 - Owner: `tools/semanticeventactivity and semantic-event-activity workflow`

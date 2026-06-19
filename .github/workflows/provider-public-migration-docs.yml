@@ -1,0 +1,48 @@
+name: provider-public-migration-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/provider-public-migration-docs.yml"
+      - "docs/20-domain/provider-runtime/public-migration-status.md"
+      - "docs/20-domain/provider-runtime/public-migration-status.riido.json"
+      - "docs/20-domain/provider-runtime/public-migration-status/**"
+      - "tools/providermigrationdocs/**"
+      - "internal/agentbridge/**"
+      - "internal/provider/**"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/provider-public-migration-docs.yml"
+      - "docs/20-domain/provider-runtime/public-migration-status.md"
+      - "docs/20-domain/provider-runtime/public-migration-status.riido.json"
+      - "docs/20-domain/provider-runtime/public-migration-status/**"
+      - "tools/providermigrationdocs/**"
+      - "internal/agentbridge/**"
+      - "internal/provider/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  provider-public-migration-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify provider public migration docs
+        run: |
+          mkdir -p out
+          go run ./tools/providermigrationdocs \
+            -check-doc \
+            -evidence-out out/provider-public-migration-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-public-migration-docs
+          path: out/provider-public-migration-docs.json
+          if-no-files-found: error
