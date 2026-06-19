@@ -256,6 +256,23 @@
   - `command`: go run ./tools/runtimeupgrade -check-doc -evidence-out /tmp/runtime-upgrade-flow-evidence.json; proves runtime upgrade manifest matches generated reader docs and local source evidence
   - `workflow`: .github/workflows/runtime-upgrade-flow.yml; proves public CI uploads runtime upgrade flow evidence
 
+### saas-assignment-source-evidence
+
+- Owner: `daemon runtime scheduling`
+- Observe: SaaS assignment docs mixed implemented daemon behavior, upstream/client boundaries, and a stale /thread-progress reporter claim.
+  - Artifacts: `docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md`
+- Hypothesis: A manifest can generate reader and migration docs, prove source checks, and fail when daemon code claims forbidden control-plane/client surfaces.
+  - Artifacts: `docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json`
+- Execute: Run saasassignment to check generated docs, local source evidence, absent surfaces, and compact evidence output.
+  - Artifacts: `tools/saasassignment`, `.github/workflows/saas-assignment-source.yml`
+- Evaluate: The verifier rejects generated doc drift, source drift, unknown source references, implemented facts without evidence, and forbidden /thread-progress or private server surfaces.
+  - Artifacts: `docs/20-domain/runtime-scheduling/saas-assignment-source.md`
+- Retrospective: SaaS assignment polling knowledge becomes executable evidence and no longer lets client/control-plane ownership drift into daemon docs.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/saasassignment -check-doc -evidence-out /tmp/saas-assignment-source-evidence.json; proves SaaS assignment source manifest matches generated docs, source checks, and absent surface rules
+  - `workflow`: .github/workflows/saas-assignment-source.yml; proves public CI uploads SaaS assignment source evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

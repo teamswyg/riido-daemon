@@ -12,10 +12,11 @@ public riido-daemon의 daemon-side SSOT와 generated reader entrypoint를 정의
 2. [`30-architecture/module-decomposition.md`](30-architecture/module-decomposition.md): package 역할, import rule, 12-factor boundary
 3. [`20-domain/provider-runtime.md`](20-domain/provider-runtime.md): provider process/session/run lifecycle과 adapter ACL
 4. [`20-domain/distribution-host-integration.md`](20-domain/distribution-host-integration.md): store role split과 external provider CLI 원칙
-5. [`30-architecture/cli-surface.md`](30-architecture/cli-surface.md): CLI/env/flag surface
-6. [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md): Figma AI Agent 화면의 daemon 경계
-7. [`30-architecture/agent-execution-unresolved-design.md`](30-architecture/agent-execution-unresolved-design.md): AI Agent 실행 미해결 이슈의 구조 분석
-8. [`30-architecture/loop-engineering.md`](30-architecture/loop-engineering.md): generated evidence loop view
+5. [`20-domain/runtime-scheduling/saas-assignment-source.md`](20-domain/runtime-scheduling/saas-assignment-source.md): SaaS assignment source/reporter executable evidence
+6. [`30-architecture/cli-surface.md`](30-architecture/cli-surface.md): CLI/env/flag surface
+7. [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md): Figma AI Agent 화면의 daemon 경계
+8. [`30-architecture/agent-execution-unresolved-design.md`](30-architecture/agent-execution-unresolved-design.md): AI Agent 실행 미해결 이슈의 구조 분석
+9. [`30-architecture/loop-engineering.md`](30-architecture/loop-engineering.md): generated evidence loop view
 
 ## 결정별 문서
 
@@ -25,7 +26,7 @@ public riido-daemon의 daemon-side SSOT와 generated reader entrypoint를 정의
 | provider runtime and adapter ACL | [`20-domain/provider-runtime.md`](20-domain/provider-runtime.md) |
 | store/distribution boundary | [`20-domain/distribution-host-integration.md`](20-domain/distribution-host-integration.md), [`30-architecture/store-distribution.md`](30-architecture/store-distribution.md), [`30-architecture/release-artifacts.md`](30-architecture/release-artifacts.md) |
 | security, redaction, runtime secret evidence | [`20-domain/security.md`](20-domain/security.md), [`20-domain/security-redaction.md`](20-domain/security-redaction.md), [`30-architecture/runtime-secret-private-evidence.md`](30-architecture/runtime-secret-private-evidence.md) |
-| runtime scheduling, workspace, validation, locking | [`20-domain/runtime-scheduling.md`](20-domain/runtime-scheduling.md), [`20-domain/workspace.md`](20-domain/workspace.md), [`20-domain/validation.md`](20-domain/validation.md), [`20-domain/locking.md`](20-domain/locking.md) |
+| runtime scheduling, workspace, validation, locking | [`20-domain/runtime-scheduling.md`](20-domain/runtime-scheduling.md), [`20-domain/runtime-scheduling/saas-assignment-source.md`](20-domain/runtime-scheduling/saas-assignment-source.md), [`20-domain/runtime-scheduling/saas-assignment-source.riido.json`](20-domain/runtime-scheduling/saas-assignment-source.riido.json), [`20-domain/workspace.md`](20-domain/workspace.md), [`20-domain/validation.md`](20-domain/validation.md), [`20-domain/locking.md`](20-domain/locking.md) |
 | CLI, package map, branch gate, config | [`30-architecture/cli-surface.md`](30-architecture/cli-surface.md), [`30-architecture/module-decomposition.md`](30-architecture/module-decomposition.md), [`30-architecture/riido-work-branch-gate.md`](30-architecture/riido-work-branch-gate.md), [`30-architecture/riido-work-branch-gate.riido.json`](30-architecture/riido-work-branch-gate.riido.json), [`30-architecture/config-reference.md`](30-architecture/config-reference.md) |
 | runtime compatibility and upgrade evidence | [`30-architecture/compatibility-gate.md`](30-architecture/compatibility-gate.md), [`30-architecture/compatibility-gate.riido.json`](30-architecture/compatibility-gate.riido.json), [`30-architecture/runtime-upgrade-flow.md`](30-architecture/runtime-upgrade-flow.md), [`30-architecture/runtime-upgrade-flow.riido.json`](30-architecture/runtime-upgrade-flow.riido.json) |
 | provider real CLI and loop evidence | [`30-architecture/integration-matrix.md`](30-architecture/integration-matrix.md), [`30-architecture/provider-real-cli-observation.md`](30-architecture/provider-real-cli-observation.md), [`30-architecture/loop-engineering.md`](30-architecture/loop-engineering.md) |

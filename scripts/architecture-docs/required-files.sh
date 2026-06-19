@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+required_files=(
+  docs/20-domain/context-map.md
+  docs/README.md
+  docs/readme/document-map.md
+  docs/readme/document-map.riido.json
+  docs/readme/verification.md
+  docs/readme/verification.riido.json
+  docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md
+  docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md
+  docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json
+  docs/20-domain/runtime-scheduling/saas-assignment-source.md
+  docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json
+  docs/30-architecture/module-decomposition.md
+  docs/30-architecture/cli-surface.md
+  docs/30-architecture/config-reference.md
+  docs/30-architecture/integration-matrix.md
+  docs/30-architecture/compatibility-gate.md
+  docs/30-architecture/compatibility-gate.riido.json
+  docs/30-architecture/runtime-upgrade-flow.md
+  docs/30-architecture/runtime-upgrade-flow.riido.json
+  docs/30-architecture/loop-engineering.md
+  docs/30-architecture/loop-engineering.riido.json
+  docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
+  docs/30-architecture/provider-real-cli-observation.md
+  docs/30-architecture/provider-real-cli-observation.riido.json
+  docs/30-architecture/runtime-secret-private-evidence.md
+  docs/30-architecture/runtime-secret-private-evidence.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md
+  docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json
+  docs/30-architecture/figma-ai-agent-daemon-boundary.md
+  docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
+  docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
+  docs/30-architecture/riido-work-branch-gate.md
+  docs/30-architecture/riido-work-branch-gate.riido.json
+  docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md
+  docs/50-roadmap/open-questions.md
+  .github/workflows/saas-assignment-source.yml
+)
+
+for path in "${required_files[@]}"; do
+  test -f "$path"
+done
