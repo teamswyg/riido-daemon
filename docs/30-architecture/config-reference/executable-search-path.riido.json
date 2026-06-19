@@ -1,0 +1,46 @@
+{
+  "schema_version": "riido-executable-search-path.v1",
+  "id": "executable-search-path-evidence",
+  "title": "Executable Search Path Evidence",
+  "generated_doc": "docs/30-architecture/config-reference/executable-search-path.md",
+  "workflow": ".github/workflows/executable-search-path-evidence.yml",
+  "evidence_artifact": "executable-search-path-evidence",
+  "purpose": "Proves provider executable discovery and child process PATH propagation without relying on launchd/Desktop inherited PATH assumptions.",
+  "search_order": [
+    {"order": 1, "name": "process PATH", "summary": "explicit operator PATH wins before augmented directories", "source_checks": ["process-path-first", "lookpath-first"], "behavior": "path_order"},
+    {"order": 2, "name": "login-shell PATH", "summary": "user login-shell PATH is read once per process and skipped safely when unavailable", "source_checks": ["login-shell-read", "login-shell-cache", "login-shell-timeout"]},
+    {"order": 3, "name": "well-known install dirs", "summary": "Homebrew, local user bins, language toolchain bins, provider bins, and Node version manager bins are appended", "source_checks": ["well-known-homebrew", "well-known-user", "well-known-provider", "node-version-manager"]}
+  ],
+  "rules": [
+    {"name": "override pins executable", "summary": "RIIDO_<PROVIDER>_PATH resolves only that file", "source_checks": ["override-only"], "behavior": "override_only"},
+    {"name": "missing override fails closed", "summary": "invalid RIIDO_<PROVIDER>_PATH never falls back to PATH", "source_checks": ["override-fail-closed"], "behavior": "override_fail_closed"},
+    {"name": "spawn inherits launch PATH", "summary": "child process env receives frozen launch PATH when the spawn env has no PATH", "source_checks": ["env-map-launch-path", "env-list-launch-path"], "behavior": "spawn_launch_path"},
+    {"name": "explicit spawn PATH preserved", "summary": "caller-provided PATH is preserved instead of overwritten", "source_checks": ["env-map-preserve-path", "env-list-preserve-path"], "behavior": "spawn_explicit_path"},
+    {"name": "selected executable reaches provider start", "summary": "runtime-selected executable and launch PATH are passed into BuildStart/spawn", "source_checks": ["detected-executable-spawn", "bridge-spawn-path"]}
+  ],
+  "source_checks": [
+    {"name": "process-path-first", "file": "internal/agentbridge/detectutil/search_dirs.go", "contains": "collector.addSplitPath(processPATH())"},
+    {"name": "lookpath-first", "file": "internal/agentbridge/detectutil/resolve_path.go", "contains": "if path, err := exec.LookPath(name); err == nil"},
+    {"name": "login-shell-read", "file": "internal/agentbridge/detectutil/search_dirs.go", "contains": "collector.addDirs(loginShellPATHDirs())"},
+    {"name": "login-shell-cache", "file": "internal/agentbridge/detectutil/login_shell_path_test.go", "contains": "TestLoginShellPATHDirsCached"},
+    {"name": "login-shell-timeout", "file": "internal/agentbridge/detectutil/constants.go", "contains": "loginShellPATHTimeout = 3 * time.Second"},
+    {"name": "well-known-homebrew", "file": "internal/agentbridge/detectutil/well_known_dirs.go", "contains": "\"/opt/homebrew/bin\", \"/opt/homebrew/sbin\""},
+    {"name": "well-known-user", "file": "internal/agentbridge/detectutil/well_known_dirs.go", "contains": "filepath.Join(home, \".local\", \"bin\")"},
+    {"name": "well-known-provider", "file": "internal/agentbridge/detectutil/well_known_dirs.go", "contains": "filepath.Join(home, \".claude\", \"bin\")"},
+    {"name": "node-version-manager", "file": "internal/agentbridge/detectutil/node_version_manager_dirs.go", "contains": "filepath.Join(home, \".nvm\", \"versions\", \"node\", \"*\", \"bin\")"},
+    {"name": "override-only", "file": "internal/agentbridge/detectutil/resolve.go", "contains": "return overrideExecutableCandidate(override)"},
+    {"name": "override-fail-closed", "file": "internal/agentbridge/detectutil/resolve_override_test.go", "contains": "TestResolveExecutableCandidatesMissingOverrideFailsClosed"},
+    {"name": "env-map-launch-path", "file": "internal/agentbridge/detectutil/env_map.go", "contains": "out[pathEnvKey()] = path"},
+    {"name": "env-list-launch-path", "file": "internal/agentbridge/detectutil/env_list.go", "contains": "EnvListWithLaunchPATHFromMap"},
+    {"name": "env-map-preserve-path", "file": "internal/agentbridge/detectutil/env_map_test.go", "contains": "TestEnvMapWithLaunchPATHPreservesExplicitPath"},
+    {"name": "env-list-preserve-path", "file": "internal/agentbridge/detectutil/env_list_test.go", "contains": "TestEnvListWithLaunchPATHFromMapPreservesSpawnPath"},
+    {"name": "detected-executable-spawn", "file": "internal/agentbridge/runtimeactor/actor_detected_executable_assert_test.go", "contains": "BuildStart request executable"},
+    {"name": "bridge-spawn-path", "file": "internal/agentbridge/bridge/client_run_executable_test.go", "contains": "BuildStart PATH"}
+  ],
+  "assertions": [
+    "explicit provider executable overrides are pins and fail closed",
+    "minimal daemon PATH is widened for unset overrides",
+    "provider child processes receive a launch PATH when no explicit spawn PATH exists",
+    "reader documentation is generated from this manifest"
+  ]
+}

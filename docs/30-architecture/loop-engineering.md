@@ -244,6 +244,23 @@
   - `command`: go run ./tools/compatibilitygate -check-doc -evidence-out /tmp/compatibility-gate-evidence.json; proves compatibility gate manifest matches generated reader docs and local source evidence
   - `workflow`: .github/workflows/compatibility-gate.yml; proves public CI uploads compatibility gate evidence
 
+### executable-search-path-evidence
+
+- Owner: `C4 provider runtime`
+- Observe: Executable discovery and child process PATH behavior were described as prose while proof lived across detectutil and runtime spawn tests.
+  - Artifacts: `docs/30-architecture/config-reference/executable-search-path.md`
+- Hypothesis: A manifest can generate the reader doc and prove search order, override fail-closed behavior, and launch PATH propagation from executable behavior plus source checks.
+  - Artifacts: `docs/30-architecture/config-reference/executable-search-path.riido.json`
+- Execute: Run executablesearchpath to check generated docs, source references, temp executable path ordering, override pinning, and spawn PATH propagation.
+  - Artifacts: `tools/executablesearchpath`, `.github/workflows/executable-search-path-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, source drift, PATH order drift, override fallback regressions, and child process PATH propagation regressions.
+  - Artifacts: `tools/executablesearchpath/run_test.go`
+- Retrospective: Executable search path behavior becomes executable local-runtime evidence instead of a manually edited config note.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/executablesearchpath -check-doc -evidence-out /tmp/executable-search-path-evidence.json; proves executable search path manifest matches generated docs, source references, and PATH behavior
+  - `workflow`: .github/workflows/executable-search-path-evidence.yml; proves public CI uploads executable search path evidence
+
 ### runtime-upgrade-flow-evidence
 
 - Owner: `daemon architecture`

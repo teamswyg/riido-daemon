@@ -1,0 +1,36 @@
+{
+  "id": "executable-search-path-evidence",
+  "owner": "C4 provider runtime",
+  "observation": {
+    "summary": "Executable discovery and child process PATH behavior were described as prose while proof lived across detectutil and runtime spawn tests.",
+    "artifacts": ["docs/30-architecture/config-reference/executable-search-path.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove search order, override fail-closed behavior, and launch PATH propagation from executable behavior plus source checks.",
+    "artifacts": ["docs/30-architecture/config-reference/executable-search-path.riido.json"]
+  },
+  "execution": {
+    "summary": "Run executablesearchpath to check generated docs, source references, temp executable path ordering, override pinning, and spawn PATH propagation.",
+    "artifacts": ["tools/executablesearchpath", ".github/workflows/executable-search-path-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, source drift, PATH order drift, override fallback regressions, and child process PATH propagation regressions.",
+    "artifacts": ["tools/executablesearchpath/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Executable search path behavior becomes executable local-runtime evidence instead of a manually edited config note.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/executablesearchpath -check-doc -evidence-out /tmp/executable-search-path-evidence.json",
+      "proves": "executable search path manifest matches generated docs, source references, and PATH behavior"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/executable-search-path-evidence.yml",
+      "proves": "public CI uploads executable search path evidence"
+    }
+  ]
+}
