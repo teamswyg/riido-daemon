@@ -1,0 +1,10 @@
+{
+  "id": "shutdown-authority",
+  "owner": "tools/shutdownauthority and shutdown-authority workflow",
+  "observation": {"summary": "Cancel, interrupt, and input docs described shutdown authority as prose while pkg/lifecycle owned the runtime vocabulary and timeout policy.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md"]},
+  "hypothesis": {"summary": "A manifest can generate the reader doc and prove shutdown levels, defaults, and daemon consumers still use pkg/lifecycle.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.riido.json"]},
+  "execution": {"summary": "Parse lifecycle source for level names/default timeouts and scan required daemon consumers for lifecycle API use.", "artifacts": ["tools/shutdownauthority", ".github/workflows/shutdown-authority.yml"]},
+  "evaluation": {"summary": "The verifier rejects level vocabulary drift, timeout drift, consumer drift, and generated doc drift.", "artifacts": ["tools/shutdownauthority/run_test.go"]},
+  "retrospective": {"summary": "Shutdown authority docs are generated while pkg/lifecycle remains the implementation evidence.", "artifacts": ["pkg/lifecycle/shutdown.go", "pkg/lifecycle/shutdown_level.go"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/shutdownauthority -check-doc -evidence-out /tmp/shutdown-authority-evidence.json", "proves": "shutdown authority manifest matches lifecycle source and consumers"}, {"kind": "workflow", "ref": ".github/workflows/shutdown-authority.yml", "proves": "public CI uploads shutdown authority evidence"}]
+}

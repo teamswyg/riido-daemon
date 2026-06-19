@@ -31,6 +31,7 @@
     {"topic": "event ingest authority evidence", "docs": ["docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md", "docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json"]},
     {"topic": "provider draft mapping evidence", "docs": ["docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md", "docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json"]},
     {"topic": "terminal result mapping evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.md", "docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.riido.json"]},
+    {"topic": "shutdown authority evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md", "docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.riido.json"]},
     {"topic": "Figma boundary and unresolved execution design", "docs": ["docs/30-architecture/figma-ai-agent-daemon-boundary.md", "docs/30-architecture/agent-execution-unresolved-design.md"]},
     {"topic": "migration history and open questions", "docs": ["docs/migration/daemon.md", "docs/migration/cli.md", "docs/50-roadmap/open-questions.md"]}
   ],
