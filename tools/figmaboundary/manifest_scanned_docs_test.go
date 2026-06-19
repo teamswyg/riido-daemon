@@ -18,9 +18,16 @@ func staleEvidenceScannedDocPaths(t *testing.T) []string {
 		"docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json",
 		"docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json",
 		"docs/migration/daemon.md",
+		"docs/migration/daemon/figma-boundary-provenance.md",
 	}
-	contextMapDir := filepath.Join(repoRoot(t), "docs/20-domain/context-map")
-	err := filepath.WalkDir(contextMapDir, func(path string, d fs.DirEntry, err error) error {
+	scanned = appendMarkdownDocs(t, scanned, "docs/20-domain/context-map")
+	scanned = appendMarkdownDocs(t, scanned, "docs/migration/daemon/figma-boundary-provenance")
+	return scanned
+}
+
+func appendMarkdownDocs(t *testing.T, scanned []string, relDir string) []string {
+	t.Helper()
+	err := filepath.WalkDir(filepath.Join(repoRoot(t), relDir), func(path string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {
 			return err
 		}
@@ -32,7 +39,7 @@ func staleEvidenceScannedDocPaths(t *testing.T) []string {
 		return nil
 	})
 	if err != nil {
-		t.Fatalf("scan context-map docs: %v", err)
+		t.Fatalf("scan %s docs: %v", relDir, err)
 	}
 	return scanned
 }
