@@ -179,6 +179,17 @@ required_files=(
   docs/20-domain/workspace/native-config-manifest/resolved-decisions.md
   docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json
   .github/workflows/workspace-native-config-docs.yml
+  docs/20-domain/distribution-host-integration.md
+  docs/20-domain/distribution-host-integration.riido.json
+  docs/20-domain/distribution-host-integration/store-channel-policy.md
+  docs/20-domain/distribution-host-integration/store-channel-policy.riido.json
+  docs/20-domain/distribution-host-integration/store-channel-policy/review-demo-mode.md
+  docs/20-domain/distribution-host-integration/store-channel-policy/review-demo-mode.riido.json
+  docs/20-domain/distribution-host-integration/store-channel-policy/open-questions.md
+  docs/20-domain/distribution-host-integration/store-channel-policy/open-questions.riido.json
+  docs/20-domain/distribution-host-integration/store-channel-policy/versioning.md
+  docs/20-domain/distribution-host-integration/store-channel-policy/versioning.riido.json
+  .github/workflows/distribution-host-docs.yml
   docs/20-domain/distribution-host-integration/invariants.md
   docs/20-domain/distribution-host-integration/invariants.riido.json
   docs/20-domain/distribution-host-integration/invariants/core.md
@@ -317,6 +328,7 @@ required_files=(
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
+  docs/30-architecture/loop-engineering/distribution-host-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-local-ipc-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json

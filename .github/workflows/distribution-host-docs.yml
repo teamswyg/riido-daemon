@@ -1,0 +1,74 @@
+name: distribution-host-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/distribution-host-docs.yml"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration.riido.json"
+      - "docs/20-domain/distribution-host-integration/**"
+      - "tools/distributionhostdocs/**"
+      - "tools/distributionhostinvariantsdocs/**"
+      - "tools/distributionhostlocalipcdocs/**"
+      - "tools/storecontract/**"
+      - "tools/privacymetadata/**"
+      - "internal/hostintegration/**"
+      - "internal/policy/**"
+      - "internal/riidoapi/**"
+      - "packaging/store/**"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/distribution-host-docs.yml"
+      - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration.riido.json"
+      - "docs/20-domain/distribution-host-integration/**"
+      - "tools/distributionhostdocs/**"
+      - "tools/distributionhostinvariantsdocs/**"
+      - "tools/distributionhostlocalipcdocs/**"
+      - "tools/storecontract/**"
+      - "tools/privacymetadata/**"
+      - "internal/hostintegration/**"
+      - "internal/policy/**"
+      - "internal/riidoapi/**"
+      - "packaging/store/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  distribution-host-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify distribution host docs
+        run: |
+          mkdir -p out
+          go run ./tools/distributionhostdocs \
+            -check-doc \
+            -evidence-out out/distribution-host-docs.json
+          go run ./tools/distributionhostinvariantsdocs \
+            -check-doc \
+            -evidence-out out/distribution-host-invariants-docs.json
+          go run ./tools/distributionhostlocalipcdocs \
+            -check-doc \
+            -evidence-out out/distribution-host-local-ipc-docs.json
+          go run ./tools/privacymetadata \
+            -check-doc \
+            -evidence-out out/privacy-metadata-evidence.json
+          go run ./tools/storecontract \
+            -contract packaging/store/riido_daemon_store_distribution.riido.json \
+            -repo . \
+            -check-policy-table \
+            -out out/store-distribution-contract.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: distribution-host-docs
+          path: out/*.json
+          if-no-files-found: error

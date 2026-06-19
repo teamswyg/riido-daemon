@@ -1,0 +1,25 @@
+{
+  "schema_version": "riido-distribution-host-page.v1",
+  "id": "store-channel-policy",
+  "title": "Distribution / Host Integration SSOT: Store Channel Policy",
+  "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy.md",
+  "back_title": "distribution-host-integration.md",
+  "back_path": "../distribution-host-integration.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Store channel policy is the C11/C7 boundary where distribution channel facts are reduced into allowed, forbidden, or review-gated host surfaces."},
+    {"kind": "heading", "text": "Generated Detail Surfaces"},
+    {"kind": "links", "links": [
+      {"title": "Store channel policy table", "path": "store-channel-policy/policy-table.md"},
+      {"title": "Server-facing metadata", "path": "store-channel-policy/server-facing-metadata.md"},
+      {"title": "Review / demo mode", "path": "store-channel-policy/review-demo-mode.md"},
+      {"title": "Open questions", "path": "store-channel-policy/open-questions.md"},
+      {"title": "Version-affecting changes", "path": "store-channel-policy/versioning.md"}
+    ]},
+    {"kind": "heading", "text": "Executable Owners"},
+    {"kind": "bullets", "items": [
+      "`tools/storecontract` generates the policy table from `internal/policy.EvaluateStoreChannelPolicy` and `packaging/store/riido_daemon_store_distribution.riido.json`.",
+      "`tools/privacymetadata` generates server-facing metadata boundaries from the privacy metadata allowlist.",
+      "`tools/distributionhostdocs` generates this index plus review/demo, open question, and versioning reader docs."
+    ]}
+  ]
+}

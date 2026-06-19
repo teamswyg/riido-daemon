@@ -1,0 +1,17 @@
+{
+  "schema_version": "riido-distribution-host-page.v1",
+  "id": "open-questions",
+  "title": "Open Questions",
+  "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy/open-questions.md",
+  "back_title": "Store Channel Policy",
+  "back_path": "../store-channel-policy.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Open questions are delegated to [`../../../50-roadmap/open-questions.md`](../../../50-roadmap/open-questions.md). Resolved implementation decisions should move into generated C11 domain docs instead of staying here."},
+    {"kind": "table", "columns": ["ID", "Status", "Handling"], "rows": [
+      ["`Q-DIST-001`", "resolved", "`mac-app-store` external provider CLI execution requires user-selected or sandbox/security-scoped OS grant plus Store review approval; otherwise the provider is store-blocked or demo-only."],
+      ["`Q-DIST-002`", "resolved", "`msix-store` uses a packaged full-trust helper/tray process as the local runtime broker; Windows service default install is forbidden."],
+      ["`Q-DIST-003`", "open", "ConsentLedger durable storage substrate remains a roadmap question: local JSON append log only, OS secure storage, or a hybrid."],
+      ["`Q-DIST-004`", "resolved elsewhere", "Private-source Store App repository ownership is tracked as `Q-CTX-005`; this public daemon doc should not fork that ownership question."]
+    ]}
+  ]
+}

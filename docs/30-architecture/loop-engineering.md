@@ -942,6 +942,24 @@
   - `command`: go test ./internal/workdir -run 'NativeConfig|Archive|CleanupArchivedBefore' -count=1; proves workdir native config and archive behavior still matches the documented C6 boundary
   - `workflow`: .github/workflows/workspace-native-config-docs.yml; proves public CI uploads workspace native config evidence
 
+### distribution-host-docs
+
+- Owner: `daemon/hostintegration`
+- Observe: The distribution host entrypoint and store-channel policy overview, review/demo, open question, and versioning pages remained manually edited prose while invariants, local IPC, policy table, and privacy metadata evidence were already generated.
+  - Artifacts: `docs/20-domain/distribution-host-integration.md`, `docs/20-domain/distribution-host-integration/store-channel-policy.md`
+- Hypothesis: A distribution-host manifest can generate the C11 entrypoint and store-channel wrapper docs while delegating policy-table and metadata details to their existing dedicated evidence tools.
+  - Artifacts: `docs/20-domain/distribution-host-integration.riido.json`, `internal/policy`, `internal/hostintegration`
+- Execute: Generate the root, store-channel policy index, review/demo, open question, and versioning docs from executable page fragments and source anchors.
+  - Artifacts: `tools/distributionhostdocs`, `.github/workflows/distribution-host-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing workflow wiring, and missing coverage registration while rechecking adjacent C11 evidence.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The C11 distribution host root and store-channel wrapper pages now become generated evidence without duplicating storecontract or privacy metadata ownership.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/distributionhostdocs -check-doc -evidence-out /tmp/distribution-host-docs.json; proves distribution host root and store-channel wrapper docs are generated and source anchors still exist
+  - `command`: go test ./tools/distributionhostdocs ./internal/hostintegration ./internal/policy ./internal/riidoapi ./cmd/riido -count=1; proves review/demo, store policy, API, and CLI behavior still match the generated boundary
+  - `workflow`: .github/workflows/distribution-host-docs.yml; proves public CI uploads distribution host docs evidence
+
 ### distribution-host-invariants-docs
 
 - Owner: `daemon/hostintegration`
