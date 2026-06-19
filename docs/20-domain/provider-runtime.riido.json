@@ -1,0 +1,73 @@
+{
+  "schema_version": "riido-provider-runtime-docs.v1",
+  "id": "provider-runtime-docs",
+  "title": "Provider Runtime / Adapter SSOT",
+  "generated_doc": "docs/20-domain/provider-runtime.md",
+  "workflow": ".github/workflows/provider-runtime-docs.yml",
+  "evidence_artifact": "provider-runtime-docs",
+  "summary": [
+    "This C4 entrypoint is generated from executable provider-runtime wrapper SSOT and delegates detailed ownership to focused provider runtime evidence tools.",
+    "The root remains a compatibility surface for existing CI anchors while the source of those anchors moves into this manifest."
+  ],
+  "compatibility_markers": [
+    "`figma-ai-agent-daemon-boundary`",
+    "`RIID-4901`",
+    "`provider-validation-matrix.riido.json`",
+    "`supports_worktree=false`",
+    "`required_surfaces=[worktree]`",
+    "`MISSING_REQUIRED_SURFACE:worktree`",
+    "Provider full-access/trusted modes are not assumed from provider defaults or\ncaller arguments",
+    "daemon-owned full-access runtime selection",
+    "Codex adapter 가 danger-full-access envelope 만 생성하고 그 위험을 Riido harness 가\n관리한다",
+    "not a provider default, caller-provided default, or\n  hidden fallback",
+    "Other providers should follow the same full-access/trusted-runtime\nmeta model only through provider-specific SSOT",
+    "`internal/process.DefaultStdoutBuffer`",
+    "`internal/process.DefaultStderrBuffer`",
+    "`internal/agentbridge/session.DefaultEventBuffer`",
+    "`internal/agentbridge/session.DefaultResultBuffer`",
+    "`internal/agentbridge/runtimeactor.DefaultMailboxSize`",
+    "`internal/agentbridge/supervisor.DefaultMailboxSize`",
+    "`Q-RT-001` closes alongside `Q-MULTICA-005`",
+    "`Q-CTX-001`",
+    "`Q-RT-003` closed",
+    "C4 Provider Runtime / Adapter owns approval wait",
+    "EventIngestor does not own approval"
+  ],
+  "parts": [
+    {"title": "Overview", "path": "provider-runtime/overview.md"},
+    {"title": "Public Migration Status", "path": "provider-runtime/public-migration-status.md"},
+    {"title": "Integration Gates", "path": "provider-runtime/integration-gates.md"},
+    {"title": "Runtime Responsibility", "path": "provider-runtime/runtime-responsibility.md"},
+    {"title": "Adapter Draft Fields", "path": "provider-runtime/adapter-draft-fields.md"},
+    {"title": "Adapter ACL", "path": "provider-runtime/adapter-acl.md"},
+    {"title": "RuntimeActor Boundary", "path": "provider-runtime/runtime-actor-boundary.md"},
+    {"title": "Versioning", "path": "provider-runtime/versioning.md"}
+  ],
+  "related_pages": [
+    {"title": "Runtime Scheduling", "path": "runtime-scheduling.md"},
+    {"title": "Workspace", "path": "workspace.md"},
+    {"title": "Security", "path": "security.md"},
+    {"title": "Validation", "path": "validation.md"},
+    {"title": "Integration Matrix", "path": "../30-architecture/integration-matrix.md"}
+  ],
+  "fragments": ["provider-runtime/overview.riido.json", "provider-runtime/adapter-draft-fields.riido.json", "provider-runtime/versioning.riido.json"],
+  "source_checks": [
+    {"name": "runtime-responsibility-generated", "file": "docs/20-domain/provider-runtime/runtime-responsibility.riido.json", "contains": "provider-runtime-responsibility-docs"},
+    {"name": "adapter-acl-generated", "file": "docs/20-domain/provider-runtime/adapter-acl.riido.json", "contains": "provider-adapter-acl-docs"},
+    {"name": "integration-gate-generated", "file": "docs/20-domain/provider-runtime/integration-gates.riido.json", "contains": "supports_worktree=false"},
+    {"name": "runtime-boundary-generated", "file": "docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.riido.json", "contains": "Q-RT-001"},
+    {"name": "approval-timeout-owner", "file": "docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json", "contains": "EventIngestor does not own timeout decisions"},
+    {"name": "draft-field-authority", "file": "docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json", "contains": "EventIngestor remains the only append authority"},
+    {"name": "process-stdout-buffer", "file": "internal/process/port.go", "contains": "DefaultStdoutBuffer = 64"},
+    {"name": "session-event-buffer", "file": "internal/agentbridge/session/config.go", "contains": "DefaultEventBuffer = 256"},
+    {"name": "runtimeactor-mailbox", "file": "internal/agentbridge/runtimeactor/defaults.go", "contains": "DefaultMailboxSize = 16"},
+    {"name": "supervisor-mailbox", "file": "internal/agentbridge/supervisor/constants.go", "contains": "DefaultMailboxSize = 64"},
+    {"name": "codex-full-access-envelope", "file": "internal/provider/codex/command.go", "contains": "FullAccessSandboxMode = \"danger-full-access\""},
+    {"name": "openclaw-worktree-gate", "file": "docs/30-architecture/provider-validation-matrix/openclaw.riido.json", "contains": "MISSING_REQUIRED_SURFACE:worktree"}
+  ],
+  "assertions": [
+    "C4 owns provider process/session/run lifecycle and adapter ACL outputs, not C3 capability, C5 scheduling, C6 workspace, C7 policy, C8 validation, or C2 canonical append authority.",
+    "Provider runtime wrapper docs are generated while detailed responsibility, ACL, gate, boundary, migration, draft field, and timeout evidence stays with dedicated tools.",
+    "Compatibility markers remain root-visible because existing public CI uses this root as a stable conformance surface."
+  ]
+}

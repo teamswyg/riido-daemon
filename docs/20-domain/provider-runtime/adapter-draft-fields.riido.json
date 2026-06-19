@@ -1,0 +1,24 @@
+{
+  "schema_version": "riido-provider-runtime-page.v1",
+  "id": "adapter-draft-fields",
+  "title": "Provider Runtime / Adapter SSOT: Adapter Draft Fields",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields.md",
+  "back_title": "provider-runtime.md",
+  "back_path": "../provider-runtime.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This entrypoint owns the C4 adapter draft field and run-lifecycle semantics."},
+    {
+      "kind": "links",
+      "links": [
+        {"title": "Allowed draft fields", "path": "adapter-draft-fields/allowed-fields.md"},
+        {"title": "Forbidden draft fields", "path": "adapter-draft-fields/forbidden-fields.md"},
+        {"title": "Process lifecycle", "path": "adapter-draft-fields/process-lifecycle.md"},
+        {"title": "Session lifecycle", "path": "adapter-draft-fields/session-lifecycle.md"},
+        {"title": "Run lifecycle", "path": "adapter-draft-fields/run-lifecycle.md"},
+        {"title": "Cancel, interrupt, and input", "path": "adapter-draft-fields/cancel-interrupt-input.md"},
+        {"title": "Idle watchdog", "path": "adapter-draft-fields/idle-watchdog.md"},
+        {"title": "Approval wait timeout", "path": "adapter-draft-fields/approval-wait-timeout.md"}
+      ]
+    }
+  ]
+}

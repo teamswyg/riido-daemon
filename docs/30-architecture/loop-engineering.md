@@ -834,6 +834,23 @@
   - `command`: go run ./tools/runtimesecretevidence -check-doc -evidence-out /tmp/runtime-secret-private-evidence.json; proves runtime secret evidence boundary generates sanitized public evidence
   - `workflow`: .github/workflows/runtime-secret-private-evidence.yml; proves public CI uploads sanitized runtime secret evidence artifacts without private secret access
 
+### provider-runtime-docs
+
+- Owner: `daemon/provider-runtime`
+- Observe: The provider-runtime root, overview, adapter-draft-fields entrypoint, and versioning pages remained manually edited while adjacent C4 responsibility, ACL, integration, boundary, draft-field, and timeout evidence was already generated.
+  - Artifacts: `docs/20-domain/provider-runtime.md`, `docs/20-domain/provider-runtime/adapter-draft-fields.md`
+- Hypothesis: A provider-runtime wrapper manifest can generate only the root and wrapper pages while preserving compatibility anchors consumed by existing public CI.
+  - Artifacts: `docs/20-domain/provider-runtime.riido.json`, `.github/workflows/provider-runtime-backpressure.yml`
+- Execute: Generate provider-runtime root, overview, adapter-draft-fields, and versioning docs from executable fragments and source anchors.
+  - Artifacts: `tools/providerruntimedocs`, `.github/workflows/provider-runtime-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing adjacent evidence ownership, missing source anchors, and missing workflow wiring.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The C4 provider-runtime root becomes generated evidence without duplicating detailed responsibility, ACL, boundary, migration, draft-field, or timeout generators.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/providerruntimedocs -check-doc -evidence-out /tmp/provider-runtime-docs.json; proves provider runtime root and wrapper docs are generated and source anchors still exist
+  - `workflow`: .github/workflows/provider-runtime-docs.yml; proves public CI uploads provider runtime wrapper evidence
+
 ### provider-runtime-responsibility-docs
 
 - Owner: `daemon/provider-runtime`
