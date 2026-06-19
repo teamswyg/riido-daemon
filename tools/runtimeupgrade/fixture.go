@@ -12,6 +12,7 @@ const fixtureManifestSource = `{
   "flow": [{"step": "reserved step", "status": "reserved", "summary": "reserved", "required_evidence": "test"}],
   "policies": [],
   "native_config": [],
+  "absent_surfaces": [{"name": "claim", "scope": ["docs/claims.md"], "tokens": ["RuntimePinViolated"], "reason": "reserved claim"}],
   "source_checks": [{"name": "source", "file": "internal/source.go", "contains": "needle"}],
   "assertions": ["implemented rows have source checks"]
 }`

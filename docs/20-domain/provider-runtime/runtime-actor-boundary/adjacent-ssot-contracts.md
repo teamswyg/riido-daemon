@@ -12,4 +12,4 @@
 | [`./workspace.md`](../../workspace.md) (C6) | adapter 는 workdir 경로 / native config 파일을 읽기만 한다. workdir 생성은 C6 가 사전에 수행. |
 | [`./security.md`](../../security.md) (C7) | `ExposesUnsafePermissionBypass` 가 true 라도 sandbox / permission / hook 활성 여부는 C7 의 정책 게이트가 결정. |
 | [`../30-architecture/compatibility-gate.md`](../../../30-architecture/compatibility-gate.md) | G5 (Pre-Execute) 핸드셰이크는 adapter 측 `initialize` / `firstline` probe 를 호출. 그 결과로 lease 가 활성화. |
-| [`../30-architecture/runtime-upgrade-flow.md`](../../../30-architecture/runtime-upgrade-flow.md) | adapter 가 `Running` 도중 `RuntimeID`/`CapabilityFingerprint` 변경을 감지하면 draft `Type=RuntimePinViolated` 를 발행하고 process 를 stop. |
+| [`../30-architecture/runtime-upgrade-flow.md`](../../../30-architecture/runtime-upgrade-flow.md) | runtime identity / capability drift 의 구현 상태와 reserved evidence 를 위임한다. `Running` 중 active drift cancellation 은 해당 SSOT 의 reserved row 가 닫힐 때까지 구현 완료로 주장하지 않는다. |

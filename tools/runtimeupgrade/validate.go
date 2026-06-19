@@ -1,13 +1,20 @@
 package main
 
-func validate(repo string, m Manifest) ([]problem, []SourceResult, []ReservedRule) {
+func validate(repo string, m Manifest) (
+	[]problem,
+	[]SourceResult,
+	[]AbsentCheck,
+	[]ReservedRule,
+) {
 	var problems []problem
 	problems = append(problems, validateRequired(m)...)
 	problems = append(problems, validateReferences(m)...)
 	sourceProblems, sources := validateSources(repo, m.SourceChecks)
 	problems = append(problems, sourceProblems...)
+	absentProblems, absent := validateAbsent(repo, m.AbsentSurfaces)
+	problems = append(problems, absentProblems...)
 	reserved := collectReserved(m)
-	return problems, sources, reserved
+	return problems, sources, absent, reserved
 }
 
 func validateRequired(m Manifest) []problem {

@@ -1,19 +1,20 @@
 package main
 
 type Manifest struct {
-	SchemaVersion    string        `json:"schema_version"`
-	ID               string        `json:"id"`
-	Title            string        `json:"title"`
-	GeneratedDoc     string        `json:"generated_doc"`
-	Workflow         string        `json:"workflow"`
-	EvidenceArtifact string        `json:"evidence_artifact"`
-	Invariant        string        `json:"invariant"`
-	Inputs           []Rule        `json:"inputs"`
-	Flow             []Rule        `json:"flow"`
-	Policies         []Rule        `json:"policies"`
-	NativeConfig     []Rule        `json:"native_config"`
-	SourceChecks     []SourceCheck `json:"source_checks"`
-	Assertions       []string      `json:"assertions"`
+	SchemaVersion    string          `json:"schema_version"`
+	ID               string          `json:"id"`
+	Title            string          `json:"title"`
+	GeneratedDoc     string          `json:"generated_doc"`
+	Workflow         string          `json:"workflow"`
+	EvidenceArtifact string          `json:"evidence_artifact"`
+	Invariant        string          `json:"invariant"`
+	Inputs           []Rule          `json:"inputs"`
+	Flow             []Rule          `json:"flow"`
+	Policies         []Rule          `json:"policies"`
+	NativeConfig     []Rule          `json:"native_config"`
+	AbsentSurfaces   []AbsentSurface `json:"absent_surfaces,omitempty"`
+	SourceChecks     []SourceCheck   `json:"source_checks"`
+	Assertions       []string        `json:"assertions"`
 }
 
 type Rule struct {
@@ -31,4 +32,11 @@ type SourceCheck struct {
 	Name     string `json:"name"`
 	File     string `json:"file"`
 	Contains string `json:"contains"`
+}
+
+type AbsentSurface struct {
+	Name   string   `json:"name"`
+	Scope  []string `json:"scope"`
+	Tokens []string `json:"tokens"`
+	Reason string   `json:"reason"`
 }

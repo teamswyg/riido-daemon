@@ -7,6 +7,7 @@ type Evidence struct {
 	ImplementedRules int            `json:"implemented_rules"`
 	ReservedRules    int            `json:"reserved_rules"`
 	SourceChecks     []SourceResult `json:"source_checks"`
+	AbsentChecks     []AbsentCheck  `json:"absent_checks"`
 	Reserved         []ReservedRule `json:"reserved"`
 	Assertions       []string       `json:"assertions"`
 	ProblemSummaries []string       `json:"problem_summaries"`
@@ -25,4 +26,12 @@ type ReservedRule struct {
 	Name             string   `json:"name"`
 	RequiredEvidence string   `json:"required_evidence"`
 	DecisionRefs     []string `json:"decision_refs,omitempty"`
+}
+
+type AbsentCheck struct {
+	Name   string   `json:"name"`
+	Scope  []string `json:"scope"`
+	Tokens []string `json:"tokens"`
+	Hits   []string `json:"hits"`
+	Pass   bool     `json:"pass"`
 }

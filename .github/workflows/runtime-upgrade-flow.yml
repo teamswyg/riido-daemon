@@ -5,6 +5,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/runtime-upgrade-flow.yml"
+      - "docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md"
       - "docs/30-architecture/runtime-upgrade-flow.md"
       - "docs/30-architecture/runtime-upgrade-flow.riido.json"
       - "internal/agentbridge/runtimeactor/**"

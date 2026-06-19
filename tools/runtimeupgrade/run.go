@@ -19,14 +19,14 @@ func run(_ context.Context, opts options) error {
 	if err != nil {
 		return err
 	}
-	problems, sources, reserved := validate(opts.Repo, manifest)
+	problems, sources, absent, reserved := validate(opts.Repo, manifest)
 	rendered := render(manifest)
 	if err := maybeWriteDoc(opts, manifest, rendered); err != nil {
 		return err
 	}
 	problems = append(problems, checkDoc(opts, manifest, rendered)...)
 	if opts.EvidenceOut != "" {
-		evidence := buildEvidence(manifest, problems, sources, reserved)
+		evidence := buildEvidence(manifest, problems, sources, absent, reserved)
 		if err := writeJSON(opts.EvidenceOut, evidence); err != nil {
 			return err
 		}
