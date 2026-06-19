@@ -1,0 +1,26 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "id": "control-plane-port",
+  "title": "ControlPlanePort Boundary",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/control-plane-port.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/agentbridge/controlplane` is the provider-neutral daemon port contract between supervisor and task source/reporter adapters."},
+    {"kind": "heading", "text": "Root Package Responsibilities"},
+    {"kind": "bullets", "items": [
+      "`TaskSourcePort`: runtime registration, deregistration, heartbeat, task claim, and cancellation watch port.",
+      "`TaskReporterPort`: task start, normalized event, and terminal result reporting port.",
+      "`TaskReportContext`: claim-time lease metadata carried through reporter context.",
+      "`MemorySource` and `MemoryReporter`: RAM-only test and offline implementations.",
+      "`FileQueueSource`: top-level JSON task files, atomic claim, claim receipt, and runtime registry record.",
+      "`FileReporter`: task-scoped JSONL report record writer."
+    ]},
+    {"kind": "heading", "text": "Nonresponsibilities"},
+    {"kind": "bullets", "items": [
+      "Supervisor polling loop, runtime selection, and slot scheduling.",
+      "`runtimeactor` session handoff and process execution.",
+      "`controlplane/saasplane` HTTP polling and event sync adapter.",
+      "Task DB source/reporter adapters outside the root package.",
+      "`riidoaiserver`, local API, project persistence, packaging, infra, and secrets."
+    ]}
+  ]
+}

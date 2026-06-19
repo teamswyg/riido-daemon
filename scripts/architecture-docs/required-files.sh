@@ -96,6 +96,25 @@ required_files=(
   docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.md
   docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.riido.json
   .github/workflows/provider-integration-gate-docs.yml
+  docs/20-domain/provider-runtime/runtime-actor-boundary.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary.riido.json
+  docs/20-domain/provider-runtime/runtime-actor-boundary/runtime-actor.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary/runtime-actor.riido.json
+  docs/20-domain/provider-runtime/runtime-actor-boundary/control-plane-port.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary/control-plane-port.riido.json
+  docs/20-domain/provider-runtime/runtime-actor-boundary/supervisor.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary/supervisor.riido.json
+  docs/20-domain/provider-runtime/runtime-actor-boundary/provider-session-preservation.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary/provider-session-preservation.riido.json
+  docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.riido.json
+  docs/20-domain/provider-runtime/runtime-actor-boundary/provider-stdin-command-acl.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary/provider-stdin-command-acl.riido.json
+  docs/20-domain/provider-runtime/runtime-actor-boundary/provider-adapter-implementations.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary/provider-adapter-implementations.riido.json
+  docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.md
+  docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.riido.json
+  .github/workflows/provider-runtime-boundary-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -198,6 +217,7 @@ required_files=(
   docs/30-architecture/loop-engineering/security-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-responsibility-docs.riido.json
   docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json
+  docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

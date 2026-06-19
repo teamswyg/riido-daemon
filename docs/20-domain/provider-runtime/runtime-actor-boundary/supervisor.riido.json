@@ -1,0 +1,26 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "id": "supervisor",
+  "title": "Supervisor Boundary",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/supervisor.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/agentbridge/supervisor` is the daemon-tier RunController. It composes C4 RuntimeActor, C5 Scheduling, C6 Workdir, C2 EventIngestor, and control-plane ports for one task run."},
+    {"kind": "heading", "text": "Responsibilities"},
+    {"kind": "bullets", "items": [
+      "Register the RuntimeActor pool with the control-plane source and send heartbeat.",
+      "Claim tasks by runtime id and prevent duplicate in-flight task execution.",
+      "Use `internal/scheduling` eligibility before provider process spawn.",
+      "Prepare task/run workdir and inject native config when a workdir adapter is configured.",
+      "Delegate provider events and terminal result drafts to daemon-side `internal/ir/ingest` for canonical append.",
+      "Report terminal results through `TaskReporterPort` and clean in-flight runs on stop/cancel."
+    ]},
+    {"kind": "heading", "text": "Nonresponsibilities"},
+    {"kind": "bullets", "items": [
+      "`riido-task-db.v1` guarded mutation and local task DB lease sidecars.",
+      "Project/MWSD sync, local API, SaaS HTTP/SSE transport, or infra/state/secret ownership.",
+      "Concrete provider parser, command, or protocol implementation.",
+      "C1/C2/C3 schema ownership.",
+      "Persistent lease registry or fencing-token primitive."
+    ]}
+  ]
+}

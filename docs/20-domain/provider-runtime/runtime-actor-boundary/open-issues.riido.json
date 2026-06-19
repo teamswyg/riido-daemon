@@ -1,0 +1,18 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "id": "open-issues",
+  "title": "Open Issues",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The roadmap document `docs/50-roadmap/open-questions.md` owns the broader open-question backlog. This surface keeps only C4 RuntimeActor boundary issue ids."},
+    {"kind": "bullets", "items": [
+      "`Q-RT-001` and legacy `Q-MULTICA-005` are closed by the runtime actor boundary.",
+      "`Q-CTX-001` is closed by runtime actor and adjacent contract boundaries.",
+      "`Q-RT-003` is closed by provider stdin command ACL.",
+      "`Q-RT-005` is closed by provider session preservation.",
+      "`Q-RT-002` remains open for provider process crash versus lease handoff ordering.",
+      "`Q-RT-004` remains open for wrapper manifest standard location and format.",
+      "`Q-RT-006` remains open for experimental Codex app-server surfaces such as `thread/fork`."
+    ]}
+  ]
+}

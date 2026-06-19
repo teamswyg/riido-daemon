@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "id": "adjacent-ssot-contracts",
+  "title": "Adjacent SSOT Contracts",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md",
+  "blocks": [
+    {"kind": "table", "columns": ["Adjacent SSOT", "Boundary call / delegation / requirement"], "rows": [
+      ["public `riido-contracts/docs/20-domain/provider-capability.md` (C3)", "`Provider.Capability()` returns C3 `ProviderCapability`; capability changes belong to C3."],
+      ["public `riido-contracts/docs/20-domain/ir-event-log.md` (C2)", "Adapter draft `Type` must be registered in the event catalog; append authority stays separated."],
+      ["public `riido-contracts/docs/20-domain/ir-schema-versioning.md`", "Adapter may fill only allowed draft fields; ingest finalizes required event fields."],
+      ["public `riido-contracts/docs/20-domain/task-lifecycle.md` (C1)", "Adapter does not decide transitions; ingest/orchestrator interprets run signals."],
+      ["`docs/20-domain/runtime-scheduling.md` (C5)", "One provider instance, one lease, and one `(RuntimeID, CapabilityFingerprint)` pair."],
+      ["`docs/20-domain/workspace.md` (C6)", "Adapter reads prepared workdir/native config; C6 creates workdirs first."],
+      ["`docs/20-domain/security.md` (C7)", "`ExposesUnsafePermissionBypass` is a risk signal; C7 policy decides activation."],
+      ["`docs/30-architecture/compatibility-gate.md`", "G5 pre-execute handshake calls adapter initialize/firstline probes before lease activation."],
+      ["`docs/30-architecture/runtime-upgrade-flow.md`", "Runtime identity, capability drift, and reserved upgrade evidence are delegated there."]
+    ]}
+  ]
+}

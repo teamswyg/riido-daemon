@@ -1,0 +1,13 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "id": "provider-stdin-command-acl",
+  "title": "Provider Stdin Command ACL",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/provider-stdin-command-acl.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Reducer commands are provider-neutral. A C4 adapter implements `agentbridge.ProviderInputBuilder` only when it has a provider stdin control protocol."},
+    {"kind": "table", "columns": ["Provider", "Input command", "Concrete frame"], "rows": [
+      ["Claude", "`CommandApproveTool` / `CommandRejectTool`", "`control_response` stream-json frame; `control_request.request_id` is preserved as `ToolRef.ProviderRequestID`."],
+      ["Codex", "JSON-RPC protocol driver internal command", "Pending request id is owned by the driver actor and answered through JSON-RPC response."]
+    ]}
+  ]
+}

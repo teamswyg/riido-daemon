@@ -13,6 +13,7 @@ tool_tests=(
   ./tools/securityinvariantsdocs
   ./tools/providerruntimeresponsibilitydocs
   ./tools/providerintegrationgatedocs
+  ./tools/providerruntimeboundarydocs
   ./tools/redactiondrift
   ./tools/providerintegrationevidence
   ./tools/providermigrationdocs
@@ -62,6 +63,7 @@ doc_tools=(
   securityinvariantsdocs
   providerruntimeresponsibilitydocs
   providerintegrationgatedocs
+  providerruntimeboundarydocs
   semanticeventactivity
   eventauthority
   providerdraftmapping
