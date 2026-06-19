@@ -51,13 +51,7 @@ for key in "${env_keys[@]}"; do
   grep -q "$key" docs/30-architecture/config-reference.md
 done
 
-allowed="github.com/teamswyg/riido-contracts"
-disallowed="$(go list -m all | awk -v allowed="$allowed" \
-  'NR > 1 && $1 != allowed { print $1 }')"
-if [ -n "$disallowed" ]; then
-  printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
-  exit 1
-fi
+scripts/verify-go-dependencies.sh
 
 go test ./tools/figmaboundary -count=1
 go test ./tools/providervalidation -count=1
