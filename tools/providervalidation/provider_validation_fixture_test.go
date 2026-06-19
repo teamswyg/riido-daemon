@@ -20,7 +20,7 @@ func loadProviderValidationContext(t *testing.T) providerValidationContext {
 	root := filepath.Join("..", "..")
 	ctx := providerValidationContext{
 		manifest:      loadManifest(t, filepath.Join(root, "docs", "30-architecture", "provider-validation-matrix.riido.json")),
-		docText:       readText(t, filepath.Join(root, "docs", "30-architecture", "integration-matrix.md")),
+		docText:       readIntegrationMatrixText(t, root),
 		securityText:  readText(t, filepath.Join(root, "docs", "20-domain", "security.md")),
 		runtimeText:   readText(t, filepath.Join(root, "docs", "20-domain", "provider-runtime.md")),
 		migrationText: readText(t, filepath.Join(root, "docs", "migration", "daemon.md")),
