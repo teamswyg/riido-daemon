@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-lifecycle-cli-approval-timeout-owner",
+  "title": "RIID-4630: ApprovalRequested Timeout Owner Cleanup",
+  "generated_doc": "docs/migration/daemon/daemon-lifecycle-cli/approval-timeout-owner.md",
+  "back_title": "daemon-lifecycle-cli",
+  "back_path": "../daemon-lifecycle-cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice closes public daemon `Q-RT-003` by moving the approval wait timeout decision into provider-runtime SSOT."},
+    {"kind": "heading", "text": "Policy"},
+    {"kind": "bullets", "items": [
+      "C4 session actor run clocks own approval wait timeout policy.",
+      "`Q-RT-003` stays out of daemon open questions.",
+      "`EventIngestor` remains an append authority only, not a timeout owner.",
+      "UI/review surfaces remain display and response senders, not terminal timeout sources.",
+      "A focused public workflow fails if `Q-RT-003` drifts back into open questions.",
+      "Reducer tests keep `EventToolApprovalNeeded` as semantic activity that resets the idle watchdog."
+    ]},
+    {"kind": "paragraph", "text": "This slice does not change provider-native approval RPC frames, add UI, change CLI flags, introduce dependencies, or alter hard/semantic timeout defaults."}
+  ]
+}

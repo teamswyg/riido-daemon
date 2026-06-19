@@ -138,6 +138,7 @@ done
 
 go run ./tools/migrationdocs -manifest docs/migration/daemon/overview.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/riidoapi-local-api.riido.json -check-doc
+go run ./tools/migrationdocs -manifest docs/migration/daemon/daemon-lifecycle-cli.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/runtime-snapshot-heartbeat.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/distribution-host-integration.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/macos-provider-cli-review.riido.json -check-doc

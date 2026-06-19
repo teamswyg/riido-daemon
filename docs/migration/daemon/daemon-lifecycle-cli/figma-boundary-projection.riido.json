@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-lifecycle-cli-figma-boundary-projection",
+  "title": "RIID-4813: Figma AI Agent Daemon Boundary Projection",
+  "generated_doc": "docs/migration/daemon/daemon-lifecycle-cli/figma-boundary-projection.md",
+  "back_title": "daemon-lifecycle-cli",
+  "back_path": "../daemon-lifecycle-cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice adds a daemon-local projection of Figma v1.22 AI Agent screen coverage. It records which screen facts are consumed by the daemon and which remain upstream contracts/control-plane/client/desktop ownership."},
+    {"kind": "heading", "text": "Added Surfaces"},
+    {"kind": "bullets", "items": [
+      "`docs/30-architecture/figma-ai-agent-daemon-boundary.md`",
+      "`docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json`",
+      "Stale agent-settings evidence refreshed to current `node-id=432:37336`",
+      "Onboarding wording uses fixture vocabulary for `리도`, `영실`, `홍도`, and `지원` rather than daemon-owned template entities.",
+      "Focused public Go tests cover daemon-relevant Figma nodes, manifest fields, cross-doc links, stale node ids, and fixture terminology.",
+      "architecture-docs runs the boundary test when the manifest, provider-runtime/context-map docs, CLI docs, or tests change."
+    ]},
+    {"kind": "paragraph", "text": "This slice does not add daemon UI, Figma integration, SaaS endpoints, generated clients, provider install flow, provider CLI bundling, or new local daemon commands. Figma remains product evidence, and contracts/control-plane coverage remains upstream."}
+  ]
+}

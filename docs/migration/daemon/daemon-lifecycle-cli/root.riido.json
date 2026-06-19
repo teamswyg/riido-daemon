@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-lifecycle-cli-root",
+  "title": "Riido Daemon Migration Plan: Daemon Lifecycle CLI",
+  "generated_doc": "docs/migration/daemon/daemon-lifecycle-cli.md",
+  "back_title": "daemon.md",
+  "back_path": "../daemon.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This entrypoint records daemon lifecycle CLI migration slices and their public daemon boundary evidence."},
+    {"kind": "links", "links": [
+      {"title": "RIID-4690 - full daemon lifecycle CLI wiring", "path": "daemon-lifecycle-cli/full-lifecycle-wiring.md"},
+      {"title": "RIID-4703 - store distribution contract", "path": "daemon-lifecycle-cli/store-distribution-contract.md"},
+      {"title": "RIID-4711 - architecture SSOT docs", "path": "daemon-lifecycle-cli/architecture-ssot-docs.md"},
+      {"title": "RIID-4630 - approval timeout owner cleanup", "path": "daemon-lifecycle-cli/approval-timeout-owner.md"},
+      {"title": "RIID-4813 - Figma daemon boundary projection", "path": "daemon-lifecycle-cli/figma-boundary-projection.md"},
+      {"title": "RIID-4843 - Figma metadata page-list limitation guard", "path": "daemon-lifecycle-cli/figma-metadata-limitation.md"}
+    ]},
+    {"kind": "paragraph", "text": "Each child page is migration history only; authoritative behavior remains in CLI code, provider-runtime, distribution-host, architecture, Figma boundary, source package, and public workflow SSOT evidence."}
+  ]
+}

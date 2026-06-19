@@ -1,0 +1,49 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-daemon-daemon-lifecycle-cli-docs",
+  "title": "Riido Daemon Migration Plan: Daemon Lifecycle CLI",
+  "workflow": ".github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml",
+  "evidence_artifact": "migration-daemon-daemon-lifecycle-cli-docs",
+  "expected_page_count": 7,
+  "fragments": [
+    "daemon-lifecycle-cli/root.riido.json",
+    "daemon-lifecycle-cli/full-lifecycle-wiring.riido.json",
+    "daemon-lifecycle-cli/store-distribution-contract.riido.json",
+    "daemon-lifecycle-cli/architecture-ssot-docs.riido.json",
+    "daemon-lifecycle-cli/approval-timeout-owner.riido.json",
+    "daemon-lifecycle-cli/figma-boundary-projection.riido.json",
+    "daemon-lifecycle-cli/figma-metadata-limitation.riido.json"
+  ],
+  "source_checks": [
+    {"name": "daemon-lifecycle-workflow", "file": ".github/workflows/daemon-lifecycle.yml", "contains": "Verify daemon lifecycle black-box/domain gates"},
+    {"name": "daemon-lifecycle-private-boundary", "file": ".github/workflows/daemon-lifecycle.yml", "contains": "cmd/riido daemon lifecycle must not import private source or server internals"},
+    {"name": "daemon-lifecycle-local-listener-boundary", "file": ".github/workflows/daemon-lifecycle.yml", "contains": "daemon lifecycle must not open public TCP listeners"},
+    {"name": "daemon-help-start-command", "file": "cmd/riido/cli_helpers.go", "contains": "riido daemon start"},
+    {"name": "daemon-task-queue-env", "file": "cmd/riido/daemon_config.go", "contains": "envTaskQueueDir                  = \"RIIDO_TASK_QUEUE_DIR\""},
+    {"name": "daemon-task-db-env", "file": "cmd/riido/daemon_config.go", "contains": "envTaskDBSourcePath              = \"RIIDO_TASK_DB_SOURCE_PATH\""},
+    {"name": "daemon-saas-url-env", "file": "cmd/riido/daemon_config.go", "contains": "envSaaSURL                       = \"RIIDO_SAAS_URL\""},
+    {"name": "daemon-device-secret-env", "file": "cmd/riido/daemon_config.go", "contains": "envDeviceSecret                  = \"RIIDO_DEVICE_SECRET\""},
+    {"name": "daemon-lifecycle-adapter-ssot", "file": "docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.riido.json", "contains": "`cmd/riido daemon ...` composes provider adapters"},
+    {"name": "store-contract-workflow", "file": ".github/workflows/store-distribution-contract.yml", "contains": "Verify store distribution contract"},
+    {"name": "store-contract-tool", "file": "tools/storecontract/schema.go", "contains": "riido-store-distribution-contract.v1"},
+    {"name": "store-distribution-docs", "file": "docs/30-architecture/store-distribution.riido.json", "contains": "\"riido_task\": \"RIID-4570\""},
+    {"name": "architecture-docs-workflow", "file": ".github/workflows/architecture-docs.yml", "contains": "Verify architecture docs"},
+    {"name": "context-map-docs", "file": "docs/20-domain/context-map.riido.json", "contains": "split-repo"},
+    {"name": "module-decomposition-docs", "file": "docs/30-architecture/module-decomposition.riido.json", "contains": "hexagonal"},
+    {"name": "approval-timeout-workflow", "file": ".github/workflows/approval-wait-timeout.yml", "contains": "Verify approval wait timeout"},
+    {"name": "approval-timeout-closed-workflow", "file": ".github/workflows/approval-timeout-ssot.yml", "contains": "Verify Q-RT-003 owner moved out of open questions"},
+    {"name": "approval-timeout-owner", "file": "docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json", "contains": "EventIngestor does not own timeout decisions"},
+    {"name": "figma-boundary-workflow", "file": ".github/workflows/figma-boundary-docs.yml", "contains": "Verify Figma boundary generated docs"},
+    {"name": "figma-boundary-riid-4813", "file": "docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json", "contains": "\"riido_task\": \"RIID-4813\""},
+    {"name": "figma-agent-settings-node", "file": "docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json", "contains": "\"node_id\":\"432:37336\""},
+    {"name": "figma-metadata-limitation", "file": "docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json", "contains": "figma-metadata-page-list-underreports-pages.v1"},
+    {"name": "figma-limitation-test", "file": "tools/figmaboundary/manifest_limitation_contract_test.go", "contains": "figma-metadata-page-list-underreports-pages.v1"}
+  ],
+  "assertions": [
+    "daemon lifecycle CLI migration notes are generated from fragments instead of hand-authored markdown",
+    "daemon lifecycle CLI claims must stay anchored to CLI code, daemon-lifecycle CI, and provider integration gate SSOT",
+    "store distribution migration claims must stay anchored to store contract tooling and generated store distribution docs",
+    "Figma boundary migration claims must stay downstream-only and anchored to the daemon boundary manifest/tooling",
+    "approval timeout migration claims must stay anchored to provider-runtime approval timeout evidence"
+  ]
+}

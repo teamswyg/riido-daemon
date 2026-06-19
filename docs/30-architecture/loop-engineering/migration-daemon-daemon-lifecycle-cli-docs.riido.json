@@ -1,0 +1,28 @@
+{
+  "id": "migration-daemon-daemon-lifecycle-cli-docs",
+  "owner": "daemon/migration",
+  "observation": {
+    "summary": "daemon-lifecycle-cli migration notes still described lifecycle wiring, store distribution, architecture docs, approval timeout, and Figma boundary work as reader-authored prose while active facts already lived in executable SSOTs and workflows.",
+    "artifacts": ["docs/migration/daemon/daemon-lifecycle-cli.md"]
+  },
+  "hypothesis": {
+    "summary": "A focused migration-docs manifest can generate the daemon lifecycle CLI slice and anchor each RIID page to existing CLI, architecture, store, approval, and Figma boundary evidence.",
+    "artifacts": ["docs/migration/daemon/daemon-lifecycle-cli.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate the daemon lifecycle CLI entrypoint and six slice pages from fragments with source checks for daemon-lifecycle CI, provider integration gates, store distribution, architecture docs, approval timeout, and Figma boundary evidence.",
+    "artifacts": ["tools/migrationdocs", ".github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for migration claims.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The daemon lifecycle CLI migration slice now becomes executable evidence instead of manual migration history.",
+    "artifacts": ["docs/executable-knowledge.md", "docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {"kind": "command", "ref": "go run ./tools/migrationdocs -manifest docs/migration/daemon/daemon-lifecycle-cli.riido.json -check-doc -evidence-out /tmp/migration-daemon-daemon-lifecycle-cli-docs.json", "proves": "daemon lifecycle CLI migration docs are generated and source anchors remain present"},
+    {"kind": "workflow", "ref": ".github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml", "proves": "public CI uploads daemon lifecycle CLI migration evidence"}
+  ]
+}
