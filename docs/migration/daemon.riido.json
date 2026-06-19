@@ -1,0 +1,33 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-daemon-root-docs",
+  "title": "Riido Daemon Migration Plan",
+  "workflow": ".github/workflows/migration-daemon-docs.yml",
+  "evidence_artifact": "migration-daemon-root-docs",
+  "expected_page_count": 1,
+  "fragments": [
+    "daemon/root.riido.json"
+  ],
+  "source_checks": [
+    {"name": "daemon-overview-manifest", "file": "docs/migration/daemon/overview.riido.json", "contains": "migration-daemon-overview-docs"},
+    {"name": "daemon-distribution-manifest", "file": "docs/migration/daemon/distribution-host-integration.riido.json", "contains": "migration-daemon-distribution-host-integration-docs"},
+    {"name": "daemon-macos-manifest", "file": "docs/migration/daemon/macos-provider-cli-review.riido.json", "contains": "migration-daemon-macos-provider-cli-review-docs"},
+    {"name": "daemon-codex-auth-manifest", "file": "docs/migration/daemon/codex-auth-full-access.riido.json", "contains": "migration-daemon-codex-auth-full-access-docs"},
+    {"name": "daemon-riidoapi-manifest", "file": "docs/migration/daemon/riidoapi-local-api.riido.json", "contains": "migration-daemon-riidoapi-local-api-docs"},
+    {"name": "daemon-lifecycle-manifest", "file": "docs/migration/daemon/daemon-lifecycle-cli.riido.json", "contains": "migration-daemon-daemon-lifecycle-cli-docs"},
+    {"name": "daemon-figma-manifest", "file": "docs/migration/daemon/figma-boundary-provenance.riido.json", "contains": "migration-daemon-figma-boundary-provenance-docs"},
+    {"name": "daemon-runtime-snapshot-manifest", "file": "docs/migration/daemon/runtime-snapshot-heartbeat.riido.json", "contains": "migration-daemon-runtime-snapshot-heartbeat-docs"},
+    {"name": "workdir-policy-marker-owner", "file": ".github/workflows/workdir-policy-ssot.yml", "contains": "grep -q \"RIID-4573\" docs/migration/daemon.md"},
+    {"name": "store-app-marker-owner", "file": ".github/workflows/store-app-ownership-ssot.yml", "contains": "Store App GUI must remain a client of C11/local API contracts"},
+    {"name": "store-review-marker-owner", "file": ".github/workflows/macos-external-provider-cli-ssot.yml", "contains": "StoreChannelPolicyInput.StoreReviewApproved=true"},
+    {"name": "provider-validation-riid", "file": "docs/30-architecture/provider-validation-matrix.riido.json", "contains": "\"riido_task\": \"RIID-4901\""},
+    {"name": "provider-validation-openclaw", "file": "docs/30-architecture/provider-validation-matrix/openclaw.riido.json", "contains": "MISSING_REQUIRED_SURFACE:worktree"},
+    {"name": "figma-boundary-manifest", "file": "docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json", "contains": "figma-ai-agent-daemon-boundary"},
+    {"name": "store-review-input-field", "file": "internal/policy/store_channel_input.go", "contains": "StoreReviewApproved    bool"}
+  ],
+  "assertions": [
+    "daemon migration root is generated from SSOT instead of hand-authored markdown",
+    "root compatibility markers remain present for existing workflow grep checks",
+    "root links remain a generated index over focused daemon migration manifests"
+  ]
+}

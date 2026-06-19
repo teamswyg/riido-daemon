@@ -6,18 +6,10 @@
   "workflow": ".github/workflows/repo-executable-knowledge-coverage.yml",
   "evidence_artifact": "repo-executable-knowledge-coverage",
   "scan_roots": ["docs"],
-  "manual_groups": [
-    {
-      "id": "migration-history-manual-surface",
-      "owner": "daemon/migration",
-      "reason": "migration history is still kept as reader-authored slice notes",
-      "next_artifact": "promote migration slices into generated migration ledger and retired-boundary evidence",
-      "path_prefixes": ["docs/migration/"]
-    }
-  ],
+  "manual_groups": [],
   "assertions": [
-    "repository docs markdown must be generated, direct-SSOT backed, or registered as manual debt",
-    "manual debt registration is observable evidence, not completion",
-    "prefix-registered manual debt must have a named owner and next executable artifact"
+    "repository docs markdown must be generated, direct-SSOT backed, or explicitly registered as manual debt",
+    "manual debt registration is observable evidence when debt exists, not completion",
+    "zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed"
   ]
 }

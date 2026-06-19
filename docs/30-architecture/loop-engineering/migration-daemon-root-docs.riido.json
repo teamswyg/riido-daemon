@@ -1,0 +1,28 @@
+{
+  "id": "migration-daemon-root-docs",
+  "owner": "daemon/migration",
+  "observation": {
+    "summary": "The daemon migration root remained the last registered manual document. It preserved compatibility markers and links, while all focused child migration sections were already generated from migrationdocs SSOT.",
+    "artifacts": ["docs/migration/daemon.md"]
+  },
+  "hypothesis": {
+    "summary": "A one-page migration-docs manifest can generate the daemon migration root, preserve compatibility markers consumed by workflows, and point readers to generated child migration sections.",
+    "artifacts": ["docs/migration/daemon.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate the daemon migration root from a fragment with source checks for child manifests, workflow-owned compatibility markers, Figma boundary, provider validation, and Store review ownership.",
+    "artifacts": ["tools/migrationdocs", ".github/workflows/migration-daemon-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, missing child manifest anchors, missing compatibility marker owners, and missing public CI evidence upload.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The daemon migration root now becomes executable evidence, leaving no registered manual docs in executable knowledge coverage.",
+    "artifacts": ["docs/executable-knowledge.md", "docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {"kind": "command", "ref": "go run ./tools/migrationdocs -manifest docs/migration/daemon.riido.json -check-doc -evidence-out /tmp/migration-daemon-root-docs.json", "proves": "daemon migration root is generated and source anchors remain present"},
+    {"kind": "workflow", "ref": ".github/workflows/migration-daemon-docs.yml", "proves": "public CI uploads daemon migration root evidence"}
+  ]
+}

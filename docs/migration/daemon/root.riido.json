@@ -1,0 +1,33 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-migration-root",
+  "title": "Riido Daemon Migration Plan",
+  "generated_doc": "docs/migration/daemon.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This SSOT is split into focused topic files so each reader can open the smallest relevant surface."},
+    {"kind": "paragraph", "text": "The original entrypoint remains here to preserve existing links."},
+    {"kind": "heading", "text": "Compatibility Markers"},
+    {"kind": "bullets", "items": [
+      "`figma-ai-agent-daemon-boundary`",
+      "`RIID-4901`",
+      "`provider-validation-matrix.riido.json`",
+      "`supports_worktree=false`",
+      "`required_surfaces=[worktree]`",
+      "`MISSING_REQUIRED_SURFACE:worktree`",
+      "Store App GUI must remain a client of C11/local API contracts",
+      "StoreChannelPolicyInput.StoreReviewApproved=true",
+      "RIID-4573"
+    ]},
+    {"kind": "heading", "text": "Parts"},
+    {"kind": "links", "links": [
+      {"title": "Overview: Goal", "path": "daemon/overview.md"},
+      {"title": "Distribution Host Integration", "path": "daemon/distribution-host-integration.md"},
+      {"title": "macOS Provider CLI Review", "path": "daemon/macos-provider-cli-review.md"},
+      {"title": "Codex Auth / Full Access", "path": "daemon/codex-auth-full-access.md"},
+      {"title": "riidoapi Local API", "path": "daemon/riidoapi-local-api.md"},
+      {"title": "Daemon Lifecycle CLI", "path": "daemon/daemon-lifecycle-cli.md"},
+      {"title": "Figma Boundary Provenance", "path": "daemon/figma-boundary-provenance.md"},
+      {"title": "Runtime Snapshot Heartbeat", "path": "daemon/runtime-snapshot-heartbeat.md"}
+    ]}
+  ]
+}

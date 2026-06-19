@@ -1008,6 +1008,23 @@
   - `command`: go run ./tools/migrationdocs -check-doc -evidence-out /tmp/migration-cli-docs.json; proves CLI migration docs are generated and source anchors remain present
   - `workflow`: .github/workflows/migration-cli-docs.yml; proves public CI uploads migration CLI evidence
 
+### migration-daemon-root-docs
+
+- Owner: `daemon/migration`
+- Observe: The daemon migration root remained the last registered manual document. It preserved compatibility markers and links, while all focused child migration sections were already generated from migrationdocs SSOT.
+  - Artifacts: `docs/migration/daemon.md`
+- Hypothesis: A one-page migration-docs manifest can generate the daemon migration root, preserve compatibility markers consumed by workflows, and point readers to generated child migration sections.
+  - Artifacts: `docs/migration/daemon.riido.json`
+- Execute: Generate the daemon migration root from a fragment with source checks for child manifests, workflow-owned compatibility markers, Figma boundary, provider validation, and Store review ownership.
+  - Artifacts: `tools/migrationdocs`, `.github/workflows/migration-daemon-docs.yml`
+- Evaluate: The verifier rejects doc drift, missing child manifest anchors, missing compatibility marker owners, and missing public CI evidence upload.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The daemon migration root now becomes executable evidence, leaving no registered manual docs in executable knowledge coverage.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon.riido.json -check-doc -evidence-out /tmp/migration-daemon-root-docs.json; proves daemon migration root is generated and source anchors remain present
+  - `workflow`: .github/workflows/migration-daemon-docs.yml; proves public CI uploads daemon migration root evidence
+
 ### migration-daemon-overview-docs
 
 - Owner: `daemon/migration`

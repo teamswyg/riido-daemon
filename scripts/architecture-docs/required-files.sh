@@ -361,6 +361,7 @@ required_files=(
   docs/30-architecture/loop-engineering/readme-docs.riido.json
   docs/30-architecture/loop-engineering/roadmap-docs.riido.json
   docs/30-architecture/loop-engineering/migration-cli-docs.riido.json
+  docs/30-architecture/loop-engineering/migration-daemon-root-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-daemon-lifecycle-cli-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-runtime-snapshot-heartbeat-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json
@@ -411,6 +412,7 @@ required_files=(
   .github/workflows/readme-docs.yml
   .github/workflows/roadmap-docs.yml
   .github/workflows/migration-cli-docs.yml
+  .github/workflows/migration-daemon-docs.yml
   .github/workflows/migration-daemon-overview-docs.yml
   .github/workflows/migration-daemon-riidoapi-local-api-docs.yml
   .github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml
@@ -436,6 +438,8 @@ required_files=(
   docs/migration/cli/validation-gates.riido.json
   docs/migration/cli/store-review-invariants.riido.json
   docs/migration/cli/open-follow-ups.riido.json
+  docs/migration/daemon.riido.json
+  docs/migration/daemon/root.riido.json
   docs/migration/daemon/overview.riido.json
   docs/migration/daemon/overview/root.riido.json
   docs/migration/daemon/overview/retired-source-boundary.riido.json

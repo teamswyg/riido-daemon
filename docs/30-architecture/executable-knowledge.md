@@ -15,18 +15,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Registered Manual Surfaces
 
-| Group | Owner | Next artifact | Matched docs |
-| --- | --- | --- | ---: |
+_None._
 
 ## Manual Hotspots
 
-| Directory | Matched docs |
-| --- | ---: |
+_None._
 
 ## Manual Samples
 
-| Group | Path |
-| --- | --- |
+_None._
 
 ## Assertions
 

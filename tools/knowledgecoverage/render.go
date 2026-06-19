@@ -19,19 +19,31 @@ func renderDoc(m manifest, docs []docClass, problems []string) string {
 	fmt.Fprintf(&b, "| Scanned docs | %d |\n\n", e.ScannedCount)
 	b.WriteString("## Registered Manual Surfaces\n\n")
 	byGroup := e.ManualByGroup
-	b.WriteString("| Group | Owner | Next artifact | Matched docs |\n| --- | --- | --- | ---: |\n")
-	for _, group := range m.ManualGroups {
-		fmt.Fprintf(&b, "| `%s` | %s | %s | %d |\n", group.ID, group.Owner, group.NextArtifact, byGroup[group.ID])
+	if len(m.ManualGroups) == 0 {
+		b.WriteString("_None._\n")
+	} else {
+		b.WriteString("| Group | Owner | Next artifact | Matched docs |\n| --- | --- | --- | ---: |\n")
+		for _, group := range m.ManualGroups {
+			fmt.Fprintf(&b, "| `%s` | %s | %s | %d |\n", group.ID, group.Owner, group.NextArtifact, byGroup[group.ID])
+		}
 	}
 	b.WriteString("\n## Manual Hotspots\n\n")
-	b.WriteString("| Directory | Matched docs |\n| --- | ---: |\n")
-	for _, dir := range e.ManualTopDirs {
-		fmt.Fprintf(&b, "| `%s` | %d |\n", dir.Path, dir.Count)
+	if len(e.ManualTopDirs) == 0 {
+		b.WriteString("_None._\n")
+	} else {
+		b.WriteString("| Directory | Matched docs |\n| --- | ---: |\n")
+		for _, dir := range e.ManualTopDirs {
+			fmt.Fprintf(&b, "| `%s` | %d |\n", dir.Path, dir.Count)
+		}
 	}
 	b.WriteString("\n## Manual Samples\n\n")
-	b.WriteString("| Group | Path |\n| --- | --- |\n")
-	for _, sample := range e.ManualSamples {
-		fmt.Fprintf(&b, "| `%s` | `%s` |\n", sample.Group, sample.Path)
+	if len(e.ManualSamples) == 0 {
+		b.WriteString("_None._\n")
+	} else {
+		b.WriteString("| Group | Path |\n| --- | --- |\n")
+		for _, sample := range e.ManualSamples {
+			fmt.Fprintf(&b, "| `%s` | `%s` |\n", sample.Group, sample.Path)
+		}
 	}
 	b.WriteString("\n## Assertions\n\n")
 	for _, assertion := range m.Assertions {
