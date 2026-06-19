@@ -1,0 +1,10 @@
+{
+  "id": "terminal-result-mapping",
+  "owner": "tools/terminalresultmapping and terminal-result-mapping workflow",
+  "observation": {"summary": "Run lifecycle terminal result rules were reader-only text while runtime mapped ResultStatus values in terminal_result_draft.go.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.md"]},
+  "hypothesis": {"summary": "A manifest can define the terminal ResultStatus to IR EventType mapping and prove the runtime switch agrees.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.riido.json"]},
+  "execution": {"summary": "Parse result.go and terminal_result_draft.go, then compare status coverage, explicit cases, fallback behavior, and empty-status normalization.", "artifacts": ["tools/terminalresultmapping", ".github/workflows/terminal-result-mapping.yml"]},
+  "evaluation": {"summary": "The verifier rejects missing ResultStatus coverage, mapping drift, generated doc drift, and default/fallback drift.", "artifacts": ["tools/terminalresultmapping/run_test.go"]},
+  "retrospective": {"summary": "Run lifecycle reader docs are generated, while the runtime switch remains the observed implementation evidence.", "artifacts": ["internal/agentbridge/supervisor/terminal_result_draft.go"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/terminalresultmapping -check-doc -evidence-out /tmp/terminal-result-mapping-evidence.json", "proves": "terminal ResultStatus mapping manifest matches runtime source"}, {"kind": "workflow", "ref": ".github/workflows/terminal-result-mapping.yml", "proves": "public CI uploads terminal result mapping evidence"}]
+}

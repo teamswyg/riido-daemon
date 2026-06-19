@@ -1,0 +1,32 @@
+{
+  "schema_version": "riido-terminal-result-mapping.v1",
+  "id": "provider-runtime-terminal-result-mapping",
+  "title": "Run Lifecycle",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.md",
+  "workflow": ".github/workflows/terminal-result-mapping.yml",
+  "evidence_artifact": "terminal-result-mapping-evidence",
+  "sources": {
+    "result_status": "internal/agentbridge/result.go",
+    "terminal_result": "internal/agentbridge/supervisor/terminal_result_draft.go"
+  },
+  "mappings": [
+    {"status": "completed", "status_const": "ResultCompleted", "event_type_const": "EventRunReportedDone", "event_type": "RunReportedDone"},
+    {"status": "failed", "status_const": "ResultFailed", "event_type_const": "EventTaskFailed", "event_type": "TaskFailed"},
+    {"status": "blocked", "status_const": "ResultBlocked", "event_type_const": "EventTaskFailed", "event_type": "TaskFailed"},
+    {"status": "aborted", "status_const": "ResultAborted", "event_type_const": "EventTaskFailed", "event_type": "TaskFailed"},
+    {"status": "cancelled", "status_const": "ResultCancelled", "event_type_const": "EventTaskCancelled", "event_type": "TaskCancelled"},
+    {"status": "timeout", "status_const": "ResultTimeout", "event_type_const": "EventTaskTimedOut", "event_type": "TaskTimedOut"}
+  ],
+  "defaults": {
+    "empty_status_const": "ResultCompleted",
+    "fallback_event_type_const": "EventTaskFailed",
+    "fallback_event_type": "TaskFailed"
+  },
+  "assertions": [
+    "every ResultStatus const is represented in this manifest",
+    "empty terminal status normalizes to ResultCompleted before mapping",
+    "failed, blocked, and aborted fail closed through the default TaskFailed event",
+    "cancelled and timeout remain distinct terminal transition events",
+    "RunReportedDone means provider self-reported completion, not task validation completion"
+  ]
+}

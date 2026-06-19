@@ -1,0 +1,37 @@
+name: terminal-result-mapping
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/terminal-result-mapping.yml"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.md"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.riido.json"
+      - "internal/agentbridge/result.go"
+      - "internal/agentbridge/supervisor/terminal_result_draft.go"
+      - "tools/terminalresultmapping/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  terminal-result-mapping-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify terminal result mapping
+        run: |
+          mkdir -p out
+          go test ./tools/terminalresultmapping -count=1
+          go run ./tools/terminalresultmapping \
+            -check-doc \
+            -evidence-out out/terminal-result-mapping-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: terminal-result-mapping-evidence
+          path: out/terminal-result-mapping-evidence.json
+          if-no-files-found: error
