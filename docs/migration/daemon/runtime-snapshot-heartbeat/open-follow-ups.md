@@ -1,0 +1,9 @@
+# Open Follow-Ups
+
+[Back to Runtime Snapshot Heartbeat](../runtime-snapshot-heartbeat.md)
+
+| Follow-up | Repository |
+| --- | --- |
+| Promote shared DTO/schema only after two repositories need the same fact. | `riido-contracts` / RIID-4637 |
+| Move SaaS server code separately. | `riido-control-plane` / RIID-4638 |
+| Move Terraform/deploy evidence privately. | `riido-infra` / RIID-4639 |
