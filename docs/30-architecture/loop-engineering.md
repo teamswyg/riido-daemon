@@ -244,6 +244,18 @@
   - `command`: go run ./tools/compatibilitygate -check-doc -evidence-out /tmp/compatibility-gate-evidence.json; proves compatibility gate manifest matches generated reader docs and local source evidence
   - `workflow`: .github/workflows/compatibility-gate.yml; proves public CI uploads compatibility gate evidence
 
+### runtime-upgrade-flow-evidence
+
+- Owner: `daemon architecture`
+- Observe: runtime-upgrade-flow.md described no-silent-upgrade behavior as prose while implemented and reserved evidence were mixed together.
+- Hypothesis: A manifest can generate the reader doc and separate implemented runtime pin evidence from reserved active-drift cancellation evidence.
+- Execute: Run runtimeupgrade to check generated docs, source evidence, and reserved evidence requirements.
+- Evaluate: The verifier rejects generated doc drift, source drift, unknown references, implemented rows without source checks, and reserved rows pretending to be implemented.
+- Retrospective: Runtime upgrade knowledge now exposes the exact remaining evidence gaps instead of hiding them in narrative prose.
+- Evidence:
+  - `command`: go run ./tools/runtimeupgrade -check-doc -evidence-out /tmp/runtime-upgrade-flow-evidence.json; proves runtime upgrade manifest matches generated reader docs and local source evidence
+  - `workflow`: .github/workflows/runtime-upgrade-flow.yml; proves public CI uploads runtime upgrade flow evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

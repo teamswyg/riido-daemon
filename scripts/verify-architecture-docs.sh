@@ -16,7 +16,7 @@ required_files=(
   docs/30-architecture/config-reference.md
   docs/30-architecture/integration-matrix.md
   docs/30-architecture/compatibility-gate.md docs/30-architecture/compatibility-gate.riido.json
-  docs/30-architecture/runtime-upgrade-flow.md
+  docs/30-architecture/runtime-upgrade-flow.md docs/30-architecture/runtime-upgrade-flow.riido.json
   docs/30-architecture/loop-engineering.md
   docs/30-architecture/loop-engineering.riido.json
   docs/30-architecture/provider-real-cli-observation.md
@@ -61,10 +61,10 @@ for key in "${env_keys[@]}"; do
   grep -q "$key" docs/30-architecture/config-reference.md
 done
 scripts/verify-go-dependencies.sh
-go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity ./tools/eventauthority ./tools/providerdraftmapping ./tools/terminalresultmapping ./tools/shutdownauthority ./tools/approvaltimeout ./tools/processlifecycle ./tools/draftfields ./tools/sessionlifecycle ./tools/branchgate ./tools/compatibilitygate -count=1
+go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity ./tools/eventauthority ./tools/providerdraftmapping ./tools/terminalresultmapping ./tools/shutdownauthority ./tools/approvaltimeout ./tools/processlifecycle ./tools/draftfields ./tools/sessionlifecycle ./tools/branchgate ./tools/compatibilitygate ./tools/runtimeupgrade -count=1
 go run ./tools/loopevidence -check
 go run ./tools/docmap -check
-for tool in repoverification semanticeventactivity eventauthority providerdraftmapping terminalresultmapping shutdownauthority approvaltimeout processlifecycle draftfields sessionlifecycle; do
+for tool in repoverification semanticeventactivity eventauthority providerdraftmapping terminalresultmapping shutdownauthority approvaltimeout processlifecycle draftfields sessionlifecycle runtimeupgrade; do
   go run "./tools/$tool" -check-doc
 done
 go run ./tools/branchgate -check-doc -check-script

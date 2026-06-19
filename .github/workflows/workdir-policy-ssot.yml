@@ -8,6 +8,7 @@ on:
       - "docs/20-domain/workspace.md"
       - "docs/20-domain/security.md"
       - "docs/30-architecture/runtime-upgrade-flow.md"
+      - "docs/30-architecture/runtime-upgrade-flow.riido.json"
       - "docs/30-architecture/config-reference.md"
       - "docs/50-roadmap/open-questions.md"
       - "docs/migration/daemon.md"
@@ -21,6 +22,7 @@ on:
       - "docs/20-domain/workspace.md"
       - "docs/20-domain/security.md"
       - "docs/30-architecture/runtime-upgrade-flow.md"
+      - "docs/30-architecture/runtime-upgrade-flow.riido.json"
       - "docs/30-architecture/config-reference.md"
       - "docs/50-roadmap/open-questions.md"
       - "docs/migration/daemon.md"
@@ -52,7 +54,8 @@ jobs:
           grep -q "Q-WS-006" docs/20-domain/workspace.md
           grep -q "Default workdir retention 은 disabled" docs/20-domain/workspace.md
           grep -q "No user-global native config overlay" docs/20-domain/security.md
-          grep -q "automatic threshold for a dirty workdir is zero" docs/30-architecture/runtime-upgrade-flow.md
+          go run ./tools/runtimeupgrade -check-doc
+          python3 scripts/verify-q-ws-runtime-upgrade.py
           grep -q "no default size/task-count cleanup" docs/30-architecture/config-reference.md
           grep -q "RIID-4573" docs/migration/daemon.md
       - name: Test workdir retention and native config gates

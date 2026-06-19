@@ -1,0 +1,41 @@
+name: runtime-upgrade-flow
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/runtime-upgrade-flow.yml"
+      - "docs/30-architecture/runtime-upgrade-flow.md"
+      - "docs/30-architecture/runtime-upgrade-flow.riido.json"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/agentbridge/supervisor/**"
+      - "internal/agentbridge/controlplane/taskdbplane/**"
+      - "internal/scheduling/**"
+      - "internal/workdir/**"
+      - "internal/provider/openclaw/**"
+      - "tools/runtimeupgrade/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  runtime-upgrade-flow-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify runtime upgrade flow
+        run: |
+          mkdir -p out
+          go test ./tools/runtimeupgrade -count=1
+          go run ./tools/runtimeupgrade \
+            -check-doc \
+            -evidence-out out/runtime-upgrade-flow-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-upgrade-flow-evidence
+          path: out/runtime-upgrade-flow-evidence.json
+          if-no-files-found: error
