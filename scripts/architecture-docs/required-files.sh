@@ -241,8 +241,13 @@ required_files=(
   docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json
   docs/20-domain/validation.md
   docs/20-domain/validation.riido.json
+  docs/20-domain/runtime-scheduling.md
+  docs/20-domain/runtime-scheduling.riido.json
   docs/20-domain/runtime-scheduling/saas-assignment-source.md
   docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json
+  docs/20-domain/runtime-scheduling/invariants.md
+  docs/20-domain/runtime-scheduling/invariants/core.md
+  docs/20-domain/runtime-scheduling/invariants/core.riido.json
   docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md
   docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json
   docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md
@@ -325,6 +330,7 @@ required_files=(
   docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json
   docs/30-architecture/loop-engineering/store-distribution-docs.riido.json
   docs/30-architecture/loop-engineering/agent-execution-design-docs.riido.json
+  docs/30-architecture/loop-engineering/runtime-scheduling-docs.riido.json
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
   docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json
@@ -357,6 +363,7 @@ required_files=(
   docs/30-architecture/riido-work-branch-gate.riido.json
   docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md
   docs/50-roadmap/open-questions.md
+  .github/workflows/runtime-scheduling-docs.yml
   .github/workflows/policy-bundle-loader-evidence.yml
   .github/workflows/local-daemon-contract-evidence.yml
   .github/workflows/runtime-eligibility-evidence.yml

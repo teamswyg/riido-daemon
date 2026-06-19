@@ -47,6 +47,7 @@ tool_tests=(
   ./tools/storedistributiondocs
   ./tools/agentexecutiondesign
   ./tools/runtimeupgrade
+  ./tools/runtimeschedulingdocs
   ./tools/localdaemoncontract
   ./tools/runtimeeligibility
   ./tools/taskrequirements
@@ -97,6 +98,7 @@ doc_tools=(
   agentexecutiondesign
   figmaboundarydocs
   providermigrationdocs
+  runtimeschedulingdocs
   localdaemoncontract
   runtimeeligibility
   taskrequirements

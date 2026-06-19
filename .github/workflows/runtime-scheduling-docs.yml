@@ -1,0 +1,52 @@
+name: runtime-scheduling-docs
+
+on:
+  pull_request:
+    paths:
+      - "docs/20-domain/runtime-scheduling.md"
+      - "docs/20-domain/runtime-scheduling.riido.json"
+      - "docs/20-domain/runtime-scheduling/**"
+      - "tools/runtimeschedulingdocs/**"
+      - ".github/workflows/runtime-scheduling-docs.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docs/20-domain/runtime-scheduling.md"
+      - "docs/20-domain/runtime-scheduling.riido.json"
+      - "docs/20-domain/runtime-scheduling/**"
+      - "tools/runtimeschedulingdocs/**"
+      - ".github/workflows/runtime-scheduling-docs.yml"
+
+jobs:
+  runtime-scheduling-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Check runtime scheduling generated docs
+        run: |
+          mkdir -p out
+          go run ./tools/runtimeschedulingdocs \
+            -check-doc \
+            -evidence-out out/runtime-scheduling-docs.json
+          go run ./tools/taskrequirements \
+            -check-doc \
+            -evidence-out out/task-requirements-evidence.json
+          go run ./tools/runtimeeligibility \
+            -check-doc \
+            -evidence-out out/runtime-eligibility-evidence.json
+          go run ./tools/localdaemoncontract \
+            -check-doc \
+            -evidence-out out/local-daemon-contract-evidence.json
+          go run ./tools/saasassignment \
+            -check-doc \
+            -evidence-out out/saas-assignment-source-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-scheduling-docs
+          path: out/*.json
+          if-no-files-found: error

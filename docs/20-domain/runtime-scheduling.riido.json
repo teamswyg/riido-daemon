@@ -1,0 +1,53 @@
+{
+  "schema_version": "riido-runtime-scheduling-docs.v1",
+  "id": "runtime-scheduling-docs",
+  "title": "Runtime Scheduling SSOT",
+  "generated_doc": "docs/20-domain/runtime-scheduling.md",
+  "workflow": ".github/workflows/runtime-scheduling-docs.yml",
+  "evidence_artifact": "runtime-scheduling-docs",
+  "summary": [
+    "C5 Runtime Scheduling owns which runtime can claim and execute a task, runtime capability eligibility, runtime lease pinning, and heartbeat meaning.",
+    "Reader documentation is generated from this manifest so scheduling boundaries are expressed as executable evidence instead of prose-only guidance."
+  ],
+  "parts": [
+    {"title": "Invariants", "path": "runtime-scheduling/invariants.md"},
+    {"title": "SaaS Assignment Source", "path": "runtime-scheduling/saas-assignment-source.md"}
+  ],
+  "invariants_index": {
+    "title": "Runtime Scheduling SSOT: Invariants",
+    "generated_doc": "docs/20-domain/runtime-scheduling/invariants.md",
+    "summary": [
+      "Scheduling invariants are split by concept so claim eligibility and daemon implementation contracts stay independently reviewable."
+    ],
+    "parts": [
+      {"title": "Scope and core invariants", "path": "invariants/core.md"},
+      {"title": "Task requirement model", "path": "invariants/task-requirements.md"},
+      {"title": "Runtime eligibility", "path": "invariants/runtime-eligibility.md"},
+      {"title": "Local daemon implementation contract", "path": "invariants/local-daemon-contract.md"}
+    ]
+  },
+  "core_fragment": "runtime-scheduling/invariants/core.riido.json",
+  "evidence_pages": [
+    {"title": "Task Requirement Model Evidence", "path": "runtime-scheduling/invariants/task-requirements.md"},
+    {"title": "Runtime Eligibility Evidence", "path": "runtime-scheduling/invariants/runtime-eligibility.md"},
+    {"title": "Local Daemon Implementation Contract Evidence", "path": "runtime-scheduling/invariants/local-daemon-contract.md"},
+    {"title": "SaaS Assignment Source Evidence", "path": "runtime-scheduling/saas-assignment-source.md"}
+  ],
+  "source_checks": [
+    {"name": "c5-package-boundary", "file": "internal/scheduling/lease.go", "contains": "Package scheduling owns the C5 Runtime Scheduling domain"},
+    {"name": "capability-only-gate", "file": "internal/scheduling/eligibility.go", "contains": "EvaluateCapability applies the C5 pre-submit scheduling gate"},
+    {"name": "pure-runtime-selection", "file": "internal/scheduling/pool.go", "contains": "It is pure C5 logic: no locks"},
+    {"name": "pre-submit-supervisor-gate", "file": "internal/agentbridge/supervisor/task_eligibility.go", "contains": "scheduling.EvaluateCapability(taskRequirements(req), runtimeCapability(status, capView))"},
+    {"name": "experimental-opt-in-gate", "file": "internal/scheduling/eligibility.go", "contains": "candidate.RequiresExperimentalOptIn && !req.AllowExperimentalRuntime"},
+    {"name": "lease-runtime-pin", "file": "internal/scheduling/lease.go", "contains": "The (RuntimeID, CapabilityFingerprint) pair IS the runtime pin"},
+    {"name": "file-queue-source-boundary", "file": "cmd/riido/daemon_control_plane.go", "contains": "source, err := controlplane.NewFileQueueSource(settings.TaskQueueDir)"},
+    {"name": "task-db-source-contract", "file": "internal/agentbridge/controlplane/taskdbplane/task_claim_attempt.go", "contains": "taskdb.ApplyGuardedTaskTransition"},
+    {"name": "provider-session-boundary", "file": "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json", "contains": "task DB runtime state is sidecar state, not a task DB schema expansion"},
+    {"name": "client-read-model-boundary", "file": "docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json", "contains": "task-thread presentation"}
+  ],
+  "assertions": [
+    "runtime scheduling dispatches by task requirements and capability snapshots, not provider binary version strings",
+    "runtime scheduling keeps provider FSM, provider session schema, and client read models outside C5",
+    "reader docs for the C5 entrypoint and core invariants are generated from this manifest"
+  ]
+}
