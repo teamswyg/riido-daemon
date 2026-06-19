@@ -94,11 +94,23 @@
   - `command`: go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1; proves redaction behavior is executable
   - `command`: go run ./tools/redactiondrift; proves security docs do not redefine redaction marker/catalog details outside the SSOT
 
-## Open Gaps
-
 ### runtime-secret-private-evidence
 
-- Owner: `riido-infra`
-- Current handling: public daemon docs describe metadata-only secret evidence, but the collector/tool is outside this repository
-- Required next artifact: private infra evidence packet or public stub manifest that proves no raw secret collection path
+- Owner: `riido-infra boundary, public daemon verifier`
+- Observe: Runtime secret release evidence needs a public contract without exposing private token values.
+  - Artifacts: `docs/30-architecture/runtime-secret-private-evidence.riido.json`
+- Hypothesis: A metadata-only packet contract can prove that public CI never requires raw secret collection paths.
+  - Artifacts: `tools/runtimesecretevidence/run_test.go`
+- Execute: Validate the contract, generate the reader doc, and publish sanitized public evidence JSON.
+  - Artifacts: `.github/workflows/runtime-secret-private-evidence.yml`, `tools/runtimesecretevidence`
+- Evaluate: The verifier rejects raw packet fields, secret read/decrypt AWS operations, missing generated docs, and missing forbidden operation coverage.
+  - Artifacts: `docs/30-architecture/runtime-secret-private-evidence.md`
+- Retrospective: Private infra remains the live evidence owner, while public daemon only owns the executable metadata boundary.
+  - Artifacts: `docs/20-domain/security/native-config-overlay/runtime-secret-evidence.md`
+- Evidence:
+  - `command`: go run ./tools/runtimesecretevidence -check-doc -evidence-out /tmp/runtime-secret-private-evidence.json; proves runtime secret evidence boundary generates sanitized public evidence
+  - `workflow`: .github/workflows/runtime-secret-private-evidence.yml; proves public CI uploads sanitized runtime secret evidence artifacts without private secret access
 
+## Open Gaps
+
+_None._

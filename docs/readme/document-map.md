@@ -10,6 +10,7 @@
 | Store channel, external CLI provenance, consent, local IPC | [`20-domain/distribution-host-integration.md`](../20-domain/distribution-host-integration.md) |
 | security policy and store channel execution gate | [`20-domain/security.md`](../20-domain/security.md) |
 | event redaction and sensitive value handling | [`20-domain/security-redaction.md`](../20-domain/security-redaction.md) |
+| runtime secret private evidence boundary | [`30-architecture/runtime-secret-private-evidence.md`](../30-architecture/runtime-secret-private-evidence.md) |
 | runtime scheduling and eligibility | [`20-domain/runtime-scheduling.md`](../20-domain/runtime-scheduling.md) |
 | workspace/native config materialization | [`20-domain/workspace.md`](../20-domain/workspace.md) |
 | CLI command surface | [`30-architecture/cli-surface.md`](../30-architecture/cli-surface.md) |

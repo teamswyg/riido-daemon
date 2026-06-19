@@ -28,6 +28,7 @@
 | local lock/lease primitive | [`20-domain/locking.md`](20-domain/locking.md) |
 | store channel policy와 tool/security decision | [`20-domain/security.md`](20-domain/security.md) |
 | raw provider/tool/event redaction | [`20-domain/security-redaction.md`](20-domain/security-redaction.md) |
+| runtime secret private evidence boundary | [`30-architecture/runtime-secret-private-evidence.md`](30-architecture/runtime-secret-private-evidence.md), [`30-architecture/runtime-secret-private-evidence.riido.json`](30-architecture/runtime-secret-private-evidence.riido.json) |
 | package map과 import rule | [`30-architecture/module-decomposition.md`](30-architecture/module-decomposition.md) |
 | Riido 작업 생성 응답의 `branchName`만 쓰는 work-unit branch rule | [`30-architecture/riido-work-branch-gate.md`](30-architecture/riido-work-branch-gate.md) |
 | provider CLI real integration test 정책 | [`30-architecture/integration-matrix.md`](30-architecture/integration-matrix.md) |

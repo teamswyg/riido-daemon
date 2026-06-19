@@ -18,6 +18,10 @@ func renderMarkdown(m manifest) string {
 		renderLoop(&b, item)
 	}
 	b.WriteString("## Open Gaps\n\n")
+	if len(m.OpenGaps) == 0 {
+		b.WriteString("_None._\n")
+		return b.String()
+	}
 	for _, item := range m.OpenGaps {
 		fmt.Fprintf(&b, "### %s\n\n", item.ID)
 		fmt.Fprintf(&b, "- Owner: `%s`\n", item.Owner)

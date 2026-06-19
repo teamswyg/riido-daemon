@@ -17,6 +17,7 @@ on:
       - "tools/loopevidence/**"
       - "tools/redactiondrift/**"
       - "tools/providerintegrationevidence/**"
+      - "tools/runtimesecretevidence/**"
   pull_request:
     paths:
       - ".github/workflows/architecture-docs.yml"
@@ -32,6 +33,7 @@ on:
       - "tools/loopevidence/**"
       - "tools/redactiondrift/**"
       - "tools/providerintegrationevidence/**"
+      - "tools/runtimesecretevidence/**"
 
 jobs:
   docs:

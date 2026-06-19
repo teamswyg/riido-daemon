@@ -14,9 +14,6 @@ func validate(root string, m manifest) []string {
 	for _, item := range m.Loops {
 		problems = append(problems, validateLoop(root, item, seen)...)
 	}
-	if len(m.OpenGaps) == 0 {
-		problems = append(problems, "open_gaps must record known unclosed loop gaps")
-	}
 	for _, item := range m.OpenGaps {
 		problems = append(problems, validateGap(item)...)
 	}
