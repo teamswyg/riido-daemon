@@ -1,0 +1,48 @@
+name: integration-matrix-docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/integration-matrix-docs.yml"
+      - "docs/30-architecture/integration-matrix.riido.json"
+      - "docs/30-architecture/integration-matrix.md"
+      - "docs/30-architecture/integration-matrix/**"
+      - "docs/30-architecture/provider-validation-matrix.riido.json"
+      - "docs/30-architecture/provider-validation-matrix/**"
+      - "docs/30-architecture/provider-real-cli-observation.riido.json"
+      - "tools/integrationmatrix/**"
+  pull_request:
+    paths:
+      - ".github/workflows/integration-matrix-docs.yml"
+      - "docs/30-architecture/integration-matrix.riido.json"
+      - "docs/30-architecture/integration-matrix.md"
+      - "docs/30-architecture/integration-matrix/**"
+      - "docs/30-architecture/provider-validation-matrix.riido.json"
+      - "docs/30-architecture/provider-validation-matrix/**"
+      - "docs/30-architecture/provider-real-cli-observation.riido.json"
+      - "tools/integrationmatrix/**"
+
+jobs:
+  integration-matrix-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify integration matrix docs
+        run: |
+          mkdir -p out
+          go test ./tools/integrationmatrix ./tools/providervalidation -count=1
+          go run ./tools/integrationmatrix \
+            -check-doc \
+            -evidence-out out/integration-matrix-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-matrix-docs
+          path: out/integration-matrix-docs.json
+          if-no-files-found: error
