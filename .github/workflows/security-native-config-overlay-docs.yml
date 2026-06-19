@@ -1,0 +1,75 @@
+name: security-native-config-overlay-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/security-native-config-overlay-docs.yml"
+      - "docs/20-domain/security/native-config-overlay.md"
+      - "docs/20-domain/security/native-config-overlay.riido.json"
+      - "docs/20-domain/security/native-config-overlay/**"
+      - "docs/20-domain/security/enforcement-locations/native-config-and-mcp.md"
+      - "docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json"
+      - "docs/30-architecture/runtime-secret-private-evidence**"
+      - "tools/securitynativeconfigoverlaydocs/**"
+      - "tools/fullaccessharness/**"
+      - "tools/nativeconfigmcp/**"
+      - "tools/runtimesecretevidence/**"
+      - "internal/policy/**"
+      - "internal/workdir/**"
+      - "internal/agentbridge/**"
+      - "internal/ir/ingest/**"
+      - "cmd/riido/daemon_settings_defaults_test.go"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/security-native-config-overlay-docs.yml"
+      - "docs/20-domain/security/native-config-overlay.md"
+      - "docs/20-domain/security/native-config-overlay.riido.json"
+      - "docs/20-domain/security/native-config-overlay/**"
+      - "docs/20-domain/security/enforcement-locations/native-config-and-mcp.md"
+      - "docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json"
+      - "docs/30-architecture/runtime-secret-private-evidence**"
+      - "tools/securitynativeconfigoverlaydocs/**"
+      - "tools/fullaccessharness/**"
+      - "tools/nativeconfigmcp/**"
+      - "tools/runtimesecretevidence/**"
+      - "internal/policy/**"
+      - "internal/workdir/**"
+      - "internal/agentbridge/**"
+      - "internal/ir/ingest/**"
+      - "cmd/riido/daemon_settings_defaults_test.go"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  security-native-config-overlay-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify security native config overlay docs
+        run: |
+          mkdir -p out
+          go run ./tools/securitynativeconfigoverlaydocs \
+            -check-doc \
+            -evidence-out out/security-native-config-overlay-docs.json
+          go run ./tools/fullaccessharness \
+            -check-doc \
+            -evidence-out out/full-access-harness-evidence.json
+          go run ./tools/nativeconfigmcp \
+            -check-doc \
+            -evidence-out out/native-config-mcp-evidence.json
+          go run ./tools/runtimesecretevidence \
+            -check-doc \
+            -evidence-out out/runtime-secret-private-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-native-config-overlay-docs
+          path: out/*.json
+          if-no-files-found: error

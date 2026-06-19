@@ -782,6 +782,24 @@
   - `command`: go run ./tools/policybundleevidence -check-doc -evidence-out /tmp/policy-bundle-loader-evidence.json; proves the related policy-bundle loader surface remains independently verified
   - `workflow`: .github/workflows/security-invariants-docs.yml; proves public CI uploads security invariant evidence
 
+### security-native-config-overlay-docs
+
+- Owner: `daemon/security`
+- Observe: Native config overlay docs described T-CFG decisions, security gates, store-channel policy placement, runtime secret evidence, and unsafe bypass policy as manually edited markdown while adjacent evidence artifacts already existed.
+  - Artifacts: `docs/20-domain/security/native-config-overlay.md`, `docs/20-domain/security/native-config-overlay`, `docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md`
+- Hypothesis: A native-config-overlay manifest can generate the root and six manual detail docs, link adjacent full-access/runtime-secret/native-config-MCP evidence, and verify policy/workdir/IR/session source anchors without changing runtime behavior.
+  - Artifacts: `docs/20-domain/security/native-config-overlay.riido.json`, `internal/policy/native_config_policy.go`, `internal/policy/unsafe_bypass_policy.go`, `internal/ir/ingest/event_from_draft.go`
+- Execute: Generate the native config overlay index and detail pages from SSOT fragments while leaving full-access harness evidence under its existing dedicated generator.
+  - Artifacts: `tools/securitynativeconfigoverlaydocs`, `.github/workflows/security-native-config-overlay-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing fragments, missing workflow wiring, and missing coverage registration.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The T-CFG native config overlay docs become generated evidence and reduce the security manual hotspot while preserving adjacent evidence ownership.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/securitynativeconfigoverlaydocs -check-doc -evidence-out /tmp/security-native-config-overlay-docs.json; proves security native config overlay docs are generated and source anchors still exist
+  - `command`: go test ./internal/policy ./internal/workdir ./internal/agentbridge/session ./internal/ir/ingest ./cmd/riido -count=1; proves policy, native-config versioning, tool blocking, event ingestion, and daemon policy defaults still match the documented boundary
+  - `workflow`: .github/workflows/security-native-config-overlay-docs.yml; proves public CI uploads security native config overlay evidence
+
 ### runtime-secret-private-evidence
 
 - Owner: `riido-infra boundary, public daemon verifier`

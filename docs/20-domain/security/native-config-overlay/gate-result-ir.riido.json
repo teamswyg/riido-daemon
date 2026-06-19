@@ -1,0 +1,10 @@
+{
+  "schema_version": "riido-security-native-config-overlay-detail.v1",
+  "id": "gate-result-ir",
+  "title": "Native Config Overlay: Gate Result IR",
+  "generated_doc": "docs/20-domain/security/native-config-overlay/gate-result-ir.md",
+  "blocks": [
+    {"kind": "table", "columns": ["Result", "EventType", "Producer"], "rows": [["gate pass", "no `PolicyViolationDetected(...)`; next step proceeds", "none; progress itself is evidence"], ["gate fail", "`PolicyViolationDetected(category, subject, severity)`, then `BlockerRaised(category=POLICY_*)` when applicable", "caller context"], ["policy bundle switch", "`PolicyBundleSwitched(from, to)`", "reserved C7/C2 contract vocabulary"], ["scoped token issue", "`SecretsScopeIssued(scopeID, ttl, purpose)`", "reserved C7/C2 contract vocabulary"], ["scoped token revoke", "`SecretsScopeRevoked(scopeID, reason)`", "reserved C7/C2 contract vocabulary"]]},
+    {"kind": "paragraph", "text": "Implemented local evidence currently anchors `PolicyViolationDetected`, `PolicyBundleVersion`, and `NativeConfigVersion`. Formal value and payload catalogs are owned by the public `riido-contracts/ir` C2 event catalog."}
+  ]
+}

@@ -56,6 +56,21 @@ required_files=(
   docs/20-domain/security/invariants/policy-targets.md
   docs/20-domain/security/invariants/policy-targets.riido.json
   .github/workflows/security-invariants-docs.yml
+  docs/20-domain/security/native-config-overlay.md
+  docs/20-domain/security/native-config-overlay.riido.json
+  docs/20-domain/security/native-config-overlay/overlay-decision.md
+  docs/20-domain/security/native-config-overlay/overlay-decision.riido.json
+  docs/20-domain/security/native-config-overlay/runtime-secret-evidence.md
+  docs/20-domain/security/native-config-overlay/runtime-secret-evidence.riido.json
+  docs/20-domain/security/native-config-overlay/security-gates.md
+  docs/20-domain/security/native-config-overlay/security-gates.riido.json
+  docs/20-domain/security/native-config-overlay/store-channel-policy-gate.md
+  docs/20-domain/security/native-config-overlay/store-channel-policy-gate.riido.json
+  docs/20-domain/security/native-config-overlay/gate-result-ir.md
+  docs/20-domain/security/native-config-overlay/gate-result-ir.riido.json
+  docs/20-domain/security/native-config-overlay/unsafe-bypass-policy.md
+  docs/20-domain/security/native-config-overlay/unsafe-bypass-policy.riido.json
+  .github/workflows/security-native-config-overlay-docs.yml
   docs/20-domain/provider-runtime/runtime-responsibility.md
   docs/20-domain/provider-runtime/runtime-responsibility.riido.json
   docs/20-domain/provider-runtime/runtime-responsibility/responsibility-statement.md
@@ -277,6 +292,7 @@ required_files=(
   docs/30-architecture/loop-engineering/locking-docs.riido.json
   docs/30-architecture/loop-engineering/security-redaction.riido.json
   docs/30-architecture/loop-engineering/security-invariants-docs.riido.json
+  docs/30-architecture/loop-engineering/security-native-config-overlay-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-responsibility-docs.riido.json
   docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json

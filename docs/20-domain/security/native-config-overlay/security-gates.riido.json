@@ -1,0 +1,12 @@
+{
+  "schema_version": "riido-security-native-config-overlay-detail.v1",
+  "id": "security-gates",
+  "title": "Native Config Overlay: Six Security Gates",
+  "generated_doc": "docs/20-domain/security/native-config-overlay/security-gates.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Security gates are ordered by decision point. Each gate decides only; the caller executes the consequence."},
+    {"kind": "table", "columns": ["#", "Gate", "Location", "Caller", "Input", "On failure"], "rows": [["G-S1", "`PreClaimSecurityGate`", "before task claim", "C5 scheduler", "task surfaces, runtime capability/trust tier, policy bundle", "task `Blocked(category=POLICY_*)`"], ["G-S2", "`PreExecuteSecurityGate`", "before provider start", "C4 adapter/orchestrator", "capability, workdir state, policy bundle", "task `Blocked`, provider not started"], ["G-S3", "`ToolUseSecurityGate`", "before `ToolCallStarted`", "server transition layer", "tool, args, runtime tier, policy bundle", "provider `Interrupt` or `ApprovalRequested`"], ["G-S4", "`FileEffectSecurityGate`", "after `FileChanged` / `CommandStarted`", "server transition layer", "path, kind, diff, protected paths, sandbox", "rollback request and `BlockerRaised(SECURITY_VIOLATION)`"], ["G-S5", "`NetworkEgressGate`", "on network attempt", "adapter ACL through server", "host, port, protocol, allowlist", "provider deny result and event"], ["G-S6", "`PreCompleteAuditGate`", "before `PatchReady -> Completed`", "C8 validation result handler", "IR log, diff, affected paths", "`Blocked(SECURITY_AUDIT_FAILED)` or forced `HumanReview`"]]},
+    {"kind": "ordered", "items": ["Gates decide only. The calling context executes the consequence.", "Every implemented gate decision is persisted as IR/audit evidence.", "Adding a gate is `change:additive`.", "Changing an existing gate responsibility is `change:breaking-policy`."]},
+    {"kind": "paragraph", "text": "The current executable subset is anchored by tool start/approval gates, session fail-closed blocking, policy violation audit append, and store-channel policy checks."}
+  ]
+}

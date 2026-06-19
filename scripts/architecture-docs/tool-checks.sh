@@ -11,6 +11,7 @@ tool_tests=(
   ./tools/lockingdocs
   ./tools/securityredactiondocs
   ./tools/securityinvariantsdocs
+  ./tools/securitynativeconfigoverlaydocs
   ./tools/providerruntimeresponsibilitydocs
   ./tools/providerintegrationgatedocs
   ./tools/providerruntimeboundarydocs
@@ -65,6 +66,7 @@ doc_tools=(
   lockingdocs
   securityredactiondocs
   securityinvariantsdocs
+  securitynativeconfigoverlaydocs
   providerruntimeresponsibilitydocs
   providerintegrationgatedocs
   providerruntimeboundarydocs
