@@ -1,0 +1,24 @@
+{
+  "schema_version": "riido-workspace-native-config-detail.v1",
+  "id": "native-config-version",
+  "title": "NativeConfigVersion Rules",
+  "generated_doc": "docs/20-domain/workspace/native-config-manifest/native-config-version.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`NativeConfigVersion` is an execution-bound `CanonicalEvent` field. C6 owns the generation rules, while the event schema is owned by the public C2 `riido-contracts` contract."},
+    {"kind": "code", "language": "text", "code": "NativeConfigVersion = sha256-hex(\n  canonicalJSON({\n    policyBundleVersion: <C7 active bundle version>,\n    nativeConfigPlan: {\n      providerKind:       ...,\n      protocolKind:       ...,\n      injectedFiles[]:    [{ path, sha256(content) }, ...],\n      hookScriptVersions: [{ id, sha256 }, ...],\n      wrapperManifestSha: <opt>\n    },\n    schemaVersion: 1\n  })\n)"},
+    {"kind": "ordered", "items": [
+      "All injected file content hashes are included; changing one line changes the version.",
+      "`policyBundleVersion` is included; policy bundle changes always change the version.",
+      "The manifest file itself is injected, so filename catalog, hook materialization mode, and telemetry placement changes affect the version.",
+      "Algorithm or input schema changes increment `schemaVersion`; old outputs remain replay-compatible.",
+      "The version is fixed when the task starts and remains immutable for the run.",
+      "The supervisor computes the value after native config injection and stamps execution-bound events through EventIngestor."
+    ]},
+    {"kind": "heading", "text": "PolicyBundleVersion Relationship"},
+    {"kind": "bullets", "items": [
+      "`PolicyBundleVersion` change implies `NativeConfigVersion` change.",
+      "`NativeConfigVersion` change does not imply policy change; wrapper or generated file content can change independently.",
+      "Both values are fixed at task start and may change only through runtime upgrade flow branches such as `T-POLICY` or `T-CONFIG`."
+    ]}
+  ]
+}

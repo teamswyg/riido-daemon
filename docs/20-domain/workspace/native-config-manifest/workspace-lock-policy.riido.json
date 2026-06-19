@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-workspace-native-config-detail.v1",
+  "id": "workspace-lock-policy",
+  "title": "Workspace Lock Policy",
+  "generated_doc": "docs/20-domain/workspace/native-config-manifest/workspace-lock-policy.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This document owns lock usage policy in domain language. The concrete `flock` or DB lease primitive is owned by C9 Locking."},
+    {"kind": "table", "columns": ["Lock", "Scope", "Hold time", "Use"], "rows": [
+      ["`repo_cache_update.lock`", "`cache/repos/{repo_hash}`", "Short; fetch/prune only", "Cache update"],
+      ["`task_workdir.lock`", "`workspaces/.../runs/{run_id}/`", "For the run", "Prevent adapter, RunController, and validation from mutating the same workdir concurrently"],
+      ["`archive_pipeline.lock`", "Archive phase", "Archive only", "`ArchiveWorkspace`"]
+    ]},
+    {"kind": "heading", "text": "Forbidden"},
+    {"kind": "bullets", "items": [
+      "Do not wrap an entire agent run in `repo_lock`; same-repo tasks must not become globally serialized.",
+      "Do not use one task's `task_workdir.lock` to protect another task's workdir; isolation is directory separation plus protected path and sandbox policy."
+    ]},
+    {"kind": "heading", "text": "Distributed Environments"},
+    {"kind": "paragraph", "text": "When multiple daemons share one host/cache, `repo_cache_update.lock` is meaningful. Cross-host cache sharing is outside this SSOT and normally uses host-local caches."}
+  ]
+}

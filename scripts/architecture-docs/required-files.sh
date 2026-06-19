@@ -115,6 +115,21 @@ required_files=(
   docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.md
   docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.riido.json
   .github/workflows/provider-runtime-boundary-docs.yml
+  docs/20-domain/workspace/native-config-manifest.md
+  docs/20-domain/workspace/native-config-manifest.riido.json
+  docs/20-domain/workspace/native-config-manifest/manifest-materialization.md
+  docs/20-domain/workspace/native-config-manifest/manifest-materialization.riido.json
+  docs/20-domain/workspace/native-config-manifest/overlay-and-hooks.md
+  docs/20-domain/workspace/native-config-manifest/overlay-and-hooks.riido.json
+  docs/20-domain/workspace/native-config-manifest/native-config-version.md
+  docs/20-domain/workspace/native-config-manifest/native-config-version.riido.json
+  docs/20-domain/workspace/native-config-manifest/workspace-lock-policy.md
+  docs/20-domain/workspace/native-config-manifest/workspace-lock-policy.riido.json
+  docs/20-domain/workspace/native-config-manifest/adjacent-contracts.md
+  docs/20-domain/workspace/native-config-manifest/adjacent-contracts.riido.json
+  docs/20-domain/workspace/native-config-manifest/resolved-decisions.md
+  docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json
+  .github/workflows/workspace-native-config-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -218,6 +233,7 @@ required_files=(
   docs/30-architecture/loop-engineering/provider-runtime-responsibility-docs.riido.json
   docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
+  docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

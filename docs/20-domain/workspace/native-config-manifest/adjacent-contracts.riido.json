@@ -1,0 +1,17 @@
+{
+  "schema_version": "riido-workspace-native-config-detail.v1",
+  "id": "adjacent-contracts",
+  "title": "Adjacent SSOT Contracts",
+  "generated_doc": "docs/20-domain/workspace/native-config-manifest/adjacent-contracts.md",
+  "blocks": [
+    {"kind": "table", "columns": ["Adjacent context", "C6 receives / supplies"], "rows": [
+      ["C7 Security / Policy", "Receives protected path, sandbox, native config plan, and MCP allowlist decisions; supplies `NativeConfigInjected` evidence."],
+      ["C4 Provider Runtime / Adapter", "Supplies workdir path, native config copy, and `NativeConfigVersion`; adapters do not create workdirs directly."],
+      ["C5 Runtime Scheduling", "Receives claimed task `runID`, `RuntimeID`, and `CapabilityFingerprint`; supplies `WorkspacePrepared` as a precondition for provider start."],
+      ["C2 IR Event Log", "Produces Cat E workspace/config drafts through EventIngestor only; public `riido-contracts` owns event schema."],
+      ["C8 Validation", "Supplies base/final state, diffs, and artifacts for read-only validation."],
+      ["C9 Locking", "Receives concrete lock primitives used by the domain lock policy."],
+      ["Container / VM manager", "Supplies host-side run root and manifest; platform/runtime launcher owns mount or VM lifecycle."]
+    ]}
+  ]
+}
