@@ -78,6 +78,7 @@ required_files=(
   docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json
   docs/30-architecture/figma-ai-agent-daemon-boundary.md
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
+  .github/workflows/figma-boundary-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json

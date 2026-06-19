@@ -1,0 +1,36 @@
+{
+  "id": "figma-boundary-docs",
+  "owner": "figma daemon boundary",
+  "observation": {
+    "summary": "Figma daemon boundary subdocs were hand-authored while the boundary manifest and entry catalog already carried the executable facts.",
+    "artifacts": ["docs/30-architecture/figma-ai-agent-daemon-boundary"]
+  },
+  "hypothesis": {
+    "summary": "A doc generator can render the boundary criteria, change loop, fixture vocabulary, screen entries, provenance, and verification docs from the boundary manifest.",
+    "artifacts": ["docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json", "docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json"]
+  },
+  "execution": {
+    "summary": "Run figmaboundarydocs to check generated docs and upload evidence in public CI.",
+    "artifacts": ["tools/figmaboundarydocs", ".github/workflows/figma-boundary-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects reader doc drift and the architecture coverage tool no longer classifies figma-boundary-subdocs as manual debt.",
+    "artifacts": ["docs/30-architecture/executable-knowledge.md"]
+  },
+  "retrospective": {
+    "summary": "Figma boundary reader subdocs become generated projections of the manifest rather than a separate interpretation surface.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/figmaboundarydocs -check-doc -evidence-out /tmp/figma-boundary-docs.json",
+      "proves": "Figma boundary subdocs are generated from the manifest and entry catalog"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/figma-boundary-docs.yml",
+      "proves": "public CI uploads Figma boundary docs evidence"
+    }
+  ]
+}

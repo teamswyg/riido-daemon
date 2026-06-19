@@ -23,6 +23,7 @@
     "docs/30-architecture/loop-engineering/config-reference-evidence.riido.json",
     "docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json",
     "docs/30-architecture/loop-engineering/executable-knowledge-coverage.riido.json",
+    "docs/30-architecture/loop-engineering/figma-boundary-docs.riido.json",
     "docs/30-architecture/loop-engineering/runtime-upgrade-flow.riido.json",
     "docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json",
     "docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json",
