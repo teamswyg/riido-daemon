@@ -142,6 +142,7 @@ go run ./tools/migrationdocs -manifest docs/migration/daemon/daemon-lifecycle-cl
 go run ./tools/migrationdocs -manifest docs/migration/daemon/runtime-snapshot-heartbeat.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/distribution-host-integration.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/macos-provider-cli-review.riido.json -check-doc
+go run ./tools/migrationdocs -manifest docs/migration/daemon/figma-boundary-provenance.riido.json -check-doc
 
 go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc
 go run ./tools/branchgate -check-doc -check-script

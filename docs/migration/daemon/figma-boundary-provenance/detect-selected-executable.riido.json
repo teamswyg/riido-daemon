@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-figma-boundary-provenance-detect-selected-executable",
+  "title": "RIID-4890: Detect-Selected Executable Start Parity",
+  "generated_doc": "docs/migration/daemon/figma-boundary-provenance/detect-selected-executable.md",
+  "back_title": "figma-boundary-provenance",
+  "back_path": "../figma-boundary-provenance.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice closes the provider runtime gap where capability detection could select one executable path but process start could re-resolve a different same-name binary from `PATH`."},
+    {"kind": "bullets", "items": [
+      "Provider-neutral `StartRequest.Executable` carries the selected executable.",
+      "`bridge.Run` and `runtimeactor.Submit` pass the selected executable into provider `BuildStart`.",
+      "Claude, Codex, OpenClaw, and Cursor command builders prefer `StartOptions.Executable`, then `StartRequest.Executable`, then provider default executable name.",
+      "OpenClaw integration coverage starts the executable that passed the calendar-version detect gate.",
+      "Explicit `RIIDO_<PROVIDER>_PATH` remains a pin, not a hint."
+    ]},
+    {"kind": "paragraph", "text": "This slice does not install provider CLIs, change provider auth, add SaaS endpoints, change assignment polling, or make daemon responsible for provider binary distribution."}
+  ]
+}

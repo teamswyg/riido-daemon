@@ -1,0 +1,52 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-daemon-figma-boundary-provenance-docs",
+  "title": "Riido Daemon Migration Plan: Figma Boundary Provenance",
+  "workflow": ".github/workflows/migration-daemon-figma-boundary-provenance-docs.yml",
+  "evidence_artifact": "migration-daemon-figma-boundary-provenance-docs",
+  "expected_page_count": 7,
+  "fragments": [
+    "figma-boundary-provenance/root.riido.json",
+    "figma-boundary-provenance/coverage-provenance.riido.json",
+    "figma-boundary-provenance/onboarding-draft-create.riido.json",
+    "figma-boundary-provenance/device-principal-config.riido.json",
+    "figma-boundary-provenance/detect-selected-executable.riido.json",
+    "figma-boundary-provenance/provider-validation-matrix.riido.json",
+    "figma-boundary-provenance/runtime-progress-numeric-args.riido.json"
+  ],
+  "source_checks": [
+    {"name": "figma-boundary-workflow", "file": ".github/workflows/figma-boundary-docs.yml", "contains": "Verify Figma boundary generated docs"},
+    {"name": "figma-boundary-riid-4813", "file": "docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json", "contains": "\"riido_task\": \"RIID-4813\""},
+    {"name": "figma-boundary-hardening-riid-4843", "file": "docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json", "contains": "\"RIID-4843\""},
+    {"name": "figma-boundary-hardening-riid-4859", "file": "docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json", "contains": "\"RIID-4859\""},
+    {"name": "figma-provenance-contracts-54", "file": "tools/figmaboundary/manifest_provenance_contract_test.go", "contains": "teamswyg/riido-contracts#54"},
+    {"name": "figma-provenance-source-field", "file": "tools/figmaboundary/manifest_provenance_contract_test.go", "contains": "MirrorsSourceField != \"stabilized_by\""},
+    {"name": "figma-onboarding-entry", "file": "docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json", "contains": "No onboarding draft execution ownership"},
+    {"name": "figma-onboarding-test", "file": "tools/figmaboundary/manifest_entry_contract_test.go", "contains": "entries[\"432:46849\"].DaemonScope"},
+    {"name": "config-reference-workflow", "file": ".github/workflows/config-reference-evidence.yml", "contains": "Verify config reference evidence"},
+    {"name": "device-principal-config", "file": "docs/30-architecture/config-reference.riido.json", "contains": "When `RIIDO_SAAS_URL` is selected with `RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET`"},
+    {"name": "device-principal-test", "file": "cmd/riido/daemon_saas_device_credential_test.go", "contains": "SaaS device credential daemon id"},
+    {"name": "executable-search-path-workflow", "file": ".github/workflows/executable-search-path-evidence.yml", "contains": "Verify executable search path evidence"},
+    {"name": "selected-executable-evidence", "file": "docs/30-architecture/config-reference/executable-search-path.riido.json", "contains": "selected executable reaches provider start"},
+    {"name": "runtimeactor-selected-executable-test", "file": "internal/agentbridge/runtimeactor/actor_detected_executable_assert_test.go", "contains": "BuildStart request executable"},
+    {"name": "bridge-selected-executable-test", "file": "internal/agentbridge/bridge/client_run_executable_test.go", "contains": "BuildStart executable"},
+    {"name": "openclaw-detect-selected-test", "file": "internal/provider/openclaw/detect_path_candidates_test.go", "contains": "selected executable: got"},
+    {"name": "integration-matrix-workflow", "file": ".github/workflows/integration-matrix-docs.yml", "contains": "go test ./tools/integrationmatrix ./tools/providervalidation"},
+    {"name": "provider-validation-matrix", "file": "docs/30-architecture/provider-validation-matrix.riido.json", "contains": "\"riido_task\": \"RIID-4901\""},
+    {"name": "provider-validation-openclaw-gate", "file": "docs/30-architecture/provider-validation-matrix/openclaw.riido.json", "contains": "MISSING_REQUIRED_SURFACE:worktree"},
+    {"name": "provider-validation-worktree-test", "file": "tools/providervalidation/provider_validation_worktree_test.go", "contains": "daemon-selected workdir artifact"},
+    {"name": "progress-code-1102", "file": "internal/agentbridge/progress_messages.go", "contains": "ProgressCodeToolCollectionCompletedCount ProgressCode = 1102"},
+    {"name": "progress-numeric-args-test", "file": "internal/agentbridge/telemetry_structured_progress_test.go", "contains": "TestTelemetryParserRendersNumericProgressArgs"},
+    {"name": "progress-primitive-args", "file": "internal/agentbridge/progress_messages_args.go", "contains": "func cleanProgressArgs(args map[string]any) map[string]string"},
+    {"name": "progress-metadata-string-shape", "file": "internal/agentbridge/progress_messages_metadata.go", "contains": "ProgressMessageMetadataArgPrefix+key"},
+    {"name": "progress-telemetry-instruction", "file": "internal/agentbridge/telemetry_contract.go", "contains": "label/count/representative_title for 1102"}
+  ],
+  "assertions": [
+    "figma boundary provenance migration notes are generated from fragments instead of hand-authored markdown",
+    "Figma provenance and onboarding claims must remain daemon downstream projection evidence, not runtime behavior ownership",
+    "DevicePrincipal migration claims must stay anchored to daemon config reference and settings tests",
+    "detect-selected executable claims must stay anchored to executable search path evidence and provider start tests",
+    "provider validation matrix claims must stay anchored to executable provider validation evidence",
+    "runtime progress numeric arg claims must stay anchored to parser, metadata, and telemetry instruction evidence"
+  ]
+}

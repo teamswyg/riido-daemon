@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-figma-boundary-provenance-coverage-provenance",
+  "title": "RIID-4847 And RIID-4851: Coverage Provenance Mirror",
+  "generated_doc": "docs/migration/daemon/figma-boundary-provenance/coverage-provenance.md",
+  "back_title": "figma-boundary-provenance",
+  "back_path": "../figma-boundary-provenance.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "These slices tighten the daemon-side Figma boundary provenance guard. `riido-control-plane` already mirrors the full contracts Figma coverage stabilization history, while daemon projection records the downstream subset it consumes."},
+    {"kind": "heading", "text": "RIID-4847"},
+    {"kind": "bullets", "items": [
+      "`source_coverage_manifest_provenance.stabilized_by` mirrors the contracts coverage stabilization history.",
+      "`mirrored_supporting_tool_limitations[].source_stabilized_by` stays narrowed to `teamswyg/riido-contracts#52`, because that field describes the limitation slice rather than the whole coverage manifest."
+    ]},
+    {"kind": "heading", "text": "RIID-4851"},
+    {"kind": "bullets", "items": [
+      "`mirrors_source_field = \"stabilized_by\"`",
+      "`source_field_introduced_by = \"teamswyg/riido-contracts#53\"`"
+    ]},
+    {"kind": "paragraph", "text": "`tools/figmaboundary` verifies full upstream coverage provenance, limitation-local provenance, and the source-field marker separately. These slices do not change daemon runtime behavior, add Figma integration, add SaaS endpoints, or make daemon the owner of Figma page discovery."}
+  ]
+}

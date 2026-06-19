@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-figma-boundary-provenance-provider-validation-matrix",
+  "title": "RIID-4901: Provider Validation Matrix Evidence",
+  "generated_doc": "docs/migration/daemon/figma-boundary-provenance/provider-validation-matrix.md",
+  "back_title": "figma-boundary-provenance",
+  "back_path": "../figma-boundary-provenance.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice closes the public daemon provider verification SSOT gap after OpenClaw, Claude Code, Cursor Agent, and Codex worktree/real-provider evidence slices."},
+    {"kind": "bullets", "items": [
+      "`docs/30-architecture/provider-validation-matrix.riido.json` becomes executable current evidence.",
+      "`docs/30-architecture/integration-matrix.md` stays focused on verification policy and links to the executable matrix.",
+      "Claude, Codex, and Cursor prove worktree side effects only when their opt-in real provider integration gates pass.",
+      "OpenClaw text completion, SaaS completion, and optional local artifact attempts must not become daemon-selected worktree support while runtime capability remains `supports_worktree=false`.",
+      "C5 scheduling invariant: OpenClaw worktree-required tasks with `required_surfaces=[worktree]` must fail with `MISSING_REQUIRED_SURFACE:worktree`."
+    ]},
+    {"kind": "paragraph", "text": "This slice does not install provider CLIs, run provider auth setup, change native provider commands, change SaaS endpoints, edit Desktop, edit generated client code, or make provider CLIs bundled artifacts."}
+  ]
+}
