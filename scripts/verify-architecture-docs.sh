@@ -59,5 +59,7 @@ go test ./tools/figmaboundary -count=1
 go test ./tools/providervalidation -count=1
 go test ./tools/agentexecutionevidence -count=1
 go test ./tools/loopevidence -count=1
+go test ./tools/redactiondrift -count=1
 go run ./tools/loopevidence -check
+go run ./tools/redactiondrift
 go test ./...
