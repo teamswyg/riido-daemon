@@ -1,0 +1,36 @@
+{
+  "id": "provider-runtime-docs",
+  "owner": "daemon/provider-runtime",
+  "observation": {
+    "summary": "The provider-runtime root, overview, adapter-draft-fields entrypoint, and versioning pages remained manually edited while adjacent C4 responsibility, ACL, integration, boundary, draft-field, and timeout evidence was already generated.",
+    "artifacts": ["docs/20-domain/provider-runtime.md", "docs/20-domain/provider-runtime/adapter-draft-fields.md"]
+  },
+  "hypothesis": {
+    "summary": "A provider-runtime wrapper manifest can generate only the root and wrapper pages while preserving compatibility anchors consumed by existing public CI.",
+    "artifacts": ["docs/20-domain/provider-runtime.riido.json", ".github/workflows/provider-runtime-backpressure.yml"]
+  },
+  "execution": {
+    "summary": "Generate provider-runtime root, overview, adapter-draft-fields, and versioning docs from executable fragments and source anchors.",
+    "artifacts": ["tools/providerruntimedocs", ".github/workflows/provider-runtime-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing adjacent evidence ownership, missing source anchors, and missing workflow wiring.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The C4 provider-runtime root becomes generated evidence without duplicating detailed responsibility, ACL, boundary, migration, draft-field, or timeout generators.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/providerruntimedocs -check-doc -evidence-out /tmp/provider-runtime-docs.json",
+      "proves": "provider runtime root and wrapper docs are generated and source anchors still exist"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/provider-runtime-docs.yml",
+      "proves": "public CI uploads provider runtime wrapper evidence"
+    }
+  ]
+}

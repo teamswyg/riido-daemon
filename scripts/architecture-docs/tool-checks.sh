@@ -12,6 +12,7 @@ tool_tests=(
   ./tools/securityredactiondocs
   ./tools/securityinvariantsdocs
   ./tools/securitynativeconfigoverlaydocs
+  ./tools/providerruntimedocs
   ./tools/providerruntimeresponsibilitydocs
   ./tools/provideradapteracldocs
   ./tools/providerintegrationgatedocs
@@ -70,6 +71,7 @@ doc_tools=(
   securityredactiondocs
   securityinvariantsdocs
   securitynativeconfigoverlaydocs
+  providerruntimedocs
   providerruntimeresponsibilitydocs
   provideradapteracldocs
   providerintegrationgatedocs

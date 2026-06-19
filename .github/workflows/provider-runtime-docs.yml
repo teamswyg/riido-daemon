@@ -1,0 +1,74 @@
+name: provider-runtime-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/provider-runtime-docs.yml"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/provider-runtime.riido.json"
+      - "docs/20-domain/provider-runtime/**"
+      - "tools/providerruntimedocs/**"
+      - "tools/providermigrationdocs/**"
+      - "tools/providerruntimeresponsibilitydocs/**"
+      - "tools/provideradapteracldocs/**"
+      - "tools/providerintegrationgatedocs/**"
+      - "tools/providerruntimeboundarydocs/**"
+      - "tools/draftfields/**"
+      - "tools/approvaltimeout/**"
+      - "tools/eventauthority/**"
+      - "tools/providerdraftmapping/**"
+      - "tools/terminalresultmapping/**"
+      - "internal/agentbridge/**"
+      - "internal/provider/**"
+      - "internal/process/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/provider-runtime-docs.yml"
+      - "docs/20-domain/provider-runtime.md"
+      - "docs/20-domain/provider-runtime.riido.json"
+      - "docs/20-domain/provider-runtime/**"
+      - "tools/providerruntimedocs/**"
+      - "tools/providermigrationdocs/**"
+      - "tools/providerruntimeresponsibilitydocs/**"
+      - "tools/provideradapteracldocs/**"
+      - "tools/providerintegrationgatedocs/**"
+      - "tools/providerruntimeboundarydocs/**"
+      - "tools/draftfields/**"
+      - "tools/approvaltimeout/**"
+      - "tools/eventauthority/**"
+      - "tools/providerdraftmapping/**"
+      - "tools/terminalresultmapping/**"
+      - "internal/agentbridge/**"
+      - "internal/provider/**"
+      - "internal/process/**"
+
+jobs:
+  provider-runtime-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify provider runtime docs
+        run: |
+          mkdir -p out
+          go run ./tools/providerruntimedocs -check-doc -evidence-out out/provider-runtime-docs.json
+          go run ./tools/providermigrationdocs -check-doc -evidence-out out/provider-public-migration-docs.json
+          go run ./tools/providerruntimeresponsibilitydocs -check-doc -evidence-out out/provider-runtime-responsibility-docs.json
+          go run ./tools/provideradapteracldocs -check-doc -evidence-out out/provider-adapter-acl-docs.json
+          go run ./tools/providerintegrationgatedocs -check-doc -evidence-out out/provider-integration-gate-docs.json
+          go run ./tools/providerruntimeboundarydocs -check-doc -evidence-out out/provider-runtime-boundary-docs.json
+          go run ./tools/draftfields -check-doc -evidence-out out/draft-fields-evidence.json
+          go run ./tools/approvaltimeout -check-doc -evidence-out out/approval-wait-timeout-evidence.json
+          go run ./tools/eventauthority -check-doc -evidence-out out/event-authority-evidence.json
+          go run ./tools/providerdraftmapping -check-doc -evidence-out out/provider-draft-mapping-evidence.json
+          go run ./tools/terminalresultmapping -check-doc -evidence-out out/terminal-result-mapping-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-runtime-docs
+          path: out/*.json
+          if-no-files-found: error

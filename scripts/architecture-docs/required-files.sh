@@ -71,6 +71,15 @@ required_files=(
   docs/20-domain/security/native-config-overlay/unsafe-bypass-policy.md
   docs/20-domain/security/native-config-overlay/unsafe-bypass-policy.riido.json
   .github/workflows/security-native-config-overlay-docs.yml
+  docs/20-domain/provider-runtime.md
+  docs/20-domain/provider-runtime.riido.json
+  docs/20-domain/provider-runtime/overview.md
+  docs/20-domain/provider-runtime/overview.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields.md
+  docs/20-domain/provider-runtime/adapter-draft-fields.riido.json
+  docs/20-domain/provider-runtime/versioning.md
+  docs/20-domain/provider-runtime/versioning.riido.json
+  .github/workflows/provider-runtime-docs.yml
   docs/20-domain/provider-runtime/runtime-responsibility.md
   docs/20-domain/provider-runtime/runtime-responsibility.riido.json
   docs/20-domain/provider-runtime/runtime-responsibility/responsibility-statement.md
