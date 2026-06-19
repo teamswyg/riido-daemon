@@ -1,0 +1,29 @@
+{
+  "schema_version": "riido-runtime-scheduling-core.v1",
+  "id": "runtime-scheduling-core",
+  "title": "Scope and Core Invariants",
+  "generated_doc": "docs/20-domain/runtime-scheduling/invariants/core.md",
+  "context": "This document fills the C5 Runtime Scheduling context with executable core invariants.",
+  "responsibilities": [
+    "Decide which runtime can claim or execute a task.",
+    "Compare task required surfaces with runtime capability snapshots.",
+    "Define runtime lease pinning and heartbeat meaning."
+  ],
+  "non_responsibilities": [
+    "Provider static capability contracts belong to riido-contracts C3.",
+    "Provider process execution, provider session schema, retention, and adapters belong to C4 Provider Runtime.",
+    "Workdir creation belongs to the daemon migration workdir slice, and lock primitives belong to C9 Locking.",
+    "Client task-thread read models and presentation copy belong to control-plane and client."
+  ],
+  "invariants": [
+    {"name": "capability-only-dispatch", "summary": "Schedulers branch on capability and task requirement facts, not provider binary version strings.", "source_checks": ["capability-only-gate"]},
+    {"name": "no-provider-specific-fsm", "summary": "Scheduling compares requirement/capability envelopes; execution state is owned by the C1/C2 task FSM.", "source_checks": ["pure-runtime-selection"]},
+    {"name": "spawn-after-eligibility", "summary": "Provider processes are spawned only after the C5 pre-submit eligibility gate accepts the task.", "source_checks": ["pre-submit-supervisor-gate"]},
+    {"name": "experimental-runtime-opt-in", "summary": "Experimental runtimes require explicit task or assignment opt-in.", "source_checks": ["experimental-opt-in-gate"]},
+    {"name": "lease-runtime-pin", "summary": "A runtime lease is pinned by RuntimeID plus CapabilityFingerprint; changed fingerprints make stale leases invalid.", "source_checks": ["lease-runtime-pin"]},
+    {"name": "file-queue-not-durable-scheduler", "summary": "The local file queue is an adapter source; durable scheduling semantics belong to DB/API sources.", "source_checks": ["file-queue-source-boundary"]},
+    {"name": "task-db-production-source", "summary": "riido-task-db.v1 claims queued rows through guarded transitions and keeps provider-completed tasks in validation.", "source_checks": ["task-db-source-contract"]},
+    {"name": "provider-session-outside-c5", "summary": "C5 preserves lease metadata but does not own the provider session table schema or native resume semantics.", "source_checks": ["provider-session-boundary"]},
+    {"name": "client-read-model-outside-c5", "summary": "C5 preserves IDs for reporting but does not own task-thread read models, active_stream selection, or client copy.", "source_checks": ["client-read-model-boundary"]}
+  ]
+}

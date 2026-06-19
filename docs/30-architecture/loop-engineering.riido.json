@@ -34,6 +34,7 @@
     "docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json",
     "docs/30-architecture/loop-engineering/figma-boundary-docs.riido.json",
     "docs/30-architecture/loop-engineering/runtime-upgrade-flow.riido.json",
+    "docs/30-architecture/loop-engineering/runtime-scheduling-docs.riido.json",
     "docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json",
     "docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json",
     "docs/30-architecture/loop-engineering/task-requirements-evidence.riido.json",

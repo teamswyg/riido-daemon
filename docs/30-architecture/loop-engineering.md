@@ -494,6 +494,23 @@
   - `command`: go run ./tools/runtimeupgrade -check-doc -evidence-out /tmp/runtime-upgrade-flow-evidence.json; proves runtime upgrade manifest matches generated reader docs and local source evidence
   - `workflow`: .github/workflows/runtime-upgrade-flow.yml; proves public CI uploads runtime upgrade flow evidence
 
+### runtime-scheduling-docs
+
+- Owner: `C5 runtime scheduling`
+- Observe: The C5 runtime scheduling entrypoint, invariant index, and core invariants still described scheduler boundaries as manually edited prose while task requirement, eligibility, local daemon, and SaaS source evidence already existed.
+  - Artifacts: `docs/20-domain/runtime-scheduling.md`, `docs/20-domain/runtime-scheduling/invariants.md`, `docs/20-domain/runtime-scheduling/invariants/core.md`
+- Hypothesis: A runtime-scheduling manifest can generate the entrypoint, invariant index, and core invariant page while linking the existing dedicated evidence surfaces.
+  - Artifacts: `docs/20-domain/runtime-scheduling.riido.json`, `docs/20-domain/runtime-scheduling/invariants/core.riido.json`
+- Execute: Generate the C5 reader docs from SSOT and check source anchors for capability-only dispatch, pure runtime selection, pre-submit eligibility, lease pinning, source ownership, and read-model boundaries.
+  - Artifacts: `tools/runtimeschedulingdocs`, `.github/workflows/runtime-scheduling-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing workflow wiring, and missing references to lower-level runtime scheduling evidence.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The C5 overview surface now points readers to generated docs and dedicated evidence instead of asking agents to reinterpret prose-only scheduler invariants.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/runtimeschedulingdocs -check-doc -evidence-out /tmp/runtime-scheduling-docs.json; proves runtime scheduling entrypoint, invariant index, and core invariant docs are generated from SSOT
+  - `workflow`: .github/workflows/runtime-scheduling-docs.yml; proves public CI uploads runtime scheduling docs evidence
+
 ### local-daemon-contract-evidence
 
 - Owner: `C5 runtime scheduling`

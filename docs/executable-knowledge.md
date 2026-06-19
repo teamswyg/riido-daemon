@@ -8,16 +8,16 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 212 |
+| Generated reader docs | 215 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 84 |
+| Registered manual docs | 81 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 17 |
+| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 14 |
 | `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
 | `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
 | `readme-manual-surface` | daemon/repo-docs | promote remaining docs/readme guides into doc-map or verification SSOT | 4 |
@@ -32,9 +32,9 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `docs/migration/daemon/macos-provider-cli-review` | 7 |
 | `docs/migration/daemon/daemon-lifecycle-cli` | 6 |
 | `docs/migration/daemon/figma-boundary-provenance` | 6 |
-| `docs/20-domain` | 5 |
 | `docs/migration/daemon/codex-auth-full-access` | 5 |
 | `docs/migration/daemon/runtime-snapshot-heartbeat` | 5 |
+| `docs/20-domain` | 4 |
 | `docs/20-domain/distribution-host-integration` | 4 |
 | `docs/migration/daemon/overview` | 4 |
 | `docs/readme` | 4 |
