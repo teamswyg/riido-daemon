@@ -26,3 +26,13 @@ func TestTranslateTurnError(t *testing.T) {
 		t.Fatalf("error: %q", last.Result.Error)
 	}
 }
+
+func TestTranslateTurnFailed(t *testing.T) {
+	raw := rawFromJSON(t, `{"jsonrpc":"2.0","method":"turn/failed","params":{"message":"nope"}}`)
+	evs := tx(t, raw)
+	last := evs[len(evs)-1]
+	if last.Kind != agentbridge.EventResult || last.Result.Status != agentbridge.ResultFailed ||
+		last.Result.Error != "nope" {
+		t.Fatalf("turn/failed: %+v", last)
+	}
+}
