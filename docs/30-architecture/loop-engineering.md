@@ -441,6 +441,22 @@
   - `command`: go run ./tools/privacymetadata -check-doc -evidence-out /tmp/privacy-metadata-evidence.json; proves privacy metadata doc matches the executable allowlist and Go server-facing metadata shape
   - `workflow`: .github/workflows/privacy-metadata-evidence.yml; proves public CI uploads privacy metadata evidence
 
+### unsafe-bypass-evidence
+
+- Owner: `C7 unsafe bypass policy`
+- Observe: Unsafe provider approval bypass locations were documented by hand while policy and provider adapters held executable behavior.
+  - Artifacts: `docs/20-domain/security/enforcement-locations/unsafe-bypass.md`
+- Hypothesis: Provider-native bypass flags can drift between policy vocabulary, provider command builders, and security docs.
+  - Artifacts: `docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json`
+- Execute: Generate the enforcement matrix from an executable manifest and validate policy/catalog/source evidence.
+  - Artifacts: `tools/unsafebypassevidence/run.go`
+- Evaluate: The verifier fails on stale generated docs, missing policy surfaces, missing provider source checks, or Codex arg catalog drift.
+  - Artifacts: `tools/unsafebypassevidence/validate_policy.go`, `tools/unsafebypassevidence/validate_codex.go`
+- Retrospective: Unsafe bypass knowledge is promoted into generated evidence instead of narrative-only security notes.
+  - Artifacts: `docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json`
+- Evidence:
+  - `command`: go run ./tools/unsafebypassevidence -check-doc -evidence-out /tmp/unsafe-bypass-evidence.json; proves unsafe bypass enforcement locations remain executable evidence
+
 ### provider-real-cli-observation
 
 - Owner: `provider-real-cli-observation workflow`
