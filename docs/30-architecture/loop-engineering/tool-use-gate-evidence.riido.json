@@ -1,0 +1,36 @@
+{
+  "id": "tool-use-gate-evidence",
+  "owner": "C7 security policy",
+  "observation": {
+    "summary": "Tool-use gate docs mixed implemented branches with reserved policy vocabulary, while executable evidence lived across policy, toolpolicy, toolargs, session, and supervisor projection code.",
+    "artifacts": ["docs/20-domain/security/enforcement-locations/tool-use-gates.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc, prove implemented tool-use branches, and keep allow-but-audit/quarantine reserved until new source evidence exists.",
+    "artifacts": ["docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json"]
+  },
+  "execution": {
+    "summary": "Run toolusegateevidence to check generated docs, source checks, absent reserved policy actions, and toolpolicy non-execution boundaries.",
+    "artifacts": ["tools/toolusegateevidence", ".github/workflows/tool-use-gate-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source evidence, unknown fact references, accidental reserved action implementation, and toolpolicy process execution leaks.",
+    "artifacts": ["tools/toolusegateevidence/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Tool-use security gate knowledge becomes executable evidence with explicit implemented/reserved branch separation.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/toolusegateevidence -check-doc -evidence-out /tmp/tool-use-gate-evidence.json",
+      "proves": "tool-use gate manifest matches generated docs, source evidence, and absent boundary rules"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/tool-use-gate-evidence.yml",
+      "proves": "public CI uploads tool-use gate evidence"
+    }
+  ]
+}

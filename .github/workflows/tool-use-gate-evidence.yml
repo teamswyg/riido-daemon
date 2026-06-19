@@ -1,0 +1,41 @@
+name: tool-use-gate-evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/tool-use-gate-evidence.yml"
+      - "docs/20-domain/security/enforcement-locations/tool-use-gates.md"
+      - "docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json"
+      - "internal/policy/**"
+      - "internal/agentbridge/toolpolicy/**"
+      - "internal/agentbridge/toolargs/**"
+      - "internal/agentbridge/session/session_tool_*.go"
+      - "internal/agentbridge/supervisor/tool_payload.go"
+      - "internal/agentbridge/supervisor/provider_event_draft.go"
+      - "tools/toolusegateevidence/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  tool-use-gate-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify tool use gate evidence
+        run: |
+          mkdir -p out
+          go test ./tools/toolusegateevidence -count=1
+          go run ./tools/toolusegateevidence \
+            -check-doc \
+            -evidence-out out/tool-use-gate-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tool-use-gate-evidence
+          path: out/tool-use-gate-evidence.json
+          if-no-files-found: error

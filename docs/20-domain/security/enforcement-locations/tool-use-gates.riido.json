@@ -1,0 +1,68 @@
+{
+  "schema_version": "riido-tool-use-gate.v1",
+  "id": "tool-use-gate-evidence",
+  "title": "Tool Use Gate Evidence",
+  "generated_doc": "docs/20-domain/security/enforcement-locations/tool-use-gates.md",
+  "workflow": ".github/workflows/tool-use-gate-evidence.yml",
+  "evidence_artifact": "tool-use-gate-evidence",
+  "purpose": "Proves the executable tool-use security gate subset, links to [`security-redaction.md`](../security-redaction.md), and separates implemented branches from reserved policy vocabulary.",
+  "implemented_actions": [
+    {"name": "allow", "summary": "explicit policy bundle allow proceeds without provider block", "source_checks": ["action-allow", "policy-bundle-allows-tool-use", "auto-approver-action-allow"]},
+    {"name": "require-approval", "summary": "classified risk without bundle allow may continue only through a human approval branch", "source_checks": ["action-require-approval", "policy-human-approval-branch"]},
+    {"name": "interrupt-and-block", "summary": "unknown tier/surface or unavailable approval path blocks provider tool use", "source_checks": ["action-interrupt-and-block", "policy-block-no-approval", "start-gate-blocks", "session-block-cancels-provider"]}
+  ],
+  "reserved_actions": [
+    {"name": "allow-but-audit", "summary": "reserved branch only; no executable ToolUseAction exists yet"},
+    {"name": "quarantine", "summary": "reserved branch only; no executable ToolUseAction exists yet"}
+  ],
+  "facts": [
+    {"name": "policy owns stable risk surfaces", "summary": "network egress, protected path write, secret exposure, and destructive command are typed ToolUseSurface values.", "source_checks": ["surface-network", "surface-protected-path", "surface-secret", "surface-destructive"]},
+    {"name": "policy decision is pure", "summary": "EvaluateToolUse returns C7 decisions without provider execution.", "source_checks": ["evaluate-tool-use", "evaluate-with-bundle"]},
+    {"name": "toolpolicy maps provider-neutral tools to surfaces", "summary": "ClassifyToolUseSurface derives risk surfaces from kind, name, and redacted args.", "source_checks": ["classify-tool-use", "classify-secret", "classify-network", "classify-protected", "classify-shell"]},
+    {"name": "redacted args become secret exposure signals", "summary": "toolargs redacts sensitive keys/patterns and toolpolicy treats redaction markers as secret exposure.", "source_checks": ["toolargs-redacted-value", "toolargs-sensitive-key", "toolargs-secret-pattern", "toolpolicy-redacted-signal"]},
+    {"name": "supervisor stores redacted provider tool payloads", "summary": "provider tool events preserve bounded ToolRef.Args without rehydrating raw secrets.", "source_checks": ["supervisor-tool-payload-clone", "supervisor-tool-start-ir", "supervisor-approval-ir"]},
+    {"name": "headless tool approval is fail-closed", "summary": "approval/start gates block classified risk when policy lacks an allow path.", "source_checks": ["approval-gate-blocks", "session-approval-blocks"]}
+  ],
+  "absent_surfaces": [
+    {"name": "reserved actions are not implemented in policy", "scope": ["internal/policy"], "tokens": ["allow-but-audit", "quarantine", "ToolUseActionAllowButAudit", "ToolUseActionQuarantine"], "reason": "reserved vocabulary must not be claimed as executable without new branch evidence."},
+    {"name": "toolpolicy does not execute provider processes", "scope": ["internal/agentbridge/toolpolicy"], "tokens": ["internal/process", "os/exec", "CommandCancelProvider"], "reason": "toolpolicy classifies and gates; session/runtime own execution and cancellation."}
+  ],
+  "source_checks": [
+    {"name": "action-allow", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseActionAllow             ToolUseAction = \"allow\""},
+    {"name": "action-require-approval", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseActionRequireApproval   ToolUseAction = \"require-approval\""},
+    {"name": "action-interrupt-and-block", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseActionInterruptAndBlock ToolUseAction = \"interrupt-and-block\""},
+    {"name": "surface-network", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseNetworkEgress      ToolUseSurface = \"tool:network-egress\""},
+    {"name": "surface-protected-path", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseProtectedPathWrite ToolUseSurface = \"tool:protected-path-write\""},
+    {"name": "surface-secret", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseSecretExposure     ToolUseSurface = \"tool:secret-exposure\""},
+    {"name": "surface-destructive", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseDestructiveCommand ToolUseSurface = \"tool:destructive-command\""},
+    {"name": "evaluate-tool-use", "file": "internal/policy/tool_policy.go", "contains": "func EvaluateToolUse(input ToolUseInput) ToolUseDecision"},
+    {"name": "policy-bundle-allows-tool-use", "file": "internal/policy/bundle_allows.go", "contains": "func (b PolicyBundle) AllowsToolUse"},
+    {"name": "evaluate-with-bundle", "file": "internal/policy/bundle_evaluate.go", "contains": "input.BundleAllows = bundle.AllowsToolUse(input.TrustTier, input.Surface)"},
+    {"name": "policy-human-approval-branch", "file": "internal/policy/tool_policy.go", "contains": "ToolUseActionRequireApproval"},
+    {"name": "policy-block-no-approval", "file": "internal/policy/tool_policy.go", "contains": "TOOL_USE_NOT_IN_POLICY_BUNDLE"},
+    {"name": "auto-approver-action-allow", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "decision.Action == policy.ToolUseActionAllow"},
+    {"name": "start-gate-blocks", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "PolicyToolStartGate"},
+    {"name": "approval-gate-blocks", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "PolicyToolApprovalGate"},
+    {"name": "classify-tool-use", "file": "internal/agentbridge/toolpolicy/classify.go", "contains": "func ClassifyToolUseSurface"},
+    {"name": "classify-secret", "file": "internal/agentbridge/toolpolicy/classify.go", "contains": "return policy.ToolUseSecretExposure, true"},
+    {"name": "classify-network", "file": "internal/agentbridge/toolpolicy/classify.go", "contains": "return policy.ToolUseNetworkEgress, true"},
+    {"name": "classify-protected", "file": "internal/agentbridge/toolpolicy/classify.go", "contains": "return policy.ToolUseProtectedPathWrite, true"},
+    {"name": "classify-shell", "file": "internal/agentbridge/toolpolicy/classify.go", "contains": "return classifyShellRisk(tool.Args)"},
+    {"name": "toolargs-redacted-value", "file": "internal/agentbridge/toolargs/constants.go", "contains": "RedactedValue = \"[redacted]\""},
+    {"name": "toolargs-sensitive-key", "file": "internal/agentbridge/toolargs/redaction.go", "contains": "func IsSensitiveKey(key string) bool"},
+    {"name": "toolargs-secret-pattern", "file": "internal/agentbridge/toolargs/add.go", "contains": "policy.ContainsSecretPattern(value)"},
+    {"name": "toolpolicy-redacted-signal", "file": "internal/agentbridge/toolpolicy/arg_signals.go", "contains": "return toolargs.HasRedactedValue(args)"},
+    {"name": "supervisor-tool-payload-clone", "file": "internal/agentbridge/supervisor/tool_payload.go", "contains": "payload[\"args\"] = toolargs.Clone(tool.Args)"},
+    {"name": "supervisor-tool-start-ir", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "return ir.EventToolCallStarted, toolPayload(ev.Tool), true"},
+    {"name": "supervisor-approval-ir", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "return ir.EventApprovalRequested"},
+    {"name": "session-block-cancels-provider", "file": "internal/agentbridge/session/session_tool_block.go", "contains": "CommandCancelProvider"},
+    {"name": "session-approval-blocks", "file": "internal/agentbridge/session/session_tool_block.go", "contains": "tool approval unavailable in headless run"}
+  ],
+  "assertions": [
+    "implemented tool-use branches are allow, require-approval, and interrupt-and-block only",
+    "allow-but-audit and quarantine remain reserved vocabulary until new evidence exists",
+    "toolpolicy classifies and gates but does not execute provider processes",
+    "ToolRef.Args evidence is bounded and redacted before IR projection",
+    "headless classified tool use fails closed when no policy allow path exists"
+  ]
+}

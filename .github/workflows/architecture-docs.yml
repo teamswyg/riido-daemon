@@ -17,6 +17,7 @@ on:
       - ".github/workflows/saas-assignment-source.yml"
       - ".github/workflows/validation-evidence.yml"
       - ".github/workflows/policy-bundle-loader-evidence.yml"
+      - ".github/workflows/tool-use-gate-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/**"
   pull_request:
@@ -34,6 +35,7 @@ on:
       - ".github/workflows/saas-assignment-source.yml"
       - ".github/workflows/validation-evidence.yml"
       - ".github/workflows/policy-bundle-loader-evidence.yml"
+      - ".github/workflows/tool-use-gate-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/**"
 

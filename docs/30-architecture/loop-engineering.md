@@ -324,6 +324,23 @@
   - `command`: go run ./tools/policybundleevidence -check-doc -evidence-out /tmp/policy-bundle-loader-evidence.json; proves policy bundle loader manifest matches generated docs, local source evidence, and absent boundary rules
   - `workflow`: .github/workflows/policy-bundle-loader-evidence.yml; proves public CI uploads policy bundle loader evidence
 
+### tool-use-gate-evidence
+
+- Owner: `C7 security policy`
+- Observe: Tool-use gate docs mixed implemented branches with reserved policy vocabulary, while executable evidence lived across policy, toolpolicy, toolargs, session, and supervisor projection code.
+  - Artifacts: `docs/20-domain/security/enforcement-locations/tool-use-gates.md`
+- Hypothesis: A manifest can generate the reader doc, prove implemented tool-use branches, and keep allow-but-audit/quarantine reserved until new source evidence exists.
+  - Artifacts: `docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json`
+- Execute: Run toolusegateevidence to check generated docs, source checks, absent reserved policy actions, and toolpolicy non-execution boundaries.
+  - Artifacts: `tools/toolusegateevidence`, `.github/workflows/tool-use-gate-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source evidence, unknown fact references, accidental reserved action implementation, and toolpolicy process execution leaks.
+  - Artifacts: `tools/toolusegateevidence/run_test.go`
+- Retrospective: Tool-use security gate knowledge becomes executable evidence with explicit implemented/reserved branch separation.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/toolusegateevidence -check-doc -evidence-out /tmp/tool-use-gate-evidence.json; proves tool-use gate manifest matches generated docs, source evidence, and absent boundary rules
+  - `workflow`: .github/workflows/tool-use-gate-evidence.yml; proves public CI uploads tool-use gate evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`
