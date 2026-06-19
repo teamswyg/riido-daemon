@@ -1,0 +1,36 @@
+{
+  "id": "policy-bundle-loader-evidence",
+  "owner": "C7 security policy",
+  "observation": {
+    "summary": "Policy bundle loader rules were described as prose while executable evidence lived across internal/policy and daemon config tests.",
+    "artifacts": ["docs/20-domain/security/invariants/policy-bundle-loader.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove fail-closed bundle parsing, daemon env wiring, accepted surfaces, and pure policy package boundaries.",
+    "artifacts": ["docs/20-domain/security/invariants/policy-bundle-loader.riido.json"]
+  },
+  "execution": {
+    "summary": "Run policybundleevidence to check generated docs, source checks, absent env/remote-fetch surfaces, and compact evidence output.",
+    "artifacts": ["tools/policybundleevidence", ".github/workflows/policy-bundle-loader-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source checks, unknown fact references, policy package env ownership, and remote bundle fetch ownership.",
+    "artifacts": ["tools/policybundleevidence/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Policy bundle loader knowledge becomes executable security evidence instead of a manually edited rule list.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/policybundleevidence -check-doc -evidence-out /tmp/policy-bundle-loader-evidence.json",
+      "proves": "policy bundle loader manifest matches generated docs, local source evidence, and absent boundary rules"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/policy-bundle-loader-evidence.yml",
+      "proves": "public CI uploads policy bundle loader evidence"
+    }
+  ]
+}

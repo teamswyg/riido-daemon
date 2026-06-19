@@ -15,6 +15,7 @@ on:
       - ".github/workflows/runtime-upgrade-flow.yml"
       - ".github/workflows/saas-assignment-source.yml"
       - ".github/workflows/validation-evidence.yml"
+      - ".github/workflows/policy-bundle-loader-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/**"
   pull_request:
@@ -30,6 +31,7 @@ on:
       - ".github/workflows/runtime-upgrade-flow.yml"
       - ".github/workflows/saas-assignment-source.yml"
       - ".github/workflows/validation-evidence.yml"
+      - ".github/workflows/policy-bundle-loader-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/**"
 
