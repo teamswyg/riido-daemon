@@ -96,6 +96,23 @@
   - `command`: go run ./tools/lockingdocs -check-doc -evidence-out /tmp/locking-docs.json; proves locking reader docs are generated and file-lock/lease/fencing/metadata source anchors still exist
   - `workflow`: .github/workflows/locking-docs.yml; proves public CI uploads locking docs evidence
 
+### security-docs
+
+- Owner: `daemon/security`
+- Observe: The security root and enforcement wrapper pages were manually edited while invariants, native config overlay, redaction, unsafe-bypass, tool-use, MCP, and full-access harness evidence were already generated.
+  - Artifacts: `docs/20-domain/security.md`, `docs/20-domain/security/enforcement-locations.md`
+- Hypothesis: A security wrapper manifest can generate only the root and wrapper pages while preserving compatibility anchors consumed by existing CI.
+  - Artifacts: `docs/20-domain/security.riido.json`, `docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json`
+- Execute: Generate security root, enforcement-location index, audit/contracts, and open-issues/versioning docs from executable fragments and source anchors.
+  - Artifacts: `tools/securitydocs`, `.github/workflows/security-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing adjacent evidence ownership, missing source anchors, and missing workflow wiring.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The C7 security root becomes generated evidence without duplicating detailed security invariant, redaction, native-config, unsafe-bypass, tool-use, MCP, or full-access harness generators.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/securitydocs -check-doc -evidence-out /tmp/security-docs.json; proves security root and wrapper docs are generated and source anchors still exist
+  - `workflow`: .github/workflows/security-docs.yml; proves public CI uploads security wrapper evidence
+
 ### provider-public-migration-docs
 
 - Owner: `daemon/domain`

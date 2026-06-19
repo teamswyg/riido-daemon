@@ -1,0 +1,36 @@
+{
+  "id": "security-docs",
+  "owner": "daemon/security",
+  "observation": {
+    "summary": "The security root and enforcement wrapper pages were manually edited while invariants, native config overlay, redaction, unsafe-bypass, tool-use, MCP, and full-access harness evidence were already generated.",
+    "artifacts": ["docs/20-domain/security.md", "docs/20-domain/security/enforcement-locations.md"]
+  },
+  "hypothesis": {
+    "summary": "A security wrapper manifest can generate only the root and wrapper pages while preserving compatibility anchors consumed by existing CI.",
+    "artifacts": ["docs/20-domain/security.riido.json", "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate security root, enforcement-location index, audit/contracts, and open-issues/versioning docs from executable fragments and source anchors.",
+    "artifacts": ["tools/securitydocs", ".github/workflows/security-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing adjacent evidence ownership, missing source anchors, and missing workflow wiring.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The C7 security root becomes generated evidence without duplicating detailed security invariant, redaction, native-config, unsafe-bypass, tool-use, MCP, or full-access harness generators.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/securitydocs -check-doc -evidence-out /tmp/security-docs.json",
+      "proves": "security root and wrapper docs are generated and source anchors still exist"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/security-docs.yml",
+      "proves": "public CI uploads security wrapper evidence"
+    }
+  ]
+}

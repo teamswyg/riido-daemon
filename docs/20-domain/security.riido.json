@@ -1,0 +1,55 @@
+{
+  "schema_version": "riido-security-docs.v1",
+  "id": "security-docs",
+  "title": "Security / Policy SSOT",
+  "generated_doc": "docs/20-domain/security.md",
+  "workflow": ".github/workflows/security-docs.yml",
+  "evidence_artifact": "security-docs",
+  "summary": [
+    "This C7 entrypoint is generated from executable security wrapper SSOT and delegates detailed policy evidence to focused security tools.",
+    "The root remains a stable compatibility surface for provider full-access harness and native config overlay anchors consumed by existing CI."
+  ],
+  "full_access_harness_title": "4.3 Provider full-access runtime harness",
+  "full_access_harness": [
+    "Provider full-access runtime harness marker retained for downstream\nconformance checks. The policy does not say provider default 가 full-access,\nand it does not say caller defaults own the sandbox. Instead, default sandbox 가\ndanger-full-access 인 provider behavior is rejected as an implicit policy.",
+    "Codex adapter 가 danger-full-access launch\nenvelope 만 생성 when the daemon-owned harness explicitly selects it:",
+    "daemon 이 Codex 를 전권 host automation surface 로 실행할 때도 harness,\nlease, heartbeat, and evidence stay daemon-owned. Claude / Cursor / OpenClaw 도 같은 메타 모델 아래에서 provider-specific trusted-runtime envelope 로만\n확장한다."
+  ],
+  "full_access_harness_code": "codex --sandbox danger-full-access app-server --listen stdio://",
+  "compatibility_markers": ["No user-global native config overlay"],
+  "parts": [
+    {"title": "Invariants", "path": "security/invariants.md"},
+    {"title": "Native Config Overlay", "path": "security/native-config-overlay.md"},
+    {"title": "Enforcement Locations", "path": "security/enforcement-locations.md"}
+  ],
+  "related_pages": [
+    {"title": "Security Redaction", "path": "security-redaction.md"},
+    {"title": "Provider Runtime", "path": "provider-runtime.md"},
+    {"title": "Workspace", "path": "workspace.md"},
+    {"title": "Distribution Host Integration", "path": "distribution-host-integration.md"}
+  ],
+  "fragments": [
+    "security/enforcement-locations.riido.json",
+    "security/enforcement-locations/audit-and-contracts.riido.json",
+    "security/enforcement-locations/open-issues-and-versioning.riido.json"
+  ],
+  "source_checks": [
+    {"name": "security-invariants-generated", "file": "docs/20-domain/security/invariants.riido.json", "contains": "security-invariants-docs"},
+    {"name": "security-native-config-generated", "file": "docs/20-domain/security/native-config-overlay.riido.json", "contains": "security-native-config-overlay-docs"},
+    {"name": "security-redaction-generated", "file": "docs/20-domain/security-redaction.riido.json", "contains": "security-redaction-docs"},
+    {"name": "unsafe-bypass-generated", "file": "docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json", "contains": "unsafe-bypass-enforcement"},
+    {"name": "tool-use-gate-generated", "file": "docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json", "contains": "tool-use-gate-evidence"},
+    {"name": "native-config-mcp-generated", "file": "docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json", "contains": "native-config-mcp-evidence"},
+    {"name": "full-access-harness-generated", "file": "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json", "contains": "Codex danger-full-access is a daemon-owned harness envelope"},
+    {"name": "trust-tier-type", "file": "internal/policy/trust_tier.go", "contains": "type TrustTier string"},
+    {"name": "unsafe-bypass-evaluator", "file": "internal/policy/unsafe_bypass_policy.go", "contains": "func EvaluateUnsafeBypass(input UnsafeBypassInput) Decision"},
+    {"name": "tool-use-evaluator", "file": "internal/policy/tool_policy.go", "contains": "func EvaluateToolUse(input ToolUseInput) ToolUseDecision"},
+    {"name": "policy-violation-audit", "file": "internal/ir/ingest/append.go", "contains": "ir.EventPolicyViolationDetected"},
+    {"name": "store-channel-policy", "file": "internal/policy/store_channel.go", "contains": "func EvaluateStoreChannelPolicy(input StoreChannelPolicyInput) Decision"}
+  ],
+  "assertions": [
+    "C7 root docs must be generated while focused policy evidence stays with dedicated sidecar tools.",
+    "Provider full-access harness anchors are compatibility evidence, not a provider default or caller-selected sandbox policy.",
+    "Native config overlay remains default-deny and no user-global native config overlay is allowed by this root policy."
+  ]
+}
