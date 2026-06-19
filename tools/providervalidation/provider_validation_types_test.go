@@ -7,6 +7,7 @@ type providerValidationManifest struct {
 	HumanDoc        string             `json:"human_doc"`
 	SourceDocuments []string           `json:"source_documents"`
 	GlobalRules     []string           `json:"global_rules"`
+	ProviderFiles   []string           `json:"provider_files,omitempty"`
 	Providers       []providerEvidence `json:"providers"`
 }
 
