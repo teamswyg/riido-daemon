@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-codex-auth-full-access-openclaw-provider-adapter",
+  "title": "RIID-4660: OpenClaw Provider Adapter",
+  "generated_doc": "docs/migration/daemon/codex-auth-full-access/openclaw-provider-adapter.md",
+  "back_title": "codex-auth-full-access",
+  "back_path": "../codex-auth-full-access.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the OpenClaw concrete provider adapter."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/provider/openclaw`",
+      "OpenClaw adapter testdata",
+      "Provider-runtime and daemon migration documentation",
+      "Public CI for command construction, mandatory session id resolution, executable detection, calendar-version gate, JSON/NDJSON parser, raw event translator, and golden fixtures"
+    ]},
+    {"kind": "paragraph", "text": "The OpenClaw adapter owns only the daemon-side C4 adapter ACL for the external OpenClaw CLI. It does not bundle, install, or distribute the OpenClaw CLI."},
+    {"kind": "paragraph", "text": "Real CLI integration remains opt-in through `AGENTBRIDGE_INTEGRATION=1`. Public CI runs deterministic black-box tests and keeps integration skipped when the external CLI is absent."},
+    {"kind": "paragraph", "text": "This slice does not move Cursor adapter, supervisor polling/runtime selection, SaaS control-plane adapters, task DB/project/mwsd local API packages, packaging artifacts, private infra, secrets, or local machine state."}
+  ]
+}

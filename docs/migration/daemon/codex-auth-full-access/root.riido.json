@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-codex-auth-full-access-root",
+  "title": "Riido Daemon Migration Plan: Codex Auth / Full Access",
+  "generated_doc": "docs/migration/daemon/codex-auth-full-access.md",
+  "back_title": "daemon.md",
+  "back_path": "../daemon.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This entrypoint records public daemon migration slices for Codex app-server auth, full-access harness correction, concrete provider adapters, supervisor, and local task DB control-plane adapter."},
+    {"kind": "links", "links": [
+      {"title": "RIID-4881 / RIID-4917 - Codex app-server auth and full-access harness", "path": "codex-auth-full-access/codex-auth-harness.md"},
+      {"title": "RIID-4660 - OpenClaw provider adapter", "path": "codex-auth-full-access/openclaw-provider-adapter.md"},
+      {"title": "RIID-4661 - Cursor provider adapter", "path": "codex-auth-full-access/cursor-provider-adapter.md"},
+      {"title": "RIID-4662 - supervisor migration", "path": "codex-auth-full-access/supervisor-migration.md"},
+      {"title": "RIID-4683 - taskdbplane local task DB adapter", "path": "codex-auth-full-access/taskdbplane-adapter.md"}
+    ]},
+    {"kind": "paragraph", "text": "Each child page is migration history only; authoritative behavior remains in security, provider-runtime, provider-validation, supervisor, taskdbplane, taskdb, and public workflow evidence."}
+  ]
+}

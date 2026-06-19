@@ -8,34 +8,28 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 289 |
+| Generated reader docs | 295 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 7 |
+| Registered manual docs | 1 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 7 |
+| `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 1 |
 
 ## Manual Hotspots
 
 | Directory | Matched docs |
 | --- | ---: |
-| `docs/migration/daemon/codex-auth-full-access` | 5 |
 | `docs/migration` | 1 |
-| `docs/migration/daemon` | 1 |
 
 ## Manual Samples
 
 | Group | Path |
 | --- | --- |
 | `migration-history-manual-surface` | `docs/migration/daemon.md` |
-| `migration-history-manual-surface` | `docs/migration/daemon/codex-auth-full-access.md` |
-| `migration-history-manual-surface` | `docs/migration/daemon/codex-auth-full-access/codex-auth-harness.md` |
-| `migration-history-manual-surface` | `docs/migration/daemon/codex-auth-full-access/cursor-provider-adapter.md` |
-| `migration-history-manual-surface` | `docs/migration/daemon/codex-auth-full-access/openclaw-provider-adapter.md` |
 
 ## Assertions
 

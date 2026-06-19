@@ -71,6 +71,7 @@
     "docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json",
     "docs/30-architecture/loop-engineering/migration-daemon-macos-provider-cli-review-docs.riido.json",
     "docs/30-architecture/loop-engineering/migration-daemon-figma-boundary-provenance-docs.riido.json",
+    "docs/30-architecture/loop-engineering/migration-daemon-codex-auth-full-access-docs.riido.json",
     "docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json",
     "docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json",
     "docs/30-architecture/loop-engineering/distribution-host-docs.riido.json",
