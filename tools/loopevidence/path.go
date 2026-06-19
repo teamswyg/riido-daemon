@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+const defaultManifest = "docs/30-architecture/loop-engineering.riido.json"
+
 func resolvePath(root, path string) string {
 	if filepath.IsAbs(path) {
 		return path

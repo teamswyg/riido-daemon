@@ -8,14 +8,14 @@ import (
 )
 
 func TestLoopEvidenceCurrentManifest(t *testing.T) {
-	err := run("../..", "docs/30-architecture/loop-engineering.riido.json", "", false, false)
+	err := run(options{Repo: "../..", Manifest: defaultManifest})
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
 func TestLoopEvidenceGeneratedDocCurrent(t *testing.T) {
-	err := run("../..", "docs/30-architecture/loop-engineering.riido.json", "", false, true)
+	err := run(options{Repo: "../..", Manifest: defaultManifest, Check: true})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,8 +40,16 @@ func TestLoopEvidenceRejectsMissingPhase(t *testing.T) {
 	if err := os.WriteFile(docPath, nil, 0o644); err != nil {
 		t.Fatal(err)
 	}
-	err := run(dir, manifestPath, docPath, false, false)
+	evidencePath := filepath.Join(dir, "out", "loop-evidence.json")
+	err := run(options{Repo: dir, Manifest: manifestPath, Doc: docPath, EvidenceOut: evidencePath})
 	if err == nil || !strings.Contains(err.Error(), "summary is required") {
 		t.Fatalf("expected missing phase error, got %v", err)
+	}
+	evidenceData, readErr := os.ReadFile(evidencePath)
+	if readErr != nil {
+		t.Fatal(readErr)
+	}
+	if !strings.Contains(string(evidenceData), `"status": "failed"`) {
+		t.Fatalf("expected failed evidence, got %s", string(evidenceData))
 	}
 }

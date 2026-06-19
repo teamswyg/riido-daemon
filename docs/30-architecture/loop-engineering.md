@@ -363,6 +363,23 @@
   - `command`: go run ./tools/knowledgecoverage -check-doc -evidence-out /tmp/executable-knowledge-coverage.json; proves architecture markdown knowledge is generated, direct-SSOT backed, or registered as manual debt
   - `workflow`: .github/workflows/executable-knowledge-coverage.yml; proves public CI uploads executable knowledge coverage evidence
 
+### loop-evidence-output
+
+- Owner: `daemon/evidence`
+- Observe: loopevidence verified the generated loop-engineering markdown but could not emit a machine-readable evidence artifact.
+  - Artifacts: `tools/loopevidence`, `docs/30-architecture/loop-engineering.md`
+- Hypothesis: Adding a compact evidence JSON output lets local runs and public CI prove the loop count, open gap count, evidence item count, and verification status without scraping markdown.
+  - Artifacts: `tools/loopevidence/types.go`, `tools/loopevidence/evidence.go`
+- Execute: Add `-evidence-out` to loopevidence, keep markdown generation unchanged, and publish the JSON through a path-scoped workflow.
+  - Artifacts: `tools/loopevidence/main.go`, `.github/workflows/loop-engineering-evidence.yml`
+- Evaluate: The verifier writes `verified` evidence on clean runs and `failed` evidence with problem summaries when loop validation fails.
+  - Artifacts: `tools/loopevidence/run_test.go`, `scripts/architecture-docs/tool-checks.sh`
+- Retrospective: Loop engineering evidence is now itself observable as JSON, so future slices can use the same evidence artifact pattern as domain doc generators.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json; proves loop engineering markdown and machine-readable evidence are current
+  - `workflow`: .github/workflows/loop-engineering-evidence.yml; proves public CI uploads loop engineering evidence
+
 ### repo-executable-knowledge-coverage
 
 - Owner: `daemon/repo-docs`

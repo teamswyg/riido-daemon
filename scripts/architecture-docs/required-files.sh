@@ -150,6 +150,7 @@ required_files=(
   docs/30-architecture/runtime-upgrade-flow.riido.json
   docs/30-architecture/loop-engineering.md
   docs/30-architecture/loop-engineering.riido.json
+  .github/workflows/loop-engineering-evidence.yml
   docs/30-architecture/loop-engineering/context-map-docs.riido.json
   docs/30-architecture/loop-engineering/provider-public-migration-docs.riido.json
   docs/30-architecture/loop-engineering/locking-docs.riido.json
@@ -159,6 +160,7 @@ required_files=(
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json
   docs/30-architecture/loop-engineering/repo-executable-knowledge-coverage.riido.json
+  docs/30-architecture/loop-engineering/loop-evidence-output.riido.json
   docs/30-architecture/loop-engineering/release-artifact-docs.riido.json
   docs/30-architecture/loop-engineering/integration-matrix-docs.riido.json
   docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json

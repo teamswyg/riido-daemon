@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"path/filepath"
 )
 
 func loadManifest(path string) (manifest, error) {
@@ -19,8 +20,19 @@ func loadManifest(path string) (manifest, error) {
 }
 
 func writeText(path, text string) error {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("create generated doc dir: %w", err)
+	}
 	if err := os.WriteFile(path, []byte(text), 0o644); err != nil {
 		return fmt.Errorf("write generated doc: %w", err)
 	}
 	return nil
+}
+
+func writeJSON(path string, value any) error {
+	data, err := json.MarshalIndent(value, "", "  ")
+	if err != nil {
+		return fmt.Errorf("marshal evidence: %w", err)
+	}
+	return writeText(path, string(append(data, '\n')))
 }
