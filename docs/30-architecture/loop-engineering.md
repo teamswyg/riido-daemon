@@ -273,6 +273,23 @@
   - `command`: go run ./tools/localdaemoncontract -check-doc -evidence-out /tmp/local-daemon-contract-evidence.json; proves local daemon contract manifest matches generated docs, implementation references, and absent boundary rules
   - `workflow`: .github/workflows/local-daemon-contract-evidence.yml; proves public CI uploads local daemon contract evidence
 
+### runtime-eligibility-evidence
+
+- Owner: `C5 runtime scheduling`
+- Observe: Runtime eligibility gate order and SaaS opt-in ingress were described as prose while proof lived across scheduling, supervisor, saasplane, and taskdbplane files.
+  - Artifacts: `docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md`
+- Hypothesis: A manifest can generate the reader doc and prove gate order, ingress passthroughs, absent opt-in inference, and source references from executable scheduling behavior.
+  - Artifacts: `docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.riido.json`
+- Execute: Run runtimeeligibility to check generated docs, source references, all EvaluateCapability reason scenarios, and forbidden inference scans.
+  - Artifacts: `tools/runtimeeligibility`, `.github/workflows/runtime-eligibility-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source evidence, gate order drift, missing reason behavior, and opt-in inference from env/provider/team heuristics.
+  - Artifacts: `tools/runtimeeligibility/run_test.go`
+- Retrospective: Runtime eligibility knowledge becomes executable scheduling evidence instead of hand-maintained prose.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/runtimeeligibility -check-doc -evidence-out /tmp/runtime-eligibility-evidence.json; proves runtime eligibility manifest matches generated docs, implementation references, gate behavior, and absent inference scans
+  - `workflow`: .github/workflows/runtime-eligibility-evidence.yml; proves public CI uploads runtime eligibility evidence
+
 ### task-requirements-evidence
 
 - Owner: `C5 runtime scheduling`

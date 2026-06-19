@@ -24,6 +24,7 @@ tool_tests=(
   ./tools/compatibilitygate
   ./tools/runtimeupgrade
   ./tools/localdaemoncontract
+  ./tools/runtimeeligibility
   ./tools/taskrequirements
   ./tools/saasassignment
   ./tools/validationevidence
@@ -49,6 +50,7 @@ doc_tools=(
   sessionlifecycle
   runtimeupgrade
   localdaemoncontract
+  runtimeeligibility
   taskrequirements
   saasassignment
   validationevidence

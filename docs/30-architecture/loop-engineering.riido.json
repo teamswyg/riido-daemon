@@ -21,6 +21,7 @@
     "docs/30-architecture/loop-engineering/compatibility-gate.riido.json",
     "docs/30-architecture/loop-engineering/runtime-upgrade-flow.riido.json",
     "docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json",
+    "docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json",
     "docs/30-architecture/loop-engineering/task-requirements-evidence.riido.json",
     "docs/30-architecture/loop-engineering/saas-assignment-source.riido.json",
     "docs/30-architecture/loop-engineering/validation-evidence.riido.json",

@@ -1,0 +1,36 @@
+{
+  "id": "runtime-eligibility-evidence",
+  "owner": "C5 runtime scheduling",
+  "observation": {
+    "summary": "Runtime eligibility gate order and SaaS opt-in ingress were described as prose while proof lived across scheduling, supervisor, saasplane, and taskdbplane files.",
+    "artifacts": ["docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove gate order, ingress passthroughs, absent opt-in inference, and source references from executable scheduling behavior.",
+    "artifacts": ["docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.riido.json"]
+  },
+  "execution": {
+    "summary": "Run runtimeeligibility to check generated docs, source references, all EvaluateCapability reason scenarios, and forbidden inference scans.",
+    "artifacts": ["tools/runtimeeligibility", ".github/workflows/runtime-eligibility-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source evidence, gate order drift, missing reason behavior, and opt-in inference from env/provider/team heuristics.",
+    "artifacts": ["tools/runtimeeligibility/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Runtime eligibility knowledge becomes executable scheduling evidence instead of hand-maintained prose.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/runtimeeligibility -check-doc -evidence-out /tmp/runtime-eligibility-evidence.json",
+      "proves": "runtime eligibility manifest matches generated docs, implementation references, gate behavior, and absent inference scans"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/runtime-eligibility-evidence.yml",
+      "proves": "public CI uploads runtime eligibility evidence"
+    }
+  ]
+}
