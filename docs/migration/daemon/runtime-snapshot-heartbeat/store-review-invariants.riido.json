@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-runtime-snapshot-heartbeat-store-review-invariants",
+  "title": "Store Review Invariants",
+  "generated_doc": "docs/migration/daemon/runtime-snapshot-heartbeat/store-review-invariants.md",
+  "back_title": "Runtime Snapshot Heartbeat",
+  "back_path": "../runtime-snapshot-heartbeat.md",
+  "blocks": [
+    {
+      "kind": "bullets",
+      "items": [
+        "Provider CLIs are external tools, not bundled app payloads.",
+        "The daemon must expose local-only IPC, not public TCP listeners.",
+        "Unsafe provider modes are opt-in policy decisions, not defaults.",
+        "Host trust tier must reject unsafe bypass.",
+        "App Store and MSIX helper/runtime contracts stay in C11 docs and tests."
+      ]
+    }
+  ]
+}
