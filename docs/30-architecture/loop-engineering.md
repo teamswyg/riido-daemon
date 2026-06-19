@@ -273,6 +273,23 @@
   - `command`: go run ./tools/localdaemoncontract -check-doc -evidence-out /tmp/local-daemon-contract-evidence.json; proves local daemon contract manifest matches generated docs, implementation references, and absent boundary rules
   - `workflow`: .github/workflows/local-daemon-contract-evidence.yml; proves public CI uploads local daemon contract evidence
 
+### task-requirements-evidence
+
+- Owner: `C5 runtime scheduling`
+- Observe: Task required surface knowledge was a reader note while scheduling, supervisor ingress, and runtime capability diagnostics had to be inspected separately.
+  - Artifacts: `docs/20-domain/runtime-scheduling/invariants/task-requirements.md`
+- Hypothesis: A manifest can generate the reader doc and prove every required surface through scheduling behavior, source checks, and runtime missing-capability evidence.
+  - Artifacts: `docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json`
+- Execute: Run taskrequirements to check generated docs, source references, known surface eligibility, unknown surface fail-closed behavior, and worktree diagnostic projection.
+  - Artifacts: `tools/taskrequirements`, `.github/workflows/task-requirements-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, source-check drift, manifest field drift, missing required-surface behavior drift, and unknown surface fail-open behavior.
+  - Artifacts: `tools/taskrequirements/run_test.go`, `internal/agentbridge/runtimeactor/capability_missing_test.go`
+- Retrospective: Task requirement knowledge becomes executable scheduling evidence instead of hand-maintained prose.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/taskrequirements -check-doc -evidence-out /tmp/task-requirements-evidence.json; proves task requirement manifest matches generated docs, implementation references, and scheduling behavior
+  - `workflow`: .github/workflows/task-requirements-evidence.yml; proves public CI uploads task requirement evidence
+
 ### saas-assignment-source-evidence
 
 - Owner: `daemon runtime scheduling`

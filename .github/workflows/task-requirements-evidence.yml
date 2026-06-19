@@ -1,0 +1,49 @@
+name: task-requirements-evidence
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/task-requirements-evidence.yml"
+      - "docs/20-domain/runtime-scheduling/invariants/task-requirements.md"
+      - "docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json"
+      - "internal/scheduling/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/agentbridge/supervisor/**"
+      - "tools/taskrequirements/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/task-requirements-evidence.yml"
+      - "docs/20-domain/runtime-scheduling/invariants/task-requirements.md"
+      - "docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json"
+      - "internal/scheduling/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/agentbridge/supervisor/**"
+      - "tools/taskrequirements/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  task-requirements-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify task requirements evidence
+        run: |
+          mkdir -p out
+          go test ./tools/taskrequirements ./internal/scheduling ./internal/agentbridge/runtimeactor -count=1
+          go run ./tools/taskrequirements \
+            -check-doc \
+            -evidence-out out/task-requirements-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: task-requirements-evidence
+          path: out/task-requirements-evidence.json
+          if-no-files-found: error

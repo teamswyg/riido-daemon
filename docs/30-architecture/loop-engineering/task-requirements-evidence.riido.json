@@ -1,0 +1,36 @@
+{
+  "id": "task-requirements-evidence",
+  "owner": "C5 runtime scheduling",
+  "observation": {
+    "summary": "Task required surface knowledge was a reader note while scheduling, supervisor ingress, and runtime capability diagnostics had to be inspected separately.",
+    "artifacts": ["docs/20-domain/runtime-scheduling/invariants/task-requirements.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove every required surface through scheduling behavior, source checks, and runtime missing-capability evidence.",
+    "artifacts": ["docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json"]
+  },
+  "execution": {
+    "summary": "Run taskrequirements to check generated docs, source references, known surface eligibility, unknown surface fail-closed behavior, and worktree diagnostic projection.",
+    "artifacts": ["tools/taskrequirements", ".github/workflows/task-requirements-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, source-check drift, manifest field drift, missing required-surface behavior drift, and unknown surface fail-open behavior.",
+    "artifacts": ["tools/taskrequirements/run_test.go", "internal/agentbridge/runtimeactor/capability_missing_test.go"]
+  },
+  "retrospective": {
+    "summary": "Task requirement knowledge becomes executable scheduling evidence instead of hand-maintained prose.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/taskrequirements -check-doc -evidence-out /tmp/task-requirements-evidence.json",
+      "proves": "task requirement manifest matches generated docs, implementation references, and scheduling behavior"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/task-requirements-evidence.yml",
+      "proves": "public CI uploads task requirement evidence"
+    }
+  ]
+}
