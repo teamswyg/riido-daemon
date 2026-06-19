@@ -6,9 +6,16 @@ type evidenceManifest struct {
 	RiidoTask           string              `json:"riido_task"`
 	HumanDoc            string              `json:"human_doc"`
 	SourceDocuments     []string            `json:"source_documents"`
+	EvidenceFiles       evidenceFiles       `json:"evidence_files"`
 	LocalEvidence       []localEvidence     `json:"local_evidence"`
 	ExternalEvidence    []externalEvidence  `json:"external_evidence"`
 	RemainingBoundaries []remainingBoundary `json:"remaining_boundaries"`
+}
+
+type evidenceFiles struct {
+	Local               []string `json:"local"`
+	External            []string `json:"external"`
+	RemainingBoundaries []string `json:"remaining_boundaries"`
 }
 
 type localEvidence struct {

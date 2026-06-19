@@ -1,0 +1,4 @@
+[
+  {"risk":"web-approval-session-resolver","status":"verified","package":"./internal/agentbridge/session","test":"TestSessionResolverApprovalWritesProviderInput","proves":"session approval resolver decisions are converted into provider approve commands without falling through to the headless gate"},
+  {"risk":"web-approval-round-trip","status":"verified","package":"./internal/agentbridge/controlplane/saasplane","test":"TestResolveToolApprovalCreatesAndWaitsForDecision","proves":"SaaS plane creates a control-plane tool approval and waits for the client decision before returning a provider-neutral approval resolution"}
+]
