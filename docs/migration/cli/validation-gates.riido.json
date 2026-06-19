@@ -1,0 +1,17 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "cli-validation-gates",
+  "title": "Validation Gates",
+  "generated_doc": "docs/migration/cli/validation-gates.md",
+  "back_title": "Riido CLI Migration Plan",
+  "back_path": "../cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Required before a CLI migration PR is mergeable:"},
+    {"kind": "code", "language": "bash", "code": "go test ./...\ngo list -m all\ngo build ./cmd/riido\ngo run ./cmd/riido --help\ngo run ./cmd/riido bridge providers"},
+    {"kind": "paragraph", "text": "Architecture-doc migration PRs must also pass:"},
+    {"kind": "code", "language": "bash", "code": "test -f docs/30-architecture/cli-surface.md\ngo test ./...\ngo build -o /tmp/riido ./cmd/riido\ngo run ./cmd/riido --help\ngo run ./cmd/riido bridge providers"},
+    {"kind": "paragraph", "text": "RIID-4686 adds a fake-local-socket mwsd/project gate for `riido mwsd projection` and `riido mwsd sync`. RIID-4690 restores focused daemon lifecycle checks:"},
+    {"kind": "code", "language": "bash", "code": "go test ./cmd/riido -run 'TestDaemon|TestLoadDaemon|TestBuildDaemon|TestForeground|TestDaemonBackground' -count=1\ngo build ./cmd/riido"},
+    {"kind": "paragraph", "text": "Commands that need a daemon, mwsd socket, provider CLI, or local app state must be black-box smoke tests with explicit skip conditions."}
+  ]
+}

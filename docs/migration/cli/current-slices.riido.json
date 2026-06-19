@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "cli-current-slices",
+  "title": "Current Migration Slices",
+  "generated_doc": "docs/migration/cli/current-slices.md",
+  "back_title": "Riido CLI Migration Plan",
+  "back_path": "../cli.md",
+  "blocks": [
+    {"kind": "heading", "text": "RIID-4714: Architecture SSOT Docs Migration"},
+    {"kind": "paragraph", "text": "This slice documents the public CLI command boundary after the split-repo migration."},
+    {"kind": "paragraph", "text": "It adds `docs/30-architecture/cli-surface.md`, links `docs/30-architecture/module-decomposition.md` to that SSOT, adds the file to the architecture-docs required gate, and records the slice in this migration plan."},
+    {"kind": "paragraph", "text": "It does not change CLI command behavior, add server runtime behavior, move infrastructure workflows, bundle provider CLIs, or add new shared contracts."}
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "migration-cli-docs",
+  "owner": "daemon/migration",
+  "observation": {
+    "summary": "CLI migration notes were still reader-authored slice history while their active facts already lived in generated CLI, context-map, module, and distribution SSOTs.",
+    "artifacts": ["docs/migration/cli.md", "docs/migration/cli/validation-gates.md"]
+  },
+  "hypothesis": {
+    "summary": "A reusable migration-docs manifest can generate historical slice notes while source-checking the current executable SSOTs they reference.",
+    "artifacts": ["docs/migration/cli.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate the CLI migration entrypoint and focused pages from fragments with source checks for CLI surface, retired source boundary, local-only module rule, smoke evidence, and Store review policy.",
+    "artifacts": ["tools/migrationdocs", ".github/workflows/migration-cli-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, missing fragments, missing source anchors, and missing workflow evidence upload.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The first migration history group moves from loose notes toward an executable migration ledger reusable by the remaining daemon migration folders.",
+    "artifacts": ["docs/executable-knowledge.md", "docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/migrationdocs -check-doc -evidence-out /tmp/migration-cli-docs.json",
+      "proves": "CLI migration docs are generated and source anchors remain present"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/migration-cli-docs.yml",
+      "proves": "public CI uploads migration CLI evidence"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "cli-daemon-split",
+  "title": "CLI / Daemon Split",
+  "generated_doc": "docs/migration/cli/cli-daemon-split.md",
+  "back_title": "Riido CLI Migration Plan",
+  "back_path": "../cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The CLI is a thin adapter. Domain decisions stay in owning packages and SSOT docs."},
+    {"kind": "table", "columns": ["CLI concern", "Owner"], "rows": [
+      ["Argument parsing and usage text", "`cmd/riido`"],
+      ["Task FSM legality", "`riido-contracts/task` through `internal/taskdb` guarded mutation"],
+      ["IR event schema", "`riido-contracts/ir`"],
+      ["Provider process execution", "daemon runtime packages"],
+      ["Local IPC transport", "`internal/riidoapi` and `internal/hostintegration`"],
+      ["SaaS HTTP/SSE server", "`riido-control-plane`"],
+      ["Deploy/apply behavior", "`riido-infra`"]
+    ]}
+  ]
+}

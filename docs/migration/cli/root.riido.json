@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "cli-migration-root",
+  "title": "Riido CLI Migration Plan",
+  "generated_doc": "docs/migration/cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Riido task: RIID-4635 `[Cli] 기존 riido_daemon CLI 마이그레이션 계획/문서화`."},
+    {"kind": "paragraph", "text": "This entrypoint defines how the CLI surface of the former private `riido_daemon` repository moves into public `riido-daemon`."},
+    {"kind": "paragraph", "text": "The CLI remains here because it is the user/operator entrypoint for the customer-PC daemon. It is documented separately from the long-running daemon runtime so command ownership, compatibility, and store-review constraints stay clear."},
+    {"kind": "heading", "text": "Focused Sections"},
+    {"kind": "links", "links": [
+      {"title": "Retired historical source boundary", "path": "cli/retired-source-boundary.md"},
+      {"title": "Target boundary", "path": "cli/target-boundary.md"},
+      {"title": "CLI / daemon split", "path": "cli/cli-daemon-split.md"},
+      {"title": "Migration order", "path": "cli/migration-order.md"},
+      {"title": "Current migration slices", "path": "cli/current-slices.md"},
+      {"title": "Validation gates", "path": "cli/validation-gates.md"},
+      {"title": "Store review invariants", "path": "cli/store-review-invariants.md"},
+      {"title": "Open follow-ups", "path": "cli/open-follow-ups.md"}
+    ]}
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-cli-docs",
+  "title": "Riido CLI Migration Plan",
+  "workflow": ".github/workflows/migration-cli-docs.yml",
+  "evidence_artifact": "migration-cli-docs",
+  "fragments": [
+    "cli/root.riido.json",
+    "cli/retired-source-boundary.riido.json",
+    "cli/target-boundary.riido.json",
+    "cli/cli-daemon-split.riido.json",
+    "cli/migration-order.riido.json",
+    "cli/current-slices.riido.json",
+    "cli/validation-gates.riido.json",
+    "cli/store-review-invariants.riido.json",
+    "cli/open-follow-ups.riido.json"
+  ],
+  "source_checks": [
+    {"name": "cli-surface-generated-ssot", "file": "docs/30-architecture/cli-surface.riido.json", "contains": "Keeps the public cmd/riido command surface generated from a manifest"},
+    {"name": "retired-private-boundary", "file": "docs/20-domain/context-map.riido.json", "contains": "riido_daemon_private / riido-daemon-private is a retired historical source"},
+    {"name": "local-cli-only", "file": "docs/30-architecture/module-decomposition.riido.json", "contains": "cmd/riido opens local IPC only and must not add a public HTTP listener"},
+    {"name": "command-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandDaemon mainCommand = \"daemon\""},
+    {"name": "bridge-providers-smoke", "file": "docs/readme/verification.riido.json", "contains": "\"bridge-providers\""},
+    {"name": "store-review-provider-policy", "file": "docs/20-domain/distribution-host-integration.riido.json", "contains": "provider-cli-bundling-forbidden"}
+  ],
+  "assertions": [
+    "CLI migration notes are generated from fragments instead of hand-authored markdown",
+    "retired private source boundaries must point to public context-map SSOT",
+    "CLI validation gates must remain anchored to executable command and smoke evidence"
+  ]
+}
