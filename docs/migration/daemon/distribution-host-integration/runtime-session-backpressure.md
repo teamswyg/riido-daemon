@@ -1,0 +1,22 @@
+# RIID-4572: Runtime / Session Backpressure
+
+[Back to distribution-host-integration](../distribution-host-integration.md)
+
+This slice closes the C4 runtime/session boundary work.
+
+Decisions:
+
+- process stdout/stderr stream buffers are SSOT constants in `internal/process`
+  and stay fixed at 64 chunks each
+- session event/result buffers stay fixed at 256 events and 1 terminal result
+- runtime actor mailbox defaults to 16 messages
+- supervisor actor mailbox defaults to 64 messages
+- provider runtime streams remain lossless bounded streams; full buffers block
+  and propagate backpressure instead of dropping text/log/warning events
+- `internal/agentbridge/session` remains a C4 internal submodel, not a separate
+  bounded context
+
+The slice adds focused public CI for default-size and no-drop backpressure gates.
+It does not add provider CLI dependencies, retry queues, EventIngestor/outbox
+durability, concrete provider adapter ownership, task DB/project/mwsd local API
+packages, packaging artifacts, private infra, secrets, or local machine state.

@@ -1,0 +1,20 @@
+# RIID-4648: Distribution Host Integration Domain
+
+[Back to distribution-host-integration](../distribution-host-integration.md)
+
+This slice moves the pure C11 distribution / host integration domain.
+
+Moved surfaces:
+
+- `internal/hostintegration`
+- `docs/20-domain/distribution-host-integration.md`
+- `privacy_metadata_allowlist.riido.json` as C10/C11 privacy-boundary evidence
+
+The package imports provider capability types from
+`github.com/teamswyg/riido-contracts/provider/capability`; the module version is
+the current `go.mod` contract version.
+
+This slice does not move provider adapters, runtime/session/supervisor actors,
+C7 policy/security implementation, concrete OS adapters, task DB/project/mwsd
+local API packages, packaging artifacts, private infra, secrets, or local
+machine state.

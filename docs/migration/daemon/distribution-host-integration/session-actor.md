@@ -1,0 +1,22 @@
+# RIID-4653: Session Actor Migration
+
+[Back to distribution-host-integration](../distribution-host-integration.md)
+
+This slice moves the provider-neutral C4 run-scope session actor.
+
+Moved surfaces:
+
+- `internal/agentbridge/session`
+- docs updates in provider-runtime and daemon migration SSOT files
+- focused public CI for session backpressure, timeout/cancellation, process exit
+  ordering, protocol-driver lifecycle, telemetry extraction, tool-start blocking,
+  and adapter temp-file cleanup gates
+
+The session actor connects Process -> Parser/ProtocolDriver -> reducer -> bounded
+Events/Result streams for a single provider run. It is provider-neutral and uses
+only the public `internal/process` port plus public `internal/agentbridge` domain.
+
+This slice does not move runtimeactor, supervisor, bridge/controlplane, concrete
+provider adapters, task DB/project/mwsd local API packages, provider-native
+approval RPC/hook implementations, packaging artifacts, private infra, secrets,
+or local machine state.
