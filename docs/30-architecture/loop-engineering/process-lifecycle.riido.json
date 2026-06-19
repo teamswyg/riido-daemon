@@ -1,0 +1,10 @@
+{
+  "id": "process-lifecycle",
+  "owner": "tools/processlifecycle and process-lifecycle workflow",
+  "observation": {"summary": "Process lifecycle responsibilities were reader-only prose while lifecycle behavior spans Adapter, Parser, Process, Session, and Supervisor surfaces.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md"]},
+  "hypothesis": {"summary": "A manifest can generate the reader doc and prove the required process lifecycle interface and source surfaces remain present.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.riido.json"]},
+  "execution": {"summary": "Parse Go interfaces with AST, scan session/process/supervisor source checks, and upload process lifecycle evidence.", "artifacts": ["tools/processlifecycle", ".github/workflows/process-lifecycle.yml"]},
+  "evaluation": {"summary": "The verifier rejects required interface surface drift, source ownership drift, and generated doc drift.", "artifacts": ["tools/processlifecycle/run_test.go"]},
+  "retrospective": {"summary": "Process lifecycle reader docs are generated while runtime interfaces remain the implementation evidence.", "artifacts": ["internal/agentbridge/adapter.go", "internal/process/port.go"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/processlifecycle -check-doc -evidence-out /tmp/process-lifecycle-evidence.json", "proves": "process lifecycle manifest matches required interfaces and source consumers"}, {"kind": "workflow", "ref": ".github/workflows/process-lifecycle.yml", "proves": "public CI uploads process lifecycle evidence"}]
+}

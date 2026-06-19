@@ -1,0 +1,39 @@
+name: process-lifecycle
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/process-lifecycle.yml"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.riido.json"
+      - "internal/agentbridge/adapter*.go"
+      - "internal/agentbridge/session/**"
+      - "internal/agentbridge/supervisor/**"
+      - "internal/process/**"
+      - "tools/processlifecycle/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  process-lifecycle-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify process lifecycle
+        run: |
+          mkdir -p out
+          go test ./tools/processlifecycle -count=1
+          go run ./tools/processlifecycle \
+            -check-doc \
+            -evidence-out out/process-lifecycle-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: process-lifecycle-evidence
+          path: out/process-lifecycle-evidence.json
+          if-no-files-found: error

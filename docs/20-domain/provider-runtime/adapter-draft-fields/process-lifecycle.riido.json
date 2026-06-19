@@ -1,0 +1,39 @@
+{
+  "schema_version": "riido-process-lifecycle.v1",
+  "id": "provider-runtime-process-lifecycle",
+  "title": "Process Lifecycle",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md",
+  "workflow": ".github/workflows/process-lifecycle.yml",
+  "evidence_artifact": "process-lifecycle-evidence",
+  "steps": [
+    {"step": "spawn", "responsibility": "Session Start calls Process.Start with adapter-built command and keeps stdout, stderr, exit, stdin, and kill handles."},
+    {"step": "observe", "responsibility": "Session runner feeds stdout and stderr into Parser, then Adapter.Translate normalizes raw provider events."},
+    {"step": "interrupt", "responsibility": "Interrupt-like provider input is modeled as provider-neutral commands and process stdin/RPC writes; the process may remain alive."},
+    {"step": "stop", "responsibility": "CommandCancelProvider is executed by session, which kills the RunningProcess through lifecycle-aware process termination."}
+  ],
+  "interfaces": [
+    {"name": "Adapter", "file": "internal/agentbridge/adapter.go", "methods": ["BuildStart", "NewParser", "Translate"]},
+    {"name": "Parser", "file": "internal/agentbridge/adapter_parser.go", "methods": ["FeedStdout", "FeedStderr", "Close"]},
+    {"name": "Process", "file": "internal/process/port.go", "methods": ["Start"]},
+    {"name": "RunningProcess", "file": "internal/process/port.go", "methods": ["Stdout", "Stderr", "Exited", "WriteStdin", "CloseStdin", "Kill"]}
+  ],
+  "source_checks": [
+    {"name": "session start spawns process", "file": "internal/agentbridge/session/start.go", "contains": "cfg.Process.Start(ctx, cfg.Spawn)"},
+    {"name": "session runner keeps stdout", "file": "internal/agentbridge/session/session_runner_new.go", "contains": "stdoutCh:  proc.Stdout()"},
+    {"name": "session runner keeps stderr", "file": "internal/agentbridge/session/session_runner_new.go", "contains": "stderrCh:  proc.Stderr()"},
+    {"name": "session runner keeps exit", "file": "internal/agentbridge/session/session_runner_new.go", "contains": "exitedCh:  proc.Exited()"},
+    {"name": "stdout is parsed", "file": "internal/agentbridge/session/session_runner_consume.go", "contains": "r.parser.FeedStdout(chunk)"},
+    {"name": "stderr is parsed", "file": "internal/agentbridge/session/session_runner_consume.go", "contains": "r.parser.FeedStderr(chunk)"},
+    {"name": "raw provider events are translated", "file": "internal/agentbridge/session/session_runner_feed.go", "contains": "r.cfg.Adapter.Translate(raw)"},
+    {"name": "cancel command kills provider", "file": "internal/agentbridge/session/command_execution.go", "contains": "agentbridge.CommandCancelProvider"},
+    {"name": "kill is lifecycle aware", "file": "internal/agentbridge/session/process_kill.go", "contains": "lifecycle.DetachedShutdown"},
+    {"name": "provider observations map to drafts", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "EventLogLine"},
+    {"name": "terminal transitions are separated", "file": "internal/agentbridge/supervisor/terminal_result_draft.go", "contains": "EventTaskFailed"}
+  ],
+  "assertions": [
+    "spawn is a session/process concern, not direct adapter state ownership",
+    "observe path converts process streams through Parser and Adapter.Translate",
+    "provider observations map to ProviderEventDraft but terminal task transitions stay in terminal result mapping",
+    "stop path uses CommandCancelProvider and lifecycle-aware process kill"
+  ]
+}
