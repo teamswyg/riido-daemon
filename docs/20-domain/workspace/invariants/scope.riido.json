@@ -1,0 +1,13 @@
+{
+  "schema_version": "riido-workspace-invariants-detail.v1",
+  "id": "scope",
+  "title": "Workspace Invariants: Scope",
+  "generated_doc": "docs/20-domain/workspace/invariants/scope.md",
+  "blocks": [
+    {"kind":"paragraph","text":"This SSOT fills the C6 Workspace / Native Config context. C6 owns deterministic task workdir materialization and native config injection, not policy decisions."},
+    {"kind":"heading","text":"Responsibilities"},
+    {"kind":"bullets","items":["Define workdir directory structure and lifecycle.","Materialize native config files deterministically into task workdirs.","Define `NativeConfigVersion` assignment rules.","Separate repo cache from task workdir.","Express lock-use policy at the domain level."]},
+    {"kind":"heading","text":"Non-Responsibilities"},
+    {"kind":"bullets","items":["Policy decisions belong to C7 Security / Policy migration slices.","Lock acquisition primitives belong to [`locking.md`](../../locking.md) (C9).","Provider flag/env mapping belongs to C4 Provider Runtime.","Lease and scheduling belong to [`runtime-scheduling/invariants.md`](../../runtime-scheduling/invariants.md) (C5)."]}
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "schema_version": "riido-workspace-invariants-detail.v1",
+  "id": "native-config-injection",
+  "title": "Workspace Invariants: Native Config Injection",
+  "generated_doc": "docs/20-domain/workspace/invariants/native-config-injection.md",
+  "blocks": [
+    {"kind":"paragraph","text":"C6 owns the injection mechanism. Policy bundles decide what must exist; Workspace creates files deterministically under provider-standard locations inside the task workdir."},
+    {"kind":"bullets","items":["`CLAUDE.md`, loaded by Claude Code.","`AGENTS.md`, loaded by Codex and default instruction-only providers.","Claude `.claude/settings.json` and hook settings when C7 allows native hooks.","`.riido/native-config-manifest.json` using `riido-native-config-manifest.v1`.","`.riido/` run metadata such as task, policy bundle lock, and native config lock."]},
+    {"kind":"paragraph","text":"If SaaS task source provides `riido_telemetry_contract`, supervisor injects the hard rule independently of provider prompt placement. Telemetry contract changes participate in `NativeConfigVersion` input hashes."},
+    {"kind":"paragraph","text":"SaaS agent presentation fields such as thumbnail URL and description belong to public contracts and control-plane; daemon does not inject those values into native config."}
+  ]
+}

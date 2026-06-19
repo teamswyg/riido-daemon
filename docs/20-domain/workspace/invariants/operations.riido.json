@@ -1,0 +1,10 @@
+{
+  "schema_version": "riido-workspace-invariants-detail.v1",
+  "id": "operations",
+  "title": "Workspace Invariants: Operations",
+  "generated_doc": "docs/20-domain/workspace/invariants/operations.md",
+  "blocks": [
+    {"kind":"paragraph","text":"Each workspace operation has one responsibility, deterministic output, and an IR/evidence surface."},
+    {"kind":"table","columns":["Operation","Input","Output / evidence"],"rows":[["`PrepareWorkspace`","`taskID`, `runID`, repo ref, policy bundle, native config plan","Workdir tree and `WorkdirCreated`"],["`MountRepo`","Repo cache path, ref, isolation mode","Code tree under workdir, with repo lock rules"],["`InjectNativeConfig`","Policy bundle plus native config plan","Config files and `NativeConfigInjected(files[], nativeConfigVersion)`"],["`RecordBaseline`","Workdir state hash","Persisted pre-run baseline"],["`CollectArtifacts`","Run result","Output, logs, and artifacts directories"],["`ArchiveWorkspace`","Terminal run","`archive.json` and `WorkdirArchived(workdirPath, archiveURI)`"],["`CleanupWorkspace`","Terminal run plus expired retention policy","Filesystem removal evidence"],["`ReinjectNativeConfig`","T-CONFIG trigger","Native config refresh and `ConfigTemplateReinjected(from, to)`"]]}
+  ]
+}

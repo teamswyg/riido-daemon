@@ -14,6 +14,7 @@ tool_tests=(
   ./tools/providerruntimeresponsibilitydocs
   ./tools/providerintegrationgatedocs
   ./tools/providerruntimeboundarydocs
+  ./tools/workspaceinvariantsdocs
   ./tools/workspacenativeconfigdocs
   ./tools/distributionhostinvariantsdocs
   ./tools/distributionhostlocalipcdocs
@@ -67,6 +68,7 @@ doc_tools=(
   providerruntimeresponsibilitydocs
   providerintegrationgatedocs
   providerruntimeboundarydocs
+  workspaceinvariantsdocs
   workspacenativeconfigdocs
   distributionhostinvariantsdocs
   distributionhostlocalipcdocs
