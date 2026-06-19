@@ -1008,6 +1008,23 @@
   - `command`: go run ./tools/migrationdocs -check-doc -evidence-out /tmp/migration-cli-docs.json; proves CLI migration docs are generated and source anchors remain present
   - `workflow`: .github/workflows/migration-cli-docs.yml; proves public CI uploads migration CLI evidence
 
+### migration-daemon-overview-docs
+
+- Owner: `daemon/migration`
+- Observe: Daemon overview migration notes still described retired source boundaries, target scope, order, and current slices as reader-authored prose while the active facts already lived in generated context-map, module, runtime-scheduling, workspace, and provider-runtime SSOTs.
+  - Artifacts: `docs/migration/daemon/overview.md`, `docs/migration/daemon/overview/current-slices.md`
+- Hypothesis: The reusable migration-docs manifest can generate the daemon overview slice and source-check the current executable SSOTs it references.
+  - Artifacts: `docs/migration/daemon/overview.riido.json`
+- Execute: Generate the daemon overview entrypoint and focused pages from fragments with source checks for retired private source boundaries, public module ownership, provider runtime migration, runtime scheduling, workspace, and assignment worktree evidence.
+  - Artifacts: `tools/migrationdocs`, `.github/workflows/migration-daemon-overview-docs.yml`
+- Evaluate: The verifier rejects doc drift, missing fragments, missing source anchors, and missing workflow evidence upload; architecture-docs also runs this manifest explicitly.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The daemon migration root now starts moving from loose history notes toward an executable migration ledger; remaining daemon migration folders can reuse the same manifest/tool contract.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/overview.riido.json -check-doc -evidence-out /tmp/migration-daemon-overview-docs.json; proves daemon overview migration docs are generated and source anchors remain present
+  - `workflow`: .github/workflows/migration-daemon-overview-docs.yml; proves public CI uploads daemon overview migration evidence
+
 ### workspace-invariants-docs
 
 - Owner: `daemon/workspace`

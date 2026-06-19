@@ -1,0 +1,48 @@
+name: migration-daemon-overview-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/migration-daemon-overview-docs.yml"
+      - "docs/migration/daemon/overview.md"
+      - "docs/migration/daemon/overview.riido.json"
+      - "docs/migration/daemon/overview/**"
+      - "docs/executable-knowledge.md"
+      - "docs/executable-knowledge.riido.json"
+      - "tools/migrationdocs/**"
+      - "tools/docmap/**"
+      - "tools/knowledgecoverage/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/migration-daemon-overview-docs.yml"
+      - "docs/migration/daemon/overview.md"
+      - "docs/migration/daemon/overview.riido.json"
+      - "docs/migration/daemon/overview/**"
+      - "docs/executable-knowledge.md"
+      - "docs/executable-knowledge.riido.json"
+      - "tools/migrationdocs/**"
+      - "tools/docmap/**"
+      - "tools/knowledgecoverage/**"
+
+jobs:
+  migration-daemon-overview-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify migration daemon overview docs
+        run: |
+          mkdir -p out
+          go run ./tools/migrationdocs -manifest docs/migration/daemon/overview.riido.json -check-doc -evidence-out out/migration-daemon-overview-docs.json
+          go run ./tools/docmap -check -evidence-out out/doc-map-evidence.json
+          go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out out/knowledge-coverage.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: migration-daemon-overview-docs
+          path: out/*.json
+          if-no-files-found: error

@@ -1,0 +1,52 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-daemon-overview-docs",
+  "title": "Riido Daemon Migration Plan: Overview",
+  "workflow": ".github/workflows/migration-daemon-overview-docs.yml",
+  "evidence_artifact": "migration-daemon-overview-docs",
+  "expected_page_count": 5,
+  "fragments": [
+    "overview/root.riido.json",
+    "overview/retired-source-boundary.riido.json",
+    "overview/target-boundary.riido.json",
+    "overview/migration-order.riido.json",
+    "overview/current-slices.riido.json"
+  ],
+  "source_checks": [
+    {
+      "name": "retired-private-boundary",
+      "file": "docs/20-domain/context-map.riido.json",
+      "contains": "riido_daemon_private / riido-daemon-private is a retired historical source"
+    },
+    {
+      "name": "public-module-boundary",
+      "file": "docs/30-architecture/module-decomposition.riido.json",
+      "contains": "SaaS server code stays in riido-control-plane"
+    },
+    {
+      "name": "provider-runtime-public-migration",
+      "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json",
+      "contains": "public riido-daemon"
+    },
+    {
+      "name": "runtime-scheduling-c5",
+      "file": "docs/20-domain/runtime-scheduling.riido.json",
+      "contains": "C5 Runtime Scheduling owns which runtime can claim and execute a task"
+    },
+    {
+      "name": "workspace-c6",
+      "file": "docs/20-domain/workspace.riido.json",
+      "contains": "This C6 entrypoint is generated from executable workspace wrapper SSOT"
+    },
+    {
+      "name": "assignment-worktree-evidence",
+      "file": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence/local-runtime.riido.json",
+      "contains": "public GitHub repo and branch are shallow cloned into daemon-selected workdir"
+    }
+  ],
+  "assertions": [
+    "Daemon overview migration notes are generated from fragments instead of hand-authored markdown",
+    "Retired private source boundaries must remain anchored to public context-map SSOT",
+    "Daemon migration target and current slices must point at current domain and architecture SSOTs"
+  ]
+}
