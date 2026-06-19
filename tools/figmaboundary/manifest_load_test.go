@@ -18,7 +18,22 @@ func loadBoundaryManifest(t *testing.T) boundaryManifest {
 	if err := json.Unmarshal(mustReadFile(t, path), &manifest); err != nil {
 		t.Fatalf("decode daemon Figma boundary manifest: %v", err)
 	}
+	manifest.Entries = append(manifest.Entries, loadBoundaryEntryFiles(t, path, manifest.EntryFiles)...)
 	return manifest
+}
+
+func loadBoundaryEntryFiles(t *testing.T, manifestPath string, files []string) []boundaryEntry {
+	t.Helper()
+	entries := []boundaryEntry{}
+	for _, file := range files {
+		var loaded []boundaryEntry
+		path := filepath.Join(filepath.Dir(manifestPath), filepath.FromSlash(file))
+		if err := json.Unmarshal(mustReadFile(t, path), &loaded); err != nil {
+			t.Fatalf("decode boundary entry file %s: %v", file, err)
+		}
+		entries = append(entries, loaded...)
+	}
+	return entries
 }
 
 func boundaryEntriesByNodeID(t *testing.T, manifest boundaryManifest) map[string]boundaryEntry {
