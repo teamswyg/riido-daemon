@@ -61,6 +61,159 @@
     {"name": "pprof-loopback-tested", "file": "cmd/riido/daemon_pprof_test.go", "contains": "TestLoadDaemonSettingsRejectsNonLoopbackPprofAddr"},
     {"name": "workdir-cleanup-tested", "file": "cmd/riido/daemon_settings_workdir_test.go", "contains": "TestLoadDaemonSettingsRejectsCleanupIntervalWithoutRetention"}
   ],
+  "detail_docs": [
+    {
+      "title": "Naming Rules",
+      "path": "docs/30-architecture/config-reference/naming-rules.md",
+      "blocks": [
+        {"kind": "bullets", "items": [
+          "User/operator runtime config uses `RIIDO_*`.",
+          "Test-only integration gates use `AGENTBRIDGE_*`.",
+          "Provider executable overrides use `RIIDO_<PROVIDER>_PATH`.",
+          "New env vars must be documented here in the same PR that reads them."
+        ]}
+      ]
+    },
+    {
+      "title": "Provider Executable Overrides",
+      "path": "docs/30-architecture/config-reference/provider-executable-overrides.md",
+      "blocks": [
+        {"kind": "table", "table": {
+          "headers": ["Variable", "Consumer", "Default", "Fail-closed rule"],
+          "rows": [
+            ["`RIIDO_CLAUDE_PATH`", "`internal/provider/claude.Detect`", "`exec.LookPath(\"claude\")`", "explicit missing/bad path does not fall back to PATH"],
+            ["`RIIDO_CODEX_PATH`", "`internal/provider/codex.Detect`", "`exec.LookPath(\"codex\")`", "same"],
+            ["`RIIDO_OPENCLAW_PATH`", "`internal/provider/openclaw.Detect`", "PATH candidate probe for `openclaw`", "same"],
+            ["`RIIDO_CURSOR_PATH`", "`internal/provider/cursor.Detect`", "`exec.LookPath(\"cursor-agent\")`", "same"]
+          ]
+        }},
+        {"kind": "paragraph", "text": "The daemon reports unavailable providers instead of executing a different binary than the operator selected. Runtime start must reuse the executable selected by Detect and must not re-resolve a same-name binary from `PATH`."},
+        {"kind": "paragraph", "text": "OpenClaw may probe later same-name PATH candidates only when `RIIDO_OPENCLAW_PATH` is unset. An explicit OpenClaw override is a pin and never falls back to PATH."}
+      ]
+    },
+    {
+      "title": "Test Integration Gate",
+      "path": "docs/30-architecture/config-reference/test-integration-gate.md",
+      "blocks": [
+        {"kind": "table", "table": {
+          "headers": ["Variable", "Consumer", "Default"],
+          "rows": [["`AGENTBRIDGE_INTEGRATION=1`", "provider `TestIntegration` tests", "unset tests skip"]]
+        }},
+        {"kind": "paragraph", "text": "Real provider CLI integration is opt-in. Public CI runs deterministic adapter tests by default and does not require provider CLIs or vendor credentials."}
+      ]
+    },
+    {
+      "title": "Daemon Identity And Runtime Config",
+      "path": "docs/30-architecture/config-reference/daemon-identity-runtime-config.md",
+      "blocks": [
+        {"kind": "env_table", "env_vars": [
+          "RIIDO_DAEMON_ID",
+          "RIIDO_DAEMON_VERSION",
+          "RIIDO_DAEMON_PROFILE",
+          "RIIDO_SERVER_URL",
+          "RIIDO_DEVICE_ID",
+          "RIIDO_DEVICE_SECRET",
+          "RIIDO_DEVICE_NAME",
+          "RIIDO_RUNTIME_OWNER",
+          "RIIDO_RUNTIME_AGENTS",
+          "RIIDO_WORKSPACE_COUNT",
+          "RIIDO_RUNTIME_MAX_CONCURRENT",
+          "RIIDO_WORKDIR_ROOT",
+          "RIIDO_WORKDIR_RETENTION_SECONDS",
+          "RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS",
+          "RIIDO_DAEMON_PPROF_ADDR",
+          "RIIDO_POLICY_BUNDLE_PATH",
+          "RIIDO_POLICY_BUNDLE_VERSION"
+        ]}
+      ]
+    },
+    {
+      "title": "Task Source Selection",
+      "path": "docs/30-architecture/config-reference/task-source-selection.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "Exactly one production task source may be selected."},
+        {"kind": "env_table", "env_vars": [
+          "RIIDO_TASK_QUEUE_DIR",
+          "RIIDO_TASK_REPORT_DIR",
+          "RIIDO_TASK_DB_SOURCE_PATH",
+          "RIIDO_SAAS_URL",
+          "RIIDO_DAEMON_POLL_INTERVAL_SECONDS",
+          "RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS",
+          "RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS"
+        ]},
+        {"kind": "paragraph", "text": "Queue, task DB, and SaaS variables are mutually exclusive where adapters would otherwise compete for task ownership."}
+      ]
+    },
+    {
+      "title": "SaaS Device Principal",
+      "path": "docs/30-architecture/config-reference/saas-device-principal.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "When `RIIDO_SAAS_URL` is selected with `RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET`, `saasplane` uses DevicePrincipal authentication."},
+        {"kind": "paragraph", "text": "The daemon reports runtime snapshots to `/v1/daemon/runtime-snapshot`, polls `/v1/daemon/agent-bindings`, then polls the agent-specific assignment endpoint."},
+        {"kind": "paragraph", "text": "Legacy `RIIDO_SAAS_AGENTS` and `RIIDO_SAAS_TOKEN` are not read by the daemon settings model."},
+        {"kind": "paragraph", "text": "If `RIIDO_DAEMON_ID` is unset on this path, daemon id defaults to `RIIDO_DEVICE_ID`. This keeps runtime ids such as `device-enrolled-000123:codex` scoped to the enrolled device instead of `agentd-local:codex`."},
+        {"kind": "paragraph", "text": "Desktop first enrolls the device through the logged-in webview session, then launches daemon with `RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET`. `saasplane` sends them as `X-Riido-Device-ID` and `X-Riido-Device-Secret`."},
+        {"kind": "paragraph", "text": "Team IDs, Open API keys, task-context paths, and workspace API keys are not identity bridges."}
+      ]
+    },
+    {
+      "title": "SaaS Polling And Runtime Bindings",
+      "path": "docs/30-architecture/config-reference/saas-polling-runtime-bindings.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "SaaS claim polling sends `PollRequest.wait_ms` with a built-in 30 second long-poll wait and extends HTTP timeout beyond that budget."},
+        {"kind": "paragraph", "text": "This is not exposed as public env. `RIIDO_DAEMON_IDLE_POLL_INTERVAL_SECONDS` remains the local supervisor retry interval after empty long-poll responses."},
+        {"kind": "paragraph", "text": "Dynamic runtime bindings from `/v1/daemon/agent-bindings` are cached for 5 seconds. Runtime registration/snapshot sync invalidates the cache so new provider facts appear promptly without making idle claim loops perform a one-request-per-second control-plane read."},
+        {"kind": "paragraph", "text": "Runtime snapshots preserve local provider availability: explicit `provider.<name>.available=false` projects as `offline` or `missing`, not `online` merely because a binary was observed."}
+      ]
+    },
+    {
+      "title": "Agent Instruction Placement",
+      "path": "docs/30-architecture/config-reference/agent-instruction-placement.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "When a task is claimed, `saasplane` converts the control-plane assignment into a provider-neutral `TaskRequest`."},
+        {"kind": "paragraph", "text": "The assignment-created `agent_instruction` snapshot and Riido telemetry contract are placed by provider capability:"},
+        {"kind": "bullets", "items": [
+          "Claude and OpenClaw use the system prompt surface.",
+          "Codex and Cursor use a prompt prefix because current daemon surface does not rely on a separate system prompt channel."
+        ]},
+        {"kind": "paragraph", "text": "Placements are recorded in `TaskRequest.Metadata[\"riido_agent_instruction\"]` and `TaskRequest.Metadata[\"riido_telemetry_contract\"]` so tests can detect drift."},
+        {"kind": "paragraph", "text": "The provider-specific placement matrix and real provider probe live in [`provider-runtime.md`](../../20-domain/provider-runtime.md#761-agent-instruction-placement-and-effectiveness-probe) and [`integration-matrix.md`](../integration-matrix.md#agent-instruction-effectiveness-probe)."}
+      ]
+    },
+    {
+      "title": "Local Daemon Flags",
+      "path": "docs/30-architecture/config-reference/local-daemon-flags.md",
+      "blocks": [
+        {"kind": "table", "table": {
+          "headers": ["Flag", "Default", "Meaning"],
+          "rows": [
+            ["`--socket`", "C11 dev-local local IPC endpoint", "local API socket or named pipe path"],
+            ["`--transport`", "`unix-socket`", "`unix-socket` or `windows-named-pipe`"],
+            ["`--pid-file`", "unset", "optional background PID file"],
+            ["`--log-file`", "unset", "optional structured log file"],
+            ["`--foreground`", "false", "run daemon in the current process"],
+            ["`--lock-file`", "`$HOME/.riido/.lock`", "local singleton advisory lock"],
+            ["`--timeout-seconds`", "`5` for stop", "graceful stop wait before kill"],
+            ["`--force`", "false", "request forced shutdown before PID fallback"]
+          ]
+        }},
+        {"kind": "paragraph", "text": "`cmd/riido` remains local-only. Health, ready, status, and metrics are exposed through local IPC subcommands, not public HTTP."}
+      ]
+    },
+    {
+      "title": "Change Procedure",
+      "path": "docs/30-architecture/config-reference/change-procedure.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "When an env var or daemon flag is added:"},
+        {"kind": "ordered", "items": [
+          "update this config reference in the same PR that reads it.",
+          "add or update parser tests.",
+          "keep failure modes explicit.",
+          "route provider-specific env reads through testable env helpers rather than direct unscoped `os.Getenv` calls in adapter internals."
+        ]}
+      ]
+    }
+  ],
   "assertions": [
     "SaaS server RIIDO_AI_SERVER_* variables belong to riido-control-plane",
     "private deploy-time evidence paths belong to riido-infra",
