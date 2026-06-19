@@ -1,0 +1,59 @@
+{
+  "id": "distribution-host-local-ipc-docs",
+  "owner": "daemon/hostintegration",
+  "observation": {
+    "summary": "Distribution host local IPC docs described helper runtime and consent rules, but remained manually edited Markdown outside CI-backed source anchor checks.",
+    "artifacts": [
+      "docs/20-domain/distribution-host-integration/local-ipc.md",
+      "docs/20-domain/distribution-host-integration/local-ipc",
+      "internal/hostintegration"
+    ]
+  },
+  "hypothesis": {
+    "summary": "A local-ipc manifest can generate the endpoint, helper, external provider CLI, Windows MSIX, and consent pages while verifying hostintegration and store contract anchors.",
+    "artifacts": [
+      "docs/20-domain/distribution-host-integration/local-ipc.riido.json",
+      "internal/hostintegration/local_ipc.go",
+      "internal/hostintegration/helper_runtime.go",
+      "internal/hostintegration/consent_ledger.go"
+    ]
+  },
+  "execution": {
+    "summary": "Generate the local IPC index and detail pages from SSOT fragments without changing runtime behavior.",
+    "artifacts": [
+      "tools/distributionhostlocalipcdocs",
+      ".github/workflows/distribution-host-local-ipc-docs.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source anchors, missing fragments, missing workflow wiring, and missing coverage registration.",
+    "artifacts": [
+      "scripts/architecture-docs/tool-checks.sh",
+      "scripts/architecture-docs/required-files.sh",
+      "tools/knowledgecoverage"
+    ]
+  },
+  "retrospective": {
+    "summary": "C11 local IPC knowledge becomes generated evidence and reduces the largest remaining manual domain hotspot without changing daemon runtime behavior.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/distributionhostlocalipcdocs -check-doc -evidence-out /tmp/distribution-host-local-ipc-docs.json",
+      "proves": "distribution host local IPC docs are generated and source anchors still exist"
+    },
+    {
+      "kind": "command",
+      "ref": "go test ./internal/hostintegration ./cmd/riido ./tools/storecontract -count=1",
+      "proves": "local IPC, helper runtime, consent, CLI defaults, and store distribution contracts still match the generated boundary"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/distribution-host-local-ipc-docs.yml",
+      "proves": "public CI uploads distribution host local IPC evidence"
+    }
+  ]
+}

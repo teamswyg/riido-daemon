@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-distribution-host-local-ipc-detail.v1",
+  "id": "endpoint-model",
+  "title": "Local IPC Endpoint Model",
+  "generated_doc": "docs/20-domain/distribution-host-integration/local-ipc/endpoint-model.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/hostintegration.LocalIPCEndpoint` and `DefaultLocalIPCEndpoint` own the C11 endpoint descriptor. They calculate local-only endpoint shape and path; they do not open sockets, named pipes, or HTTP listeners."},
+    {"kind": "code", "language": "text", "code": "LocalIPCEndpoint {\n    channel      DistributionChannel\n    hostOS       \"darwin\" | \"windows\"\n    endpointKind \"unix-socket\" | \"named-pipe\"\n    path         string\n    owner        \"store-app\" | \"helper\"\n}"},
+    {"kind": "table", "columns": ["Channel", "IPC adapter", "Path owner"], "rows": [
+      ["`developer-id`", "Unix domain socket", "`~/Library/Application Support/riido` or user config dir"],
+      ["`mac-app-store`", "Unix domain socket inside app group/container", "App Sandbox container or app group"],
+      ["`msix-sideload`", "Windows named pipe", "Package local data / app identity"],
+      ["`msix-store`", "Windows named pipe", "Package local data / app identity"],
+      ["`dev-local`", "Unix domain socket", "Current launchd/dev path"]
+    ]},
+    {"kind": "bullets", "items": [
+      "`cmd/riido` default daemon socket is computed through C11 `AppDataRoot` plus `LocalIPCEndpoint`.",
+      "Windows named-pipe transport reuses the same request envelope and `riidoapi` handler shape.",
+      "C1 through C10 must not import OS-specific listener adapters."
+    ]}
+  ]
+}

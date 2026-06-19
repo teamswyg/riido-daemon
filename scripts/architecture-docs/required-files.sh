@@ -143,6 +143,19 @@ required_files=(
   docs/20-domain/distribution-host-integration/invariants/workspace-grant-store.md
   docs/20-domain/distribution-host-integration/invariants/workspace-grant-store.riido.json
   .github/workflows/distribution-host-invariants-docs.yml
+  docs/20-domain/distribution-host-integration/local-ipc.md
+  docs/20-domain/distribution-host-integration/local-ipc.riido.json
+  docs/20-domain/distribution-host-integration/local-ipc/endpoint-model.md
+  docs/20-domain/distribution-host-integration/local-ipc/endpoint-model.riido.json
+  docs/20-domain/distribution-host-integration/local-ipc/macos-helper-strategy.md
+  docs/20-domain/distribution-host-integration/local-ipc/macos-helper-strategy.riido.json
+  docs/20-domain/distribution-host-integration/local-ipc/macos-external-provider-cli.md
+  docs/20-domain/distribution-host-integration/local-ipc/macos-external-provider-cli.riido.json
+  docs/20-domain/distribution-host-integration/local-ipc/windows-msix-strategy.md
+  docs/20-domain/distribution-host-integration/local-ipc/windows-msix-strategy.riido.json
+  docs/20-domain/distribution-host-integration/local-ipc/consent-ledger.md
+  docs/20-domain/distribution-host-integration/local-ipc/consent-ledger.riido.json
+  .github/workflows/distribution-host-local-ipc-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -248,6 +261,7 @@ required_files=(
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-invariants-docs.riido.json
+  docs/30-architecture/loop-engineering/distribution-host-local-ipc-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

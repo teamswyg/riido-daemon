@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-distribution-host-local-ipc-detail.v1",
+  "id": "windows-msix-strategy",
+  "title": "Windows MSIX Strategy",
+  "generated_doc": "docs/20-domain/distribution-host-integration/local-ipc/windows-msix-strategy.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`msix-sideload` and `msix-store` share local runtime responsibilities, but review and update boundaries differ."},
+    {"kind": "table", "columns": ["Channel", "Runtime shape", "Startup/background rule"], "rows": [
+      ["`msix-sideload`", "Signed MSIX with Store App plus local helper/broker under package identity", "Explicit `background-helper` consent; Windows service install is disabled by default"],
+      ["`msix-store`", "Microsoft Store packaged desktop app plus full-trust helper/tray process", "Store-managed updates; background helper requires consent and Store review approval"]
+    ]},
+    {"kind": "ordered", "items": [
+      "Provider CLIs are not included in MSIX packages.",
+      "`ExternalToolRegistry` preserves user-selected, env-override, and auto-detected provenance only.",
+      "Store App to helper control surface is Windows named pipe only; external TCP listener is forbidden.",
+      "App data and daemon state use package local data roots; user profile fallback is rejected.",
+      "Workspace access reaches C6 only when a Windows folder-picker grant and workspace consent are both active.",
+      "`msix-store` must support review/demo mode without provider installation."
+    ]},
+    {"kind": "paragraph", "text": "`ResolveHelperRuntimePlan` computes MSIX roles and named-pipe local IPC, but does not spawn provider processes, open named pipes, or install Windows services."}
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "schema_version": "riido-distribution-host-local-ipc-docs.v1",
+  "id": "distribution-host-local-ipc-docs",
+  "title": "Distribution / Host Integration SSOT: Local IPC",
+  "generated_doc": "docs/20-domain/distribution-host-integration/local-ipc.md",
+  "workflow": ".github/workflows/distribution-host-local-ipc-docs.yml",
+  "evidence_artifact": "distribution-host-local-ipc-docs",
+  "summary": [
+    "This SSOT fixes the C11 local IPC, helper-runtime, consent, and store-safe local execution boundaries as generated documentation.",
+    "The generated pages are bound to `internal/hostintegration`, local daemon IPC defaults, and store-distribution contract gates."
+  ],
+  "detail_pages": [
+    {"id": "endpoint-model", "title": "Local IPC Endpoint Model", "path": "local-ipc/endpoint-model.md"},
+    {"id": "macos-helper-strategy", "title": "macOS App Store Helper Strategy", "path": "local-ipc/macos-helper-strategy.md"},
+    {"id": "macos-external-provider-cli", "title": "macOS External Provider CLI Strategy", "path": "local-ipc/macos-external-provider-cli.md"},
+    {"id": "windows-msix-strategy", "title": "Windows MSIX Strategy", "path": "local-ipc/windows-msix-strategy.md"},
+    {"id": "consent-ledger", "title": "ConsentLedger", "path": "local-ipc/consent-ledger.md"}
+  ],
+  "related_pages": [
+    {"id": "distribution-host-root", "title": "Distribution Host Integration", "path": "../distribution-host-integration.md"},
+    {"id": "invariants", "title": "Distribution Host Invariants", "path": "invariants.md"},
+    {"id": "store-channel-policy", "title": "Store Channel Policy", "path": "store-channel-policy.md"},
+    {"id": "store-distribution", "title": "Store Distribution Architecture", "path": "../../30-architecture/store-distribution.md"}
+  ],
+  "fragments": {
+    "endpoint-model": "local-ipc/endpoint-model.riido.json",
+    "macos-helper-strategy": "local-ipc/macos-helper-strategy.riido.json",
+    "macos-external-provider-cli": "local-ipc/macos-external-provider-cli.riido.json",
+    "windows-msix-strategy": "local-ipc/windows-msix-strategy.riido.json",
+    "consent-ledger": "local-ipc/consent-ledger.riido.json"
+  },
+  "source_checks": [
+    {"name": "local-ipc-endpoint-model", "file": "internal/hostintegration/local_ipc_types.go", "contains": "type LocalIPCEndpoint struct"},
+    {"name": "local-ipc-default-endpoint", "file": "internal/hostintegration/local_ipc.go", "contains": "It does not open sockets or named pipes."},
+    {"name": "dev-local-default-socket", "file": "cmd/riido/daemon_ipc_default_paths.go", "contains": "DefaultLocalIPCEndpoint(hostintegration.LocalIPCEndpointInput"},
+    {"name": "mac-helper-runtime-plan", "file": "internal/hostintegration/helper_runtime_mac_app_store.go", "contains": "HelperStartupServiceManagementLoginItem"},
+    {"name": "mac-helper-consent-review", "file": "internal/hostintegration/helper_runtime_test.go", "contains": "consent and review"},
+    {"name": "mac-helper-shape", "file": "internal/hostintegration/helper_runtime_assert_test.go", "contains": "LocalIPCEndpointUnixSocket"},
+    {"name": "helper-runtime-pure-boundary", "file": "internal/hostintegration/helper_runtime.go", "contains": "It does not spawn providers, install"},
+    {"name": "external-provider-confirmation", "file": "internal/hostintegration/external_tool_record_confirmation_test.go", "contains": "auto-detected CLI should require confirmation in mac app store channel"},
+    {"name": "store-policy-provider-bundling", "file": "packaging/store/riido_daemon_store_distribution.riido.json", "contains": "\"provider_cli_bundling\": \"forbidden\""},
+    {"name": "msix-helper-runtime-plan", "file": "internal/hostintegration/helper_runtime_msix.go", "contains": "HelperRuntimeRoleMSIXFullTrustTray"},
+    {"name": "msix-store-named-pipe", "file": "internal/hostintegration/helper_runtime_msix_store_test.go", "contains": "msix-store background should be allowed with consent and review approval"},
+    {"name": "msix-sideload-broker", "file": "internal/hostintegration/helper_runtime_msix_sideload_test.go", "contains": "msix-sideload background should only require explicit consent"},
+    {"name": "consent-ledger-model", "file": "internal/hostintegration/consent_ledger.go", "contains": "records; the current state is always derived."},
+    {"name": "consent-subject-validation", "file": "internal/hostintegration/consent_validation.go", "contains": "provider execute consent must not include workspace id"},
+    {"name": "workspace-grant-consent", "file": "internal/hostintegration/workspace_grant_materialization_test.go", "contains": "grant without workspace-access consent should not materialize"}
+  ],
+  "assertions": [
+    "C11 local IPC exposes endpoint descriptors, not listener implementation details.",
+    "Helper runtime plans compute store-safe roles, startup registration, background rules, and review surfaces without spawning providers or calling OS APIs.",
+    "Provider CLIs remain external user-installed executables; store-safe routing is represented as C11 records and policy input.",
+    "macOS Store helper execution requires explicit consent and Store review approval before background execution is allowed.",
+    "Windows MSIX helper execution uses named-pipe local IPC and keeps Store versus sideload update/review rules distinct.",
+    "Consent is an append-only ledger whose current state is derived and then consumed by helper/runtime/workspace materialization decisions."
+  ]
+}
