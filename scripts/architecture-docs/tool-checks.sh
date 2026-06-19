@@ -30,6 +30,7 @@ tool_tests=(
   ./tools/runtimesecretevidence
   ./tools/docmap
   ./tools/repoverification
+  ./tools/readmedocs
   ./tools/semanticeventactivity
   ./tools/eventauthority
   ./tools/providerdraftmapping
@@ -68,6 +69,7 @@ tool_tests=(
 
 doc_tools=(
   repoverification
+  readmedocs
   contextmapdocs
   lockingdocs
   securitydocs

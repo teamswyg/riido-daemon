@@ -8,9 +8,9 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 229 |
+| Generated reader docs | 233 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 67 |
+| Registered manual docs | 63 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
@@ -19,7 +19,6 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | --- | --- | --- | ---: |
 | `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
 | `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
-| `readme-manual-surface` | daemon/repo-docs | promote remaining docs/readme guides into doc-map or verification SSOT | 4 |
 
 ## Manual Hotspots
 
@@ -34,9 +33,9 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `docs/migration/daemon/codex-auth-full-access` | 5 |
 | `docs/migration/daemon/runtime-snapshot-heartbeat` | 5 |
 | `docs/migration/daemon/overview` | 4 |
-| `docs/readme` | 4 |
 | `docs/migration/daemon/riidoapi-local-api` | 3 |
 | `docs/migration` | 2 |
+| `docs/50-roadmap` | 1 |
 
 ## Manual Samples
 
@@ -48,10 +47,6 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `migration-history-manual-surface` | `docs/migration/cli/current-slices.md` |
 | `migration-history-manual-surface` | `docs/migration/cli/migration-order.md` |
 | `migration-history-manual-surface` | `docs/migration/cli/open-follow-ups.md` |
-| `readme-manual-surface` | `docs/readme/module-map.md` |
-| `readme-manual-surface` | `docs/readme/provider-cli.md` |
-| `readme-manual-surface` | `docs/readme/repository-boundary.md` |
-| `readme-manual-surface` | `docs/readme/run-and-smoke.md` |
 
 ## Assertions
 

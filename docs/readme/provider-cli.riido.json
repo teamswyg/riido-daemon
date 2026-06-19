@@ -1,0 +1,18 @@
+{
+  "schema_version": "riido-readme-page.v1",
+  "id": "readme-provider-cli",
+  "title": "README: Provider CLI Principles",
+  "generated_doc": "docs/readme/provider-cli.md",
+  "back_title": "README",
+  "back_path": "../../README.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Claude Code, Codex, OpenClaw, and Cursor Agent are not included in Riido package artifacts. Riido detects, registers, and verifies user-installed external CLIs."},
+    {"kind": "table", "columns": ["Provider", "Default executable", "Override env"], "rows": [
+      ["Claude Code", "`claude`", "`RIIDO_CLAUDE_PATH`"],
+      ["Codex", "`codex`", "`RIIDO_CODEX_PATH`"],
+      ["OpenClaw", "`openclaw`", "`RIIDO_OPENCLAW_PATH`"],
+      ["Cursor Agent", "`cursor-agent`", "`RIIDO_CURSOR_PATH`"]
+    ]},
+    {"kind": "paragraph", "text": "Real CLI roundtrip integration tests are opt-in. When `AGENTBRIDGE_INTEGRATION=1` is absent or provider CLI is unavailable, integration tests must skip. Deterministic parser, translator, and golden tests run in public CI."}
+  ]
+}

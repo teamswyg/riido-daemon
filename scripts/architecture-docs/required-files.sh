@@ -244,6 +244,15 @@ required_files=(
   docs/readme/document-map.riido.json
   docs/readme/verification.md
   docs/readme/verification.riido.json
+  docs/readme/readme-pages.riido.json
+  docs/readme/module-map.md
+  docs/readme/module-map.riido.json
+  docs/readme/provider-cli.md
+  docs/readme/provider-cli.riido.json
+  docs/readme/repository-boundary.md
+  docs/readme/repository-boundary.riido.json
+  docs/readme/run-and-smoke.md
+  docs/readme/run-and-smoke.riido.json
   docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md
   docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.riido.json
   docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md
@@ -349,6 +358,7 @@ required_files=(
   docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-docs.riido.json
+  docs/30-architecture/loop-engineering/readme-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-docs.riido.json
@@ -390,6 +400,7 @@ required_files=(
   docs/30-architecture/figma-ai-agent-daemon-boundary.md
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
   .github/workflows/figma-boundary-docs.yml
+  .github/workflows/readme-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
