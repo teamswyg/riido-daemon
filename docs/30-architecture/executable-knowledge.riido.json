@@ -30,24 +30,6 @@
       ]
     },
     {
-      "id": "config-reference-subdocs",
-      "owner": "cmd/riido daemon config",
-      "reason": "subtopic docs remain hand-authored while top-level env catalog is generated",
-      "next_artifact": "fold remaining subtopic rows into config-reference manifest rendering",
-      "paths": [
-        "docs/30-architecture/config-reference/agent-instruction-placement.md",
-        "docs/30-architecture/config-reference/change-procedure.md",
-        "docs/30-architecture/config-reference/daemon-identity-runtime-config.md",
-        "docs/30-architecture/config-reference/local-daemon-flags.md",
-        "docs/30-architecture/config-reference/naming-rules.md",
-        "docs/30-architecture/config-reference/provider-executable-overrides.md",
-        "docs/30-architecture/config-reference/saas-device-principal.md",
-        "docs/30-architecture/config-reference/saas-polling-runtime-bindings.md",
-        "docs/30-architecture/config-reference/task-source-selection.md",
-        "docs/30-architecture/config-reference/test-integration-gate.md"
-      ]
-    },
-    {
       "id": "figma-boundary-subdocs",
       "owner": "figma daemon boundary",
       "reason": "fixture and provenance topic docs remain hand-authored beside an executable boundary manifest",

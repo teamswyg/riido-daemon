@@ -21,6 +21,7 @@ type Manifest struct {
 	DaemonEnvVars    []EnvVar      `json:"daemon_env_vars"`
 	CoverageAnchors  []Anchor      `json:"coverage_anchors"`
 	SourceChecks     []SourceCheck `json:"source_checks"`
+	DetailDocs       []DetailDoc   `json:"detail_docs"`
 	Assertions       []string      `json:"assertions"`
 }
 
