@@ -1,0 +1,28 @@
+{
+  "id": "migration-daemon-distribution-host-integration-docs",
+  "owner": "daemon/migration",
+  "observation": {
+    "summary": "distribution-host-integration migration notes still described C11, C7, C2, C4, backpressure, and Store App ownership slices as reader-authored prose while active facts already lived in domain SSOT and public workflows.",
+    "artifacts": ["docs/migration/daemon/distribution-host-integration.md"]
+  },
+  "hypothesis": {
+    "summary": "A focused migration-docs manifest can generate the distribution-host-integration migration slice and anchor each RIID page to its owning SSOT or workflow evidence.",
+    "artifacts": ["docs/migration/daemon/distribution-host-integration.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate the distribution-host-integration entrypoint and eight slice pages from fragments with source checks for C11 hostintegration, C7 policy, C2 EventIngestor, C4 provider runtime, tool gates, session actor, backpressure, and Store App ownership.",
+    "artifacts": ["tools/migrationdocs", ".github/workflows/migration-daemon-distribution-host-integration-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for domain ownership and runtime boundary claims.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The distribution host integration migration slice now becomes executable evidence instead of manual migration history.",
+    "artifacts": ["docs/executable-knowledge.md", "docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {"kind": "command", "ref": "go run ./tools/migrationdocs -manifest docs/migration/daemon/distribution-host-integration.riido.json -check-doc -evidence-out /tmp/migration-daemon-distribution-host-integration-docs.json", "proves": "distribution-host-integration migration docs are generated and source anchors remain present"},
+    {"kind": "workflow", "ref": ".github/workflows/migration-daemon-distribution-host-integration-docs.yml", "proves": "public CI uploads distribution-host-integration migration evidence"}
+  ]
+}

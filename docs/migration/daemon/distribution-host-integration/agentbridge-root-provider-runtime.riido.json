@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-agentbridge-root-provider-runtime",
+  "title": "RIID-4651: Agentbridge Root Provider Runtime Domain",
+  "generated_doc": "docs/migration/daemon/distribution-host-integration/agentbridge-root-provider-runtime.md",
+  "back_title": "distribution-host-integration",
+  "back_path": "../distribution-host-integration.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the provider-neutral C4 Provider Runtime / Adapter root domain."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/agentbridge`",
+      "`docs/20-domain/provider-runtime.md`",
+      "focused public CI for reducer, telemetry, blocked-arg, and semantic-activity gates"
+    ]},
+    {"kind": "paragraph", "text": "The package is stdlib-only and intentionally does not import concrete provider packages, task/project persistence, process execution implementations, local API packages, or filesystem/network adapters."},
+    {"kind": "paragraph", "text": "This slice does not move `internal/agentbridge/session`, runtimeactor, supervisor, bridge, controlplane, detectutil, concrete provider adapters, `ToolRef.Args` flattening/toolpolicy execution, task DB/project/mwsd local API packages, packaging artifacts, private infra, secrets, or local machine state."}
+  ]
+}

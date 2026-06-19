@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-security-policy-domain",
+  "title": "RIID-4649: Security Policy Domain",
+  "generated_doc": "docs/migration/daemon/distribution-host-integration/security-policy-domain.md",
+  "back_title": "distribution-host-integration",
+  "back_path": "../distribution-host-integration.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the pure C7 security / policy decision domain."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/policy`",
+      "`docs/20-domain/security.md`",
+      "`docs/20-domain/security-redaction.md`"
+    ]},
+    {"kind": "paragraph", "text": "The package imports C11 host integration types from public `internal/hostintegration`."},
+    {"kind": "paragraph", "text": "This slice does not move provider adapters, runtime/session/supervisor actors, ToolRef.Args / EventIngestor wiring, concrete sandbox/network/OS adapters, task DB/project/mwsd local API packages, packaging artifacts, private infra, secrets, or local machine state."}
+  ]
+}

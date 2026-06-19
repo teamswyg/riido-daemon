@@ -1059,6 +1059,23 @@
   - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/runtime-snapshot-heartbeat.riido.json -check-doc -evidence-out /tmp/migration-daemon-runtime-snapshot-heartbeat-docs.json; proves runtime-snapshot-heartbeat migration docs are generated and source anchors remain present
   - `workflow`: .github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml; proves public CI uploads runtime-snapshot-heartbeat migration evidence
 
+### migration-daemon-distribution-host-integration-docs
+
+- Owner: `daemon/migration`
+- Observe: distribution-host-integration migration notes still described C11, C7, C2, C4, backpressure, and Store App ownership slices as reader-authored prose while active facts already lived in domain SSOT and public workflows.
+  - Artifacts: `docs/migration/daemon/distribution-host-integration.md`
+- Hypothesis: A focused migration-docs manifest can generate the distribution-host-integration migration slice and anchor each RIID page to its owning SSOT or workflow evidence.
+  - Artifacts: `docs/migration/daemon/distribution-host-integration.riido.json`
+- Execute: Generate the distribution-host-integration entrypoint and eight slice pages from fragments with source checks for C11 hostintegration, C7 policy, C2 EventIngestor, C4 provider runtime, tool gates, session actor, backpressure, and Store App ownership.
+  - Artifacts: `tools/migrationdocs`, `.github/workflows/migration-daemon-distribution-host-integration-docs.yml`
+- Evaluate: The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for domain ownership and runtime boundary claims.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The distribution host integration migration slice now becomes executable evidence instead of manual migration history.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/distribution-host-integration.riido.json -check-doc -evidence-out /tmp/migration-daemon-distribution-host-integration-docs.json; proves distribution-host-integration migration docs are generated and source anchors remain present
+  - `workflow`: .github/workflows/migration-daemon-distribution-host-integration-docs.yml; proves public CI uploads distribution-host-integration migration evidence
+
 ### workspace-invariants-docs
 
 - Owner: `daemon/workspace`

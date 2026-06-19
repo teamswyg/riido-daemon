@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-toolargs-toolpolicy",
+  "title": "RIID-4652: Toolargs / Toolpolicy Migration",
+  "generated_doc": "docs/migration/daemon/distribution-host-integration/toolargs-toolpolicy.md",
+  "back_title": "distribution-host-integration",
+  "back_path": "../distribution-host-integration.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the provider-neutral C4/C7 tool-use bridge."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/agentbridge/toolargs`",
+      "`internal/agentbridge/toolpolicy`",
+      "docs updates in provider-runtime, security, and security-redaction SSOT files",
+      "focused public CI for ToolRef.Args redaction, risk-surface classification, AutoApprover, and ToolStartGate gates"
+    ]},
+    {"kind": "paragraph", "text": "`toolargs` turns provider raw tool input into a bounded string map and redacts sensitive keys or values with the `ToolRef.Args` marker."},
+    {"kind": "paragraph", "text": "`toolpolicy` maps `agentbridge.ToolRef` into C7 `ToolUseSurface` decisions and only auto-approves when the active policy bundle explicitly allows the classified surface."},
+    {"kind": "paragraph", "text": "This slice does not move concrete provider adapter parser/wiring, session/runtimeactor/supervisor execution, provider-native approval RPC/hook implementation, ToolCallStarted fail-close wiring, task DB/project/mwsd local API packages, packaging artifacts, private infra, secrets, or local machine state."}
+  ]
+}
