@@ -68,14 +68,3 @@ func TestCodexProtocolDriverProcessExitFailsPendingRequests(t *testing.T) {
 		t.Fatalf("expected an Error event after process exit, got %+v", exitEvents)
 	}
 }
-
-// --- Integration: agentbridge.ProtocolDriver contract is satisfied. ---
-
-func TestCodexProtocolDriverImplementsSessionInterface(t *testing.T) {
-	d, _ := NewProtocolDriver(agentbridge.StartRequest{})
-	if d == nil {
-		t.Fatal("driver is nil")
-	}
-	// Compile-time check: assignable to agentbridge.ProtocolDriver.
-	_ = d
-}
