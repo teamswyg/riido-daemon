@@ -1,0 +1,165 @@
+{
+  "schema_version": "riido-provider-public-migration-docs.v1",
+  "id": "provider-public-migration-status",
+  "title": "Provider Runtime / Adapter SSOT: Public Migration Status",
+  "generated_doc": "docs/20-domain/provider-runtime/public-migration-status.md",
+  "workflow": ".github/workflows/provider-public-migration-docs.yml",
+  "evidence_artifact": "provider-public-migration-docs",
+  "summary": [
+    "This manifest tracks which Provider Runtime / Adapter surfaces have moved into public riido-daemon.",
+    "The reader docs are generated so migration status cannot drift from package, gate, and boundary evidence."
+  ],
+  "pages": [
+    {
+      "id": "scope-boundaries",
+      "title": "Scope Boundaries",
+      "generated_doc": "docs/20-domain/provider-runtime/public-migration-status/scope-boundaries.md",
+      "summary": [
+        "RIID-4651 moved internal/agentbridge into public riido-daemon.",
+        "The root is stdlib-only and provider-neutral: Adapter, RawEvent / Parser, RunState, reducer, telemetry parser, and tool start gate."
+      ],
+      "facts": [
+        "Task DB, project, MWSD, local API, server, control-plane, infra, secrets, and state files were not included in this slice.",
+        "Figma onboarding planning screens remain outside C4 ownership.",
+        "C4 may report runtime detection and liveness, then execute SaaS-authorized assignments, but it does not own UI labels, fixture catalog, direct-setting forms, workspace selectors, or preview popovers.",
+        "Node 432:46849 may collect agent draft/configuration before runtime and workspace selection; C4 consumes only final authorized runtime/model/instruction snapshots.",
+        "Web onboarding node 236:29749 is outside C4; download CTA may lead to daemon artifact execution, but sign-up, terms, invite, waitlist, marketing consent, and progress references remain upstream."
+      ],
+      "artifacts": [
+        "internal/agentbridge",
+        "docs/30-architecture/figma-ai-agent-daemon-boundary.md"
+      ],
+      "links": [
+        {"title": "daemon projection", "path": "../../../30-architecture/figma-ai-agent-daemon-boundary.md"}
+      ]
+    },
+    {
+      "id": "core-packages",
+      "title": "Core Packages",
+      "generated_doc": "docs/20-domain/provider-runtime/public-migration-status/core-packages.md",
+      "summary": [
+        "Core provider-neutral packages moved before concrete provider adapters.",
+        "These rows are migration evidence, not permission to move adjacent SaaS, task DB, project, or infra responsibilities into C4."
+      ],
+      "table_columns": ["RIID", "Public package", "Migration status"],
+      "table_rows": [
+        ["RIID-4652", "internal/agentbridge/toolargs, internal/agentbridge/toolpolicy", "bounded/redacted ToolRef.Args, C7 risk surface, AutoApprover, ToolStartGate"],
+        ["RIID-4653", "internal/agentbridge/session", "one-run session actor, parser/driver/reducer stream, timeout, cancellation, telemetry, fail-closed gate"],
+        ["RIID-4654", "internal/agentbridge/bridge, internal/agentbridge/detectutil", "provider registry, detect/run entrypoint, PATH lookup, env override pin, version probe"],
+        ["RIID-4656", "internal/agentbridge/runtimeactor", "mailbox actor, detect, capability reconciliation, bounded slots, submit/cancel/status/heartbeat"],
+        ["RIID-4657", "internal/agentbridge/controlplane", "provider-neutral source/reporter port for registration, heartbeat, claim, cancel-watch, events"]
+      ],
+      "facts": [
+        "Provider-native hook/RPC pre-start interrupt and SaaS/web approval handoff are executed by later session/runtimeactor/provider adapter slices, not by the early tool policy slice alone.",
+        "Still outside these moves: supervisor polling loop, controlplane/saasplane, controlplane/taskdbplane, concrete provider adapters, server HTTP/SSE transport, task DB, project, and MWSD adapters."
+      ],
+      "artifacts": [
+        "internal/agentbridge/toolargs",
+        "internal/agentbridge/toolpolicy",
+        "internal/agentbridge/session",
+        "internal/agentbridge/bridge",
+        "internal/agentbridge/detectutil",
+        "internal/agentbridge/runtimeactor",
+        "internal/agentbridge/controlplane"
+      ]
+    },
+    {
+      "id": "claude",
+      "title": "Claude Adapter",
+      "generated_doc": "docs/20-domain/provider-runtime/public-migration-status/claude.md",
+      "provider_id": "claude",
+      "summary": [
+        "RIID-4658 moved internal/provider/claude into public riido-daemon.",
+        "The package does not bundle Claude Code CLI."
+      ],
+      "facts": [
+        "It owns external executable detection, command construction, stream-json parser, raw event translator, stdin protocol driver, and provider input approval frame builder.",
+        "Real Claude CLI execution is gated by AGENTBRIDGE_INTEGRATION=1.",
+        "A-51 added an integration gate that expects ResultCompleted and an expected file artifact inside daemon-selected workdir.",
+        "The gate requires local Claude Code auth/runtime and explicitly uses PermissionModeAcceptEdits to allow edit/write tools.",
+        "A skipped gate does not prove filesystem side effects."
+      ],
+      "artifacts": [
+        "internal/provider/claude",
+        ".github/workflows/provider-claude.yml"
+      ]
+    },
+    {
+      "id": "codex",
+      "title": "Codex Adapter",
+      "generated_doc": "docs/20-domain/provider-runtime/public-migration-status/codex.md",
+      "provider_id": "codex",
+      "summary": [
+        "RIID-4659 moved internal/provider/codex into public riido-daemon.",
+        "The package does not bundle Codex CLI."
+      ],
+      "facts": [
+        "It owns codex --sandbox danger-full-access app-server --listen stdio:// construction, daemon-owned full-access runtime selection, JSONL parser, raw event translator, JSON-RPC protocol driver, pending request actor, and approval response path.",
+        "Codex app-server can use the user's existing Codex auth store.",
+        "Workdir is a daemon-selected task/evidence root, not a filesystem sandbox boundary.",
+        "The full-access launch shape is C4 adapter-owned harness policy, not provider default or caller input.",
+        "A-57 added a real CLI gate that expects ResultCompleted and an expected file artifact inside daemon-selected workdir.",
+        "Codex runtime model catalog may report host Codex config model as runtime-scoped opaque model_id.",
+        "Daemon never infers model catalog from OpenAI/ChatGPT tokens, account identity, API key, team id, or Open API key.",
+        "Control-plane fallback catalog ids are preserved in assignment metadata but normalized to StartRequest.Model=\"\"; provider native flags need real provider model ids."
+      ],
+      "artifacts": [
+        "internal/provider/codex",
+        ".github/workflows/provider-codex.yml"
+      ]
+    },
+    {
+      "id": "openclaw",
+      "title": "OpenClaw Adapter",
+      "generated_doc": "docs/20-domain/provider-runtime/public-migration-status/openclaw.md",
+      "provider_id": "openclaw",
+      "summary": [
+        "RIID-4660 moved internal/provider/openclaw into public riido-daemon.",
+        "The package does not bundle OpenClaw CLI."
+      ],
+      "facts": [
+        "It owns external executable detection, calendar-version gate, openclaw agent --local --json command construction, mandatory session id resolution, JSON/NDJSON parser, and raw event translator.",
+        "Real OpenClaw execution is gated by AGENTBRIDGE_INTEGRATION=1.",
+        "OpenClaw --session-id is provider-native.",
+        "Existing ResumeSessionID is preserved, but first-run TaskID fallback is normalized to riido-<sanitized-task-slug>-<short-hash>.",
+        "A-42 showed SaaS thread completion can happen without expected workdir artifact, so text completion is not filesystem side-effect evidence.",
+        "A-48 added an integration gate that expects ResultCompleted and an expected file artifact in daemon-selected workdir.",
+        "If the gate skips, filesystem side effect is not proven.",
+        "OpenClaw agent currently lacks per-run --workspace / --cwd.",
+        "Tasks requiring daemon-selected workdir are pre-submit blocked with required_surfaces=[\"worktree\"].",
+        "Capability reconciliation exposes OpenClaw SupportsWorktree=false and Claude/Codex/Cursor SupportsWorktree=true."
+      ],
+      "artifacts": [
+        "internal/provider/openclaw",
+        ".github/workflows/provider-openclaw.yml"
+      ]
+    },
+    {
+      "id": "cursor",
+      "title": "Cursor Adapter",
+      "generated_doc": "docs/20-domain/provider-runtime/public-migration-status/cursor.md",
+      "provider_id": "cursor",
+      "summary": [
+        "RIID-4661 moved internal/provider/cursor into public riido-daemon.",
+        "The package does not bundle Cursor Agent CLI."
+      ],
+      "facts": [
+        "It owns root-print, agent-subcommand, legacy-chat launch profile selection, --yolo unsafe bypass policy gate, daemon task workdir headless workspace trust acknowledgement --trust, external executable detection, stream-json parser, and raw event translator.",
+        "Cursor --trust prevents an interactive trust prompt for daemon-selected workdir.",
+        "--trust is not tool auto-approval.",
+        "--yolo remains an unsafe bypass surface and can be used only after C7 policy gate approval.",
+        "Real Cursor Agent execution is gated by AGENTBRIDGE_INTEGRATION=1."
+      ],
+      "artifacts": [
+        "internal/provider/cursor",
+        ".github/workflows/provider-cursor.yml"
+      ]
+    }
+  ],
+  "assertions": [
+    "public migration status reader docs are generated from this manifest",
+    "each concrete provider row has a unique provider_id and existing implementation package",
+    "integration gates are evidence surfaces and skipped gates do not prove filesystem side effects",
+    "migration status does not transfer UI, SaaS, task DB, project, infra, secret, or state ownership into C4"
+  ]
+}

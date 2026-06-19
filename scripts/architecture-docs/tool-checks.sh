@@ -10,6 +10,7 @@ tool_tests=(
   ./tools/loopevidence
   ./tools/redactiondrift
   ./tools/providerintegrationevidence
+  ./tools/providermigrationdocs
   ./tools/runtimesecretevidence
   ./tools/docmap
   ./tools/repoverification
@@ -71,6 +72,7 @@ doc_tools=(
   storedistributiondocs
   agentexecutiondesign
   figmaboundarydocs
+  providermigrationdocs
   localdaemoncontract
   runtimeeligibility
   taskrequirements
