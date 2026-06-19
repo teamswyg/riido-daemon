@@ -1,0 +1,10 @@
+{
+  "id": "branch-gate",
+  "owner": "tools/branchgate and branch-gate-evidence workflow",
+  "observation": {"summary": "Riido work branch rule was manually documented while the merge gate lived in a separate shell script.", "artifacts": ["docs/30-architecture/riido-work-branch-gate.md", "scripts/verify-riido-work-branch.sh"]},
+  "hypothesis": {"summary": "A manifest can generate both the reader doc and branch gate script while executing accepted/rejected examples as evidence.", "artifacts": ["docs/30-architecture/riido-work-branch-gate.riido.json"]},
+  "execution": {"summary": "Generate doc/script, execute branch examples, and upload branch-gate evidence.", "artifacts": ["tools/branchgate", ".github/workflows/branch-gate-evidence.yml"]},
+  "evaluation": {"summary": "The verifier rejects generated doc/script drift and branch example behavior drift.", "artifacts": ["tools/branchgate/run_test.go"]},
+  "retrospective": {"summary": "Branch rule explanation and executable gate now share the same SSOT.", "artifacts": [".github/workflows/riido-work-branch.yml"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/branchgate -check-doc -check-script -evidence-out /tmp/branch-gate-evidence.json", "proves": "branch gate doc/script and examples match the manifest"}, {"kind": "workflow", "ref": ".github/workflows/branch-gate-evidence.yml", "proves": "public CI uploads branch gate evidence"}]
+}

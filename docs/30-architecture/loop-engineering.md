@@ -215,6 +215,23 @@
   - `command`: go run ./tools/sessionlifecycle -check-doc -evidence-out /tmp/session-lifecycle-evidence.json; proves session lifecycle source evidence and absent surfaces remain executable
   - `workflow`: .github/workflows/session-lifecycle.yml; proves public CI uploads session lifecycle evidence
 
+### branch-gate
+
+- Owner: `tools/branchgate and branch-gate-evidence workflow`
+- Observe: Riido work branch rule was manually documented while the merge gate lived in a separate shell script.
+  - Artifacts: `docs/30-architecture/riido-work-branch-gate.md`, `scripts/verify-riido-work-branch.sh`
+- Hypothesis: A manifest can generate both the reader doc and branch gate script while executing accepted/rejected examples as evidence.
+  - Artifacts: `docs/30-architecture/riido-work-branch-gate.riido.json`
+- Execute: Generate doc/script, execute branch examples, and upload branch-gate evidence.
+  - Artifacts: `tools/branchgate`, `.github/workflows/branch-gate-evidence.yml`
+- Evaluate: The verifier rejects generated doc/script drift and branch example behavior drift.
+  - Artifacts: `tools/branchgate/run_test.go`
+- Retrospective: Branch rule explanation and executable gate now share the same SSOT.
+  - Artifacts: `.github/workflows/riido-work-branch.yml`
+- Evidence:
+  - `command`: go run ./tools/branchgate -check-doc -check-script -evidence-out /tmp/branch-gate-evidence.json; proves branch gate doc/script and examples match the manifest
+  - `workflow`: .github/workflows/branch-gate-evidence.yml; proves public CI uploads branch gate evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`
