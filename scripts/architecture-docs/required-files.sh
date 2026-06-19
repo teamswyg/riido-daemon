@@ -32,6 +32,8 @@ required_files=(
   docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json
   docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md
   docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json
+  docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md
+  docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.riido.json
   docs/20-domain/runtime-scheduling/invariants/task-requirements.md
   docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json
   docs/30-architecture/module-decomposition.md
@@ -46,6 +48,7 @@ required_files=(
   docs/30-architecture/loop-engineering.riido.json
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
+  docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json
   docs/30-architecture/loop-engineering/task-requirements-evidence.riido.json
   docs/30-architecture/loop-engineering/tool-use-gate-evidence.riido.json
   docs/30-architecture/loop-engineering/native-config-mcp-evidence.riido.json
@@ -76,6 +79,7 @@ required_files=(
   docs/50-roadmap/open-questions.md
   .github/workflows/policy-bundle-loader-evidence.yml
   .github/workflows/local-daemon-contract-evidence.yml
+  .github/workflows/runtime-eligibility-evidence.yml
   .github/workflows/task-requirements-evidence.yml
   .github/workflows/tool-use-gate-evidence.yml
   .github/workflows/native-config-mcp-evidence.yml

@@ -1,0 +1,62 @@
+{
+  "schema_version": "riido-runtime-eligibility.v1",
+  "id": "runtime-eligibility-evidence",
+  "title": "Runtime Eligibility Evidence",
+  "generated_doc": "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md",
+  "workflow": ".github/workflows/runtime-eligibility-evidence.yml",
+  "evidence_artifact": "runtime-eligibility-evidence",
+  "purpose": "Proves the C5 pre-submit runtime eligibility gate order and ingress facts from executable scheduling behavior.",
+  "inputs": [
+    {"name": "Provider", "source": "TaskRequest.Provider", "source_checks": ["task-requirements-provider"]},
+    {"name": "RequiredSurfaces", "source": "TaskRequest.RequiredSurfaces plus metadata fallback", "source_checks": ["task-requirements-surfaces"]},
+    {"name": "AllowExperimentalRuntime", "source": "TaskRequest.AllowExperimentalRuntime plus metadata fallback", "source_checks": ["task-requirements-experimental"]},
+    {"name": "RuntimeID", "source": "runtime status", "source_checks": ["runtime-capability-runtime-id"]},
+    {"name": "CapabilityFingerprint", "source": "C3 capability reconciliation", "source_checks": ["runtime-capability-fingerprint"]},
+    {"name": "SlotLimit / SlotsInUse", "source": "runtime status and heartbeat", "source_checks": ["runtime-capability-slots"]},
+    {"name": "Available / CompatibilityStatus / RequiresExperimentalOptIn", "source": "C3 capability reconciliation", "source_checks": ["runtime-capability-compatibility"]},
+    {"name": "provider-neutral support flags", "source": "C3 capability reconciliation", "source_checks": ["runtime-capability-surfaces"]}
+  ],
+  "gates": [
+    {"order": 1, "code": "PROVIDER_MISMATCH", "summary": "task provider and runtime capability provider must match", "source_checks": ["gate-provider-mismatch"]},
+    {"order": 2, "code": "PROVIDER_UNAVAILABLE", "summary": "unavailable providers are rejected", "source_checks": ["gate-unavailable"]},
+    {"order": 3, "code": "COMPATIBILITY_BLOCKED", "summary": "blocked compatibility is rejected", "source_checks": ["gate-blocked"]},
+    {"order": 4, "code": "EXPERIMENTAL_RUNTIME_REQUIRES_OPT_IN", "summary": "experimental runtimes require explicit task opt-in", "source_checks": ["gate-experimental"]},
+    {"order": 5, "code": "SLOT_EXHAUSTED", "summary": "runtimes with no free slots are rejected", "source_checks": ["gate-slot"]},
+    {"order": 6, "code": "MISSING_REQUIRED_SURFACE", "summary": "all required provider-neutral surfaces must be supported", "source_checks": ["gate-surface"]}
+  ],
+  "passthroughs": [
+    {"name": "supervisor uses C5 gate", "summary": "daemon supervisor evaluates taskRequirements through scheduling.EvaluateCapability", "source_checks": ["supervisor-evaluate"]},
+    {"name": "SaaS assignment copies opt-in snapshot", "summary": "SaaS assignment AllowExperimentalRuntime is copied into bridge.TaskRequest", "source_checks": ["saas-opt-in-copy", "saas-opt-in-test"]},
+    {"name": "task DB runtime selection uses scheduling", "summary": "local task DB plane selects runtime candidates through scheduling.SelectRuntime", "source_checks": ["taskdb-select-runtime"]}
+  ],
+  "absent_scans": [
+    {"name": "SaaS opt-in has no env inference", "scope": ["internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go"], "tokens": ["os.Getenv", "LookupEnv", "RIIDO_", "OPENAI_API_KEY"], "reason": "SaaS opt-in must come from assignment snapshot, not local daemon environment."},
+    {"name": "SaaS opt-in has no provider/team heuristic", "scope": ["internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go"], "tokens": ["RuntimeProvider ==", "TeamID", "team_id"], "reason": "SaaS opt-in must not be inferred from provider name or team identity."}
+  ],
+  "source_checks": [
+    {"name": "task-requirements-provider", "file": "internal/agentbridge/supervisor/task_requirements.go", "contains": "Provider:                 capability.ProviderKind(req.Provider)"},
+    {"name": "task-requirements-surfaces", "file": "internal/agentbridge/supervisor/task_requirements.go", "contains": "RequiredSurfaces:         scheduling.NormalizeRequiredSurfaces(surfaces)"},
+    {"name": "task-requirements-experimental", "file": "internal/agentbridge/supervisor/task_requirements.go", "contains": "AllowExperimentalRuntime: req.AllowExperimentalRuntime || metadataBool(req.Metadata, MetadataAllowExperimentalRuntime)"},
+    {"name": "runtime-capability-runtime-id", "file": "internal/agentbridge/supervisor/task_eligibility.go", "contains": "RuntimeID:                 capability.RuntimeID(status.RuntimeID)"},
+    {"name": "runtime-capability-fingerprint", "file": "internal/agentbridge/supervisor/task_eligibility.go", "contains": "CapabilityFingerprint:     capability.CapabilityFingerprint(capView.CapabilityFingerprint)"},
+    {"name": "runtime-capability-slots", "file": "internal/agentbridge/supervisor/runtime_registration.go", "contains": "SlotLimit:            status.MaxConcurrent"},
+    {"name": "runtime-capability-compatibility", "file": "internal/agentbridge/supervisor/task_eligibility.go", "contains": "RequiresExperimentalOptIn: capView.RequiresExperimentalOptIn"},
+    {"name": "runtime-capability-surfaces", "file": "internal/agentbridge/supervisor/task_eligibility.go", "contains": "SupportsWorktree:          capView.SupportsWorktree"},
+    {"name": "gate-provider-mismatch", "file": "internal/scheduling/eligibility.go", "contains": "PROVIDER_MISMATCH"},
+    {"name": "gate-unavailable", "file": "internal/scheduling/eligibility.go", "contains": "PROVIDER_UNAVAILABLE"},
+    {"name": "gate-blocked", "file": "internal/scheduling/eligibility.go", "contains": "COMPATIBILITY_BLOCKED"},
+    {"name": "gate-experimental", "file": "internal/scheduling/eligibility.go", "contains": "EXPERIMENTAL_RUNTIME_REQUIRES_OPT_IN"},
+    {"name": "gate-slot", "file": "internal/scheduling/eligibility.go", "contains": "SLOT_EXHAUSTED"},
+    {"name": "gate-surface", "file": "internal/scheduling/eligibility.go", "contains": "addSurfaceReasons(&out, req, candidate)"},
+    {"name": "supervisor-evaluate", "file": "internal/agentbridge/supervisor/task_eligibility.go", "contains": "scheduling.EvaluateCapability(taskRequirements(req), runtimeCapability(status, capView))"},
+    {"name": "saas-opt-in-copy", "file": "internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go", "contains": "AllowExperimentalRuntime: assignment.AllowExperimentalRuntime"},
+    {"name": "saas-opt-in-test", "file": "internal/agentbridge/controlplane/saasplane/saasplane_system_prompt_test.go", "contains": "if !req.AllowExperimentalRuntime"},
+    {"name": "taskdb-select-runtime", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_selection.go", "contains": "selection, ok := scheduling.SelectRuntime"}
+  ],
+  "assertions": [
+    "runtime eligibility must be derived from task requirements and runtime capability snapshot only",
+    "experimental runtime opt-in must be explicit task/assignment data",
+    "surface requirements are evaluated after provider, availability, compatibility, experimental, and slot gates",
+    "reader documentation is generated from this manifest"
+  ]
+}

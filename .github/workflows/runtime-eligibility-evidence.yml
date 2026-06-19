@@ -1,0 +1,51 @@
+name: runtime-eligibility-evidence
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/runtime-eligibility-evidence.yml"
+      - "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md"
+      - "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.riido.json"
+      - "internal/scheduling/**"
+      - "internal/agentbridge/supervisor/**"
+      - "internal/agentbridge/controlplane/saasplane/**"
+      - "internal/agentbridge/controlplane/taskdbplane/**"
+      - "tools/runtimeeligibility/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/runtime-eligibility-evidence.yml"
+      - "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md"
+      - "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.riido.json"
+      - "internal/scheduling/**"
+      - "internal/agentbridge/supervisor/**"
+      - "internal/agentbridge/controlplane/saasplane/**"
+      - "internal/agentbridge/controlplane/taskdbplane/**"
+      - "tools/runtimeeligibility/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  runtime-eligibility-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify runtime eligibility evidence
+        run: |
+          mkdir -p out
+          go test ./tools/runtimeeligibility ./internal/scheduling -count=1
+          go run ./tools/runtimeeligibility \
+            -check-doc \
+            -evidence-out out/runtime-eligibility-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: runtime-eligibility-evidence
+          path: out/runtime-eligibility-evidence.json
+          if-no-files-found: error
