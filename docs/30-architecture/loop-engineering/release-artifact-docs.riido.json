@@ -1,0 +1,36 @@
+{
+  "id": "release-artifact-docs",
+  "owner": "release packaging",
+  "observation": {
+    "summary": "Release artifact docs were reader-authored while the workflow and packaging scripts already carried the executable facts.",
+    "artifacts": ["docs/30-architecture/release-artifacts.md", ".github/workflows/release-artifacts.yml"]
+  },
+  "hypothesis": {
+    "summary": "A release artifact manifest can generate the reader docs and verify workflow/script anchors for build targets, checksums, installer behavior, and archive boundaries.",
+    "artifacts": ["docs/30-architecture/release-artifacts.riido.json"]
+  },
+  "execution": {
+    "summary": "Run releaseartifacts to check generated docs and upload evidence in public CI.",
+    "artifacts": ["tools/releaseartifacts", ".github/workflows/release-artifact-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects reader doc drift and the architecture coverage tool no longer classifies release-artifacts as manual debt.",
+    "artifacts": ["docs/30-architecture/executable-knowledge.md"]
+  },
+  "retrospective": {
+    "summary": "Release packaging knowledge becomes a generated projection of an executable manifest instead of a manually edited release note.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/releaseartifacts -check-doc -evidence-out /tmp/release-artifact-docs.json",
+      "proves": "release artifact docs are generated from the manifest and anchored to workflow/script source checks"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/release-artifact-docs.yml",
+      "proves": "public CI uploads release artifact docs evidence"
+    }
+  ]
+}

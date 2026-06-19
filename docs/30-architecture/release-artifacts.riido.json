@@ -1,0 +1,72 @@
+{
+  "schema_version": "riido-release-artifacts.v1",
+  "id": "architecture-release-artifacts",
+  "title": "Release Artifacts",
+  "generated_doc": "docs/30-architecture/release-artifacts.md",
+  "workflow": ".github/workflows/release-artifact-docs.yml",
+  "evidence_artifact": "release-artifact-docs",
+  "purpose": "Define how riido-daemon public release assets are built, published, installed, and consumed without turning reader prose into the source of truth.",
+  "release_workflow": ".github/workflows/release-artifacts.yml",
+  "build_script": "scripts/build-release-package.sh",
+  "publish_script": "scripts/publish-release-artifacts.sh",
+  "install_script": "scripts/install-riido-daemon.sh",
+  "targets": [
+    {"platform": "macOS amd64", "goos": "darwin", "goarch": "amd64", "format": "tar"},
+    {"platform": "macOS arm64", "goos": "darwin", "goarch": "arm64", "format": "tar"},
+    {"platform": "Linux amd64", "goos": "linux", "goarch": "amd64", "format": "tar"},
+    {"platform": "Linux arm64", "goos": "linux", "goarch": "arm64", "format": "tar"},
+    {"platform": "Windows amd64", "goos": "windows", "goarch": "amd64", "format": "zip"},
+    {"platform": "Windows arm64", "goos": "windows", "goarch": "arm64", "format": "zip"}
+  ],
+  "archive_contents": ["riido or riido.exe", "LICENSE", "NOTICE.md", "VERSION"],
+  "installer": {
+    "command": "curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh",
+    "supported_goos": ["darwin", "linux"],
+    "supported_goarch": ["amd64", "arm64"],
+    "version_env": "RIIDO_DAEMON_VERSION",
+    "install_dir_env": "RIIDO_DAEMON_INSTALL_DIR",
+    "default_install_dir": "$HOME/.riido/bin"
+  },
+  "desktop_msix": {
+    "download_source": "GitHub Release asset",
+    "storage_root": "user-writable app data",
+    "required_env": ["RIIDO_DEVICE_ID", "RIIDO_DEVICE_SECRET", "RIIDO_SAAS_URL"],
+    "cdn_latest_base_url": "https://cdn.riido.io/releases/latest/ai-agent/",
+    "cdn_latest_paths": [
+      "releases/latest/ai-agent/riido-daemon_darwin_arm64.tar.gz",
+      "releases/latest/ai-agent/riido-daemon_darwin_amd64.tar.gz"
+    ]
+  },
+  "forbidden_archive_items": [
+    "Claude, Codex, OpenClaw, Cursor, or any provider CLI binary",
+    "provider tokens, API keys, or environment files",
+    "workspace files or user data",
+    "signing credentials or deployment evidence"
+  ],
+  "inherited_refs": [
+    "docs/20-domain/distribution-host-integration.md",
+    "docs/30-architecture/store-distribution.md"
+  ],
+  "source_checks": [
+    {"name": "workflow-build-matrix", "file": ".github/workflows/release-artifacts.yml", "contains": "darwin/arm64/tar"},
+    {"name": "workflow-tag-release", "file": ".github/workflows/release-artifacts.yml", "contains": "startsWith(github.ref, 'refs/tags/v')"},
+    {"name": "build-package-trimpath", "file": "scripts/build-release-package.sh", "contains": "-trimpath -ldflags"},
+    {"name": "build-package-artifact-env", "file": "scripts/build-release-package.sh", "contains": "RIIDO_RELEASE_ARTIFACT_NAME"},
+    {"name": "publish-checksums", "file": "scripts/publish-release-artifacts.sh", "contains": "sha256sum riido-daemon_* > SHA256SUMS"},
+    {"name": "install-prerelease-latest", "file": "scripts/install-riido-daemon.sh", "contains": "releases?per_page=1"},
+    {"name": "install-checksum-verification", "file": "scripts/install-riido-daemon.sh", "contains": "checksum mismatch"},
+    {"name": "install-dir-override", "file": "scripts/install-riido-daemon.sh", "contains": "RIIDO_DAEMON_INSTALL_DIR"}
+  ],
+  "detail_docs": [
+    {"title": "Decision and Asset Names", "path": "docs/30-architecture/release-artifacts/assets.md"},
+    {"title": "Installer", "path": "docs/30-architecture/release-artifacts/installer.md"},
+    {"title": "Desktop/MSIX Consumption and CDN Mirror", "path": "docs/30-architecture/release-artifacts/desktop-msix-cdn.md"},
+    {"title": "Review Boundary", "path": "docs/30-architecture/release-artifacts/review-boundary.md"}
+  ],
+  "assertions": [
+    "Release assets are generated from v* tags and dry-run built on pull requests.",
+    "Provider CLIs and secrets are never bundled in riido-daemon release archives.",
+    "GitHub Releases are the immutable daemon binary source; CDN latest is only a mutable mirror.",
+    "Installer behavior must stay derivable from the install script and release target manifest."
+  ]
+}

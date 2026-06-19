@@ -312,6 +312,23 @@
   - `command`: go run ./tools/knowledgecoverage -check-doc -evidence-out /tmp/executable-knowledge-coverage.json; proves architecture markdown knowledge is generated, direct-SSOT backed, or registered as manual debt
   - `workflow`: .github/workflows/executable-knowledge-coverage.yml; proves public CI uploads executable knowledge coverage evidence
 
+### release-artifact-docs
+
+- Owner: `release packaging`
+- Observe: Release artifact docs were reader-authored while the workflow and packaging scripts already carried the executable facts.
+  - Artifacts: `docs/30-architecture/release-artifacts.md`, `.github/workflows/release-artifacts.yml`
+- Hypothesis: A release artifact manifest can generate the reader docs and verify workflow/script anchors for build targets, checksums, installer behavior, and archive boundaries.
+  - Artifacts: `docs/30-architecture/release-artifacts.riido.json`
+- Execute: Run releaseartifacts to check generated docs and upload evidence in public CI.
+  - Artifacts: `tools/releaseartifacts`, `.github/workflows/release-artifact-docs.yml`
+- Evaluate: The verifier rejects reader doc drift and the architecture coverage tool no longer classifies release-artifacts as manual debt.
+  - Artifacts: `docs/30-architecture/executable-knowledge.md`
+- Retrospective: Release packaging knowledge becomes a generated projection of an executable manifest instead of a manually edited release note.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/releaseartifacts -check-doc -evidence-out /tmp/release-artifact-docs.json; proves release artifact docs are generated from the manifest and anchored to workflow/script source checks
+  - `workflow`: .github/workflows/release-artifact-docs.yml; proves public CI uploads release artifact docs evidence
+
 ### figma-boundary-docs
 
 - Owner: `figma daemon boundary`

@@ -45,6 +45,13 @@ required_files=(
   docs/30-architecture/config-reference/executable-search-path.riido.json
   docs/30-architecture/executable-knowledge.md
   docs/30-architecture/executable-knowledge.riido.json
+  docs/30-architecture/release-artifacts.md
+  docs/30-architecture/release-artifacts.riido.json
+  docs/30-architecture/release-artifacts/assets.md
+  docs/30-architecture/release-artifacts/desktop-msix-cdn.md
+  docs/30-architecture/release-artifacts/installer.md
+  docs/30-architecture/release-artifacts/review-boundary.md
+  .github/workflows/release-artifact-docs.yml
   docs/30-architecture/integration-matrix.md
   docs/30-architecture/compatibility-gate.md
   docs/30-architecture/compatibility-gate.riido.json
@@ -55,6 +62,7 @@ required_files=(
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json
+  docs/30-architecture/loop-engineering/release-artifact-docs.riido.json
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
   docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json
