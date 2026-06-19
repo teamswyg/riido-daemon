@@ -1,0 +1,25 @@
+{
+  "schema_version": "riido-locking-detail.v1",
+  "id": "acquire-release",
+  "title": "Acquire / Release Rules",
+  "generated_doc": "docs/20-domain/locking/acquire-release.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The claim adapter performs the following under the same file lock."},
+    {
+      "kind": "ordered",
+      "items": [
+        "reload runtime registry",
+        "reload task DB",
+        "confirm the C5 selector selected the current runtime",
+        "inspect the task lease record",
+        "leave the task Queued when an active foreign lease exists",
+        "write a new active lease with fencing_token = previous + 1 when no lease exists or the old lease is expired/released",
+        "refresh same runtime + same capability fingerprint active leases only when heartbeat running_task_ids contains the task id",
+        "save the lease sidecar, then save the guarded task transition into task DB"
+      ]
+    },
+    {"kind": "paragraph", "text": "On provider progress or terminal report, the task DB reporter checks the active lease under the same file lock before saving the C1 transition."},
+    {"kind": "paragraph", "text": "Progress mutation is rejected when the lease is missing, expired, mismatched, or not active. Terminal report records released_at for the task lease."},
+    {"kind": "paragraph", "text": "Before claim, expired leases are reconciled under the same file lock. Preparing/Running leases are handed off through Blocked then Queued, Claimed leases fail, NeedsInput leases time out, and waiting/terminal/validation-review stale leases are released without state mutation."}
+  ]
+}

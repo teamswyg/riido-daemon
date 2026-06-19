@@ -1,0 +1,18 @@
+{
+  "schema_version": "riido-locking-detail.v1",
+  "id": "adjacent-contracts",
+  "title": "Adjacent SSOT Contracts",
+  "generated_doc": "docs/20-domain/locking/adjacent-contracts.md",
+  "blocks": [
+    {
+      "kind": "table",
+      "columns": ["adjacent context", "received / supplied"],
+      "rows": [
+        ["C5 Runtime Scheduling", "receives selected RuntimeID/CapabilityFingerprint and lease expiry meaning; supplies local claim primitive and fencing token"],
+        ["C1 Task Lifecycle", "receives Queued -> Claimed and other state transitions; supplies single-writer critical section before saving transitions"],
+        ["C4 Provider Runtime", "receives the fact that provider process start was fenced to a single runtime"],
+        ["C8 Validation", "shares the boundary that validation commands run as separate guarded mutations after provider lease release"]
+      ]
+    }
+  ]
+}

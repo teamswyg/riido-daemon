@@ -1,0 +1,52 @@
+{
+  "schema_version": "riido-loop.v1",
+  "id": "locking-docs",
+  "owner": "daemon/domain",
+  "observation": {
+    "summary": "C9 Locking / Lease docs were reader-authored while file lock, sidecar lease, fencing, and metadata proof lived in Go source and tests.",
+    "artifacts": [
+      "docs/20-domain/locking.md",
+      "internal/lock",
+      "internal/agentbridge/controlplane/taskdbplane"
+    ]
+  },
+  "hypothesis": {
+    "summary": "A locking manifest plus detail fragments can generate reader docs and verify source anchors for lock primitives, lease registry, fencing, and request metadata.",
+    "artifacts": [
+      "docs/20-domain/locking.riido.json",
+      "docs/20-domain/locking/local-file-lock.riido.json"
+    ]
+  },
+  "execution": {
+    "summary": "Generate C9 reader docs from structured responsibilities, invariants, detail fragments, and source checks.",
+    "artifacts": [
+      "tools/lockingdocs",
+      ".github/workflows/locking-docs.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, invalid fragment blocks, missing workflow/source anchors, and source checks that no longer match the implementation.",
+    "artifacts": [
+      "docs/20-domain/locking.md",
+      "docs/executable-knowledge.md"
+    ]
+  },
+  "retrospective": {
+    "summary": "C9 locking knowledge is now an executable evidence registry rather than a hand-maintained primitive description.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/lockingdocs -check-doc -evidence-out /tmp/locking-docs.json",
+      "proves": "locking reader docs are generated and file-lock/lease/fencing/metadata source anchors still exist"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/locking-docs.yml",
+      "proves": "public CI uploads locking docs evidence"
+    }
+  ]
+}

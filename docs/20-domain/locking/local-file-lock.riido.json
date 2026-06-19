@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-locking-detail.v1",
+  "id": "local-file-lock",
+  "title": "Local File Lock",
+  "generated_doc": "docs/20-domain/locking/local-file-lock.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Go implementation is owned by internal/lock."},
+    {
+      "kind": "table",
+      "columns": ["primitive", "implementation", "meaning"],
+      "rows": [
+        ["AcquireFile(ctx, path)", "flock(2) exclusive advisory lock on Unix; claim-file emulation on Windows", "waits until the lock is acquired or ctx is done"],
+        ["WithFile(ctx, path, fn)", "acquire -> fn -> release", "wraps adapter read-modify-write critical sections"]
+      ]
+    },
+    {"kind": "paragraph", "text": "This primitive does not use sync.Mutex or sync.RWMutex. The concurrency boundary is the OS/local lock, not an actor state guard."},
+    {"kind": "paragraph", "text": "The production riido-task-db.v1 adapter is internal/agentbridge/controlplane/taskdbplane. Guarded mutation belongs to internal/taskdb, while taskdbplane alone may read-modify-write task DB, runtime registry, and lease sidecar under the same lock."}
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-locking-detail.v1",
+  "id": "request-metadata",
+  "title": "Request Metadata",
+  "generated_doc": "docs/20-domain/locking/request-metadata.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "When the task DB source claims a task, it writes the following values into bridge.TaskRequest.Metadata."},
+    {
+      "kind": "table",
+      "columns": ["key", "meaning"],
+      "rows": [
+        ["runtime_lease_id", "local lease sidecar lease_id"],
+        ["runtime_fencing_token", "task-scoped monotonic fencing token"],
+        ["runtime_capability_fingerprint", "capability fingerprint used by the C5 selector"]
+      ]
+    },
+    {"kind": "paragraph", "text": "The supervisor extracts these values into a typed report context and passes them through StartTask, ReportEvent, and CompleteTask."},
+    {"kind": "paragraph", "text": "The task DB reporter compares runtime_lease_id, runtime_fencing_token, and runtime_capability_fingerprint with the current active sidecar lease. Missing or mismatched values reject progress mutation."}
+  ]
+}
