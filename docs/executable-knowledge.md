@@ -8,16 +8,16 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 206 |
+| Generated reader docs | 212 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 90 |
+| Registered manual docs | 84 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 23 |
+| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 17 |
 | `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
 | `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
 | `readme-manual-surface` | daemon/repo-docs | promote remaining docs/readme guides into doc-map or verification SSOT | 4 |
@@ -26,7 +26,6 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Directory | Matched docs |
 | --- | ---: |
-| `docs/20-domain/provider-runtime` | 9 |
 | `docs/migration/cli` | 8 |
 | `docs/migration/daemon` | 8 |
 | `docs/migration/daemon/distribution-host-integration` | 8 |
@@ -38,6 +37,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `docs/migration/daemon/runtime-snapshot-heartbeat` | 5 |
 | `docs/20-domain/distribution-host-integration` | 4 |
 | `docs/migration/daemon/overview` | 4 |
+| `docs/readme` | 4 |
 
 ## Manual Samples
 

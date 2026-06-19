@@ -835,6 +835,24 @@
   - `command`: go run ./tools/providerdraftmapping -check-doc -evidence-out /tmp/provider-draft-mapping-evidence.json; proves related provider event draft mapping remains independently verified
   - `workflow`: .github/workflows/provider-runtime-responsibility-docs.yml; proves public CI uploads provider runtime responsibility evidence
 
+### provider-adapter-acl-docs
+
+- Owner: `daemon/provider-runtime`
+- Observe: Provider adapter ACL docs still kept C4 raw-to-draft, backpressure, bridge, instruction placement, and detect helper boundaries as manually edited markdown while adjacent EventIngestor and provider-draft evidence already existed.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-acl.md`, `docs/20-domain/provider-runtime/adapter-acl`, `docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md`
+- Hypothesis: An adapter-acl manifest can generate root plus five manual detail pages, link adjacent EventIngestor/provider-draft/search-path evidence, and verify source anchors in bridge, detectutil, session, process, runtimeactor, supervisor, and telemetry instruction code.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-acl.riido.json`, `internal/agentbridge/bridge`, `internal/agentbridge/detectutil`, `internal/agentbridge/session`, `internal/process`
+- Execute: Generate the adapter ACL index and detail pages from SSOT fragments while leaving EventIngestor authority under its existing dedicated generator.
+  - Artifacts: `tools/provideradapteracldocs`, `.github/workflows/provider-adapter-acl-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing fragments, missing workflow wiring, and missing coverage registration.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The C4 adapter ACL docs become generated evidence and reduce the provider-runtime manual hotspot while preserving adjacent evidence ownership.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/provideradapteracldocs -check-doc -evidence-out /tmp/provider-adapter-acl-docs.json; proves provider adapter ACL docs are generated and source anchors still exist
+  - `command`: go test ./tools/provideradapteracldocs ./internal/agentbridge ./internal/process ./internal/provider/openclaw -count=1; proves bridge, detect helper, instruction placement, backpressure, and OpenClaw override behavior still match the documented boundary
+  - `workflow`: .github/workflows/provider-adapter-acl-docs.yml; proves public CI uploads provider adapter ACL evidence
+
 ### provider-integration-gate-docs
 
 - Owner: `daemon/provider-runtime`

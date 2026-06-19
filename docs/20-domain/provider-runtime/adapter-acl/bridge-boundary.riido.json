@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-provider-adapter-acl-detail.v1",
+  "id": "bridge-boundary",
+  "title": "Bridge Boundary",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-acl/bridge-boundary.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/agentbridge/bridge` is the C4 provider-runtime provider-neutral library entrypoint. Callers inject adapter lists and process ports; bridge composes a single provider run."},
+    {"kind": "bullets", "items": ["Create an adapter registry and reject duplicate/empty provider names.", "Call `Detect(ctx)` and return provider capability snapshots in stable provider-name order.", "Convert `TaskRequest` into `agentbridge.StartRequest` and call adapter `BuildStart`.", "Materialize SaaS assignment `agent_instruction` into provider-specific runtime instruction surfaces.", "Convert `StartCommand` into `process.Command` and start `internal/agentbridge/session`.", "Attach a one-run protocol driver when the adapter implements `ProtocolDriverProvider`.", "Return a session handle facade while preserving adapter `DroppedArgs` and `TempFiles` at the session boundary."]},
+    {"kind": "paragraph", "text": "`bridge` does not own scheduling, task claim, EventIngestor append, workdir preparation, policy decision, provider-specific parsing, or persistence."}
+  ]
+}

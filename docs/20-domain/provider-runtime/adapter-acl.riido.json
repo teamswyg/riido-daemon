@@ -1,0 +1,63 @@
+{
+  "schema_version": "riido-provider-adapter-acl-docs.v1",
+  "id": "provider-adapter-acl-docs",
+  "title": "Provider Runtime / Adapter SSOT: Adapter ACL",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-acl.md",
+  "workflow": ".github/workflows/provider-adapter-acl-docs.yml",
+  "evidence_artifact": "provider-adapter-acl-docs",
+  "summary": [
+    "This executable ontology owns the C4 adapter ACL surfaces that translate provider raw streams into daemon-neutral drafts and orchestrated runtime execution.",
+    "Canonical event append authority remains adjacent evidence owned by the EventIngestor contract."
+  ],
+  "detail_pages": [
+    {"id": "raw-to-draft-rules", "title": "Raw to draft rules", "path": "adapter-acl/raw-to-draft-rules.md"},
+    {"id": "backpressure", "title": "Backpressure", "path": "adapter-acl/backpressure.md"},
+    {"id": "bridge-boundary", "title": "Bridge boundary", "path": "adapter-acl/bridge-boundary.md"},
+    {"id": "instruction-placement", "title": "Instruction placement", "path": "adapter-acl/instruction-placement.md"},
+    {"id": "detect-helper-boundary", "title": "Detect helper boundary", "path": "adapter-acl/detect-helper-boundary.md"}
+  ],
+  "related_pages": [
+    {"title": "EventIngestor contract", "path": "adapter-acl/event-ingestor-contract.md"},
+    {"title": "Provider event draft mapping", "path": "runtime-responsibility/provider-event-draft.md"},
+    {"title": "Executable search path evidence", "path": "../../30-architecture/config-reference/executable-search-path.md"}
+  ],
+  "fragments": {
+    "raw-to-draft-rules": "adapter-acl/raw-to-draft-rules.riido.json",
+    "backpressure": "adapter-acl/backpressure.riido.json",
+    "bridge-boundary": "adapter-acl/bridge-boundary.riido.json",
+    "instruction-placement": "adapter-acl/instruction-placement.riido.json",
+    "detect-helper-boundary": "adapter-acl/detect-helper-boundary.riido.json"
+  },
+  "source_checks": [
+    {"name": "raw-event-model", "file": "internal/agentbridge/adapter_parser.go", "contains": "type RawEvent struct"},
+    {"name": "raw-type-provider-specific", "file": "internal/agentbridge/adapter_parser.go", "contains": "provider-specific and meaningful only to the adapter's Translate"},
+    {"name": "provider-event-draft-switch", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "func providerEventDraft(ev agentbridge.Event)"},
+    {"name": "tool-approval-mapping", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "return ir.EventApprovalRequested"},
+    {"name": "stdout-buffer", "file": "internal/process/port.go", "contains": "DefaultStdoutBuffer = 64"},
+    {"name": "stderr-buffer", "file": "internal/process/port.go", "contains": "DefaultStderrBuffer = 64"},
+    {"name": "event-buffer", "file": "internal/agentbridge/session/config.go", "contains": "DefaultEventBuffer = 256"},
+    {"name": "result-buffer", "file": "internal/agentbridge/session/config.go", "contains": "DefaultResultBuffer = 1"},
+    {"name": "runtime-mailbox", "file": "internal/agentbridge/runtimeactor/defaults.go", "contains": "DefaultMailboxSize = 16"},
+    {"name": "supervisor-mailbox", "file": "internal/agentbridge/supervisor/constants.go", "contains": "DefaultMailboxSize = 64"},
+    {"name": "bridge-run-buildstart", "file": "internal/agentbridge/bridge/client_run.go", "contains": "runtime.adapter.BuildStart(startReq)"},
+    {"name": "bridge-run-session-start", "file": "internal/agentbridge/bridge/client_run.go", "contains": "session.Start(ctx, cfg)"},
+    {"name": "bridge-protocol-driver", "file": "internal/agentbridge/bridge/protocol_driver.go", "contains": "adapter.(agentbridge.ProtocolDriverProvider)"},
+    {"name": "bridge-dropped-args", "file": "internal/agentbridge/bridge/session.go", "contains": "func (s *Session) DroppedArgs() []string"},
+    {"name": "start-request-env", "file": "internal/agentbridge/bridge/start_request.go", "contains": "launchEnv := detectutil.EnvMapWithLaunchPATH(req.Env)"},
+    {"name": "instruction-strategies", "file": "internal/agentbridge/telemetry_strategy.go", "contains": "func RuntimeInstructionStrategies() []RuntimeInstructionStrategy"},
+    {"name": "instruction-apply", "file": "internal/agentbridge/telemetry_apply.go", "contains": "func ApplyRuntimeInstructionContract"},
+    {"name": "instruction-probe", "file": "internal/agentbridge/telemetry_probe.go", "contains": "func BuildInstructionEffectivenessProbe"},
+    {"name": "instruction-probe-test", "file": "internal/agentbridge/telemetry_probe_contract_test.go", "contains": "TestBuildInstructionEffectivenessProbePlacesMarkerByProvider"},
+    {"name": "detect-override-pin", "file": "internal/agentbridge/detectutil/resolve.go", "contains": "a valid override is the only accepted"},
+    {"name": "detect-login-shell", "file": "internal/agentbridge/detectutil/search_dirs.go", "contains": "collector.addDirs(loginShellPATHDirs())"},
+    {"name": "detect-timeout", "file": "internal/agentbridge/detectutil/constants.go", "contains": "loginShellPATHTimeout = 3 * time.Second"},
+    {"name": "openclaw-override", "file": "internal/provider/openclaw/detect_config.go", "contains": "const EnvOverride = \"RIIDO_OPENCLAW_PATH\""}
+  ],
+  "assertions": [
+    "Adapter ACL reader docs must be generated from this ontology.",
+    "Provider adapters emit normalized drafts; EventIngestor owns canonical append authority.",
+    "Bridge owns provider-neutral run composition and preserves DroppedArgs/TempFiles into the session boundary.",
+    "Detect helper override paths are pins and fail closed instead of falling back to PATH.",
+    "Instruction placement is provider-specific but verified through deterministic contract tests and opt-in real-provider probes."
+  ]
+}

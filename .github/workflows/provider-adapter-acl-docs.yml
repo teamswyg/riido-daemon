@@ -1,0 +1,67 @@
+name: provider-adapter-acl-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/provider-adapter-acl-docs.yml"
+      - "docs/20-domain/provider-runtime/adapter-acl.md"
+      - "docs/20-domain/provider-runtime/adapter-acl.riido.json"
+      - "docs/20-domain/provider-runtime/adapter-acl/**"
+      - "docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft**"
+      - "tools/provideradapteracldocs/**"
+      - "tools/eventauthority/**"
+      - "tools/providerdraftmapping/**"
+      - "tools/executablesearchpath/**"
+      - "internal/agentbridge/**"
+      - "internal/process/**"
+      - "internal/provider/openclaw/**"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/provider-adapter-acl-docs.yml"
+      - "docs/20-domain/provider-runtime/adapter-acl.md"
+      - "docs/20-domain/provider-runtime/adapter-acl.riido.json"
+      - "docs/20-domain/provider-runtime/adapter-acl/**"
+      - "docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft**"
+      - "tools/provideradapteracldocs/**"
+      - "tools/eventauthority/**"
+      - "tools/providerdraftmapping/**"
+      - "tools/executablesearchpath/**"
+      - "internal/agentbridge/**"
+      - "internal/process/**"
+      - "internal/provider/openclaw/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  provider-adapter-acl-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify provider adapter ACL docs
+        run: |
+          mkdir -p out
+          go run ./tools/provideradapteracldocs \
+            -check-doc \
+            -evidence-out out/provider-adapter-acl-docs.json
+          go run ./tools/eventauthority \
+            -check-doc \
+            -evidence-out out/event-authority-evidence.json
+          go run ./tools/providerdraftmapping \
+            -check-doc \
+            -evidence-out out/provider-draft-mapping-evidence.json
+          go run ./tools/executablesearchpath \
+            -check-doc \
+            -evidence-out out/executable-search-path-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-adapter-acl-docs
+          path: out/*.json
+          if-no-files-found: error
