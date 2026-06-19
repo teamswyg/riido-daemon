@@ -1,0 +1,49 @@
+name: executable-search-path-evidence
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/executable-search-path-evidence.yml"
+      - "docs/30-architecture/config-reference/executable-search-path.md"
+      - "docs/30-architecture/config-reference/executable-search-path.riido.json"
+      - "internal/agentbridge/detectutil/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/agentbridge/bridge/**"
+      - "tools/executablesearchpath/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/executable-search-path-evidence.yml"
+      - "docs/30-architecture/config-reference/executable-search-path.md"
+      - "docs/30-architecture/config-reference/executable-search-path.riido.json"
+      - "internal/agentbridge/detectutil/**"
+      - "internal/agentbridge/runtimeactor/**"
+      - "internal/agentbridge/bridge/**"
+      - "tools/executablesearchpath/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  executable-search-path-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify executable search path evidence
+        run: |
+          mkdir -p out
+          go test ./tools/executablesearchpath ./internal/agentbridge/detectutil -count=1
+          go run ./tools/executablesearchpath \
+            -check-doc \
+            -evidence-out out/executable-search-path-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: executable-search-path-evidence
+          path: out/executable-search-path-evidence.json
+          if-no-files-found: error
