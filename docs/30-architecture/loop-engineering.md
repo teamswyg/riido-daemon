@@ -164,6 +164,23 @@
   - `command`: go run ./tools/approvaltimeout -check-doc -evidence-out /tmp/approval-wait-timeout-evidence.json; proves approval wait timeout manifest matches related manifests and runtime sources
   - `workflow`: .github/workflows/approval-wait-timeout.yml; proves public CI uploads approval wait timeout evidence
 
+### process-lifecycle
+
+- Owner: `tools/processlifecycle and process-lifecycle workflow`
+- Observe: Process lifecycle responsibilities were reader-only prose while lifecycle behavior spans Adapter, Parser, Process, Session, and Supervisor surfaces.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md`
+- Hypothesis: A manifest can generate the reader doc and prove the required process lifecycle interface and source surfaces remain present.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.riido.json`
+- Execute: Parse Go interfaces with AST, scan session/process/supervisor source checks, and upload process lifecycle evidence.
+  - Artifacts: `tools/processlifecycle`, `.github/workflows/process-lifecycle.yml`
+- Evaluate: The verifier rejects required interface surface drift, source ownership drift, and generated doc drift.
+  - Artifacts: `tools/processlifecycle/run_test.go`
+- Retrospective: Process lifecycle reader docs are generated while runtime interfaces remain the implementation evidence.
+  - Artifacts: `internal/agentbridge/adapter.go`, `internal/process/port.go`
+- Evidence:
+  - `command`: go run ./tools/processlifecycle -check-doc -evidence-out /tmp/process-lifecycle-evidence.json; proves process lifecycle manifest matches required interfaces and source consumers
+  - `workflow`: .github/workflows/process-lifecycle.yml; proves public CI uploads process lifecycle evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`
