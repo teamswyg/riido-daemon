@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "cursor-real-cli",
+  "title": "Cursor Real CLI Gate",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/cursor-real-cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Cursor real CLI evidence is opt-in and is only PASS when the provider roundtrip creates the expected daemon-selected workdir artifact."},
+    {"kind": "bullets", "items": [
+      "The adapter passes `--workspace <cwd>` and `--trust` for the daemon-selected workdir.",
+      "The daemon adapter must not default to Cursor `--yolo`.",
+      "The real CLI integration gate requires `AGENTBRIDGE_INTEGRATION=1`, local Cursor auth, `ResultCompleted`, and artifact verification."
+    ]}
+  ]
+}

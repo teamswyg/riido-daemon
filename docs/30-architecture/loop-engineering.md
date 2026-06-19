@@ -817,6 +817,24 @@
   - `command`: go run ./tools/providerdraftmapping -check-doc -evidence-out /tmp/provider-draft-mapping-evidence.json; proves related provider event draft mapping remains independently verified
   - `workflow`: .github/workflows/provider-runtime-responsibility-docs.yml; proves public CI uploads provider runtime responsibility evidence
 
+### provider-integration-gate-docs
+
+- Owner: `daemon/provider-runtime`
+- Observe: Provider runtime integration gate docs were still reader-authored scope notes while the codebase already had package, test, and matrix evidence for those boundaries.
+  - Artifacts: `docs/20-domain/provider-runtime/integration-gates.md`, `docs/20-domain/provider-runtime/integration-gates`
+- Hypothesis: An integration-gates manifest can generate the gate docs and verify source anchors for cursor real CLI, SaaS plane, task DB plane, local API, MWSD/project sync, supervisor, and daemon lifecycle scope.
+  - Artifacts: `docs/20-domain/provider-runtime/integration-gates.riido.json`, `docs/30-architecture/provider-validation-matrix.riido.json`
+- Execute: Generate the integration gate index and detail pages from SSOT fragments, while reusing integrationmatrix and providerintegrationevidence for adjacent provider evidence.
+  - Artifacts: `tools/providerintegrationgatedocs`, `.github/workflows/provider-integration-gate-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing workflow wiring, and detached matrix evidence.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `tools/integrationmatrix`, `tools/providerintegrationevidence`
+- Retrospective: Integration gate reader docs are now generated artifacts and the remaining provider-runtime manual hotspot is smaller.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/providerintegrationgatedocs -check-doc -evidence-out /tmp/provider-integration-gate-docs.json; proves provider integration gate docs are generated and source anchors still exist
+  - `command`: go run ./tools/integrationmatrix -check-doc -evidence-out /tmp/integration-matrix-docs.json; proves related architecture integration matrix remains independently verified
+  - `workflow`: .github/workflows/provider-integration-gate-docs.yml; proves public CI uploads provider integration gate evidence
+
 ## Open Gaps
 
 _None._

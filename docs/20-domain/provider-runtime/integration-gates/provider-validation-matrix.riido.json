@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "provider-validation-matrix",
+  "title": "Provider Validation Matrix",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/provider-validation-matrix.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Provider PASS/limited/blocked evidence is owned by the architecture integration matrix and provider validation manifest."},
+    {"kind": "bullets", "items": [
+      "`docs/30-architecture/provider-validation-matrix.riido.json` records provider-specific evidence rows.",
+      "OpenClaw remains `supports_worktree=false`, so worktree-required tasks must fail scheduling with `MISSING_REQUIRED_SURFACE:worktree`.",
+      "A skipped integration test, detected binary, or SaaS completed thread alone must not be claimed as filesystem side-effect evidence."
+    ]}
+  ]
+}

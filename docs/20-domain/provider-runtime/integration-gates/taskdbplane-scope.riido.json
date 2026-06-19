@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "taskdbplane-scope",
+  "title": "Task DB Plane Migration Scope",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/taskdbplane-scope.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Task DB plane adapts the local `riido-task-db.v1` file into agentbridge control-plane ports."},
+    {"kind": "bullets", "items": [
+      "`internal/taskdb` owns schema, guarded mutation, command-id idempotent replay, and validation evidence receipts.",
+      "`internal/agentbridge/controlplane/taskdbplane` owns runtime registry and lease sidecars.",
+      "Lease ID, fencing token, and capability fingerprint are required to report terminal task state."
+    ]}
+  ]
+}

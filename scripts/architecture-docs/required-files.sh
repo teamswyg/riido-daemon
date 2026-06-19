@@ -75,6 +75,27 @@ required_files=(
   docs/20-domain/provider-runtime/runtime-responsibility/provider-adapter-port.md
   docs/20-domain/provider-runtime/runtime-responsibility/provider-adapter-port.riido.json
   .github/workflows/provider-runtime-responsibility-docs.yml
+  docs/20-domain/provider-runtime/integration-gates.md
+  docs/20-domain/provider-runtime/integration-gates.riido.json
+  docs/20-domain/provider-runtime/integration-gates/cursor-real-cli.md
+  docs/20-domain/provider-runtime/integration-gates/cursor-real-cli.riido.json
+  docs/20-domain/provider-runtime/integration-gates/provider-validation-matrix.md
+  docs/20-domain/provider-runtime/integration-gates/provider-validation-matrix.riido.json
+  docs/20-domain/provider-runtime/integration-gates/supervisor-scope.md
+  docs/20-domain/provider-runtime/integration-gates/supervisor-scope.riido.json
+  docs/20-domain/provider-runtime/integration-gates/taskdbplane-scope.md
+  docs/20-domain/provider-runtime/integration-gates/taskdbplane-scope.riido.json
+  docs/20-domain/provider-runtime/integration-gates/riidoapi-local-api.md
+  docs/20-domain/provider-runtime/integration-gates/riidoapi-local-api.riido.json
+  docs/20-domain/provider-runtime/integration-gates/mwsd-project-sync.md
+  docs/20-domain/provider-runtime/integration-gates/mwsd-project-sync.riido.json
+  docs/20-domain/provider-runtime/integration-gates/saasplane-scope.md
+  docs/20-domain/provider-runtime/integration-gates/saasplane-scope.riido.json
+  docs/20-domain/provider-runtime/integration-gates/saasplane-runtime-snapshot.md
+  docs/20-domain/provider-runtime/integration-gates/saasplane-runtime-snapshot.riido.json
+  docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.md
+  docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.riido.json
+  .github/workflows/provider-integration-gate-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -176,6 +197,7 @@ required_files=(
   docs/30-architecture/loop-engineering/security-redaction.riido.json
   docs/30-architecture/loop-engineering/security-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-responsibility-docs.riido.json
+  docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

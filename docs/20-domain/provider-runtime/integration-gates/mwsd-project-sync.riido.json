@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "mwsd-project-sync",
+  "title": "MWSD And Project Sync Scope",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/mwsd-project-sync.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`mwsdbridge` and `project` are local projection adapters, not provider runtime execution owners."},
+    {"kind": "bullets", "items": [
+      "`mwsdbridge` is the anti-corruption layer for the macmini-workspace daemon socket contract.",
+      "`project` builds the Riido workspace projection and syncs projected tasks into the public task DB shape.",
+      "Project sync feeds task rows and diagnostics; it does not own provider sessions, SaaS transport, or runtime scheduling."
+    ]}
+  ]
+}

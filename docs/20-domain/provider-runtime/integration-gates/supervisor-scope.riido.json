@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-integration-gate-detail.v1",
+  "id": "supervisor-scope",
+  "title": "Supervisor Migration Scope",
+  "generated_doc": "docs/20-domain/provider-runtime/integration-gates/supervisor-scope.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The supervisor is the daemon-tier control loop that connects runtime actors, task claims, preparation, reporting, and shutdown cancellation."},
+    {"kind": "bullets", "items": [
+      "It owns public daemon runtime orchestration under `internal/agentbridge/supervisor`.",
+      "It delegates canonical persistence through control-plane ports instead of owning server HTTP transport or infra state.",
+      "It remains separate from local API, project/MWSD sync, SaaS adapter, and task DB implementation slices."
+    ]}
+  ]
+}
