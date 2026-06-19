@@ -1,0 +1,32 @@
+# RIID-4686 — mwsdbridge/Project Projection Sync Migration
+
+[Back to riidoapi local API](../riidoapi-local-api.md)
+
+This slice moves the public-safe mwsd workspace projection adapter:
+
+- `internal/mwsdbridge`
+- `internal/project`
+- `riido mwsd snapshot|projection|sync|orchestration|projects|status`
+- focused public CI for mwsd Unix-socket handshake, workspace projection,
+  project state persistence, project-to-taskdb sync, CLI black-box sync, public
+  boundary import checks, no-public-TCP listener checks, and stdlib-only Go
+  dependency checks
+
+`internal/mwsdbridge` is the anti-corruption layer for the local
+macmini-workspace daemon. It reads only the mwsd JSON socket contracts and must
+not parse macmini-workspace files directly.
+
+`internal/project` owns the deterministic `riido-workspace-projection.v1` and
+`riido-project-state.v1` files. Its task DB sync adapter is intentionally narrow:
+it projects mwsd-discovered document tasks into public `internal/taskdb` records
+and initial `TaskCreated` transitions, but guarded task mutation remains owned
+by `internal/taskdb`.
+
+The CLI remains a thin adapter for this slice. `riido mwsd sync` writes the
+project state file and updates `riido-task-db.v1` through the projection sync
+adapter. It does not start provider processes, talk to the SaaS server, open
+public TCP listeners, or bundle the mwsd daemon.
+
+This slice does not move full `riido daemon ...` process lifecycle commands,
+`controlplane/saasplane`, server HTTP transport, packaging artifacts, private
+infra, secrets, or local machine state.
