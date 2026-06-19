@@ -96,6 +96,23 @@
   - `command`: go run ./tools/eventauthority -check-doc -evidence-out /tmp/event-authority-evidence.json; proves event authority manifest matches Draft and CanonicalEvent builder source
   - `workflow`: .github/workflows/event-authority.yml; proves public CI uploads event authority field evidence
 
+### provider-draft-mapping
+
+- Owner: `tools/providerdraftmapping and provider-draft-mapping workflow`
+- Observe: ProviderEventDraft mapping was encoded in a Go switch while reader docs only described the boundary.
+  - Artifacts: `docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json`
+- Hypothesis: A manifest can make every EventKind either mapped to an IR EventType or intentionally skipped, and prove the source switch agrees.
+  - Artifacts: `tools/providerdraftmapping/validate_test.go`
+- Execute: Parse provider_event_draft.go, compare mapped and skipped EventKind rows, and upload mapping evidence.
+  - Artifacts: `.github/workflows/provider-draft-mapping.yml`, `tools/providerdraftmapping`
+- Evaluate: The verifier rejects source mapping drift, EventKind coverage gaps, EventKind const mismatches, and generated doc drift.
+  - Artifacts: `docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md`
+- Retrospective: Provider draft mapping reader docs are generated, while the switch remains runtime source evidence.
+  - Artifacts: `internal/agentbridge/supervisor/provider_event_draft.go`
+- Evidence:
+  - `command`: go run ./tools/providerdraftmapping -check-doc -evidence-out /tmp/provider-draft-mapping-evidence.json; proves provider draft mapping manifest matches source switch and EventKind coverage
+  - `workflow`: .github/workflows/provider-draft-mapping.yml; proves public CI uploads provider draft mapping evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

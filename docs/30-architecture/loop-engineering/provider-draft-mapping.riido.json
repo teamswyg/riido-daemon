@@ -1,0 +1,10 @@
+{
+  "id": "provider-draft-mapping",
+  "owner": "tools/providerdraftmapping and provider-draft-mapping workflow",
+  "observation": {"summary": "ProviderEventDraft mapping was encoded in a Go switch while reader docs only described the boundary.", "artifacts": ["docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json"]},
+  "hypothesis": {"summary": "A manifest can make every EventKind either mapped to an IR EventType or intentionally skipped, and prove the source switch agrees.", "artifacts": ["tools/providerdraftmapping/validate_test.go"]},
+  "execution": {"summary": "Parse provider_event_draft.go, compare mapped and skipped EventKind rows, and upload mapping evidence.", "artifacts": [".github/workflows/provider-draft-mapping.yml", "tools/providerdraftmapping"]},
+  "evaluation": {"summary": "The verifier rejects source mapping drift, EventKind coverage gaps, EventKind const mismatches, and generated doc drift.", "artifacts": ["docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md"]},
+  "retrospective": {"summary": "Provider draft mapping reader docs are generated, while the switch remains runtime source evidence.", "artifacts": ["internal/agentbridge/supervisor/provider_event_draft.go"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/providerdraftmapping -check-doc -evidence-out /tmp/provider-draft-mapping-evidence.json", "proves": "provider draft mapping manifest matches source switch and EventKind coverage"}, {"kind": "workflow", "ref": ".github/workflows/provider-draft-mapping.yml", "proves": "public CI uploads provider draft mapping evidence"}]
+}

@@ -9,6 +9,8 @@ required_files=(
   docs/readme/verification.riido.json
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json
+  docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md
+  docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json
   docs/30-architecture/module-decomposition.md
   docs/30-architecture/cli-surface.md
   docs/30-architecture/config-reference.md
@@ -37,12 +39,10 @@ if scripts/verify-riido-work-branch.sh "codex/not-allowed"; then
   echo "namespaced helper branch unexpectedly passed"
   exit 1
 fi
-
 if scripts/verify-riido-work-branch.sh "feature-branch"; then
   echo "non-Riido branch unexpectedly passed"
   exit 1
 fi
-
 stale_pattern='후속 architecture-doc migration|architecture-doc migration slice|github.com/teamswyg/riido_daemon|cmd/riido_ai_server|internal/riidoaiserver|terraform/'
 stale="$(grep -R --line-number -E "$stale_pattern" \
   docs/20-domain docs/30-architecture docs/50-roadmap || true)"
@@ -58,16 +58,14 @@ env_keys=(
 for key in "${env_keys[@]}"; do
   grep -q "$key" docs/30-architecture/config-reference.md
 done
-
 scripts/verify-go-dependencies.sh
-
-go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity -count=1
-go test ./tools/eventauthority -count=1
+go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity ./tools/eventauthority ./tools/providerdraftmapping -count=1
 go run ./tools/loopevidence -check
 go run ./tools/docmap -check
 go run ./tools/repoverification -check-doc
 go run ./tools/semanticeventactivity -check-doc
 go run ./tools/eventauthority -check-doc
+go run ./tools/providerdraftmapping -check-doc
 go run ./tools/redactiondrift
 go run ./tools/providerintegrationevidence -check-doc
 go run ./tools/runtimesecretevidence -check-doc
