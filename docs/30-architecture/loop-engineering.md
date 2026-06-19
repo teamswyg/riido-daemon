@@ -957,6 +957,23 @@
   - `command`: go run ./tools/workspacedocs -check-doc -evidence-out /tmp/workspace-docs.json; proves workspace root docs are generated and closed Q-WS/source anchors still exist
   - `workflow`: .github/workflows/workspace-docs.yml; proves public CI uploads workspace wrapper evidence
 
+### readme-docs
+
+- Owner: `daemon/repo-docs`
+- Observe: Four secondary README pages remained reader-authored while doc-map and repo verification entrypoints were generated.
+  - Artifacts: `docs/readme/module-map.md`, `docs/readme/provider-cli.md`, `docs/readme/repository-boundary.md`, `docs/readme/run-and-smoke.md`
+- Hypothesis: A small README page manifest can make repository handoff knowledge executable without changing daemon runtime behavior.
+  - Artifacts: `docs/readme/readme-pages.riido.json`
+- Execute: Generate README handoff markdown from page fragments and source checks that anchor CLI, provider, installer, and task-source facts.
+  - Artifacts: `tools/readmedocs`, `.github/workflows/readme-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing page fragments, and missing public CI evidence upload.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: README support pages become generated evidence surfaces, leaving migration history and roadmap as explicit manual debt.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/readmedocs -check-doc -evidence-out /tmp/readme-docs.json; proves README handoff docs are generated and source anchors remain present
+  - `workflow`: .github/workflows/readme-docs.yml; proves public CI uploads README handoff evidence
+
 ### workspace-invariants-docs
 
 - Owner: `daemon/workspace`

@@ -1,0 +1,36 @@
+{
+  "id": "readme-docs",
+  "owner": "daemon/repo-docs",
+  "observation": {
+    "summary": "Four secondary README pages remained reader-authored while doc-map and repo verification entrypoints were generated.",
+    "artifacts": ["docs/readme/module-map.md", "docs/readme/provider-cli.md", "docs/readme/repository-boundary.md", "docs/readme/run-and-smoke.md"]
+  },
+  "hypothesis": {
+    "summary": "A small README page manifest can make repository handoff knowledge executable without changing daemon runtime behavior.",
+    "artifacts": ["docs/readme/readme-pages.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate README handoff markdown from page fragments and source checks that anchor CLI, provider, installer, and task-source facts.",
+    "artifacts": ["tools/readmedocs", ".github/workflows/readme-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source anchors, missing page fragments, and missing public CI evidence upload.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "README support pages become generated evidence surfaces, leaving migration history and roadmap as explicit manual debt.",
+    "artifacts": ["docs/executable-knowledge.md", "docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/readmedocs -check-doc -evidence-out /tmp/readme-docs.json",
+      "proves": "README handoff docs are generated and source anchors remain present"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/readme-docs.yml",
+      "proves": "public CI uploads README handoff evidence"
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+name: readme-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/readme-docs.yml"
+      - "docs/README.md"
+      - "docs/readme/**"
+      - "tools/readmedocs/**"
+      - "tools/docmap/**"
+      - "tools/repoverification/**"
+      - "cmd/riido/**"
+      - "internal/provider/**"
+      - "scripts/install-riido-daemon.sh"
+      - "scripts/integration-smoke.sh"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/readme-docs.yml"
+      - "docs/README.md"
+      - "docs/readme/**"
+      - "tools/readmedocs/**"
+      - "tools/docmap/**"
+      - "tools/repoverification/**"
+      - "cmd/riido/**"
+      - "internal/provider/**"
+      - "scripts/install-riido-daemon.sh"
+      - "scripts/integration-smoke.sh"
+
+jobs:
+  readme-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify README docs
+        run: |
+          mkdir -p out
+          go run ./tools/readmedocs -check-doc -evidence-out out/readme-docs.json
+          go run ./tools/docmap -check -evidence-out out/doc-map-evidence.json
+          go run ./tools/repoverification -check-doc -evidence-out out/repo-verification-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: readme-docs
+          path: out/*.json
+          if-no-files-found: error

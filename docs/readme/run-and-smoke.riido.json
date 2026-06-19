@@ -1,0 +1,24 @@
+{
+  "schema_version": "riido-readme-page.v1",
+  "id": "readme-run-and-smoke",
+  "title": "README: Run And Smoke",
+  "generated_doc": "docs/readme/run-and-smoke.md",
+  "back_title": "README",
+  "back_path": "../../README.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Install latest macOS/Linux release:"},
+    {"kind": "code", "language": "bash", "code": "curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh"},
+    {"kind": "paragraph", "text": "`latest` is resolved through the GitHub Releases API because public daemon release currently uses the pre-release channel instead of GitHub's stable `/releases/latest` endpoint."},
+    {"kind": "paragraph", "text": "Install a specific release:"},
+    {"kind": "code", "language": "bash", "code": "RIIDO_DAEMON_VERSION=v0.0.1 \\\ncurl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh"},
+    {"kind": "paragraph", "text": "Desktop/MSIX launchers download the matching GitHub Release asset into app user data before launching it. Distribution details live in [`docs/30-architecture/release-artifacts.md`](../30-architecture/release-artifacts.md)."},
+    {"kind": "code", "language": "bash", "code": "go run ./cmd/riido --help\ngo run ./cmd/riido bridge providers\ngo run ./cmd/riido daemon start --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid --log-file /tmp/riido-agentd.log\ngo run ./cmd/riido daemon status --socket /tmp/riido-agentd.sock\ngo run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid\ngo run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid --force"},
+    {"kind": "paragraph", "text": "`riido daemon ...` chooses its task source through Factor 12 env:"},
+    {"kind": "bullets", "items": [
+      "`RIIDO_TASK_QUEUE_DIR`",
+      "`RIIDO_TASK_DB_SOURCE_PATH`",
+      "`RIIDO_SAAS_URL` + `RIIDO_DEVICE_ID` + `RIIDO_DEVICE_SECRET`"
+    ]},
+    {"kind": "paragraph", "text": "Only one source should be selected as the production source."}
+  ]
+}

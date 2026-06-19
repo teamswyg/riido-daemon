@@ -20,13 +20,6 @@
       "reason": "open questions are still reader-authored and not derived from an executable backlog model",
       "next_artifact": "promote roadmap questions into generated open-question registry",
       "path_prefixes": ["docs/50-roadmap/"]
-    },
-    {
-      "id": "readme-manual-surface",
-      "owner": "daemon/repo-docs",
-      "reason": "secondary readme pages still mix generated entrypoints with reader-authored guides",
-      "next_artifact": "promote remaining docs/readme guides into doc-map or verification SSOT",
-      "path_prefixes": ["docs/readme/"]
     }
   ],
   "assertions": [

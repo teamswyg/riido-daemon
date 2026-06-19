@@ -1,0 +1,30 @@
+{
+  "schema_version": "riido-readme-pages.v1",
+  "id": "daemon-readme-handoff-pages",
+  "title": "README Handoff Pages",
+  "workflow": ".github/workflows/readme-docs.yml",
+  "evidence_artifact": "readme-docs",
+  "fragments": [
+    "module-map.riido.json",
+    "provider-cli.riido.json",
+    "repository-boundary.riido.json",
+    "run-and-smoke.riido.json"
+  ],
+  "source_checks": [
+    {"name": "bridge-providers-cli", "file": "cmd/riido/bridge_model.go", "contains": "`riido bridge providers`"},
+    {"name": "daemon-command-surface", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandDaemon mainCommand = \"daemon\""},
+    {"name": "task-source-env", "file": "cmd/riido/daemon_config.go", "contains": "envTaskDBSourcePath              = \"RIIDO_TASK_DB_SOURCE_PATH\""},
+    {"name": "saas-device-env", "file": "cmd/riido/daemon_config.go", "contains": "envDeviceSecret                  = \"RIIDO_DEVICE_SECRET\""},
+    {"name": "claude-override", "file": "internal/provider/claude/detect.go", "contains": "const EnvOverride = \"RIIDO_CLAUDE_PATH\""},
+    {"name": "codex-override", "file": "internal/provider/codex/detect.go", "contains": "const EnvOverride = \"RIIDO_CODEX_PATH\""},
+    {"name": "openclaw-override", "file": "internal/provider/openclaw/detect_config.go", "contains": "const EnvOverride = \"RIIDO_OPENCLAW_PATH\""},
+    {"name": "cursor-override", "file": "internal/provider/cursor/constants.go", "contains": "EnvOverride       = \"RIIDO_CURSOR_PATH\""},
+    {"name": "integration-smoke-gate", "file": "scripts/integration-smoke.sh", "contains": "AGENTBRIDGE_INTEGRATION=1 go test \"./internal/provider/$provider\" -race -run TestIntegration -v"},
+    {"name": "github-release-installer", "file": "scripts/install-riido-daemon.sh", "contains": "https://api.github.com/repos/$repo/releases?per_page=1"}
+  ],
+  "assertions": [
+    "README handoff pages are generated from executable JSON fragments instead of reader-authored markdown",
+    "provider CLI names and override env keys must be anchored in adapter code or smoke scripts",
+    "run and smoke commands must stay aligned with CLI command constants and installer behavior"
+  ]
+}
