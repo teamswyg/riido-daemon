@@ -397,6 +397,23 @@
   - `command`: go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out /tmp/repo-executable-knowledge-coverage.json; proves repo-wide docs are generated, direct-SSOT backed, or registered as manual debt
   - `workflow`: .github/workflows/repo-executable-knowledge-coverage.yml; proves public CI uploads repo-wide executable knowledge coverage evidence
 
+### knowledge-coverage-breakdown
+
+- Owner: `daemon/repo-docs`
+- Observe: knowledgecoverage emitted repo-wide counts but did not expose the highest manual directories or representative manual docs in machine-readable evidence.
+  - Artifacts: `tools/knowledgecoverage`, `docs/executable-knowledge.md`
+- Hypothesis: Adding bounded manual hotspots and samples to the evidence artifact makes the next SSOT conversion target observable without running ad hoc shell probes.
+  - Artifacts: `tools/knowledgecoverage/types.go`, `tools/knowledgecoverage/manual_breakdown.go`
+- Execute: Extend knowledgecoverage evidence and generated docs with top manual directories plus per-group samples while keeping the existing public CI workflow.
+  - Artifacts: `tools/knowledgecoverage/evidence.go`, `.github/workflows/repo-executable-knowledge-coverage.yml`
+- Evaluate: The verifier now reports bounded `manual_top_dirs` and `manual_samples` in JSON and keeps generated reader docs in sync.
+  - Artifacts: `tools/knowledgecoverage/manual_breakdown_test.go`, `docs/executable-knowledge.md`
+- Retrospective: Manual debt remains debt, but the next conversion queue is now produced by the same evidence system that tracks coverage.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out /tmp/repo-executable-knowledge-coverage.json; proves repo coverage evidence includes counts, manual hotspots, and manual samples
+  - `workflow`: .github/workflows/repo-executable-knowledge-coverage.yml; proves public CI publishes the enriched repo coverage evidence
+
 ### release-artifact-docs
 
 - Owner: `release packaging`

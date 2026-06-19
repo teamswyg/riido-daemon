@@ -19,6 +19,8 @@ func buildEvidence(m manifest, docs []docClass, problems []string) evidence {
 		ManualCount:      counts["manual_registered"],
 		ManualGroups:     manualGroupIDs(m),
 		ManualByGroup:    manualCountsByGroup(docs),
+		ManualTopDirs:    manualTopDirs(docs, 12),
+		ManualSamples:    manualSamples(docs, 5),
 		ProblemSummaries: problems,
 		EvidenceArtifact: m.EvidenceArtifact,
 	}

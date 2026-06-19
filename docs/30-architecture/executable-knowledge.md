@@ -18,6 +18,16 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
 
+## Manual Hotspots
+
+| Directory | Matched docs |
+| --- | ---: |
+
+## Manual Samples
+
+| Group | Path |
+| --- | --- |
+
 ## Assertions
 
 - 30-architecture markdown must be generated, backed by a direct .riido.json, or registered as a manual surface with a next executable artifact

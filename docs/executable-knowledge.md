@@ -22,6 +22,43 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
 | `readme-manual-surface` | daemon/repo-docs | promote remaining docs/readme guides into doc-map or verification SSOT | 4 |
 
+## Manual Hotspots
+
+| Directory | Matched docs |
+| --- | ---: |
+| `docs/20-domain/provider-runtime` | 37 |
+| `docs/20-domain/workspace` | 17 |
+| `docs/20-domain/distribution-host-integration` | 16 |
+| `docs/20-domain/security` | 10 |
+| `docs/migration/cli` | 8 |
+| `docs/migration/daemon` | 8 |
+| `docs/migration/daemon/distribution-host-integration` | 8 |
+| `docs/migration/daemon/macos-provider-cli-review` | 7 |
+| `docs/migration/daemon/daemon-lifecycle-cli` | 6 |
+| `docs/migration/daemon/figma-boundary-provenance` | 6 |
+| `docs/20-domain` | 5 |
+| `docs/migration/daemon/codex-auth-full-access` | 5 |
+
+## Manual Samples
+
+| Group | Path |
+| --- | --- |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/invariants.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/invariants/app-data-root.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/invariants/channels-and-roles.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/invariants/core.md` |
+| `roadmap-manual-surface` | `docs/50-roadmap/open-questions.md` |
+| `migration-history-manual-surface` | `docs/migration/cli.md` |
+| `migration-history-manual-surface` | `docs/migration/cli/cli-daemon-split.md` |
+| `migration-history-manual-surface` | `docs/migration/cli/current-slices.md` |
+| `migration-history-manual-surface` | `docs/migration/cli/migration-order.md` |
+| `migration-history-manual-surface` | `docs/migration/cli/open-follow-ups.md` |
+| `readme-manual-surface` | `docs/readme/module-map.md` |
+| `readme-manual-surface` | `docs/readme/provider-cli.md` |
+| `readme-manual-surface` | `docs/readme/repository-boundary.md` |
+| `readme-manual-surface` | `docs/readme/run-and-smoke.md` |
+
 ## Assertions
 
 - repository docs markdown must be generated, direct-SSOT backed, or registered as manual debt
