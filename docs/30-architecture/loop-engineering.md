@@ -411,18 +411,18 @@
 ### store-distribution
 
 - Owner: `tools/storecontract`
-- Observe: Store channel claims are observed through a package/distribution contract.
-  - Artifacts: `packaging/store/riido_daemon_store_distribution.riido.json`
+- Observe: Store channel claims are observed through a package/distribution contract and generated policy table.
+  - Artifacts: `packaging/store/riido_daemon_store_distribution.riido.json`, `docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md`
 - Hypothesis: A distribution change can accidentally add forbidden artifacts, terms, or user-path leakage.
   - Artifacts: `tools/storecontract/schema.go`
-- Execute: Run the store contract verifier against the repository.
-  - Artifacts: `tools/storecontract/run.go`
-- Evaluate: The verifier fails on missing docs, notice terms, forbidden package roots, or user-path artifacts.
-  - Artifacts: `tools/storecontract/artifact_scan.go`
+- Execute: Run the store contract verifier and regenerate/check the policy table from the C7 decision function.
+  - Artifacts: `tools/storecontract/run.go`, `tools/storecontract/policy_table_doc.go`
+- Evaluate: The verifier fails on missing docs, notice terms, forbidden package roots, user-path artifacts, or stale policy-table documentation.
+  - Artifacts: `tools/storecontract/artifact_scan.go`, `tools/storecontract/policy_table_test.go`
 - Retrospective: Store review and channel decisions are promoted into C11 SSOT instead of loose notes.
   - Artifacts: `docs/30-architecture/store-distribution.md`
 - Evidence:
-  - `command`: go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .; proves store distribution contract remains executable
+  - `command`: go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo . -check-policy-table; proves store distribution contract and generated policy table remain executable
 
 ### privacy-metadata-evidence
 

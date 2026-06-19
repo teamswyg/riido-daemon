@@ -7,6 +7,10 @@ import (
 )
 
 func run(repoRoot, contractPath string) (checkResult, error) {
+	return runWithOptions(repoRoot, contractPath, runOptions{})
+}
+
+func runWithOptions(repoRoot, contractPath string, opts runOptions) (checkResult, error) {
 	result := newCheckResult(contractPath)
 	root, err := filepath.Abs(repoRoot)
 	if err != nil {
@@ -22,6 +26,7 @@ func run(repoRoot, contractPath string) (checkResult, error) {
 
 	result.addContractMetadata(loaded)
 	problems := validateStoreContract(root, loaded)
+	problems = append(problems, applyPolicyTableOptions(root, loaded, opts, &result)...)
 	if len(problems) > 0 {
 		result.Errors = problems
 		return result, errors.New("store distribution contract failed")

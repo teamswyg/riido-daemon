@@ -1,10 +1,12 @@
 {
   "id": "store-distribution",
   "owner": "tools/storecontract",
-  "observation": {"summary": "Store channel claims are observed through a package/distribution contract.", "artifacts": ["packaging/store/riido_daemon_store_distribution.riido.json"]},
+  "observation": {"summary": "Store channel claims are observed through a package/distribution contract and generated policy table.", "artifacts": ["packaging/store/riido_daemon_store_distribution.riido.json", "docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md"]},
   "hypothesis": {"summary": "A distribution change can accidentally add forbidden artifacts, terms, or user-path leakage.", "artifacts": ["tools/storecontract/schema.go"]},
-  "execution": {"summary": "Run the store contract verifier against the repository.", "artifacts": ["tools/storecontract/run.go"]},
-  "evaluation": {"summary": "The verifier fails on missing docs, notice terms, forbidden package roots, or user-path artifacts.", "artifacts": ["tools/storecontract/artifact_scan.go"]},
+  "execution": {"summary": "Run the store contract verifier and regenerate/check the policy table from the C7 decision function.", "artifacts": ["tools/storecontract/run.go", "tools/storecontract/policy_table_doc.go"]},
+  "evaluation": {"summary": "The verifier fails on missing docs, notice terms, forbidden package roots, user-path artifacts, or stale policy-table documentation.", "artifacts": ["tools/storecontract/artifact_scan.go", "tools/storecontract/policy_table_test.go"]},
   "retrospective": {"summary": "Store review and channel decisions are promoted into C11 SSOT instead of loose notes.", "artifacts": ["docs/30-architecture/store-distribution.md"]},
-  "evidence": [{"kind": "command", "ref": "go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .", "proves": "store distribution contract remains executable"}]
+  "evidence": [
+    {"kind": "command", "ref": "go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo . -check-policy-table", "proves": "store distribution contract and generated policy table remain executable"}
+  ]
 }

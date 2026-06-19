@@ -9,6 +9,7 @@ on:
       - "docs/20-domain/distribution-host-integration.md"
       - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
+      - "docs/30-architecture/loop-engineering/store-distribution.riido.json"
       - "docs/migration/daemon.md"
       - "internal/hostintegration/**"
       - "internal/policy/**"
@@ -23,6 +24,7 @@ on:
       - "docs/20-domain/distribution-host-integration.md"
       - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
+      - "docs/30-architecture/loop-engineering/store-distribution.riido.json"
       - "docs/migration/daemon.md"
       - "internal/hostintegration/**"
       - "internal/policy/**"
@@ -43,4 +45,13 @@ jobs:
       - name: Test store contract tool
         run: go test ./tools/storecontract -count=1
       - name: Verify store distribution contract
-        run: go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .
+        run: >
+          go run ./tools/storecontract
+          -contract packaging/store/riido_daemon_store_distribution.riido.json
+          -repo .
+          -check-policy-table
+          -out /tmp/store-distribution-contract.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: store-distribution-contract
+          path: /tmp/store-distribution-contract.json

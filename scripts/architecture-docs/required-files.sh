@@ -8,6 +8,8 @@ required_files=(
   docs/readme/document-map.riido.json
   docs/readme/verification.md
   docs/readme/verification.riido.json
+  docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md
+  docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.riido.json
   docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md
   docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.riido.json
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md
@@ -73,6 +75,7 @@ required_files=(
   .github/workflows/full-access-harness-evidence.yml
   .github/workflows/assignment-fsm-evidence.yml
   .github/workflows/privacy-metadata-evidence.yml
+  .github/workflows/store-distribution-contract.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml
 )

@@ -10,9 +10,16 @@ func main() {
 	contractPath := flag.String("contract", "packaging/store/riido_daemon_store_distribution.riido.json", "store distribution contract path")
 	repoRoot := flag.String("repo", ".", "repository root")
 	outPath := flag.String("out", "", "optional JSON check output path")
+	policyTablePath := flag.String("policy-table", defaultPolicyTablePath, "generated store channel policy table path")
+	writePolicyTable := flag.Bool("write-policy-table", false, "rewrite the generated store channel policy table")
+	checkPolicyTable := flag.Bool("check-policy-table", false, "verify the generated store channel policy table")
 	flag.Parse()
 
-	result, err := run(*repoRoot, *contractPath)
+	result, err := runWithOptions(*repoRoot, *contractPath, runOptions{
+		PolicyTablePath:  *policyTablePath,
+		WritePolicyTable: *writePolicyTable,
+		CheckPolicyTable: *checkPolicyTable,
+	})
 	if *outPath != "" {
 		if writeErr := writeJSON(*outPath, result); writeErr != nil {
 			fmt.Fprintln(os.Stderr, writeErr)
