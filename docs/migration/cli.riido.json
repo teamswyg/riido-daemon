@@ -4,6 +4,7 @@
   "title": "Riido CLI Migration Plan",
   "workflow": ".github/workflows/migration-cli-docs.yml",
   "evidence_artifact": "migration-cli-docs",
+  "expected_page_count": 9,
   "fragments": [
     "cli/root.riido.json",
     "cli/retired-source-boundary.riido.json",
