@@ -15,6 +15,7 @@
     "docs/30-architecture/loop-engineering/shutdown-authority.riido.json",
     "docs/30-architecture/loop-engineering/approval-wait-timeout.riido.json",
     "docs/30-architecture/loop-engineering/process-lifecycle.riido.json",
+    "docs/30-architecture/loop-engineering/draft-field-surface.riido.json",
     "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
     "docs/30-architecture/loop-engineering/store-distribution.riido.json",
     "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",

@@ -181,6 +181,23 @@
   - `command`: go run ./tools/processlifecycle -check-doc -evidence-out /tmp/process-lifecycle-evidence.json; proves process lifecycle manifest matches required interfaces and source consumers
   - `workflow`: .github/workflows/process-lifecycle.yml; proves public CI uploads process lifecycle evidence
 
+### draft-field-surface
+
+- Owner: `tools/draftfields and draft-fields workflow`
+- Observe: Allowed and forbidden provider draft fields were reader-only prose while adapter authority is enforced in code.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md`, `docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md`
+- Hypothesis: A single manifest can generate the field docs, separate implemented fields from reserved vocabulary, and prove forbidden authority fields do not leak into draft construction.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json`
+- Execute: Scan allowed source evidence, forbidden draft scope tokens, and generated docs.
+  - Artifacts: `tools/draftfields`, `.github/workflows/draft-fields.yml`
+- Evaluate: The verifier rejects missing implemented field evidence, reserved fields with fake source claims, forbidden token leaks, and generated doc drift.
+  - Artifacts: `tools/draftfields/run_test.go`
+- Retrospective: Draft field reader docs now come from executable field surface ontology instead of manual prose.
+  - Artifacts: `internal/agentbridge/supervisor/provider_event_draft.go`
+- Evidence:
+  - `command`: go run ./tools/draftfields -check-doc -evidence-out /tmp/draft-fields-evidence.json; proves draft field surface and authority boundary remain executable
+  - `workflow`: .github/workflows/draft-fields.yml; proves public CI uploads draft field surface evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

@@ -1,0 +1,42 @@
+{
+  "schema_version": "riido-draft-field-surface.v1",
+  "id": "provider-runtime-draft-field-surface",
+  "title": "Draft Field Surface",
+  "allowed_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md",
+  "forbidden_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md",
+  "workflow": ".github/workflows/draft-fields.yml",
+  "evidence_artifact": "draft-fields-evidence",
+  "forbidden_scope": [
+    "internal/agentbridge/supervisor/provider_event_draft.go",
+    "internal/agentbridge/supervisor/terminal_result_draft.go"
+  ],
+  "allowed_fields": [
+    {"field": "Type", "status": "implemented", "meaning": "normalized IR event type selected by providerEventDraft", "source": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "(ir.EventType, map[string]any, bool)"},
+    {"field": "Payload", "status": "implemented", "meaning": "provider-observed event data that is safe to forward as a draft payload", "source": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "map[string]any"},
+    {"field": "ProviderSessionID", "status": "implemented", "meaning": "provider-native session identifier observed from EventSessionIdentified", "source": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "\"providerSessionID\": ev.SessionID"},
+    {"field": "RawType", "status": "source_only", "meaning": "provider-specific raw event type before adapter translation", "source": "internal/agentbridge/adapter_parser.go", "contains": "Type    string"},
+    {"field": "Raw", "status": "source_only", "meaning": "raw provider payload/bytes may exist before translation but is not emitted by providerEventDraft", "source": "internal/agentbridge/adapter_parser.go", "contains": "Payload map[string]any"},
+    {"field": "ObservedAt", "status": "source_only", "meaning": "run-scope observation time carried by agentbridge.Event; workspace draft emission does not currently persist it", "source": "internal/agentbridge/event.go", "contains": "At           time.Time"},
+    {"field": "Unknown", "status": "reserved", "meaning": "reserved vocabulary for preserving unknown provider fields without granting authority"},
+    {"field": "ProviderTurnID", "status": "reserved", "meaning": "reserved vocabulary for provider-native turn identifiers when a provider exposes one"}
+  ],
+  "forbidden_fields": [
+    {"field": "EventID", "filled_by": "EventIngestor", "reason": "central event id issue keeps append ordering deterministic", "tokens": ["EventID", "eventID", "event_id"]},
+    {"field": "sequence / ordering metadata", "filled_by": "EventIngestor", "reason": "events for one task must be ordered by ingest authority", "tokens": ["Sequence", "sequence", "Ordering", "ordering"]},
+    {"field": "RuntimeID", "filled_by": "EventIngestor lease lookup", "reason": "lease owns the runtime identity paired to the assignment", "tokens": ["RuntimeID", "runtimeID", "runtime_id"]},
+    {"field": "CapabilityFingerprint", "filled_by": "EventIngestor lease lookup", "reason": "capability identity must match the paired lease fingerprint", "tokens": ["CapabilityFingerprint", "capabilityFingerprint", "capability_fingerprint"]},
+    {"field": "ActorKind", "filled_by": "authorized caller / EventIngestor config", "reason": "adapter-owned attribution breaks audit invariants", "tokens": ["ActorKind", "actorKind", "actor_kind"]},
+    {"field": "ActorID", "filled_by": "server transition layer", "reason": "actor attribution belongs to authorized orchestration", "tokens": ["ActorID", "actorID", "actor_id"]},
+    {"field": "EventSchemaVersion", "filled_by": "EventIngestor", "reason": "active reducer version is not adapter-local", "tokens": ["EventSchemaVersion", "eventSchemaVersion", "event_schema_version"]},
+    {"field": "FSMVersion", "filled_by": "server transition layer", "reason": "only transition events get the active FSM schema", "tokens": ["FSMVersion", "fsmVersion", "fsm_version"]},
+    {"field": "OccurredAt", "filled_by": "EventIngestor", "reason": "ingest owns external event timestamp policy", "tokens": ["OccurredAt", "occurredAt", "occurred_at"]},
+    {"field": "IngestedAt", "filled_by": "EventIngestor", "reason": "append time is decided by ingest authority", "tokens": ["IngestedAt", "ingestedAt", "ingested_at"]}
+  ],
+  "assertions": [
+    "adapter draft surface is observation-only",
+    "implemented allowed fields must have source evidence",
+    "reserved allowed fields must be named but not falsely claimed as emitted",
+    "forbidden authority fields must not appear in draft construction scope",
+    "EventIngestor remains the only append authority"
+  ]
+}
