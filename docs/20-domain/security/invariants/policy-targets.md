@@ -17,5 +17,8 @@ trust tier.
 | T-MCP | MCP server allowlist | allowed MCP server ids plus transport limits |
 | T-CFG | native config injection | task-level policy files materialized into workdir |
 
+Secret exposure redaction marker/catalog details are owned by
+[`../security-redaction.md`](../security-redaction.md).
+
 This document owns target enum values and meanings. Adjacent contexts consume
 only decisions, such as "T-SBX -> workspace-write".

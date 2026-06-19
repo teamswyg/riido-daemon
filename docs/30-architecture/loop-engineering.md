@@ -62,27 +62,22 @@
 
 ### security-redaction
 
-- Owner: `event-ingestor and toolargs workflows`
+- Owner: `event-ingestor, toolargs, and redactiondrift workflows`
 - Observe: Secret redaction decisions are observed through C7 policy, ToolRef args, and C2 EventIngestor tests.
   - Artifacts: `docs/20-domain/security-redaction.md`
 - Hypothesis: Security docs must not redefine redaction markers outside the redaction SSOT.
   - Artifacts: `docs/20-domain/security-redaction/verification-gates.md`
-- Execute: Run redaction/audit and toolargs/toolpolicy workflows.
-  - Artifacts: `.github/workflows/event-ingestor.yml`, `.github/workflows/toolargs-toolpolicy.yml`
-- Evaluate: Tests prove marker generation, safe-value behavior, second-pass redaction, and PolicyViolationDetected audit append.
-  - Artifacts: `internal/policy/redaction_test.go`, `internal/ir/ingest/event_redaction_test.go`
-- Retrospective: Remaining drift checks are tracked as loop gaps until they become executable workflow rules.
+- Execute: Run redaction/audit tests, toolargs/toolpolicy tests, and the doc drift verifier.
+  - Artifacts: `.github/workflows/event-ingestor.yml`, `.github/workflows/toolargs-toolpolicy.yml`, `tools/redactiondrift`
+- Evaluate: Tests prove marker generation, safe-value behavior, second-pass redaction, PolicyViolationDetected audit append, and no marker/catalog redefinition outside the SSOT.
+  - Artifacts: `internal/policy/redaction_test.go`, `internal/ir/ingest/event_redaction_test.go`, `tools/redactiondrift/run_test.go`
+- Retrospective: When security hub docs need redaction details, they link to the redaction SSOT instead of restating marker/catalog rules.
   - Artifacts: `docs/20-domain/security-redaction/verification-gates.md`
 - Evidence:
-  - `command`: go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1; proves redaction behavior is executable even before broader drift checks
+  - `command`: go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1; proves redaction behavior is executable
+  - `command`: go run ./tools/redactiondrift; proves security docs do not redefine redaction marker/catalog details outside the SSOT
 
 ## Open Gaps
-
-### redaction-doc-drift
-
-- Owner: `architecture-docs`
-- Current handling: security-redaction behavior tests exist, but security.md drift prevention is still described as follow-up
-- Required next artifact: a verifier that rejects redaction marker/catalog redefinition outside docs/20-domain/security-redaction.md
 
 ### runtime-secret-private-evidence
 

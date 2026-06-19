@@ -37,17 +37,19 @@
     },
     {
       "id": "security-redaction",
-      "owner": "event-ingestor and toolargs workflows",
+      "owner": "event-ingestor, toolargs, and redactiondrift workflows",
       "observation": {"summary": "Secret redaction decisions are observed through C7 policy, ToolRef args, and C2 EventIngestor tests.", "artifacts": ["docs/20-domain/security-redaction.md"]},
       "hypothesis": {"summary": "Security docs must not redefine redaction markers outside the redaction SSOT.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
-      "execution": {"summary": "Run redaction/audit and toolargs/toolpolicy workflows.", "artifacts": [".github/workflows/event-ingestor.yml", ".github/workflows/toolargs-toolpolicy.yml"]},
-      "evaluation": {"summary": "Tests prove marker generation, safe-value behavior, second-pass redaction, and PolicyViolationDetected audit append.", "artifacts": ["internal/policy/redaction_test.go", "internal/ir/ingest/event_redaction_test.go"]},
-      "retrospective": {"summary": "Remaining drift checks are tracked as loop gaps until they become executable workflow rules.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
-      "evidence": [{"kind": "command", "ref": "go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1", "proves": "redaction behavior is executable even before broader drift checks"}]
+      "execution": {"summary": "Run redaction/audit tests, toolargs/toolpolicy tests, and the doc drift verifier.", "artifacts": [".github/workflows/event-ingestor.yml", ".github/workflows/toolargs-toolpolicy.yml", "tools/redactiondrift"]},
+      "evaluation": {"summary": "Tests prove marker generation, safe-value behavior, second-pass redaction, PolicyViolationDetected audit append, and no marker/catalog redefinition outside the SSOT.", "artifacts": ["internal/policy/redaction_test.go", "internal/ir/ingest/event_redaction_test.go", "tools/redactiondrift/run_test.go"]},
+      "retrospective": {"summary": "When security hub docs need redaction details, they link to the redaction SSOT instead of restating marker/catalog rules.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
+      "evidence": [
+        {"kind": "command", "ref": "go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1", "proves": "redaction behavior is executable"},
+        {"kind": "command", "ref": "go run ./tools/redactiondrift", "proves": "security docs do not redefine redaction marker/catalog details outside the SSOT"}
+      ]
     }
   ],
   "open_gaps": [
-    {"id": "redaction-doc-drift", "owner": "architecture-docs", "current_handling": "security-redaction behavior tests exist, but security.md drift prevention is still described as follow-up", "required_next_artifact": "a verifier that rejects redaction marker/catalog redefinition outside docs/20-domain/security-redaction.md"},
     {"id": "runtime-secret-private-evidence", "owner": "riido-infra", "current_handling": "public daemon docs describe metadata-only secret evidence, but the collector/tool is outside this repository", "required_next_artifact": "private infra evidence packet or public stub manifest that proves no raw secret collection path"},
     {"id": "real-cli-continuous-observation", "owner": "provider runtime", "current_handling": "real provider tests are operator opt-in via scripts/integration-smoke.sh", "required_next_artifact": "scheduled/manual public workflow or external evidence artifact recording latest available-provider run"}
   ]

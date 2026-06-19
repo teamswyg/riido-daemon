@@ -30,6 +30,9 @@ Harness responsibilities:
 - runtime slot, lease, fencing token, and task-level active assignment policy
 - provider real-integration gate and workdir side-effect verification
 
+Redaction marker/catalog details remain owned by
+[`../security-redaction.md`](../security-redaction.md).
+
 This replaces the RIID-4881 permission-profile experiment. The new model admits
 full-access execution explicitly and manages its risk through harness, lease,
 heartbeat, and evidence.
