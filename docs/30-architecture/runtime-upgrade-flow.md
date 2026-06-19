@@ -44,6 +44,12 @@ Invariant: An active provider run must not silently move to a different runtime 
 | prepared metadata carries native config version | `implemented` |  | Supervisor applies NativeConfigVersion to task metadata before provider start. | `workspace-metadata-native-config` |
 | dirty workdir reinjection threshold is zero | `reserved` | `Q-WS-006` | The closed policy decision is that automatic threshold for a dirty workdir is zero; this repo slice does not yet prove the runtime enforcement path. | requires: workdir/supervisor test proving dirty Preparing/Running workdirs never receive in-place native config reinjection |
 
+## Forbidden Claims
+
+| Claim | Reason |
+| --- | --- |
+| `active runtime drift implemented claim` | active Running drift cancellation is reserved until runtimeactor enforcement evidence exists |
+
 ## Assertions
 
 - `Implemented rows must point at source evidence.`

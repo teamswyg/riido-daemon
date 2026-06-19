@@ -30,6 +30,9 @@
     {"name": "prepared metadata carries native config version", "status": "implemented", "summary": "Supervisor applies NativeConfigVersion to task metadata before provider start.", "source_checks": ["workspace-metadata-native-config"]},
     {"name": "dirty workdir reinjection threshold is zero", "status": "reserved", "decision_refs": ["Q-WS-006"], "summary": "The closed policy decision is that automatic threshold for a dirty workdir is zero; this repo slice does not yet prove the runtime enforcement path.", "required_evidence": "workdir/supervisor test proving dirty Preparing/Running workdirs never receive in-place native config reinjection"}
   ],
+  "absent_surfaces": [
+    {"name": "active runtime drift implemented claim", "scope": ["docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md"], "tokens": ["RuntimePinViolated"], "reason": "active Running drift cancellation is reserved until runtimeactor enforcement evidence exists"}
+  ],
   "source_checks": [
     {"name": "daemon-version-status", "file": "cmd/riido/daemon_status_types.go", "contains": "DaemonVersion  string"},
     {"name": "capability-fingerprint", "file": "internal/agentbridge/runtimeactor/capability.go", "contains": "ComputeCapabilityFingerprint"},

@@ -10,6 +10,7 @@ func writeFixtureRepo(t *testing.T, repo string) {
 	t.Helper()
 	writeFile(t, repo, defaultManifest, fixtureManifestSource)
 	writeFile(t, repo, "internal/source.go", "package internal\nconst _ = \"needle\"\n")
+	writeFile(t, repo, "docs/claims.md", "reserved claim only\n")
 }
 
 func writeFile(t *testing.T, repo, rel, body string) {

@@ -16,6 +16,7 @@ func render(manifest Manifest) string {
 	writeRuleTable(&b, "Flow", manifest.Flow)
 	writeRuleTable(&b, "Policy", manifest.Policies)
 	writeRuleTable(&b, "Native Config", manifest.NativeConfig)
+	writeAbsentSurfaces(&b, manifest.AbsentSurfaces)
 	writeAssertions(&b, manifest.Assertions)
 	return b.String()
 }

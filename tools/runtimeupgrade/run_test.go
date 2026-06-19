@@ -29,3 +29,12 @@ func TestRunDetectsReservedRuleWithSourceChecks(t *testing.T) {
 		t.Fatal("expected reserved rule with source checks to fail")
 	}
 }
+
+func TestRunDetectsForbiddenClaim(t *testing.T) {
+	repo := t.TempDir()
+	writeFixtureRepo(t, repo)
+	writeFile(t, repo, "docs/claims.md", "RuntimePinViolated\n")
+	if err := run(t.Context(), options{Repo: repo, Manifest: defaultManifest}); err == nil {
+		t.Fatal("expected forbidden implemented claim")
+	}
+}

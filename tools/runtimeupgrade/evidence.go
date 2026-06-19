@@ -4,6 +4,7 @@ func buildEvidence(
 	manifest Manifest,
 	problems []problem,
 	sources []SourceResult,
+	absent []AbsentCheck,
 	reserved []ReservedRule,
 ) Evidence {
 	status := "verified"
@@ -18,6 +19,7 @@ func buildEvidence(
 		ImplementedRules: implemented,
 		ReservedRules:    reservedCount,
 		SourceChecks:     sources,
+		AbsentChecks:     absent,
 		Reserved:         reserved,
 		Assertions:       manifest.Assertions,
 		ProblemSummaries: problemMessages(problems),
