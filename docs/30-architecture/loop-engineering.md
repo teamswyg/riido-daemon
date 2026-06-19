@@ -853,6 +853,24 @@
   - `command`: go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc; proves repository manual documentation debt decreases after boundary docs become generated
   - `workflow`: .github/workflows/provider-runtime-boundary-docs.yml; proves public CI uploads provider runtime boundary evidence
 
+### workspace-native-config-docs
+
+- Owner: `daemon/workspace`
+- Observe: Workspace native-config manifest docs referenced executable workdir IR and generated Go code, but the reader-facing C6 boundary was still manually edited markdown.
+  - Artifacts: `docs/20-domain/workspace/native-config-manifest.md`, `docs/20-domain/workspace/native-config-manifest`, `internal/workdir/native_config_plan.riido.json`
+- Hypothesis: A workspace-native-config manifest can generate the C6 manifest/materialization/version/lock/adjacent-decision docs and verify source anchors in the workdir IR, generator template, render code, version hash code, and retention config.
+  - Artifacts: `docs/20-domain/workspace/native-config-manifest.riido.json`, `internal/workdir/native_config_model.go`, `internal/workdir/native_config_version.go`
+- Execute: Generate the native config manifest index and detail pages from SSOT fragments, while leaving C7 native-config/MCP evidence as an adjacent security surface.
+  - Artifacts: `tools/workspacenativeconfigdocs`, `.github/workflows/workspace-native-config-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing fragments, missing workflow wiring, and missing coverage registration.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The C6 native config docs become generated evidence and reduce the workspace manual hotspot without changing runtime behavior.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/workspacenativeconfigdocs -check-doc -evidence-out /tmp/workspace-native-config-docs.json; proves workspace native config docs are generated and source anchors still exist
+  - `command`: go test ./internal/workdir -run 'NativeConfig|Archive|CleanupArchivedBefore' -count=1; proves workdir native config and archive behavior still matches the documented C6 boundary
+  - `workflow`: .github/workflows/workspace-native-config-docs.yml; proves public CI uploads workspace native config evidence
+
 ## Open Gaps
 
 _None._

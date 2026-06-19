@@ -1,0 +1,29 @@
+{
+  "schema_version": "riido-workspace-native-config-detail.v1",
+  "id": "manifest-materialization",
+  "title": "Native Config Manifest And Materialization",
+  "generated_doc": "docs/20-domain/workspace/native-config-manifest/manifest-materialization.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The executable SSOT for provider native config file plans is `internal/workdir/native_config_plan.riido.json` (`riido-native-config-plan.v1`). `go generate ./internal/workdir` compiles it through `tools/riidogen/templates/native_config_plan.go.gotmpl` into `internal/workdir/native_config_plan_gen.go`."},
+    {"kind": "paragraph", "text": "`riido-native-config-manifest.v1` is the current evidence for provider-native config materialization. The same manifest content is written under `workdir/.riido/native-config-manifest.json` and `native-config/.riido/native-config-manifest.json`."},
+    {"kind": "table", "columns": ["Field", "Meaning"], "rows": [
+      ["`schema_version`", "Always `riido-native-config-manifest.v1`."],
+      ["`provider_kind`", "Provider family such as `claude`, `codex`, `openclaw`, `cursor`, or fallback."],
+      ["`protocol_kind`", "Protocol kind selected by C3; omitted when empty."],
+      ["`primary_instruction_file`", "Provider auto-loaded instruction file such as `CLAUDE.md`, `AGENTS.md`, or `GEMINI.md`."],
+      ["`manifest_file`", "Manifest relative path, currently `.riido/native-config-manifest.json`."],
+      ["`hook_mode`", "`instruction-only` or a provider-native hook materialization mode such as `claude-command-hooks`."],
+      ["`config_home_dir`", "Provider config home relative path when task-scoped config home is explicitly materialized."],
+      ["`provider_settings_files`", "Provider settings/config files that the provider can read."],
+      ["`hook_files`", "Provider-native hook script files referenced by settings."],
+      ["`telemetry_contract_placement`", "Where the SaaS source placed the telemetry contract."],
+      ["`workflow`", "Runtime config workflow branch; defaults to `default`."],
+      ["`generated_files`", "Deterministically materialized relative file paths, including the manifest itself."]
+    ]},
+    {"kind": "table", "columns": ["Provider", "Generated files", "Meaning"], "rows": [
+      ["Claude", "`CLAUDE.md`, `.claude/settings.json`, `.riido/hooks/claude-audit-hook.sh`, `.riido/native-config-manifest.json`", "Claude command hook files may materialize only when C7 allows the `claude:command-hooks:audit` surface; otherwise hook mode falls back to `instruction-only`."],
+      ["Codex", "`AGENTS.md`, `.riido/native-config-manifest.json`", "Codex task-scoped `.codex/config.toml` or `CODEX_HOME` overlay is not materialized by C6; C4 owns the full-access runtime envelope."],
+      ["OpenClaw / Cursor / unknown", "`AGENTS.md`, `.riido/native-config-manifest.json`", "Current default is provider-neutral instruction file injection only."]
+    ]}
+  ]
+}

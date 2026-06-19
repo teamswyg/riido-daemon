@@ -1,0 +1,23 @@
+{
+  "schema_version": "riido-workspace-native-config-detail.v1",
+  "id": "overlay-and-hooks",
+  "title": "Overlay, Deterministic Materialization, And Hook Boundaries",
+  "generated_doc": "docs/20-domain/workspace/native-config-manifest/overlay-and-hooks.md",
+  "blocks": [
+    {"kind": "heading", "text": "Native Config Overlay Policy"},
+    {"kind": "paragraph", "text": "The native config overlay standard is per-task materialization that does not read or copy user-global provider config. Claude command hooks and future provider-native config homes are enabled only through explicit C7 policy bundle surfaces."},
+    {"kind": "bullets", "items": [
+      "Codex does not use this C6 overlay; the C4 adapter launches the mandatory full-access runtime envelope.",
+      "OpenClaw, Cursor, and unknown providers default to instruction-only overlay.",
+      "Adding a new provider-native overlay surface requires one change set covering C7 policy surface, `riido-native-config-plan.v1`, manifest fields, and NativeConfigVersion input."
+    ]},
+    {"kind": "heading", "text": "Deterministic Materialization"},
+    {"kind": "paragraph", "text": "The same policy bundle version and task plan must produce the same file set and file contents. Random salt, timestamp, or hostname values must not leak into generated native config files."},
+    {"kind": "heading", "text": "Protected Path And Hook Separation"},
+    {"kind": "bullets", "items": [
+      "C7 decides which paths are protected (`T-PATH`).",
+      "C6 implements protected path mechanics such as local file attributes, readonly mounts, or namespace preparation.",
+      "C4 executes provider hooks when the adapter receives a materialized hook script; the script content still originates from policy."
+    ]}
+  ]
+}

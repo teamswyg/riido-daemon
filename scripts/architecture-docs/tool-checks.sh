@@ -14,6 +14,7 @@ tool_tests=(
   ./tools/providerruntimeresponsibilitydocs
   ./tools/providerintegrationgatedocs
   ./tools/providerruntimeboundarydocs
+  ./tools/workspacenativeconfigdocs
   ./tools/redactiondrift
   ./tools/providerintegrationevidence
   ./tools/providermigrationdocs
@@ -64,6 +65,7 @@ doc_tools=(
   providerruntimeresponsibilitydocs
   providerintegrationgatedocs
   providerruntimeboundarydocs
+  workspacenativeconfigdocs
   semanticeventactivity
   eventauthority
   providerdraftmapping

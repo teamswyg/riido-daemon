@@ -1,0 +1,25 @@
+{
+  "schema_version": "riido-workspace-native-config-detail.v1",
+  "id": "resolved-decisions",
+  "title": "Resolved Workdir Decisions And Version-Affecting Changes",
+  "generated_doc": "docs/20-domain/workspace/native-config-manifest/resolved-decisions.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The following RIID-4573 decisions are absorbed into this C6 SSOT and must not be reintroduced as roadmap open questions."},
+    {"kind": "table", "columns": ["ID", "Decision", "Follow-up owner"], "rows": [
+      ["`Q-WS-001`", "Local daemon archive backend default is same-host run root `keep-in-place`; S3/compressed/external storage requires an explicit archive adapter and config.", "future infra/archive adapter"],
+      ["`Q-WS-002`", "Default workdir retention is disabled; `RIIDO_WORKDIR_RETENTION_SECONDS` enables archived-run TTL cleanup and no size/task-count cleanup exists by default.", "daemon config + workdir cleanup"],
+      ["`Q-WS-003`", "Shared repo cache prune has no automatic schedule and must be operator-triggered maintenance with a short `repo_cache_update.lock`.", "future cache maintenance adapter"],
+      ["`Q-WS-004`", "Native config overlay is per-task materialization by default; user-global config overlay/copy is forbidden unless C7 and C6 explicitly add it.", "C7 policy + C6 workdir"],
+      ["`Q-WS-005`", "Container/VM workdir delivery is owned by C4 runtime launcher / platform adapter; C6 provides host-side run root, files, and manifest.", "future isolated runtime launcher"],
+      ["`Q-WS-006`", "Automatic in-place `ReinjectNativeConfig` threshold for dirty workdirs is zero; policy/config changes route through runtime upgrade flow.", "runtime upgrade flow + supervisor"]
+    ]},
+    {"kind": "heading", "text": "Version-Affecting Changes"},
+    {"kind": "bullets", "items": [
+      "New operation: `change:additive` with C2 Cat E event update.",
+      "Directory layout change: `change:breaking-policy` plus migration tool.",
+      "`NativeConfigVersion` algorithm change: `change:breaking-ir` while preserving old schema outputs forever.",
+      "Lock policy change: `change:breaking-policy` because distributed safety can change.",
+      "Protected path implementation change: `change:behavioral`; C7 owns policy decision while C6 owns implementation."
+    ]}
+  ]
+}

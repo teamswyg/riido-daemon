@@ -1,0 +1,54 @@
+name: workspace-native-config-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/workspace-native-config-docs.yml"
+      - "docs/20-domain/workspace/native-config-manifest.md"
+      - "docs/20-domain/workspace/native-config-manifest.riido.json"
+      - "docs/20-domain/workspace/native-config-manifest/**"
+      - "docs/20-domain/security/enforcement-locations/native-config-and-mcp**"
+      - "docs/30-architecture/config-reference**"
+      - "docs/30-architecture/runtime-upgrade-flow**"
+      - "tools/workspacenativeconfigdocs/**"
+      - "internal/workdir/**"
+      - "cmd/riido/daemon_config_workdir*.go"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/workspace-native-config-docs.yml"
+      - "docs/20-domain/workspace/native-config-manifest.md"
+      - "docs/20-domain/workspace/native-config-manifest.riido.json"
+      - "docs/20-domain/workspace/native-config-manifest/**"
+      - "docs/20-domain/security/enforcement-locations/native-config-and-mcp**"
+      - "docs/30-architecture/config-reference**"
+      - "docs/30-architecture/runtime-upgrade-flow**"
+      - "tools/workspacenativeconfigdocs/**"
+      - "internal/workdir/**"
+      - "cmd/riido/daemon_config_workdir*.go"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  workspace-native-config-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify workspace native config docs
+        run: |
+          mkdir -p out
+          go run ./tools/workspacenativeconfigdocs \
+            -check-doc \
+            -evidence-out out/workspace-native-config-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workspace-native-config-docs
+          path: out/*.json
+          if-no-files-found: error

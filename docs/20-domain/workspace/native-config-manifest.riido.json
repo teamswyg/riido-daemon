@@ -1,0 +1,61 @@
+{
+  "schema_version": "riido-workspace-native-config-docs.v1",
+  "id": "workspace-native-config-docs",
+  "title": "Workspace / Native Config SSOT: Native Config Manifest",
+  "generated_doc": "docs/20-domain/workspace/native-config-manifest.md",
+  "workflow": ".github/workflows/workspace-native-config-docs.yml",
+  "evidence_artifact": "workspace-native-config-docs",
+  "summary": [
+    "This SSOT fixes the C6 native config manifest, deterministic materialization, NativeConfigVersion, workspace lock policy, adjacent contracts, and closed workdir decisions as generated documentation.",
+    "The executable file-plan source remains `internal/workdir/native_config_plan.riido.json`; this manifest generates the reader-facing boundary and verifies source anchors around the generated plan and workdir implementation."
+  ],
+  "detail_pages": [
+    {"id": "manifest-materialization", "title": "Native Config Manifest And Materialization", "path": "native-config-manifest/manifest-materialization.md"},
+    {"id": "overlay-and-hooks", "title": "Overlay, Deterministic Materialization, And Hook Boundaries", "path": "native-config-manifest/overlay-and-hooks.md"},
+    {"id": "native-config-version", "title": "NativeConfigVersion Rules", "path": "native-config-manifest/native-config-version.md"},
+    {"id": "workspace-lock-policy", "title": "Workspace Lock Policy", "path": "native-config-manifest/workspace-lock-policy.md"},
+    {"id": "adjacent-contracts", "title": "Adjacent SSOT Contracts", "path": "native-config-manifest/adjacent-contracts.md"},
+    {"id": "resolved-decisions", "title": "Resolved Workdir Decisions And Version-Affecting Changes", "path": "native-config-manifest/resolved-decisions.md"}
+  ],
+  "related_pages": [
+    {"id": "workspace-invariants", "title": "Workspace Invariants", "path": "invariants.md"},
+    {"id": "native-config-mcp", "title": "Native Config And MCP Security Evidence", "path": "../security/enforcement-locations/native-config-and-mcp.md"},
+    {"id": "runtime-upgrade-flow", "title": "Runtime Upgrade Flow", "path": "../../30-architecture/runtime-upgrade-flow.md"},
+    {"id": "config-reference", "title": "Config Reference", "path": "../../30-architecture/config-reference.md"}
+  ],
+  "fragments": {
+    "manifest-materialization": "native-config-manifest/manifest-materialization.riido.json",
+    "overlay-and-hooks": "native-config-manifest/overlay-and-hooks.riido.json",
+    "native-config-version": "native-config-manifest/native-config-version.riido.json",
+    "workspace-lock-policy": "native-config-manifest/workspace-lock-policy.riido.json",
+    "adjacent-contracts": "native-config-manifest/adjacent-contracts.riido.json",
+    "resolved-decisions": "native-config-manifest/resolved-decisions.riido.json"
+  },
+  "source_checks": [
+    {"name": "native-config-plan-ir", "file": "internal/workdir/native_config_plan.riido.json", "contains": "\"schema_version\": \"riido-native-config-plan.v1\""},
+    {"name": "native-config-plan-generate", "file": "internal/workdir/generate.go", "contains": "go:generate go run ../../tools/riidogen -kind native-config-plan"},
+    {"name": "native-config-plan-template", "file": "tools/riidogen/templates/native_config_plan.go.gotmpl", "contains": "NativeConfigManifestSchemaVersion"},
+    {"name": "native-config-manifest-model", "file": "internal/workdir/native_config_model.go", "contains": "type NativeConfigManifest struct"},
+    {"name": "native-config-generated-files", "file": "internal/workdir/native_config_model.go", "contains": "func (p ProviderNativeConfigPlan) GeneratedFiles()"},
+    {"name": "native-config-render-generated-files", "file": "internal/workdir/native_config_manifest_render.go", "contains": "GeneratedFiles:             plan.GeneratedFiles()"},
+    {"name": "native-config-version-hash", "file": "internal/workdir/native_config_version.go", "contains": "sha256-hex NativeConfigVersion"},
+    {"name": "native-config-version-policy-bound", "file": "internal/workdir/native_config_version_test.go", "contains": "assertVersionChangesForPolicy"},
+    {"name": "native-config-version-content-bound", "file": "internal/workdir/native_config_version_test.go", "contains": "assertVersionChangesForContent"},
+    {"name": "claude-command-hooks", "file": "internal/workdir/native_config_claude_hooks_test.go", "contains": "TestInjectClaudeWritesSettingsAndHook"},
+    {"name": "codex-instruction-only", "file": "internal/workdir/native_config_codex_manifest_test.go", "contains": "HookMode != NativeConfigHookModeInstructionOnly"},
+    {"name": "native-hook-policy-decision", "file": "internal/workdir/native_config_options.go", "contains": "NativeConfigHookModeInstructionOnly"},
+    {"name": "workdir-adapter-port", "file": "internal/workdir/adapter.go", "contains": "InjectRuntimeConfig before handing the workdir to the runtime actor"},
+    {"name": "workspace-layout", "file": "internal/workdir/fs_workspace_layout.go", "contains": "NativeConfig: filepath.Join(taskRoot, \"native-config\")"},
+    {"name": "archive-keep-in-place", "file": "internal/workdir/fs_archive.go", "contains": "RetentionModeKeepInPlace"},
+    {"name": "workdir-retention-config", "file": "cmd/riido/daemon_config.go", "contains": "RIIDO_WORKDIR_RETENTION_SECONDS"},
+    {"name": "no-size-task-count-cleanup", "file": "docs/30-architecture/config-reference.md", "contains": "no default size/task-count cleanup"}
+  ],
+  "assertions": [
+    "The provider native config file plan is generated from `internal/workdir/native_config_plan.riido.json`; code must not redefine provider filename or hook mapping ad hoc.",
+    "`riido-native-config-manifest.v1` is replayable evidence written into the workdir and native-config copy.",
+    "`NativeConfigVersion` is deterministic, policy-bound, and content-bound for all injected files.",
+    "Native config overlay is per-task by default; user-global config copy/overlay requires explicit C7 surface and C6 manifest/version changes.",
+    "C6 owns host-side workdir and manifest materialization, while C4 owns runtime launch and C7 owns security policy decisions.",
+    "Q-WS decisions stay closed as executable C6/C7/runtime evidence and must not drift back into roadmap prose."
+  ]
+}
