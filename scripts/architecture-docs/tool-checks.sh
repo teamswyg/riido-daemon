@@ -30,6 +30,7 @@ tool_tests=(
   ./tools/releaseartifacts
   ./tools/integrationmatrix
   ./tools/moduledecomposition
+  ./tools/storedistributiondocs
   ./tools/runtimeupgrade
   ./tools/localdaemoncontract
   ./tools/runtimeeligibility
@@ -64,6 +65,7 @@ doc_tools=(
   releaseartifacts
   integrationmatrix
   moduledecomposition
+  storedistributiondocs
   figmaboundarydocs
   localdaemoncontract
   runtimeeligibility

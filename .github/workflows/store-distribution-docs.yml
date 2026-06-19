@@ -1,0 +1,48 @@
+name: store-distribution-docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/store-distribution-docs.yml"
+      - "docs/30-architecture/store-distribution.riido.json"
+      - "docs/30-architecture/store-distribution.md"
+      - "docs/30-architecture/store-distribution/**"
+      - "packaging/store/**"
+      - "tools/storedistributiondocs/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/store-distribution-docs.yml"
+      - "docs/30-architecture/store-distribution.riido.json"
+      - "docs/30-architecture/store-distribution.md"
+      - "docs/30-architecture/store-distribution/**"
+      - "packaging/store/**"
+      - "tools/storedistributiondocs/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  store-distribution-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify store distribution docs
+        run: |
+          mkdir -p out
+          go test ./tools/storedistributiondocs -count=1
+          go run ./tools/storedistributiondocs \
+            -check-doc \
+            -evidence-out out/store-distribution-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: store-distribution-docs
+          path: out/store-distribution-docs.json
+          if-no-files-found: error

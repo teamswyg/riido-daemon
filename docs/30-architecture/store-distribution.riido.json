@@ -1,0 +1,50 @@
+{
+  "schema_version": "riido-store-distribution-docs.v1",
+  "id": "store-distribution-docs",
+  "title": "Store Distribution Architecture SSOT",
+  "generated_doc": "docs/30-architecture/store-distribution.md",
+  "workflow": ".github/workflows/store-distribution-docs.yml",
+  "evidence_artifact": "store-distribution-docs",
+  "riido_task": "RIID-4570",
+  "store_contract": "packaging/store/riido_daemon_store_distribution.riido.json",
+  "compatibility_markers": ["Q-CTX-005", "future desktop/app repository", "public repositories never store secrets", "user-selected/sandbox/security-scoped OS grant 와 App Review approval"],
+  "decisions": [
+    "Provider CLIs are not included in package artifacts; they are user-installed external tools.",
+    "Mac uses Developer ID notarized distribution first; Mac App Store requires sandbox/helper/workspace grant redesign.",
+    "Windows uses MSIX sideload first; Microsoft Store requires packaged desktop app and review evidence.",
+    "Store App and Local Helper are separated by role: UI owns consent/status/grants, helper owns local-only IPC and task execution orchestration.",
+    "Store review mode is required and must work without provider CLIs."
+  ],
+  "external_sources": [
+    {"label": "Apple App Review Guidelines", "url": "https://developer.apple.com/app-store/review/guidelines/"},
+    {"label": "Apple Developer ID", "url": "https://developer.apple.com/support/developer-id/"},
+    {"label": "Microsoft Store Policies", "url": "https://learn.microsoft.com/en-us/windows/apps/publish/store-policies"},
+    {"label": "MSIX packaged desktop apps", "url": "https://learn.microsoft.com/en-us/windows/msix/desktop/desktop-to-uwp-behind-the-scenes"}
+  ],
+  "daemon_changes": [
+    {"work": "Local IPC abstraction", "owner_context": "C11", "output": "Unix socket / Windows named pipe adapters behind one port"},
+    {"work": "App data root abstraction", "owner_context": "C11/C6", "output": "dev-local / Developer ID / App Store / MSIX path selection"},
+    {"work": "ExternalToolRegistry", "owner_context": "C11/C3", "output": "provider path provenance + version/login status"},
+    {"work": "ConsentLedger", "owner_context": "C11/C7", "output": "background/provider/workspace/telemetry grants"},
+    {"work": "WorkspaceGrantStore", "owner_context": "C11/C6", "output": "macOS security-scoped bookmark / Windows folder grant representation"},
+    {"work": "StoreChannelPolicyGate", "owner_context": "C11/C7", "output": "channel-specific blocked reasons"},
+    {"work": "Store-safe demo mode", "owner_context": "C11", "output": "reviewable/offline UX without provider spawn or SaaS telemetry sync"},
+    {"work": "Distribution contract gate", "owner_context": "C11", "output": "executable check that provider binaries are not bundled"}
+  ],
+  "server_changes": [
+    {"work": "Distribution metadata", "owner_context": "C10", "output": "daemon poll/register payload includes channel/app version/status only"},
+    {"work": "Provider status sync", "owner_context": "C10", "output": "available/login-required/unsupported without path/token"},
+    {"work": "Capability routing gate", "owner_context": "C10 + C3/C7", "output": "task assignment excludes store-blocked or login-required runtimes"},
+    {"work": "Review/demo account", "owner_context": "C10", "output": "store-review-only SaaS seed/provisioning without real provider CLI"},
+    {"work": "Privacy policy alignment", "owner_context": "C10", "output": "API collection scope matches the public policy metadata allowlist"}
+  ],
+  "review_notes": [
+    "Riido does not include Claude / Codex / OpenClaw / Cursor Agent binaries.",
+    "Users connect provider CLIs they installed separately.",
+    "Provider execution requires explicit user consent and visible connected status.",
+    "Workspace access is limited to user-selected folders.",
+    "Background helper / startup behavior is opt-in and revocable.",
+    "SaaS sync does not upload provider executable paths, workspace absolute paths, provider tokens, API keys, or raw environment values.",
+    "Demo/review mode is available when provider CLIs are absent."
+  ]
+}

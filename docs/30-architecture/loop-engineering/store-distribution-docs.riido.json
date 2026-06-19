@@ -1,0 +1,36 @@
+{
+  "id": "store-distribution-docs",
+  "owner": "store distribution",
+  "observation": {
+    "summary": "Store distribution architecture docs were reader-authored while package channels and surfaces already live in executable store contract shards.",
+    "artifacts": ["docs/30-architecture/store-distribution.md", "packaging/store/riido_daemon_store_distribution.riido.json"]
+  },
+  "hypothesis": {
+    "summary": "A store distribution docs manifest plus contract shard reader can generate architecture and daemon-change docs while detecting doc drift.",
+    "artifacts": ["docs/30-architecture/store-distribution.riido.json", "packaging/store/riido_daemon_store_distribution/*.riido.json"]
+  },
+  "execution": {
+    "summary": "Run storedistributiondocs to check generated docs and publish compact evidence in public CI.",
+    "artifacts": ["tools/storedistributiondocs", ".github/workflows/store-distribution-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift and the architecture coverage tool no longer classifies store-distribution as manual debt.",
+    "artifacts": ["docs/30-architecture/executable-knowledge.md"]
+  },
+  "retrospective": {
+    "summary": "Store distribution architecture knowledge becomes contract-backed generated evidence instead of manually edited architecture prose.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/storedistributiondocs -check-doc -evidence-out /tmp/store-distribution-docs.json",
+      "proves": "store distribution architecture docs are generated from the docs manifest and store contract shards"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/store-distribution-docs.yml",
+      "proves": "public CI uploads store distribution docs evidence"
+    }
+  ]
+}

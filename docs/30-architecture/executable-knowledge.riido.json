@@ -28,29 +28,6 @@
         "docs/30-architecture/agent-execution-unresolved-design/verification-evidence.md",
         "docs/30-architecture/agent-execution-unresolved-design/workspace-plan.md"
       ]
-    },
-    {
-      "id": "store-distribution",
-      "owner": "store distribution",
-      "reason": "store distribution architecture docs remain hand-authored beside contract evidence",
-      "next_artifact": "generate distribution architecture/readiness tables from store contract manifest",
-      "paths": [
-        "docs/30-architecture/store-distribution.md",
-        "docs/30-architecture/store-distribution/architecture.md",
-        "docs/30-architecture/store-distribution/architecture/decisions.md",
-        "docs/30-architecture/store-distribution/architecture/mac-app-store-acceptance.md",
-        "docs/30-architecture/store-distribution/architecture/macos-helper-login.md",
-        "docs/30-architecture/store-distribution/architecture/msix-acceptance.md",
-        "docs/30-architecture/store-distribution/architecture/package-boundaries.md",
-        "docs/30-architecture/store-distribution/architecture/target-matrix.md",
-        "docs/30-architecture/store-distribution/architecture/windows-msix-runtime.md",
-        "docs/30-architecture/store-distribution/daemon-changes.md",
-        "docs/30-architecture/store-distribution/daemon-changes/executable-contract.md",
-        "docs/30-architecture/store-distribution/daemon-changes/external-sources.md",
-        "docs/30-architecture/store-distribution/daemon-changes/required-daemon-changes.md",
-        "docs/30-architecture/store-distribution/daemon-changes/required-server-changes.md",
-        "docs/30-architecture/store-distribution/daemon-changes/review-notes-contract.md"
-      ]
     }
   ],
   "assertions": [
