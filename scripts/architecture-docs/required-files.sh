@@ -11,6 +11,19 @@ required_files=(
   docs/20-domain/context-map/figma-onboarding-boundaries.riido.json
   docs/20-domain/context-map/split-repo-ownership.riido.json
   .github/workflows/context-map-docs.yml
+  docs/20-domain/locking.md
+  docs/20-domain/locking.riido.json
+  docs/20-domain/locking/local-file-lock.md
+  docs/20-domain/locking/local-file-lock.riido.json
+  docs/20-domain/locking/lease-registry.md
+  docs/20-domain/locking/lease-registry.riido.json
+  docs/20-domain/locking/acquire-release.md
+  docs/20-domain/locking/acquire-release.riido.json
+  docs/20-domain/locking/request-metadata.md
+  docs/20-domain/locking/request-metadata.riido.json
+  docs/20-domain/locking/adjacent-contracts.md
+  docs/20-domain/locking/adjacent-contracts.riido.json
+  .github/workflows/locking-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -107,6 +120,7 @@ required_files=(
   docs/30-architecture/loop-engineering.riido.json
   docs/30-architecture/loop-engineering/context-map-docs.riido.json
   docs/30-architecture/loop-engineering/provider-public-migration-docs.riido.json
+  docs/30-architecture/loop-engineering/locking-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

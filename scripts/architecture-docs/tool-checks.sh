@@ -8,6 +8,7 @@ tool_tests=(
   ./tools/providervalidation
   ./tools/agentexecutionevidence
   ./tools/loopevidence
+  ./tools/lockingdocs
   ./tools/redactiondrift
   ./tools/providerintegrationevidence
   ./tools/providermigrationdocs
@@ -52,6 +53,7 @@ tool_tests=(
 doc_tools=(
   repoverification
   contextmapdocs
+  lockingdocs
   semanticeventactivity
   eventauthority
   providerdraftmapping

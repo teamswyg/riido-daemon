@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-locking-detail.v1",
+  "id": "lease-registry",
+  "title": "Local Task DB Lease Registry",
+  "generated_doc": "docs/20-domain/locking/lease-registry.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "A task DB source using RIIDO_TASK_DB_SOURCE_PATH stores a lease sidecar next to the task DB file."},
+    {
+      "kind": "table",
+      "columns": ["task DB path", "lease registry path", "lock path"],
+      "rows": [["task-db.json", "task-db.leases.json", "task-db.json.lock"]]
+    },
+    {"kind": "paragraph", "text": "The schema version is riido-runtime-lease-registry.v1."},
+    {
+      "kind": "code",
+      "language": "json",
+      "code": "{\n  \"schema_version\": \"riido-runtime-lease-registry.v1\",\n  \"task_db_path\": \"/path/to/task-db.json\",\n  \"updated_at\": \"2026-05-25T00:00:00Z\",\n  \"leases\": [\n    {\n      \"lease_id\": \"runtime-lease:task-1:1\",\n      \"task_id\": \"task-1\",\n      \"runtime_id\": \"runtime-codex\",\n      \"capability_fingerprint\": \"sha256...\",\n      \"claimed_at\": \"2026-05-25T00:00:00Z\",\n      \"lease_until\": \"2026-05-25T00:00:30Z\",\n      \"fencing_token\": 1\n    }\n  ]\n}"
+    },
+    {"kind": "paragraph", "text": "The current local JSON lease TTL is 30 seconds. It is a local claim fencing window for reducing crash handoff time, not the provider process maximum runtime."}
+  ]
+}

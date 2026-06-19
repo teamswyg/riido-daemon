@@ -1,0 +1,50 @@
+name: locking-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/locking-docs.yml"
+      - "docs/20-domain/locking.md"
+      - "docs/20-domain/locking.riido.json"
+      - "docs/20-domain/locking/**"
+      - "tools/lockingdocs/**"
+      - "internal/lock/**"
+      - "internal/agentbridge/controlplane/**"
+      - "internal/scheduling/**"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/locking-docs.yml"
+      - "docs/20-domain/locking.md"
+      - "docs/20-domain/locking.riido.json"
+      - "docs/20-domain/locking/**"
+      - "tools/lockingdocs/**"
+      - "internal/lock/**"
+      - "internal/agentbridge/controlplane/**"
+      - "internal/scheduling/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  locking-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify locking docs
+        run: |
+          mkdir -p out
+          go run ./tools/lockingdocs \
+            -check-doc \
+            -evidence-out out/locking-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: locking-docs
+          path: out/locking-docs.json
+          if-no-files-found: error

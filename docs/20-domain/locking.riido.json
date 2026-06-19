@@ -1,0 +1,63 @@
+{
+  "schema_version": "riido-locking-docs.v1",
+  "id": "locking-lease-ssot",
+  "title": "Locking / Lease SSOT",
+  "generated_doc": "docs/20-domain/locking.md",
+  "workflow": ".github/workflows/locking-docs.yml",
+  "evidence_artifact": "locking-docs",
+  "summary": [
+    "C9 Locking / Lease owns local file lock primitives, task DB sidecar lease registry mechanics, and fencing token infrastructure rules.",
+    "C9 does not decide runtime eligibility, task lifecycle state semantics, or provider process execution."
+  ],
+  "responsibilities": [
+    "local file lock primitive",
+    "task DB sidecar lease registry persistence",
+    "fencing token increment and comparison",
+    "single-writer critical sections for local JSON task DB mutation"
+  ],
+  "non_responsibilities": [
+    "runtime scheduling eligibility decisions owned by C5",
+    "task state transition contract owned by public riido-contracts C1",
+    "provider process execution owned by C4 Provider Runtime"
+  ],
+  "invariants": [
+    "C9 provides primitives only; lock acquisition, release, sidecar update, and fencing token mechanics do not select eligible tasks.",
+    "Local JSON task DB mutation happens only under the shared task DB .lock file.",
+    "Fencing token is a task-scoped monotonic counter.",
+    "Lease pin equals the C5 RuntimeLease pair of RuntimeID and CapabilityFingerprint.",
+    "File lock is a local-only primitive; remote/distributed claims require an adapter with the same C9 meaning."
+  ],
+  "detail_pages": [
+    {"id": "local-file-lock", "title": "Local File Lock", "path": "locking/local-file-lock.md"},
+    {"id": "lease-registry", "title": "Local Task DB Lease Registry", "path": "locking/lease-registry.md"},
+    {"id": "acquire-release", "title": "Acquire / Release Rules", "path": "locking/acquire-release.md"},
+    {"id": "request-metadata", "title": "Request Metadata", "path": "locking/request-metadata.md"},
+    {"id": "adjacent-contracts", "title": "Adjacent SSOT Contracts", "path": "locking/adjacent-contracts.md"}
+  ],
+  "fragments": {
+    "local-file-lock": "locking/local-file-lock.riido.json",
+    "lease-registry": "locking/lease-registry.riido.json",
+    "acquire-release": "locking/acquire-release.riido.json",
+    "request-metadata": "locking/request-metadata.riido.json",
+    "adjacent-contracts": "locking/adjacent-contracts.riido.json"
+  },
+  "source_checks": [
+    {"name": "file-lock-acquire", "file": "internal/lock/filelock.go", "contains": "func AcquireFile(ctx context.Context, path string)"},
+    {"name": "file-lock-with", "file": "internal/lock/filelock_with.go", "contains": "func WithFile(ctx context.Context, path string, fn func() error)"},
+    {"name": "taskdb-shared-lock", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_persistence.go", "contains": "return c9lock.WithFile(ctx, p.lockPath, fn)"},
+    {"name": "lease-schema-version", "file": "internal/agentbridge/controlplane/taskdbplane/taskdbplane.go", "contains": "RuntimeLeaseRegistrySchemaVersion = \"riido-runtime-lease-registry.v1\""},
+    {"name": "lease-ttl", "file": "internal/agentbridge/controlplane/taskdbplane/taskdbplane.go", "contains": "defaultRuntimeLeaseTTL = 30 * time.Second"},
+    {"name": "lease-record-fields", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_types.go", "contains": "FencingToken          int64      `json:\"fencing_token\"`"},
+    {"name": "lease-fencing-increment", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_acquire.go", "contains": "existing.FencingToken+1"},
+    {"name": "lease-report-require", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go", "contains": "runtime fencing token mismatch"},
+    {"name": "request-metadata-keys", "file": "internal/agentbridge/controlplane/metadata.go", "contains": "MetadataRuntimeCapabilityFingerprint"},
+    {"name": "request-metadata-write", "file": "internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go", "contains": "func addLeaseMetadata(meta map[string]string, lease RuntimeLeaseRecord)"},
+    {"name": "lease-pinning-test", "file": "internal/scheduling/lease_test.go", "contains": "TestLeasePinningInvariant"},
+    {"name": "exclusive-lock-test", "file": "internal/lock/filelock_test.go", "contains": "TestWithFileSerializesExclusiveLock"}
+  ],
+  "assertions": [
+    "locking reader docs are generated from this manifest and fragments",
+    "source checks prove the local file lock, lease registry, fencing, and metadata anchors still exist",
+    "C9 locking docs must not claim C5 scheduling or C4 provider execution ownership"
+  ]
+}

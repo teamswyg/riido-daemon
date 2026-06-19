@@ -79,6 +79,23 @@
   - `command`: go run ./tools/contextmapdocs -check-doc -evidence-out /tmp/context-map-docs.json; proves context-map docs are generated from bounded-context SSOT fragments
   - `workflow`: .github/workflows/context-map-docs.yml; proves public CI uploads context-map docs evidence
 
+### locking-docs
+
+- Owner: `daemon/domain`
+- Observe: C9 Locking / Lease docs were reader-authored while file lock, sidecar lease, fencing, and metadata proof lived in Go source and tests.
+  - Artifacts: `docs/20-domain/locking.md`, `internal/lock`, `internal/agentbridge/controlplane/taskdbplane`
+- Hypothesis: A locking manifest plus detail fragments can generate reader docs and verify source anchors for lock primitives, lease registry, fencing, and request metadata.
+  - Artifacts: `docs/20-domain/locking.riido.json`, `docs/20-domain/locking/local-file-lock.riido.json`
+- Execute: Generate C9 reader docs from structured responsibilities, invariants, detail fragments, and source checks.
+  - Artifacts: `tools/lockingdocs`, `.github/workflows/locking-docs.yml`
+- Evaluate: The verifier rejects doc drift, invalid fragment blocks, missing workflow/source anchors, and source checks that no longer match the implementation.
+  - Artifacts: `docs/20-domain/locking.md`, `docs/executable-knowledge.md`
+- Retrospective: C9 locking knowledge is now an executable evidence registry rather than a hand-maintained primitive description.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/lockingdocs -check-doc -evidence-out /tmp/locking-docs.json; proves locking reader docs are generated and file-lock/lease/fencing/metadata source anchors still exist
+  - `workflow`: .github/workflows/locking-docs.yml; proves public CI uploads locking docs evidence
+
 ### provider-public-migration-docs
 
 - Owner: `daemon/domain`
