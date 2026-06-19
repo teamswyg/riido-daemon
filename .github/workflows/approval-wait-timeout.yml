@@ -1,0 +1,40 @@
+name: approval-wait-timeout
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/approval-wait-timeout.yml"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json"
+      - "docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json"
+      - "internal/agentbridge/event_kind.go"
+      - "internal/agentbridge/reducer_result_events.go"
+      - "internal/agentbridge/session/**"
+      - "tools/approvaltimeout/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  approval-wait-timeout-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify approval wait timeout
+        run: |
+          mkdir -p out
+          go test ./tools/approvaltimeout -count=1
+          go run ./tools/approvaltimeout \
+            -check-doc \
+            -evidence-out out/approval-wait-timeout-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: approval-wait-timeout-evidence
+          path: out/approval-wait-timeout-evidence.json
+          if-no-files-found: error
