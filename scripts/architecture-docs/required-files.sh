@@ -406,6 +406,7 @@ required_files=(
   .github/workflows/roadmap-docs.yml
   .github/workflows/migration-cli-docs.yml
   .github/workflows/migration-daemon-overview-docs.yml
+  .github/workflows/migration-daemon-riidoapi-local-api-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -429,6 +430,11 @@ required_files=(
   docs/migration/daemon/overview/target-boundary.riido.json
   docs/migration/daemon/overview/migration-order.riido.json
   docs/migration/daemon/overview/current-slices.riido.json
+  docs/migration/daemon/riidoapi-local-api.riido.json
+  docs/migration/daemon/riidoapi-local-api/root.riido.json
+  docs/migration/daemon/riidoapi-local-api/4684-local-api-adapter.riido.json
+  docs/migration/daemon/riidoapi-local-api/4685-task-api-bridge-cli.riido.json
+  docs/migration/daemon/riidoapi-local-api/4686-mwsdbridge-project-sync.riido.json
   docs/50-roadmap/open-questions.md
   docs/50-roadmap/open-questions.riido.json
   .github/workflows/runtime-scheduling-docs.yml

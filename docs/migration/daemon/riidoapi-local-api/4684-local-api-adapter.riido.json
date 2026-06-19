@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-riidoapi-local-api-4684",
+  "title": "RIID-4684 - riidoapi Local API Adapter Migration",
+  "generated_doc": "docs/migration/daemon/riidoapi-local-api/4684-local-api-adapter.md",
+  "back_title": "riidoapi local API",
+  "back_path": "../riidoapi-local-api.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the daemon local-only API adapter."},
+    {"kind": "bullets", "items": [
+      "`internal/riidoapi`",
+      "docs updates in distribution-host-integration, CLI migration, and daemon migration SSOT files",
+      "focused public CI for local API status/tasks/transition/evidence/validate, review-demo mode, Unix socket transport, Windows named pipe path behavior, and no-public-TCP listener boundary checks"
+    ]},
+    {"kind": "paragraph", "text": "`internal/riidoapi` owns the local JSON envelope and the local transport adapters used by GUI/Zed/CLI surfaces. The handler exposes `status`, `tasks`, `transition`, `evidence`, `validate`, and `review-demo` over local IPC only."},
+    {"kind": "paragraph", "text": "Task mutations use public `internal/taskdb` guarded transition/evidence receipts. Validation uses public `internal/validation` and rejects missing `approval_id` before running the command."},
+    {"kind": "paragraph", "text": "This slice imports C1/C2 domain types from `github.com/teamswyg/riido-contracts` and does not reintroduce private `riido_daemon` internal packages."},
+    {"kind": "paragraph", "text": "It does not move `cmd/riido` CLI commands, mwsdbridge/project projection sync, `controlplane/saasplane`, server HTTP transport, packaging artifacts, private infra, secrets, or local machine state."}
+  ]
+}
