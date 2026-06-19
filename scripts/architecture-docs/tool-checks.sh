@@ -18,6 +18,7 @@ tool_tests=(
   ./tools/providerruntimeboundarydocs
   ./tools/workspaceinvariantsdocs
   ./tools/workspacenativeconfigdocs
+  ./tools/distributionhostdocs
   ./tools/distributionhostinvariantsdocs
   ./tools/distributionhostlocalipcdocs
   ./tools/redactiondrift
@@ -75,6 +76,7 @@ doc_tools=(
   providerruntimeboundarydocs
   workspaceinvariantsdocs
   workspacenativeconfigdocs
+  distributionhostdocs
   distributionhostinvariantsdocs
   distributionhostlocalipcdocs
   semanticeventactivity

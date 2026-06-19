@@ -1,0 +1,23 @@
+{
+  "schema_version": "riido-distribution-host-page.v1",
+  "id": "review-demo-mode",
+  "title": "Review / Demo Mode",
+  "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy/review-demo-mode.md",
+  "back_title": "Store Channel Policy",
+  "back_path": "../store-channel-policy.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Review/demo mode is a C11 Store App / Local Helper control surface. It lets Store reviewers inspect offline onboarding and status surfaces without requiring provider CLI installation."},
+    {"kind": "heading", "text": "Reviewer Surfaces"},
+    {"kind": "bullets", "items": [
+      "provider CLI missing-state display",
+      "read-only provider connection preview",
+      "fake/demo workspace grant root",
+      "background helper consent UI",
+      "local-only status without SaaS",
+      "privacy and telemetry settings"
+    ]},
+    {"kind": "heading", "text": "Execution Rule"},
+    {"kind": "paragraph", "text": "`internal/hostintegration.EvaluateReviewDemoMode` enables review/demo mode only for store-managed channels with `review-demo-mode` consent. The enabled mode keeps `ProviderExecutionAllowed=false`, `TelemetrySyncAllowed=false`, and `LocalOnly=true` through the public `internal/riidoapi` `review-demo` method."},
+    {"kind": "paragraph", "text": "`riido api review-demo --channel mac-app-store --review-demo-consent-granted true` is the CLI adapter for the same local control contract. It does not detect or execute provider CLIs."}
+  ]
+}

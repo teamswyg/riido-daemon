@@ -8,16 +8,16 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 215 |
+| Generated reader docs | 220 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 81 |
+| Registered manual docs | 76 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 14 |
+| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 9 |
 | `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
 | `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
 | `readme-manual-surface` | daemon/repo-docs | promote remaining docs/readme guides into doc-map or verification SSOT | 4 |
@@ -34,20 +34,20 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `docs/migration/daemon/figma-boundary-provenance` | 6 |
 | `docs/migration/daemon/codex-auth-full-access` | 5 |
 | `docs/migration/daemon/runtime-snapshot-heartbeat` | 5 |
-| `docs/20-domain` | 4 |
-| `docs/20-domain/distribution-host-integration` | 4 |
 | `docs/migration/daemon/overview` | 4 |
 | `docs/readme` | 4 |
+| `docs/20-domain` | 3 |
+| `docs/20-domain/provider-runtime` | 3 |
 
 ## Manual Samples
 
 | Group | Path |
 | --- | --- |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/store-channel-policy.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/store-channel-policy/open-questions.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/store-channel-policy/review-demo-mode.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/store-channel-policy/versioning.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/provider-runtime.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/provider-runtime/adapter-draft-fields.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/provider-runtime/overview.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/provider-runtime/versioning.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/security.md` |
 | `roadmap-manual-surface` | `docs/50-roadmap/open-questions.md` |
 | `migration-history-manual-surface` | `docs/migration/cli.md` |
 | `migration-history-manual-surface` | `docs/migration/cli/cli-daemon-split.md` |

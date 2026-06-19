@@ -1,0 +1,16 @@
+{
+  "schema_version": "riido-distribution-host-page.v1",
+  "id": "versioning",
+  "title": "Version-Affecting Changes",
+  "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy/versioning.md",
+  "back_title": "Store Channel Policy",
+  "back_path": "../store-channel-policy.md",
+  "blocks": [
+    {"kind": "table", "columns": ["Change", "Version impact", "Required evidence"], "rows": [
+      ["Add a new `DistributionChannel`", "`change:additive`", "Regenerate StoreChannelPolicy table and distribution host docs."],
+      ["Relax provider CLI bundling prohibition", "`change:breaking-policy`", "Legal and Store review decision evidence is required before policy code changes."],
+      ["Add a Local IPC endpoint kind", "C11 additive change", "Generated local IPC docs and hostintegration endpoint model evidence must change together."],
+      ["Let C1-C10 import OS-specific IPC adapters", "context boundary violation", "Not a valid versioned change; keep OS adapters behind C11."]
+    ]}
+  ]
+}
