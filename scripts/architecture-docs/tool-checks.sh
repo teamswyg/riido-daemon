@@ -29,6 +29,7 @@ tool_tests=(
   ./tools/knowledgecoverage
   ./tools/releaseartifacts
   ./tools/integrationmatrix
+  ./tools/moduledecomposition
   ./tools/runtimeupgrade
   ./tools/localdaemoncontract
   ./tools/runtimeeligibility
@@ -62,6 +63,7 @@ doc_tools=(
   knowledgecoverage
   releaseartifacts
   integrationmatrix
+  moduledecomposition
   figmaboundarydocs
   localdaemoncontract
   runtimeeligibility

@@ -1,0 +1,49 @@
+{
+  "schema_version": "riido-module-decomposition.v1",
+  "id": "architecture-module-decomposition",
+  "title": "Module Decomposition SSOT",
+  "generated_doc": "docs/30-architecture/module-decomposition.md",
+  "workflow": ".github/workflows/module-decomposition-docs.yml",
+  "evidence_artifact": "module-decomposition-docs",
+  "riido_task": "RIID-4711",
+  "module_path": "github.com/teamswyg/riido-daemon",
+  "binary_package": "cmd/riido",
+  "purpose": "Generate package layout, import rules, ports, and daemon boundary docs from an executable module manifest plus go list evidence.",
+  "decisions": [
+    "The Go module is github.com/teamswyg/riido-daemon.",
+    "The only deployable binary in this repository is cmd/riido.",
+    "SaaS server code stays in riido-control-plane; deploy/apply/evidence code stays in riido-infra; shared DTO/schema facts stay in riido-contracts.",
+    "Claude, Codex, OpenClaw, and Cursor CLIs are external attached resources and are never bundled, installed, or silently downloaded.",
+    "Domain packages depend inward on contracts and ports. Provider, local IPC, filesystem, process, SaaS HTTP, and host/store behavior enter through adapters.",
+    "Store App GUI code is not a daemon domain package. A future desktop/app repository may own UI and OS entitlement adapters, while riido-daemon owns C11 contracts, helper runtime, local IPC server, and store distribution gates.",
+    "Future Store App GUI adapter ownership must remain an outer adapter concern, never a daemon domain dependency."
+  ],
+  "package_roles_file": "module-decomposition/package-roles.riido.json",
+  "import_rules_file": "module-decomposition/import-rules.riido.json",
+  "ports_file": "module-decomposition/ports.riido.json",
+  "factor_boundary": {
+    "configuration": "RIIDO_* env vars or explicit local CLI flags",
+    "test_gates": "AGENTBRIDGE_*",
+    "state": "Local daemon state is disposable; durable facts live in task DB JSON, sidecar lease/registry files, mwsd projection files, workdir metadata, or SaaS assignment events.",
+    "listener": "cmd/riido opens local IPC only and must not add a public HTTP listener."
+  },
+  "change_procedure": [
+    "Update this manifest if the package/dependency map changes.",
+    "Update docs/20-domain/context-map.md if bounded-context ownership changes.",
+    "Update docs/30-architecture/config-reference.md for env/config changes.",
+    "Add or update a focused public workflow when the boundary can be checked in GitHub Actions without secrets or provider binaries."
+  ],
+  "detail_docs": [
+    {"title": "Package Map", "path": "docs/30-architecture/module-decomposition/package-map.md"},
+    {"title": "Import Rules", "path": "docs/30-architecture/module-decomposition/import-rules.md"},
+    {"title": "Hexagonal Ports", "path": "docs/30-architecture/module-decomposition/hexagonal-ports.md"},
+    {"title": "12-Factor Boundary", "path": "docs/30-architecture/module-decomposition/12-factor-boundary.md"},
+    {"title": "Change Procedure", "path": "docs/30-architecture/module-decomposition/change-procedure.md"}
+  ],
+  "assertions": [
+    "The reader package map is generated from this manifest and checked against go list package existence.",
+    "Production imports for listed package groups must not match forbidden internal prefixes.",
+    "cmd/riido is the composition root; domain packages stay behind ports and adapters.",
+    "Future GUI/store app ownership remains an outer adapter concern."
+  ]
+}

@@ -346,6 +346,23 @@
   - `command`: go run ./tools/integrationmatrix -check-doc -evidence-out /tmp/integration-matrix-docs.json; proves provider integration docs are generated from integration and provider validation manifests
   - `workflow`: .github/workflows/integration-matrix-docs.yml; proves public CI uploads integration matrix docs evidence
 
+### module-decomposition-docs
+
+- Owner: `package architecture`
+- Observe: Module decomposition docs were reader-authored while package existence and production imports are observable from go list.
+  - Artifacts: `docs/30-architecture/module-decomposition.md`, `cmd`, `internal`, `pkg`
+- Hypothesis: A module decomposition manifest plus go list verifier can generate the package map, import rules, ports, and daemon boundary docs while detecting import drift.
+  - Artifacts: `docs/30-architecture/module-decomposition.riido.json`
+- Execute: Run moduledecomposition to check generated docs, package existence, binary package shape, and forbidden production imports.
+  - Artifacts: `tools/moduledecomposition`, `.github/workflows/module-decomposition-docs.yml`
+- Evaluate: The verifier rejects reader doc drift and the architecture coverage tool no longer classifies module-decomposition as manual debt.
+  - Artifacts: `docs/30-architecture/executable-knowledge.md`
+- Retrospective: Package architecture knowledge becomes go-list-backed evidence instead of a manually edited package overview.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/moduledecomposition -check-doc -evidence-out /tmp/module-decomposition-docs.json; proves module decomposition docs are generated and package/import constraints match go list evidence
+  - `workflow`: .github/workflows/module-decomposition-docs.yml; proves public CI uploads module decomposition docs evidence
+
 ### figma-boundary-docs
 
 - Owner: `figma daemon boundary`

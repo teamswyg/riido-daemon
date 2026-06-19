@@ -25,6 +25,7 @@
     "docs/30-architecture/loop-engineering/executable-knowledge-coverage.riido.json",
     "docs/30-architecture/loop-engineering/release-artifact-docs.riido.json",
     "docs/30-architecture/loop-engineering/integration-matrix-docs.riido.json",
+    "docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json",
     "docs/30-architecture/loop-engineering/figma-boundary-docs.riido.json",
     "docs/30-architecture/loop-engineering/runtime-upgrade-flow.riido.json",
     "docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json",
