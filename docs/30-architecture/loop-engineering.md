@@ -871,6 +871,24 @@
   - `command`: go test ./internal/workdir -run 'NativeConfig|Archive|CleanupArchivedBefore' -count=1; proves workdir native config and archive behavior still matches the documented C6 boundary
   - `workflow`: .github/workflows/workspace-native-config-docs.yml; proves public CI uploads workspace native config evidence
 
+### distribution-host-invariants-docs
+
+- Owner: `daemon/hostintegration`
+- Observe: Distribution host integration invariant docs described C11 host surfaces, but the reader-facing invariant pages were still manually edited markdown.
+  - Artifacts: `docs/20-domain/distribution-host-integration/invariants.md`, `docs/20-domain/distribution-host-integration/invariants`, `internal/hostintegration`
+- Hypothesis: A distribution-host-invariants manifest can generate the C11 invariant pages and verify source anchors in hostintegration models, tests, and store-distribution contracts.
+  - Artifacts: `docs/20-domain/distribution-host-integration/invariants.riido.json`, `internal/hostintegration/distribution_channel.go`, `packaging/store/riido_daemon_store_distribution.riido.json`
+- Execute: Generate the invariant index and detail pages from SSOT fragments, preserving the existing C11 runtime behavior.
+  - Artifacts: `tools/distributionhostinvariantsdocs`, `.github/workflows/distribution-host-invariants-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing fragments, missing workflow wiring, and missing coverage registration.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: C11 invariant knowledge becomes generated evidence and shrinks the largest remaining manual domain hotspot without changing runtime behavior.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/distributionhostinvariantsdocs -check-doc -evidence-out /tmp/distribution-host-invariants-docs.json; proves distribution host invariant docs are generated and source anchors still exist
+  - `command`: go test ./internal/hostintegration ./tools/storecontract -count=1; proves hostintegration domain facts and store distribution contract still match the generated invariant boundary
+  - `workflow`: .github/workflows/distribution-host-invariants-docs.yml; proves public CI uploads distribution host invariant evidence
+
 ## Open Gaps
 
 _None._

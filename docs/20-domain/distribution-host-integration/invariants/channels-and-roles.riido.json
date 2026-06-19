@@ -1,0 +1,29 @@
+{
+  "schema_version": "riido-distribution-host-invariants-detail.v1",
+  "id": "channels-and-roles",
+  "title": "Distribution Channels and Role Model",
+  "generated_doc": "docs/20-domain/distribution-host-integration/invariants/channels-and-roles.md",
+  "blocks": [
+    {"kind": "heading", "text": "Distribution Channels"},
+    {"kind": "table", "columns": ["Channel", "Meaning", "Primary purpose"], "rows": [
+      ["`developer-id`", "macOS Developer ID signed and notarized outside the Mac App Store", "Primary macOS distribution"],
+      ["`mac-app-store`", "Mac App Store sandboxed app", "Long-term restricted Store channel"],
+      ["`msix-sideload`", "Signed MSIX outside Microsoft Store", "Primary Windows distribution"],
+      ["`msix-store`", "Microsoft Store MSIX / packaged desktop app", "Windows Store distribution"],
+      ["`dev-local`", "Repository, launchd, or foreground development", "Developer-local execution"]
+    ]},
+    {"kind": "paragraph", "text": "A distribution channel is package artifact identity. The same daemon binary may expose different host surfaces when the channel changes."},
+    {"kind": "heading", "text": "Role Model"},
+    {"kind": "table", "columns": ["Role", "Owns", "Must not own"], "rows": [
+      ["Store App", "Onboarding, provider path registration, workspace selection, background/privacy settings, status and review UI", "Provider CLI binaries, silent installers, unmanaged updaters"],
+      ["Local Helper / Broker", "Local-only IPC, task claim loop, provider runtime orchestration, status and metrics", "External TCP listeners, autostart without consent"],
+      ["Provider Connector", "Executable provenance, version/login/capability probe", "Vendor code redistribution, provider license substitution"],
+      ["SaaS Control Plane", "Assignment, polling, event stream, policy-aware routing metadata", "Customer PC provider process execution"]
+    ]},
+    {"kind": "bullets", "items": [
+      "GUI adapters convert provider path, login status, workspace grant, and consent state into C11 records.",
+      "GUI adapters do not spawn provider processes; execution stays behind the local helper and C4 runtime boundary.",
+      "Shared wire types move to `riido-contracts` only when two repositories need the same contract."
+    ]}
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "schema_version": "riido-distribution-host-invariants-detail.v1",
+  "id": "app-data-root",
+  "title": "AppDataRoot",
+  "generated_doc": "docs/20-domain/distribution-host-integration/invariants/app-data-root.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/hostintegration.AppDataRoot` is the pure C11 model for approved app data roots. The model does not call OS APIs; it validates the channel, host OS, and root candidates supplied by adapters."},
+    {"kind": "code", "language": "text", "code": "AppDataRoot {\n    channel DistributionChannel\n    hostOS  \"darwin\" | \"windows\"\n    scope   \"user-application-support\" | \"sandbox-container\" | \"app-group\" |\n            \"windows-local-app-data\" | \"windows-package-local-data\"\n    path    string\n}"},
+    {"kind": "ordered", "items": [
+      "`dev-local` and `developer-id` on macOS use `$HOME/Library/Application Support/riido`.",
+      "`mac-app-store` requires an app group root or sandbox container root supplied by an adapter; user home fallback is rejected.",
+      "`msix-sideload` and `msix-store` require Windows package local data roots supplied by an adapter; user profile fallback is rejected.",
+      "C6 materializes workdirs only under `AppDataRoot.WorkdirRoot()`, which appends `workspaces/` under the approved app data root.",
+      "App data root is not the user's repository root; user-selected workspace folders are represented by `WorkspaceGrantStore`."
+    ]}
+  ]
+}

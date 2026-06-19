@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-distribution-host-invariants-detail.v1",
+  "id": "core",
+  "title": "Scope and Core Invariants",
+  "generated_doc": "docs/20-domain/distribution-host-integration/invariants/core.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This page defines the C11 Distribution / Host Integration boundary. C11 owns host surfaces, distribution-channel restrictions, local helper contracts, external provider CLI provenance, local IPC facts, app data roots, and workspace grants."},
+    {"kind": "paragraph", "text": "C11 does not own provider capability semantics (C3), workspace materialization (C6), runtime process execution (C4), security decision matrices (C7), or SaaS assignment and polling (C10)."},
+    {"kind": "heading", "text": "Core Invariants"},
+    {"kind": "ordered", "items": [
+      "Provider CLIs are never bundled in Riido package artifacts.",
+      "The Store App is a user-facing control surface for helper state, provider connection state, workspace grants, consent, privacy, telemetry, and review/demo mode.",
+      "Store App GUI adapters consume C11 contracts; they may own native UI and entitlement calls but cannot bypass C11 facts.",
+      "Background helper execution is gated by explicit consent and review-aware helper runtime plans.",
+      "Local IPC is modeled as local-only; platform endpoint details live behind OS adapters.",
+      "Store channels constrain runtime capability usage even when a provider supports a surface.",
+      "Review environments must be assessable without a provider CLI present.",
+      "Public daemon binaries may be release assets, but provider executables remain external user-installed tools."
+    ]},
+    {"kind": "paragraph", "text": "The executable evidence anchors are `internal/hostintegration`, `tools/storecontract`, and the store distribution contract under `packaging/store`."}
+  ]
+}
