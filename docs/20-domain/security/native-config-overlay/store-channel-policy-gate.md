@@ -1,0 +1,23 @@
+# Native Config Overlay: StoreChannelPolicyGate
+
+[Back to native-config-overlay](../native-config-overlay.md)
+
+`StoreChannelPolicyGate` is not a seventh runtime security gate. It is a
+pre-runtime decision made after C11 Distribution / Host Integration determines
+distribution channel and consent state.
+
+| Question | Calling context | On failure |
+| --- | --- | --- |
+| May this channel start provider CLI execution? | C4 pre-execute | provider not started with `STORE_CHANNEL_PROVIDER_EXECUTION_BLOCKED` |
+| May this channel enable background helper? | C11 Store App / helper | startup disabled and consent UI shown |
+| May this channel use workspace root? | C6 workspace prepare | task claim/prepare blocked |
+| Is this metadata allowed to be sent to server? | C10 SaaS adapter | path/token/absolute workspace root removed |
+
+The store channel policy table is owned by
+[`distribution-host-integration/store-channel-policy.md`](../../distribution-host-integration/store-channel-policy.md).
+This document only owns the principle that the table is a security boundary.
+
+`internal/policy.EvaluateStoreChannelPolicy` is the current pure implementation.
+It receives C11 `DistributionChannel`, consent, OS grant, and store-review facts,
+then returns allow/block `Decision` only. It does not start provider processes or
+call OS adapters.
