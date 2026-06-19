@@ -1,0 +1,50 @@
+name: workspace-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/workspace-docs.yml"
+      - "docs/20-domain/workspace.md"
+      - "docs/20-domain/workspace.riido.json"
+      - "docs/20-domain/workspace/**"
+      - "tools/workspacedocs/**"
+      - "tools/workspaceinvariantsdocs/**"
+      - "tools/workspacenativeconfigdocs/**"
+      - "internal/workdir/**"
+      - "cmd/riido/daemon_config_workdir*.go"
+      - "cmd/riido/daemon_config.go"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/workspace-docs.yml"
+      - "docs/20-domain/workspace.md"
+      - "docs/20-domain/workspace.riido.json"
+      - "docs/20-domain/workspace/**"
+      - "tools/workspacedocs/**"
+      - "tools/workspaceinvariantsdocs/**"
+      - "tools/workspacenativeconfigdocs/**"
+      - "internal/workdir/**"
+      - "cmd/riido/daemon_config_workdir*.go"
+      - "cmd/riido/daemon_config.go"
+
+jobs:
+  workspace-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify workspace docs
+        run: |
+          mkdir -p out
+          go run ./tools/workspacedocs -check-doc -evidence-out out/workspace-docs.json
+          go run ./tools/workspaceinvariantsdocs -check-doc -evidence-out out/workspace-invariants-docs.json
+          go run ./tools/workspacenativeconfigdocs -check-doc -evidence-out out/workspace-native-config-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workspace-docs
+          path: out/*.json
+          if-no-files-found: error

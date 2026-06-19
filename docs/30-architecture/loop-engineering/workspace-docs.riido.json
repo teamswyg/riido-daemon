@@ -1,0 +1,36 @@
+{
+  "id": "workspace-docs",
+  "owner": "daemon/workspace",
+  "observation": {
+    "summary": "The workspace root stayed manually edited while workspace invariants and native-config manifest evidence were already generated.",
+    "artifacts": ["docs/20-domain/workspace.md", "docs/20-domain/workspace/invariants.md"]
+  },
+  "hypothesis": {
+    "summary": "A workspace wrapper manifest can generate the root while preserving closed Q-WS compatibility anchors consumed by workdir-policy CI.",
+    "artifacts": ["docs/20-domain/workspace.riido.json", "docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate workspace root docs from executable wrapper SSOT and source anchors without duplicating detailed C6 generators.",
+    "artifacts": ["tools/workspacedocs", ".github/workflows/workspace-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing Q-WS anchors, missing focused workspace evidence, and missing workflow wiring.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The last domain root manual surface becomes generated while detailed workspace invariant/native-config ownership remains focused.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/workspacedocs -check-doc -evidence-out /tmp/workspace-docs.json",
+      "proves": "workspace root docs are generated and closed Q-WS/source anchors still exist"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/workspace-docs.yml",
+      "proves": "public CI uploads workspace wrapper evidence"
+    }
+  ]
+}

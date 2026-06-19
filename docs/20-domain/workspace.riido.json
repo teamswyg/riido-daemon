@@ -1,0 +1,51 @@
+{
+  "schema_version": "riido-workspace-docs.v1",
+  "id": "workspace-docs",
+  "title": "Workspace / Native Config SSOT",
+  "generated_doc": "docs/20-domain/workspace.md",
+  "workflow": ".github/workflows/workspace-docs.yml",
+  "evidence_artifact": "workspace-docs",
+  "summary": [
+    "This C6 entrypoint is generated from executable workspace wrapper SSOT and delegates detailed workdir and native config evidence to focused workspace tools.",
+    "The root remains a stable compatibility surface for closed Q-WS workdir decisions consumed by public CI."
+  ],
+  "compatibility_markers": [
+    "`Q-WS-001`",
+    "`Q-WS-002`",
+    "`Q-WS-003`",
+    "`Q-WS-004`",
+    "`Q-WS-005`",
+    "`Q-WS-006`",
+    "Default workdir retention 은 disabled"
+  ],
+  "parts": [
+    {"title": "Invariants", "path": "workspace/invariants.md"},
+    {"title": "Native Config Manifest", "path": "workspace/native-config-manifest.md"}
+  ],
+  "related_pages": [
+    {"title": "Runtime Upgrade Flow", "path": "../30-architecture/runtime-upgrade-flow.md"},
+    {"title": "Security", "path": "security.md"},
+    {"title": "Locking", "path": "locking.md"},
+    {"title": "Distribution Host Integration", "path": "distribution-host-integration.md"}
+  ],
+  "source_checks": [
+    {"name": "workspace-invariants-generated", "file": "docs/20-domain/workspace/invariants.riido.json", "contains": "workspace-invariants-docs"},
+    {"name": "workspace-native-config-generated", "file": "docs/20-domain/workspace/native-config-manifest.riido.json", "contains": "workspace-native-config-docs"},
+    {"name": "q-ws-001", "file": "docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json", "contains": "`Q-WS-001`"},
+    {"name": "q-ws-002", "file": "docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json", "contains": "`Q-WS-002`"},
+    {"name": "q-ws-003", "file": "docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json", "contains": "`Q-WS-003`"},
+    {"name": "q-ws-004", "file": "docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json", "contains": "`Q-WS-004`"},
+    {"name": "q-ws-005", "file": "docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json", "contains": "`Q-WS-005`"},
+    {"name": "q-ws-006", "file": "docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json", "contains": "`Q-WS-006`"},
+    {"name": "workdir-adapter-port", "file": "internal/workdir/adapter.go", "contains": "InjectRuntimeConfig before handing the workdir to the runtime actor"},
+    {"name": "workspace-layout", "file": "internal/workdir/fs_workspace_layout.go", "contains": "NativeConfig: filepath.Join(taskRoot, \"native-config\")"},
+    {"name": "archive-schema", "file": "internal/workdir/constants.go", "contains": "ArchiveRecordSchemaVersion = \"riido-workdir-archive.v1\""},
+    {"name": "retention-config", "file": "cmd/riido/daemon_config.go", "contains": "RIIDO_WORKDIR_RETENTION_SECONDS"},
+    {"name": "native-config-version", "file": "internal/workdir/native_config_version.go", "contains": "sha256-hex NativeConfigVersion"}
+  ],
+  "assertions": [
+    "C6 Workspace materializes deterministic workdir state and native config files, not policy decisions.",
+    "Closed Q-WS decisions stay root-visible for compatibility while their executable detail lives in generated workspace fragments.",
+    "Workspace root docs must be generated without duplicating focused invariant or native-config evidence generators."
+  ]
+}

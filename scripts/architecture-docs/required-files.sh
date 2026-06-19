@@ -161,6 +161,9 @@ required_files=(
   docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.md
   docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.riido.json
   .github/workflows/provider-runtime-boundary-docs.yml
+  docs/20-domain/workspace.md
+  docs/20-domain/workspace.riido.json
+  .github/workflows/workspace-docs.yml
   docs/20-domain/workspace/invariants.md
   docs/20-domain/workspace/invariants.riido.json
   docs/20-domain/workspace/invariants/scope.md
@@ -345,6 +348,7 @@ required_files=(
   docs/30-architecture/loop-engineering/provider-adapter-acl-docs.riido.json
   docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
+  docs/30-architecture/loop-engineering/workspace-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-docs.riido.json

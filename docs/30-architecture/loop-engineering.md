@@ -940,6 +940,23 @@
   - `command`: go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc; proves repository manual documentation debt decreases after boundary docs become generated
   - `workflow`: .github/workflows/provider-runtime-boundary-docs.yml; proves public CI uploads provider runtime boundary evidence
 
+### workspace-docs
+
+- Owner: `daemon/workspace`
+- Observe: The workspace root stayed manually edited while workspace invariants and native-config manifest evidence were already generated.
+  - Artifacts: `docs/20-domain/workspace.md`, `docs/20-domain/workspace/invariants.md`
+- Hypothesis: A workspace wrapper manifest can generate the root while preserving closed Q-WS compatibility anchors consumed by workdir-policy CI.
+  - Artifacts: `docs/20-domain/workspace.riido.json`, `docs/20-domain/workspace/native-config-manifest/resolved-decisions.riido.json`
+- Execute: Generate workspace root docs from executable wrapper SSOT and source anchors without duplicating detailed C6 generators.
+  - Artifacts: `tools/workspacedocs`, `.github/workflows/workspace-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing Q-WS anchors, missing focused workspace evidence, and missing workflow wiring.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The last domain root manual surface becomes generated while detailed workspace invariant/native-config ownership remains focused.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/workspacedocs -check-doc -evidence-out /tmp/workspace-docs.json; proves workspace root docs are generated and closed Q-WS/source anchors still exist
+  - `workflow`: .github/workflows/workspace-docs.yml; proves public CI uploads workspace wrapper evidence
+
 ### workspace-invariants-docs
 
 - Owner: `daemon/workspace`

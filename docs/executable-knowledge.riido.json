@@ -8,13 +8,6 @@
   "scan_roots": ["docs"],
   "manual_groups": [
     {
-      "id": "domain-ontology-manual-surface",
-      "owner": "daemon/domain",
-      "reason": "domain docs still contain reader-authored ontology, invariant, and policy prose",
-      "next_artifact": "promote docs/20-domain into generated ontology and invariant registries",
-      "path_prefixes": ["docs/20-domain/"]
-    },
-    {
       "id": "migration-history-manual-surface",
       "owner": "daemon/migration",
       "reason": "migration history is still kept as reader-authored slice notes",
