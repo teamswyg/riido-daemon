@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/store-app-ownership-ssot.yml"
       - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
       - "docs/30-architecture/module-decomposition.md"
       - "docs/50-roadmap/open-questions.md"
@@ -14,6 +15,7 @@ on:
     paths:
       - ".github/workflows/store-app-ownership-ssot.yml"
       - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
       - "docs/30-architecture/module-decomposition.md"
       - "docs/50-roadmap/open-questions.md"

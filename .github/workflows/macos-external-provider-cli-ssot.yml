@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/macos-external-provider-cli-ssot.yml"
       - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
       - "docs/migration/daemon.md"
       - "internal/policy/store_channel.go"
@@ -16,6 +17,7 @@ on:
     paths:
       - ".github/workflows/macos-external-provider-cli-ssot.yml"
       - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
       - "docs/migration/daemon.md"
       - "internal/policy/store_channel.go"
@@ -36,6 +38,7 @@ jobs:
         run: |
           grep -q "Q-DIST-001.*resolved" docs/20-domain/distribution-host-integration.md
           grep -q "Q-DIST-001.*RESOLVED" docs/20-domain/distribution-host-integration.md
+          grep -q "StoreReviewApproved=true" docs/20-domain/distribution-host-integration/local-ipc/macos-external-provider-cli.md
           grep -q "user-selected/sandbox/security-scoped OS grant 와 App Review approval" docs/30-architecture/store-distribution.md
           grep -q "StoreChannelPolicyInput.StoreReviewApproved=true" docs/migration/daemon.md
       - name: Verify macOS external Provider CLI gate
