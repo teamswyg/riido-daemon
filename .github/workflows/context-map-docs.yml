@@ -1,0 +1,46 @@
+name: context-map-docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/context-map-docs.yml"
+      - "docs/20-domain/context-map.md"
+      - "docs/20-domain/context-map.riido.json"
+      - "docs/20-domain/context-map/**"
+      - "tools/contextmapdocs/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/context-map-docs.yml"
+      - "docs/20-domain/context-map.md"
+      - "docs/20-domain/context-map.riido.json"
+      - "docs/20-domain/context-map/**"
+      - "tools/contextmapdocs/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  context-map-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify context map docs
+        run: |
+          mkdir -p out
+          go test ./tools/contextmapdocs -count=1
+          go run ./tools/contextmapdocs \
+            -check-doc \
+            -evidence-out out/context-map-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: context-map-docs
+          path: out/context-map-docs.json
+          if-no-files-found: error

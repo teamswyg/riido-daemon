@@ -3,6 +3,14 @@ set -euo pipefail
 
 required_files=(
   docs/20-domain/context-map.md
+  docs/20-domain/context-map.riido.json
+  docs/20-domain/context-map/acl-locations.riido.json
+  docs/20-domain/context-map/change-procedure.riido.json
+  docs/20-domain/context-map/dependency-direction.riido.json
+  docs/20-domain/context-map/figma-daemon-boundaries.riido.json
+  docs/20-domain/context-map/figma-onboarding-boundaries.riido.json
+  docs/20-domain/context-map/split-repo-ownership.riido.json
+  .github/workflows/context-map-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -88,6 +96,7 @@ required_files=(
   docs/30-architecture/runtime-upgrade-flow.riido.json
   docs/30-architecture/loop-engineering.md
   docs/30-architecture/loop-engineering.riido.json
+  docs/30-architecture/loop-engineering/context-map-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

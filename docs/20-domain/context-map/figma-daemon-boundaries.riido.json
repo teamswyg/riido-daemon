@@ -1,0 +1,27 @@
+{
+  "schema_version": "riido-context-map-figma-boundaries.v1",
+  "sections": [
+    {
+      "refs": ["node-id=156-19307"],
+      "daemon_scope": "May power runtime status after a route is opened.",
+      "not_owned": ["menu labels", "ordering", "selected state", "route availability"]
+    },
+    {
+      "refs": ["node-id=162-23090", "node-id=275-22731"],
+      "daemon_scope": "Owns current-device local facts exposed by riido daemon status, health, ready, metrics, stop, logs, and start.",
+      "not_owned": ["agent hover popover", "daemon stop modal copy", "restart animation", "remote-device presentation", "SaaS devices projection", "Windows waitlist copy", "marketing consent mutation", "provider install-card hover behavior", "external provider installation links"]
+    },
+    {
+      "refs": ["node-id=432-37336", "node-id=134-6542", "node-id=337-24001", "node-id=337-24013", "node-id=432-35713"],
+      "daemon_scope": "Owns only runtime execution after an already-authorized runtime binding/model/instruction is assigned.",
+      "not_owned": ["agent records", "created_at", "updated_at", "save/add button state", "member runtime selectability", "row/meatball edit entry", "absolute-time tooltip behavior", "row layout", "long-description presentation", "status-label copy/color", "model dropdown catalog"]
+    },
+    {
+      "refs": ["node-id=153-15935"],
+      "daemon_scope": "Consumes only SaaS assignments that already passed target-scope policy, then controls the selected runtime.",
+      "not_owned": ["project target validation", "milestone target validation", "intake target validation", "AI property filler validation", "mention surface validation", "task/subtask target validation"]
+    }
+  ],
+  "direct_host_helper_rule": "Direct host-helper actions remain current-device local facts in C11.",
+  "assignment_authorization_rule": "SaaS assignment and daemon command authorization are upstream agent-access facts."
+}

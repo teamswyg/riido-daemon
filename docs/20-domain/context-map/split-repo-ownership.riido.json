@@ -1,0 +1,16 @@
+{
+  "schema_version": "riido-context-map-split-repo-ownership.v1",
+  "rules": [
+    "riido-daemon must not redefine shared task/IR/provider capability facts.",
+    "When both daemon and control-plane need the same DTO/schema, promote it to riido-contracts first.",
+    "Deployment-only facts stay in riido-infra.",
+    "Server runtime behavior stays in riido-control-plane.",
+    "riido-contracts owns the shared meaning of agent profile fields and instruction limits.",
+    "riido-control-plane owns create/save/update API behavior.",
+    "riido-daemon owns only customer-PC runtime consumption of an assigned instruction value.",
+    "The model catalog is a runtime-scoped contracts/control-plane read-model fact."
+  ],
+  "daemon_must_not_redefine": ["thumbnail presentation", "one-line description presentation", "created_at / updated_at timestamp meaning", "RBAC/editability", "API shape", "model-default request semantics", "client required-control presentation", "server storage policy"],
+  "downstream_boundary_check": "../30-architecture/figma-ai-agent-daemon-boundary.md",
+  "downstream_boundary_note": "That manifest is a downstream boundary check, not a replacement for contracts/control-plane SSOT."
+}

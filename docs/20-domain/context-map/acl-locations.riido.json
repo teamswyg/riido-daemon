@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-context-map-acl-locations.v1",
+  "rows": [
+    {"acl": "Provider adapter ACL", "input": "Claude/Codex/OpenClaw/Cursor raw stdout or RPC events", "output": "agentbridge.RawEvent, CanonicalEvent drafts, provider-neutral result state"},
+    {"acl": "Event ingestor ACL", "input": "provider-neutral event drafts and unknown fields", "output": "validated/redacted riido-contracts/ir envelopes"},
+    {"acl": "SaaS polling ACL", "input": "assignment polling DTOs from riido-contracts/assignment", "output": "agentbridge.TaskRequest and reporter events"},
+    {"acl": "Task DB ACL", "input": "local riido-task-db.v1 records", "output": "TaskSourcePort claims and guarded task mutations"},
+    {"acl": "mwsd bridge ACL", "input": "mwsd socket JSON contracts", "output": "project/task DB projection records"},
+    {"acl": "Host integration ACL", "input": "OS/store facts, external tool paths, consent/grants", "output": "provider-neutral routing status, local IPC endpoints, app/workdir roots"}
+  ]
+}

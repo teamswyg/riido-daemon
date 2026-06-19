@@ -3,6 +3,7 @@ set -euo pipefail
 
 tool_tests=(
   ./tools/figmaboundary
+  ./tools/contextmapdocs
   ./tools/figmaboundarydocs
   ./tools/providervalidation
   ./tools/agentexecutionevidence
@@ -49,6 +50,7 @@ tool_tests=(
 
 doc_tools=(
   repoverification
+  contextmapdocs
   semanticeventactivity
   eventauthority
   providerdraftmapping
