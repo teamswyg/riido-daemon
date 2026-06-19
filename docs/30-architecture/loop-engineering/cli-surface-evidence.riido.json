@@ -1,0 +1,36 @@
+{
+  "id": "cli-surface-evidence",
+  "owner": "CLI local adapter",
+  "observation": {
+    "summary": "The public cmd/riido surface was described in prose while actual command groups lived in cli_commands.go and printUsage output.",
+    "artifacts": ["docs/30-architecture/cli-surface.md", "cmd/riido/cli_commands.go"]
+  },
+  "hypothesis": {
+    "summary": "A CLI surface manifest can generate the reader doc and verify command vocabulary, local-only boundaries, help output, and provider smoke output.",
+    "artifacts": ["docs/30-architecture/cli-surface.riido.json"]
+  },
+  "execution": {
+    "summary": "Run clisurface to check generated docs, source command vocabulary, forbidden public listener tokens, help output, and bridge provider JSON.",
+    "artifacts": ["tools/clisurface", ".github/workflows/cli-surface-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing command declarations, public listener regressions, missing usage lines, and missing provider vocabulary.",
+    "artifacts": ["tools/clisurface/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "CLI surface knowledge becomes executable local adapter evidence instead of a manually edited command overview.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/clisurface -check-doc -evidence-out /tmp/cli-surface-evidence.json",
+      "proves": "CLI surface manifest matches generated docs, source vocabulary, local-only constraints, and black-box CLI output"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/cli-surface-evidence.yml",
+      "proves": "public CI uploads CLI surface evidence"
+    }
+  ]
+}

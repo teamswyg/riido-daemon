@@ -1,0 +1,92 @@
+{
+  "schema_version": "riido-cli-surface-evidence.v1",
+  "id": "cli-surface-evidence",
+  "title": "CLI Surface Evidence",
+  "generated_doc": "docs/30-architecture/cli-surface.md",
+  "workflow": ".github/workflows/cli-surface-evidence.yml",
+  "evidence_artifact": "cli-surface-evidence",
+  "purpose": "Keeps the public cmd/riido command surface generated from a manifest and verified against black-box CLI output plus source boundaries.",
+  "command_groups": [
+    {
+      "name": "serve",
+      "owner": "internal/riidoapi",
+      "boundary": "local IPC server over Unix socket or Windows named pipe",
+      "subcommands": [],
+      "usage_tokens": ["riido serve"],
+      "source_checks": ["main-command-serve", "run-serve-dispatch"]
+    },
+    {
+      "name": "api",
+      "owner": "internal/riidoapi",
+      "boundary": "local IPC client for guarded task and status APIs",
+      "subcommands": ["status", "tasks", "review-demo", "transition", "evidence", "validate"],
+      "usage_tokens": ["riido api <status|tasks>", "riido api review-demo", "riido api transition", "riido api evidence", "riido api validate"],
+      "source_checks": ["main-command-api", "api-subcommand-vocabulary"]
+    },
+    {
+      "name": "mwsd",
+      "owner": "internal/mwsdbridge, internal/project, internal/taskdb",
+      "boundary": "reads MWSD snapshots and promotes local workspace/task projections",
+      "subcommands": ["snapshot", "projection", "sync", "orchestration", "projects", "status"],
+      "usage_tokens": ["riido mwsd <snapshot|projection|sync|orchestration|projects|status>"],
+      "source_checks": ["main-command-mwsd", "mwsd-subcommand-vocabulary"]
+    },
+    {
+      "name": "task",
+      "owner": "internal/taskdb, internal/validation",
+      "boundary": "local guarded task mutation, evidence, and validation over JSON task DB",
+      "subcommands": ["list", "transition", "evidence", "validate"],
+      "usage_tokens": ["riido task list", "riido task transition", "riido task evidence", "riido task validate"],
+      "source_checks": ["main-command-task", "task-subcommand-vocabulary"]
+    },
+    {
+      "name": "bridge",
+      "owner": "provider adapter packages",
+      "boundary": "provider list/detect smoke surface without executing provider tasks",
+      "subcommands": ["providers", "detect"],
+      "usage_tokens": ["riido bridge <providers|detect>"],
+      "source_checks": ["main-command-bridge", "bridge-subcommand-vocabulary"]
+    },
+    {
+      "name": "daemon",
+      "owner": "internal/agentbridge/runtimeactor, supervisor, control-plane adapters",
+      "boundary": "local runtime lifecycle, health, readiness, metrics, stop, and logs",
+      "subcommands": ["start", "status", "health", "ready", "metrics", "stop", "logs"],
+      "usage_tokens": ["riido daemon start", "riido daemon status", "riido daemon health", "riido daemon ready", "riido daemon metrics", "riido daemon stop", "riido daemon logs"],
+      "source_checks": ["main-command-daemon", "daemon-subcommand-vocabulary"]
+    }
+  ],
+  "providers": ["claude", "codex", "openclaw", "cursor"],
+  "source_checks": [
+    {"name": "main-command-serve", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandServe  mainCommand = \"serve\""},
+    {"name": "main-command-api", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandAPI    mainCommand = \"api\""},
+    {"name": "main-command-mwsd", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandMwsd   mainCommand = \"mwsd\""},
+    {"name": "main-command-task", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandTask   mainCommand = \"task\""},
+    {"name": "main-command-bridge", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandBridge mainCommand = \"bridge\""},
+    {"name": "main-command-daemon", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandDaemon mainCommand = \"daemon\""},
+    {"name": "api-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "apiCommandValidate   apiCommand = \"validate\""},
+    {"name": "mwsd-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "mwsdCommandOrchestration mwsdCommand = \"orchestration\""},
+    {"name": "task-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "taskCommandValidate   taskCommand = \"validate\""},
+    {"name": "bridge-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "bridgeCommandDetect    bridgeCommand = \"detect\""},
+    {"name": "daemon-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "daemonCommandMetrics daemonCommand = \"metrics\""},
+    {"name": "run-serve-dispatch", "file": "cmd/riido/main.go", "contains": "return runServe(args[1:])"}
+  ],
+  "forbidden_source_tokens": [
+    {"name": "no-public-http-listener", "root": "cmd/riido", "suffix": ".go", "contains": "http.ListenAndServe"},
+    {"name": "no-public-tcp-listener", "root": "cmd/riido", "suffix": ".go", "contains": "net.Listen(\"tcp\""}
+  ],
+  "related_sections": [
+    {"title": "Figma AI Agent daemon boundary", "path": "figma-ai-agent-daemon-boundary.md"},
+    {"title": "Role", "path": "cli-surface/role.md"},
+    {"title": "Command groups", "path": "cli-surface/command-groups.md"},
+    {"title": "Runtime settings mapping", "path": "cli-surface/runtime-settings.md"},
+    {"title": "Local IPC rule", "path": "cli-surface/local-ipc-rule.md"},
+    {"title": "Guarded mutation rule", "path": "cli-surface/guarded-mutation-rule.md"},
+    {"title": "Validation", "path": "cli-surface/validation.md"}
+  ],
+  "assertions": [
+    "cmd/riido remains local-only and must not open public TCP or HTTP listeners",
+    "usage output must expose each declared command group",
+    "bridge providers output must expose the provider vocabulary without launching provider tasks"
+  ]
+}

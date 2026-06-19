@@ -38,6 +38,7 @@ required_files=(
   docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json
   docs/30-architecture/module-decomposition.md
   docs/30-architecture/cli-surface.md
+  docs/30-architecture/cli-surface.riido.json
   docs/30-architecture/config-reference.md
   docs/30-architecture/config-reference/executable-search-path.md
   docs/30-architecture/config-reference/executable-search-path.riido.json
@@ -48,6 +49,7 @@ required_files=(
   docs/30-architecture/runtime-upgrade-flow.riido.json
   docs/30-architecture/loop-engineering.md
   docs/30-architecture/loop-engineering.riido.json
+  docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
@@ -90,6 +92,7 @@ required_files=(
   .github/workflows/assignment-fsm-evidence.yml
   .github/workflows/privacy-metadata-evidence.yml
   .github/workflows/store-distribution-contract.yml
+  .github/workflows/cli-surface-evidence.yml
   .github/workflows/executable-search-path-evidence.yml
   .github/workflows/unsafe-bypass-evidence.yml
   .github/workflows/saas-assignment-source.yml
