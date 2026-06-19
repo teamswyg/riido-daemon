@@ -1,0 +1,26 @@
+# RIID-4711: Architecture SSOT Docs
+
+[Back to daemon-lifecycle-cli](../daemon-lifecycle-cli.md)
+
+This slice moves the public daemon architecture SSOT into `riido-daemon` after
+the split-repo package migration.
+
+Added surfaces:
+
+- `docs/20-domain/context-map.md` for public daemon bounded-context ownership and
+  split-repo dependency direction
+- `docs/30-architecture/module-decomposition.md` for hexagonal package and import
+  rules
+- `docs/30-architecture/config-reference.md` for daemon-only Factor 12 env/flag
+  ownership
+- `docs/30-architecture/integration-matrix.md` for optional real provider CLI
+  integration gates
+- `docs/30-architecture/compatibility-gate.md` and
+  `docs/30-architecture/runtime-upgrade-flow.md`
+- `docs/50-roadmap/open-questions.md`
+- focused public CI for architecture doc presence, stale split-repo wording,
+  config coverage, dependency boundary, and Go tests
+
+This slice does not move `cmd/riido_ai_server`, `internal/riidoaiserver`,
+Terraform/AWS/deploy evidence, private state, `.riido-local`, provider CLI
+binaries, or provider installation automation.
