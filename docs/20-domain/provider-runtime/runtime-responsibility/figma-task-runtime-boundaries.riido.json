@@ -1,0 +1,15 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "id": "figma-task-runtime-boundaries",
+  "title": "Figma Task Runtime Boundaries",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/figma-task-runtime-boundaries.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Figma task UI state is upstream context, not a provider runtime interpretation surface."},
+    {"kind": "bullets", "items": [
+      "Task thread selection, annotation parsing, dropdowns, and participant projection are control-plane/client concerns.",
+      "The runtime consumes only structured assignment input and command signals such as cancel or interrupt.",
+      "Telemetry markers may pass through as metadata, but they must not change execution authority."
+    ]},
+    {"kind": "paragraph", "text": "A provider adapter must never infer target policy or workspace authority from UI-only labels."}
+  ]
+}

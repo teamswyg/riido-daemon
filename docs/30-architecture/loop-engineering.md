@@ -799,6 +799,24 @@
   - `command`: go run ./tools/runtimesecretevidence -check-doc -evidence-out /tmp/runtime-secret-private-evidence.json; proves runtime secret evidence boundary generates sanitized public evidence
   - `workflow`: .github/workflows/runtime-secret-private-evidence.yml; proves public CI uploads sanitized runtime secret evidence artifacts without private secret access
 
+### provider-runtime-responsibility-docs
+
+- Owner: `daemon/provider-runtime`
+- Observe: Provider runtime responsibility docs were labeled SSOT, but only provider-event-draft had executable generation and source-anchored verification.
+  - Artifacts: `docs/20-domain/provider-runtime/runtime-responsibility.md`, `tools/knowledgecoverage`
+- Hypothesis: A runtime-responsibility manifest can generate the responsibility pages and verify C3/C4/C5 boundary anchors in code and tests.
+  - Artifacts: `docs/20-domain/provider-runtime/runtime-responsibility.riido.json`, `internal/agentbridge/state.go`
+- Execute: Generate the runtime responsibility index and detail pages from SSOT fragments while keeping provider-event-draft as related evidence.
+  - Artifacts: `tools/providerruntimeresponsibilitydocs`, `.github/workflows/provider-runtime-responsibility-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing workflow wiring, and detached provider draft evidence.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `tools/providerdraftmapping`
+- Retrospective: Runtime responsibility docs now follow Observe -> Hypothesis -> Execute -> Evaluate -> Retrospective and reduce provider-runtime manual surface.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/providerruntimeresponsibilitydocs -check-doc -evidence-out /tmp/provider-runtime-responsibility-docs.json; proves runtime responsibility docs are generated and source anchors still exist
+  - `command`: go run ./tools/providerdraftmapping -check-doc -evidence-out /tmp/provider-draft-mapping-evidence.json; proves related provider event draft mapping remains independently verified
+  - `workflow`: .github/workflows/provider-runtime-responsibility-docs.yml; proves public CI uploads provider runtime responsibility evidence
+
 ## Open Gaps
 
 _None._

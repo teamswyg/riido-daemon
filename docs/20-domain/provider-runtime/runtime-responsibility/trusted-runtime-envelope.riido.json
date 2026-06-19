@@ -1,0 +1,15 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "id": "trusted-runtime-envelope",
+  "title": "Trusted Runtime Envelope",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/trusted-runtime-envelope.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "A trusted runtime envelope is a provider-specific process shape that has explicit authority and conformance tests."},
+    {"kind": "bullets", "items": [
+      "Codex currently adopts the full-access app-server envelope owned by daemon-generated arguments.",
+      "Claude requires explicit PermissionMode and rejects unsafe bypass unless policy allows the isolated trust tier.",
+      "Cursor and OpenClaw remain unpromoted until equivalent command, permission, and integration evidence exists."
+    ]},
+    {"kind": "paragraph", "text": "Promotion requires security review, command-shape tests, and provider adapter conformance evidence."}
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "id": "provider-adapter-port",
+  "title": "Provider Adapter Port",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/provider-adapter-port.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The provider adapter port is the narrow SPI between provider-specific CLIs and provider-neutral runtime actors."},
+    {"kind": "bullets", "items": [
+      "Detect reports local provider capability without mutating the public capability model.",
+      "BuildStart returns a daemon-owned StartCommand with protocol-critical args enforced by the adapter.",
+      "Parser and Translate convert provider output into run-scope events, commands, and drafts.",
+      "Cancel, Interrupt, ProvideInput, ResolveApproval, PinSession, and ResumeSession remain runtime commands, not client UX actions."
+    ]},
+    {"kind": "paragraph", "text": "The port may expose provider event drafts, but only the supervisor/control-plane path can append canonical IR."}
+  ]
+}

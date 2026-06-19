@@ -11,6 +11,7 @@ tool_tests=(
   ./tools/lockingdocs
   ./tools/securityredactiondocs
   ./tools/securityinvariantsdocs
+  ./tools/providerruntimeresponsibilitydocs
   ./tools/redactiondrift
   ./tools/providerintegrationevidence
   ./tools/providermigrationdocs
@@ -58,6 +59,7 @@ doc_tools=(
   lockingdocs
   securityredactiondocs
   securityinvariantsdocs
+  providerruntimeresponsibilitydocs
   semanticeventactivity
   eventauthority
   providerdraftmapping

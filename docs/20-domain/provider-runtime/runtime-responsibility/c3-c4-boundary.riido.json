@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "id": "c3-c4-boundary",
+  "title": "C3 / C4 Boundary",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/c3-c4-boundary.md",
+  "blocks": [
+    {"kind": "table", "columns": ["Layer", "Owns", "C4 rule"], "rows": [
+      ["C3 Provider Capability", "ProviderCapability, fingerprint, catalog vocabulary", "C4 imports read-only and must not redefine it"],
+      ["C4 Provider Runtime", "Adapter port, process command, parser, raw event draft", "C4 emits drafts and local evidence only"],
+      ["C5 Scheduling", "Runtime lease and assignment scheduling", "C4 consumes assignment input after lease decisions"]
+    ]},
+    {"kind": "paragraph", "text": "The dependency direction is C4 toward contracts vocabulary. Reverse imports from agentbridge into concrete providers or scheduling policy are boundary violations."}
+  ]
+}
