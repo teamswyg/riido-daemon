@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "cli-retired-source-boundary",
+  "title": "Retired Historical Source Boundary",
+  "generated_doc": "docs/migration/cli/retired-source-boundary.md",
+  "back_title": "Riido CLI Migration Plan",
+  "back_path": "../cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "The initial CLI migration once used the former private source as history. That source is closed. New work must not read, compare, copy from, cherry-pick from, push to, open PRs against, merge, or otherwise modify `riido_daemon_private` or `riido-daemon-private`."},
+    {"kind": "paragraph", "text": "If a CLI fact is missing from public `riido-daemon`, define it in this public SSOT or promote the shared contract to `riido-contracts`."},
+    {"kind": "heading", "text": "Historical CLI Slice"},
+    {"kind": "bullets", "items": [
+      "`cmd/riido`, `printUsage()`, and CLI tests under `cmd/riido`",
+      "scripts that call local CLI commands when not deploy/infra scripts",
+      "README examples for local daemon and local API usage",
+      "`docs/30-architecture/config-reference.md`",
+      "`docs/20-domain/runtime-versioning.md`",
+      "CLI-related roadmap/audit rows"
+    ]}
+  ]
+}

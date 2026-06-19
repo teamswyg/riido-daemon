@@ -1,0 +1,48 @@
+name: migration-cli-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/migration-cli-docs.yml"
+      - "docs/migration/cli.md"
+      - "docs/migration/cli.riido.json"
+      - "docs/migration/cli/**"
+      - "docs/executable-knowledge.md"
+      - "docs/executable-knowledge.riido.json"
+      - "tools/migrationdocs/**"
+      - "tools/docmap/**"
+      - "tools/knowledgecoverage/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/migration-cli-docs.yml"
+      - "docs/migration/cli.md"
+      - "docs/migration/cli.riido.json"
+      - "docs/migration/cli/**"
+      - "docs/executable-knowledge.md"
+      - "docs/executable-knowledge.riido.json"
+      - "tools/migrationdocs/**"
+      - "tools/docmap/**"
+      - "tools/knowledgecoverage/**"
+
+jobs:
+  migration-cli-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify migration CLI docs
+        run: |
+          mkdir -p out
+          go run ./tools/migrationdocs -check-doc -evidence-out out/migration-cli-docs.json
+          go run ./tools/docmap -check -evidence-out out/doc-map-evidence.json
+          go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out out/knowledge-coverage.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: migration-cli-docs
+          path: out/*.json
+          if-no-files-found: error

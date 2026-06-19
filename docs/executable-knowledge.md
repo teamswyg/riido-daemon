@@ -8,22 +8,21 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 234 |
+| Generated reader docs | 243 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 62 |
+| Registered manual docs | 53 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
+| `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 53 |
 
 ## Manual Hotspots
 
 | Directory | Matched docs |
 | --- | ---: |
-| `docs/migration/cli` | 8 |
 | `docs/migration/daemon` | 8 |
 | `docs/migration/daemon/distribution-host-integration` | 8 |
 | `docs/migration/daemon/macos-provider-cli-review` | 7 |
@@ -33,17 +32,17 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `docs/migration/daemon/runtime-snapshot-heartbeat` | 5 |
 | `docs/migration/daemon/overview` | 4 |
 | `docs/migration/daemon/riidoapi-local-api` | 3 |
-| `docs/migration` | 2 |
+| `docs/migration` | 1 |
 
 ## Manual Samples
 
 | Group | Path |
 | --- | --- |
-| `migration-history-manual-surface` | `docs/migration/cli.md` |
-| `migration-history-manual-surface` | `docs/migration/cli/cli-daemon-split.md` |
-| `migration-history-manual-surface` | `docs/migration/cli/current-slices.md` |
-| `migration-history-manual-surface` | `docs/migration/cli/migration-order.md` |
-| `migration-history-manual-surface` | `docs/migration/cli/open-follow-ups.md` |
+| `migration-history-manual-surface` | `docs/migration/daemon.md` |
+| `migration-history-manual-surface` | `docs/migration/daemon/codex-auth-full-access.md` |
+| `migration-history-manual-surface` | `docs/migration/daemon/codex-auth-full-access/codex-auth-harness.md` |
+| `migration-history-manual-surface` | `docs/migration/daemon/codex-auth-full-access/cursor-provider-adapter.md` |
+| `migration-history-manual-surface` | `docs/migration/daemon/codex-auth-full-access/openclaw-provider-adapter.md` |
 
 ## Assertions
 

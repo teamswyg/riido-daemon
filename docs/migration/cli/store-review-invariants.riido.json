@@ -1,0 +1,16 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "cli-store-review-invariants",
+  "title": "Store Review Invariants",
+  "generated_doc": "docs/migration/cli/store-review-invariants.md",
+  "back_title": "Riido CLI Migration Plan",
+  "back_path": "../cli.md",
+  "blocks": [
+    {"kind": "bullets", "items": [
+      "The CLI must not create public network listeners.",
+      "Provider CLIs are discovered external tools, not bundled payloads.",
+      "Commands that mutate guarded task state must preserve approval-id and receipt rules.",
+      "Unsafe provider flags must remain policy-gated."
+    ]}
+  ]
+}

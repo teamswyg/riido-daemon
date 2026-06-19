@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "cli-migration-order",
+  "title": "Migration Order",
+  "generated_doc": "docs/migration/cli/migration-order.md",
+  "back_title": "Riido CLI Migration Plan",
+  "back_path": "../cli.md",
+  "blocks": [
+    {"kind": "numbered", "items": [
+      "Move CLI docs and README examples.",
+      "Move parser/usage tests that do not need migrated internals.",
+      "Move task/API/bridge wrappers once backing packages are public. RIID-4685 covers `internal/taskdb`, `internal/riidoapi`, and provider adapter ports.",
+      "Move mwsd wrappers once projection packages move. RIID-4686 restores `riido mwsd ...` against public `mwsdbridge`, `project`, and `taskdb`.",
+      "Restore daemon lifecycle wrappers once runtime packages move. RIID-4690 covers runtimeactor, supervisor, taskdbplane, and saasplane.",
+      "Restore config docs. RIID-4711 moves `docs/30-architecture/config-reference.md`.",
+      "Restore CLI architecture docs. RIID-4714 adds `docs/30-architecture/cli-surface.md`.",
+      "Restore smoke scripts as black-box tests.",
+      "Keep real provider CLI tests opt-in and skipped unless executables exist."
+    ]}
+  ]
+}

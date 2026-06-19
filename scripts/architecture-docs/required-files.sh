@@ -360,6 +360,7 @@ required_files=(
   docs/30-architecture/loop-engineering/workspace-docs.riido.json
   docs/30-architecture/loop-engineering/readme-docs.riido.json
   docs/30-architecture/loop-engineering/roadmap-docs.riido.json
+  docs/30-architecture/loop-engineering/migration-cli-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-docs.riido.json
@@ -403,6 +404,7 @@ required_files=(
   .github/workflows/figma-boundary-docs.yml
   .github/workflows/readme-docs.yml
   .github/workflows/roadmap-docs.yml
+  .github/workflows/migration-cli-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -410,6 +412,16 @@ required_files=(
   docs/30-architecture/riido-work-branch-gate.md
   docs/30-architecture/riido-work-branch-gate.riido.json
   docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md
+  docs/migration/cli.riido.json
+  docs/migration/cli/root.riido.json
+  docs/migration/cli/retired-source-boundary.riido.json
+  docs/migration/cli/target-boundary.riido.json
+  docs/migration/cli/cli-daemon-split.riido.json
+  docs/migration/cli/migration-order.riido.json
+  docs/migration/cli/current-slices.riido.json
+  docs/migration/cli/validation-gates.riido.json
+  docs/migration/cli/store-review-invariants.riido.json
+  docs/migration/cli/open-follow-ups.riido.json
   docs/50-roadmap/open-questions.md
   docs/50-roadmap/open-questions.riido.json
   .github/workflows/runtime-scheduling-docs.yml

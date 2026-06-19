@@ -32,6 +32,7 @@ tool_tests=(
   ./tools/repoverification
   ./tools/readmedocs
   ./tools/roadmapdocs
+  ./tools/migrationdocs
   ./tools/semanticeventactivity
   ./tools/eventauthority
   ./tools/providerdraftmapping
@@ -72,6 +73,7 @@ doc_tools=(
   repoverification
   readmedocs
   roadmapdocs
+  migrationdocs
   contextmapdocs
   lockingdocs
   securitydocs

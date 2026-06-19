@@ -1,0 +1,15 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "cli-open-follow-ups",
+  "title": "Open Follow-Ups",
+  "generated_doc": "docs/migration/cli/open-follow-ups.md",
+  "back_title": "Riido CLI Migration Plan",
+  "back_path": "../cli.md",
+  "blocks": [
+    {"kind": "table", "columns": ["Follow-up", "Repository"], "rows": [
+      ["Promote shared DTOs only when needed by multiple repos.", "`riido-contracts` / RIID-4637"],
+      ["Keep SaaS server commands out of the local CLI binary.", "`riido-control-plane` / RIID-4638"],
+      ["Keep deploy/apply commands in private automation.", "`riido-infra` / RIID-4639"]
+    ]}
+  ]
+}
