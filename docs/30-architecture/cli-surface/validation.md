@@ -1,0 +1,15 @@
+# Validation
+
+[Back to CLI Surface SSOT](../cli-surface.md)
+
+Required black-box checks for CLI docs/adapter changes:
+
+```bash
+go test ./...
+go build -o /tmp/riido ./cmd/riido
+go run ./cmd/riido --help
+go run ./cmd/riido bridge providers
+```
+
+Commands that require a running daemon, mwsd socket, provider CLI, or local app
+state should have explicit skip conditions in tests.
