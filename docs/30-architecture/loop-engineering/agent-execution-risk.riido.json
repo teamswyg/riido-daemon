@@ -1,0 +1,10 @@
+{
+  "id": "agent-execution-risk",
+  "owner": "tools/agentexecutionevidence",
+  "observation": {"summary": "Unresolved execution risks are represented as local, external, or remaining-boundary evidence.", "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json"]},
+  "hypothesis": {"summary": "Every claimed risk closure must point at a local test, external repo evidence, or an explicit remaining boundary.", "artifacts": ["tools/agentexecutionevidence/required_test.go"]},
+  "execution": {"summary": "Run the evidence manifest verifier.", "artifacts": ["tools/agentexecutionevidence/evidence_manifest_test.go"]},
+  "evaluation": {"summary": "The verifier rejects missing risks, private boundary leaks, missing tests, and unmentioned evidence.", "artifacts": ["tools/agentexecutionevidence/assert_test.go"]},
+  "retrospective": {"summary": "New unresolved findings become manifest rows before implementation claims closure.", "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/verification-evidence.md"]},
+  "evidence": [{"kind": "command", "ref": "go test ./tools/agentexecutionevidence -count=1", "proves": "agent execution risk claims are machine checked"}]
+}

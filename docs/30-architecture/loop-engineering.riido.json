@@ -4,67 +4,14 @@
   "title": "Loop Engineering Evidence",
   "generated_doc": "docs/30-architecture/loop-engineering.md",
   "required_phases": ["observe", "hypothesis", "execute", "evaluate", "retrospective"],
-  "loops": [
-    {
-      "id": "architecture-docs",
-      "owner": "architecture-docs workflow",
-      "observation": {"summary": "Architecture docs, migration docs, and roadmap changes are observed through path-scoped CI.", "artifacts": [".github/workflows/architecture-docs.yml"]},
-      "hypothesis": {"summary": "A doc change can introduce stale boundary wording or break executable SSOT links.", "artifacts": ["scripts/verify-architecture-docs.sh"]},
-      "execution": {"summary": "Run the architecture verifier and all architecture tool tests.", "artifacts": ["scripts/verify-architecture-docs.sh"]},
-      "evaluation": {"summary": "The verifier fails on missing required files, stale wording, dependency drift, or failed tool tests.", "artifacts": ["tools/figmaboundary", "tools/providervalidation", "tools/agentexecutionevidence"]},
-      "retrospective": {"summary": "Closed decisions move into owning SSOT docs; unresolved shared decisions stay in the roadmap.", "artifacts": ["docs/50-roadmap/open-questions.md"]},
-      "evidence": [{"kind": "command", "ref": "scripts/verify-architecture-docs.sh", "proves": "architecture docs remain executable and linked to tool checks"}]
-    },
-    {
-      "id": "agent-execution-risk",
-      "owner": "tools/agentexecutionevidence",
-      "observation": {"summary": "Unresolved execution risks are represented as local, external, or remaining-boundary evidence.", "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json"]},
-      "hypothesis": {"summary": "Every claimed risk closure must point at a local test, external repo evidence, or an explicit remaining boundary.", "artifacts": ["tools/agentexecutionevidence/required_test.go"]},
-      "execution": {"summary": "Run the evidence manifest verifier.", "artifacts": ["tools/agentexecutionevidence/evidence_manifest_test.go"]},
-      "evaluation": {"summary": "The verifier rejects missing risks, private boundary leaks, missing tests, and unmentioned evidence.", "artifacts": ["tools/agentexecutionevidence/assert_test.go"]},
-      "retrospective": {"summary": "New unresolved findings become manifest rows before implementation claims closure.", "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/verification-evidence.md"]},
-      "evidence": [{"kind": "command", "ref": "go test ./tools/agentexecutionevidence -count=1", "proves": "agent execution risk claims are machine checked"}]
-    },
-    {
-      "id": "store-distribution",
-      "owner": "tools/storecontract",
-      "observation": {"summary": "Store channel claims are observed through a package/distribution contract.", "artifacts": ["packaging/store/riido_daemon_store_distribution.riido.json"]},
-      "hypothesis": {"summary": "A distribution change can accidentally add forbidden artifacts, terms, or user-path leakage.", "artifacts": ["tools/storecontract/schema.go"]},
-      "execution": {"summary": "Run the store contract verifier against the repository.", "artifacts": ["tools/storecontract/run.go"]},
-      "evaluation": {"summary": "The verifier fails on missing docs, notice terms, forbidden package roots, or user-path artifacts.", "artifacts": ["tools/storecontract/artifact_scan.go"]},
-      "retrospective": {"summary": "Store review and channel decisions are promoted into C11 SSOT instead of loose notes.", "artifacts": ["docs/30-architecture/store-distribution.md"]},
-      "evidence": [{"kind": "command", "ref": "go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .", "proves": "store distribution contract remains executable"}]
-    },
-    {
-      "id": "provider-real-cli-observation",
-      "owner": "provider-real-cli-observation workflow",
-      "observation": {"summary": "Real provider CLI availability and integration status are observed through a scheduled/manual evidence artifact.", "artifacts": ["docs/30-architecture/provider-real-cli-observation.riido.json"]},
-      "hypothesis": {"summary": "Public runners may have no provider CLIs, but that must be recorded as observed skip rather than invisible absence.", "artifacts": ["tools/providerintegrationevidence/run_test.go"]},
-      "execution": {"summary": "Run the provider observation tool with integration enabled and upload the evidence JSON artifact.", "artifacts": [".github/workflows/provider-real-cli-observation.yml", "tools/providerintegrationevidence"]},
-      "evaluation": {"summary": "Missing executables produce skipped evidence; detected providers must pass TestIntegration or fail the workflow.", "artifacts": ["docs/30-architecture/provider-real-cli-observation.md"]},
-      "retrospective": {"summary": "Provider matrix wording points to generated observation evidence instead of a future unscheduled idea.", "artifacts": ["docs/30-architecture/integration-matrix/provider-matrix.md"]},
-      "evidence": [{"kind": "command", "ref": "go run ./tools/providerintegrationevidence -check-doc", "proves": "provider observation docs are generated from the manifest"}, {"kind": "workflow", "ref": ".github/workflows/provider-real-cli-observation.yml", "proves": "public CI records scheduled/manual real CLI observation artifacts"}]
-    },
-    {
-      "id": "security-redaction",
-      "owner": "event-ingestor, toolargs, and redactiondrift workflows",
-      "observation": {"summary": "Secret redaction decisions are observed through C7 policy, ToolRef args, and C2 EventIngestor tests.", "artifacts": ["docs/20-domain/security-redaction.md"]},
-      "hypothesis": {"summary": "Security docs must not redefine redaction markers outside the redaction SSOT.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
-      "execution": {"summary": "Run redaction/audit tests, toolargs/toolpolicy tests, and the doc drift verifier.", "artifacts": [".github/workflows/event-ingestor.yml", ".github/workflows/toolargs-toolpolicy.yml", "tools/redactiondrift"]},
-      "evaluation": {"summary": "Tests prove marker generation, safe-value behavior, second-pass redaction, PolicyViolationDetected audit append, and no marker/catalog redefinition outside the SSOT.", "artifacts": ["internal/policy/redaction_test.go", "internal/ir/ingest/event_redaction_test.go", "tools/redactiondrift/run_test.go"]},
-      "retrospective": {"summary": "When security hub docs need redaction details, they link to the redaction SSOT instead of restating marker/catalog rules.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
-      "evidence": [{"kind": "command", "ref": "go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1", "proves": "redaction behavior is executable"}, {"kind": "command", "ref": "go run ./tools/redactiondrift", "proves": "security docs do not redefine redaction marker/catalog details outside the SSOT"}]
-    },
-    {
-      "id": "runtime-secret-private-evidence",
-      "owner": "riido-infra boundary, public daemon verifier",
-      "observation": {"summary": "Runtime secret release evidence needs a public contract without exposing private token values.", "artifacts": ["docs/30-architecture/runtime-secret-private-evidence.riido.json"]},
-      "hypothesis": {"summary": "A metadata-only packet contract can prove that public CI never requires raw secret collection paths.", "artifacts": ["tools/runtimesecretevidence/run_test.go"]},
-      "execution": {"summary": "Validate the contract, generate the reader doc, and publish sanitized public evidence JSON.", "artifacts": [".github/workflows/runtime-secret-private-evidence.yml", "tools/runtimesecretevidence"]},
-      "evaluation": {"summary": "The verifier rejects raw packet fields, secret read/decrypt AWS operations, missing generated docs, and missing forbidden operation coverage.", "artifacts": ["docs/30-architecture/runtime-secret-private-evidence.md"]},
-      "retrospective": {"summary": "Private infra remains the live evidence owner, while public daemon only owns the executable metadata boundary.", "artifacts": ["docs/20-domain/security/native-config-overlay/runtime-secret-evidence.md"]},
-      "evidence": [{"kind": "command", "ref": "go run ./tools/runtimesecretevidence -check-doc -evidence-out /tmp/runtime-secret-private-evidence.json", "proves": "runtime secret evidence boundary generates sanitized public evidence"}, {"kind": "workflow", "ref": ".github/workflows/runtime-secret-private-evidence.yml", "proves": "public CI uploads sanitized runtime secret evidence artifacts without private secret access"}]
-    }
+  "loop_files": [
+    "docs/30-architecture/loop-engineering/architecture-docs.riido.json",
+    "docs/30-architecture/loop-engineering/doc-map-evidence.riido.json",
+    "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
+    "docs/30-architecture/loop-engineering/store-distribution.riido.json",
+    "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",
+    "docs/30-architecture/loop-engineering/security-redaction.riido.json",
+    "docs/30-architecture/loop-engineering/runtime-secret-private-evidence.riido.json"
   ],
   "open_gaps": []
 }

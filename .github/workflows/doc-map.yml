@@ -1,0 +1,36 @@
+name: doc-map
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/doc-map.yml"
+      - "docs/README.md"
+      - "docs/readme/document-map.md"
+      - "docs/readme/document-map.riido.json"
+      - "tools/docmap/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  doc-map-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify generated doc map
+        run: |
+          mkdir -p out
+          go test ./tools/docmap -count=1
+          go run ./tools/docmap \
+            -check \
+            -evidence-out out/doc-map-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: doc-map-evidence
+          path: out/doc-map-evidence.json
+          if-no-files-found: error

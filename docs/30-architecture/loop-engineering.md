@@ -28,6 +28,23 @@
 - Evidence:
   - `command`: scripts/verify-architecture-docs.sh; proves architecture docs remain executable and linked to tool checks
 
+### doc-map-evidence
+
+- Owner: `tools/docmap and doc-map workflow`
+- Observe: README and document-map duplicated navigation facts as manually edited reader docs.
+  - Artifacts: `docs/readme/document-map.riido.json`
+- Hypothesis: A single executable manifest can generate reader entrypoints and prevent broken document links.
+  - Artifacts: `tools/docmap/run_test.go`
+- Execute: Run docmap to check generated docs and publish a compact evidence JSON artifact.
+  - Artifacts: `.github/workflows/doc-map.yml`, `tools/docmap`
+- Evaluate: The verifier rejects missing mapped docs, duplicate decision topics, and generated doc drift.
+  - Artifacts: `docs/README.md`, `docs/readme/document-map.md`
+- Retrospective: Document navigation becomes generated reader surface; the manifest owns the map.
+  - Artifacts: `docs/readme/document-map.riido.json`
+- Evidence:
+  - `command`: go run ./tools/docmap -check -evidence-out /tmp/doc-map-evidence.json; proves doc map reader docs and link coverage are generated from the manifest
+  - `workflow`: .github/workflows/doc-map.yml; proves public CI uploads document map evidence artifacts
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

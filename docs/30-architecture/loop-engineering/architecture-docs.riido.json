@@ -1,0 +1,10 @@
+{
+  "id": "architecture-docs",
+  "owner": "architecture-docs workflow",
+  "observation": {"summary": "Architecture docs, migration docs, and roadmap changes are observed through path-scoped CI.", "artifacts": [".github/workflows/architecture-docs.yml"]},
+  "hypothesis": {"summary": "A doc change can introduce stale boundary wording or break executable SSOT links.", "artifacts": ["scripts/verify-architecture-docs.sh"]},
+  "execution": {"summary": "Run the architecture verifier and all architecture tool tests.", "artifacts": ["scripts/verify-architecture-docs.sh"]},
+  "evaluation": {"summary": "The verifier fails on missing required files, stale wording, dependency drift, or failed tool tests.", "artifacts": ["tools/figmaboundary", "tools/providervalidation", "tools/agentexecutionevidence"]},
+  "retrospective": {"summary": "Closed decisions move into owning SSOT docs; unresolved shared decisions stay in the roadmap.", "artifacts": ["docs/50-roadmap/open-questions.md"]},
+  "evidence": [{"kind": "command", "ref": "scripts/verify-architecture-docs.sh", "proves": "architecture docs remain executable and linked to tool checks"}]
+}
