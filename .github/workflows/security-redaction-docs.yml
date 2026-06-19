@@ -1,0 +1,53 @@
+name: security-redaction-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/security-redaction-docs.yml"
+      - "docs/20-domain/security-redaction.md"
+      - "docs/20-domain/security-redaction.riido.json"
+      - "docs/20-domain/security-redaction/**"
+      - "tools/securityredactiondocs/**"
+      - "tools/redactiondrift/**"
+      - "internal/policy/**"
+      - "internal/agentbridge/toolargs/**"
+      - "internal/ir/ingest/**"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/security-redaction-docs.yml"
+      - "docs/20-domain/security-redaction.md"
+      - "docs/20-domain/security-redaction.riido.json"
+      - "docs/20-domain/security-redaction/**"
+      - "tools/securityredactiondocs/**"
+      - "tools/redactiondrift/**"
+      - "internal/policy/**"
+      - "internal/agentbridge/toolargs/**"
+      - "internal/ir/ingest/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  security-redaction-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify security redaction docs
+        run: |
+          mkdir -p out
+          go run ./tools/securityredactiondocs \
+            -check-doc \
+            -evidence-out out/security-redaction-docs.json
+          go run ./tools/redactiondrift
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-redaction-docs
+          path: out/security-redaction-docs.json
+          if-no-files-found: error

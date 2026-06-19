@@ -1,0 +1,72 @@
+{
+  "schema_version": "riido-security-redaction-docs.v1",
+  "id": "security-redaction-docs",
+  "title": "Security Redaction SSOT",
+  "generated_doc": "docs/20-domain/security-redaction.md",
+  "workflow": ".github/workflows/security-redaction-docs.yml",
+  "evidence_artifact": "security-redaction-docs",
+  "summary": [
+    "This executable ontology owns C7 secret redaction decisions and the C4/C2 execution responsibilities that consume them.",
+    "Markdown under `docs/20-domain/security-redaction*.md` is generated from this file and its fragments."
+  ],
+  "responsibilities": [
+    "C7 secret redaction forbidden pattern catalog.",
+    "Canonical marker formats for IR payloads and ToolRef.Args summaries.",
+    "C4 adapter, C4 ToolRef.Args, and C2 EventIngestor execution responsibility boundaries.",
+    "Redaction audit event payload and policy-version change classification."
+  ],
+  "non_responsibilities": [
+    "Concrete provider raw-event to ProviderEventDraft adapter implementation.",
+    "CanonicalEvent schema and envelope ownership in riido-contracts/ir.",
+    "ToolRef.Args flattening implementation beyond the marker and risk surface contract."
+  ],
+  "invariants": [
+    "C7 owns redaction decisions; C4 and C2 call the catalog without redefining pattern meaning.",
+    "Raw secrets are not stored in IR Payload, Unknown, or ToolRef.Args; only markers remain.",
+    "C4 first-pass adapter redaction observes and transforms but does not emit audit events.",
+    "C2 EventIngestor appends PolicyViolationDetected when second-pass redaction occurs.",
+    "Pattern catalog evolution is a policy-bundle version change."
+  ],
+  "detail_pages": [
+    {"id": "pattern-catalog", "title": "금지 패턴 카탈로그", "path": "security-redaction/pattern-catalog.md"},
+    {"id": "markers", "title": "Marker", "path": "security-redaction/markers.md"},
+    {"id": "execution-responsibility", "title": "실행 책임", "path": "security-redaction/execution-responsibility.md"},
+    {"id": "audit-event", "title": "Audit Event", "path": "security-redaction/audit-event.md"},
+    {"id": "failure", "title": "Redaction Failure", "path": "security-redaction/failure.md"},
+    {"id": "versioning", "title": "Versioning", "path": "security-redaction/versioning.md"},
+    {"id": "verification-gates", "title": "검증 게이트", "path": "security-redaction/verification-gates.md"}
+  ],
+  "fragments": {
+    "pattern-catalog": "security-redaction/pattern-catalog.riido.json",
+    "markers": "security-redaction/markers.riido.json",
+    "execution-responsibility": "security-redaction/execution-responsibility.riido.json",
+    "audit-event": "security-redaction/audit-event.riido.json",
+    "failure": "security-redaction/failure.riido.json",
+    "versioning": "security-redaction/versioning.riido.json",
+    "verification-gates": "security-redaction/verification-gates.riido.json"
+  },
+  "source_checks": [
+    {"name": "policy catalog", "file": "internal/policy/redaction.go", "contains": "var secretRedactionPatterns = []secretPattern{"},
+    {"name": "pattern aws-access-key", "file": "internal/policy/redaction.go", "contains": "id: \"aws-access-key\""},
+    {"name": "pattern gcp-api-key", "file": "internal/policy/redaction.go", "contains": "id: \"gcp-api-key\""},
+    {"name": "pattern github-token", "file": "internal/policy/redaction.go", "contains": "id: \"github-token\""},
+    {"name": "pattern gitlab-token", "file": "internal/policy/redaction.go", "contains": "id: \"gitlab-token\""},
+    {"name": "pattern anthropic-api-key", "file": "internal/policy/redaction.go", "contains": "id: \"anthropic-api-key\""},
+    {"name": "pattern openai-api-key", "file": "internal/policy/redaction.go", "contains": "id: \"openai-api-key\""},
+    {"name": "pattern jwt", "file": "internal/policy/redaction.go", "contains": "id: \"jwt\""},
+    {"name": "pattern pem-private-key", "file": "internal/policy/redaction.go", "contains": "id: \"pem-private-key\""},
+    {"name": "pattern basic-auth-url", "file": "internal/policy/redaction.go", "contains": "id: \"basic-auth-url\""},
+    {"name": "pattern env-secret-assignment", "file": "internal/policy/redaction.go", "contains": "id: \"env-secret-assignment\""},
+    {"name": "canonical marker", "file": "internal/policy/redaction.go", "contains": "SecretRedactionMarkerPrefix = \"[REDACTED:\""},
+    {"name": "tool args marker", "file": "internal/agentbridge/toolargs/constants.go", "contains": "RedactedValue = \"[redacted]\""},
+    {"name": "secret exposure risk", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseSecretExposure     ToolUseSurface = \"tool:secret-exposure\""},
+    {"name": "event ingestor audit", "file": "internal/ir/ingest/append.go", "contains": "ir.EventPolicyViolationDetected"},
+    {"name": "audit category", "file": "internal/ir/ingest/redaction_summary.go", "contains": "\"category\":        \"SECRET_LEAK_ATTEMPTED\","},
+    {"name": "drift gate", "file": "tools/redactiondrift/validate.go", "contains": "validateRedactionSSOT"}
+  ],
+  "assertions": [
+    "Generated markdown must match this ontology and its fragments.",
+    "tools/redactiondrift remains the boundary guard against redaction rule redefinition in security hub docs.",
+    "Policy, ToolRef.Args, and EventIngestor tests are verification sidecars for this ontology."
+  ]
+}

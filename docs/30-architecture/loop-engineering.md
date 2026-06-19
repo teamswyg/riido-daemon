@@ -714,20 +714,21 @@
 
 ### security-redaction
 
-- Owner: `event-ingestor, toolargs, and redactiondrift workflows`
-- Observe: Secret redaction decisions are observed through C7 policy, ToolRef args, and C2 EventIngestor tests.
-  - Artifacts: `docs/20-domain/security-redaction.md`
-- Hypothesis: Security docs must not redefine redaction markers outside the redaction SSOT.
-  - Artifacts: `docs/20-domain/security-redaction/verification-gates.md`
-- Execute: Run redaction/audit tests, toolargs/toolpolicy tests, and the doc drift verifier.
-  - Artifacts: `.github/workflows/event-ingestor.yml`, `.github/workflows/toolargs-toolpolicy.yml`, `tools/redactiondrift`
-- Evaluate: Tests prove marker generation, safe-value behavior, second-pass redaction, PolicyViolationDetected audit append, and no marker/catalog redefinition outside the SSOT.
-  - Artifacts: `internal/policy/redaction_test.go`, `internal/ir/ingest/event_redaction_test.go`, `tools/redactiondrift/run_test.go`
-- Retrospective: When security hub docs need redaction details, they link to the redaction SSOT instead of restating marker/catalog rules.
-  - Artifacts: `docs/20-domain/security-redaction/verification-gates.md`
+- Owner: `daemon/security`
+- Observe: Secret redaction behavior was executable through C7 policy, ToolRef.Args, C2 EventIngestor, and redactiondrift checks, but the redaction docs were still reader-authored markdown.
+  - Artifacts: `docs/20-domain/security-redaction.md`, `internal/policy/redaction.go`, `tools/redactiondrift`
+- Hypothesis: A security-redaction manifest plus detail fragments can generate the reader docs while checking implementation anchors for markers, risk surfaces, audit payloads, and drift boundaries.
+  - Artifacts: `docs/20-domain/security-redaction.riido.json`, `docs/20-domain/security-redaction/markers.riido.json`
+- Execute: Generate C7 redaction docs from structured responsibilities, invariants, detail fragments, and source checks, while keeping redactiondrift as the security hub boundary verifier.
+  - Artifacts: `tools/securityredactiondocs`, `tools/redactiondrift`, `.github/workflows/security-redaction-docs.yml`
+- Evaluate: The verifier rejects doc drift, invalid fragments, missing workflow artifacts, and missing source anchors for marker formats, secret exposure risk, and PolicyViolationDetected audit append.
+  - Artifacts: `docs/20-domain/security-redaction.md`, `internal/ir/ingest/event_redaction_test.go`, `tools/securityredactiondocs/run_test.go`
+- Retrospective: Redaction knowledge remains readable, but the editable surface is now the executable ontology and evidence-producing verifier rather than hand-maintained markdown.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
-  - `command`: go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1; proves redaction behavior is executable
-  - `command`: go run ./tools/redactiondrift; proves security docs do not redefine redaction marker/catalog details outside the SSOT
+  - `command`: go run ./tools/securityredactiondocs -check-doc -evidence-out /tmp/security-redaction-docs.json; proves security redaction reader docs are generated and implementation source anchors still exist
+  - `command`: go run ./tools/redactiondrift; proves security hub docs do not redefine redaction marker or catalog details outside the SSOT
+  - `workflow`: .github/workflows/security-redaction-docs.yml; proves public CI uploads security redaction doc evidence
 
 ### runtime-secret-private-evidence
 

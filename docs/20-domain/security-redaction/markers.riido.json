@@ -1,0 +1,13 @@
+{
+  "schema_version": "riido-security-redaction-detail.v1",
+  "id": "markers",
+  "title": "Marker",
+  "generated_doc": "docs/20-domain/security-redaction/markers.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Canonical IR payload redaction marker 는 다음 형식이다."},
+    {"kind": "code", "language": "text", "code": "[REDACTED:<patternID>]"},
+    {"kind": "paragraph", "text": "`ToolRef.Args` 는 policy classification 입력용 bounded summary 이므로 pattern ID 를 보존하지 않고 단일 marker 를 쓴다."},
+    {"kind": "code", "language": "text", "code": "[redacted]"},
+    {"kind": "paragraph", "text": "`ToolRef.Args` 에 `[redacted]` marker 가 있으면 `tool:secret-exposure` risk surface 로 분류한다."}
+  ]
+}
