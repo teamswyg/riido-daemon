@@ -1,0 +1,18 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-figma-boundary-provenance-device-principal-config",
+  "title": "RIID-4881: DevicePrincipal Config",
+  "generated_doc": "docs/migration/daemon/figma-boundary-provenance/device-principal-config.md",
+  "back_title": "figma-boundary-provenance",
+  "back_path": "../figma-boundary-provenance.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice mirrors the upstream contracts/control-plane decision that daemon SaaS polling is bound by DevicePrincipal credentials and assignment snapshots, not team/OpenAPI-key configuration."},
+    {"kind": "bullets", "items": [
+      "`RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET` are the daemon credential inputs for SaaS polling in the Desktop-launched flow.",
+      "`team_id`, `teamId`, OpenAPI task-context paths, Open API keys, and `X-Workspace-Api-Key` are not daemon assignment execution identity inputs.",
+      "Those values are not binding, polling, or smoke-test inputs for daemon assignment execution.",
+      "Daemon remains a downstream consumer of already-authorized assignment snapshots."
+    ]},
+    {"kind": "paragraph", "text": "This slice does not change daemon runtime behavior, add SaaS endpoints, edit provider credential handling, alter workdir isolation, add deployment config, or remove legacy local-only task sources."}
+  ]
+}

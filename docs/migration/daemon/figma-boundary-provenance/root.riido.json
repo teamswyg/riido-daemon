@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-figma-boundary-provenance-root",
+  "title": "Riido Daemon Migration Plan: Figma Boundary Provenance",
+  "generated_doc": "docs/migration/daemon/figma-boundary-provenance.md",
+  "back_title": "daemon.md",
+  "back_path": "../daemon.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This entrypoint records daemon-side migration slices that mirrored upstream Figma boundary provenance into public daemon SSOT."},
+    {"kind": "links", "links": [
+      {"title": "RIID-4847 and RIID-4851 - coverage provenance mirror", "path": "figma-boundary-provenance/coverage-provenance.md"},
+      {"title": "RIID-4859 - onboarding draft-create boundary", "path": "figma-boundary-provenance/onboarding-draft-create.md"},
+      {"title": "RIID-4881 - DevicePrincipal config", "path": "figma-boundary-provenance/device-principal-config.md"},
+      {"title": "RIID-4890 - detect-selected executable start parity", "path": "figma-boundary-provenance/detect-selected-executable.md"},
+      {"title": "RIID-4901 - provider validation matrix evidence", "path": "figma-boundary-provenance/provider-validation-matrix.md"},
+      {"title": "RIID-4917 - runtime progress numeric args", "path": "figma-boundary-provenance/runtime-progress-numeric-args.md"}
+    ]},
+    {"kind": "paragraph", "text": "Each child page is migration history only; authoritative behavior remains in Figma boundary, config reference, executable-search-path, provider-validation, progress-message, source package, and public workflow SSOT evidence."}
+  ]
+}

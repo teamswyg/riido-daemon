@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-figma-boundary-provenance-runtime-progress-numeric-args",
+  "title": "RIID-4917: Runtime Progress Numeric Args",
+  "generated_doc": "docs/migration/daemon/figma-boundary-provenance/runtime-progress-numeric-args.md",
+  "back_title": "figma-boundary-provenance",
+  "back_path": "../figma-boundary-provenance.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice closes a live development finding where Codex could emit progress telemetry with an integer `count` argument for code `1102`. The upstream `riido-contracts/progressmessage` catalog already defines that argument as an int, but daemon projection previously accepted only string-valued args."},
+    {"kind": "paragraph", "text": "Without this slice, malformed or incomplete progress telemetry could later fall back to raw JSON-shaped copy in the public thread stream."},
+    {"kind": "bullets", "items": [
+      "Primitive JSON progress args are accepted.",
+      "Args normalize into the string metadata shape used by the SaaS assignment event contract.",
+      "Rendered Korean progress text for `1102` is preserved when `count` is numeric.",
+      "Injected telemetry instruction tells providers that `1102` requires `label`, `count`, and `representative_title`.",
+      "The public SSE/client response shape remains unchanged."
+    ]},
+    {"kind": "paragraph", "text": "This slice does not add new progress codes, change the append-only progress catalog, change frontend rendering, or alter provider final-answer content."}
+  ]
+}

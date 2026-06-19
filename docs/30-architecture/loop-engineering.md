@@ -1110,6 +1110,23 @@
   - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/macos-provider-cli-review.riido.json -check-doc -evidence-out /tmp/migration-daemon-macos-provider-cli-review-docs.json; proves macOS provider CLI review migration docs are generated and source anchors remain present
   - `workflow`: .github/workflows/migration-daemon-macos-provider-cli-review-docs.yml; proves public CI uploads macOS provider CLI review migration evidence
 
+### migration-daemon-figma-boundary-provenance-docs
+
+- Owner: `daemon/migration`
+- Observe: figma-boundary-provenance migration notes still described Figma provenance, DevicePrincipal config, detect-selected executable parity, provider validation, and numeric progress args as reader-authored prose while active facts already lived in executable SSOTs and workflows.
+  - Artifacts: `docs/migration/daemon/figma-boundary-provenance.md`
+- Hypothesis: A focused migration-docs manifest can generate the Figma boundary provenance slice and anchor each RIID page to Figma, config, executable-search-path, provider-validation, and progress telemetry evidence.
+  - Artifacts: `docs/migration/daemon/figma-boundary-provenance.riido.json`
+- Execute: Generate the Figma boundary provenance entrypoint and six slice pages from fragments with source checks for figmaboundary, configreference, executablesearchpath, providervalidation, and runtime progress metadata evidence.
+  - Artifacts: `tools/migrationdocs`, `.github/workflows/migration-daemon-figma-boundary-provenance-docs.yml`
+- Evaluate: The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for migration claims.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The Figma boundary provenance migration slice now becomes executable evidence instead of manual migration history.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/figma-boundary-provenance.riido.json -check-doc -evidence-out /tmp/migration-daemon-figma-boundary-provenance-docs.json; proves Figma boundary provenance migration docs are generated and source anchors remain present
+  - `workflow`: .github/workflows/migration-daemon-figma-boundary-provenance-docs.yml; proves public CI uploads Figma boundary provenance migration evidence
+
 ### workspace-invariants-docs
 
 - Owner: `daemon/workspace`

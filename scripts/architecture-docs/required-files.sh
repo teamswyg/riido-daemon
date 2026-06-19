@@ -365,6 +365,7 @@ required_files=(
   docs/30-architecture/loop-engineering/migration-daemon-runtime-snapshot-heartbeat-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-macos-provider-cli-review-docs.riido.json
+  docs/30-architecture/loop-engineering/migration-daemon-figma-boundary-provenance-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-docs.riido.json
@@ -415,6 +416,7 @@ required_files=(
   .github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml
   .github/workflows/migration-daemon-distribution-host-integration-docs.yml
   .github/workflows/migration-daemon-macos-provider-cli-review-docs.yml
+  .github/workflows/migration-daemon-figma-boundary-provenance-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -477,6 +479,14 @@ required_files=(
   docs/migration/daemon/macos-provider-cli-review/4657-controlplane-ports.riido.json
   docs/migration/daemon/macos-provider-cli-review/4658-claude-provider.riido.json
   docs/migration/daemon/macos-provider-cli-review/4659-codex-provider.riido.json
+  docs/migration/daemon/figma-boundary-provenance.riido.json
+  docs/migration/daemon/figma-boundary-provenance/root.riido.json
+  docs/migration/daemon/figma-boundary-provenance/coverage-provenance.riido.json
+  docs/migration/daemon/figma-boundary-provenance/onboarding-draft-create.riido.json
+  docs/migration/daemon/figma-boundary-provenance/device-principal-config.riido.json
+  docs/migration/daemon/figma-boundary-provenance/detect-selected-executable.riido.json
+  docs/migration/daemon/figma-boundary-provenance/provider-validation-matrix.riido.json
+  docs/migration/daemon/figma-boundary-provenance/runtime-progress-numeric-args.riido.json
   docs/50-roadmap/open-questions.md
   docs/50-roadmap/open-questions.riido.json
   .github/workflows/runtime-scheduling-docs.yml
