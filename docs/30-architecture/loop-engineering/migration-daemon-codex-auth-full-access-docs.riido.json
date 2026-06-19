@@ -1,0 +1,28 @@
+{
+  "id": "migration-daemon-codex-auth-full-access-docs",
+  "owner": "daemon/migration",
+  "observation": {
+    "summary": "codex-auth-full-access migration notes still described Codex auth, provider adapters, supervisor, and taskdbplane moves as reader-authored prose while active facts already lived in security, provider-runtime, provider-validation, supervisor, taskdbplane, and public workflow evidence.",
+    "artifacts": ["docs/migration/daemon/codex-auth-full-access.md"]
+  },
+  "hypothesis": {
+    "summary": "A focused migration-docs manifest can generate the Codex auth/full-access slice and anchor each page to its owning SSOT, source package, or workflow evidence.",
+    "artifacts": ["docs/migration/daemon/codex-auth-full-access.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate the Codex auth/full-access entrypoint and five slice pages from fragments with source checks for Codex full-access harness, OpenClaw, Cursor, supervisor, and taskdbplane evidence.",
+    "artifacts": ["tools/migrationdocs", ".github/workflows/migration-daemon-codex-auth-full-access-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for migration claims.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The Codex auth/full-access migration slice now becomes executable evidence instead of manual migration history.",
+    "artifacts": ["docs/executable-knowledge.md", "docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {"kind": "command", "ref": "go run ./tools/migrationdocs -manifest docs/migration/daemon/codex-auth-full-access.riido.json -check-doc -evidence-out /tmp/migration-daemon-codex-auth-full-access-docs.json", "proves": "Codex auth/full-access migration docs are generated and source anchors remain present"},
+    {"kind": "workflow", "ref": ".github/workflows/migration-daemon-codex-auth-full-access-docs.yml", "proves": "public CI uploads Codex auth/full-access migration evidence"}
+  ]
+}

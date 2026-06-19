@@ -1127,6 +1127,23 @@
   - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/figma-boundary-provenance.riido.json -check-doc -evidence-out /tmp/migration-daemon-figma-boundary-provenance-docs.json; proves Figma boundary provenance migration docs are generated and source anchors remain present
   - `workflow`: .github/workflows/migration-daemon-figma-boundary-provenance-docs.yml; proves public CI uploads Figma boundary provenance migration evidence
 
+### migration-daemon-codex-auth-full-access-docs
+
+- Owner: `daemon/migration`
+- Observe: codex-auth-full-access migration notes still described Codex auth, provider adapters, supervisor, and taskdbplane moves as reader-authored prose while active facts already lived in security, provider-runtime, provider-validation, supervisor, taskdbplane, and public workflow evidence.
+  - Artifacts: `docs/migration/daemon/codex-auth-full-access.md`
+- Hypothesis: A focused migration-docs manifest can generate the Codex auth/full-access slice and anchor each page to its owning SSOT, source package, or workflow evidence.
+  - Artifacts: `docs/migration/daemon/codex-auth-full-access.riido.json`
+- Execute: Generate the Codex auth/full-access entrypoint and five slice pages from fragments with source checks for Codex full-access harness, OpenClaw, Cursor, supervisor, and taskdbplane evidence.
+  - Artifacts: `tools/migrationdocs`, `.github/workflows/migration-daemon-codex-auth-full-access-docs.yml`
+- Evaluate: The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for migration claims.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The Codex auth/full-access migration slice now becomes executable evidence instead of manual migration history.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/codex-auth-full-access.riido.json -check-doc -evidence-out /tmp/migration-daemon-codex-auth-full-access-docs.json; proves Codex auth/full-access migration docs are generated and source anchors remain present
+  - `workflow`: .github/workflows/migration-daemon-codex-auth-full-access-docs.yml; proves public CI uploads Codex auth/full-access migration evidence
+
 ### workspace-invariants-docs
 
 - Owner: `daemon/workspace`

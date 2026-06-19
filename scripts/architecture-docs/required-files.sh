@@ -366,6 +366,7 @@ required_files=(
   docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-macos-provider-cli-review-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-figma-boundary-provenance-docs.riido.json
+  docs/30-architecture/loop-engineering/migration-daemon-codex-auth-full-access-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-docs.riido.json
@@ -417,6 +418,7 @@ required_files=(
   .github/workflows/migration-daemon-distribution-host-integration-docs.yml
   .github/workflows/migration-daemon-macos-provider-cli-review-docs.yml
   .github/workflows/migration-daemon-figma-boundary-provenance-docs.yml
+  .github/workflows/migration-daemon-codex-auth-full-access-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -487,6 +489,13 @@ required_files=(
   docs/migration/daemon/figma-boundary-provenance/detect-selected-executable.riido.json
   docs/migration/daemon/figma-boundary-provenance/provider-validation-matrix.riido.json
   docs/migration/daemon/figma-boundary-provenance/runtime-progress-numeric-args.riido.json
+  docs/migration/daemon/codex-auth-full-access.riido.json
+  docs/migration/daemon/codex-auth-full-access/root.riido.json
+  docs/migration/daemon/codex-auth-full-access/codex-auth-harness.riido.json
+  docs/migration/daemon/codex-auth-full-access/openclaw-provider-adapter.riido.json
+  docs/migration/daemon/codex-auth-full-access/cursor-provider-adapter.riido.json
+  docs/migration/daemon/codex-auth-full-access/supervisor-migration.riido.json
+  docs/migration/daemon/codex-auth-full-access/taskdbplane-adapter.riido.json
   docs/50-roadmap/open-questions.md
   docs/50-roadmap/open-questions.riido.json
   .github/workflows/runtime-scheduling-docs.yml

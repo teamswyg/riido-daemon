@@ -1,0 +1,48 @@
+name: migration-daemon-codex-auth-full-access-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/migration-daemon-codex-auth-full-access-docs.yml"
+      - "docs/migration/daemon/codex-auth-full-access.md"
+      - "docs/migration/daemon/codex-auth-full-access.riido.json"
+      - "docs/migration/daemon/codex-auth-full-access/**"
+      - "docs/executable-knowledge.md"
+      - "docs/executable-knowledge.riido.json"
+      - "tools/migrationdocs/**"
+      - "tools/docmap/**"
+      - "tools/knowledgecoverage/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/migration-daemon-codex-auth-full-access-docs.yml"
+      - "docs/migration/daemon/codex-auth-full-access.md"
+      - "docs/migration/daemon/codex-auth-full-access.riido.json"
+      - "docs/migration/daemon/codex-auth-full-access/**"
+      - "docs/executable-knowledge.md"
+      - "docs/executable-knowledge.riido.json"
+      - "tools/migrationdocs/**"
+      - "tools/docmap/**"
+      - "tools/knowledgecoverage/**"
+
+jobs:
+  migration-daemon-codex-auth-full-access-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify migration daemon codex auth full access docs
+        run: |
+          mkdir -p out
+          go run ./tools/migrationdocs -manifest docs/migration/daemon/codex-auth-full-access.riido.json -check-doc -evidence-out out/migration-daemon-codex-auth-full-access-docs.json
+          go run ./tools/docmap -check -evidence-out out/doc-map-evidence.json
+          go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out out/knowledge-coverage.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: migration-daemon-codex-auth-full-access-docs
+          path: out/*.json
+          if-no-files-found: error
