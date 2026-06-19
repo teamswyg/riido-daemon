@@ -1,0 +1,36 @@
+{
+  "id": "local-daemon-contract-evidence",
+  "owner": "C5 runtime scheduling",
+  "observation": {
+    "summary": "The local daemon implementation contract described runtime pools, task DB sidecars, leases, and fencing as prose while the proof lived across scheduling, supervisor, taskdbplane, and cmd/riido files.",
+    "artifacts": ["docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove runtime-scoped claim dispatch, pure selector boundaries, sidecar registry ownership, and lease fencing from source checks.",
+    "artifacts": ["docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json"]
+  },
+  "execution": {
+    "summary": "Run localdaemoncontract to check generated docs, source checks, absent adapter/persistence imports in scheduling, and absent provider execution imports in taskdbplane.",
+    "artifacts": ["tools/localdaemoncontract", ".github/workflows/local-daemon-contract-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source evidence, unknown fact references, scheduler boundary leaks, and taskdbplane provider execution leaks.",
+    "artifacts": ["tools/localdaemoncontract/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Local daemon scheduling knowledge becomes executable contract evidence instead of a manually edited implementation note.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localdaemoncontract -check-doc -evidence-out /tmp/local-daemon-contract-evidence.json",
+      "proves": "local daemon contract manifest matches generated docs, implementation references, and absent boundary rules"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/local-daemon-contract-evidence.yml",
+      "proves": "public CI uploads local daemon contract evidence"
+    }
+  ]
+}

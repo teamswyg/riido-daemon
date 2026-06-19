@@ -1,0 +1,61 @@
+{
+  "schema_version": "riido-local-daemon-contract.v1",
+  "id": "local-daemon-contract-evidence",
+  "title": "Local Daemon Implementation Contract Evidence",
+  "generated_doc": "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md",
+  "workflow": ".github/workflows/local-daemon-contract-evidence.yml",
+  "evidence_artifact": "local-daemon-contract-evidence",
+  "purpose": "Proves the public daemon runtime scheduling contract from executable code references instead of hand-written prose.",
+  "facts": [
+    {"name": "daemon exposes local task sources by env", "summary": "cmd/riido owns the local queue and task DB source environment surface.", "source_checks": ["daemon-env-task-queue", "daemon-env-task-db"]},
+    {"name": "supervisor owns runtime pool dispatch", "summary": "daemon startup wires runtime actors into SupervisorActor and supervisor claims work by runtime id.", "source_checks": ["supervisor-runtime-pool", "supervisor-runtime-claim", "supervisor-runtime-heartbeat"]},
+    {"name": "scheduler selection is pure C5 logic", "summary": "SelectRuntime orders candidates without locks, persistence, provider execution, or process side effects.", "source_checks": ["scheduler-pure-selector", "scheduler-runtime-pin"]},
+    {"name": "task DB uses sidecar runtime registries", "summary": "taskdbplane stores runtime registry and lease registry next to the task DB without changing the task DB schema.", "source_checks": ["taskdb-runtime-registry-schema", "taskdb-runtime-lease-schema", "taskdb-runtime-registry-path", "taskdb-runtime-lease-path"]},
+    {"name": "task DB claims only the selected runtime", "summary": "taskdbplane reuses SelectRuntime and only lets the selected runtime id claim the queued row.", "source_checks": ["taskdb-select-runtime", "taskdb-selected-runtime-only", "taskdb-acquire-runtime-lease"]},
+    {"name": "lease metadata fences reports", "summary": "claimed TaskRequest metadata carries lease id, fencing token, and capability fingerprint; reports must match active lease identity.", "source_checks": ["taskdb-lease-metadata", "taskdb-require-runtime-lease", "taskdb-reject-fencing-mismatch", "taskdb-reject-fingerprint-mismatch"]},
+    {"name": "expired leases requeue or terminate by state", "summary": "expired Preparing/Running leases hand off through Blocked then Queued, while Claimed and NeedsInput become terminal.", "source_checks": ["taskdb-expired-handoff", "taskdb-expired-claimed-fails", "taskdb-expired-needs-input-times-out"]},
+    {"name": "heartbeats refresh only matching active leases", "summary": "runtime heartbeats refresh running task leases only when runtime id and capability fingerprint still match.", "source_checks": ["taskdb-heartbeat-refresh-runtime", "taskdb-heartbeat-refresh-fingerprint"]}
+  ],
+  "boundaries": [
+    {"name": "internal/scheduling", "owner": "C5 runtime scheduling", "summary": "pure runtime eligibility, selection, and runtime pin model"},
+    {"name": "internal/agentbridge/supervisor", "owner": "daemon runtime loop", "summary": "runtime registration, claim dispatch, heartbeat, cancellation, and pre-submit eligibility"},
+    {"name": "internal/agentbridge/controlplane/taskdbplane", "owner": "local task DB adapter", "summary": "task DB source/reporter, runtime registry sidecars, leases, fencing, and guarded task transitions"},
+    {"name": "cmd/riido daemon", "owner": "12-factor local adapter", "summary": "env/flag surface and runtime actor pool wiring"}
+  ],
+  "absent_surfaces": [
+    {"name": "scheduler has no adapter or persistence imports", "scope": ["internal/scheduling"], "tokens": ["github.com/teamswyg/riido-daemon/internal/agentbridge", "github.com/teamswyg/riido-daemon/internal/taskdb", "github.com/teamswyg/riido-daemon/internal/lock", "net/http"], "reason": "C5 scheduling must stay pure and must not own daemon adapter, task DB, lease primitive, or HTTP behavior."},
+    {"name": "taskdbplane has no provider execution imports", "scope": ["internal/agentbridge/controlplane/taskdbplane"], "tokens": ["github.com/teamswyg/riido-daemon/internal/provider/", "github.com/teamswyg/riido-daemon/internal/process"], "reason": "taskdbplane may claim/report tasks but must not execute provider processes."}
+  ],
+  "source_checks": [
+    {"name": "daemon-env-task-queue", "file": "cmd/riido/daemon_config.go", "contains": "envTaskQueueDir                  = \"RIIDO_TASK_QUEUE_DIR\""},
+    {"name": "daemon-env-task-db", "file": "cmd/riido/daemon_config.go", "contains": "envTaskDBSourcePath              = \"RIIDO_TASK_DB_SOURCE_PATH\""},
+    {"name": "supervisor-runtime-pool", "file": "cmd/riido/daemon_supervisor_start.go", "contains": "Runtimes:            runtimes"},
+    {"name": "supervisor-runtime-claim", "file": "internal/agentbridge/supervisor/task_claiming.go", "contains": "a.cfg.Source.ClaimTask(claimCtx, status.RuntimeID)"},
+    {"name": "supervisor-runtime-heartbeat", "file": "internal/agentbridge/supervisor/poll_heartbeat.go", "contains": "RunningTaskIDs: hb.RunningTaskIDs"},
+    {"name": "scheduler-pure-selector", "file": "internal/scheduling/pool.go", "contains": "provider execution side effects happen here"},
+    {"name": "scheduler-runtime-pin", "file": "internal/scheduling/lease.go", "contains": "The (RuntimeID, CapabilityFingerprint) pair IS the runtime pin"},
+    {"name": "taskdb-runtime-registry-schema", "file": "internal/agentbridge/controlplane/taskdbplane/taskdbplane.go", "contains": "RuntimeRegistrySchemaVersion      = \"riido-runtime-registry.v1\""},
+    {"name": "taskdb-runtime-lease-schema", "file": "internal/agentbridge/controlplane/taskdbplane/taskdbplane.go", "contains": "RuntimeLeaseRegistrySchemaVersion = \"riido-runtime-lease-registry.v1\""},
+    {"name": "taskdb-runtime-registry-path", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_persistence.go", "contains": "return before + \".runtimes.json\""},
+    {"name": "taskdb-runtime-lease-path", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_persistence.go", "contains": "return before + \".leases.json\""},
+    {"name": "taskdb-select-runtime", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_selection.go", "contains": "scheduling.SelectRuntime"},
+    {"name": "taskdb-selected-runtime-only", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_selection.go", "contains": "string(selection.Runtime.RuntimeID) != runtimeID"},
+    {"name": "taskdb-acquire-runtime-lease", "file": "internal/agentbridge/controlplane/taskdbplane/task_claim_attempt.go", "contains": "acquireRuntimeLease(*leases, record.ID, runtimeID"},
+    {"name": "taskdb-lease-metadata", "file": "internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go", "contains": "controlplane.MetadataRuntimeFencingToken"},
+    {"name": "taskdb-require-runtime-lease", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go", "contains": "requireActiveRuntimeLease"},
+    {"name": "taskdb-reject-fencing-mismatch", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go", "contains": "runtime fencing token mismatch"},
+    {"name": "taskdb-reject-fingerprint-mismatch", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go", "contains": "runtime capability fingerprint mismatch"},
+    {"name": "taskdb-expired-handoff", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_expiry.go", "contains": "task.StateQueued"},
+    {"name": "taskdb-expired-claimed-fails", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_expiry.go", "contains": "runtime lease expired before provider execution"},
+    {"name": "taskdb-expired-needs-input-times-out", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_expiry.go", "contains": "runtime lease expired while waiting for input"},
+    {"name": "taskdb-heartbeat-refresh-runtime", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_refresh.go", "contains": "lease.RuntimeID != rec.RuntimeID"},
+    {"name": "taskdb-heartbeat-refresh-fingerprint", "file": "internal/agentbridge/controlplane/taskdbplane/runtime_lease_refresh.go", "contains": "runtimeHasCapabilityFingerprint(rec, lease.CapabilityFingerprint)"}
+  ],
+  "assertions": [
+    "local daemon scheduling claims are runtime-scoped, not process-global",
+    "scheduler selection is pure and cannot acquire leases or spawn providers",
+    "task DB runtime state is sidecar state, not a task DB schema expansion",
+    "progress/result reports require active lease identity and fencing token evidence",
+    "expired leases have explicit handoff or terminal outcomes"
+  ]
+}
