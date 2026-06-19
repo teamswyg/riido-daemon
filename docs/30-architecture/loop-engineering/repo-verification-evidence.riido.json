@@ -1,0 +1,10 @@
+{
+  "id": "repo-verification-evidence",
+  "owner": "tools/repoverification and repo-verification workflow",
+  "observation": {"summary": "README verification commands were a copy/paste list without machine evidence.", "artifacts": ["docs/readme/verification.riido.json"]},
+  "hypothesis": {"summary": "Representing verification commands as argv arrays lets CI run the same command set and publish compact evidence.", "artifacts": ["tools/repoverification/run_test.go"]},
+  "execution": {"summary": "Run the verification command manifest and upload command-level evidence.", "artifacts": [".github/workflows/repo-verification.yml", "tools/repoverification"]},
+  "evaluation": {"summary": "The verifier rejects doc drift, duplicate command ids, invalid argv, and failed commands when run mode is enabled.", "artifacts": ["docs/readme/verification.md"]},
+  "retrospective": {"summary": "The verification reader doc is generated; the manifest owns command intent and execution shape.", "artifacts": ["docs/readme/verification.riido.json"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/repoverification -check-doc -run-commands -evidence-out /tmp/repo-verification-evidence.json", "proves": "README verification commands execute from the manifest"}, {"kind": "workflow", "ref": ".github/workflows/repo-verification.yml", "proves": "public CI uploads command-level verification evidence"}]
+}

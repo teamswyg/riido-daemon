@@ -6,6 +6,8 @@ required_files=(
   docs/README.md
   docs/readme/document-map.md
   docs/readme/document-map.riido.json
+  docs/readme/verification.md
+  docs/readme/verification.riido.json
   docs/30-architecture/module-decomposition.md
   docs/30-architecture/cli-surface.md
   docs/30-architecture/config-reference.md
@@ -62,9 +64,10 @@ done
 
 scripts/verify-go-dependencies.sh
 
-go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap -count=1
+go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification -count=1
 go run ./tools/loopevidence -check
 go run ./tools/docmap -check
+go run ./tools/repoverification -check-doc
 go run ./tools/redactiondrift
 go run ./tools/providerintegrationevidence -check-doc
 go run ./tools/runtimesecretevidence -check-doc

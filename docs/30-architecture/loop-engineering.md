@@ -45,6 +45,23 @@
   - `command`: go run ./tools/docmap -check -evidence-out /tmp/doc-map-evidence.json; proves doc map reader docs and link coverage are generated from the manifest
   - `workflow`: .github/workflows/doc-map.yml; proves public CI uploads document map evidence artifacts
 
+### repo-verification-evidence
+
+- Owner: `tools/repoverification and repo-verification workflow`
+- Observe: README verification commands were a copy/paste list without machine evidence.
+  - Artifacts: `docs/readme/verification.riido.json`
+- Hypothesis: Representing verification commands as argv arrays lets CI run the same command set and publish compact evidence.
+  - Artifacts: `tools/repoverification/run_test.go`
+- Execute: Run the verification command manifest and upload command-level evidence.
+  - Artifacts: `.github/workflows/repo-verification.yml`, `tools/repoverification`
+- Evaluate: The verifier rejects doc drift, duplicate command ids, invalid argv, and failed commands when run mode is enabled.
+  - Artifacts: `docs/readme/verification.md`
+- Retrospective: The verification reader doc is generated; the manifest owns command intent and execution shape.
+  - Artifacts: `docs/readme/verification.riido.json`
+- Evidence:
+  - `command`: go run ./tools/repoverification -check-doc -run-commands -evidence-out /tmp/repo-verification-evidence.json; proves README verification commands execute from the manifest
+  - `workflow`: .github/workflows/repo-verification.yml; proves public CI uploads command-level verification evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

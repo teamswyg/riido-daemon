@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-repo-verification.v1",
+  "id": "daemon-repo-verification",
+  "title": "README Verification",
+  "generated_doc": "docs/readme/verification.md",
+  "workflow": ".github/workflows/repo-verification.yml",
+  "evidence_artifact": "repo-verification-evidence",
+  "commands": [
+    {"id": "all-tests", "description": "Run the public daemon test suite.", "argv": ["go", "test", "./..."]},
+    {"id": "module-boundary", "description": "List modules for the Riido-owned dependency boundary.", "argv": ["go", "list", "-m", "all"]},
+    {"id": "storecontract-tests", "description": "Run the Store distribution verifier tests.", "argv": ["go", "test", "./tools/storecontract"]},
+    {"id": "storecontract-repo", "description": "Verify package and store distribution contract against this repository.", "argv": ["go", "run", "./tools/storecontract", "-contract", "packaging/store/riido_daemon_store_distribution.riido.json", "-repo", "."]},
+    {"id": "cli-build", "description": "Build the local helper CLI.", "argv": ["go", "build", "-o", "/tmp/riido", "./cmd/riido"]},
+    {"id": "cli-help", "description": "Verify CLI help renders.", "argv": ["go", "run", "./cmd/riido", "--help"]},
+    {"id": "bridge-providers", "description": "Verify provider registry output renders.", "argv": ["go", "run", "./cmd/riido", "bridge", "providers"]}
+  ],
+  "assertions": [
+    "verification reader doc is generated from this manifest",
+    "commands are represented as argv arrays, not prose",
+    "public CI can run the command set and upload compact evidence"
+  ]
+}
