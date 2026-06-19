@@ -1,0 +1,10 @@
+{
+  "id": "security-redaction",
+  "owner": "event-ingestor, toolargs, and redactiondrift workflows",
+  "observation": {"summary": "Secret redaction decisions are observed through C7 policy, ToolRef args, and C2 EventIngestor tests.", "artifacts": ["docs/20-domain/security-redaction.md"]},
+  "hypothesis": {"summary": "Security docs must not redefine redaction markers outside the redaction SSOT.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
+  "execution": {"summary": "Run redaction/audit tests, toolargs/toolpolicy tests, and the doc drift verifier.", "artifacts": [".github/workflows/event-ingestor.yml", ".github/workflows/toolargs-toolpolicy.yml", "tools/redactiondrift"]},
+  "evaluation": {"summary": "Tests prove marker generation, safe-value behavior, second-pass redaction, PolicyViolationDetected audit append, and no marker/catalog redefinition outside the SSOT.", "artifacts": ["internal/policy/redaction_test.go", "internal/ir/ingest/event_redaction_test.go", "tools/redactiondrift/run_test.go"]},
+  "retrospective": {"summary": "When security hub docs need redaction details, they link to the redaction SSOT instead of restating marker/catalog rules.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
+  "evidence": [{"kind": "command", "ref": "go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1", "proves": "redaction behavior is executable"}, {"kind": "command", "ref": "go run ./tools/redactiondrift", "proves": "security docs do not redefine redaction marker/catalog details outside the SSOT"}]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "store-distribution",
+  "owner": "tools/storecontract",
+  "observation": {"summary": "Store channel claims are observed through a package/distribution contract.", "artifacts": ["packaging/store/riido_daemon_store_distribution.riido.json"]},
+  "hypothesis": {"summary": "A distribution change can accidentally add forbidden artifacts, terms, or user-path leakage.", "artifacts": ["tools/storecontract/schema.go"]},
+  "execution": {"summary": "Run the store contract verifier against the repository.", "artifacts": ["tools/storecontract/run.go"]},
+  "evaluation": {"summary": "The verifier fails on missing docs, notice terms, forbidden package roots, or user-path artifacts.", "artifacts": ["tools/storecontract/artifact_scan.go"]},
+  "retrospective": {"summary": "Store review and channel decisions are promoted into C11 SSOT instead of loose notes.", "artifacts": ["docs/30-architecture/store-distribution.md"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .", "proves": "store distribution contract remains executable"}]
+}

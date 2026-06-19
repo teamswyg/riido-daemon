@@ -3,6 +3,9 @@ set -euo pipefail
 
 required_files=(
   docs/20-domain/context-map.md
+  docs/README.md
+  docs/readme/document-map.md
+  docs/readme/document-map.riido.json
   docs/30-architecture/module-decomposition.md
   docs/30-architecture/cli-surface.md
   docs/30-architecture/config-reference.md
@@ -59,14 +62,9 @@ done
 
 scripts/verify-go-dependencies.sh
 
-go test ./tools/figmaboundary -count=1
-go test ./tools/providervalidation -count=1
-go test ./tools/agentexecutionevidence -count=1
-go test ./tools/loopevidence -count=1
-go test ./tools/redactiondrift -count=1
-go test ./tools/providerintegrationevidence -count=1
-go test ./tools/runtimesecretevidence -count=1
+go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap -count=1
 go run ./tools/loopevidence -check
+go run ./tools/docmap -check
 go run ./tools/redactiondrift
 go run ./tools/providerintegrationevidence -check-doc
 go run ./tools/runtimesecretevidence -check-doc

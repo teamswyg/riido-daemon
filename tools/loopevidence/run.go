@@ -16,6 +16,10 @@ func run(repoRoot, manifestPath, docPath string, write, check bool) error {
 	if err != nil {
 		return err
 	}
+	loaded, err = expandLoopFiles(root, loaded)
+	if err != nil {
+		return err
+	}
 	if docPath == "" {
 		docPath = loaded.GeneratedDoc
 	}

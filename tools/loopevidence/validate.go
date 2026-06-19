@@ -11,6 +11,9 @@ func validate(root string, m manifest) []string {
 	var problems []string
 	problems = append(problems, validateHeader(m)...)
 	seen := map[string]bool{}
+	if len(m.Loops) == 0 {
+		problems = append(problems, "loops or loop_files must provide at least one loop")
+	}
 	for _, item := range m.Loops {
 		problems = append(problems, validateLoop(root, item, seen)...)
 	}

@@ -1,0 +1,10 @@
+{
+  "id": "doc-map-evidence",
+  "owner": "tools/docmap and doc-map workflow",
+  "observation": {"summary": "README and document-map duplicated navigation facts as manually edited reader docs.", "artifacts": ["docs/readme/document-map.riido.json"]},
+  "hypothesis": {"summary": "A single executable manifest can generate reader entrypoints and prevent broken document links.", "artifacts": ["tools/docmap/run_test.go"]},
+  "execution": {"summary": "Run docmap to check generated docs and publish a compact evidence JSON artifact.", "artifacts": [".github/workflows/doc-map.yml", "tools/docmap"]},
+  "evaluation": {"summary": "The verifier rejects missing mapped docs, duplicate decision topics, and generated doc drift.", "artifacts": ["docs/README.md", "docs/readme/document-map.md"]},
+  "retrospective": {"summary": "Document navigation becomes generated reader surface; the manifest owns the map.", "artifacts": ["docs/readme/document-map.riido.json"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/docmap -check -evidence-out /tmp/doc-map-evidence.json", "proves": "doc map reader docs and link coverage are generated from the manifest"}, {"kind": "workflow", "ref": ".github/workflows/doc-map.yml", "proves": "public CI uploads document map evidence artifacts"}]
+}

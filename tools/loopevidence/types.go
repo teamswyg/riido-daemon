@@ -6,6 +6,7 @@ type manifest struct {
 	Title          string   `json:"title"`
 	GeneratedDoc   string   `json:"generated_doc"`
 	RequiredPhases []string `json:"required_phases"`
+	LoopFiles      []string `json:"loop_files"`
 	Loops          []loop   `json:"loops"`
 	OpenGaps       []gap    `json:"open_gaps"`
 }
