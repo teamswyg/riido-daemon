@@ -1,0 +1,29 @@
+# Dependency Direction
+
+[Back to context-map.md](../context-map.md)
+
+```text
+riido-contracts/task,ir,provider/capability
+        |
+        v
+ C4 provider adapters -> C4 session/runtime actors -> C5 supervisor
+        |                         |                       |
+        v                         v                       v
+ C2 ingest/redaction        C6 workdir              C10 adapter ports
+        |                         |                       |
+        v                         v                       v
+ C1 local task DB       C7 policy decisions       local taskdb / SaaS polling
+
+C11 host integration supplies local IPC, app data roots, consent, provider
+provenance, review-demo surfaces, and store-channel policy inputs. C11 may
+consult C7 but C7 must not call OS/store adapters.
+```
+
+The daemon imports contracts inward and adapts host/provider/server reality at
+the edges. Runtime/domain packages must not import `cmd/riido`,
+`riido-control-plane`, `riido-infra`, Terraform, AWS account data, or provider
+CLI binaries.
+
+The retired private daemon repository must not be referenced, compared against,
+cherry-picked from, pushed to, opened as a PR target, merged, or otherwise
+modified during public daemon work.
