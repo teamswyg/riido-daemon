@@ -1,0 +1,22 @@
+# Security Invariants: Trust Tier
+
+[Back to invariants](../invariants.md)
+
+Trust tier means the isolation level of the runtime execution environment.
+
+| Tier | Meaning | Unsafe bypass possible? |
+| --- | --- | --- |
+| `Host` | daemon runs directly on user/operator host OS | never |
+| `IsolatedContainer` | OS-level container isolation such as Docker, containerd, or Podman | only when policy bundle explicitly allows |
+| `EphemeralVM` | one-shot VM per task | only when policy bundle explicitly allows |
+| `CIControlledRunner` | CI-managed isolated runner | only when policy bundle explicitly allows and CI isolation is verified |
+| `Unknown` | trust tier cannot be determined | never |
+
+Rules:
+
+1. Trust tier is decided from external signals during runtime registration.
+2. Signals combine self-reporting, such as wrapper manifest or runtime env, with
+   verifiable facts, such as cgroup or namespace isolation detection.
+3. `Unknown` is rejected by capability gate G-S1.
+4. Trust tier is not an input to `ProviderCapability` / `CapabilityFingerprint`,
+   but changing it triggers capability reevaluation.
