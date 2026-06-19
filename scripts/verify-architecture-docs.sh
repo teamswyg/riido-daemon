@@ -25,6 +25,7 @@ required_files=(
   docs/30-architecture/runtime-secret-private-evidence.riido.json
   docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md
   docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json
+  docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.riido.json
   docs/30-architecture/figma-ai-agent-daemon-boundary.md
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -35,11 +36,11 @@ for path in "${required_files[@]}"; do
   test -f "$path"
 done
 scripts/verify-riido-work-branch.sh "A-40-AI-Agent-SSOT-Riido-작업-branchName-사용-강제"
-if scripts/verify-riido-work-branch.sh "codex/not-allowed"; then
+if scripts/verify-riido-work-branch.sh "codex/not-allowed" >/tmp/riido-branch-negative-1.log 2>&1; then
   echo "namespaced helper branch unexpectedly passed"
   exit 1
 fi
-if scripts/verify-riido-work-branch.sh "feature-branch"; then
+if scripts/verify-riido-work-branch.sh "feature-branch" >/tmp/riido-branch-negative-2.log 2>&1; then
   echo "non-Riido branch unexpectedly passed"
   exit 1
 fi
@@ -59,13 +60,14 @@ for key in "${env_keys[@]}"; do
   grep -q "$key" docs/30-architecture/config-reference.md
 done
 scripts/verify-go-dependencies.sh
-go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity ./tools/eventauthority ./tools/providerdraftmapping -count=1
+go test ./tools/figmaboundary ./tools/providervalidation ./tools/agentexecutionevidence ./tools/loopevidence ./tools/redactiondrift ./tools/providerintegrationevidence ./tools/runtimesecretevidence ./tools/docmap ./tools/repoverification ./tools/semanticeventactivity ./tools/eventauthority ./tools/providerdraftmapping ./tools/terminalresultmapping -count=1
 go run ./tools/loopevidence -check
 go run ./tools/docmap -check
 go run ./tools/repoverification -check-doc
 go run ./tools/semanticeventactivity -check-doc
 go run ./tools/eventauthority -check-doc
 go run ./tools/providerdraftmapping -check-doc
+go run ./tools/terminalresultmapping -check-doc
 go run ./tools/redactiondrift
 go run ./tools/providerintegrationevidence -check-doc
 go run ./tools/runtimesecretevidence -check-doc
