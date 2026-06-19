@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-macos-provider-cli-review-4659",
+  "title": "RIID-4659: Codex Provider",
+  "generated_doc": "docs/migration/daemon/macos-provider-cli-review/4659-codex-provider.md",
+  "back_title": "macos-provider-cli-review",
+  "back_path": "../macos-provider-cli-review.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the Codex adapter."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/provider/codex`",
+      "Codex adapter testdata",
+      "Provider-runtime and daemon migration documentation",
+      "Public CI for command construction, blocked protocol args, unsafe bypass filtering, `CODEX_HOME` non-materialization, detection, JSONL parsing, raw translation, golden fixtures, JSON-RPC actor, handshake, and protocol-driver approval response"
+    ]},
+    {"kind": "paragraph", "text": "The package owns only the daemon-side C4 adapter ACL for the external Codex CLI app-server stdio mode. It must not bundle, install, or distribute Codex."},
+    {"kind": "paragraph", "text": "Real CLI integration is opt-in with `AGENTBRIDGE_INTEGRATION=1`; public CI stays deterministic and skips real CLI checks when the external CLI is absent."}
+  ]
+}

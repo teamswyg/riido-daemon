@@ -1,0 +1,44 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-daemon-macos-provider-cli-review-docs",
+  "title": "Riido Daemon Migration Plan: macOS Provider CLI Review",
+  "workflow": ".github/workflows/migration-daemon-macos-provider-cli-review-docs.yml",
+  "evidence_artifact": "migration-daemon-macos-provider-cli-review-docs",
+  "expected_page_count": 8,
+  "fragments": [
+    "macos-provider-cli-review/root.riido.json",
+    "macos-provider-cli-review/4571-provider-cli-review.riido.json",
+    "macos-provider-cli-review/4573-workdir-policy.riido.json",
+    "macos-provider-cli-review/4654-bridge-detectutil.riido.json",
+    "macos-provider-cli-review/4656-runtimeactor.riido.json",
+    "macos-provider-cli-review/4657-controlplane-ports.riido.json",
+    "macos-provider-cli-review/4658-claude-provider.riido.json",
+    "macos-provider-cli-review/4659-codex-provider.riido.json"
+  ],
+  "source_checks": [
+    {"name": "macos-provider-cli-workflow", "file": ".github/workflows/macos-external-provider-cli-ssot.yml", "contains": "Verify Q-DIST-001 is resolved in C11 SSOT"},
+    {"name": "provider-cli-bundling-forbidden", "file": "packaging/store/riido_daemon_store_distribution.riido.json", "contains": "\"provider_cli_bundling\": \"forbidden\""},
+    {"name": "store-review-field", "file": "internal/policy/store_channel_input.go", "contains": "StoreReviewApproved    bool"},
+    {"name": "os-grant-field", "file": "internal/policy/store_channel_input.go", "contains": "OSGrantPresent         bool"},
+    {"name": "workdir-policy-workflow", "file": ".github/workflows/workdir-policy-ssot.yml", "contains": "Test workdir retention and native config gates"},
+    {"name": "native-config-retention", "file": "docs/20-domain/workspace/native-config-manifest.riido.json", "contains": "no default size/task-count cleanup"},
+    {"name": "repo-cache-lock", "file": "docs/20-domain/workspace/invariants.riido.json", "contains": "repo_cache_update.lock"},
+    {"name": "bridge-detectutil-workflow", "file": ".github/workflows/bridge-detectutil.yml", "contains": "Verify bridge/detectutil stay provider neutral"},
+    {"name": "bridge-detectutil-row", "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json", "contains": "RIID-4654"},
+    {"name": "runtimeactor-workflow", "file": ".github/workflows/runtimeactor.yml", "contains": "Verify runtimeactor stays provider neutral"},
+    {"name": "runtimeactor-row", "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json", "contains": "RIID-4656"},
+    {"name": "controlplane-workflow", "file": ".github/workflows/controlplane.yml", "contains": "Verify controlplane root stays provider neutral"},
+    {"name": "controlplane-row", "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json", "contains": "RIID-4657"},
+    {"name": "claude-workflow", "file": ".github/workflows/provider-claude.yml", "contains": "Verify Claude adapter gates"},
+    {"name": "claude-row", "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json", "contains": "RIID-4658"},
+    {"name": "codex-workflow", "file": ".github/workflows/provider-codex.yml", "contains": "Verify Codex adapter gates"},
+    {"name": "codex-row", "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json", "contains": "RIID-4659"},
+    {"name": "codex-home-non-materialization", "file": "cmd/riido/bridge_codex_start_test.go", "contains": "codex adapter must not invent CODEX_HOME"}
+  ],
+  "assertions": [
+    "macOS provider CLI review migration notes are generated from fragments instead of hand-authored markdown",
+    "Mac App Store provider execution claims must stay anchored to C11 store-channel policy and distribution package evidence",
+    "provider-neutral bridge, runtimeactor, and controlplane slices must stay separated from concrete Claude and Codex adapters",
+    "workdir policy migration claims must remain anchored to workspace/native-config SSOT and public CI"
+  ]
+}

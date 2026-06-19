@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-macos-provider-cli-review-4656",
+  "title": "RIID-4656: Runtime Actor",
+  "generated_doc": "docs/migration/daemon/macos-provider-cli-review/4656-runtimeactor.md",
+  "back_title": "macos-provider-cli-review",
+  "back_path": "../macos-provider-cli-review.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the provider-neutral C4/C5 runtime actor."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/agentbridge/runtimeactor`",
+      "Provider-runtime and daemon migration documentation",
+      "Public CI for mailbox, slot, cancellation, heartbeat, capability reconciliation, detected fingerprint, and protocol-driver handoff"
+    ]},
+    {"kind": "paragraph", "text": "The runtime actor owns one mailbox actor per runtime/capability boundary, reconciles adapter detection into public C3 contracts capability facts, enforces slots, starts one-run sessions, cascades cancellation, and publishes status/heartbeat snapshots."},
+    {"kind": "paragraph", "text": "This slice does not move supervisor, controlplane, concrete adapters, task DB/project/local API packages, packaging, infra, secrets, or local machine state."}
+  ]
+}

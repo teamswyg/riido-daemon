@@ -363,6 +363,7 @@ required_files=(
   docs/30-architecture/loop-engineering/migration-cli-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-runtime-snapshot-heartbeat-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json
+  docs/30-architecture/loop-engineering/migration-daemon-macos-provider-cli-review-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-docs.riido.json
@@ -411,6 +412,7 @@ required_files=(
   .github/workflows/migration-daemon-riidoapi-local-api-docs.yml
   .github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml
   .github/workflows/migration-daemon-distribution-host-integration-docs.yml
+  .github/workflows/migration-daemon-macos-provider-cli-review-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -456,6 +458,15 @@ required_files=(
   docs/migration/daemon/distribution-host-integration/session-actor.riido.json
   docs/migration/daemon/distribution-host-integration/runtime-session-backpressure.riido.json
   docs/migration/daemon/distribution-host-integration/store-app-ownership.riido.json
+  docs/migration/daemon/macos-provider-cli-review.riido.json
+  docs/migration/daemon/macos-provider-cli-review/root.riido.json
+  docs/migration/daemon/macos-provider-cli-review/4571-provider-cli-review.riido.json
+  docs/migration/daemon/macos-provider-cli-review/4573-workdir-policy.riido.json
+  docs/migration/daemon/macos-provider-cli-review/4654-bridge-detectutil.riido.json
+  docs/migration/daemon/macos-provider-cli-review/4656-runtimeactor.riido.json
+  docs/migration/daemon/macos-provider-cli-review/4657-controlplane-ports.riido.json
+  docs/migration/daemon/macos-provider-cli-review/4658-claude-provider.riido.json
+  docs/migration/daemon/macos-provider-cli-review/4659-codex-provider.riido.json
   docs/50-roadmap/open-questions.md
   docs/50-roadmap/open-questions.riido.json
   .github/workflows/runtime-scheduling-docs.yml

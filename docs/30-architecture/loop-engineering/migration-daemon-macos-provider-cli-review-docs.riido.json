@@ -1,0 +1,28 @@
+{
+  "id": "migration-daemon-macos-provider-cli-review-docs",
+  "owner": "daemon/migration",
+  "observation": {
+    "summary": "macos-provider-cli-review migration notes still described provider CLI review, workdir policy, provider-neutral runtime packages, and concrete provider adapters as reader-authored prose while active facts already lived in domain SSOT and public workflows.",
+    "artifacts": ["docs/migration/daemon/macos-provider-cli-review.md"]
+  },
+  "hypothesis": {
+    "summary": "A focused migration-docs manifest can generate the macOS provider CLI review slice and anchor each RIID page to its owning SSOT or workflow evidence.",
+    "artifacts": ["docs/migration/daemon/macos-provider-cli-review.riido.json"]
+  },
+  "execution": {
+    "summary": "Generate the macOS provider CLI review entrypoint and seven slice pages from fragments with source checks for C11 Store policy, workspace policy, bridge/detectutil, runtimeactor, controlplane, Claude, and Codex evidence.",
+    "artifacts": ["tools/migrationdocs", ".github/workflows/migration-daemon-macos-provider-cli-review-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for migration claims.",
+    "artifacts": ["scripts/architecture-docs/tool-checks.sh", "scripts/architecture-docs/required-files.sh", "tools/knowledgecoverage"]
+  },
+  "retrospective": {
+    "summary": "The macOS provider CLI review migration slice now becomes executable evidence instead of manual migration history.",
+    "artifacts": ["docs/executable-knowledge.md", "docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {"kind": "command", "ref": "go run ./tools/migrationdocs -manifest docs/migration/daemon/macos-provider-cli-review.riido.json -check-doc -evidence-out /tmp/migration-daemon-macos-provider-cli-review-docs.json", "proves": "macOS provider CLI review migration docs are generated and source anchors remain present"},
+    {"kind": "workflow", "ref": ".github/workflows/migration-daemon-macos-provider-cli-review-docs.yml", "proves": "public CI uploads macOS provider CLI review migration evidence"}
+  ]
+}

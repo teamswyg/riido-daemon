@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-macos-provider-cli-review-4658",
+  "title": "RIID-4658: Claude Provider",
+  "generated_doc": "docs/migration/daemon/macos-provider-cli-review/4658-claude-provider.md",
+  "back_title": "macos-provider-cli-review",
+  "back_path": "../macos-provider-cli-review.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the first concrete provider adapter."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/provider/claude`",
+      "Claude adapter testdata",
+      "Provider-runtime and daemon migration documentation",
+      "Public CI for command construction, blocked protocol args, executable detection, stream-json parsing, raw event translation, golden fixtures, and input approval frames"
+    ]},
+    {"kind": "paragraph", "text": "The package owns only the daemon-side C4 adapter ACL for the external Claude Code CLI. It must not bundle, install, or distribute Claude."},
+    {"kind": "paragraph", "text": "Real CLI integration is opt-in with `AGENTBRIDGE_INTEGRATION=1`; public CI stays deterministic and skips real CLI checks when the external CLI is absent."}
+  ]
+}
