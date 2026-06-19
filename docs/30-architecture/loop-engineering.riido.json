@@ -7,6 +7,7 @@
   "loop_files": [
     "docs/30-architecture/loop-engineering/architecture-docs.riido.json",
     "docs/30-architecture/loop-engineering/doc-map-evidence.riido.json",
+    "docs/30-architecture/loop-engineering/repo-verification-evidence.riido.json",
     "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
     "docs/30-architecture/loop-engineering/store-distribution.riido.json",
     "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",

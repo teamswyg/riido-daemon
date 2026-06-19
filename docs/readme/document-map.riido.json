@@ -26,6 +26,7 @@
     {"topic": "runtime scheduling, workspace, validation, locking", "docs": ["docs/20-domain/runtime-scheduling.md", "docs/20-domain/workspace.md", "docs/20-domain/validation.md", "docs/20-domain/locking.md"]},
     {"topic": "CLI, package map, branch gate, config", "docs": ["docs/30-architecture/cli-surface.md", "docs/30-architecture/module-decomposition.md", "docs/30-architecture/riido-work-branch-gate.md", "docs/30-architecture/config-reference.md"]},
     {"topic": "provider real CLI and loop evidence", "docs": ["docs/30-architecture/integration-matrix.md", "docs/30-architecture/provider-real-cli-observation.md", "docs/30-architecture/loop-engineering.md"]},
+    {"topic": "repository verification command set", "docs": ["docs/readme/verification.md", "docs/readme/verification.riido.json"]},
     {"topic": "Figma boundary and unresolved execution design", "docs": ["docs/30-architecture/figma-ai-agent-daemon-boundary.md", "docs/30-architecture/agent-execution-unresolved-design.md"]},
     {"topic": "migration history and open questions", "docs": ["docs/migration/daemon.md", "docs/migration/cli.md", "docs/50-roadmap/open-questions.md"]}
   ],
