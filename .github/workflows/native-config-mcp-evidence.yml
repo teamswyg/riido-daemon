@@ -1,0 +1,45 @@
+name: native-config-mcp-evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/native-config-mcp-evidence.yml"
+      - "docs/20-domain/security/enforcement-locations/native-config-and-mcp.md"
+      - "docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json"
+      - "cmd/riido/daemon_settings*_test.go"
+      - "internal/policy/**"
+      - "internal/workdir/**"
+      - "internal/agentbridge/adapter_start.go"
+      - "internal/agentbridge/session/session_*temp_file*.go"
+      - "internal/agentbridge/session/session_runner_finish.go"
+      - "internal/agentbridge/supervisor/workspace_native*.go"
+      - "internal/agentbridge/supervisor/workspace_metadata_apply.go"
+      - "internal/provider/claude/**"
+      - "internal/provider/codex/command_env_security_test.go"
+      - "tools/nativeconfigmcp/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  native-config-mcp-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify native config and MCP evidence
+        run: |
+          mkdir -p out
+          go test ./tools/nativeconfigmcp -count=1
+          go run ./tools/nativeconfigmcp \
+            -check-doc \
+            -evidence-out out/native-config-mcp-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-config-mcp-evidence
+          path: out/native-config-mcp-evidence.json
+          if-no-files-found: error

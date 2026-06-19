@@ -1,0 +1,59 @@
+{
+  "schema_version": "riido-native-config-mcp.v1",
+  "id": "native-config-mcp-evidence",
+  "title": "Native Config and MCP Lifecycle Evidence",
+  "generated_doc": "docs/20-domain/security/enforcement-locations/native-config-and-mcp.md",
+  "workflow": ".github/workflows/native-config-mcp-evidence.yml",
+  "evidence_artifact": "native-config-mcp-evidence",
+  "purpose": "Proves native config materialization and MCP temp-file lifecycle rules from source checks instead of hand-written policy prose.",
+  "facts": [
+    {"name": "policy owns native hook decision", "summary": "Claude command-hook audit is the only native hook surface and requires known trust tier plus bundle allow.", "source_checks": ["hook-surface", "hook-evaluator", "hook-deny-unknown-tier", "default-allows-claude-hook"]},
+    {"name": "policy owns native config file decision", "summary": "Codex task-scoped config home is typed but not allowed by the default local policy bundle.", "source_checks": ["file-surface", "file-evaluator", "default-denies-codex-home", "settings-deny-codex-home"]},
+    {"name": "supervisor applies policy before workdir injection", "summary": "supervisor converts denied Claude hooks to instruction-only and denied Codex config-home to disabled mode.", "source_checks": ["supervisor-hook-policy", "supervisor-hook-instruction-only", "supervisor-codex-home-policy", "supervisor-codex-home-disabled", "supervisor-inject-runtime-config"]},
+    {"name": "workdir materializes deterministic native config evidence", "summary": "workdir records generated files in the native config manifest and writes Claude hook artifacts only when the plan includes them.", "source_checks": ["workdir-manifest-generated-files", "workdir-claude-settings", "workdir-claude-hook-script", "workdir-claude-hook-test"]},
+    {"name": "Codex config home remains disabled by default", "summary": "Codex primary instruction file remains AGENTS.md while .codex/config.toml is absent when config home mode is disabled.", "source_checks": ["workdir-codex-home-disabled-test", "workdir-codex-agents-test", "provider-codex-no-invent-home"]},
+    {"name": "MCP config path is a temp-file capability", "summary": "Claude StartCommand includes strict MCP args only when a path exists and registers that path in TempFiles.", "source_checks": ["start-command-temp-files", "claude-mcp-args", "claude-mcp-test"]},
+    {"name": "session owns MCP temp-file cleanup", "summary": "session cleanup runs after provider finish and tests cover process exit, cancellation, and timeout cleanup paths.", "source_checks": ["session-finish-cleanup", "session-exit-cleanup-test", "session-cancel-cleanup-test", "session-timeout-cleanup-test"]}
+  ],
+  "absent_surfaces": [
+    {"name": "workdir does not decide policy", "scope": ["internal/workdir"], "tokens": ["EvaluateNativeConfigHook", "EvaluateNativeConfigFile", "policy.PolicyBundle"], "reason": "C6 materializes the resolved plan; C7/C4 policy decisions stay outside workdir."},
+    {"name": "Codex adapter does not invent task-scoped CODEX_HOME", "scope": ["internal/provider/codex"], "tokens": ["CODEX_HOME=<workdir>", ".codex/config.toml"], "reason": "Codex auth/env preservation is allowed, but task-scoped config home materialization is not default behavior."},
+    {"name": "Claude adapter does not inline raw MCP JSON in args", "scope": ["internal/provider/claude"], "tokens": ["MCPConfig []byte", "MCPConfig:"], "reason": "provider command receives --mcp-config path and reports temp files, not raw MCP JSON payloads."}
+  ],
+  "source_checks": [
+    {"name": "hook-surface", "file": "internal/policy/native_config_policy.go", "contains": "NativeConfigHookClaudeCommandAudit NativeConfigHookSurface = \"claude:command-hooks:audit\""},
+    {"name": "hook-evaluator", "file": "internal/policy/native_config_policy.go", "contains": "func EvaluateNativeConfigHook(input NativeConfigHookInput) Decision"},
+    {"name": "hook-deny-unknown-tier", "file": "internal/policy/native_config_policy.go", "contains": "NATIVE_CONFIG_HOOK_UNKNOWN_TRUST_TIER"},
+    {"name": "default-allows-claude-hook", "file": "internal/policy/bundle_default.go", "contains": "NativeConfigHookClaudeCommandAudit"},
+    {"name": "file-surface", "file": "internal/policy/native_config_file_policy.go", "contains": "NativeConfigFileCodexTaskScopedHome NativeConfigFileSurface = \"codex:config-home:task-scoped\""},
+    {"name": "file-evaluator", "file": "internal/policy/native_config_file_policy.go", "contains": "func EvaluateNativeConfigFile(input NativeConfigFileInput) Decision"},
+    {"name": "default-denies-codex-home", "file": "internal/policy/bundle_default_test.go", "contains": "local default must not materialize Codex task-scoped config home"},
+    {"name": "settings-deny-codex-home", "file": "cmd/riido/daemon_settings_defaults_test.go", "contains": "AllowsNativeConfigFile(policy.TrustTierHost, policy.NativeConfigFileCodexTaskScopedHome)"},
+    {"name": "supervisor-hook-policy", "file": "internal/agentbridge/supervisor/workspace_native_policy.go", "contains": "policy.EvaluateNativeConfigHookWithBundle"},
+    {"name": "supervisor-hook-instruction-only", "file": "internal/agentbridge/supervisor/workspace_native_policy.go", "contains": "return workdir.NativeConfigHookModeInstructionOnly"},
+    {"name": "supervisor-codex-home-policy", "file": "internal/agentbridge/supervisor/workspace_native_policy.go", "contains": "policy.EvaluateNativeConfigFileWithBundle"},
+    {"name": "supervisor-codex-home-disabled", "file": "internal/agentbridge/supervisor/workspace_native_policy.go", "contains": "return workdir.NativeConfigHomeModeDisabled"},
+    {"name": "supervisor-inject-runtime-config", "file": "internal/agentbridge/supervisor/workspace_native_config.go", "contains": "NativeConfigHomeMode:       native.configHomeMode"},
+    {"name": "workdir-manifest-generated-files", "file": "internal/workdir/native_config_model.go", "contains": "GeneratedFiles             []string `json:\"generated_files\"`"},
+    {"name": "workdir-claude-settings", "file": "internal/workdir/native_config_artifacts.go", "contains": "case \".claude/settings.json\":"},
+    {"name": "workdir-claude-hook-script", "file": "internal/workdir/native_config_artifacts.go", "contains": ".riido/hooks/claude-audit-hook.sh"},
+    {"name": "workdir-claude-hook-test", "file": "internal/workdir/native_config_claude_hooks_test.go", "contains": "TestInjectClaudeWritesSettingsAndHook"},
+    {"name": "workdir-codex-home-disabled-test", "file": "internal/workdir/native_config_codex_home_test.go", "contains": "NativeConfigHomeModeDisabled"},
+    {"name": "workdir-codex-agents-test", "file": "internal/workdir/native_config_codex_home_test.go", "contains": "AGENTS.md"},
+    {"name": "provider-codex-no-invent-home", "file": "internal/provider/codex/command_env_security_test.go", "contains": "Codex adapter must not invent CODEX_HOME"},
+    {"name": "start-command-temp-files", "file": "internal/agentbridge/adapter_start.go", "contains": "TempFiles   []string"},
+    {"name": "claude-mcp-args", "file": "internal/provider/claude/start_args.go", "contains": "args = append(args, \"--strict-mcp-config\", \"--mcp-config\", path)"},
+    {"name": "claude-mcp-test", "file": "internal/provider/claude/command_mcp_test.go", "contains": "MCP config path should be registered as a temp file"},
+    {"name": "session-finish-cleanup", "file": "internal/agentbridge/session/session_runner_finish.go", "contains": "cleanupTempFiles(r.cfg.TempFiles)"},
+    {"name": "session-exit-cleanup-test", "file": "internal/agentbridge/session/session_temp_file_exit_test.go", "contains": "TestSessionRemovesTempFilesAfterProcessExit"},
+    {"name": "session-cancel-cleanup-test", "file": "internal/agentbridge/session/session_temp_file_cancel_test.go", "contains": "TestSessionRemovesTempFilesAfterCancellation"},
+    {"name": "session-timeout-cleanup-test", "file": "internal/agentbridge/session/session_timeout_cleanup_test.go", "contains": "TestSessionRemovesTempFilesAfterTimeout"}
+  ],
+  "assertions": [
+    "workdir materializes only a supervisor-resolved native config plan",
+    "Claude audit hooks require policy allow and known trust tier",
+    "Codex task-scoped config home remains disabled by default",
+    "MCP config is passed by path and registered as session-owned temp file",
+    "session cleanup removes MCP temp files after exit, cancellation, and timeout"
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "native-config-mcp-evidence",
+  "owner": "C7 security policy",
+  "observation": {
+    "summary": "Native config and MCP lifecycle rules were described as prose while evidence lived across policy, supervisor, workdir, provider adapters, and session cleanup code.",
+    "artifacts": ["docs/20-domain/security/enforcement-locations/native-config-and-mcp.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove native hook policy, Codex config-home denial, and MCP temp-file cleanup from source references.",
+    "artifacts": ["docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json"]
+  },
+  "execution": {
+    "summary": "Run nativeconfigmcp to check generated docs, source checks, and absent policy/adapter boundary leaks.",
+    "artifacts": ["tools/nativeconfigmcp", ".github/workflows/native-config-mcp-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source evidence, workdir policy decisions, Codex task-scoped home invention, and raw MCP JSON argument leaks.",
+    "artifacts": ["tools/nativeconfigmcp/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Native config and MCP lifecycle knowledge becomes executable evidence instead of a manually edited policy note.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/nativeconfigmcp -check-doc -evidence-out /tmp/native-config-mcp-evidence.json",
+      "proves": "native config/MCP manifest matches generated docs, source evidence, and absent boundary rules"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/native-config-mcp-evidence.yml",
+      "proves": "public CI uploads native config/MCP evidence"
+    }
+  ]
+}

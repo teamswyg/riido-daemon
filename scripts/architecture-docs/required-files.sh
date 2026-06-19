@@ -12,6 +12,8 @@ required_files=(
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json
+  docs/20-domain/security/enforcement-locations/native-config-and-mcp.md
+  docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json
   docs/20-domain/security/enforcement-locations/tool-use-gates.md
   docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json
   docs/20-domain/security/invariants/policy-bundle-loader.md
@@ -35,6 +37,7 @@ required_files=(
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
   docs/30-architecture/loop-engineering/tool-use-gate-evidence.riido.json
+  docs/30-architecture/loop-engineering/native-config-mcp-evidence.riido.json
   docs/30-architecture/provider-real-cli-observation.md
   docs/30-architecture/provider-real-cli-observation.riido.json
   docs/30-architecture/runtime-secret-private-evidence.md
@@ -57,6 +60,7 @@ required_files=(
   .github/workflows/policy-bundle-loader-evidence.yml
   .github/workflows/local-daemon-contract-evidence.yml
   .github/workflows/tool-use-gate-evidence.yml
+  .github/workflows/native-config-mcp-evidence.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml
 )
