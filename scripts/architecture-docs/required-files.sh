@@ -8,6 +8,8 @@ required_files=(
   docs/readme/document-map.riido.json
   docs/readme/verification.md
   docs/readme/verification.riido.json
+  docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md
+  docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.riido.json
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md
@@ -41,6 +43,7 @@ required_files=(
   docs/30-architecture/loop-engineering/tool-use-gate-evidence.riido.json
   docs/30-architecture/loop-engineering/native-config-mcp-evidence.riido.json
   docs/30-architecture/loop-engineering/full-access-harness-evidence.riido.json
+  docs/30-architecture/loop-engineering/privacy-metadata-evidence.riido.json
   docs/30-architecture/provider-real-cli-observation.md
   docs/30-architecture/provider-real-cli-observation.riido.json
   docs/30-architecture/runtime-secret-private-evidence.md
@@ -69,6 +72,7 @@ required_files=(
   .github/workflows/native-config-mcp-evidence.yml
   .github/workflows/full-access-harness-evidence.yml
   .github/workflows/assignment-fsm-evidence.yml
+  .github/workflows/privacy-metadata-evidence.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml
 )

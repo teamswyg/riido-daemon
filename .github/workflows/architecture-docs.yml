@@ -21,6 +21,7 @@ on:
       - ".github/workflows/native-config-mcp-evidence.yml"
       - ".github/workflows/full-access-harness-evidence.yml"
       - ".github/workflows/assignment-fsm-evidence.yml"
+      - ".github/workflows/privacy-metadata-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/**"
   pull_request:
@@ -42,6 +43,7 @@ on:
       - ".github/workflows/native-config-mcp-evidence.yml"
       - ".github/workflows/full-access-harness-evidence.yml"
       - ".github/workflows/assignment-fsm-evidence.yml"
+      - ".github/workflows/privacy-metadata-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/**"
 
