@@ -18,7 +18,8 @@
     {"doc": "docs/30-architecture/cli-surface.md", "description": "CLI/env/flag surface"},
     {"doc": "docs/30-architecture/figma-ai-agent-daemon-boundary.md", "description": "Figma AI Agent 화면의 daemon 경계"},
     {"doc": "docs/30-architecture/agent-execution-unresolved-design.md", "description": "AI Agent 실행 미해결 이슈의 구조 분석"},
-    {"doc": "docs/30-architecture/loop-engineering.md", "description": "generated evidence loop view"}
+    {"doc": "docs/30-architecture/loop-engineering.md", "description": "generated evidence loop view"},
+    {"doc": "docs/30-architecture/executable-knowledge.md", "description": "generated coverage of manual architecture knowledge debt"}
   ],
   "decisions": [
     {"topic": "daemon bounded context", "docs": ["docs/20-domain/context-map.md"]},
@@ -28,7 +29,7 @@
     {"topic": "runtime scheduling, workspace, validation, locking", "docs": ["docs/20-domain/runtime-scheduling.md", "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md", "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json", "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md", "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.riido.json", "docs/20-domain/runtime-scheduling/invariants/task-requirements.md", "docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json", "docs/20-domain/runtime-scheduling/saas-assignment-source.md", "docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json", "docs/20-domain/workspace.md", "docs/20-domain/validation.md", "docs/20-domain/validation.riido.json", "docs/20-domain/locking.md"]},
     {"topic": "CLI, package map, branch gate, config", "docs": ["docs/30-architecture/cli-surface.md", "docs/30-architecture/cli-surface.riido.json", "docs/30-architecture/module-decomposition.md", "docs/30-architecture/riido-work-branch-gate.md", "docs/30-architecture/riido-work-branch-gate.riido.json", "docs/30-architecture/config-reference.md", "docs/30-architecture/config-reference.riido.json", "docs/30-architecture/config-reference/executable-search-path.md", "docs/30-architecture/config-reference/executable-search-path.riido.json"]},
     {"topic": "runtime compatibility and upgrade evidence", "docs": ["docs/30-architecture/compatibility-gate.md", "docs/30-architecture/compatibility-gate.riido.json", "docs/30-architecture/runtime-upgrade-flow.md", "docs/30-architecture/runtime-upgrade-flow.riido.json"]},
-    {"topic": "provider real CLI and loop evidence", "docs": ["docs/30-architecture/integration-matrix.md", "docs/30-architecture/provider-real-cli-observation.md", "docs/30-architecture/loop-engineering.md"]},
+    {"topic": "provider real CLI and loop evidence", "docs": ["docs/30-architecture/integration-matrix.md", "docs/30-architecture/provider-real-cli-observation.md", "docs/30-architecture/loop-engineering.md", "docs/30-architecture/executable-knowledge.md", "docs/30-architecture/executable-knowledge.riido.json"]},
     {"topic": "repository verification command set", "docs": ["docs/readme/verification.md", "docs/readme/verification.riido.json"]},
     {"topic": "semantic event activity evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md", "docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json"]},
     {"topic": "event ingest authority evidence", "docs": ["docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md", "docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json"]},

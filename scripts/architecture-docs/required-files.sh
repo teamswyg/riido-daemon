@@ -43,6 +43,8 @@ required_files=(
   docs/30-architecture/config-reference.riido.json
   docs/30-architecture/config-reference/executable-search-path.md
   docs/30-architecture/config-reference/executable-search-path.riido.json
+  docs/30-architecture/executable-knowledge.md
+  docs/30-architecture/executable-knowledge.riido.json
   docs/30-architecture/integration-matrix.md
   docs/30-architecture/compatibility-gate.md
   docs/30-architecture/compatibility-gate.riido.json
@@ -97,6 +99,7 @@ required_files=(
   .github/workflows/cli-surface-evidence.yml
   .github/workflows/config-reference-evidence.yml
   .github/workflows/executable-search-path-evidence.yml
+  .github/workflows/executable-knowledge-coverage.yml
   .github/workflows/unsafe-bypass-evidence.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml

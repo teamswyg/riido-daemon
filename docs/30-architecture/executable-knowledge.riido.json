@@ -1,0 +1,148 @@
+{
+  "schema_version": "riido-executable-knowledge-coverage.v1",
+  "id": "architecture-executable-knowledge-coverage",
+  "title": "Architecture Executable Knowledge Coverage",
+  "generated_doc": "docs/30-architecture/executable-knowledge.md",
+  "workflow": ".github/workflows/executable-knowledge-coverage.yml",
+  "evidence_artifact": "executable-knowledge-coverage",
+  "scan_roots": ["docs/30-architecture"],
+  "manual_groups": [
+    {
+      "id": "agent-execution-unresolved-design",
+      "owner": "daemon/control-plane/contracts boundary",
+      "reason": "unresolved execution knowledge is still split as reader-authored design notes",
+      "next_artifact": "promote remaining risk map into generated evidence/fsm/design registry",
+      "paths": [
+        "docs/30-architecture/agent-execution-unresolved-design.md",
+        "docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md",
+        "docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md",
+        "docs/30-architecture/agent-execution-unresolved-design/execution-identity.md",
+        "docs/30-architecture/agent-execution-unresolved-design/implementation-slices.md",
+        "docs/30-architecture/agent-execution-unresolved-design/overview.md",
+        "docs/30-architecture/agent-execution-unresolved-design/problem-map.md",
+        "docs/30-architecture/agent-execution-unresolved-design/rag-guardrails.md",
+        "docs/30-architecture/agent-execution-unresolved-design/repo-ownership.md",
+        "docs/30-architecture/agent-execution-unresolved-design/retry-recovery-policy.md",
+        "docs/30-architecture/agent-execution-unresolved-design/runtime-launch-envelope.md",
+        "docs/30-architecture/agent-execution-unresolved-design/stream-envelope.md",
+        "docs/30-architecture/agent-execution-unresolved-design/verification-evidence.md",
+        "docs/30-architecture/agent-execution-unresolved-design/workspace-plan.md"
+      ]
+    },
+    {
+      "id": "cli-surface-subdocs",
+      "owner": "cmd/riido local CLI",
+      "reason": "subtopic docs remain hand-authored while the top-level CLI surface is generated",
+      "next_artifact": "fold subtopic rows into cli-surface manifest rendering",
+      "paths": [
+        "docs/30-architecture/cli-surface/command-groups.md",
+        "docs/30-architecture/cli-surface/guarded-mutation-rule.md",
+        "docs/30-architecture/cli-surface/local-ipc-rule.md",
+        "docs/30-architecture/cli-surface/role.md",
+        "docs/30-architecture/cli-surface/runtime-settings.md",
+        "docs/30-architecture/cli-surface/validation.md"
+      ]
+    },
+    {
+      "id": "config-reference-subdocs",
+      "owner": "cmd/riido daemon config",
+      "reason": "subtopic docs remain hand-authored while top-level env catalog is generated",
+      "next_artifact": "fold remaining subtopic rows into config-reference manifest rendering",
+      "paths": [
+        "docs/30-architecture/config-reference/agent-instruction-placement.md",
+        "docs/30-architecture/config-reference/change-procedure.md",
+        "docs/30-architecture/config-reference/daemon-identity-runtime-config.md",
+        "docs/30-architecture/config-reference/local-daemon-flags.md",
+        "docs/30-architecture/config-reference/naming-rules.md",
+        "docs/30-architecture/config-reference/provider-executable-overrides.md",
+        "docs/30-architecture/config-reference/saas-device-principal.md",
+        "docs/30-architecture/config-reference/saas-polling-runtime-bindings.md",
+        "docs/30-architecture/config-reference/task-source-selection.md",
+        "docs/30-architecture/config-reference/test-integration-gate.md"
+      ]
+    },
+    {
+      "id": "figma-boundary-subdocs",
+      "owner": "figma daemon boundary",
+      "reason": "fixture and provenance topic docs remain hand-authored beside an executable boundary manifest",
+      "next_artifact": "generate topic tables from figma boundary manifest entries",
+      "paths": [
+        "docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md",
+        "docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md",
+        "docs/30-architecture/figma-ai-agent-daemon-boundary/fixture-vocabulary.md",
+        "docs/30-architecture/figma-ai-agent-daemon-boundary/screen-entries.md",
+        "docs/30-architecture/figma-ai-agent-daemon-boundary/upstream-provenance.md",
+        "docs/30-architecture/figma-ai-agent-daemon-boundary/verification.md"
+      ]
+    },
+    {
+      "id": "integration-matrix",
+      "owner": "provider integration matrix",
+      "reason": "provider integration knowledge remains a reader-authored matrix",
+      "next_artifact": "promote provider capability matrix into executable manifest and provider observation evidence",
+      "paths": [
+        "docs/30-architecture/integration-matrix.md",
+        "docs/30-architecture/integration-matrix/assertions.md",
+        "docs/30-architecture/integration-matrix/change-procedure.md",
+        "docs/30-architecture/integration-matrix/gate-policy.md",
+        "docs/30-architecture/integration-matrix/instruction-effectiveness.md",
+        "docs/30-architecture/integration-matrix/provider-matrix.md"
+      ]
+    },
+    {
+      "id": "module-decomposition",
+      "owner": "package architecture",
+      "reason": "package/import architecture remains hand-authored instead of derived from source imports",
+      "next_artifact": "generate package map and import rules from go list/import graph evidence",
+      "paths": [
+        "docs/30-architecture/module-decomposition.md",
+        "docs/30-architecture/module-decomposition/12-factor-boundary.md",
+        "docs/30-architecture/module-decomposition/change-procedure.md",
+        "docs/30-architecture/module-decomposition/hexagonal-ports.md",
+        "docs/30-architecture/module-decomposition/import-rules.md",
+        "docs/30-architecture/module-decomposition/package-map.md"
+      ]
+    },
+    {
+      "id": "release-artifacts",
+      "owner": "release packaging",
+      "reason": "release artifact knowledge remains hand-authored while builds are executable",
+      "next_artifact": "generate artifact matrix from release workflow and packaging manifest",
+      "paths": [
+        "docs/30-architecture/release-artifacts.md",
+        "docs/30-architecture/release-artifacts/assets.md",
+        "docs/30-architecture/release-artifacts/desktop-msix-cdn.md",
+        "docs/30-architecture/release-artifacts/installer.md",
+        "docs/30-architecture/release-artifacts/review-boundary.md"
+      ]
+    },
+    {
+      "id": "store-distribution",
+      "owner": "store distribution",
+      "reason": "store distribution architecture docs remain hand-authored beside contract evidence",
+      "next_artifact": "generate distribution architecture/readiness tables from store contract manifest",
+      "paths": [
+        "docs/30-architecture/store-distribution.md",
+        "docs/30-architecture/store-distribution/architecture.md",
+        "docs/30-architecture/store-distribution/architecture/decisions.md",
+        "docs/30-architecture/store-distribution/architecture/mac-app-store-acceptance.md",
+        "docs/30-architecture/store-distribution/architecture/macos-helper-login.md",
+        "docs/30-architecture/store-distribution/architecture/msix-acceptance.md",
+        "docs/30-architecture/store-distribution/architecture/package-boundaries.md",
+        "docs/30-architecture/store-distribution/architecture/target-matrix.md",
+        "docs/30-architecture/store-distribution/architecture/windows-msix-runtime.md",
+        "docs/30-architecture/store-distribution/daemon-changes.md",
+        "docs/30-architecture/store-distribution/daemon-changes/executable-contract.md",
+        "docs/30-architecture/store-distribution/daemon-changes/external-sources.md",
+        "docs/30-architecture/store-distribution/daemon-changes/required-daemon-changes.md",
+        "docs/30-architecture/store-distribution/daemon-changes/required-server-changes.md",
+        "docs/30-architecture/store-distribution/daemon-changes/review-notes-contract.md"
+      ]
+    }
+  ],
+  "assertions": [
+    "30-architecture markdown must be generated, backed by a direct .riido.json, or registered as a manual surface with a next executable artifact",
+    "manual surface registration is debt inventory, not a replacement for executable SSOT",
+    "new unregistered architecture prose must fail CI before it can silently expand interpretation variance"
+  ]
+}

@@ -25,6 +25,7 @@ tool_tests=(
   ./tools/clisurface
   ./tools/configreference
   ./tools/executablesearchpath
+  ./tools/knowledgecoverage
   ./tools/runtimeupgrade
   ./tools/localdaemoncontract
   ./tools/runtimeeligibility
@@ -55,6 +56,7 @@ doc_tools=(
   clisurface
   configreference
   executablesearchpath
+  knowledgecoverage
   localdaemoncontract
   runtimeeligibility
   taskrequirements
