@@ -1,0 +1,34 @@
+{
+  "schema_version": "riido-work-branch-gate.v1",
+  "id": "riido-work-branch-gate",
+  "title": "Riido Work Branch Gate",
+  "generated_doc": "docs/30-architecture/riido-work-branch-gate.md",
+  "generated_script": "scripts/verify-riido-work-branch.sh",
+  "workflow": ".github/workflows/riido-work-branch.yml",
+  "evidence_workflow": ".github/workflows/branch-gate-evidence.yml",
+  "evidence_artifact": "branch-gate-evidence",
+  "pattern": "^[A-Z][A-Z0-9]*-[0-9]+-.+$",
+  "shape": "<PROJECT_KEY>-<NUMBER>-<SLUG>",
+  "example": "A-40-AI-Agent-SSOT-Riido-branchName",
+  "allow_main": true,
+  "rules": [
+    "Every code or documentation change must use the branchName returned by Riido task creation.",
+    "Namespaced helper branches such as codex/... or feature/... are rejected.",
+    "Whitespace in branch names is rejected.",
+    "The format gate proves Riido work-unit shape; the exact branchName source remains the Riido task response."
+  ],
+  "examples": [
+    {"branch": "main", "accepted": true, "reason": "default branch is allowed for local checks"},
+    {"branch": "A-40-AI-Agent-SSOT-Riido-작업-branchName-사용-강제", "accepted": true, "reason": "Riido work-unit branch shape"},
+    {"branch": "RIID-4892-public-provider-smoke-harness", "accepted": true, "reason": "Riido work-unit branch shape"},
+    {"branch": "codex/not-allowed", "accepted": false, "reason": "namespaced helper branch"},
+    {"branch": "feature-branch", "accepted": false, "reason": "missing Riido task key"},
+    {"branch": "RIID 4892 bad whitespace", "accepted": false, "reason": "whitespace"}
+  ],
+  "assertions": [
+    "branch gate script is generated from this manifest",
+    "reader doc is generated from this manifest",
+    "accepted and rejected branch examples are executed as verification evidence",
+    "PR branch-name workflow calls the generated script"
+  ]
+}

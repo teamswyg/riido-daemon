@@ -1,0 +1,38 @@
+name: branch-gate-evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/branch-gate-evidence.yml"
+      - ".github/workflows/riido-work-branch.yml"
+      - "docs/30-architecture/riido-work-branch-gate.md"
+      - "docs/30-architecture/riido-work-branch-gate.riido.json"
+      - "scripts/verify-riido-work-branch.sh"
+      - "tools/branchgate/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  branch-gate-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify branch gate
+        run: |
+          mkdir -p out
+          go test ./tools/branchgate -count=1
+          go run ./tools/branchgate \
+            -check-doc \
+            -check-script \
+            -evidence-out out/branch-gate-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: branch-gate-evidence
+          path: out/branch-gate-evidence.json
+          if-no-files-found: error
