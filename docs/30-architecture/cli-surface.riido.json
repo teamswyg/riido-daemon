@@ -84,6 +84,86 @@
     {"title": "Guarded mutation rule", "path": "cli-surface/guarded-mutation-rule.md"},
     {"title": "Validation", "path": "cli-surface/validation.md"}
   ],
+  "detail_docs": [
+    {
+      "title": "Role",
+      "path": "docs/30-architecture/cli-surface/role.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "The CLI may:"},
+        {"kind": "bullets", "items": [
+          "parse args and print usage",
+          "call local daemon packages in this repository",
+          "read/write local JSON state through guarded adapters",
+          "open local IPC transports only",
+          "emit JSON for shell/operator automation"
+        ]},
+        {"kind": "paragraph", "text": "The CLI must not:"},
+        {"kind": "bullets", "items": [
+          "start a public network listener",
+          "bundle or install provider CLIs",
+          "run infrastructure deploy/apply workflows",
+          "own SaaS server behavior",
+          "bypass task mutation guards or policy gates",
+          "redefine contract facts owned by `riido-contracts`"
+        ]}
+      ]
+    },
+    {
+      "title": "Command Groups",
+      "path": "docs/30-architecture/cli-surface/command-groups.md",
+      "blocks": [
+        {"kind": "command_groups_table"},
+        {"kind": "paragraph", "text": "`printUsage()` in `cmd/riido/main.go` is the executable usage matrix. This document describes command ownership; it does not replace usage text."}
+      ]
+    },
+    {
+      "title": "Runtime Settings Mapping",
+      "path": "docs/30-architecture/cli-surface/runtime-settings.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "Figma `node-id=162-23090` shows a runtime settings page with current-device daemon status, daemon detail fields (`실행 시간`, PID, daemon ID, profile, and device name), daemon stop, restart-in-progress UI, attached agents, and other devices."},
+        {"kind": "paragraph", "text": "This CLI owns only the current-device local lifecycle facts that a desktop helper can read or invoke through local IPC/CLI:"},
+        {"kind": "bullets", "items": [
+          "`riido daemon status|health|ready|metrics` expose current daemon status, readiness, PID, uptime, profile, device name, and runtime snapshots",
+          "`riido daemon stop` performs cooperative local shutdown with PID fallback; `--force` requests forced lifecycle authority before PID fallback",
+          "`riido daemon start` starts the local daemon process"
+        ]},
+        {"kind": "paragraph", "text": "There is no separate `riido daemon restart` command today. A desktop helper may compose restart from local stop/start behavior and own the spinner/animation."},
+        {"kind": "paragraph", "text": "Remote device rows and the SaaS `GET /v1/client/ai-agent/devices` projection are owned by `riido-control-plane` and `riido-contracts`; this CLI must not add a public network listener or SaaS endpoint for the runtime settings screen."},
+        {"kind": "paragraph", "text": "Attached-agent avatar/profile rendering and hover details remain client presentation over control-plane records."},
+        {"kind": "paragraph", "text": "The broader Figma AI Agent daemon boundary is projected in [`figma-ai-agent-daemon-boundary.md`](../figma-ai-agent-daemon-boundary.md). That projection does not add CLI commands by itself; this CLI changes only when the daemon boundary becomes a local lifecycle, IPC, provider detection, or provider execution surface."}
+      ]
+    },
+    {
+      "title": "Local IPC Rule",
+      "path": "docs/30-architecture/cli-surface/local-ipc-rule.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "`riido serve`, `riido api`, and `riido daemon` may use:"},
+        {"kind": "bullets", "items": ["Unix socket", "Windows named pipe"]},
+        {"kind": "paragraph", "text": "They must not add TCP/HTTP listeners to the local CLI binary. SaaS HTTP routes belong to the public control-plane repository."}
+      ]
+    },
+    {
+      "title": "Guarded Mutation Rule",
+      "path": "docs/30-architecture/cli-surface/guarded-mutation-rule.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "`riido task transition`, `riido task evidence`, `riido task validate`, and their `riido api ...` equivalents must go through the same guarded mutation path used by the local API. Approval IDs, command IDs, idempotent receipts, replay mismatch checks, and deterministic validation evidence remain adapter-invariant."}
+      ]
+    },
+    {
+      "title": "Validation",
+      "path": "docs/30-architecture/cli-surface/validation.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "Required black-box checks for CLI docs/adapter changes:"},
+        {"kind": "commands", "items": [
+          "go test ./...",
+          "go build -o /tmp/riido ./cmd/riido",
+          "go run ./cmd/riido --help",
+          "go run ./cmd/riido bridge providers"
+        ]},
+        {"kind": "paragraph", "text": "Commands that require a running daemon, mwsd socket, provider CLI, or local app state should have explicit skip conditions in tests."}
+      ]
+    }
+  ],
   "assertions": [
     "cmd/riido remains local-only and must not open public TCP or HTTP listeners",
     "usage output must expose each declared command group",

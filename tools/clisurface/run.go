@@ -13,6 +13,7 @@ func run(opts options) error {
 	behaviors := checkBehaviors(opts.Repo, manifest)
 	rendered := renderMarkdown(manifest)
 	var problems []problem
+	problems = append(problems, checkDetailDocs(manifest)...)
 	if err := maybeWriteDoc(opts, manifest, rendered); err != nil {
 		problems = append(problems, problem{Message: err.Error()})
 	}

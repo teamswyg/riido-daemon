@@ -6,19 +6,36 @@ func maybeWriteDoc(opts options, manifest Manifest, rendered string) error {
 	if !opts.WriteDoc {
 		return nil
 	}
-	return writeText(repoPath(opts.Repo, manifest.GeneratedDoc), rendered)
+	for path, body := range renderedDocs(manifest, rendered) {
+		if err := writeText(repoPath(opts.Repo, path), body); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func checkDoc(opts options, manifest Manifest, rendered string) []problem {
 	if !opts.CheckDoc {
 		return nil
 	}
-	data, err := os.ReadFile(repoPath(opts.Repo, manifest.GeneratedDoc))
-	if err != nil {
-		return []problem{{Message: err.Error()}}
+	var problems []problem
+	for path, body := range renderedDocs(manifest, rendered) {
+		data, err := os.ReadFile(repoPath(opts.Repo, path))
+		if err != nil {
+			problems = append(problems, problem{Message: err.Error()})
+			continue
+		}
+		if string(data) != body {
+			problems = append(problems, problem{Message: "generated doc drift: run go run ./tools/clisurface -write-doc"})
+		}
 	}
-	if string(data) != rendered {
-		return []problem{{Message: "generated doc drift: run go run ./tools/clisurface -write-doc"}}
+	return problems
+}
+
+func renderedDocs(manifest Manifest, renderedRoot string) map[string]string {
+	docs := map[string]string{manifest.GeneratedDoc: renderedRoot}
+	for _, doc := range manifest.DetailDocs {
+		docs[doc.Path] = renderDetailDoc(manifest, doc)
 	}
-	return nil
+	return docs
 }

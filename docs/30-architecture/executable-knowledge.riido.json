@@ -30,20 +30,6 @@
       ]
     },
     {
-      "id": "cli-surface-subdocs",
-      "owner": "cmd/riido local CLI",
-      "reason": "subtopic docs remain hand-authored while the top-level CLI surface is generated",
-      "next_artifact": "fold subtopic rows into cli-surface manifest rendering",
-      "paths": [
-        "docs/30-architecture/cli-surface/command-groups.md",
-        "docs/30-architecture/cli-surface/guarded-mutation-rule.md",
-        "docs/30-architecture/cli-surface/local-ipc-rule.md",
-        "docs/30-architecture/cli-surface/role.md",
-        "docs/30-architecture/cli-surface/runtime-settings.md",
-        "docs/30-architecture/cli-surface/validation.md"
-      ]
-    },
-    {
       "id": "config-reference-subdocs",
       "owner": "cmd/riido daemon config",
       "reason": "subtopic docs remain hand-authored while top-level env catalog is generated",
