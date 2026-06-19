@@ -7,22 +7,9 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-contracts/task"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/taskdbplane"
 	"github.com/teamswyg/riido-daemon/internal/taskdb"
 )
-
-func (a daemonTestAdapter) Translate(agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
-	return nil, nil, nil
-}
-
-func (a daemonTestAdapter) BlockedArgs() []string { return nil }
-
-type daemonTestParser struct{}
-
-func (daemonTestParser) FeedStdout([]byte) ([]agentbridge.RawEvent, error) { return nil, nil }
-func (daemonTestParser) FeedStderr([]byte) ([]agentbridge.RawEvent, error) { return nil, nil }
-func (daemonTestParser) Close() ([]agentbridge.RawEvent, error)            { return nil, nil }
 
 func TestBuildDaemonControlPlaneUsesTaskDBSource(t *testing.T) {
 	taskDBPath := filepath.Join(t.TempDir(), "task-db.json")
