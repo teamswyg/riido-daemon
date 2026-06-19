@@ -64,6 +64,7 @@
     "docs/30-architecture/loop-engineering/readme-docs.riido.json",
     "docs/30-architecture/loop-engineering/roadmap-docs.riido.json",
     "docs/30-architecture/loop-engineering/migration-cli-docs.riido.json",
+    "docs/30-architecture/loop-engineering/migration-daemon-root-docs.riido.json",
     "docs/30-architecture/loop-engineering/migration-daemon-overview-docs.riido.json",
     "docs/30-architecture/loop-engineering/migration-daemon-riidoapi-local-api-docs.riido.json",
     "docs/30-architecture/loop-engineering/migration-daemon-daemon-lifecycle-cli-docs.riido.json",

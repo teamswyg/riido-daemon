@@ -136,6 +136,7 @@ for tool in "${doc_tools[@]}"; do
   go run "./tools/$tool" -check-doc
 done
 
+go run ./tools/migrationdocs -manifest docs/migration/daemon.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/overview.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/riidoapi-local-api.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/daemon-lifecycle-cli.riido.json -check-doc

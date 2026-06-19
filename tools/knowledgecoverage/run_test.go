@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestKnowledgeCoverageRepositoryManifest(t *testing.T) {
 	err := run("../..", "docs/30-architecture/executable-knowledge.riido.json", "", false, true)
@@ -32,6 +35,15 @@ func TestKnowledgeCoverageAllowsZeroManualGroups(t *testing.T) {
 	m.ManualGroups = nil
 	if problems := validateManifest(root, m); len(problems) != 0 {
 		t.Fatalf("zero manual groups should be valid: %v", problems)
+	}
+}
+
+func TestRenderDocShowsNoneForZeroManualDebt(t *testing.T) {
+	m := fixtureManifest()
+	m.ManualGroups = nil
+	got := renderDoc(m, []docClass{{Path: "docs/generated.md", Kind: "generated"}}, nil)
+	if strings.Count(got, "_None._") != 3 {
+		t.Fatalf("expected all manual sections to show none:\n%s", got)
 	}
 }
 

@@ -8,31 +8,25 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 295 |
+| Generated reader docs | 296 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 1 |
+| Registered manual docs | 0 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
-| Group | Owner | Next artifact | Matched docs |
-| --- | --- | --- | ---: |
-| `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 1 |
+_None._
 
 ## Manual Hotspots
 
-| Directory | Matched docs |
-| --- | ---: |
-| `docs/migration` | 1 |
+_None._
 
 ## Manual Samples
 
-| Group | Path |
-| --- | --- |
-| `migration-history-manual-surface` | `docs/migration/daemon.md` |
+_None._
 
 ## Assertions
 
-- repository docs markdown must be generated, direct-SSOT backed, or registered as manual debt
-- manual debt registration is observable evidence, not completion
-- prefix-registered manual debt must have a named owner and next executable artifact
+- repository docs markdown must be generated, direct-SSOT backed, or explicitly registered as manual debt
+- manual debt registration is observable evidence when debt exists, not completion
+- zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed
