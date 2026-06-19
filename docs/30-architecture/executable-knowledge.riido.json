@@ -30,20 +30,6 @@
       ]
     },
     {
-      "id": "figma-boundary-subdocs",
-      "owner": "figma daemon boundary",
-      "reason": "fixture and provenance topic docs remain hand-authored beside an executable boundary manifest",
-      "next_artifact": "generate topic tables from figma boundary manifest entries",
-      "paths": [
-        "docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md",
-        "docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md",
-        "docs/30-architecture/figma-ai-agent-daemon-boundary/fixture-vocabulary.md",
-        "docs/30-architecture/figma-ai-agent-daemon-boundary/screen-entries.md",
-        "docs/30-architecture/figma-ai-agent-daemon-boundary/upstream-provenance.md",
-        "docs/30-architecture/figma-ai-agent-daemon-boundary/verification.md"
-      ]
-    },
-    {
       "id": "integration-matrix",
       "owner": "provider integration matrix",
       "reason": "provider integration knowledge remains a reader-authored matrix",

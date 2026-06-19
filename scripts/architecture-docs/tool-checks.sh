@@ -3,6 +3,7 @@ set -euo pipefail
 
 tool_tests=(
   ./tools/figmaboundary
+  ./tools/figmaboundarydocs
   ./tools/providervalidation
   ./tools/agentexecutionevidence
   ./tools/loopevidence
@@ -57,6 +58,7 @@ doc_tools=(
   configreference
   executablesearchpath
   knowledgecoverage
+  figmaboundarydocs
   localdaemoncontract
   runtimeeligibility
   taskrequirements

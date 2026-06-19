@@ -1,0 +1,47 @@
+name: figma-boundary-docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/figma-boundary-docs.yml"
+      - "docs/30-architecture/figma-ai-agent-daemon-boundary.md"
+      - "docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json"
+      - "docs/30-architecture/figma-ai-agent-daemon-boundary/**"
+      - "tools/figmaboundary/**"
+      - "tools/figmaboundarydocs/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/figma-boundary-docs.yml"
+      - "docs/30-architecture/figma-ai-agent-daemon-boundary.md"
+      - "docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json"
+      - "docs/30-architecture/figma-ai-agent-daemon-boundary/**"
+      - "tools/figmaboundary/**"
+      - "tools/figmaboundarydocs/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  figma-boundary-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify Figma boundary generated docs
+        run: |
+          mkdir -p out
+          go test ./tools/figmaboundary ./tools/figmaboundarydocs -count=1
+          go run ./tools/figmaboundarydocs \
+            -check-doc \
+            -evidence-out out/figma-boundary-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: figma-boundary-docs
+          path: out/figma-boundary-docs.json
+          if-no-files-found: error
