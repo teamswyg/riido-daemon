@@ -37,6 +37,16 @@ required_files=(
   docs/20-domain/runtime-scheduling/invariants/task-requirements.md
   docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json
   docs/30-architecture/module-decomposition.md
+  docs/30-architecture/module-decomposition.riido.json
+  docs/30-architecture/module-decomposition/import-rules.riido.json
+  docs/30-architecture/module-decomposition/package-roles.riido.json
+  docs/30-architecture/module-decomposition/ports.riido.json
+  docs/30-architecture/module-decomposition/12-factor-boundary.md
+  docs/30-architecture/module-decomposition/change-procedure.md
+  docs/30-architecture/module-decomposition/hexagonal-ports.md
+  docs/30-architecture/module-decomposition/import-rules.md
+  docs/30-architecture/module-decomposition/package-map.md
+  .github/workflows/module-decomposition-docs.yml
   docs/30-architecture/cli-surface.md
   docs/30-architecture/cli-surface.riido.json
   docs/30-architecture/config-reference.md
@@ -71,6 +81,7 @@ required_files=(
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json
   docs/30-architecture/loop-engineering/release-artifact-docs.riido.json
   docs/30-architecture/loop-engineering/integration-matrix-docs.riido.json
+  docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
   docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json

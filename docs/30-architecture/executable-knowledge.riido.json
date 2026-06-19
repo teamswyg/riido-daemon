@@ -30,20 +30,6 @@
       ]
     },
     {
-      "id": "module-decomposition",
-      "owner": "package architecture",
-      "reason": "package/import architecture remains hand-authored instead of derived from source imports",
-      "next_artifact": "generate package map and import rules from go list/import graph evidence",
-      "paths": [
-        "docs/30-architecture/module-decomposition.md",
-        "docs/30-architecture/module-decomposition/12-factor-boundary.md",
-        "docs/30-architecture/module-decomposition/change-procedure.md",
-        "docs/30-architecture/module-decomposition/hexagonal-ports.md",
-        "docs/30-architecture/module-decomposition/import-rules.md",
-        "docs/30-architecture/module-decomposition/package-map.md"
-      ]
-    },
-    {
       "id": "store-distribution",
       "owner": "store distribution",
       "reason": "store distribution architecture docs remain hand-authored beside contract evidence",

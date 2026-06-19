@@ -1,0 +1,36 @@
+{
+  "id": "module-decomposition-docs",
+  "owner": "package architecture",
+  "observation": {
+    "summary": "Module decomposition docs were reader-authored while package existence and production imports are observable from go list.",
+    "artifacts": ["docs/30-architecture/module-decomposition.md", "cmd", "internal", "pkg"]
+  },
+  "hypothesis": {
+    "summary": "A module decomposition manifest plus go list verifier can generate the package map, import rules, ports, and daemon boundary docs while detecting import drift.",
+    "artifacts": ["docs/30-architecture/module-decomposition.riido.json"]
+  },
+  "execution": {
+    "summary": "Run moduledecomposition to check generated docs, package existence, binary package shape, and forbidden production imports.",
+    "artifacts": ["tools/moduledecomposition", ".github/workflows/module-decomposition-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects reader doc drift and the architecture coverage tool no longer classifies module-decomposition as manual debt.",
+    "artifacts": ["docs/30-architecture/executable-knowledge.md"]
+  },
+  "retrospective": {
+    "summary": "Package architecture knowledge becomes go-list-backed evidence instead of a manually edited package overview.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/moduledecomposition -check-doc -evidence-out /tmp/module-decomposition-docs.json",
+      "proves": "module decomposition docs are generated and package/import constraints match go list evidence"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/module-decomposition-docs.yml",
+      "proves": "public CI uploads module decomposition docs evidence"
+    }
+  ]
+}
