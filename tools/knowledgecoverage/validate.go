@@ -28,6 +28,7 @@ func validateManualGroups(m manifest) []string {
 	var problems []string
 	seenGroups := map[string]bool{}
 	seenPaths := map[string]string{}
+	seenPrefixes := map[string]string{}
 	for _, group := range m.ManualGroups {
 		if group.ID == "" || group.Owner == "" || group.Reason == "" || group.NextArtifact == "" {
 			problems = append(problems, "manual group id, owner, reason, and next_artifact are required")
@@ -36,10 +37,11 @@ func validateManualGroups(m manifest) []string {
 			problems = append(problems, fmt.Sprintf("duplicate manual group %q", group.ID))
 		}
 		seenGroups[group.ID] = true
-		if len(group.Paths) == 0 {
-			problems = append(problems, fmt.Sprintf("manual group %q has no paths", group.ID))
+		if len(group.Paths) == 0 && len(group.PathPrefixes) == 0 {
+			problems = append(problems, fmt.Sprintf("manual group %q has no paths or path_prefixes", group.ID))
 		}
 		problems = append(problems, validateManualGroupPaths(group, seenPaths)...)
+		problems = append(problems, validateManualGroupPrefixes(group, seenPrefixes)...)
 	}
 	return problems
 }

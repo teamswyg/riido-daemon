@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 func manualPathIndex(m manifest) map[string]manualGroup {
 	result := map[string]manualGroup{}
 	for _, group := range m.ManualGroups {
@@ -8,6 +10,17 @@ func manualPathIndex(m manifest) map[string]manualGroup {
 		}
 	}
 	return result
+}
+
+func manualPrefixMatch(m manifest, path string) (manualGroup, bool) {
+	for _, group := range m.ManualGroups {
+		for _, prefix := range group.PathPrefixes {
+			if strings.HasPrefix(path, prefix) {
+				return group, true
+			}
+		}
+	}
+	return manualGroup{}, false
 }
 
 func manualGroupIDs(m manifest) []string {

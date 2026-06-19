@@ -18,9 +18,10 @@ func renderDoc(m manifest, docs []docClass, problems []string) string {
 	fmt.Fprintf(&b, "| Registered manual docs | %d |\n", e.ManualCount)
 	fmt.Fprintf(&b, "| Scanned docs | %d |\n\n", e.ScannedCount)
 	b.WriteString("## Registered Manual Surfaces\n\n")
-	b.WriteString("| Group | Owner | Next artifact | Paths |\n| --- | --- | --- | ---: |\n")
+	byGroup := e.ManualByGroup
+	b.WriteString("| Group | Owner | Next artifact | Matched docs |\n| --- | --- | --- | ---: |\n")
 	for _, group := range m.ManualGroups {
-		fmt.Fprintf(&b, "| `%s` | %s | %s | %d |\n", group.ID, group.Owner, group.NextArtifact, len(group.Paths))
+		fmt.Fprintf(&b, "| `%s` | %s | %s | %d |\n", group.ID, group.Owner, group.NextArtifact, byGroup[group.ID])
 	}
 	b.WriteString("\n## Assertions\n\n")
 	for _, assertion := range m.Assertions {

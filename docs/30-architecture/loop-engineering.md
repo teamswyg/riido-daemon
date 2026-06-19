@@ -312,6 +312,23 @@
   - `command`: go run ./tools/knowledgecoverage -check-doc -evidence-out /tmp/executable-knowledge-coverage.json; proves architecture markdown knowledge is generated, direct-SSOT backed, or registered as manual debt
   - `workflow`: .github/workflows/executable-knowledge-coverage.yml; proves public CI uploads executable knowledge coverage evidence
 
+### repo-executable-knowledge-coverage
+
+- Owner: `daemon/repo-docs`
+- Observe: repo-wide docs probe found generated architecture coverage but unobserved manual surfaces outside docs/30-architecture
+  - Artifacts: `docs/executable-knowledge.riido.json`
+- Hypothesis: manual docs outside architecture must be registered as observable debt before they can be safely converted slice by slice
+  - Artifacts: `tools/knowledgecoverage`
+- Execute: add repo-wide knowledge coverage with prefix-registered manual debt groups and a public CI artifact
+  - Artifacts: `.github/workflows/repo-executable-knowledge-coverage.yml`
+- Evaluate: coverage check must pass while reporting generated, direct SSOT, and registered manual counts
+  - Artifacts: `docs/executable-knowledge.md`
+- Retrospective: the next conversion slices should reduce prefix-registered manual counts rather than add more narrative docs
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out /tmp/repo-executable-knowledge-coverage.json; proves repo-wide docs are generated, direct-SSOT backed, or registered as manual debt
+  - `workflow`: .github/workflows/repo-executable-knowledge-coverage.yml; proves public CI uploads repo-wide executable knowledge coverage evidence
+
 ### release-artifact-docs
 
 - Owner: `release packaging`

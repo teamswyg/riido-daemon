@@ -1,0 +1,44 @@
+{
+  "schema_version": "riido-executable-knowledge-coverage.v1",
+  "id": "repo-executable-knowledge-coverage",
+  "title": "Repository Executable Knowledge Coverage",
+  "generated_doc": "docs/executable-knowledge.md",
+  "workflow": ".github/workflows/repo-executable-knowledge-coverage.yml",
+  "evidence_artifact": "repo-executable-knowledge-coverage",
+  "scan_roots": ["docs"],
+  "manual_groups": [
+    {
+      "id": "domain-ontology-manual-surface",
+      "owner": "daemon/domain",
+      "reason": "domain docs still contain reader-authored ontology, invariant, and policy prose",
+      "next_artifact": "promote docs/20-domain into generated ontology and invariant registries",
+      "path_prefixes": ["docs/20-domain/"]
+    },
+    {
+      "id": "migration-history-manual-surface",
+      "owner": "daemon/migration",
+      "reason": "migration history is still kept as reader-authored slice notes",
+      "next_artifact": "promote migration slices into generated migration ledger and retired-boundary evidence",
+      "path_prefixes": ["docs/migration/"]
+    },
+    {
+      "id": "roadmap-manual-surface",
+      "owner": "daemon/planning",
+      "reason": "open questions are still reader-authored and not derived from an executable backlog model",
+      "next_artifact": "promote roadmap questions into generated open-question registry",
+      "path_prefixes": ["docs/50-roadmap/"]
+    },
+    {
+      "id": "readme-manual-surface",
+      "owner": "daemon/repo-docs",
+      "reason": "secondary readme pages still mix generated entrypoints with reader-authored guides",
+      "next_artifact": "promote remaining docs/readme guides into doc-map or verification SSOT",
+      "path_prefixes": ["docs/readme/"]
+    }
+  ],
+  "assertions": [
+    "repository docs markdown must be generated, direct-SSOT backed, or registered as manual debt",
+    "manual debt registration is observable evidence, not completion",
+    "prefix-registered manual debt must have a named owner and next executable artifact"
+  ]
+}
