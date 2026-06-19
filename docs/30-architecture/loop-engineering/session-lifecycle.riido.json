@@ -1,0 +1,36 @@
+{
+  "id": "session-lifecycle",
+  "owner": "tools/sessionlifecycle and session-lifecycle workflow",
+  "observation": {
+    "summary": "Session lifecycle was reader-only prose and claimed surfaces that do not exist as direct daemon APIs.",
+    "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc, prove pin/resume/close source evidence, and keep fork/direct ResumeSession as absent surfaces.",
+    "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json"]
+  },
+  "execution": {
+    "summary": "Scan session, provider, and SaaS assignment source checks plus absent surface tokens.",
+    "artifacts": ["tools/sessionlifecycle", ".github/workflows/session-lifecycle.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects missing source evidence, unknown step references, unexpected direct resume/fork surfaces, and generated doc drift.",
+    "artifacts": ["tools/sessionlifecycle/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Session lifecycle reader docs now state implemented and reserved surfaces from executable evidence rather than manual prose.",
+    "artifacts": ["internal/agentbridge/adapter_start.go", "internal/agentbridge/session"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/sessionlifecycle -check-doc -evidence-out /tmp/session-lifecycle-evidence.json",
+      "proves": "session lifecycle source evidence and absent surfaces remain executable"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/session-lifecycle.yml",
+      "proves": "public CI uploads session lifecycle evidence"
+    }
+  ]
+}
