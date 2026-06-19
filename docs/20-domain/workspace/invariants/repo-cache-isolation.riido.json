@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-workspace-invariants-detail.v1",
+  "id": "repo-cache-isolation",
+  "title": "Workspace Invariants: Repo Cache Isolation",
+  "generated_doc": "docs/20-domain/workspace/invariants/repo-cache-isolation.md",
+  "blocks": [
+    {"kind":"paragraph","text":"Code-modifying task workdirs and source repo caches are different directories. This page owns mode semantics; cache maintenance adapters remain future work unless source checks prove otherwise."},
+    {"kind":"table","columns":["Mode","Behavior","Cost","Recommended when"],"rows":[["git worktree","`git worktree add` from shared bare repo under `cache/repos/{repo_hash}`","Saves disk and prepares quickly","Many tasks use the same repo"],["shallow clone","Independent per-task clone from cache","More disk and slightly slower prepare","Stronger isolation is required"]]},
+    {"kind":"bullets","items":["`cache/repos/{repo_hash}` is shared across tasks and needs short locks only for fetch/prune updates.","Active task worktrees are not affected by later cache updates.","Automatic shared cache prune is not a local daemon default.","Operator-triggered prune must run under `repo_cache_update.lock` and must never delete active task workdirs or run roots."]}
+  ]
+}

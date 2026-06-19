@@ -1,0 +1,69 @@
+{
+  "schema_version": "riido-workspace-invariants-docs.v1",
+  "id": "workspace-invariants-docs",
+  "title": "Workspace / Native Config SSOT: Invariants",
+  "generated_doc": "docs/20-domain/workspace/invariants.md",
+  "workflow": ".github/workflows/workspace-invariants-docs.yml",
+  "evidence_artifact": "workspace-invariants-docs",
+  "summary": [
+    "This SSOT fixes the C6 workdir tree, lifecycle, archive, repo-cache, store grant, and native-config invariant surface as generated documentation.",
+    "The generated pages are bound to `internal/workdir`, daemon workdir configuration, and C11 workspace grant evidence."
+  ],
+  "detail_pages": [
+    {"id": "scope", "title": "Workspace Invariants: Scope", "path": "invariants/scope.md"},
+    {"id": "core", "title": "Workspace Invariants: Core", "path": "invariants/core.md"},
+    {"id": "lifecycle", "title": "Workspace Invariants: Lifecycle", "path": "invariants/lifecycle.md"},
+    {"id": "operations", "title": "Workspace Invariants: Operations", "path": "invariants/operations.md"},
+    {"id": "directory-layout", "title": "Workspace Invariants: Directory Layout", "path": "invariants/directory-layout.md"},
+    {"id": "store-channel-grants", "title": "Workspace Invariants: Store Channel Grants", "path": "invariants/store-channel-grants.md"},
+    {"id": "local-archive-manifest", "title": "Workspace Invariants: Local Archive Manifest", "path": "invariants/local-archive-manifest.md"},
+    {"id": "repo-cache-isolation", "title": "Workspace Invariants: Repo Cache Isolation", "path": "invariants/repo-cache-isolation.md"},
+    {"id": "native-config-injection", "title": "Workspace Invariants: Native Config Injection", "path": "invariants/native-config-injection.md"}
+  ],
+  "related_pages": [
+    {"id": "native-config-manifest", "title": "Native Config Manifest", "path": "native-config-manifest.md"},
+    {"id": "locking", "title": "Locking", "path": "../locking.md"},
+    {"id": "security-invariants", "title": "Security Invariants", "path": "../security/invariants.md"},
+    {"id": "distribution-host-invariants", "title": "Distribution Host Invariants", "path": "../distribution-host-integration/invariants.md"}
+  ],
+  "fragments": {
+    "scope": "invariants/scope.riido.json",
+    "core": "invariants/core.riido.json",
+    "lifecycle": "invariants/lifecycle.riido.json",
+    "operations": "invariants/operations.riido.json",
+    "directory-layout": "invariants/directory-layout.riido.json",
+    "store-channel-grants": "invariants/store-channel-grants.riido.json",
+    "local-archive-manifest": "invariants/local-archive-manifest.riido.json",
+    "repo-cache-isolation": "invariants/repo-cache-isolation.riido.json",
+    "native-config-injection": "invariants/native-config-injection.riido.json"
+  },
+  "source_checks": [
+    {"name":"workdir-adapter-port","file":"internal/workdir/adapter.go","contains":"InjectRuntimeConfig before handing the workdir to the runtime actor"},
+    {"name":"task-id-model","file":"internal/workdir/workspace_model.go","contains":"type TaskID struct"},
+    {"name":"workspace-tree-model","file":"internal/workdir/workspace_model.go","contains":"NativeConfig string"},
+    {"name":"workspace-layout","file":"internal/workdir/fs_workspace_layout.go","contains":"filepath.Join(root, id.Workspace, \"tasks\", id.Task, \"runs\", runID)"},
+    {"name":"prepare-workspace-id","file":"internal/workdir/fs_prepare.go","contains":"Returns an error when workspace id is empty"},
+    {"name":"prepare-tree-test","file":"internal/workdir/fs_prepare_test.go","contains":"assertWorkspaceDirs(t, ws)"},
+    {"name":"archive-schema","file":"internal/workdir/constants.go","contains":"ArchiveRecordSchemaVersion = \"riido-workdir-archive.v1\""},
+    {"name":"archive-write","file":"internal/workdir/fs_archive.go","contains":"writeJSONAtomic(filepath.Join(ws.Root, \"archive.json\"), record)"},
+    {"name":"cleanup-active-dirty","file":"internal/workdir/cleanup.go","contains":"Runs without"},
+    {"name":"cleanup-expired-only","file":"internal/workdir/cleanup_archived_test.go","contains":"assertRunKept(t, activeRun)"},
+    {"name":"native-config-inject","file":"internal/workdir/fs_inject_runtime_config.go","contains":"writeNativeConfigArtifact(ws, plan.PrimaryInstructionFile"},
+    {"name":"native-config-plan-ir","file":"internal/workdir/native_config_plan.riido.json","contains":"\"schema_version\": \"riido-native-config-plan.v1\""},
+    {"name":"native-config-version","file":"internal/workdir/native_config_version.go","contains":"sha256-hex NativeConfigVersion"},
+    {"name":"native-config-version-test","file":"internal/workdir/native_config_version_test.go","contains":"version must change for policy"},
+    {"name":"runtime-telemetry-input","file":"internal/workdir/runtime_config_model.go","contains":"TelemetryContractPlacement string"},
+    {"name":"daemon-workdir-root","file":"cmd/riido/daemon_config_workdir_env.go","contains":"loadDaemonWorkdirRoot"},
+    {"name":"workspace-grant-consent","file":"internal/hostintegration/workspace_grant_materialization_test.go","contains":"grant without workspace-access consent should not materialize"},
+    {"name":"store-channel-os-grants","file":"internal/hostintegration/workspace_grant_store_channel_test.go","contains":"windows folder picker grant"},
+    {"name":"repo-cache-lock-policy","file":"docs/20-domain/workspace/native-config-manifest/workspace-lock-policy.riido.json","contains":"repo_cache_update.lock"}
+  ],
+  "assertions": [
+    "C6 Workspace materializes policy-approved filesystem state and does not decide C7 policy.",
+    "Every task run uses an isolated run root and provider cwd is always the run workdir.",
+    "NativeConfigVersion is deterministic, policy-bound, and content-bound before provider execution.",
+    "Local archive manifests are terminal-run evidence and cleanup only removes expired archived runs.",
+    "Store channel workspace roots require C11 grants and consent before C6 materialization.",
+    "Repo cache and task workdir semantics remain separate even where cache maintenance is future adapter work."
+  ]
+}

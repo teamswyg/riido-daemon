@@ -1,0 +1,10 @@
+{
+  "schema_version": "riido-workspace-invariants-detail.v1",
+  "id": "core",
+  "title": "Workspace Invariants: Core",
+  "generated_doc": "docs/20-domain/workspace/invariants/core.md",
+  "blocks": [
+    {"kind":"paragraph","text":"Primary invariant: Workspace does not decide policy. Workspace deterministically materializes the policy/native config bundle allowed by C7 Security into the task workdir."},
+    {"kind":"ordered","items":["Every task run has an isolated workdir tree. Two runs of the same task use separate `run_id` directories.","`WorkspacePrepared` is required before `Running`, but is not a `Claim` precondition.","A run cannot enter `Running` without `NativeConfigVersion`.","`PolicyBundleVersion` and `NativeConfigVersion` are fixed before `Running`.","Protected path decisions are owned by C7; Workspace implements resulting filesystem visibility and permissions.","Shared repo cache locks are short; wrapping an entire agent run in a repo lock violates this invariant."]}
+  ]
+}

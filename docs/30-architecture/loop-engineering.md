@@ -853,6 +853,24 @@
   - `command`: go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc; proves repository manual documentation debt decreases after boundary docs become generated
   - `workflow`: .github/workflows/provider-runtime-boundary-docs.yml; proves public CI uploads provider runtime boundary evidence
 
+### workspace-invariants-docs
+
+- Owner: `daemon/workspace`
+- Observe: Workspace invariant docs described C6 workdir scope, lifecycle, directory layout, grants, archive, repo-cache, and native-config boundaries, but the reader-facing markdown was still manually edited.
+  - Artifacts: `docs/20-domain/workspace/invariants.md`, `docs/20-domain/workspace/invariants`, `internal/workdir`
+- Hypothesis: A workspace-invariants manifest can generate the scope/core/lifecycle/operations/layout/grants/archive/repo-cache/native-config docs and verify source anchors in workdir and host-integration code.
+  - Artifacts: `docs/20-domain/workspace/invariants.riido.json`, `internal/workdir/workspace_model.go`, `internal/hostintegration`
+- Execute: Generate the workspace invariant index and detail pages from SSOT fragments, keeping lifecycle and permission boundaries executable instead of narrative-only.
+  - Artifacts: `tools/workspaceinvariantsdocs`, `.github/workflows/workspace-invariants-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source anchors, missing fragments, missing workflow wiring, and missing coverage registration.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The C6 workspace invariant docs become generated evidence and reduce the workspace manual hotspot without changing runtime behavior.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/workspaceinvariantsdocs -check-doc -evidence-out /tmp/workspace-invariants-docs.json; proves workspace invariant docs are generated and source anchors still exist
+  - `command`: go test ./internal/workdir ./internal/hostintegration ./cmd/riido -count=1; proves workspace layout, grants, archive, native config, and daemon workdir config behavior still match the documented boundary
+  - `workflow`: .github/workflows/workspace-invariants-docs.yml; proves public CI uploads workspace invariant evidence
+
 ### workspace-native-config-docs
 
 - Owner: `daemon/workspace`

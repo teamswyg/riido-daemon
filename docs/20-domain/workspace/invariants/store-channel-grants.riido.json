@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-workspace-invariants-detail.v1",
+  "id": "store-channel-grants",
+  "title": "Workspace Invariants: Store Channel Grants",
+  "generated_doc": "docs/20-domain/workspace/invariants/store-channel-grants.md",
+  "blocks": [
+    {"kind":"paragraph","text":"Store channels separate the workdir root from the user workspace root."},
+    {"kind":"table","columns":["Root","Owner","Store rule"],"rows":[["`workdir root`","C11 app data root + C6 materialization","Created inside app container, package local data, or app group"],["`user workspace root`","C11 `WorkspaceGrantStore`","Inaccessible without user-selected folder grant"],["`repo cache`","C6, constrained by C11 path selection","Arbitrary home scan is forbidden in Store channels"]]},
+    {"kind":"ordered","items":["macOS App Store requires a security-scoped bookmark or app group/container grant.","Windows MSIX requires package identity and user-selected folder grant.","The current `dev-local` Application Support path cannot be shipped as a Store artifact.","Provider cwd remains `workdir/`; selected workspace content is materialized by snapshot, worktree, or shallow clone during prepare.","C6 materializes a user workspace root only when both active grant and `ConsentLedger.workspace-access:<workspace-id>` are true."]}
+  ]
+}

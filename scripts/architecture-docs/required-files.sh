@@ -115,6 +115,27 @@ required_files=(
   docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.md
   docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.riido.json
   .github/workflows/provider-runtime-boundary-docs.yml
+  docs/20-domain/workspace/invariants.md
+  docs/20-domain/workspace/invariants.riido.json
+  docs/20-domain/workspace/invariants/scope.md
+  docs/20-domain/workspace/invariants/scope.riido.json
+  docs/20-domain/workspace/invariants/core.md
+  docs/20-domain/workspace/invariants/core.riido.json
+  docs/20-domain/workspace/invariants/lifecycle.md
+  docs/20-domain/workspace/invariants/lifecycle.riido.json
+  docs/20-domain/workspace/invariants/operations.md
+  docs/20-domain/workspace/invariants/operations.riido.json
+  docs/20-domain/workspace/invariants/directory-layout.md
+  docs/20-domain/workspace/invariants/directory-layout.riido.json
+  docs/20-domain/workspace/invariants/store-channel-grants.md
+  docs/20-domain/workspace/invariants/store-channel-grants.riido.json
+  docs/20-domain/workspace/invariants/local-archive-manifest.md
+  docs/20-domain/workspace/invariants/local-archive-manifest.riido.json
+  docs/20-domain/workspace/invariants/repo-cache-isolation.md
+  docs/20-domain/workspace/invariants/repo-cache-isolation.riido.json
+  docs/20-domain/workspace/invariants/native-config-injection.md
+  docs/20-domain/workspace/invariants/native-config-injection.riido.json
+  .github/workflows/workspace-invariants-docs.yml
   docs/20-domain/workspace/native-config-manifest.md
   docs/20-domain/workspace/native-config-manifest.riido.json
   docs/20-domain/workspace/native-config-manifest/manifest-materialization.md
@@ -259,6 +280,7 @@ required_files=(
   docs/30-architecture/loop-engineering/provider-runtime-responsibility-docs.riido.json
   docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
+  docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-local-ipc-docs.riido.json

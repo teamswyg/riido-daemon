@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-workspace-invariants-detail.v1",
+  "id": "lifecycle",
+  "title": "Workspace Invariants: Lifecycle",
+  "generated_doc": "docs/20-domain/workspace/invariants/lifecycle.md",
+  "blocks": [
+    {"kind":"paragraph","text":"Workspace lifecycle is domain-level. Implementation may remain simple operations; lifecycle states describe observable preparation and retention semantics."},
+    {"kind":"table","columns":["State","Meaning","Entry condition"],"rows":[["`WorkspaceUnprepared`","Task exists but workdir does not","`TaskCreated` through `TaskQueued`"],["`WorkspacePreparing`","Workdir creation, repo mount, and native config injection are in progress","`TaskClaimed` to `WorkdirPreparing`"],["`WorkspacePrepared`","Preparation is complete and `NativeConfigVersion` is fixed","Precondition for `RunStarted`"],["`WorkspaceDirty`","Run is active or terminal artifacts remain","After `RunStarted`, before `ArchiveWorkspace`"],["`WorkspaceArchived`","Artifact retention location is recorded","After task terminal"],["`WorkspaceFailed`","Prepare or archive failed irrecoverably","Any failed phase"]]},
+    {"kind":"paragraph","text":"This lifecycle is not a 1:1 mapping to C1 `TaskState`; a failed task may leave workspace dirty for operator analysis before archive evidence is written."}
+  ]
+}

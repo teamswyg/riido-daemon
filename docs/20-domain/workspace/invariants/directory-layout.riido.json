@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-workspace-invariants-detail.v1",
+  "id": "directory-layout",
+  "title": "Workspace Invariants: Directory Layout",
+  "generated_doc": "docs/20-domain/workspace/invariants/directory-layout.md",
+  "blocks": [
+    {"kind":"paragraph","text":"`RIIDO_WORKDIR_ROOT` owns the exact local workdir root path. Store-channel app data roots are C11-owned; C6 only materializes roots accepted by C11 and never creates Store-channel home fallbacks."},
+    {"kind":"code","language":"txt","code":"$RIIDO_WORKDIR_ROOT/\n  {workspace_id}/\n    tasks/\n      {task_id}/\n        runs/\n          {run_id}/\n            workdir/\n            output/\n            logs/\n            artifacts/\n            native-config/\n            ir/\n            archive.json"},
+    {"kind":"ordered","items":["Provider cwd is always `workdir/`.","Protected status for sibling directories is decided by C7 `T-PATH`.","Terminal local archive defaults to `keep-in-place`; `archiveURI` is `file://<run-root>`.","Daemon stop that cancels an in-flight run still follows terminal workspace lifecycle and writes `archive.json`.","Filesystem cleanup is disabled by default and uses `RIIDO_WORKDIR_RETENTION_SECONDS` only for archived run roots.","Size-based or task-count cleanup is not a local daemon default."]}
+  ]
+}
