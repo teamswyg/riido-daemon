@@ -60,6 +60,23 @@
 - Evidence:
   - `command`: go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .; proves store distribution contract remains executable
 
+### provider-real-cli-observation
+
+- Owner: `provider-real-cli-observation workflow`
+- Observe: Real provider CLI availability and integration status are observed through a scheduled/manual evidence artifact.
+  - Artifacts: `docs/30-architecture/provider-real-cli-observation.riido.json`
+- Hypothesis: Public runners may have no provider CLIs, but that must be recorded as observed skip rather than invisible absence.
+  - Artifacts: `tools/providerintegrationevidence/run_test.go`
+- Execute: Run the provider observation tool with integration enabled and upload the evidence JSON artifact.
+  - Artifacts: `.github/workflows/provider-real-cli-observation.yml`, `tools/providerintegrationevidence`
+- Evaluate: Missing executables produce skipped evidence; detected providers must pass TestIntegration or fail the workflow.
+  - Artifacts: `docs/30-architecture/provider-real-cli-observation.md`
+- Retrospective: Provider matrix wording points to generated observation evidence instead of a future unscheduled idea.
+  - Artifacts: `docs/30-architecture/integration-matrix/provider-matrix.md`
+- Evidence:
+  - `command`: go run ./tools/providerintegrationevidence -check-doc; proves provider observation docs are generated from the manifest
+  - `workflow`: .github/workflows/provider-real-cli-observation.yml; proves public CI records scheduled/manual real CLI observation artifacts
+
 ### security-redaction
 
 - Owner: `event-ingestor, toolargs, and redactiondrift workflows`
@@ -84,10 +101,4 @@
 - Owner: `riido-infra`
 - Current handling: public daemon docs describe metadata-only secret evidence, but the collector/tool is outside this repository
 - Required next artifact: private infra evidence packet or public stub manifest that proves no raw secret collection path
-
-### real-cli-continuous-observation
-
-- Owner: `provider runtime`
-- Current handling: real provider tests are operator opt-in via scripts/integration-smoke.sh
-- Required next artifact: scheduled/manual public workflow or external evidence artifact recording latest available-provider run
 

@@ -10,9 +10,10 @@
 | Cursor Agent | `cursor-agent` | command/parser/profile/golden tests | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -run TestIntegration -count=1` | `supports_worktree=true` |
 
 Public pull-request CI runs deterministic tests and keeps real provider
-integration opt-in. A future scheduled/manual workflow may install provider
-CLIs with `continue-on-error` for install steps only; the integration test step
-itself must fail when the gates pass but behavior regresses.
+integration opt-in. The scheduled/manual
+[`provider-real-cli-observation`](../provider-real-cli-observation.md) workflow
+records available-provider evidence. Missing executables remain observed skip
+evidence, while any detected provider must pass its integration test.
 
 Operators can run the current local provider matrix with:
 

@@ -16,6 +16,7 @@ on:
       - "tools/providervalidation/**"
       - "tools/loopevidence/**"
       - "tools/redactiondrift/**"
+      - "tools/providerintegrationevidence/**"
   pull_request:
     paths:
       - ".github/workflows/architecture-docs.yml"
@@ -30,6 +31,7 @@ on:
       - "tools/providervalidation/**"
       - "tools/loopevidence/**"
       - "tools/redactiondrift/**"
+      - "tools/providerintegrationevidence/**"
 
 jobs:
   docs:

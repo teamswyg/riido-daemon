@@ -1,0 +1,38 @@
+name: provider-real-cli-observation
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+  pull_request:
+    paths:
+      - ".github/workflows/provider-real-cli-observation.yml"
+      - "docs/30-architecture/provider-real-cli-observation.md"
+      - "docs/30-architecture/provider-real-cli-observation.riido.json"
+      - "tools/providerintegrationevidence/**"
+      - "internal/provider/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  observe-real-provider-clis:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Observe provider real CLI integration
+        run: |
+          mkdir -p out
+          go run ./tools/providerintegrationevidence \
+            -check-doc \
+            -run-integration \
+            -evidence-out out/provider-real-cli-observation.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-real-cli-observation
+          path: out/provider-real-cli-observation.json
+          if-no-files-found: error
