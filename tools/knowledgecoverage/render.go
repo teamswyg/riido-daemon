@@ -23,6 +23,16 @@ func renderDoc(m manifest, docs []docClass, problems []string) string {
 	for _, group := range m.ManualGroups {
 		fmt.Fprintf(&b, "| `%s` | %s | %s | %d |\n", group.ID, group.Owner, group.NextArtifact, byGroup[group.ID])
 	}
+	b.WriteString("\n## Manual Hotspots\n\n")
+	b.WriteString("| Directory | Matched docs |\n| --- | ---: |\n")
+	for _, dir := range e.ManualTopDirs {
+		fmt.Fprintf(&b, "| `%s` | %d |\n", dir.Path, dir.Count)
+	}
+	b.WriteString("\n## Manual Samples\n\n")
+	b.WriteString("| Group | Path |\n| --- | --- |\n")
+	for _, sample := range e.ManualSamples {
+		fmt.Fprintf(&b, "| `%s` | `%s` |\n", sample.Group, sample.Path)
+	}
 	b.WriteString("\n## Assertions\n\n")
 	for _, assertion := range m.Assertions {
 		b.WriteString("- " + assertion + "\n")

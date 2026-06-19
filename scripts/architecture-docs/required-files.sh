@@ -161,6 +161,7 @@ required_files=(
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json
   docs/30-architecture/loop-engineering/repo-executable-knowledge-coverage.riido.json
   docs/30-architecture/loop-engineering/loop-evidence-output.riido.json
+  docs/30-architecture/loop-engineering/knowledge-coverage-breakdown.riido.json
   docs/30-architecture/loop-engineering/release-artifact-docs.riido.json
   docs/30-architecture/loop-engineering/integration-matrix-docs.riido.json
   docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json

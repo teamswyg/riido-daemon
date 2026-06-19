@@ -1,0 +1,50 @@
+{
+  "id": "knowledge-coverage-breakdown",
+  "owner": "daemon/repo-docs",
+  "observation": {
+    "summary": "knowledgecoverage emitted repo-wide counts but did not expose the highest manual directories or representative manual docs in machine-readable evidence.",
+    "artifacts": [
+      "tools/knowledgecoverage",
+      "docs/executable-knowledge.md"
+    ]
+  },
+  "hypothesis": {
+    "summary": "Adding bounded manual hotspots and samples to the evidence artifact makes the next SSOT conversion target observable without running ad hoc shell probes.",
+    "artifacts": [
+      "tools/knowledgecoverage/types.go",
+      "tools/knowledgecoverage/manual_breakdown.go"
+    ]
+  },
+  "execution": {
+    "summary": "Extend knowledgecoverage evidence and generated docs with top manual directories plus per-group samples while keeping the existing public CI workflow.",
+    "artifacts": [
+      "tools/knowledgecoverage/evidence.go",
+      ".github/workflows/repo-executable-knowledge-coverage.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "The verifier now reports bounded `manual_top_dirs` and `manual_samples` in JSON and keeps generated reader docs in sync.",
+    "artifacts": [
+      "tools/knowledgecoverage/manual_breakdown_test.go",
+      "docs/executable-knowledge.md"
+    ]
+  },
+  "retrospective": {
+    "summary": "Manual debt remains debt, but the next conversion queue is now produced by the same evidence system that tracks coverage.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out /tmp/repo-executable-knowledge-coverage.json",
+      "proves": "repo coverage evidence includes counts, manual hotspots, and manual samples"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/repo-executable-knowledge-coverage.yml",
+      "proves": "public CI publishes the enriched repo coverage evidence"
+    }
+  ]
+}
