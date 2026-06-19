@@ -261,6 +261,23 @@
   - `command`: go run ./tools/clisurface -check-doc -evidence-out /tmp/cli-surface-evidence.json; proves CLI surface manifest matches generated docs, source vocabulary, local-only constraints, and black-box CLI output
   - `workflow`: .github/workflows/cli-surface-evidence.yml; proves public CI uploads CLI surface evidence
 
+### config-reference-evidence
+
+- Owner: `daemon config surface`
+- Observe: The config reference entrypoint listed daemon env and coverage anchors as prose while actual daemon env variables lived in cmd/riido/daemon_config.go.
+  - Artifacts: `docs/30-architecture/config-reference.md`, `cmd/riido/daemon_config.go`
+- Hypothesis: A config reference manifest can generate the reader doc and prove the daemon env catalog matches Go source constants plus parser-test anchors.
+  - Artifacts: `docs/30-architecture/config-reference.riido.json`
+- Execute: Run configreference to check generated docs, AST-extracted daemon env constants, provider override anchors, integration anchors, and parser-test source checks.
+  - Artifacts: `tools/configreference`, `.github/workflows/config-reference-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, added daemon env consts missing from the manifest, removed code env consts still documented, and missing parser-test anchors.
+  - Artifacts: `tools/configreference/run_test.go`
+- Retrospective: The daemon env catalog becomes executable config evidence instead of a manually edited list of env keys.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/configreference -check-doc -evidence-out /tmp/config-reference-evidence.json; proves config reference manifest matches generated docs, daemon env constants, and source anchors
+  - `workflow`: .github/workflows/config-reference-evidence.yml; proves public CI uploads config reference evidence
+
 ### executable-search-path-evidence
 
 - Owner: `C4 provider runtime`
