@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-real-cli-observation.v1",
+  "id": "provider-real-cli-observation",
+  "title": "Provider Real CLI Observation",
+  "generated_doc": "docs/30-architecture/provider-real-cli-observation.md",
+  "workflow": ".github/workflows/provider-real-cli-observation.yml",
+  "evidence_artifact": "provider-real-cli-observation",
+  "providers": [
+    {"id": "claude", "display_name": "Claude Code", "default_executable": "claude", "override_env": "RIIDO_CLAUDE_PATH", "go_package": "./internal/provider/claude", "test_regex": "TestIntegration"},
+    {"id": "codex", "display_name": "Codex", "default_executable": "codex", "override_env": "RIIDO_CODEX_PATH", "go_package": "./internal/provider/codex", "test_regex": "TestIntegration"},
+    {"id": "openclaw", "display_name": "OpenClaw", "default_executable": "openclaw", "override_env": "RIIDO_OPENCLAW_PATH", "go_package": "./internal/provider/openclaw", "test_regex": "TestIntegration"},
+    {"id": "cursor", "display_name": "Cursor Agent", "default_executable": "cursor-agent", "override_env": "RIIDO_CURSOR_PATH", "go_package": "./internal/provider/cursor", "test_regex": "TestIntegration"}
+  ]
+}

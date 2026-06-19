@@ -31,6 +31,7 @@
 | package map과 import rule | [`30-architecture/module-decomposition.md`](30-architecture/module-decomposition.md) |
 | Riido 작업 생성 응답의 `branchName`만 쓰는 work-unit branch rule | [`30-architecture/riido-work-branch-gate.md`](30-architecture/riido-work-branch-gate.md) |
 | provider CLI real integration test 정책 | [`30-architecture/integration-matrix.md`](30-architecture/integration-matrix.md) |
+| provider real CLI scheduled/manual observation evidence | [`30-architecture/provider-real-cli-observation.md`](30-architecture/provider-real-cli-observation.md), [`30-architecture/provider-real-cli-observation.riido.json`](30-architecture/provider-real-cli-observation.riido.json) |
 | runtime upgrade와 compatibility gate | [`30-architecture/runtime-upgrade-flow.md`](30-architecture/runtime-upgrade-flow.md), [`30-architecture/compatibility-gate.md`](30-architecture/compatibility-gate.md) |
 | Figma AI Agent 화면에서 daemon이 소비하는 경계 | [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md) |
 | AI Agent 실행 미해결 이슈의 구조 원인과 contracts/control-plane/daemon 설계 방향 | [`30-architecture/agent-execution-unresolved-design.md`](30-architecture/agent-execution-unresolved-design.md) |
