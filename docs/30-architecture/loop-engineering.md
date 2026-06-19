@@ -358,6 +358,23 @@
   - `command`: go run ./tools/nativeconfigmcp -check-doc -evidence-out /tmp/native-config-mcp-evidence.json; proves native config/MCP manifest matches generated docs, source evidence, and absent boundary rules
   - `workflow`: .github/workflows/native-config-mcp-evidence.yml; proves public CI uploads native config/MCP evidence
 
+### full-access-harness-evidence
+
+- Owner: `C7 security policy`
+- Observe: Full-access runtime harness rules were prose while Codex launch shape, override dropping, and provider-default denial lived across adapter tests and provider validation fixtures.
+  - Artifacts: `docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md`
+- Hypothesis: A manifest can generate the reader doc and prove daemon-owned Codex full-access launch, caller override rejection, and absent permission-profile generation from source references.
+  - Artifacts: `docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json`
+- Execute: Run fullaccessharness to check generated docs, source checks, and absent unsafe/default policy surfaces.
+  - Artifacts: `tools/fullaccessharness`, `.github/workflows/full-access-harness-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, missing Codex adapter evidence, missing provider validation matrix claims, permission profile generation, and default host unsafe bypass allowances.
+  - Artifacts: `tools/fullaccessharness/run_test.go`
+- Retrospective: Full-access harness knowledge becomes executable evidence instead of a manually edited security note.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/fullaccessharness -check-doc -evidence-out /tmp/full-access-harness-evidence.json; proves full-access harness manifest matches generated docs, source evidence, and absent unsafe/default policy surfaces
+  - `workflow`: .github/workflows/full-access-harness-evidence.yml; proves public CI uploads full-access harness evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

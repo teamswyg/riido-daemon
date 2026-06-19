@@ -18,6 +18,8 @@ required_files=(
   docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json
   docs/20-domain/security/invariants/policy-bundle-loader.md
   docs/20-domain/security/invariants/policy-bundle-loader.riido.json
+  docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md
+  docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json
   docs/20-domain/validation.md
   docs/20-domain/validation.riido.json
   docs/20-domain/runtime-scheduling/saas-assignment-source.md
@@ -38,6 +40,7 @@ required_files=(
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
   docs/30-architecture/loop-engineering/tool-use-gate-evidence.riido.json
   docs/30-architecture/loop-engineering/native-config-mcp-evidence.riido.json
+  docs/30-architecture/loop-engineering/full-access-harness-evidence.riido.json
   docs/30-architecture/provider-real-cli-observation.md
   docs/30-architecture/provider-real-cli-observation.riido.json
   docs/30-architecture/runtime-secret-private-evidence.md
@@ -61,6 +64,7 @@ required_files=(
   .github/workflows/local-daemon-contract-evidence.yml
   .github/workflows/tool-use-gate-evidence.yml
   .github/workflows/native-config-mcp-evidence.yml
+  .github/workflows/full-access-harness-evidence.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml
 )

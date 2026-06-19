@@ -1,0 +1,39 @@
+name: full-access-harness-evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/full-access-harness-evidence.yml"
+      - "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md"
+      - "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json"
+      - "docs/30-architecture/provider-validation-matrix.riido.json"
+      - "docs/30-architecture/provider-validation-matrix/codex.riido.json"
+      - "internal/provider/codex/**"
+      - "internal/policy/bundle_default.go"
+      - "tools/fullaccessharness/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  full-access-harness-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify full-access harness evidence
+        run: |
+          mkdir -p out
+          go test ./tools/fullaccessharness -count=1
+          go run ./tools/fullaccessharness \
+            -check-doc \
+            -evidence-out out/full-access-harness-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-access-harness-evidence
+          path: out/full-access-harness-evidence.json
+          if-no-files-found: error

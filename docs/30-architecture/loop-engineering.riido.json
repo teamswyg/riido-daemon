@@ -26,6 +26,7 @@
     "docs/30-architecture/loop-engineering/policy-bundle-loader-evidence.riido.json",
     "docs/30-architecture/loop-engineering/tool-use-gate-evidence.riido.json",
     "docs/30-architecture/loop-engineering/native-config-mcp-evidence.riido.json",
+    "docs/30-architecture/loop-engineering/full-access-harness-evidence.riido.json",
     "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
     "docs/30-architecture/loop-engineering/store-distribution.riido.json",
     "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",

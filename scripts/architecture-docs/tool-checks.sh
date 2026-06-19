@@ -29,6 +29,7 @@ tool_tests=(
   ./tools/policybundleevidence
   ./tools/toolusegateevidence
   ./tools/nativeconfigmcp
+  ./tools/fullaccessharness
 )
 
 doc_tools=(
@@ -49,6 +50,7 @@ doc_tools=(
   policybundleevidence
   toolusegateevidence
   nativeconfigmcp
+  fullaccessharness
 )
 
 go test "${tool_tests[@]}" -count=1
