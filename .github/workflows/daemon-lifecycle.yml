@@ -52,23 +52,17 @@ jobs:
           cache: false
       - name: Verify no non-Riido Go dependencies
         run: |
-          allowed="github.com/teamswyg/riido-contracts"
-          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
-          if [ -n "$disallowed" ]; then
-            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
-            exit 1
-          fi
+          disallowed="$(go list -m all | awk 'NR > 1 && $1 != "github.com/teamswyg/riido-contracts" { print $1 }')"
+          test -z "$disallowed" || { printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"; exit 1; }
       - name: Verify daemon lifecycle public boundary
         run: |
           if grep -R --line-number -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/riidoaiserver' cmd/riido; then
-            echo "cmd/riido daemon lifecycle must not import private source or server internals"
-            exit 1
+            echo "cmd/riido daemon lifecycle must not import private source or server internals"; exit 1
           fi
       - name: Verify daemon local-only listener boundary
         run: |
           if grep -R --line-number -E 'net\.Listen\("tcp"|http\.ListenAndServe|:8080|0\.0\.0\.0' cmd/riido; then
-            echo "daemon lifecycle must not open public TCP listeners"
-            exit 1
+            echo "daemon lifecycle must not open public TCP listeners"; exit 1
           fi
       - name: Verify daemon lifecycle black-box/domain gates
         run: |
