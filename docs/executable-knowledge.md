@@ -8,9 +8,9 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 233 |
+| Generated reader docs | 234 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 63 |
+| Registered manual docs | 62 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
@@ -18,7 +18,6 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
 | `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
-| `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
 
 ## Manual Hotspots
 
@@ -35,13 +34,11 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `docs/migration/daemon/overview` | 4 |
 | `docs/migration/daemon/riidoapi-local-api` | 3 |
 | `docs/migration` | 2 |
-| `docs/50-roadmap` | 1 |
 
 ## Manual Samples
 
 | Group | Path |
 | --- | --- |
-| `roadmap-manual-surface` | `docs/50-roadmap/open-questions.md` |
 | `migration-history-manual-surface` | `docs/migration/cli.md` |
 | `migration-history-manual-surface` | `docs/migration/cli/cli-daemon-split.md` |
 | `migration-history-manual-surface` | `docs/migration/cli/current-slices.md` |

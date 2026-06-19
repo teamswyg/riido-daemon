@@ -359,6 +359,7 @@ required_files=(
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-docs.riido.json
   docs/30-architecture/loop-engineering/readme-docs.riido.json
+  docs/30-architecture/loop-engineering/roadmap-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-docs.riido.json
@@ -401,6 +402,7 @@ required_files=(
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
   .github/workflows/figma-boundary-docs.yml
   .github/workflows/readme-docs.yml
+  .github/workflows/roadmap-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -409,6 +411,7 @@ required_files=(
   docs/30-architecture/riido-work-branch-gate.riido.json
   docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md
   docs/50-roadmap/open-questions.md
+  docs/50-roadmap/open-questions.riido.json
   .github/workflows/runtime-scheduling-docs.yml
   .github/workflows/policy-bundle-loader-evidence.yml
   .github/workflows/local-daemon-contract-evidence.yml
