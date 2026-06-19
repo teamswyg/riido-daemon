@@ -28,6 +28,16 @@ func TestKnowledgeCoverageFindsUnregisteredManualDoc(t *testing.T) {
 	}
 }
 
+func TestKnowledgeCoverageAllowsZeroManualGroups(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "docs/30-architecture/executable-knowledge.md", "")
+	m := fixtureManifest()
+	m.ManualGroups = nil
+	if problems := validateManifest(root, m); len(problems) != 0 {
+		t.Fatalf("zero manual groups should be valid: %v", problems)
+	}
+}
+
 func fixtureManifest() manifest {
 	return manifest{
 		SchemaVersion:    "riido-executable-knowledge-coverage.v1",

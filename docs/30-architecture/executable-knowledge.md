@@ -8,16 +8,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 65 |
+| Generated reader docs | 79 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 14 |
+| Registered manual docs | 0 |
 | Scanned docs | 80 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Paths |
 | --- | --- | --- | ---: |
-| `agent-execution-unresolved-design` | daemon/control-plane/contracts boundary | promote remaining risk map into generated evidence/fsm/design registry | 14 |
 
 ## Assertions
 

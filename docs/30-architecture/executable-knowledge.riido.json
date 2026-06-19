@@ -6,30 +6,7 @@
   "workflow": ".github/workflows/executable-knowledge-coverage.yml",
   "evidence_artifact": "executable-knowledge-coverage",
   "scan_roots": ["docs/30-architecture"],
-  "manual_groups": [
-    {
-      "id": "agent-execution-unresolved-design",
-      "owner": "daemon/control-plane/contracts boundary",
-      "reason": "unresolved execution knowledge is still split as reader-authored design notes",
-      "next_artifact": "promote remaining risk map into generated evidence/fsm/design registry",
-      "paths": [
-        "docs/30-architecture/agent-execution-unresolved-design.md",
-        "docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md",
-        "docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md",
-        "docs/30-architecture/agent-execution-unresolved-design/execution-identity.md",
-        "docs/30-architecture/agent-execution-unresolved-design/implementation-slices.md",
-        "docs/30-architecture/agent-execution-unresolved-design/overview.md",
-        "docs/30-architecture/agent-execution-unresolved-design/problem-map.md",
-        "docs/30-architecture/agent-execution-unresolved-design/rag-guardrails.md",
-        "docs/30-architecture/agent-execution-unresolved-design/repo-ownership.md",
-        "docs/30-architecture/agent-execution-unresolved-design/retry-recovery-policy.md",
-        "docs/30-architecture/agent-execution-unresolved-design/runtime-launch-envelope.md",
-        "docs/30-architecture/agent-execution-unresolved-design/stream-envelope.md",
-        "docs/30-architecture/agent-execution-unresolved-design/verification-evidence.md",
-        "docs/30-architecture/agent-execution-unresolved-design/workspace-plan.md"
-      ]
-    }
-  ],
+  "manual_groups": [],
   "assertions": [
     "30-architecture markdown must be generated, backed by a direct .riido.json, or registered as a manual surface with a next executable artifact",
     "manual surface registration is debt inventory, not a replacement for executable SSOT",

@@ -1,0 +1,44 @@
+name: agent-execution-design-docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/agent-execution-design-docs.yml"
+      - "docs/30-architecture/agent-execution-unresolved-design.riido.json"
+      - "docs/30-architecture/agent-execution-unresolved-design/**"
+      - "tools/agentexecutiondesign/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/agent-execution-design-docs.yml"
+      - "docs/30-architecture/agent-execution-unresolved-design.riido.json"
+      - "docs/30-architecture/agent-execution-unresolved-design/**"
+      - "tools/agentexecutiondesign/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  agent-execution-design-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify agent execution design docs
+        run: |
+          mkdir -p out
+          go test ./tools/agentexecutiondesign -count=1
+          go run ./tools/agentexecutiondesign \
+            -check-doc \
+            -evidence-out out/agent-execution-design-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agent-execution-design-docs
+          path: out/agent-execution-design-docs.json
+          if-no-files-found: error

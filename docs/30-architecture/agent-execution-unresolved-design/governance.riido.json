@@ -1,0 +1,31 @@
+{
+  "repo_ownership": [
+    {"repo": "riido-contracts", "responsibility": "ExecutionIdentity, WorkspacePlan, FSM, stream envelope, approval DTO, generated enum/FSM SPI"},
+    {"repo": "riido-control-plane", "responsibility": "task context to WorkspacePlan, assignment snapshot, scoped reconcile, stream coalescer, approval endpoint"},
+    {"repo": "riido-daemon", "responsibility": "assignment-id in-flight model, workspace materializer, launch envelope/PATH, retry wrapper, watcher release"},
+    {"repo": "riido-infra", "responsibility": "private auth broker/storage only when needed; no raw secret/evidence in public docs"},
+    {"repo": "client/desktop", "responsibility": "optimistic cache upsert, SSE subscription, daemon PID probe, stale lock recovery, update/quit handoff"}
+  ],
+  "rag_allowed": ["vocabulary", "ownership", "non-secret rules", "generated contract shape", "test criteria"],
+  "rag_forbidden": [
+    "private repository clone URL with credential",
+    "raw token, bearer token, PAT, GitHub App installation token",
+    "AWS account-specific live evidence payload",
+    "signed URL, temporary credential, SSM parameter value",
+    "production smoke response body containing customer/task private content"
+  ],
+  "open_decisions": [
+    {"id": "Q-EXEC-001", "decision": "private repo auth broker shape", "default": "public repo only, private fail-closed"},
+    {"id": "Q-EXEC-002", "decision": "long-lived provider process default", "default": "one-shot default, resume id requires explicit resume"},
+    {"id": "Q-EXEC-003", "decision": "web approval timeout and fallback terminal state", "default": "blocked with approval_timeout"},
+    {"id": "Q-EXEC-004", "decision": "WorkspacePlan inline vs linked execution plan id", "default": "assignment snapshot inline minimal plan"},
+    {"id": "Q-EXEC-005", "decision": "stream delta retention window", "default": "final answer durable, deltas bounded/ephemeral"}
+  ],
+  "non_goals": [
+    "This design does not implement private repo auth immediately.",
+    "The public daemon does not bundle or install provider CLI binaries.",
+    "The daemon does not own client read-model UI copy.",
+    "The workspace materializer does not directly mutate the user's original repo working tree.",
+    "Public repositories do not store live deployment payloads or secret evidence."
+  ]
+}

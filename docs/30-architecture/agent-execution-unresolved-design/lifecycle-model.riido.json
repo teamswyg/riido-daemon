@@ -1,0 +1,25 @@
+{
+  "stream_events": [
+    {"kind": "progress_event", "store": "assignment event log", "client_meaning": "status/progress row"},
+    {"kind": "answer_delta", "store": "stream buffer", "client_meaning": "assistant body live update"},
+    {"kind": "final_answer", "store": "terminal assignment result", "client_meaning": "completed thread body"},
+    {"kind": "provider_log", "store": "diagnostics/audit", "client_meaning": "hidden or expandable diagnostic"}
+  ],
+  "stream_rule": "final_answer is the completed body SSOT; answer_delta is only for background correction and live render.",
+  "retry_policies": [
+    {"class": "transport_transient", "retry": "yes", "rule": "timeout, reset, 502/503/504; idempotent request only"},
+    {"class": "transport_permanent", "retry": "no", "rule": "400/401/403/404 or contract violation"},
+    {"class": "workspace_prepare_transient", "retry": "maybe", "rule": "network clone timeout or lock contention"},
+    {"class": "workspace_prepare_permanent", "retry": "no", "rule": "private auth unsupported or branch not found"},
+    {"class": "provider_spawn_transient", "retry": "maybe", "rule": "executable temporarily unavailable after TTL re-detect"},
+    {"class": "provider_policy_blocked", "retry": "no", "rule": "explicit policy deny"},
+    {"class": "provider_session_lost", "retry": "no blind rerun", "rule": "require recovery_fresh_start_required without resume id"}
+  ],
+  "implementation_slices": [
+    {"title": "P0: Safety And Identity Foundation", "items": ["Add daemon ExecutionIdentity helper.", "Key saasplane maps, watchers, and partial body buffers by assignment id.", "Preserve logical task_id as report metadata.", "Add transient retry/backoff for safe/idempotent JSON transport.", "Freeze selected executable and launch PATH into StartRequest.Env and spawn env."]},
+    {"title": "P1: Public Repo Workspace Materialization", "items": ["Promote minimal WorkspacePlan DTO to riido-contracts.", "Persist repo/branch as assignment snapshot fields, not only prompt text.", "Clone public repo/branch before provider start.", "Fail closed for private or unknown repo without token broker."]},
+    {"title": "P1: Stop Lifecycle Normalization", "items": ["Add stop_requested and provider_cancel_requested to assignment FSM.", "Let user stop mutate assignment state before daemon process cancellation.", "Preserve lifecycle.Context graceful/forced authority across actor boundaries.", "Record provider kill result separately from terminal projection."]},
+    {"title": "P2: Streaming And Approval Plane", "items": ["Add server-owned answer_delta coalescer and final_answer result path.", "Promote approval request/decision DTO to contracts.", "Use safe auto-approve allowlist; fail closed for protected surfaces without web approval."]},
+    {"title": "P3: Resume And Desktop Lifecycle", "items": ["Store provider session id as durable assignment event.", "On restart, converge to resume, recovery_fresh_start_required, or failed_recovery.", "Refuse stale PID fallback without daemon identity evidence.", "Run workspace materialization and provider submit outside supervisor actor loop."]}
+  ]
+}

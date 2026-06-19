@@ -1,0 +1,36 @@
+{
+  "id": "agent-execution-design-docs",
+  "owner": "daemon/control-plane/contracts boundary",
+  "observation": {
+    "summary": "Agent execution design docs were the final manual architecture group while evidence files and FSM manifests already existed.",
+    "artifacts": ["docs/30-architecture/agent-execution-unresolved-design.md", "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json"]
+  },
+  "hypothesis": {
+    "summary": "Design fragments plus assignment lifecycle evidence files can generate the reader docs and keep unresolved boundaries explicit.",
+    "artifacts": ["docs/30-architecture/agent-execution-unresolved-design.riido.json", "docs/30-architecture/agent-execution-unresolved-design/*.riido.json"]
+  },
+  "execution": {
+    "summary": "Run agentexecutiondesign to check generated docs, evidence file consumption, and public CI evidence upload.",
+    "artifacts": ["tools/agentexecutiondesign", ".github/workflows/agent-execution-design-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift and executable knowledge coverage can reach zero registered manual architecture docs.",
+    "artifacts": ["docs/30-architecture/executable-knowledge.md"]
+  },
+  "retrospective": {
+    "summary": "Agent execution design knowledge becomes evidence-backed generated architecture instead of reader-authored unresolved prose.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/agentexecutiondesign -check-doc -evidence-out /tmp/agent-execution-design-docs.json",
+      "proves": "agent execution design docs are generated from fragments and assignment lifecycle evidence files"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/agent-execution-design-docs.yml",
+      "proves": "public CI uploads agent execution design docs evidence"
+    }
+  ]
+}
