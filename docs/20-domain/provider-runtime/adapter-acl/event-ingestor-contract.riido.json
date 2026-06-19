@@ -1,0 +1,44 @@
+{
+  "schema_version": "riido-event-authority.v1",
+  "id": "provider-runtime-event-ingestor-authority",
+  "title": "EventIngestor Contract",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md",
+  "workflow": ".github/workflows/event-authority.yml",
+  "evidence_artifact": "event-authority-evidence",
+  "draft_source": "internal/ir/ingest/draft.go",
+  "builder_source": "internal/ir/ingest/event_from_draft.go",
+  "draft_supplied_fields": [
+    "OccurredAt",
+    "Scope",
+    "Type",
+    "Payload",
+    "Unknown",
+    "TaskID",
+    "RunID",
+    "RuntimeID",
+    "CapabilityFingerprint",
+    "ProviderKind",
+    "ProtocolKind",
+    "ProviderVersion",
+    "AdapterID",
+    "AdapterVersion",
+    "ProtocolVersion",
+    "NativeConfigVersion",
+    "FSMVersion"
+  ],
+  "ingestor_assigned_fields": [
+    "EventID",
+    "EventSchemaVersion",
+    "ActorKind",
+    "ActorID",
+    "RiidoDaemonVersion",
+    "PolicyBundleVersion"
+  ],
+  "rules": [
+    "CanonicalEvent append has exactly one code path: EventIngestor single append API.",
+    "Adapter implementations do not import EventIngestor.",
+    "Reducer cannot call EventIngestor; it is pure.",
+    "RunController lives outside adapter implementations.",
+    "If ingest is down, RunController preserves the no-drop backpressure contract."
+  ]
+}
