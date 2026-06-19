@@ -4,7 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+
+	"github.com/teamswyg/riido-contracts/progressmessage"
 )
+
+func renderProgressMessage(code ProgressCode, args map[string]string) (string, string, bool) {
+	args = progressmessage.NormalizeArgsForCode(int(code), args)
+	rendered, ok := progressmessage.Render(int(code), args, progressmessage.DefaultLocale)
+	if !ok {
+		return "", "", false
+	}
+	return rendered, progressMessageKey(code), true
+}
 
 func progressArgString(value any) string {
 	switch v := value.(type) {
