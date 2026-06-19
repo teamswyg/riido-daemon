@@ -32,6 +32,7 @@ tool_tests=(
   ./tools/fullaccessharness
   ./tools/assignmentfsm
   ./tools/privacymetadata
+  ./tools/unsafebypassevidence
 )
 
 doc_tools=(
@@ -55,6 +56,7 @@ doc_tools=(
   fullaccessharness
   assignmentfsm
   privacymetadata
+  unsafebypassevidence
 )
 
 go test "${tool_tests[@]}" -count=1

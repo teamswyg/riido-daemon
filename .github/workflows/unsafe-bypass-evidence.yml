@@ -1,0 +1,49 @@
+name: unsafe-bypass-evidence
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/unsafe-bypass-evidence.yml"
+      - "docs/20-domain/security/enforcement-locations/unsafe-bypass.md"
+      - "docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json"
+      - "internal/policy/**"
+      - "internal/provider/claude/**"
+      - "internal/provider/codex/**"
+      - "internal/provider/cursor/**"
+      - "tools/unsafebypassevidence/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/unsafe-bypass-evidence.yml"
+      - "docs/20-domain/security/enforcement-locations/unsafe-bypass.md"
+      - "docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json"
+      - "internal/policy/**"
+      - "internal/provider/claude/**"
+      - "internal/provider/codex/**"
+      - "internal/provider/cursor/**"
+      - "tools/unsafebypassevidence/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  unsafe-bypass-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Test unsafe bypass evidence tool
+        run: go test ./tools/unsafebypassevidence -count=1
+      - name: Verify unsafe bypass evidence
+        run: >
+          go run ./tools/unsafebypassevidence
+          -check-doc
+          -evidence-out /tmp/unsafe-bypass-evidence.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: unsafe-bypass-evidence
+          path: /tmp/unsafe-bypass-evidence.json

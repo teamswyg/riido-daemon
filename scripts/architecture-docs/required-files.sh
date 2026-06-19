@@ -20,6 +20,8 @@ required_files=(
   docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json
   docs/20-domain/security/enforcement-locations/tool-use-gates.md
   docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json
+  docs/20-domain/security/enforcement-locations/unsafe-bypass.md
+  docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json
   docs/20-domain/security/invariants/policy-bundle-loader.md
   docs/20-domain/security/invariants/policy-bundle-loader.riido.json
   docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md
@@ -46,6 +48,7 @@ required_files=(
   docs/30-architecture/loop-engineering/native-config-mcp-evidence.riido.json
   docs/30-architecture/loop-engineering/full-access-harness-evidence.riido.json
   docs/30-architecture/loop-engineering/privacy-metadata-evidence.riido.json
+  docs/30-architecture/loop-engineering/unsafe-bypass-evidence.riido.json
   docs/30-architecture/provider-real-cli-observation.md
   docs/30-architecture/provider-real-cli-observation.riido.json
   docs/30-architecture/runtime-secret-private-evidence.md
@@ -76,6 +79,7 @@ required_files=(
   .github/workflows/assignment-fsm-evidence.yml
   .github/workflows/privacy-metadata-evidence.yml
   .github/workflows/store-distribution-contract.yml
+  .github/workflows/unsafe-bypass-evidence.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml
 )

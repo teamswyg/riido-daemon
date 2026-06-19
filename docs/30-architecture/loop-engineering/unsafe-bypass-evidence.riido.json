@@ -1,0 +1,12 @@
+{
+  "id": "unsafe-bypass-evidence",
+  "owner": "C7 unsafe bypass policy",
+  "observation": {"summary": "Unsafe provider approval bypass locations were documented by hand while policy and provider adapters held executable behavior.", "artifacts": ["docs/20-domain/security/enforcement-locations/unsafe-bypass.md"]},
+  "hypothesis": {"summary": "Provider-native bypass flags can drift between policy vocabulary, provider command builders, and security docs.", "artifacts": ["docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json"]},
+  "execution": {"summary": "Generate the enforcement matrix from an executable manifest and validate policy/catalog/source evidence.", "artifacts": ["tools/unsafebypassevidence/run.go"]},
+  "evaluation": {"summary": "The verifier fails on stale generated docs, missing policy surfaces, missing provider source checks, or Codex arg catalog drift.", "artifacts": ["tools/unsafebypassevidence/validate_policy.go", "tools/unsafebypassevidence/validate_codex.go"]},
+  "retrospective": {"summary": "Unsafe bypass knowledge is promoted into generated evidence instead of narrative-only security notes.", "artifacts": ["docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json"]},
+  "evidence": [
+    {"kind": "command", "ref": "go run ./tools/unsafebypassevidence -check-doc -evidence-out /tmp/unsafe-bypass-evidence.json", "proves": "unsafe bypass enforcement locations remain executable evidence"}
+  ]
+}

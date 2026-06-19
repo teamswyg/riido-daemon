@@ -1,0 +1,39 @@
+{
+  "schema_version": "riido-unsafe-bypass-evidence.v1",
+  "id": "unsafe-bypass-enforcement",
+  "title": "Unsafe Bypass Enforcement",
+  "generated_doc": "docs/20-domain/security/enforcement-locations/unsafe-bypass.md",
+  "workflow": ".github/workflows/unsafe-bypass-evidence.yml",
+  "evidence_artifact": "unsafe-bypass-evidence",
+  "purpose": "Proves provider-native approval bypass surfaces are explicit policy surfaces and remain denied by default on Host/Unknown trust tiers.",
+  "surfaces": [
+    {"provider": "Claude", "surface": "claude:bypassPermissions", "flag": "--permission-mode bypassPermissions", "enforcement": "C4 Claude provider BuildStart", "host_default": "deny", "source_checks": ["policy-surface-claude", "claude-buildstart-policy", "claude-host-test", "claude-custom-filter"]},
+    {"provider": "Cursor", "surface": "cursor:--yolo", "flag": "--yolo", "enforcement": "C4 Cursor provider BuildStart", "host_default": "deny", "source_checks": ["policy-surface-cursor", "cursor-buildstart-policy", "cursor-host-test", "cursor-trust-not-yolo", "cursor-blocked-args"]},
+    {"provider": "Codex", "surface": "codex:--yolo", "flag": "--yolo", "enforcement": "C4 Codex provider custom arg filter", "host_default": "deny", "source_checks": ["policy-surface-codex-yolo", "codex-arg-catalog", "codex-custom-test", "codex-equals-test"]},
+    {"provider": "Codex", "surface": "codex:--dangerously-bypass-approvals-and-sandbox", "flag": "--dangerously-bypass-approvals-and-sandbox", "enforcement": "C4 Codex provider custom arg filter", "host_default": "deny", "source_checks": ["policy-surface-codex-danger", "codex-arg-catalog", "codex-custom-test", "codex-equals-test"]}
+  ],
+  "source_checks": [
+    {"name": "policy-surface-claude", "file": "internal/policy/unsafe_bypass_policy.go", "contains": "UnsafeBypassClaudePermissions UnsafeBypassSurface = \"claude:bypassPermissions\""},
+    {"name": "policy-surface-cursor", "file": "internal/policy/unsafe_bypass_policy.go", "contains": "UnsafeBypassCursorYolo        UnsafeBypassSurface = \"cursor:--yolo\""},
+    {"name": "policy-surface-codex-yolo", "file": "internal/policy/unsafe_bypass_policy.go", "contains": "UnsafeBypassCodexYolo         UnsafeBypassSurface = \"codex:--yolo\""},
+    {"name": "policy-surface-codex-danger", "file": "internal/policy/unsafe_bypass_policy.go", "contains": "UnsafeBypassCodexDangerBypass UnsafeBypassSurface = \"codex:--dangerously-bypass-approvals-and-sandbox\""},
+    {"name": "policy-host-unknown-test", "file": "internal/policy/unsafe_bypass_policy_test.go", "contains": "TestEvaluateUnsafeBypassDeniesHostAndUnknown"},
+    {"name": "policy-known-switch", "file": "internal/policy/bundle_validation_unsafe_bypass.go", "contains": "UnsafeBypassCodexDangerBypass"},
+    {"name": "bundle-host-reject-test", "file": "internal/policy/bundle_unsafe_bypass_test.go", "contains": "TestParsePolicyBundleRejectsHostUnsafeBypass"},
+    {"name": "claude-buildstart-policy", "file": "internal/provider/claude/permission_policy.go", "contains": "Surface:      policy.UnsafeBypassClaudePermissions"},
+    {"name": "claude-host-test", "file": "internal/provider/claude/command_permission_test.go", "contains": "bypassPermissions on Host trust tier must be rejected"},
+    {"name": "claude-custom-filter", "file": "internal/provider/claude/command_custom_args_test.go", "contains": "\"--permission-mode=bypassPermissions\""},
+    {"name": "cursor-buildstart-policy", "file": "internal/provider/cursor/command_unsafe.go", "contains": "Surface:      policy.UnsafeBypassCursorYolo"},
+    {"name": "cursor-host-test", "file": "internal/provider/cursor/command_yolo_test.go", "contains": "AllowYolo on Host trust tier must be rejected"},
+    {"name": "cursor-trust-not-yolo", "file": "internal/provider/cursor/command_default_test.go", "contains": "--trust must not imply unsafe --yolo"},
+    {"name": "cursor-blocked-args", "file": "internal/provider/cursor/command_policy_test.go", "contains": "\"--yolo\""},
+    {"name": "codex-arg-catalog", "file": "internal/provider/codex/command_args.go", "contains": "func UnsafeBypassArgs() []string"},
+    {"name": "codex-custom-test", "file": "internal/provider/codex/command_unsafe_custom_args_test.go", "contains": "TestBuildStartBlocksUnsafeBypassCustomArgs"},
+    {"name": "codex-equals-test", "file": "internal/provider/codex/command_unsafe_bypass_equals_test.go", "contains": "TestBuildStartBlocksCodexUnsafeBypassBooleanEqualsArgs"}
+  ],
+  "assertions": [
+    "Host and Unknown trust tiers deny every unsafe bypass surface even if a policy bundle claims allow.",
+    "Isolated trust tiers require an explicit policy bundle allow before a provider-native bypass may be emitted.",
+    "Codex full-access sandbox is not an unsafe bypass surface; caller-provided approval-bypass args remain filtered."
+  ]
+}
