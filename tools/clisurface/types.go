@@ -21,6 +21,7 @@ type Manifest struct {
 	SourceChecks          []SourceCheck          `json:"source_checks"`
 	ForbiddenSourceTokens []ForbiddenSourceToken `json:"forbidden_source_tokens"`
 	RelatedSections       []RelatedSection       `json:"related_sections"`
+	DetailDocs            []DetailDoc            `json:"detail_docs"`
 	Assertions            []string               `json:"assertions"`
 }
 
