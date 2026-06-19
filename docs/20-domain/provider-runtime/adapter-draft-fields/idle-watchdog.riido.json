@@ -1,0 +1,35 @@
+{
+  "schema_version": "riido-semantic-event-activity.v1",
+  "id": "provider-runtime-idle-watchdog",
+  "title": "Idle Watchdog Semantic Activity",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md",
+  "workflow": ".github/workflows/semantic-event-activity.yml",
+  "evidence_artifact": "semantic-event-activity-evidence",
+  "semantic_activity": [
+    "lifecycle",
+    "text_delta",
+    "thinking_delta",
+    "tool_call_started",
+    "tool_call_delta",
+    "tool_call_completed",
+    "tool_call_failed",
+    "tool_approval_needed",
+    "usage_delta",
+    "progress"
+  ],
+  "non_semantic_activity": [
+    "session_identified",
+    "log",
+    "warning",
+    "error",
+    "result",
+    "cancellation_requested",
+    "timeout",
+    "process_exit"
+  ],
+  "assertions": [
+    "semantic events reset the idle watchdog",
+    "non-semantic events do not reset the idle watchdog",
+    "manifest categories match internal/agentbridge.EventKind.IsSemanticActivity"
+  ]
+}

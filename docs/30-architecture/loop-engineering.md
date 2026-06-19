@@ -62,6 +62,23 @@
   - `command`: go run ./tools/repoverification -check-doc -run-commands -evidence-out /tmp/repo-verification-evidence.json; proves README verification commands execute from the manifest
   - `workflow`: .github/workflows/repo-verification.yml; proves public CI uploads command-level verification evidence
 
+### semantic-event-activity
+
+- Owner: `tools/semanticeventactivity and semantic-event-activity workflow`
+- Observe: Idle watchdog semantic activity was described in Markdown while runtime classification lived in EventKind.IsSemanticActivity.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json`
+- Hypothesis: A manifest that lists semantic and non-semantic event kinds can prove the reader doc and runtime classification stay aligned.
+  - Artifacts: `tools/semanticeventactivity/validate_test.go`
+- Execute: Compare manifest categories against internal/agentbridge.EventKind.IsSemanticActivity and upload classification evidence.
+  - Artifacts: `.github/workflows/semantic-event-activity.yml`, `tools/semanticeventactivity`
+- Evaluate: The verifier rejects unknown event kinds, category drift, duplicate event kinds, and generated doc drift.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md`
+- Retrospective: Idle watchdog reader docs are generated from a manifest and runtime classification is now an evidence boundary.
+  - Artifacts: `internal/agentbridge/event_kind_catalog.go`
+- Evidence:
+  - `command`: go run ./tools/semanticeventactivity -check-doc -evidence-out /tmp/semantic-event-activity-evidence.json; proves semantic activity manifest matches runtime event classification
+  - `workflow`: .github/workflows/semantic-event-activity.yml; proves public CI uploads semantic event classification evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

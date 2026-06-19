@@ -1,0 +1,36 @@
+name: semantic-event-activity
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/semantic-event-activity.yml"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json"
+      - "internal/agentbridge/event_kind*.go"
+      - "tools/semanticeventactivity/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  semantic-event-activity-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify semantic event activity
+        run: |
+          mkdir -p out
+          go test ./tools/semanticeventactivity -count=1
+          go run ./tools/semanticeventactivity \
+            -check-doc \
+            -evidence-out out/semantic-event-activity-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: semantic-event-activity-evidence
+          path: out/semantic-event-activity-evidence.json
+          if-no-files-found: error
