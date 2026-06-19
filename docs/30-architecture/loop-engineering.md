@@ -1042,6 +1042,23 @@
   - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/riidoapi-local-api.riido.json -check-doc -evidence-out /tmp/migration-daemon-riidoapi-local-api-docs.json; proves riidoapi local API migration docs are generated and source anchors remain present
   - `workflow`: .github/workflows/migration-daemon-riidoapi-local-api-docs.yml; proves public CI uploads riidoapi local API migration evidence
 
+### migration-daemon-runtime-snapshot-heartbeat-docs
+
+- Owner: `daemon/migration`
+- Observe: runtime-snapshot-heartbeat migration notes still described runtime liveness, DevicePrincipal identity defaults, and store review invariants as reader-authored prose while active facts already lived in saasplane source, config reference SSOT, and store-review workflows.
+  - Artifacts: `docs/migration/daemon/runtime-snapshot-heartbeat.md`, `docs/migration/daemon/runtime-snapshot-heartbeat/aggregated-runtime-snapshot.md`
+- Hypothesis: A focused migration-docs manifest can generate the runtime-snapshot-heartbeat migration slice and anchor each claim to source or public CI evidence.
+  - Artifacts: `docs/migration/daemon/runtime-snapshot-heartbeat.riido.json`
+- Execute: Generate the runtime-snapshot-heartbeat entrypoint and pages from fragments with source checks for saasplane runtime snapshot refresh, DevicePrincipal daemon identity defaulting, local-only IPC, store distribution, unsafe bypass, and heartbeat stale cancellation evidence.
+  - Artifacts: `tools/migrationdocs`, `.github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml`
+- Evaluate: The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for runtime snapshot, identity, and store-review claims.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The runtime snapshot heartbeat migration slice now becomes executable evidence instead of manual migration history.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/runtime-snapshot-heartbeat.riido.json -check-doc -evidence-out /tmp/migration-daemon-runtime-snapshot-heartbeat-docs.json; proves runtime-snapshot-heartbeat migration docs are generated and source anchors remain present
+  - `workflow`: .github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml; proves public CI uploads runtime-snapshot-heartbeat migration evidence
+
 ### workspace-invariants-docs
 
 - Owner: `daemon/workspace`

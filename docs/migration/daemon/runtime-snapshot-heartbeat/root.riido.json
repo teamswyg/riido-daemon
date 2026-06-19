@@ -1,0 +1,43 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-runtime-snapshot-heartbeat-root",
+  "title": "Riido Daemon Migration Plan: Runtime Snapshot Heartbeat",
+  "generated_doc": "docs/migration/daemon/runtime-snapshot-heartbeat.md",
+  "back_title": "daemon.md",
+  "back_path": "../daemon.md",
+  "blocks": [
+    {
+      "kind": "paragraph",
+      "text": "This migration area captures the RIID-4917 runtime liveness slice as executable migration evidence."
+    },
+    {
+      "kind": "links",
+      "links": [
+        {
+          "title": "RIID-4917 - aggregated device/runtime snapshot heartbeat",
+          "path": "runtime-snapshot-heartbeat/aggregated-runtime-snapshot.md"
+        },
+        {
+          "title": "RIID-4917 - device-scoped SaaS daemon identity",
+          "path": "runtime-snapshot-heartbeat/device-scoped-identity.md"
+        },
+        {
+          "title": "Validation gates",
+          "path": "runtime-snapshot-heartbeat/validation-gates.md"
+        },
+        {
+          "title": "Store review invariants",
+          "path": "runtime-snapshot-heartbeat/store-review-invariants.md"
+        },
+        {
+          "title": "Open follow-ups",
+          "path": "runtime-snapshot-heartbeat/open-follow-ups.md"
+        }
+      ]
+    },
+    {
+      "kind": "paragraph",
+      "text": "The entrypoint stays small; runtime snapshot behavior, identity defaults, validation, store review invariants, and follow-ups are split into single-purpose pages below."
+    }
+  ]
+}

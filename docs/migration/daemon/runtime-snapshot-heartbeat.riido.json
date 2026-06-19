@@ -1,0 +1,35 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-daemon-runtime-snapshot-heartbeat-docs",
+  "title": "Riido Daemon Migration Plan: Runtime Snapshot Heartbeat",
+  "workflow": ".github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml",
+  "evidence_artifact": "migration-daemon-runtime-snapshot-heartbeat-docs",
+  "expected_page_count": 6,
+  "fragments": [
+    "runtime-snapshot-heartbeat/root.riido.json",
+    "runtime-snapshot-heartbeat/aggregated-runtime-snapshot.riido.json",
+    "runtime-snapshot-heartbeat/device-scoped-identity.riido.json",
+    "runtime-snapshot-heartbeat/validation-gates.riido.json",
+    "runtime-snapshot-heartbeat/store-review-invariants.riido.json",
+    "runtime-snapshot-heartbeat/open-follow-ups.riido.json"
+  ],
+  "source_checks": [
+    {"name": "registered-runtime-refresh", "file": "internal/agentbridge/controlplane/saasplane/runtime_snapshot_refresh.go", "contains": "refreshRegisteredRuntimeSnapshot"},
+    {"name": "runtime-snapshot-rate-limit", "file": "internal/agentbridge/controlplane/saasplane/constants.go", "contains": "runtimeSnapshotHeartbeatMinInterval = 4 * time.Second"},
+    {"name": "runtime-snapshot-process-facts", "file": "internal/agentbridge/controlplane/saasplane/runtime_snapshot_types.go", "contains": "UptimeSeconds"},
+    {"name": "runtime-snapshot-model-facts", "file": "internal/agentbridge/controlplane/saasplane/runtime_snapshot_types.go", "contains": "RequiresExperimentalOptIn"},
+    {"name": "device-principal-daemon-default", "file": "cmd/riido/daemon_config_identity_parse.go", "contains": "return devicePrincipalID"},
+    {"name": "local-daemon-default", "file": "cmd/riido/daemon_config_identity_parse.go", "contains": "return \"agentd-local\""},
+    {"name": "config-reference-identity-default", "file": "docs/30-architecture/config-reference.riido.json", "contains": "RIIDO_DEVICE_ID in SaaS mode, else agentd-local"},
+    {"name": "provider-cli-store-boundary", "file": "docs/30-architecture/store-distribution.riido.json", "contains": "Provider CLIs are not included in package artifacts"},
+    {"name": "unsafe-bypass-host-deny", "file": "docs/20-domain/security/native-config-overlay/unsafe-bypass-policy.riido.json", "contains": "UNSAFE_BYPASS_ON_HOST"},
+    {"name": "daemon-local-only-workflow", "file": ".github/workflows/daemon-lifecycle.yml", "contains": "Verify daemon local-only listener boundary"},
+    {"name": "storecontract-workflow", "file": ".github/workflows/store-distribution-contract.yml", "contains": "go run ./tools/storecontract"},
+    {"name": "heartbeat-stale-cancellation-source", "file": "docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json", "contains": "heartbeat stale cancellation"}
+  ],
+  "assertions": [
+    "runtime snapshot heartbeat migration notes are generated from fragments instead of hand-authored markdown",
+    "SaaS device principal daemon identity must remain device-scoped when RIIDO_DAEMON_ID is unset",
+    "runtime snapshot heartbeat claims must stay anchored to saasplane source and store-review evidence"
+  ]
+}

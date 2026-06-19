@@ -138,6 +138,7 @@ done
 
 go run ./tools/migrationdocs -manifest docs/migration/daemon/overview.riido.json -check-doc
 go run ./tools/migrationdocs -manifest docs/migration/daemon/riidoapi-local-api.riido.json -check-doc
+go run ./tools/migrationdocs -manifest docs/migration/daemon/runtime-snapshot-heartbeat.riido.json -check-doc
 
 go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc
 go run ./tools/branchgate -check-doc -check-script

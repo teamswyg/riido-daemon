@@ -1,0 +1,37 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-runtime-snapshot-heartbeat-validation-gates",
+  "title": "Validation Gates",
+  "generated_doc": "docs/migration/daemon/runtime-snapshot-heartbeat/validation-gates.md",
+  "back_title": "Runtime Snapshot Heartbeat",
+  "back_path": "../runtime-snapshot-heartbeat.md",
+  "blocks": [
+    {
+      "kind": "paragraph",
+      "text": "Required before a daemon migration PR is mergeable:"
+    },
+    {
+      "kind": "code",
+      "language": "bash",
+      "code": "go test ./...\ngo list -m all\ngo test ./tools/storecontract\ngo run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .\ntest -f docs/20-domain/context-map.md\ntest -f docs/30-architecture/config-reference.md"
+    },
+    {
+      "kind": "paragraph",
+      "text": "When the migrated files include the old audit tooling, restore the stronger private-repo gates in public CI:"
+    },
+    {
+      "kind": "code",
+      "language": "bash",
+      "code": "make check"
+    },
+    {
+      "kind": "paragraph",
+      "text": "Provider real-CLI integration checks stay environment-gated:"
+    },
+    {
+      "kind": "code",
+      "language": "bash",
+      "code": "AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/... -run TestIntegration -v"
+    }
+  ]
+}

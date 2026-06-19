@@ -1,0 +1,47 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-runtime-snapshot-heartbeat-aggregated-runtime-snapshot",
+  "title": "RIID-4917: Aggregated Device / Runtime Snapshot Heartbeat",
+  "generated_doc": "docs/migration/daemon/runtime-snapshot-heartbeat/aggregated-runtime-snapshot.md",
+  "back_title": "Runtime Snapshot Heartbeat",
+  "back_path": "../runtime-snapshot-heartbeat.md",
+  "blocks": [
+    {
+      "kind": "paragraph",
+      "text": "This slice closes a live development finding where an idle-but-running daemon did not refresh the SaaS device/runtime read model after initial runtime registration."
+    },
+    {
+      "kind": "paragraph",
+      "text": "After control-plane applies the stale projection window, the daemon must refresh liveness even when no assignment is active."
+    },
+    {
+      "kind": "heading",
+      "text": "This Slice Does"
+    },
+    {
+      "kind": "bullets",
+      "items": [
+        "store registered runtime snapshot facts inside `saasplane` mailbox state",
+        "send an aggregated daemon runtime snapshot during the heartbeat cadence for DevicePrincipal mode",
+        "include daemon process facts in that snapshot: profile, PID, started-at timestamp, and uptime seconds",
+        "allow daemon app version to be sent as server-side telemetry without changing the client read shape",
+        "preserve provider model catalog and experimental opt-in facts in heartbeat snapshots",
+        "rate-limit same-tick runtime heartbeat calls so the daemon does not fan out one SaaS snapshot request per runtime"
+      ]
+    },
+    {
+      "kind": "heading",
+      "text": "This Slice Does Not Change"
+    },
+    {
+      "kind": "bullets",
+      "items": [
+        "frontend generated code",
+        "assignment SSE shape",
+        "provider command construction",
+        "device credential enrollment",
+        "static test-only bearer-token paths"
+      ]
+    }
+  ]
+}
