@@ -1,0 +1,41 @@
+# README: Run And Smoke
+
+[Back to README](../../README.md)
+
+Install latest macOS/Linux release:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh
+```
+
+`latest` is resolved through the GitHub Releases API because public daemon
+release currently uses the pre-release channel instead of GitHub's stable
+`/releases/latest` endpoint.
+
+Install a specific release:
+
+```bash
+RIIDO_DAEMON_VERSION=v0.0.1 \
+curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh
+```
+
+Desktop/MSIX launchers download the matching GitHub Release asset into app user
+data before launching it. Distribution details live in
+[`docs/30-architecture/release-artifacts.md`](../30-architecture/release-artifacts.md).
+
+```bash
+go run ./cmd/riido --help
+go run ./cmd/riido bridge providers
+go run ./cmd/riido daemon start --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid --log-file /tmp/riido-agentd.log
+go run ./cmd/riido daemon status --socket /tmp/riido-agentd.sock
+go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid
+go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/riido-agentd.pid --force
+```
+
+`riido daemon ...` chooses its task source through Factor 12 env:
+
+- `RIIDO_TASK_QUEUE_DIR`
+- `RIIDO_TASK_DB_SOURCE_PATH`
+- `RIIDO_SAAS_URL` + `RIIDO_DEVICE_ID` + `RIIDO_DEVICE_SECRET`
+
+Only one source should be selected as the production source.
