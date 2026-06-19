@@ -1042,6 +1042,23 @@
   - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/riidoapi-local-api.riido.json -check-doc -evidence-out /tmp/migration-daemon-riidoapi-local-api-docs.json; proves riidoapi local API migration docs are generated and source anchors remain present
   - `workflow`: .github/workflows/migration-daemon-riidoapi-local-api-docs.yml; proves public CI uploads riidoapi local API migration evidence
 
+### migration-daemon-daemon-lifecycle-cli-docs
+
+- Owner: `daemon/migration`
+- Observe: daemon-lifecycle-cli migration notes still described lifecycle wiring, store distribution, architecture docs, approval timeout, and Figma boundary work as reader-authored prose while active facts already lived in executable SSOTs and workflows.
+  - Artifacts: `docs/migration/daemon/daemon-lifecycle-cli.md`
+- Hypothesis: A focused migration-docs manifest can generate the daemon lifecycle CLI slice and anchor each RIID page to existing CLI, architecture, store, approval, and Figma boundary evidence.
+  - Artifacts: `docs/migration/daemon/daemon-lifecycle-cli.riido.json`
+- Execute: Generate the daemon lifecycle CLI entrypoint and six slice pages from fragments with source checks for daemon-lifecycle CI, provider integration gates, store distribution, architecture docs, approval timeout, and Figma boundary evidence.
+  - Artifacts: `tools/migrationdocs`, `.github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml`
+- Evaluate: The verifier rejects doc drift, missing fragments, missing workflow evidence upload, and missing source anchors for migration claims.
+  - Artifacts: `scripts/architecture-docs/tool-checks.sh`, `scripts/architecture-docs/required-files.sh`, `tools/knowledgecoverage`
+- Retrospective: The daemon lifecycle CLI migration slice now becomes executable evidence instead of manual migration history.
+  - Artifacts: `docs/executable-knowledge.md`, `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/migrationdocs -manifest docs/migration/daemon/daemon-lifecycle-cli.riido.json -check-doc -evidence-out /tmp/migration-daemon-daemon-lifecycle-cli-docs.json; proves daemon lifecycle CLI migration docs are generated and source anchors remain present
+  - `workflow`: .github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml; proves public CI uploads daemon lifecycle CLI migration evidence
+
 ### migration-daemon-runtime-snapshot-heartbeat-docs
 
 - Owner: `daemon/migration`

@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-lifecycle-cli-figma-metadata-limitation",
+  "title": "RIID-4843: Figma Metadata Page-List Limitation Guard",
+  "generated_doc": "docs/migration/daemon/daemon-lifecycle-cli/figma-metadata-limitation.md",
+  "back_title": "daemon-lifecycle-cli",
+  "back_path": "../daemon-lifecycle-cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice mirrors the upstream `riido-contracts` Figma metadata tooling limitation into the daemon boundary manifest."},
+    {"kind": "heading", "text": "Guarded Facts"},
+    {"kind": "bullets", "items": [
+      "`teamswyg/riido-contracts#52` is recorded as upstream provenance for `figma-metadata-page-list-underreports-pages.v1`.",
+      "The daemon projection preserves authoritative pages `129:5215`, `42:3014`, and `0:1`, even when supporting metadata lists only the UI page.",
+      "Non-UI/onboarding daemon evidence nodes remain in `figma-ai-agent-daemon-boundary.riido.json`.",
+      "Focused public Go tests cover the mirrored limitation and downstream non-UI node preservation."
+    ]},
+    {"kind": "paragraph", "text": "This slice does not change daemon runtime behavior, add Figma integration, add SaaS endpoints, or make daemon the owner of Figma page discovery. The canonical Figma coverage and inspection method remain in `riido-contracts`; daemon only guards its downstream projection."}
+  ]
+}

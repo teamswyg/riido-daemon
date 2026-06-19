@@ -361,6 +361,7 @@ required_files=(
   docs/30-architecture/loop-engineering/readme-docs.riido.json
   docs/30-architecture/loop-engineering/roadmap-docs.riido.json
   docs/30-architecture/loop-engineering/migration-cli-docs.riido.json
+  docs/30-architecture/loop-engineering/migration-daemon-daemon-lifecycle-cli-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-runtime-snapshot-heartbeat-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-macos-provider-cli-review-docs.riido.json
@@ -410,6 +411,7 @@ required_files=(
   .github/workflows/migration-cli-docs.yml
   .github/workflows/migration-daemon-overview-docs.yml
   .github/workflows/migration-daemon-riidoapi-local-api-docs.yml
+  .github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml
   .github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml
   .github/workflows/migration-daemon-distribution-host-integration-docs.yml
   .github/workflows/migration-daemon-macos-provider-cli-review-docs.yml
@@ -441,6 +443,14 @@ required_files=(
   docs/migration/daemon/riidoapi-local-api/4684-local-api-adapter.riido.json
   docs/migration/daemon/riidoapi-local-api/4685-task-api-bridge-cli.riido.json
   docs/migration/daemon/riidoapi-local-api/4686-mwsdbridge-project-sync.riido.json
+  docs/migration/daemon/daemon-lifecycle-cli.riido.json
+  docs/migration/daemon/daemon-lifecycle-cli/root.riido.json
+  docs/migration/daemon/daemon-lifecycle-cli/full-lifecycle-wiring.riido.json
+  docs/migration/daemon/daemon-lifecycle-cli/store-distribution-contract.riido.json
+  docs/migration/daemon/daemon-lifecycle-cli/architecture-ssot-docs.riido.json
+  docs/migration/daemon/daemon-lifecycle-cli/approval-timeout-owner.riido.json
+  docs/migration/daemon/daemon-lifecycle-cli/figma-boundary-projection.riido.json
+  docs/migration/daemon/daemon-lifecycle-cli/figma-metadata-limitation.riido.json
   docs/migration/daemon/runtime-snapshot-heartbeat.riido.json
   docs/migration/daemon/runtime-snapshot-heartbeat/root.riido.json
   docs/migration/daemon/runtime-snapshot-heartbeat/aggregated-runtime-snapshot.riido.json

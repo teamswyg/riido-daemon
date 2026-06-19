@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-lifecycle-cli-store-distribution-contract",
+  "title": "RIID-4703: Store Distribution Contract",
+  "generated_doc": "docs/migration/daemon/daemon-lifecycle-cli/store-distribution-contract.md",
+  "back_title": "daemon-lifecycle-cli",
+  "back_path": "../daemon-lifecycle-cli.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the executable store distribution contract into the public daemon repository."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`packaging/store/riido_daemon_store_distribution.riido.json`",
+      "`tools/storecontract`",
+      "`docs/30-architecture/store-distribution.md`",
+      "`NOTICE.md`",
+      "`.github/workflows/store-distribution-contract.yml`"
+    ]},
+    {"kind": "paragraph", "text": "The gate fixes public daemon boundaries for Developer ID, Mac App Store, MSIX sideload, and Microsoft Store review surfaces. It makes provider CLI non-bundling, store-managed update rules, local-only IPC, App Sandbox/login item expectations, Windows named pipe/package-local data expectations, demo review account surface, and privacy metadata allowlist requirements executable."},
+    {"kind": "paragraph", "text": "This slice does not build, sign, notarize, submit, or package app bundles/MSIX artifacts. It does not bundle provider CLIs, move private infra/account artifacts, or change the control-plane review account runtime seed."}
+  ]
+}
