@@ -1,0 +1,19 @@
+# Agent Instruction Placement
+
+[Back to Daemon Config Reference](../config-reference.md)
+
+When a task is claimed, `saasplane` converts the control-plane assignment into a
+provider-neutral `TaskRequest`.
+
+The assignment-created `agent_instruction` snapshot and Riido telemetry contract
+are placed by provider capability:
+
+- Claude and OpenClaw use the system prompt surface.
+- Codex and Cursor use a prompt prefix because current daemon surface does not
+  rely on a separate system prompt channel.
+
+Placements are recorded in `TaskRequest.Metadata["riido_agent_instruction"]` and
+`TaskRequest.Metadata["riido_telemetry_contract"]` so tests can detect drift.
+The provider-specific placement matrix and real provider probe live in
+[`provider-runtime.md`](../../20-domain/provider-runtime.md#761-agent-instruction-placement-and-effectiveness-probe)
+and [`integration-matrix.md`](../integration-matrix.md#agent-instruction-effectiveness-probe).

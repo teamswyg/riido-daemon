@@ -1,0 +1,10 @@
+# Test Integration Gate
+
+[Back to Daemon Config Reference](../config-reference.md)
+
+| Variable | Consumer | Default |
+| --- | --- | --- |
+| `AGENTBRIDGE_INTEGRATION=1` | provider `TestIntegration` tests | unset tests skip |
+
+Real provider CLI integration is opt-in. Public CI runs deterministic adapter
+tests by default and does not require provider CLIs or vendor credentials.
