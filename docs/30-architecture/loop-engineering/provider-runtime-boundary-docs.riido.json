@@ -1,0 +1,57 @@
+{
+  "id": "provider-runtime-boundary-docs",
+  "owner": "daemon/provider-runtime",
+  "observation": {
+    "summary": "Provider runtime actor boundary docs were short but reader-authored, leaving C4 RuntimeActor, supervisor, control-plane port, session preservation, and adapter ACL boundaries outside generated evidence.",
+    "artifacts": [
+      "docs/20-domain/provider-runtime/runtime-actor-boundary.md",
+      "docs/20-domain/provider-runtime/runtime-actor-boundary"
+    ]
+  },
+  "hypothesis": {
+    "summary": "A runtime-actor-boundary manifest can generate the boundary docs and verify source anchors for runtime actor ownership, control-plane ports, supervisor composition, session preservation, adapter ACLs, and provider implementations.",
+    "artifacts": [
+      "docs/20-domain/provider-runtime/runtime-actor-boundary.riido.json",
+      "internal/agentbridge/runtimeactor/doc.go",
+      "internal/agentbridge/controlplane/controlplane.go",
+      "internal/agentbridge/supervisor/doc.go"
+    ]
+  },
+  "execution": {
+    "summary": "Generate the runtime actor boundary index and detail pages from SSOT fragments, and publish the verifier through public GitHub Actions.",
+    "artifacts": [
+      "tools/providerruntimeboundarydocs",
+      ".github/workflows/provider-runtime-boundary-docs.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source anchors, missing detail fragments, and missing workflow wiring.",
+    "artifacts": [
+      "scripts/architecture-docs/tool-checks.sh",
+      "scripts/architecture-docs/required-files.sh"
+    ]
+  },
+  "retrospective": {
+    "summary": "Runtime actor boundary docs become generated evidence, reducing provider-runtime manual surface without changing daemon runtime behavior.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/providerruntimeboundarydocs -check-doc -evidence-out /tmp/provider-runtime-boundary-docs.json",
+      "proves": "provider runtime boundary docs are generated and source anchors still exist"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc",
+      "proves": "repository manual documentation debt decreases after boundary docs become generated"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/provider-runtime-boundary-docs.yml",
+      "proves": "public CI uploads provider runtime boundary evidence"
+    }
+  ]
+}

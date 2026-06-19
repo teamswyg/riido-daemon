@@ -1,0 +1,26 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "id": "runtime-actor",
+  "title": "RuntimeActor Boundary",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/runtime-actor.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/agentbridge/runtimeactor` is the mailbox actor that owns one RuntimeID's provider execution capacity. One actor goroutine owns the in-flight task map and slot state."},
+    {"kind": "heading", "text": "Responsibilities"},
+    {"kind": "bullets", "items": [
+      "Run adapter `Detect` during start and reconcile the raw daemon observation into public C3 `ProviderCapability`.",
+      "Include `PolicyBundleVersion` and detected executable fingerprint in the capability fingerprint input.",
+      "Fail closed for max-concurrent slot exhaustion, duplicate task id, unavailable provider, and unknown provider.",
+      "Submit tasks to `session.Start` and attach an optional `ProtocolDriverProvider` to the session.",
+      "Cascade `Cancel` and `Stop` through session cancellation, process kill, and slot release.",
+      "Project `Status` and `HeartbeatPayload` for local settings UI and control-plane heartbeat consumers."
+    ]},
+    {"kind": "heading", "text": "Nonresponsibilities"},
+    {"kind": "bullets", "items": [
+      "Supervisor polling, task claim, and runtime selection.",
+      "EventIngestor append and task transition decisions.",
+      "Workdir preparation and native config injection.",
+      "Provider-specific parser or adapter implementation.",
+      "Task DB, project, MWSD, local API, SaaS transport, or infra persistence."
+    ]}
+  ]
+}

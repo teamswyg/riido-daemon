@@ -53,7 +53,8 @@
     "docs/30-architecture/loop-engineering/security-invariants-docs.riido.json",
     "docs/30-architecture/loop-engineering/runtime-secret-private-evidence.riido.json",
     "docs/30-architecture/loop-engineering/provider-runtime-responsibility-docs.riido.json",
-    "docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json"
+    "docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json",
+    "docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json"
   ],
   "open_gaps": []
 }

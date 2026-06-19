@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "id": "provider-adapter-implementations",
+  "title": "Provider Adapter Implementations",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/provider-adapter-implementations.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Provider capability, protocol, and priority are owned by public `riido-contracts/docs/20-domain/provider-capability.md`. This surface records only how provider adapters appear inside the C4 Provider Runtime context."},
+    {"kind": "bullets", "items": [
+      "RIID-4658: `ClaudeStreamJSONAdapter` lives under `internal/provider/claude`.",
+      "RIID-4659: `CodexAppServerAdapter` lives under `internal/provider/codex`.",
+      "RIID-4660: `OpenClawAgentJSONAdapter` lives under `internal/provider/openclaw`.",
+      "RIID-4661: `CursorAgentStreamJSONAdapter` lives under `internal/provider/cursor`."
+    ]},
+    {"kind": "table", "columns": ["Adapter", "Runtime representation", "Primary draft category"], "rows": [
+      ["`ClaudeStreamJSONAdapter`", "`claude -p --output-format stream-json` stdout is consumed as NDJSON; session id is extracted from the `system.init` line.", "Mostly Cat C"],
+      ["`CodexAppServerAdapter`", "`codex --sandbox danger-full-access app-server --listen stdio://` JSON-RPC; daemon owns the full-access harness envelope.", "Cat C plus approval"],
+      ["`OpenClawAgentJSONAdapter`", "`openclaw agent --local --json`; unsupported CLI folds into unavailable through calendar-version gate.", "Mostly Cat C"],
+      ["`CursorAgentStreamJSONAdapter`", "`cursor-agent -p --output-format stream-json` root-print shape; version/profile differences require explicit launch profile.", "Mostly Cat C"]
+    ]},
+    {"kind": "paragraph", "text": "All four adapters implement the same `Provider` port and emit the same `ProviderEventDraft` surface. Adapter-specific branching is by `ProtocolKind` only."}
+  ]
+}

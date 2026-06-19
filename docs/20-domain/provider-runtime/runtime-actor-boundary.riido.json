@@ -1,0 +1,66 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-docs.v1",
+  "id": "provider-runtime-boundary-docs",
+  "title": "Provider Runtime / Adapter SSOT: RuntimeActor Boundary",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary.md",
+  "workflow": ".github/workflows/provider-runtime-boundary-docs.yml",
+  "evidence_artifact": "provider-runtime-boundary-docs",
+  "summary": [
+    "This SSOT fixes the C4 RuntimeActor, supervisor, control-plane port, session preservation, adapter ACL, and open issue boundaries as generated documentation plus source anchors.",
+    "The boundary is intentionally local to the public daemon repository; SaaS HTTP handlers, infra, Terraform, deployment state, and private server stores are adjacent contracts, not runtime actor responsibilities."
+  ],
+  "detail_pages": [
+    {"id": "runtime-actor", "title": "RuntimeActor Boundary", "path": "runtime-actor-boundary/runtime-actor.md"},
+    {"id": "control-plane-port", "title": "ControlPlanePort Boundary", "path": "runtime-actor-boundary/control-plane-port.md"},
+    {"id": "supervisor", "title": "Supervisor Boundary", "path": "runtime-actor-boundary/supervisor.md"},
+    {"id": "provider-session-preservation", "title": "Provider Session Preservation", "path": "runtime-actor-boundary/provider-session-preservation.md"},
+    {"id": "adjacent-ssot-contracts", "title": "Adjacent SSOT Contracts", "path": "runtime-actor-boundary/adjacent-ssot-contracts.md"},
+    {"id": "provider-stdin-command-acl", "title": "Provider Stdin Command ACL", "path": "runtime-actor-boundary/provider-stdin-command-acl.md"},
+    {"id": "provider-adapter-implementations", "title": "Provider Adapter Implementations", "path": "runtime-actor-boundary/provider-adapter-implementations.md"},
+    {"id": "open-issues", "title": "Open Issues", "path": "runtime-actor-boundary/open-issues.md"}
+  ],
+  "related_pages": [
+    {"id": "runtime-responsibility", "title": "Provider Runtime Responsibility", "path": "runtime-responsibility.md"},
+    {"id": "integration-gates", "title": "Provider Integration Gates", "path": "integration-gates.md"},
+    {"id": "runtime-upgrade-flow", "title": "Runtime Upgrade Flow", "path": "../../30-architecture/runtime-upgrade-flow.md"}
+  ],
+  "fragments": {
+    "runtime-actor": "runtime-actor-boundary/runtime-actor.riido.json",
+    "control-plane-port": "runtime-actor-boundary/control-plane-port.riido.json",
+    "supervisor": "runtime-actor-boundary/supervisor.riido.json",
+    "provider-session-preservation": "runtime-actor-boundary/provider-session-preservation.riido.json",
+    "adjacent-ssot-contracts": "runtime-actor-boundary/adjacent-ssot-contracts.riido.json",
+    "provider-stdin-command-acl": "runtime-actor-boundary/provider-stdin-command-acl.riido.json",
+    "provider-adapter-implementations": "runtime-actor-boundary/provider-adapter-implementations.riido.json",
+    "open-issues": "runtime-actor-boundary/open-issues.riido.json"
+  },
+  "source_checks": [
+    {"name": "runtimeactor-single-owner", "file": "internal/agentbridge/runtimeactor/doc.go", "contains": "Actor state is owned by a single goroutine"},
+    {"name": "runtimeactor-submit-guards", "file": "internal/agentbridge/runtimeactor/actor_submit_validate.go", "contains": "ErrDuplicateTaskID"},
+    {"name": "runtimeactor-capability-fingerprint", "file": "internal/agentbridge/runtimeactor/capability.go", "contains": "PolicyBundleVersion"},
+    {"name": "runtimeactor-heartbeat", "file": "internal/agentbridge/runtimeactor/status_types.go", "contains": "Heartbeat is the publish-ready payload"},
+    {"name": "controlplane-source-port", "file": "internal/agentbridge/controlplane/controlplane.go", "contains": "type TaskSourcePort interface"},
+    {"name": "controlplane-reporter-port", "file": "internal/agentbridge/controlplane/controlplane.go", "contains": "type TaskReporterPort interface"},
+    {"name": "controlplane-report-context", "file": "internal/agentbridge/controlplane/task_report_context.go", "contains": "RuntimeFencingToken"},
+    {"name": "filequeue-claim-receipt", "file": "internal/agentbridge/controlplane/file_queue_source.go", "contains": "claim receipt"},
+    {"name": "filereporter-jsonl", "file": "internal/agentbridge/controlplane/file_reporter.go", "contains": "JSONL files"},
+    {"name": "supervisor-control-loop", "file": "internal/agentbridge/supervisor/doc.go", "contains": "The supervisor owns the control-plane loop"},
+    {"name": "supervisor-runtime-registration", "file": "internal/agentbridge/supervisor/runtime_registration.go", "contains": "RegisterRuntime"},
+    {"name": "supervisor-session-pinned-draft", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "EventSessionPinned"},
+    {"name": "workdir-adapter-port", "file": "internal/workdir/adapter.go", "contains": "InjectRuntimeConfig"},
+    {"name": "scheduling-pre-submit-gate", "file": "internal/scheduling/eligibility.go", "contains": "EvaluateCapability applies the C5 pre-submit scheduling gate"},
+    {"name": "provider-input-builder", "file": "internal/agentbridge/command.go", "contains": "ProviderInputBuilder interface"},
+    {"name": "claude-control-response", "file": "internal/provider/claude/provider_input.go", "contains": "control_response"},
+    {"name": "codex-json-rpc-envelope", "file": "internal/provider/codex/command.go", "contains": "codex --sandbox danger-full-access app-server --listen"},
+    {"name": "openclaw-local-json", "file": "internal/provider/openclaw/command_args.go", "contains": "--json"},
+    {"name": "cursor-workspace-trust", "file": "internal/provider/cursor/command_workspace.go", "contains": "\"--workspace\", cwd"}
+  ],
+  "assertions": [
+    "RuntimeActor owns one runtime capability boundary and does not own polling, persistence, concrete provider parsing, workdir preparation, or server transport.",
+    "ControlPlanePort is provider-neutral and splits source/reporter ports from SaaS, task DB, project, and MWSD adapters.",
+    "Supervisor composes runtime actors, scheduling, workdir preparation, canonical event ingestion, and reporting for one daemon process.",
+    "Provider native session identity is preserved as C4 session data and event payload, while runtime eligibility and lease fencing remain C5/C9 responsibilities.",
+    "Provider stdin command ACLs are optional adapter-side translations from reducer commands, not provider-specific reducer branches.",
+    "Open questions are tracked as explicit executable backlog identifiers instead of hidden narrative caveats."
+  ]
+}

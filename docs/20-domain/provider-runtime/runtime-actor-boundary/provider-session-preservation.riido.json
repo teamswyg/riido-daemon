@@ -1,0 +1,19 @@
+{
+  "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "id": "provider-session-preservation",
+  "title": "Provider Session Preservation",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/provider-session-preservation.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "C4 Provider Runtime owns the provider session table that maps provider-native session identity to Riido runtime identity. C5 Scheduling owns task claim lease and heartbeat semantics, not this table."},
+    {"kind": "table", "columns": ["Pair key", "Preservation location"], "rows": [
+      ["(`TaskID`, `RunID`, `ProviderSessionID`)", "IR `SessionPinned` event payload plus C5 lease metadata runtime pin"],
+      ["(`ProviderSessionID`, `RuntimeID`)", "C4 provider session table `riido-provider-session-table.v1`"]
+    ]},
+    {"kind": "bullets", "items": [
+      "Adapters do not keep session id as hidden private memory; they emit it as a draft for ingest.",
+      "Crash resume is recovered from the IR log plus provider session table.",
+      "The minimal session table key is `(ProviderSessionID, RuntimeID)`.",
+      "Runtime eligibility, lease expiry, stale fingerprint, and task handoff are still owned by C5/C9."
+    ]}
+  ]
+}
