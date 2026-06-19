@@ -1,0 +1,60 @@
+{
+  "schema_version": "riido-security-native-config-overlay-docs.v1",
+  "id": "security-native-config-overlay-docs",
+  "title": "Security / Policy SSOT: Native Config Overlay",
+  "generated_doc": "docs/20-domain/security/native-config-overlay.md",
+  "workflow": ".github/workflows/security-native-config-overlay-docs.yml",
+  "evidence_artifact": "security-native-config-overlay-docs",
+  "summary": [
+    "This executable ontology owns T-CFG native config overlay decisions, gate vocabulary, store-channel policy gate placement, runtime secret metadata boundaries, and unsafe bypass policy links.",
+    "Full-access runtime harness evidence remains a dedicated generated artifact and is linked as an adjacent surface rather than regenerated here."
+  ],
+  "detail_pages": [
+    {"id": "overlay-decision", "title": "T-CFG native config overlay decision", "path": "native-config-overlay/overlay-decision.md"},
+    {"id": "runtime-secret-evidence", "title": "T-SEC runtime secret release evidence", "path": "native-config-overlay/runtime-secret-evidence.md"},
+    {"id": "security-gates", "title": "Six security gates", "path": "native-config-overlay/security-gates.md"},
+    {"id": "store-channel-policy-gate", "title": "StoreChannelPolicyGate", "path": "native-config-overlay/store-channel-policy-gate.md"},
+    {"id": "gate-result-ir", "title": "Gate result IR notation", "path": "native-config-overlay/gate-result-ir.md"},
+    {"id": "unsafe-bypass-policy", "title": "Unsafe permission bypass policy", "path": "native-config-overlay/unsafe-bypass-policy.md"}
+  ],
+  "related_pages": [
+    {"title": "Provider full-access runtime harness", "path": "native-config-overlay/full-access-runtime-harness.md"},
+    {"title": "Native config and MCP lifecycle evidence", "path": "enforcement-locations/native-config-and-mcp.md"},
+    {"title": "Runtime secret private evidence", "path": "../../30-architecture/runtime-secret-private-evidence.md"}
+  ],
+  "fragments": {
+    "overlay-decision": "native-config-overlay/overlay-decision.riido.json",
+    "runtime-secret-evidence": "native-config-overlay/runtime-secret-evidence.riido.json",
+    "security-gates": "native-config-overlay/security-gates.riido.json",
+    "store-channel-policy-gate": "native-config-overlay/store-channel-policy-gate.riido.json",
+    "gate-result-ir": "native-config-overlay/gate-result-ir.riido.json",
+    "unsafe-bypass-policy": "native-config-overlay/unsafe-bypass-policy.riido.json"
+  },
+  "source_checks": [
+    {"name": "hook-surface", "file": "internal/policy/native_config_policy.go", "contains": "NativeConfigHookClaudeCommandAudit NativeConfigHookSurface = \"claude:command-hooks:audit\""},
+    {"name": "hook-evaluator", "file": "internal/policy/native_config_policy.go", "contains": "func EvaluateNativeConfigHook(input NativeConfigHookInput) Decision"},
+    {"name": "file-surface", "file": "internal/policy/native_config_file_policy.go", "contains": "NativeConfigFileCodexTaskScopedHome NativeConfigFileSurface = \"codex:config-home:task-scoped\""},
+    {"name": "file-evaluator", "file": "internal/policy/native_config_file_policy.go", "contains": "func EvaluateNativeConfigFile(input NativeConfigFileInput) Decision"},
+    {"name": "default-denies-codex-home", "file": "cmd/riido/daemon_settings_defaults_test.go", "contains": "AllowsNativeConfigFile(policy.TrustTierHost, policy.NativeConfigFileCodexTaskScopedHome)"},
+    {"name": "supervisor-hook-policy", "file": "internal/agentbridge/supervisor/workspace_native_policy.go", "contains": "policy.EvaluateNativeConfigHookWithBundle"},
+    {"name": "supervisor-codex-home-policy", "file": "internal/agentbridge/supervisor/workspace_native_policy.go", "contains": "policy.EvaluateNativeConfigFileWithBundle"},
+    {"name": "workdir-config-mode", "file": "internal/workdir/native_config_options.go", "contains": "NativeConfigHomeModeDisabled"},
+    {"name": "codex-full-access-constant", "file": "internal/provider/codex/command.go", "contains": "FullAccessSandboxMode = \"danger-full-access\""},
+    {"name": "native-config-version-test", "file": "internal/workdir/native_config_version_test.go", "contains": "TestComputeNativeConfigVersionIsDeterministicAndPolicyBound"},
+    {"name": "event-policy-version", "file": "internal/ir/ingest/event_from_draft.go", "contains": "PolicyBundleVersion:   i.cfg.PolicyBundleVersion"},
+    {"name": "event-native-config-version", "file": "internal/ir/ingest/event_from_draft.go", "contains": "NativeConfigVersion:   draft.NativeConfigVersion"},
+    {"name": "policy-violation-audit", "file": "internal/ir/ingest/append.go", "contains": "ir.EventPolicyViolationDetected"},
+    {"name": "tool-start-gate", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "PolicyToolStartGate"},
+    {"name": "tool-approval-gate", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "PolicyToolApprovalGate"},
+    {"name": "session-block-tool-use", "file": "internal/agentbridge/session/session_tool_block.go", "contains": "CommandCancelProvider"},
+    {"name": "store-channel-policy", "file": "internal/policy/store_channel.go", "contains": "func EvaluateStoreChannelPolicy(input StoreChannelPolicyInput) Decision"},
+    {"name": "unsafe-bypass-evaluator", "file": "internal/policy/unsafe_bypass_policy.go", "contains": "func EvaluateUnsafeBypass(input UnsafeBypassInput) Decision"},
+    {"name": "unsafe-host-reject-test", "file": "internal/policy/bundle_unsafe_bypass_test.go", "contains": "TestParsePolicyBundleRejectsHostUnsafeBypass"}
+  ],
+  "assertions": [
+    "Native config overlay reader docs must be generated from this ontology.",
+    "Provider-native config overlay is default-deny and policy-bundle gated.",
+    "Gate vocabulary may include reserved future decisions, but implemented claims must point at source checks.",
+    "Full-access harness and runtime secret readiness remain adjacent evidence artifacts consumed by this index."
+  ]
+}

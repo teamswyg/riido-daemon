@@ -1,0 +1,59 @@
+{
+  "id": "security-native-config-overlay-docs",
+  "owner": "daemon/security",
+  "observation": {
+    "summary": "Native config overlay docs described T-CFG decisions, security gates, store-channel policy placement, runtime secret evidence, and unsafe bypass policy as manually edited markdown while adjacent evidence artifacts already existed.",
+    "artifacts": [
+      "docs/20-domain/security/native-config-overlay.md",
+      "docs/20-domain/security/native-config-overlay",
+      "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md"
+    ]
+  },
+  "hypothesis": {
+    "summary": "A native-config-overlay manifest can generate the root and six manual detail docs, link adjacent full-access/runtime-secret/native-config-MCP evidence, and verify policy/workdir/IR/session source anchors without changing runtime behavior.",
+    "artifacts": [
+      "docs/20-domain/security/native-config-overlay.riido.json",
+      "internal/policy/native_config_policy.go",
+      "internal/policy/unsafe_bypass_policy.go",
+      "internal/ir/ingest/event_from_draft.go"
+    ]
+  },
+  "execution": {
+    "summary": "Generate the native config overlay index and detail pages from SSOT fragments while leaving full-access harness evidence under its existing dedicated generator.",
+    "artifacts": [
+      "tools/securitynativeconfigoverlaydocs",
+      ".github/workflows/security-native-config-overlay-docs.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source anchors, missing fragments, missing workflow wiring, and missing coverage registration.",
+    "artifacts": [
+      "scripts/architecture-docs/tool-checks.sh",
+      "scripts/architecture-docs/required-files.sh",
+      "tools/knowledgecoverage"
+    ]
+  },
+  "retrospective": {
+    "summary": "The T-CFG native config overlay docs become generated evidence and reduce the security manual hotspot while preserving adjacent evidence ownership.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/securitynativeconfigoverlaydocs -check-doc -evidence-out /tmp/security-native-config-overlay-docs.json",
+      "proves": "security native config overlay docs are generated and source anchors still exist"
+    },
+    {
+      "kind": "command",
+      "ref": "go test ./internal/policy ./internal/workdir ./internal/agentbridge/session ./internal/ir/ingest ./cmd/riido -count=1",
+      "proves": "policy, native-config versioning, tool blocking, event ingestion, and daemon policy defaults still match the documented boundary"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/security-native-config-overlay-docs.yml",
+      "proves": "public CI uploads security native config overlay evidence"
+    }
+  ]
+}

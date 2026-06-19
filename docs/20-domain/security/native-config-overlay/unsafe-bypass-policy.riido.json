@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-security-native-config-overlay-detail.v1",
+  "id": "unsafe-bypass-policy",
+  "title": "Native Config Overlay: Unsafe Permission Bypass Policy",
+  "generated_doc": "docs/20-domain/security/native-config-overlay/unsafe-bypass-policy.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This matrix refines the security invariant for `ExposesUnsafePermissionBypass`. Provider-native approval bypass is a policy surface, not a provider default."},
+    {"kind": "table", "columns": ["trust tier x bundle", "Behavior"], "rows": [["`Host` x any", "always reject with `UNSAFE_BYPASS_ON_HOST`"], ["`IsolatedContainer` x bundle allows", "allow with single-task isolation and protected path gates"], ["`IsolatedContainer` x bundle does not allow", "reject"], ["`EphemeralVM` x bundle allows", "allow"], ["`EphemeralVM` x bundle does not allow", "reject"], ["`CIControlledRunner` x bundle allows", "allow after CI isolation guarantee verification"], ["`Unknown` x any", "always reject"]]},
+    {"kind": "paragraph", "text": "Current execution meaning of \"bundle allows\": the provider unsafe bypass surface is explicitly present in `bundle.TrustTierPolicies[<tier>].AllowedSurfaces.UnsafeBypass`. There is no inference and no default allow."}
+  ]
+}
