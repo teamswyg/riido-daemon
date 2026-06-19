@@ -362,6 +362,7 @@ required_files=(
   docs/30-architecture/loop-engineering/roadmap-docs.riido.json
   docs/30-architecture/loop-engineering/migration-cli-docs.riido.json
   docs/30-architecture/loop-engineering/migration-daemon-runtime-snapshot-heartbeat-docs.riido.json
+  docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json
   docs/30-architecture/loop-engineering/distribution-host-docs.riido.json
@@ -409,6 +410,7 @@ required_files=(
   .github/workflows/migration-daemon-overview-docs.yml
   .github/workflows/migration-daemon-riidoapi-local-api-docs.yml
   .github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml
+  .github/workflows/migration-daemon-distribution-host-integration-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -444,6 +446,16 @@ required_files=(
   docs/migration/daemon/runtime-snapshot-heartbeat/validation-gates.riido.json
   docs/migration/daemon/runtime-snapshot-heartbeat/store-review-invariants.riido.json
   docs/migration/daemon/runtime-snapshot-heartbeat/open-follow-ups.riido.json
+  docs/migration/daemon/distribution-host-integration.riido.json
+  docs/migration/daemon/distribution-host-integration/root.riido.json
+  docs/migration/daemon/distribution-host-integration/distribution-host-domain.riido.json
+  docs/migration/daemon/distribution-host-integration/security-policy-domain.riido.json
+  docs/migration/daemon/distribution-host-integration/event-ingestor-boundary.riido.json
+  docs/migration/daemon/distribution-host-integration/agentbridge-root-provider-runtime.riido.json
+  docs/migration/daemon/distribution-host-integration/toolargs-toolpolicy.riido.json
+  docs/migration/daemon/distribution-host-integration/session-actor.riido.json
+  docs/migration/daemon/distribution-host-integration/runtime-session-backpressure.riido.json
+  docs/migration/daemon/distribution-host-integration/store-app-ownership.riido.json
   docs/50-roadmap/open-questions.md
   docs/50-roadmap/open-questions.riido.json
   .github/workflows/runtime-scheduling-docs.yml

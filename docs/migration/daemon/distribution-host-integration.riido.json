@@ -1,0 +1,41 @@
+{
+  "schema_version": "riido-migration-docs.v1",
+  "id": "migration-daemon-distribution-host-integration-docs",
+  "title": "Riido Daemon Migration Plan: Distribution Host Integration",
+  "workflow": ".github/workflows/migration-daemon-distribution-host-integration-docs.yml",
+  "evidence_artifact": "migration-daemon-distribution-host-integration-docs",
+  "expected_page_count": 9,
+  "fragments": [
+    "distribution-host-integration/root.riido.json",
+    "distribution-host-integration/distribution-host-domain.riido.json",
+    "distribution-host-integration/security-policy-domain.riido.json",
+    "distribution-host-integration/event-ingestor-boundary.riido.json",
+    "distribution-host-integration/agentbridge-root-provider-runtime.riido.json",
+    "distribution-host-integration/toolargs-toolpolicy.riido.json",
+    "distribution-host-integration/session-actor.riido.json",
+    "distribution-host-integration/runtime-session-backpressure.riido.json",
+    "distribution-host-integration/store-app-ownership.riido.json"
+  ],
+  "source_checks": [
+    {"name": "distribution-host-ssot", "file": "docs/20-domain/distribution-host-integration.riido.json", "contains": "C11 Distribution / Host Integration owns"},
+    {"name": "distribution-channel-model", "file": "internal/hostintegration/distribution_channel.go", "contains": "type DistributionChannel string"},
+    {"name": "security-docs-workflow", "file": ".github/workflows/security-docs.yml", "contains": "go run ./tools/securitydocs"},
+    {"name": "tool-use-evaluator", "file": "internal/policy/tool_policy.go", "contains": "func EvaluateToolUse(input ToolUseInput) ToolUseDecision"},
+    {"name": "event-ingestor-authority", "file": "docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json", "contains": "CanonicalEvent append has exactly one code path"},
+    {"name": "event-ingestor-audit", "file": "internal/ir/ingest/append.go", "contains": "ir.EventPolicyViolationDetected"},
+    {"name": "agentbridge-provider-neutral", "file": ".github/workflows/agentbridge-root.yml", "contains": "Verify agentbridge stays provider neutral"},
+    {"name": "provider-public-riid-4651", "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json", "contains": "RIID-4651"},
+    {"name": "toolargs-toolpolicy-gate", "file": ".github/workflows/toolargs-toolpolicy.yml", "contains": "Verify toolargs/toolpolicy gates"},
+    {"name": "toolref-args-redaction", "file": "docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json", "contains": "ToolRef.Args evidence is bounded and redacted"},
+    {"name": "session-actor-gate", "file": ".github/workflows/session-actor.yml", "contains": "Verify session actor gates"},
+    {"name": "backpressure-ssot", "file": "docs/20-domain/provider-runtime/adapter-acl/backpressure.riido.json", "contains": "DefaultEventBuffer"},
+    {"name": "backpressure-workflow", "file": ".github/workflows/provider-runtime-backpressure.yml", "contains": "Verify provider runtime backpressure SSOT constants"},
+    {"name": "store-app-ownership", "file": "docs/20-domain/distribution-host-integration.riido.json", "contains": "Store App GUI must remain a client of C11/local API contracts"},
+    {"name": "store-app-workflow", "file": ".github/workflows/store-app-ownership-ssot.yml", "contains": "Verify Q-CTX-005 is closed in owning SSOT"}
+  ],
+  "assertions": [
+    "distribution host migration notes are generated from fragments instead of hand-authored markdown",
+    "C11, C7, C2, and C4 slice claims must stay anchored to their owning SSOT or workflow evidence",
+    "migration pages must not move provider execution, SaaS, task DB, project, infra, secrets, or local machine state into C11"
+  ]
+}

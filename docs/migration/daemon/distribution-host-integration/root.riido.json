@@ -1,0 +1,22 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-distribution-host-integration-root",
+  "title": "Riido Daemon Migration Plan: Distribution Host Integration",
+  "generated_doc": "docs/migration/daemon/distribution-host-integration.md",
+  "back_title": "daemon.md",
+  "back_path": "../daemon.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This entrypoint records public daemon migration slices for C11 distribution/host integration, C7 security/policy, C2 EventIngestor, provider runtime root, tool-use policy, session actor, backpressure, and Store App ownership."},
+    {"kind": "links", "links": [
+      {"title": "RIID-4648 - distribution host integration domain", "path": "distribution-host-integration/distribution-host-domain.md"},
+      {"title": "RIID-4649 - security policy domain", "path": "distribution-host-integration/security-policy-domain.md"},
+      {"title": "RIID-4650 - EventIngestor boundary", "path": "distribution-host-integration/event-ingestor-boundary.md"},
+      {"title": "RIID-4651 - agentbridge root provider runtime domain", "path": "distribution-host-integration/agentbridge-root-provider-runtime.md"},
+      {"title": "RIID-4652 - toolargs / toolpolicy migration", "path": "distribution-host-integration/toolargs-toolpolicy.md"},
+      {"title": "RIID-4653 - session actor migration", "path": "distribution-host-integration/session-actor.md"},
+      {"title": "RIID-4572 - runtime/session backpressure", "path": "distribution-host-integration/runtime-session-backpressure.md"},
+      {"title": "RIID-4570 - Store App repo/adapter ownership", "path": "distribution-host-integration/store-app-ownership.md"}
+    ]},
+    {"kind": "paragraph", "text": "Each child page is migration history only; authoritative behavior remains in the referenced domain SSOT, source packages, and public workflows."}
+  ]
+}

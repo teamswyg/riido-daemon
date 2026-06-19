@@ -8,27 +8,26 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 258 |
+| Generated reader docs | 267 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 38 |
+| Registered manual docs | 29 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 38 |
+| `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 29 |
 
 ## Manual Hotspots
 
 | Directory | Matched docs |
 | --- | ---: |
-| `docs/migration/daemon/distribution-host-integration` | 8 |
 | `docs/migration/daemon/macos-provider-cli-review` | 7 |
 | `docs/migration/daemon/daemon-lifecycle-cli` | 6 |
 | `docs/migration/daemon/figma-boundary-provenance` | 6 |
-| `docs/migration/daemon` | 5 |
 | `docs/migration/daemon/codex-auth-full-access` | 5 |
+| `docs/migration/daemon` | 4 |
 | `docs/migration` | 1 |
 
 ## Manual Samples

@@ -67,6 +67,7 @@
     "docs/30-architecture/loop-engineering/migration-daemon-overview-docs.riido.json",
     "docs/30-architecture/loop-engineering/migration-daemon-riidoapi-local-api-docs.riido.json",
     "docs/30-architecture/loop-engineering/migration-daemon-runtime-snapshot-heartbeat-docs.riido.json",
+    "docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json",
     "docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json",
     "docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json",
     "docs/30-architecture/loop-engineering/distribution-host-docs.riido.json",

@@ -1,0 +1,18 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-event-ingestor-boundary",
+  "title": "RIID-4650: EventIngestor Boundary",
+  "generated_doc": "docs/migration/daemon/distribution-host-integration/event-ingestor-boundary.md",
+  "back_title": "distribution-host-integration",
+  "back_path": "../distribution-host-integration.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the daemon-side C2 EventIngestor implementation."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/ir/ingest`",
+      "`docs/20-domain/security-redaction.md` references to the now-public EventIngestor verification point"
+    ]},
+    {"kind": "paragraph", "text": "The package imports CanonicalEvent and envelope validation types from `github.com/teamswyg/riido-contracts/ir`, and imports the local public C7 policy redaction catalog from `internal/policy`."},
+    {"kind": "paragraph", "text": "This slice does not move provider adapters, runtime/session/supervisor actors, ToolRef.Args flattening, concrete event sink wiring beyond the existing C6 workdir sink port, task DB/project/mwsd local API packages, packaging artifacts, private infra, secrets, or local machine state."}
+  ]
+}
