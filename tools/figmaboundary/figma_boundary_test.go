@@ -11,6 +11,7 @@ type boundaryManifest struct {
 	MirroredSupportingToolLimitations []toolLimitation    `json:"mirrored_supporting_tool_limitations"`
 	Figma                             figmaRef            `json:"figma"`
 	BoundaryPolicy                    boundaryPolicy      `json:"boundary_policy"`
+	EntryFiles                        []string            `json:"entry_files"`
 	Entries                           []boundaryEntry     `json:"entries"`
 }
 

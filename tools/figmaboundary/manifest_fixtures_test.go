@@ -15,6 +15,7 @@ func TestFigmaAIAgentDaemonBoundaryRejectsStaleEvidence(t *testing.T) {
 		"docs/30-architecture/cli-surface.md",
 		"docs/30-architecture/figma-ai-agent-daemon-boundary.md",
 		"docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json",
+		"docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json",
 		"docs/migration/daemon.md",
 	}
 	for _, rel := range scanned {
