@@ -5,228 +5,28 @@
   "human_doc": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md",
   "source_documents": [
     "docs/30-architecture/agent-execution-unresolved-design/overview.md",
+    "docs/30-architecture/agent-execution-unresolved-design/problem-map.md",
+    "docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md",
+    "docs/30-architecture/agent-execution-unresolved-design/execution-identity.md",
+    "docs/30-architecture/agent-execution-unresolved-design/workspace-plan.md",
+    "docs/30-architecture/agent-execution-unresolved-design/runtime-launch-envelope.md",
     "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md",
+    "docs/30-architecture/agent-execution-unresolved-design/stream-envelope.md",
+    "docs/30-architecture/agent-execution-unresolved-design/retry-recovery-policy.md",
+    "docs/30-architecture/agent-execution-unresolved-design/repo-ownership.md",
+    "docs/30-architecture/agent-execution-unresolved-design/implementation-slices.md",
+    "docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md",
+    "docs/30-architecture/agent-execution-unresolved-design/verification-evidence.md",
     "docs/50-roadmap/open-questions.md"
   ],
-  "local_evidence": [
-    {
-      "risk": "same-task-multiple-assignments",
-      "status": "verified",
-      "package": "./internal/agentbridge/runtimeactor",
-      "test": "TestRuntimeActorUsesAssignmentIDAsExecutionKey",
-      "proves": "same logical task_id with distinct assignment ids runs as distinct runtime executions"
-    },
-    {
-      "risk": "public-repo-worktree-materialization",
-      "status": "verified",
-      "package": "./internal/agentbridge/supervisor",
-      "test": "TestMaterializeAssignmentWorktreeRunsShallowBranchClone",
-      "proves": "public GitHub repo and branch are shallow cloned into daemon-selected workdir"
-    },
-    {
-      "risk": "private-repo-fail-closed",
-      "status": "verified",
-      "package": "./internal/agentbridge/supervisor",
-      "test": "TestSupervisorBlocksPrivateAssignmentWorktreeBeforeProviderStart",
-      "proves": "private or unsupported worktree is blocked before provider process start"
-    },
-    {
-      "risk": "async-workspace-preparation",
-      "status": "verified",
-      "package": "./internal/agentbridge/supervisor",
-      "test": "TestSupervisorHeartbeatContinuesDuringWorkspaceMaterialization",
-      "proves": "slow workspace materialization does not block supervisor heartbeat"
-    },
-    {
-      "risk": "restart-recovery-refuses-fresh-start",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestPlaneFailsActiveAssignmentWithoutSessionAfterLocalStateLoss",
-      "proves": "active assignment without provider session id fails recovery instead of starting from scratch"
-    },
-    {
-      "risk": "restart-recovery-provider-session-resume",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestPlaneClaimsActiveAssignmentAfterLocalStateLoss",
-      "proves": "active assignment with provider session id is claimed with resume session"
-    },
-    {
-      "risk": "cancellation-watcher-release",
-      "status": "verified",
-      "package": "./internal/agentbridge/supervisor",
-      "test": "TestSupervisorCancelsCancellationWatchAfterTaskCompletion",
-      "proves": "terminal task path releases cancellation watcher lifetime"
-    },
-    {
-      "risk": "stale-pid-kill-refusal",
-      "status": "verified",
-      "package": "./cmd/riido",
-      "test": "TestDaemonStopRejectsNonDaemonPidFile",
-      "proves": "daemon stop refuses stale pid fallback without daemon identity evidence"
-    },
-    {
-      "risk": "launch-path-freeze",
-      "status": "verified",
-      "package": "./internal/agentbridge/runtimeactor",
-      "test": "TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn",
-      "proves": "detected executable and frozen launch PATH reach provider build and process spawn"
-    },
-    {
-      "risk": "capability-ttl-redetect",
-      "status": "verified",
-      "package": "./internal/agentbridge/runtimeactor",
-      "test": "TestRuntimeActorRefreshesUnavailableCapabilityAfterTTL",
-      "proves": "unavailable provider capability is re-detected after TTL instead of staying permanently cached"
-    },
-    {
-      "risk": "transient-poll-retry",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestPlaneRetriesTransientPoll",
-      "proves": "poll retries transient server failure"
-    },
-    {
-      "risk": "transient-agent-bindings-retry",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestPlaneRetriesTransientAgentBindings",
-      "proves": "agent binding lookup retries transient server failure"
-    },
-    {
-      "risk": "transient-heartbeat-retry",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestPlaneRetriesTransientHeartbeat",
-      "proves": "heartbeat retries transient server failure"
-    },
-    {
-      "risk": "transient-runtime-snapshot-retry",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestPlaneRetriesTransientRuntimeSnapshot",
-      "proves": "runtime snapshot push retries transient server failure"
-    },
-    {
-      "risk": "permanent-poll-no-retry",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestPlaneDoesNotRetryPermanentPollFailure",
-      "proves": "permanent poll failure is not retried"
-    },
-    {
-      "risk": "idempotent-event-post-retry",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestPlaneRetriesTransientEventPostWithIdempotencyKey",
-      "proves": "event POST retry is allowed only when idempotency metadata exists"
-    },
-    {
-      "risk": "headless-tool-risk-fail-closed",
-      "status": "verified",
-      "package": "./internal/agentbridge/toolpolicy",
-      "test": "TestPolicyToolStartGateBlocksClassifiedRiskWithoutApprovalPath",
-      "proves": "classified tool start fails closed when no approval path is available"
-    },
-    {
-      "risk": "windows-stale-claim-recovery",
-      "status": "verified",
-      "package": "./internal/lock",
-      "test": "TestReclaimStaleLockClaimRemovesOldClaim",
-      "proves": "old daemon lock claims can be reclaimed"
-    },
-    {
-      "risk": "windows-fresh-claim-retained",
-      "status": "verified",
-      "package": "./internal/lock",
-      "test": "TestReclaimStaleLockClaimKeepsFreshClaim",
-      "proves": "fresh daemon lock claims are retained"
-    },
-    {
-      "risk": "workspace-prepare-cancel-fence",
-      "status": "verified",
-      "package": "./internal/agentbridge/supervisor",
-      "test": "TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart",
-      "proves": "cancellation during workspace preparation stops before provider runtime start"
-    },
-    {
-      "risk": "generated-fsm-daemon-consumption",
-      "status": "verified",
-      "package": "./internal/contractscompat",
-      "test": "TestContractsBaseline",
-      "proves": "daemon consumes contracts generated assignment and task FSM service providers"
-    },
-    {
-      "risk": "web-approval-contract-consumption",
-      "status": "verified",
-      "package": "./internal/contractscompat",
-      "test": "TestContractsBaseline",
-      "proves": "daemon consumes contracts tool approval timeout status and decision vocabulary"
-    },
-    {
-      "risk": "web-approval-session-resolver",
-      "status": "verified",
-      "package": "./internal/agentbridge/session",
-      "test": "TestSessionResolverApprovalWritesProviderInput",
-      "proves": "session approval resolver decisions are converted into provider approve commands without falling through to the headless gate"
-    },
-    {
-      "risk": "web-approval-round-trip",
-      "status": "verified",
-      "package": "./internal/agentbridge/controlplane/saasplane",
-      "test": "TestResolveToolApprovalCreatesAndWaitsForDecision",
-      "proves": "SaaS plane creates a control-plane tool approval and waits for the client decision before returning a provider-neutral approval resolution"
-    }
-  ],
-  "external_evidence": [
-    {
-      "risk": "private-repo-url-redaction",
-      "status": "verified",
-      "repo": "riido-control-plane",
-      "test": "TestStoreActorDropsSensitiveAssignmentWorktreeURL",
-      "proves": "control-plane store actor drops sensitive assignment worktree URL"
-    },
-    {
-      "risk": "active-stream-handoff",
-      "status": "verified",
-      "repo": "riido-control-plane",
-      "test": "TestHTTPAIAgentClientDevelopmentV2WorkspaceScopedCreateAndThreadStream",
-      "proves": "task action response can hand client an active stream link"
-    },
-    {
-      "risk": "terminal-late-progress-fence",
-      "status": "verified",
-      "repo": "riido-control-plane",
-      "test": "TestC2LateRuntimeProgressDoesNotReactivateStoppedThread",
-      "proves": "late runtime progress cannot reactivate stopped task thread projection"
-    },
-    {
-      "risk": "generated-fsm-conformance",
-      "status": "verified",
-      "repo": "riido-contracts",
-      "test": "TestVerifyGeneratedFSMFiles",
-      "proves": "contracts fsmgen verifies generated FSM drift and conformance from Common Lisp metadata"
-    },
-    {
-      "risk": "web-approval-contract",
-      "status": "verified",
-      "repo": "riido-contracts",
-      "test": "TestAssignmentContractToolApprovalWireShape",
-      "proves": "contracts owns the tool approval request/decision/result DTO wire shape"
-    }
-  ],
-  "remaining_boundaries": [
-    {
-      "id": "private-repo-auth",
-      "owner": "contracts/control-plane/infra policy",
-      "current_handling": "private repositories fail closed without token broker",
-      "required_next_artifact": "token-ref auth design and contract; raw token remains outside public daemon SSOT"
-    },
-    {
-      "id": "client-desktop-consumption",
-      "owner": "client/desktop",
-      "current_handling": "server exposes active stream handoff but UI consumption is outside daemon ownership",
-      "required_next_artifact": "client active stream subscription and desktop update/quit handoff"
-    }
-  ]
+  "evidence_files": {
+    "local": [
+      "assignment-lifecycle-evidence/local-runtime.riido.json",
+      "assignment-lifecycle-evidence/local-transport.riido.json",
+      "assignment-lifecycle-evidence/local-platform.riido.json",
+      "assignment-lifecycle-evidence/local-approval.riido.json"
+    ],
+    "external": ["assignment-lifecycle-evidence/external.riido.json"],
+    "remaining_boundaries": ["assignment-lifecycle-evidence/remaining-boundaries.riido.json"]
+  }
 }

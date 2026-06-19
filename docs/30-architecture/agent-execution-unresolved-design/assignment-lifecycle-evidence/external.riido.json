@@ -1,0 +1,7 @@
+[
+  {"risk":"private-repo-url-redaction","status":"verified","repo":"riido-control-plane","test":"TestStoreActorDropsSensitiveAssignmentWorktreeURL","proves":"control-plane store actor drops sensitive assignment worktree URL"},
+  {"risk":"active-stream-handoff","status":"verified","repo":"riido-control-plane","test":"TestHTTPAIAgentClientDevelopmentV2WorkspaceScopedCreateAndThreadStream","proves":"task action response can hand client an active stream link"},
+  {"risk":"terminal-late-progress-fence","status":"verified","repo":"riido-control-plane","test":"TestC2LateRuntimeProgressDoesNotReactivateStoppedThread","proves":"late runtime progress cannot reactivate stopped task thread projection"},
+  {"risk":"generated-fsm-conformance","status":"verified","repo":"riido-contracts","test":"TestVerifyGeneratedFSMFiles","proves":"contracts fsmgen verifies generated FSM drift and conformance from Common Lisp metadata"},
+  {"risk":"web-approval-contract","status":"verified","repo":"riido-contracts","test":"TestAssignmentContractToolApprovalWireShape","proves":"contracts owns the tool approval request/decision/result DTO wire shape"}
+]

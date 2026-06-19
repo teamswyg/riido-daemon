@@ -1,0 +1,10 @@
+[
+  {"risk":"launch-path-freeze","status":"verified","package":"./internal/agentbridge/runtimeactor","test":"TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn","proves":"detected executable and frozen launch PATH reach provider build and process spawn"},
+  {"risk":"capability-ttl-redetect","status":"verified","package":"./internal/agentbridge/runtimeactor","test":"TestRuntimeActorRefreshesUnavailableCapabilityAfterTTL","proves":"unavailable provider capability is re-detected after TTL instead of staying permanently cached"},
+  {"risk":"transient-poll-retry","status":"verified","package":"./internal/agentbridge/controlplane/saasplane","test":"TestPlaneRetriesTransientPoll","proves":"poll retries transient server failure"},
+  {"risk":"transient-agent-bindings-retry","status":"verified","package":"./internal/agentbridge/controlplane/saasplane","test":"TestPlaneRetriesTransientAgentBindings","proves":"agent binding lookup retries transient server failure"},
+  {"risk":"transient-heartbeat-retry","status":"verified","package":"./internal/agentbridge/controlplane/saasplane","test":"TestPlaneRetriesTransientHeartbeat","proves":"heartbeat retries transient server failure"},
+  {"risk":"transient-runtime-snapshot-retry","status":"verified","package":"./internal/agentbridge/controlplane/saasplane","test":"TestPlaneRetriesTransientRuntimeSnapshot","proves":"runtime snapshot push retries transient server failure"},
+  {"risk":"permanent-poll-no-retry","status":"verified","package":"./internal/agentbridge/controlplane/saasplane","test":"TestPlaneDoesNotRetryPermanentPollFailure","proves":"permanent poll failure is not retried"},
+  {"risk":"idempotent-event-post-retry","status":"verified","package":"./internal/agentbridge/controlplane/saasplane","test":"TestPlaneRetriesTransientEventPostWithIdempotencyKey","proves":"event POST retry is allowed only when idempotency metadata exists"}
+]
