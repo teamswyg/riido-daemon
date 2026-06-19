@@ -1,0 +1,16 @@
+{
+  "schema_version": "riido-distribution-host-invariants-detail.v1",
+  "id": "external-tool-registry",
+  "title": "ExternalToolRegistry",
+  "generated_doc": "docs/20-domain/distribution-host-integration/invariants/external-tool-registry.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Provider CLI registration is modeled by provenance, not just executable path. `internal/hostintegration.ExternalToolRecord` and `ExternalToolRegistry` are pure C11 models; PATH probing, process spawn, bookmarks, and named pipes stay in adapters."},
+    {"kind": "code", "language": "text", "code": "ExternalToolRecord {\n    provider              ProviderKind\n    executablePath         string\n    provenance             \"user-selected\" | \"env-override\" | \"auto-detected\"\n    detectedVersion        string\n    loginStatus            \"unknown\" | \"logged-in\" | \"login-required\"\n    compatibilityStatus    CompatibilityStatus\n    lastVerifiedAt         time\n}"},
+    {"kind": "ordered", "items": [
+      "`user-selected` is the strongest signal and comes from a user file picker.",
+      "`env-override` comes from a `RIIDO_<PROVIDER>_PATH` environment variable and must be visible as an override in Store channels.",
+      "`auto-detected` comes from PATH or known install path discovery and requires execution confirmation in Store-managed channels.",
+      "`login-required` is actionable status, not a hard failure; schedulers and UI can exclude that provider from routing."
+    ]}
+  ]
+}

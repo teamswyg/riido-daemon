@@ -8,16 +8,16 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 177 |
+| Generated reader docs | 183 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 119 |
+| Registered manual docs | 113 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 52 |
+| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 46 |
 | `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
 | `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
 | `readme-manual-surface` | daemon/repo-docs | promote remaining docs/readme guides into doc-map or verification SSOT | 4 |
@@ -26,7 +26,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Directory | Matched docs |
 | --- | ---: |
-| `docs/20-domain/distribution-host-integration` | 16 |
+| `docs/20-domain/distribution-host-integration` | 10 |
 | `docs/20-domain/security` | 10 |
 | `docs/20-domain/workspace` | 10 |
 | `docs/20-domain/provider-runtime` | 9 |
@@ -44,10 +44,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Group | Path |
 | --- | --- |
 | `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/invariants.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/invariants/app-data-root.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/invariants/channels-and-roles.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/invariants/core.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/local-ipc.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/local-ipc/consent-ledger.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/local-ipc/endpoint-model.md` |
+| `domain-ontology-manual-surface` | `docs/20-domain/distribution-host-integration/local-ipc/macos-external-provider-cli.md` |
 | `roadmap-manual-surface` | `docs/50-roadmap/open-questions.md` |
 | `migration-history-manual-surface` | `docs/migration/cli.md` |
 | `migration-history-manual-surface` | `docs/migration/cli/cli-daemon-split.md` |

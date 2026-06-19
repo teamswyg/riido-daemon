@@ -1,0 +1,17 @@
+{
+  "schema_version": "riido-distribution-host-invariants-detail.v1",
+  "id": "workspace-grant-store",
+  "title": "WorkspaceGrantStore",
+  "generated_doc": "docs/20-domain/distribution-host-integration/invariants/workspace-grant-store.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/hostintegration.WorkspaceGrantStore` is the pure C11 model for user workspace root access. C6 consumes active grant records during workdir preparation; OS bookmark or folder-picker token bytes stay adapter-owned."},
+    {"kind": "code", "language": "text", "code": "WorkspaceGrantRecord {\n    workspaceID string\n    channel     DistributionChannel\n    hostOS      \"darwin\" | \"windows\"\n    method      \"dev-local-path\" | \"user-selected-folder\" |\n                \"security-scoped-bookmark\" | \"windows-folder-picker-grant\"\n    rootPath    string\n    grantedAt   time\n    revokedAt   time?\n}"},
+    {"kind": "ordered", "items": [
+      "Workdir root and user workspace root are always separate.",
+      "`mac-app-store` requires `security-scoped-bookmark` for workspace grants.",
+      "`msix-store` requires `windows-folder-picker-grant` for workspace grants.",
+      "An active grant still needs `ConsentLedger` workspace access consent before C6 materialization is allowed.",
+      "Revocation keeps the record as evidence but removes it from the active grant view."
+    ]}
+  ]
+}

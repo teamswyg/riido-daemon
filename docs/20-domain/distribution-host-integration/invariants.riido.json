@@ -1,0 +1,55 @@
+{
+  "schema_version": "riido-distribution-host-invariants-docs.v1",
+  "id": "distribution-host-invariants-docs",
+  "title": "Distribution / Host Integration SSOT: Invariants",
+  "generated_doc": "docs/20-domain/distribution-host-integration/invariants.md",
+  "workflow": ".github/workflows/distribution-host-invariants-docs.yml",
+  "evidence_artifact": "distribution-host-invariants-docs",
+  "summary": [
+    "This SSOT fixes C11 host-integration invariants as generated documentation bound to `internal/hostintegration` executable models and store-distribution contracts.",
+    "The generated reader docs cover distribution channels, runtime roles, external provider CLI provenance, approved app data roots, and workspace grant materialization boundaries."
+  ],
+  "detail_pages": [
+    {"id": "core", "title": "Scope and Core Invariants", "path": "invariants/core.md"},
+    {"id": "channels-and-roles", "title": "Distribution Channels and Role Model", "path": "invariants/channels-and-roles.md"},
+    {"id": "external-tool-registry", "title": "ExternalToolRegistry", "path": "invariants/external-tool-registry.md"},
+    {"id": "app-data-root", "title": "AppDataRoot", "path": "invariants/app-data-root.md"},
+    {"id": "workspace-grant-store", "title": "WorkspaceGrantStore", "path": "invariants/workspace-grant-store.md"}
+  ],
+  "related_pages": [
+    {"id": "distribution-host-root", "title": "Distribution Host Integration", "path": "../distribution-host-integration.md"},
+    {"id": "local-ipc", "title": "Local IPC", "path": "local-ipc.md"},
+    {"id": "store-channel-policy", "title": "Store Channel Policy", "path": "store-channel-policy.md"},
+    {"id": "store-distribution", "title": "Store Distribution Architecture", "path": "../../30-architecture/store-distribution.md"}
+  ],
+  "fragments": {
+    "core": "invariants/core.riido.json",
+    "channels-and-roles": "invariants/channels-and-roles.riido.json",
+    "external-tool-registry": "invariants/external-tool-registry.riido.json",
+    "app-data-root": "invariants/app-data-root.riido.json",
+    "workspace-grant-store": "invariants/workspace-grant-store.riido.json"
+  },
+  "source_checks": [
+    {"name": "distribution-channel-model", "file": "internal/hostintegration/distribution_channel.go", "contains": "type DistributionChannel string"},
+    {"name": "store-managed-channel-rule", "file": "internal/hostintegration/distribution_channel.go", "contains": "func (c DistributionChannel) StoreManaged() bool"},
+    {"name": "helper-runtime-plan", "file": "internal/hostintegration/helper_runtime_plan.go", "contains": "ProviderCLIBundlingAllowed    bool"},
+    {"name": "helper-runtime-safety", "file": "internal/hostintegration/helper_runtime_safety_assert_test.go", "contains": "store helper plan must not allow bundled provider CLIs"},
+    {"name": "store-contract-provider-bundling", "file": "packaging/store/riido_daemon_store_distribution.riido.json", "contains": "\"provider_cli_bundling\": \"forbidden\""},
+    {"name": "external-tool-record", "file": "internal/hostintegration/external_tool_record.go", "contains": "The executable path is local-only and must never be sent to C10."},
+    {"name": "external-tool-registry", "file": "internal/hostintegration/external_tool_registry.go", "contains": "precedence rules as Register"},
+    {"name": "auto-detected-confirmation", "file": "internal/hostintegration/external_tool_record_confirmation_test.go", "contains": "auto-detected CLI should require confirmation in mac app store channel"},
+    {"name": "app-data-root-model", "file": "internal/hostintegration/app_data_root_model.go", "contains": "Store channels must not silently fall back to unmanaged home paths."},
+    {"name": "mac-store-root-test", "file": "internal/hostintegration/app_data_root_test.go", "contains": "expected mac app store root without app group/container to fail"},
+    {"name": "msix-store-root-test", "file": "internal/hostintegration/app_data_root_windows_test.go", "contains": "expected msix store root without package local data to fail"},
+    {"name": "workspace-grant-materialization", "file": "internal/hostintegration/workspace_grant_record.go", "contains": "func (r WorkspaceGrantRecord) MaterializationAllowed(consent ConsentState) bool"},
+    {"name": "workspace-grant-store-channel", "file": "internal/hostintegration/workspace_grant_store_channel_test.go", "contains": "security-scoped bookmark"}
+  ],
+  "assertions": [
+    "C11 owns distribution channel identity and host integration facts; provider capability remains C3 and runtime process execution remains C4.",
+    "Riido packages do not bundle provider CLIs; external provider tools enter C11 only as provenance-bearing local records.",
+    "Store App GUI adapters consume C11 contracts and may own OS entitlement calls, but must not spawn provider processes or copy C11 facts.",
+    "Store-managed channels require explicit consent and review-aware helper/runtime plans before background execution is allowed.",
+    "Approved app data roots and user workspace grants are separate concepts; C6 consumes only C11-approved roots and active grants.",
+    "Generated C11 invariants must stay source-checked against executable hostintegration models and store distribution contracts."
+  ]
+}
