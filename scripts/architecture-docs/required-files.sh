@@ -47,6 +47,8 @@ required_files=(
   docs/30-architecture/module-decomposition/import-rules.md
   docs/30-architecture/module-decomposition/package-map.md
   .github/workflows/module-decomposition-docs.yml
+  docs/30-architecture/store-distribution.riido.json
+  .github/workflows/store-distribution-docs.yml
   docs/30-architecture/cli-surface.md
   docs/30-architecture/cli-surface.riido.json
   docs/30-architecture/config-reference.md
@@ -82,6 +84,7 @@ required_files=(
   docs/30-architecture/loop-engineering/release-artifact-docs.riido.json
   docs/30-architecture/loop-engineering/integration-matrix-docs.riido.json
   docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json
+  docs/30-architecture/loop-engineering/store-distribution-docs.riido.json
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
   docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
   docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json
