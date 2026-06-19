@@ -1,0 +1,36 @@
+{
+  "id": "full-access-harness-evidence",
+  "owner": "C7 security policy",
+  "observation": {
+    "summary": "Full-access runtime harness rules were prose while Codex launch shape, override dropping, and provider-default denial lived across adapter tests and provider validation fixtures.",
+    "artifacts": ["docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove daemon-owned Codex full-access launch, caller override rejection, and absent permission-profile generation from source references.",
+    "artifacts": ["docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json"]
+  },
+  "execution": {
+    "summary": "Run fullaccessharness to check generated docs, source checks, and absent unsafe/default policy surfaces.",
+    "artifacts": ["tools/fullaccessharness", ".github/workflows/full-access-harness-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing Codex adapter evidence, missing provider validation matrix claims, permission profile generation, and default host unsafe bypass allowances.",
+    "artifacts": ["tools/fullaccessharness/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Full-access harness knowledge becomes executable evidence instead of a manually edited security note.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/fullaccessharness -check-doc -evidence-out /tmp/full-access-harness-evidence.json",
+      "proves": "full-access harness manifest matches generated docs, source evidence, and absent unsafe/default policy surfaces"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/full-access-harness-evidence.yml",
+      "proves": "public CI uploads full-access harness evidence"
+    }
+  ]
+}

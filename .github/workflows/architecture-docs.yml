@@ -19,6 +19,7 @@ on:
       - ".github/workflows/policy-bundle-loader-evidence.yml"
       - ".github/workflows/tool-use-gate-evidence.yml"
       - ".github/workflows/native-config-mcp-evidence.yml"
+      - ".github/workflows/full-access-harness-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/**"
   pull_request:
@@ -38,6 +39,7 @@ on:
       - ".github/workflows/policy-bundle-loader-evidence.yml"
       - ".github/workflows/tool-use-gate-evidence.yml"
       - ".github/workflows/native-config-mcp-evidence.yml"
+      - ".github/workflows/full-access-harness-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
       - "tools/**"
 
