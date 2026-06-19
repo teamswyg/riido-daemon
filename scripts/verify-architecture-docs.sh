@@ -13,6 +13,8 @@ required_files=(
   docs/30-architecture/loop-engineering.riido.json
   docs/30-architecture/provider-real-cli-observation.md
   docs/30-architecture/provider-real-cli-observation.riido.json
+  docs/30-architecture/runtime-secret-private-evidence.md
+  docs/30-architecture/runtime-secret-private-evidence.riido.json
   docs/30-architecture/figma-ai-agent-daemon-boundary.md
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -63,7 +65,9 @@ go test ./tools/agentexecutionevidence -count=1
 go test ./tools/loopevidence -count=1
 go test ./tools/redactiondrift -count=1
 go test ./tools/providerintegrationevidence -count=1
+go test ./tools/runtimesecretevidence -count=1
 go run ./tools/loopevidence -check
 go run ./tools/redactiondrift
 go run ./tools/providerintegrationevidence -check-doc
+go run ./tools/runtimesecretevidence -check-doc
 go test ./...
