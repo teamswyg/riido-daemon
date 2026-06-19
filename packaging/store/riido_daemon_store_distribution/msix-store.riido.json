@@ -1,0 +1,32 @@
+{
+  "id": "msix-store",
+  "platform": "windows",
+  "status": "requires-policy-gate",
+  "runtime_role": "msix-packaged-full-trust-helper-tray",
+  "background_rule": "explicit-consent-and-store-review",
+  "local_ipc_transport": "windows-named-pipe",
+  "data_root": "windows-package-local-data",
+  "update_mechanism": "store-managed",
+  "required_surfaces": [
+    "package-identity",
+    "windows-desktop-target-device-family",
+    "named-pipe-local-ipc",
+    "package-local-data",
+    "runfulltrust-review-note",
+    "store-managed-updates",
+    "partner-center-review-notes",
+    "review-demo-mode",
+    "privacy-policy",
+    "demo-review-account",
+    "privacy-metadata-allowlist",
+    "provider-non-bundling-review-note"
+  ],
+  "forbidden_surfaces": [
+    "bundled-provider-cli",
+    "silent-provider-install",
+    "windows-service-default",
+    "self-updater",
+    "external-tcp-listener",
+    "arbitrary-home-scan"
+  ]
+}
