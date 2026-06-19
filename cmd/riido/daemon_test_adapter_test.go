@@ -26,3 +26,15 @@ func (a daemonTestAdapter) BuildStart(agentbridge.StartRequest) (agentbridge.Sta
 }
 
 func (a daemonTestAdapter) NewParser() agentbridge.Parser { return daemonTestParser{} }
+
+func (a daemonTestAdapter) Translate(agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
+	return nil, nil, nil
+}
+
+func (a daemonTestAdapter) BlockedArgs() []string { return nil }
+
+type daemonTestParser struct{}
+
+func (daemonTestParser) FeedStdout([]byte) ([]agentbridge.RawEvent, error) { return nil, nil }
+func (daemonTestParser) FeedStderr([]byte) ([]agentbridge.RawEvent, error) { return nil, nil }
+func (daemonTestParser) Close() ([]agentbridge.RawEvent, error)            { return nil, nil }
