@@ -15,7 +15,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Registered Manual Surfaces
 
-| Group | Owner | Next artifact | Paths |
+| Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
 
 ## Assertions

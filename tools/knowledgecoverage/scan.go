@@ -14,7 +14,7 @@ func scanDocs(root string, m manifest) ([]docClass, []string) {
 	var docs []docClass
 	var problems []string
 	for _, scanRoot := range m.ScanRoots {
-		found, err := scanRootDocs(root, scanRoot, manualByPath)
+		found, err := scanRootDocs(root, scanRoot, m, manualByPath)
 		if err != nil {
 			problems = append(problems, err.Error())
 			continue
@@ -27,20 +27,20 @@ func scanDocs(root string, m manifest) ([]docClass, []string) {
 	return docs, append(problems, validateManualEntries(root, m, docs)...)
 }
 
-func scanRootDocs(root, scanRoot string, manualByPath map[string]manualGroup) ([]docClass, error) {
+func scanRootDocs(root, scanRoot string, m manifest, manualByPath map[string]manualGroup) ([]docClass, error) {
 	var docs []docClass
 	err := filepath.WalkDir(resolvePath(root, scanRoot), func(path string, d os.DirEntry, err error) error {
 		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {
 			return err
 		}
 		rel := slashPath(root, path)
-		docs = append(docs, classifyDoc(root, rel, manualByPath))
+		docs = append(docs, classifyDoc(root, rel, m, manualByPath))
 		return nil
 	})
 	return docs, err
 }
 
-func classifyDoc(root, rel string, manualByPath map[string]manualGroup) docClass {
+func classifyDoc(root, rel string, m manifest, manualByPath map[string]manualGroup) docClass {
 	text, err := os.ReadFile(resolvePath(root, rel))
 	if err == nil && strings.Contains(string(text), generatedMarker) {
 		return docClass{Path: rel, Kind: "generated"}
@@ -49,6 +49,9 @@ func classifyDoc(root, rel string, manualByPath map[string]manualGroup) docClass
 		return docClass{Path: rel, Kind: "direct_ssot"}
 	}
 	if group, ok := manualByPath[rel]; ok {
+		return docClass{Path: rel, Kind: "manual_registered", Group: group.ID, Reason: group.Reason}
+	}
+	if group, ok := manualPrefixMatch(m, rel); ok {
 		return docClass{Path: rel, Kind: "manual_registered", Group: group.ID, Reason: group.Reason}
 	}
 	return docClass{Path: rel, Kind: "unregistered_manual"}

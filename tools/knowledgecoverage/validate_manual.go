@@ -33,6 +33,9 @@ func validateManualEntries(root string, m manifest, docs []docClass) []string {
 		for _, path := range group.Paths {
 			problems = append(problems, validateManualPath(root, group.ID, path, classes)...)
 		}
+		for _, prefix := range group.PathPrefixes {
+			problems = append(problems, validateManualPrefix(root, group.ID, prefix, docs)...)
+		}
 	}
 	return problems
 }

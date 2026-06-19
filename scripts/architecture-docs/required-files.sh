@@ -4,6 +4,8 @@ set -euo pipefail
 required_files=(
   docs/20-domain/context-map.md
   docs/README.md
+  docs/executable-knowledge.md
+  docs/executable-knowledge.riido.json
   docs/readme/document-map.md
   docs/readme/document-map.riido.json
   docs/readme/verification.md
@@ -64,6 +66,7 @@ required_files=(
   docs/30-architecture/config-reference/executable-search-path.riido.json
   docs/30-architecture/executable-knowledge.md
   docs/30-architecture/executable-knowledge.riido.json
+  .github/workflows/repo-executable-knowledge-coverage.yml
   docs/30-architecture/release-artifacts.md
   docs/30-architecture/release-artifacts.riido.json
   docs/30-architecture/release-artifacts/assets.md
@@ -88,6 +91,7 @@ required_files=(
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json
+  docs/30-architecture/loop-engineering/repo-executable-knowledge-coverage.riido.json
   docs/30-architecture/loop-engineering/release-artifact-docs.riido.json
   docs/30-architecture/loop-engineering/integration-matrix-docs.riido.json
   docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json
