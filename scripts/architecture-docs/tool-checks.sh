@@ -94,7 +94,7 @@ doc_tools=(
 )
 
 go test "${tool_tests[@]}" -count=1
-go run ./tools/loopevidence -check
+go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json
 go run ./tools/docmap -check
 go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo . -check-policy-table
 

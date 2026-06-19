@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/architecture-docs.yml"
+      - ".github/workflows/loop-engineering-evidence.yml"
       - ".github/workflows/repo-executable-knowledge-coverage.yml"
       - ".github/workflows/context-map-docs.yml"
       - ".github/workflows/locking-docs.yml"
@@ -49,6 +50,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/architecture-docs.yml"
+      - ".github/workflows/loop-engineering-evidence.yml"
       - ".github/workflows/repo-executable-knowledge-coverage.yml"
       - ".github/workflows/context-map-docs.yml"
       - ".github/workflows/locking-docs.yml"

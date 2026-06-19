@@ -1,5 +1,14 @@
 package main
 
+type options struct {
+	Repo        string
+	Manifest    string
+	Doc         string
+	Write       bool
+	Check       bool
+	EvidenceOut string
+}
+
 type manifest struct {
 	SchemaVersion  string   `json:"schema_version"`
 	ID             string   `json:"id"`
@@ -38,4 +47,16 @@ type gap struct {
 	Owner                string `json:"owner"`
 	CurrentHandling      string `json:"current_handling"`
 	RequiredNextArtifact string `json:"required_next_artifact"`
+}
+
+type evidenceReport struct {
+	SchemaVersion     string   `json:"schema_version"`
+	ID                string   `json:"id"`
+	Status            string   `json:"status"`
+	GeneratedDoc      string   `json:"generated_doc"`
+	LoopCount         int      `json:"loop_count"`
+	OpenGapCount      int      `json:"open_gap_count"`
+	EvidenceItemCount int      `json:"evidence_item_count"`
+	RequiredPhases    []string `json:"required_phases"`
+	ProblemSummaries  []string `json:"problem_summaries,omitempty"`
 }

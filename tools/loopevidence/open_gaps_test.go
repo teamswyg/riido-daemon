@@ -25,7 +25,7 @@ func TestLoopEvidenceAllowsNoOpenGaps(t *testing.T) {
 	if err := os.WriteFile(docPath, []byte(renderMarkdown(mustLoadLoop(t, manifestPath))), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := run(dir, manifestPath, docPath, false, true); err != nil {
+	if err := run(options{Repo: dir, Manifest: manifestPath, Doc: docPath, Check: true}); err != nil {
 		t.Fatal(err)
 	}
 }
