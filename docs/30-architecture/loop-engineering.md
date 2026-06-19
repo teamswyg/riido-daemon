@@ -244,6 +244,23 @@
   - `command`: go run ./tools/compatibilitygate -check-doc -evidence-out /tmp/compatibility-gate-evidence.json; proves compatibility gate manifest matches generated reader docs and local source evidence
   - `workflow`: .github/workflows/compatibility-gate.yml; proves public CI uploads compatibility gate evidence
 
+### cli-surface-evidence
+
+- Owner: `CLI local adapter`
+- Observe: The public cmd/riido surface was described in prose while actual command groups lived in cli_commands.go and printUsage output.
+  - Artifacts: `docs/30-architecture/cli-surface.md`, `cmd/riido/cli_commands.go`
+- Hypothesis: A CLI surface manifest can generate the reader doc and verify command vocabulary, local-only boundaries, help output, and provider smoke output.
+  - Artifacts: `docs/30-architecture/cli-surface.riido.json`
+- Execute: Run clisurface to check generated docs, source command vocabulary, forbidden public listener tokens, help output, and bridge provider JSON.
+  - Artifacts: `tools/clisurface`, `.github/workflows/cli-surface-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, missing command declarations, public listener regressions, missing usage lines, and missing provider vocabulary.
+  - Artifacts: `tools/clisurface/run_test.go`
+- Retrospective: CLI surface knowledge becomes executable local adapter evidence instead of a manually edited command overview.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/clisurface -check-doc -evidence-out /tmp/cli-surface-evidence.json; proves CLI surface manifest matches generated docs, source vocabulary, local-only constraints, and black-box CLI output
+  - `workflow`: .github/workflows/cli-surface-evidence.yml; proves public CI uploads CLI surface evidence
+
 ### executable-search-path-evidence
 
 - Owner: `C4 provider runtime`
