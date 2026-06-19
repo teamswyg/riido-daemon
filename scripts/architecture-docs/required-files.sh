@@ -41,6 +41,15 @@ required_files=(
   docs/20-domain/security-redaction/versioning.md
   docs/20-domain/security-redaction/versioning.riido.json
   .github/workflows/security-redaction-docs.yml
+  docs/20-domain/security.md
+  docs/20-domain/security.riido.json
+  docs/20-domain/security/enforcement-locations.md
+  docs/20-domain/security/enforcement-locations.riido.json
+  docs/20-domain/security/enforcement-locations/audit-and-contracts.md
+  docs/20-domain/security/enforcement-locations/audit-and-contracts.riido.json
+  docs/20-domain/security/enforcement-locations/open-issues-and-versioning.md
+  docs/20-domain/security/enforcement-locations/open-issues-and-versioning.riido.json
+  .github/workflows/security-docs.yml
   docs/20-domain/security/invariants.md
   docs/20-domain/security/invariants.riido.json
   docs/20-domain/security/invariants/scope.md
@@ -328,6 +337,7 @@ required_files=(
   docs/30-architecture/loop-engineering/context-map-docs.riido.json
   docs/30-architecture/loop-engineering/provider-public-migration-docs.riido.json
   docs/30-architecture/loop-engineering/locking-docs.riido.json
+  docs/30-architecture/loop-engineering/security-docs.riido.json
   docs/30-architecture/loop-engineering/security-redaction.riido.json
   docs/30-architecture/loop-engineering/security-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/security-native-config-overlay-docs.riido.json

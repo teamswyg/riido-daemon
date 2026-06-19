@@ -8,16 +8,16 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 224 |
+| Generated reader docs | 228 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 72 |
+| Registered manual docs | 68 |
 | Scanned docs | 297 |
 
 ## Registered Manual Surfaces
 
 | Group | Owner | Next artifact | Matched docs |
 | --- | --- | --- | ---: |
-| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 5 |
+| `domain-ontology-manual-surface` | daemon/domain | promote docs/20-domain into generated ontology and invariant registries | 1 |
 | `migration-history-manual-surface` | daemon/migration | promote migration slices into generated migration ledger and retired-boundary evidence | 62 |
 | `roadmap-manual-surface` | daemon/planning | promote roadmap questions into generated open-question registry | 1 |
 | `readme-manual-surface` | daemon/repo-docs | promote remaining docs/readme guides into doc-map or verification SSOT | 4 |
@@ -36,17 +36,13 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `docs/migration/daemon/runtime-snapshot-heartbeat` | 5 |
 | `docs/migration/daemon/overview` | 4 |
 | `docs/readme` | 4 |
-| `docs/20-domain/security` | 3 |
 | `docs/migration/daemon/riidoapi-local-api` | 3 |
+| `docs/migration` | 2 |
 
 ## Manual Samples
 
 | Group | Path |
 | --- | --- |
-| `domain-ontology-manual-surface` | `docs/20-domain/security.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/security/enforcement-locations.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/security/enforcement-locations/audit-and-contracts.md` |
-| `domain-ontology-manual-surface` | `docs/20-domain/security/enforcement-locations/open-issues-and-versioning.md` |
 | `domain-ontology-manual-surface` | `docs/20-domain/workspace.md` |
 | `roadmap-manual-surface` | `docs/50-roadmap/open-questions.md` |
 | `migration-history-manual-surface` | `docs/migration/cli.md` |

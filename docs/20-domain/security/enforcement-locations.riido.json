@@ -1,0 +1,18 @@
+{
+  "schema_version": "riido-security-page.v1",
+  "id": "enforcement-locations",
+  "title": "Security / Policy SSOT: Enforcement Locations",
+  "generated_doc": "docs/20-domain/security/enforcement-locations.md",
+  "back_title": "security.md",
+  "back_path": "../security.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This SSOT is split by enforcement concern so C7 decisions, provider runtime execution, and audit boundaries can be inspected independently."},
+    {"kind": "links", "links": [
+      {"title": "5.1 Unsafe bypass enforcement", "path": "enforcement-locations/unsafe-bypass.md"},
+      {"title": "5.2-5.4 Native config and MCP lifecycle enforcement", "path": "enforcement-locations/native-config-and-mcp.md"},
+      {"title": "6 ToolUse / FileEffect / NetworkEgress branches", "path": "enforcement-locations/tool-use-gates.md"},
+      {"title": "7-9 Audit invariants and adjacent SSOT contracts", "path": "enforcement-locations/audit-and-contracts.md"},
+      {"title": "10-11 Open issues and version-affecting changes", "path": "enforcement-locations/open-issues-and-versioning.md"}
+    ]}
+  ]
+}

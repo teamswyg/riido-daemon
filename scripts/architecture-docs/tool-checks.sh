@@ -9,6 +9,7 @@ tool_tests=(
   ./tools/agentexecutionevidence
   ./tools/loopevidence
   ./tools/lockingdocs
+  ./tools/securitydocs
   ./tools/securityredactiondocs
   ./tools/securityinvariantsdocs
   ./tools/securitynativeconfigoverlaydocs
@@ -68,6 +69,7 @@ doc_tools=(
   repoverification
   contextmapdocs
   lockingdocs
+  securitydocs
   securityredactiondocs
   securityinvariantsdocs
   securitynativeconfigoverlaydocs

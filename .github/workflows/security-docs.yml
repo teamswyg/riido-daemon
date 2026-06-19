@@ -1,0 +1,65 @@
+name: security-docs
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/security-docs.yml"
+      - "docs/20-domain/security.md"
+      - "docs/20-domain/security.riido.json"
+      - "docs/20-domain/security/**"
+      - "docs/20-domain/security-redaction**"
+      - "tools/securitydocs/**"
+      - "tools/securityinvariantsdocs/**"
+      - "tools/securitynativeconfigoverlaydocs/**"
+      - "tools/securityredactiondocs/**"
+      - "tools/unsafebypassevidence/**"
+      - "tools/toolusegateevidence/**"
+      - "tools/nativeconfigmcp/**"
+      - "tools/fullaccessharness/**"
+      - "internal/policy/**"
+      - "internal/ir/ingest/**"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/security-docs.yml"
+      - "docs/20-domain/security.md"
+      - "docs/20-domain/security.riido.json"
+      - "docs/20-domain/security/**"
+      - "docs/20-domain/security-redaction**"
+      - "tools/securitydocs/**"
+      - "tools/securityinvariantsdocs/**"
+      - "tools/securitynativeconfigoverlaydocs/**"
+      - "tools/securityredactiondocs/**"
+      - "tools/unsafebypassevidence/**"
+      - "tools/toolusegateevidence/**"
+      - "tools/nativeconfigmcp/**"
+      - "tools/fullaccessharness/**"
+      - "internal/policy/**"
+      - "internal/ir/ingest/**"
+
+jobs:
+  security-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify security docs
+        run: |
+          mkdir -p out
+          go run ./tools/securitydocs -check-doc -evidence-out out/security-docs.json
+          go run ./tools/securityinvariantsdocs -check-doc -evidence-out out/security-invariants-docs.json
+          go run ./tools/securitynativeconfigoverlaydocs -check-doc -evidence-out out/security-native-config-overlay-docs.json
+          go run ./tools/securityredactiondocs -check-doc -evidence-out out/security-redaction-docs.json
+          go run ./tools/unsafebypassevidence -check-doc -evidence-out out/unsafe-bypass-evidence.json
+          go run ./tools/toolusegateevidence -check-doc -evidence-out out/tool-use-gate-evidence.json
+          go run ./tools/nativeconfigmcp -check-doc -evidence-out out/native-config-mcp-evidence.json
+          go run ./tools/fullaccessharness -check-doc -evidence-out out/full-access-harness-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-docs
+          path: out/*.json
+          if-no-files-found: error
