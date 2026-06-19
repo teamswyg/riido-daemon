@@ -1,0 +1,26 @@
+{
+  "schema_version": "riido-context-map-figma-onboarding-boundaries.v1",
+  "sections": [
+    {
+      "refs": ["node-id=42-3014", "node-id=137-6746", "node-id=138-7389", "node-id=164-26969", "node-id=164-30192", "node-id=164-27719", "node-id=164-30206"],
+      "daemon_scope": "Supplies runtime liveness/detection facts and later consumes an already-assigned instruction/runtime/model snapshot.",
+      "not_owned": ["runtime choice UI", "fixture list", "direct-setting expansion", "workspace scroll affordance", "selected-workspace rows", "new workspace rows", "two-line ellipsis annotation", "no-installed-AI skip branch"]
+    },
+    {
+      "refs": ["node-id=164-26969", "planning node 432:46849"],
+      "daemon_scope": "C4 later consumes only already-assigned instruction/runtime/model values.",
+      "not_owned": ["name input composition", "description input composition", "instruction input composition", "client-local draft", "workspace-less create path"]
+    },
+    {
+      "refs": ["node-id=137-6746", "node-id=138-7389"],
+      "daemon_scope": "Provides liveness/detection facts for client presentation.",
+      "not_owned": ["detected labels", "non-selectable labels", "radio state", "fixture rows", "direct setting row", "disabled-next presentation", "preview skeleton"]
+    },
+    {
+      "refs": ["node-id=236-29749"],
+      "daemon_scope": "Starts only after the desktop/helper surface launches it and then reports runtime liveness/control-plane assignment state.",
+      "not_owned": ["macOS app download route", "Google/email sign-up", "terms consent", "member invite", "Windows waitlist", "marketing consent", "chat animation", "progress-bar references"]
+    }
+  ],
+  "must_not_hardcode": ["onboarding fixture rows", "fixture descriptions", "fixture instructions", "direct-setting entry points", "workspace selection/create-new entry points", "onboarding step skipping", "provider install/start CTAs", "client text overflow behavior"]
+}

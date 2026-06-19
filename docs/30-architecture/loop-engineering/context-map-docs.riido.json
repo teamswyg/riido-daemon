@@ -1,0 +1,36 @@
+{
+  "id": "context-map-docs",
+  "owner": "daemon/domain",
+  "observation": {
+    "summary": "repo-wide coverage reported 123 domain ontology manual docs; context-map is an eight-doc bounded-context slice within that debt",
+    "artifacts": ["docs/executable-knowledge.md", "docs/20-domain/context-map.md"]
+  },
+  "hypothesis": {
+    "summary": "context ownership, ACL, dependency, and Figma boundary prose can be converted into a generated bounded-context SSOT",
+    "artifacts": ["docs/20-domain/context-map.riido.json"]
+  },
+  "execution": {
+    "summary": "generate context-map reader docs from structured context, ACL, dependency, Figma, repo ownership, and change procedure fragments",
+    "artifacts": ["tools/contextmapdocs", ".github/workflows/context-map-docs.yml"]
+  },
+  "evaluation": {
+    "summary": "repo-wide coverage should move eight context-map docs from registered manual debt to generated reader docs",
+    "artifacts": ["docs/executable-knowledge.md"]
+  },
+  "retrospective": {
+    "summary": "the next domain slices should follow the same fragment-backed generator pattern rather than editing reader docs",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/contextmapdocs -check-doc -evidence-out /tmp/context-map-docs.json",
+      "proves": "context-map docs are generated from bounded-context SSOT fragments"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/context-map-docs.yml",
+      "proves": "public CI uploads context-map docs evidence"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": "riido-context-map-docs.v1",
+  "id": "daemon-context-map",
+  "title": "DDD Context Map SSOT",
+  "generated_doc": "docs/20-domain/context-map.md",
+  "workflow": ".github/workflows/context-map-docs.yml",
+  "evidence_artifact": "context-map-docs",
+  "riido_task": "RIID-4711",
+  "task_title": "[Daemon] Architecture SSOT docs migration",
+  "intro": "This entrypoint owns the public riido-daemon bounded-context map after the repository split.",
+  "ownership_summary": [
+    "Shared C1/C2/C3 contracts are consumed from riido-contracts.",
+    "SaaS C10 server behavior is owned by riido-control-plane.",
+    "Private deploy/evidence wiring is owned by riido-infra."
+  ],
+  "focused_sections": [
+    {"title": "Bounded contexts", "path": "context-map/bounded-contexts.md"},
+    {"title": "Dependency direction", "path": "context-map/dependency-direction.md"},
+    {"title": "ACL locations", "path": "context-map/acl-locations.md"},
+    {"title": "Split-repo ownership", "path": "context-map/split-repo-ownership.md"},
+    {"title": "Figma daemon boundaries", "path": "context-map/figma-daemon-boundaries.md"},
+    {"title": "Figma onboarding boundaries", "path": "context-map/figma-onboarding-boundaries.md"},
+    {"title": "Change procedure", "path": "context-map/change-procedure.md"}
+  ],
+  "boundary_evidence": [
+    {"title": "figma-ai-agent-daemon-boundary", "path": "../30-architecture/figma-ai-agent-daemon-boundary.md"}
+  ],
+  "repository_boundary_rule": "riido_daemon_private / riido-daemon-private is a retired historical source, not an active dependency, evidence store, or work target. Missing facts must be resolved in public riido-daemon SSOT or promoted to riido-contracts.",
+  "work_unit_boundary_rule": "Every change starts from a Riido task. The task creation response branchName is the only allowed branch name for the work.",
+  "work_unit_gate": ".github/workflows/riido-work-branch.yml",
+  "work_unit_script": "scripts/verify-riido-work-branch.sh",
+  "fragments": {
+    "acl_locations": "context-map/acl-locations.riido.json",
+    "dependency_direction": "context-map/dependency-direction.riido.json",
+    "figma_daemon_boundaries": "context-map/figma-daemon-boundaries.riido.json",
+    "figma_onboarding_boundaries": "context-map/figma-onboarding-boundaries.riido.json",
+    "split_repo_ownership": "context-map/split-repo-ownership.riido.json",
+    "change_procedure": "context-map/change-procedure.riido.json"
+  },
+  "contexts": [
+    {"id": "C1", "context": "Task Lifecycle", "owner": "github.com/teamswyg/riido-contracts/task; daemon mutates local rows through internal/taskdb only"},
+    {"id": "C2", "context": "IR Event Log", "owner": "github.com/teamswyg/riido-contracts/ir; daemon-side append/redaction boundary is internal/ir/ingest"},
+    {"id": "C3", "context": "Provider Capability", "owner": "github.com/teamswyg/riido-contracts/provider/capability; daemon provider adapters produce detected snapshots"},
+    {"id": "C4", "context": "Provider Runtime / Adapter", "owner": "internal/agentbridge, internal/agentbridge/session, internal/provider/{claude,codex,openclaw,cursor}"},
+    {"id": "C5", "context": "Runtime Scheduling", "owner": "internal/scheduling, internal/agentbridge/runtimeactor, internal/agentbridge/supervisor, internal/agentbridge/controlplane/taskdbplane"},
+    {"id": "C6", "context": "Workspace / Native Config", "owner": "internal/workdir"},
+    {"id": "C7", "context": "Security / Policy", "owner": "internal/policy"},
+    {"id": "C8", "context": "Validation", "owner": "internal/validation"},
+    {"id": "C9", "context": "Locking / Lease Primitive", "owner": "internal/lock plus task DB sidecar leases"},
+    {"id": "C10", "context": "SaaS Control Plane Adapter", "owner": "daemon-side polling/reporting adapter in internal/agentbridge/controlplane/saasplane; server behavior remains in riido-control-plane"},
+    {"id": "C11", "context": "Distribution / Host Integration", "owner": "internal/hostintegration, internal/riidoapi, packaging/store, tools/storecontract"}
+  ]
+}

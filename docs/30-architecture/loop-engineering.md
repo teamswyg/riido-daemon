@@ -62,6 +62,23 @@
   - `command`: go run ./tools/repoverification -check-doc -run-commands -evidence-out /tmp/repo-verification-evidence.json; proves README verification commands execute from the manifest
   - `workflow`: .github/workflows/repo-verification.yml; proves public CI uploads command-level verification evidence
 
+### context-map-docs
+
+- Owner: `daemon/domain`
+- Observe: repo-wide coverage reported 123 domain ontology manual docs; context-map is an eight-doc bounded-context slice within that debt
+  - Artifacts: `docs/executable-knowledge.md`, `docs/20-domain/context-map.md`
+- Hypothesis: context ownership, ACL, dependency, and Figma boundary prose can be converted into a generated bounded-context SSOT
+  - Artifacts: `docs/20-domain/context-map.riido.json`
+- Execute: generate context-map reader docs from structured context, ACL, dependency, Figma, repo ownership, and change procedure fragments
+  - Artifacts: `tools/contextmapdocs`, `.github/workflows/context-map-docs.yml`
+- Evaluate: repo-wide coverage should move eight context-map docs from registered manual debt to generated reader docs
+  - Artifacts: `docs/executable-knowledge.md`
+- Retrospective: the next domain slices should follow the same fragment-backed generator pattern rather than editing reader docs
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/contextmapdocs -check-doc -evidence-out /tmp/context-map-docs.json; proves context-map docs are generated from bounded-context SSOT fragments
+  - `workflow`: .github/workflows/context-map-docs.yml; proves public CI uploads context-map docs evidence
+
 ### semantic-event-activity
 
 - Owner: `tools/semanticeventactivity and semantic-event-activity workflow`

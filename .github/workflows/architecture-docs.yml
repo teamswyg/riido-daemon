@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/architecture-docs.yml"
       - ".github/workflows/repo-executable-knowledge-coverage.yml"
+      - ".github/workflows/context-map-docs.yml"
       - "docs/executable-knowledge.md"
       - "docs/executable-knowledge.riido.json"
       - "docs/20-domain/**"
@@ -45,6 +46,7 @@ on:
     paths:
       - ".github/workflows/architecture-docs.yml"
       - ".github/workflows/repo-executable-knowledge-coverage.yml"
+      - ".github/workflows/context-map-docs.yml"
       - "docs/executable-knowledge.md"
       - "docs/executable-knowledge.riido.json"
       - "docs/20-domain/**"
