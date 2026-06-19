@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-macos-provider-cli-review-4573",
+  "title": "RIID-4573: Workdir Policy",
+  "generated_doc": "docs/migration/daemon/macos-provider-cli-review/4573-workdir-policy.md",
+  "back_title": "macos-provider-cli-review",
+  "back_path": "../macos-provider-cli-review.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice absorbs public workdir questions `Q-WS-001` through `Q-WS-006` into workspace, native-config, and runtime-upgrade SSOT."},
+    {"kind": "heading", "text": "Resolved Defaults"},
+    {"kind": "bullets", "items": [
+      "Local archive defaults to keep-in-place.",
+      "Cleanup is disabled by default; only the opt-in TTL env path is active.",
+      "There is no implicit size-based or task-count-based cleanup.",
+      "Shared repo cache prune is operator-triggered only and guarded by short `repo_cache_update.lock`.",
+      "Native config is task-scoped; user-global copy/overlay is not a default."
+    ]},
+    {"kind": "paragraph", "text": "Container or VM handoff remains future C4 runtime launcher/platform adapter work. C6 prepares host-side files and manifests only."}
+  ]
+}

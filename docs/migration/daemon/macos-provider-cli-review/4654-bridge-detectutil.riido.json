@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-macos-provider-cli-review-4654",
+  "title": "RIID-4654: Bridge and Detectutil",
+  "generated_doc": "docs/migration/daemon/macos-provider-cli-review/4654-bridge-detectutil.md",
+  "back_title": "macos-provider-cli-review",
+  "back_path": "../macos-provider-cli-review.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice moves the provider-neutral C4 bridge entrypoint and detect helpers."},
+    {"kind": "heading", "text": "Moved Surfaces"},
+    {"kind": "bullets", "items": [
+      "`internal/agentbridge/bridge`",
+      "`internal/agentbridge/detectutil`",
+      "Provider-runtime and daemon migration documentation",
+      "Public CI for bridge run, detect, session handoff, and fail-closed probe gates"
+    ]},
+    {"kind": "paragraph", "text": "The bridge wires adapter `BuildStart` into the public `internal/process` port and session actor. Detectutil owns env override pinning, PATH fallback, version probes, and strict exit-code probe helpers."},
+    {"kind": "paragraph", "text": "This slice does not move runtimeactor, supervisor, controlplane, concrete adapters, native approval policy, task DB/project/local API packages, packaging, infra, secrets, or local machine state."}
+  ]
+}

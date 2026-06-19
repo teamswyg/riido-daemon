@@ -1,0 +1,21 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-macos-provider-cli-review-root",
+  "title": "Riido Daemon Migration Plan: macOS Provider CLI Review",
+  "generated_doc": "docs/migration/daemon/macos-provider-cli-review.md",
+  "back_title": "daemon.md",
+  "back_path": "../daemon.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This entrypoint records public daemon migration slices for macOS external provider CLI review, workdir policy, provider-neutral bridge/detect helpers, runtime actor, control-plane ports, and concrete Claude/Codex adapters."},
+    {"kind": "links", "links": [
+      {"title": "RIID-4571 - provider CLI review", "path": "macos-provider-cli-review/4571-provider-cli-review.md"},
+      {"title": "RIID-4573 - workdir policy", "path": "macos-provider-cli-review/4573-workdir-policy.md"},
+      {"title": "RIID-4654 - bridge and detectutil", "path": "macos-provider-cli-review/4654-bridge-detectutil.md"},
+      {"title": "RIID-4656 - runtime actor", "path": "macos-provider-cli-review/4656-runtimeactor.md"},
+      {"title": "RIID-4657 - control-plane ports", "path": "macos-provider-cli-review/4657-controlplane-ports.md"},
+      {"title": "RIID-4658 - Claude provider", "path": "macos-provider-cli-review/4658-claude-provider.md"},
+      {"title": "RIID-4659 - Codex provider", "path": "macos-provider-cli-review/4659-codex-provider.md"}
+    ]},
+    {"kind": "paragraph", "text": "Each child page is migration history only; authoritative behavior remains in distribution-host, workspace, provider-runtime, source package, and public workflow SSOT evidence."}
+  ]
+}

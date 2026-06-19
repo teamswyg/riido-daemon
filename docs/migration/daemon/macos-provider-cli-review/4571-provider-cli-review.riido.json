@@ -1,0 +1,24 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-macos-provider-cli-review-4571",
+  "title": "RIID-4571: Provider CLI Review",
+  "generated_doc": "docs/migration/daemon/macos-provider-cli-review/4571-provider-cli-review.md",
+  "back_title": "macos-provider-cli-review",
+  "back_path": "../macos-provider-cli-review.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This slice closes `Q-DIST-001` for the Mac App Store external provider CLI strategy."},
+    {"kind": "heading", "text": "Policy"},
+    {"kind": "bullets", "items": [
+      "Claude, Codex, OpenClaw, and Cursor CLIs are external user-installed tools.",
+      "The Store App must never bundle, download, install, or silently update provider CLIs.",
+      "`mac-app-store` provider CLI execution requires both `StoreChannelPolicyInput.OSGrantPresent=true` and `StoreChannelPolicyInput.StoreReviewApproved=true`.",
+      "If either proof is missing, the provider may be detected or shown as login-required/store-blocked, but C4 must not spawn it."
+    ]},
+    {"kind": "heading", "text": "Review Evidence"},
+    {"kind": "bullets", "items": [
+      "Public CI verifies the `Q-DIST-001` closure in the C11 distribution-host SSOT.",
+      "Store package evidence keeps `provider_cli_bundling` forbidden.",
+      "Executable paths, bookmark bytes, entitlement proof, signing secrets, and live submission evidence remain local/private."
+    ]}
+  ]
+}
