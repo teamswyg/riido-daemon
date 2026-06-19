@@ -13,6 +13,8 @@
   ],
   "required_docs": [
     "docs/20-domain/distribution-host-integration.md",
+    "docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md",
+    "docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.riido.json",
     "docs/30-architecture/store-distribution.md",
     "NOTICE.md"
   ],

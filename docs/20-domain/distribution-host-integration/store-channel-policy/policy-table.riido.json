@@ -1,0 +1,13 @@
+{
+  "schema_version": "riido-store-channel-policy-table.v1",
+  "id": "store-channel-policy-table",
+  "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md",
+  "generated_by": "tools/storecontract",
+  "channel_contract": "packaging/store/riido_daemon_store_distribution.riido.json",
+  "policy_function": "internal/policy.EvaluateStoreChannelPolicy",
+  "source_types": [
+    "internal/policy.StoreSurface",
+    "internal/hostintegration.DistributionChannel"
+  ],
+  "evidence_command": "go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo . -check-policy-table -out /tmp/store-distribution-contract.json"
+}
