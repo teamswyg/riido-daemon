@@ -1,0 +1,43 @@
+{
+  "provider": "openclaw",
+  "display_name": "OpenClaw",
+  "runtime_kind": "openclaw",
+  "executable": "openclaw",
+  "deterministic_ci": [
+    "go test ./internal/provider/openclaw",
+    "go test ./internal/agentbridge",
+    "go test ./internal/scheduling"
+  ],
+  "opt_in_integration": "AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -run TestIntegration -count=1",
+  "worktree_support": "unsupported",
+  "pass_evidence": [
+    "ResultCompleted with non-empty provider output",
+    "deterministic provider-safe session id",
+    "executable path that passed OpenClaw Detect"
+  ],
+  "negative_or_limited_evidence": [
+    "SaaS completed thread alone does not prove filesystem side effect",
+    "Optional artifact integration gate may pass only when local OpenClaw workspace configuration honors the daemon process cwd",
+    "Runtime capability still reports supports_worktree=false"
+  ],
+  "required_scheduling_gate": [
+    "required_surfaces=[worktree] -> MISSING_REQUIRED_SURFACE:worktree"
+  ],
+  "skip_before_run": [
+    "AGENTBRIDGE_INTEGRATION not set",
+    "openclaw executable missing",
+    "Detect Available=false",
+    "unsupported OpenClaw calendar version"
+  ],
+  "latest_evidence": [
+    "A-41-AI-Agent-SSOT-OpenClaw-empty-result-fail-closed-public-반영",
+    "A-42-AI-Agent-Live-E2E-OpenClaw-public-fail-closed-이후-재검증",
+    "A-48-AI-Agent-Live-E2E-OpenClaw-filesystem-side-effect-검증",
+    "RIID-4890-Daemon-OpenClaw-detect-selected-executable-실행-경로-정합성"
+  ],
+  "must_not_claim": [
+    "OpenClaw supports daemon-selected worktree",
+    "SaaS completed thread proves filesystem side effect",
+    "OpenClaw text completion is enough for worktree-required tasks"
+  ]
+}

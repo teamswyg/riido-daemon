@@ -1,8 +1,6 @@
 package providervalidation
 
 import (
-	"bytes"
-	"encoding/json"
 	"os"
 	"path/filepath"
 	"testing"
@@ -38,21 +36,6 @@ func loadProviderValidationContext(t *testing.T) providerValidationContext {
 		ctx.providers[provider.Provider] = provider
 	}
 	return ctx
-}
-
-func loadManifest(t *testing.T, path string) providerValidationManifest {
-	t.Helper()
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("read manifest: %v", err)
-	}
-	dec := json.NewDecoder(bytes.NewReader(data))
-	dec.DisallowUnknownFields()
-	var manifest providerValidationManifest
-	if err := dec.Decode(&manifest); err != nil {
-		t.Fatalf("decode manifest: %v", err)
-	}
-	return manifest
 }
 
 func readText(t *testing.T, path string) string {

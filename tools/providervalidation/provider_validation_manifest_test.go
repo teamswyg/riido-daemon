@@ -25,4 +25,14 @@ func TestProviderValidationManifestIdentity(t *testing.T) {
 	if !hasString(manifest.GlobalRules, "Provider full-access/trusted runtime modes must be explicit daemon-owned harness envelopes, never implicit provider defaults or caller-provided CustomArgs.") {
 		t.Fatalf("global_rules must preserve full-access harness invariant: %+v", manifest.GlobalRules)
 	}
+	for _, want := range []string{
+		"provider-validation-matrix/claude.riido.json",
+		"provider-validation-matrix/codex.riido.json",
+		"provider-validation-matrix/openclaw.riido.json",
+		"provider-validation-matrix/cursor.riido.json",
+	} {
+		if !hasString(manifest.ProviderFiles, want) {
+			t.Fatalf("provider_files must include %q: %+v", want, manifest.ProviderFiles)
+		}
+	}
 }
