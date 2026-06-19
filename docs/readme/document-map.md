@@ -18,6 +18,7 @@
 | App Store/MSIX/Developer ID distribution criteria | [`30-architecture/store-distribution.md`](../30-architecture/store-distribution.md) |
 | GitHub Release binary and curl install path | [`30-architecture/release-artifacts.md`](../30-architecture/release-artifacts.md) |
 | provider CLI integration verification | [`30-architecture/integration-matrix.md`](../30-architecture/integration-matrix.md) |
+| evidence loop verification and generated reader view | [`30-architecture/loop-engineering.md`](../30-architecture/loop-engineering.md) |
 | env var and flag catalog | [`30-architecture/config-reference.md`](../30-architecture/config-reference.md) |
 | public daemon migration history and retired private source ban | [`migration/daemon.md`](../migration/daemon.md) |
 | unresolved questions | [`50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) |

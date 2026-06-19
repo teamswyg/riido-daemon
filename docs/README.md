@@ -11,6 +11,7 @@
 5. [`30-architecture/cli-surface.md`](30-architecture/cli-surface.md)와 [`30-architecture/config-reference.md`](30-architecture/config-reference.md)에서 CLI/env/flag surface를 봅니다.
 6. Figma v1.22 AI Agent 화면을 daemon 관점에서 해석해야 할 때는 [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md)를 봅니다.
 7. AI Agent 실행 미해결 이슈를 구조적으로 분석하거나 repo 간 구현 순서를 잡을 때는 [`30-architecture/agent-execution-unresolved-design.md`](30-architecture/agent-execution-unresolved-design.md)를 봅니다.
+8. 자기개선/증적 루프가 실행 가능한지 볼 때는 generated view인 [`30-architecture/loop-engineering.md`](30-architecture/loop-engineering.md)를 봅니다.
 
 ## 결정별 문서
 
@@ -33,6 +34,7 @@
 | runtime upgrade와 compatibility gate | [`30-architecture/runtime-upgrade-flow.md`](30-architecture/runtime-upgrade-flow.md), [`30-architecture/compatibility-gate.md`](30-architecture/compatibility-gate.md) |
 | Figma AI Agent 화면에서 daemon이 소비하는 경계 | [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md) |
 | AI Agent 실행 미해결 이슈의 구조 원인과 contracts/control-plane/daemon 설계 방향 | [`30-architecture/agent-execution-unresolved-design.md`](30-architecture/agent-execution-unresolved-design.md) |
+| Observe/Hypothesis/Execute/Evaluate/Retrospective 증적 루프 | [`30-architecture/loop-engineering.md`](30-architecture/loop-engineering.md), [`30-architecture/loop-engineering.riido.json`](30-architecture/loop-engineering.riido.json) |
 | migration history | [`migration/daemon.md`](migration/daemon.md), [`migration/cli.md`](migration/cli.md) |
 | 미해결 질문 | [`50-roadmap/open-questions.md`](50-roadmap/open-questions.md) |
 

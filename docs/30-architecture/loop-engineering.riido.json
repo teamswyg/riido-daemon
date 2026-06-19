@@ -1,0 +1,54 @@
+{
+  "schema_version": "riido-loop-evidence.v1",
+  "id": "daemon-loop-engineering",
+  "title": "Loop Engineering Evidence",
+  "generated_doc": "docs/30-architecture/loop-engineering.md",
+  "required_phases": ["observe", "hypothesis", "execute", "evaluate", "retrospective"],
+  "loops": [
+    {
+      "id": "architecture-docs",
+      "owner": "architecture-docs workflow",
+      "observation": {"summary": "Architecture docs, migration docs, and roadmap changes are observed through path-scoped CI.", "artifacts": [".github/workflows/architecture-docs.yml"]},
+      "hypothesis": {"summary": "A doc change can introduce stale boundary wording or break executable SSOT links.", "artifacts": ["scripts/verify-architecture-docs.sh"]},
+      "execution": {"summary": "Run the architecture verifier and all architecture tool tests.", "artifacts": ["scripts/verify-architecture-docs.sh"]},
+      "evaluation": {"summary": "The verifier fails on missing required files, stale wording, dependency drift, or failed tool tests.", "artifacts": ["tools/figmaboundary", "tools/providervalidation", "tools/agentexecutionevidence"]},
+      "retrospective": {"summary": "Closed decisions move into owning SSOT docs; unresolved shared decisions stay in the roadmap.", "artifacts": ["docs/50-roadmap/open-questions.md"]},
+      "evidence": [{"kind": "command", "ref": "scripts/verify-architecture-docs.sh", "proves": "architecture docs remain executable and linked to tool checks"}]
+    },
+    {
+      "id": "agent-execution-risk",
+      "owner": "tools/agentexecutionevidence",
+      "observation": {"summary": "Unresolved execution risks are represented as local, external, or remaining-boundary evidence.", "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json"]},
+      "hypothesis": {"summary": "Every claimed risk closure must point at a local test, external repo evidence, or an explicit remaining boundary.", "artifacts": ["tools/agentexecutionevidence/required_test.go"]},
+      "execution": {"summary": "Run the evidence manifest verifier.", "artifacts": ["tools/agentexecutionevidence/evidence_manifest_test.go"]},
+      "evaluation": {"summary": "The verifier rejects missing risks, private boundary leaks, missing tests, and unmentioned evidence.", "artifacts": ["tools/agentexecutionevidence/assert_test.go"]},
+      "retrospective": {"summary": "New unresolved findings become manifest rows before implementation claims closure.", "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/verification-evidence.md"]},
+      "evidence": [{"kind": "command", "ref": "go test ./tools/agentexecutionevidence -count=1", "proves": "agent execution risk claims are machine checked"}]
+    },
+    {
+      "id": "store-distribution",
+      "owner": "tools/storecontract",
+      "observation": {"summary": "Store channel claims are observed through a package/distribution contract.", "artifacts": ["packaging/store/riido_daemon_store_distribution.riido.json"]},
+      "hypothesis": {"summary": "A distribution change can accidentally add forbidden artifacts, terms, or user-path leakage.", "artifacts": ["tools/storecontract/schema.go"]},
+      "execution": {"summary": "Run the store contract verifier against the repository.", "artifacts": ["tools/storecontract/run.go"]},
+      "evaluation": {"summary": "The verifier fails on missing docs, notice terms, forbidden package roots, or user-path artifacts.", "artifacts": ["tools/storecontract/artifact_scan.go"]},
+      "retrospective": {"summary": "Store review and channel decisions are promoted into C11 SSOT instead of loose notes.", "artifacts": ["docs/30-architecture/store-distribution.md"]},
+      "evidence": [{"kind": "command", "ref": "go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .", "proves": "store distribution contract remains executable"}]
+    },
+    {
+      "id": "security-redaction",
+      "owner": "event-ingestor and toolargs workflows",
+      "observation": {"summary": "Secret redaction decisions are observed through C7 policy, ToolRef args, and C2 EventIngestor tests.", "artifacts": ["docs/20-domain/security-redaction.md"]},
+      "hypothesis": {"summary": "Security docs must not redefine redaction markers outside the redaction SSOT.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
+      "execution": {"summary": "Run redaction/audit and toolargs/toolpolicy workflows.", "artifacts": [".github/workflows/event-ingestor.yml", ".github/workflows/toolargs-toolpolicy.yml"]},
+      "evaluation": {"summary": "Tests prove marker generation, safe-value behavior, second-pass redaction, and PolicyViolationDetected audit append.", "artifacts": ["internal/policy/redaction_test.go", "internal/ir/ingest/event_redaction_test.go"]},
+      "retrospective": {"summary": "Remaining drift checks are tracked as loop gaps until they become executable workflow rules.", "artifacts": ["docs/20-domain/security-redaction/verification-gates.md"]},
+      "evidence": [{"kind": "command", "ref": "go test ./internal/policy ./internal/ir/ingest ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy -count=1", "proves": "redaction behavior is executable even before broader drift checks"}]
+    }
+  ],
+  "open_gaps": [
+    {"id": "redaction-doc-drift", "owner": "architecture-docs", "current_handling": "security-redaction behavior tests exist, but security.md drift prevention is still described as follow-up", "required_next_artifact": "a verifier that rejects redaction marker/catalog redefinition outside docs/20-domain/security-redaction.md"},
+    {"id": "runtime-secret-private-evidence", "owner": "riido-infra", "current_handling": "public daemon docs describe metadata-only secret evidence, but the collector/tool is outside this repository", "required_next_artifact": "private infra evidence packet or public stub manifest that proves no raw secret collection path"},
+    {"id": "real-cli-continuous-observation", "owner": "provider runtime", "current_handling": "real provider tests are operator opt-in via scripts/integration-smoke.sh", "required_next_artifact": "scheduled/manual public workflow or external evidence artifact recording latest available-provider run"}
+  ]
+}

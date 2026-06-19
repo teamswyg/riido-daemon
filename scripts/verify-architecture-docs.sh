@@ -9,6 +9,8 @@ required_files=(
   docs/30-architecture/integration-matrix.md
   docs/30-architecture/compatibility-gate.md
   docs/30-architecture/runtime-upgrade-flow.md
+  docs/30-architecture/loop-engineering.md
+  docs/30-architecture/loop-engineering.riido.json
   docs/30-architecture/figma-ai-agent-daemon-boundary.md
   docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -56,4 +58,6 @@ scripts/verify-go-dependencies.sh
 go test ./tools/figmaboundary -count=1
 go test ./tools/providervalidation -count=1
 go test ./tools/agentexecutionevidence -count=1
+go test ./tools/loopevidence -count=1
+go run ./tools/loopevidence -check
 go test ./...
