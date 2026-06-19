@@ -12,6 +12,8 @@ required_files=(
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json
+  docs/20-domain/validation.md
+  docs/20-domain/validation.riido.json
   docs/20-domain/runtime-scheduling/saas-assignment-source.md
   docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json
   docs/30-architecture/module-decomposition.md
@@ -45,6 +47,7 @@ required_files=(
   docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md
   docs/50-roadmap/open-questions.md
   .github/workflows/saas-assignment-source.yml
+  .github/workflows/validation-evidence.yml
 )
 
 for path in "${required_files[@]}"; do

@@ -1,0 +1,36 @@
+{
+  "id": "validation-evidence",
+  "owner": "C8 validation",
+  "observation": {
+    "summary": "Validation.md described command execution, evidence, and transitions as prose while source evidence lived in validation, taskvalidation, taskdbplane, cmd, and local API packages.",
+    "artifacts": ["docs/20-domain/validation.md"]
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove daemon-measured exit code truth, guarded evidence mutation, transition mapping, and absent direct completion authority.",
+    "artifacts": ["docs/20-domain/validation.riido.json"]
+  },
+  "execution": {
+    "summary": "Run validationevidence to check generated docs, source checks, absent direct-completion surfaces, and compact evidence output.",
+    "artifacts": ["tools/validationevidence", ".github/workflows/validation-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, missing source checks, unknown fact references, and validation code that directly claims Completed authority.",
+    "artifacts": ["tools/validationevidence/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "Validation knowledge becomes executable evidence instead of a manually edited C8 policy page.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/validationevidence -check-doc -evidence-out /tmp/validation-evidence.json",
+      "proves": "validation manifest matches generated docs, local source evidence, and absent completion authority"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/validation-evidence.yml",
+      "proves": "public CI uploads validation evidence"
+    }
+  ]
+}
