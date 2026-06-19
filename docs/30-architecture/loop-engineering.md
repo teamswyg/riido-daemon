@@ -295,6 +295,23 @@
   - `command`: go run ./tools/executablesearchpath -check-doc -evidence-out /tmp/executable-search-path-evidence.json; proves executable search path manifest matches generated docs, source references, and PATH behavior
   - `workflow`: .github/workflows/executable-search-path-evidence.yml; proves public CI uploads executable search path evidence
 
+### executable-knowledge-coverage
+
+- Owner: `architecture knowledge surface`
+- Observe: Architecture docs still include reader-authored Markdown that is not generated and has no direct .riido.json sibling.
+  - Artifacts: `docs/30-architecture`
+- Hypothesis: A coverage verifier can make manual prose visible as registered debt and fail CI when new unregistered interpretation variance appears.
+  - Artifacts: `docs/30-architecture/executable-knowledge.riido.json`
+- Execute: Run knowledgecoverage to classify 30-architecture Markdown as generated, direct SSOT, or registered manual surface.
+  - Artifacts: `tools/knowledgecoverage`, `.github/workflows/executable-knowledge-coverage.yml`
+- Evaluate: The verifier rejects unregistered manual architecture docs and reports generated/direct/manual counts.
+  - Artifacts: `docs/30-architecture/executable-knowledge.md`
+- Retrospective: Loop engineering gaps become a machine-checked inventory instead of an informal review note.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/knowledgecoverage -check-doc -evidence-out /tmp/executable-knowledge-coverage.json; proves architecture markdown knowledge is generated, direct-SSOT backed, or registered as manual debt
+  - `workflow`: .github/workflows/executable-knowledge-coverage.yml; proves public CI uploads executable knowledge coverage evidence
+
 ### runtime-upgrade-flow-evidence
 
 - Owner: `daemon architecture`
