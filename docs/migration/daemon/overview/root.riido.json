@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-overview-root",
+  "title": "Riido Daemon Migration Plan: Overview",
+  "generated_doc": "docs/migration/daemon/overview.md",
+  "back_title": "daemon.md",
+  "back_path": "../daemon.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Riido task: RIID-4636 `[Daemon] 기존 riido_daemon daemon 마이그레이션 계획/문서화`."},
+    {"kind": "paragraph", "text": "This entrypoint defines how the daemon/runtime part of the former private `riido_daemon` repository moves into public `riido-daemon`."},
+    {"kind": "paragraph", "text": "`riido-daemon` owns customer-PC daemon runtime, local host integration, and provider execution boundary. It must stay public, store-reviewable, and free of non-Riido dependencies unless a later ADR explicitly changes that rule."},
+    {"kind": "heading", "text": "Focused Sections"},
+    {"kind": "links", "links": [
+      {"title": "Retired historical source boundary", "path": "overview/retired-source-boundary.md"},
+      {"title": "Target boundary", "path": "overview/target-boundary.md"},
+      {"title": "Migration order", "path": "overview/migration-order.md"},
+      {"title": "Current migration slices", "path": "overview/current-slices.md"}
+    ]}
+  ]
+}

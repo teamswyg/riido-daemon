@@ -405,6 +405,7 @@ required_files=(
   .github/workflows/readme-docs.yml
   .github/workflows/roadmap-docs.yml
   .github/workflows/migration-cli-docs.yml
+  .github/workflows/migration-daemon-overview-docs.yml
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json
   docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json
@@ -422,6 +423,12 @@ required_files=(
   docs/migration/cli/validation-gates.riido.json
   docs/migration/cli/store-review-invariants.riido.json
   docs/migration/cli/open-follow-ups.riido.json
+  docs/migration/daemon/overview.riido.json
+  docs/migration/daemon/overview/root.riido.json
+  docs/migration/daemon/overview/retired-source-boundary.riido.json
+  docs/migration/daemon/overview/target-boundary.riido.json
+  docs/migration/daemon/overview/migration-order.riido.json
+  docs/migration/daemon/overview/current-slices.riido.json
   docs/50-roadmap/open-questions.md
   docs/50-roadmap/open-questions.riido.json
   .github/workflows/runtime-scheduling-docs.yml

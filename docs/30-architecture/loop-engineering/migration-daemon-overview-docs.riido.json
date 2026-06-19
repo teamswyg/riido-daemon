@@ -1,0 +1,51 @@
+{
+  "id": "migration-daemon-overview-docs",
+  "owner": "daemon/migration",
+  "observation": {
+    "summary": "Daemon overview migration notes still described retired source boundaries, target scope, order, and current slices as reader-authored prose while the active facts already lived in generated context-map, module, runtime-scheduling, workspace, and provider-runtime SSOTs.",
+    "artifacts": [
+      "docs/migration/daemon/overview.md",
+      "docs/migration/daemon/overview/current-slices.md"
+    ]
+  },
+  "hypothesis": {
+    "summary": "The reusable migration-docs manifest can generate the daemon overview slice and source-check the current executable SSOTs it references.",
+    "artifacts": [
+      "docs/migration/daemon/overview.riido.json"
+    ]
+  },
+  "execution": {
+    "summary": "Generate the daemon overview entrypoint and focused pages from fragments with source checks for retired private source boundaries, public module ownership, provider runtime migration, runtime scheduling, workspace, and assignment worktree evidence.",
+    "artifacts": [
+      "tools/migrationdocs",
+      ".github/workflows/migration-daemon-overview-docs.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects doc drift, missing fragments, missing source anchors, and missing workflow evidence upload; architecture-docs also runs this manifest explicitly.",
+    "artifacts": [
+      "scripts/architecture-docs/tool-checks.sh",
+      "scripts/architecture-docs/required-files.sh",
+      "tools/knowledgecoverage"
+    ]
+  },
+  "retrospective": {
+    "summary": "The daemon migration root now starts moving from loose history notes toward an executable migration ledger; remaining daemon migration folders can reuse the same manifest/tool contract.",
+    "artifacts": [
+      "docs/executable-knowledge.md",
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/migrationdocs -manifest docs/migration/daemon/overview.riido.json -check-doc -evidence-out /tmp/migration-daemon-overview-docs.json",
+      "proves": "daemon overview migration docs are generated and source anchors remain present"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/migration-daemon-overview-docs.yml",
+      "proves": "public CI uploads daemon overview migration evidence"
+    }
+  ]
+}

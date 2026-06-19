@@ -1,0 +1,18 @@
+{
+  "schema_version": "riido-migration-page.v1",
+  "id": "daemon-overview-migration-order",
+  "title": "Migration Order",
+  "generated_doc": "docs/migration/daemon/overview/migration-order.md",
+  "back_title": "Overview",
+  "back_path": "../overview.md",
+  "blocks": [
+    {"kind": "numbered", "items": [
+      "Port SSOT docs first, before moving code that executes decisions.",
+      "Move provider-neutral primitives: `agentbridge` root types, reducer, command/result/event contracts, and concrete-provider-free tests.",
+      "Move process/workdir/policy/validation support packages behind ports.",
+      "Move provider adapters one at a time with parser/golden and detect command tests. Real CLI integration stays opt-in and skipped unless installed.",
+      "Move runtime actors and local host integration. Supervisor/runtime/session actors remain mailbox-owned, with no shared mutable state shortcut.",
+      "Rebuild public workflows for unit, domain, generated drift, dependency, and black-box daemon checks. Private CI must not duplicate those expensive checks."
+    ]}
+  ]
+}
