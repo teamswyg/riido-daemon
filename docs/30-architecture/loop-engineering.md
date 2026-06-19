@@ -198,6 +198,23 @@
   - `command`: go run ./tools/draftfields -check-doc -evidence-out /tmp/draft-fields-evidence.json; proves draft field surface and authority boundary remain executable
   - `workflow`: .github/workflows/draft-fields.yml; proves public CI uploads draft field surface evidence
 
+### session-lifecycle
+
+- Owner: `tools/sessionlifecycle and session-lifecycle workflow`
+- Observe: Session lifecycle was reader-only prose and claimed surfaces that do not exist as direct daemon APIs.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md`
+- Hypothesis: A manifest can generate the reader doc, prove pin/resume/close source evidence, and keep fork/direct ResumeSession as absent surfaces.
+  - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json`
+- Execute: Scan session, provider, and SaaS assignment source checks plus absent surface tokens.
+  - Artifacts: `tools/sessionlifecycle`, `.github/workflows/session-lifecycle.yml`
+- Evaluate: The verifier rejects missing source evidence, unknown step references, unexpected direct resume/fork surfaces, and generated doc drift.
+  - Artifacts: `tools/sessionlifecycle/run_test.go`
+- Retrospective: Session lifecycle reader docs now state implemented and reserved surfaces from executable evidence rather than manual prose.
+  - Artifacts: `internal/agentbridge/adapter_start.go`, `internal/agentbridge/session`
+- Evidence:
+  - `command`: go run ./tools/sessionlifecycle -check-doc -evidence-out /tmp/session-lifecycle-evidence.json; proves session lifecycle source evidence and absent surfaces remain executable
+  - `workflow`: .github/workflows/session-lifecycle.yml; proves public CI uploads session lifecycle evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`

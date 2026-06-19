@@ -1,0 +1,40 @@
+name: session-lifecycle
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/session-lifecycle.yml"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md"
+      - "docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json"
+      - "internal/agentbridge/adapter_start.go"
+      - "internal/agentbridge/session/**"
+      - "internal/agentbridge/supervisor/provider_event_draft.go"
+      - "internal/agentbridge/controlplane/saasplane/**"
+      - "internal/provider/**"
+      - "tools/sessionlifecycle/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  session-lifecycle-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify session lifecycle
+        run: |
+          mkdir -p out
+          go test ./tools/sessionlifecycle -count=1
+          go run ./tools/sessionlifecycle \
+            -check-doc \
+            -evidence-out out/session-lifecycle-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: session-lifecycle-evidence
+          path: out/session-lifecycle-evidence.json
+          if-no-files-found: error

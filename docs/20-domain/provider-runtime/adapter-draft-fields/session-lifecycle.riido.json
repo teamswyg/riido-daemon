@@ -1,0 +1,37 @@
+{
+  "schema_version": "riido-session-lifecycle.v1",
+  "id": "provider-runtime-session-lifecycle",
+  "title": "Session Lifecycle",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md",
+  "workflow": ".github/workflows/session-lifecycle.yml",
+  "evidence_artifact": "session-lifecycle-evidence",
+  "steps": [
+    {"step": "pin", "status": "implemented", "responsibility": "provider EventSessionIdentified is converted to SessionPinned with providerSessionID and carried into terminal result", "source_checks": ["provider session pin draft", "final result carries session id", "saas event carries provider session id"]},
+    {"step": "resume", "status": "implemented", "responsibility": "assignment ResumeSessionID flows through TaskRequest and StartRequest into provider-specific BuildStart surfaces", "source_checks": ["assignment to task resume id", "provider-neutral resume field", "claude resume arg", "cursor resume arg", "openclaw resume id"]},
+    {"step": "fork", "status": "reserved", "responsibility": "reserved vocabulary only; daemon has no fork=true or thread/fork session surface today", "source_checks": []},
+    {"step": "close", "status": "implemented", "responsibility": "process exit flushes parser close and session finish emits exactly one terminal result; no separate close draft is emitted", "source_checks": ["parser close on exit", "finish sends terminal result", "result closes after one delivery"]}
+  ],
+  "source_checks": [
+    {"name": "provider session pin draft", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "EventSessionPinned"},
+    {"name": "final result carries session id", "file": "internal/agentbridge/session/session_runner_result.go", "contains": "finalResult.SessionID = r.state.SessionID"},
+    {"name": "saas event carries provider session id", "file": "internal/agentbridge/controlplane/saasplane/saasplane_claim_report_events_test.go", "contains": "EventProviderSessionPinned"},
+    {"name": "assignment to task resume id", "file": "internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go", "contains": "ResumeSessionID:          assignmentResumeSessionID(assignment)"},
+    {"name": "provider-neutral resume field", "file": "internal/agentbridge/adapter_start.go", "contains": "ResumeSessionID string"},
+    {"name": "claude resume arg", "file": "internal/provider/claude/start_args.go", "contains": "appendStringArg(args, \"--resume\", req.ResumeSessionID)"},
+    {"name": "cursor resume arg", "file": "internal/provider/cursor/command_workspace.go", "contains": "args = append(args, \"--resume\", req.ResumeSessionID)"},
+    {"name": "openclaw resume id", "file": "internal/provider/openclaw/session_id.go", "contains": "return req.ResumeSessionID, nil"},
+    {"name": "parser close on exit", "file": "internal/agentbridge/session/session_runner_process_exit.go", "contains": "r.parser.Close()"},
+    {"name": "finish sends terminal result", "file": "internal/agentbridge/session/session_runner_finish.go", "contains": "r.sess.result <- r.finalResult()"},
+    {"name": "result closes after one delivery", "file": "internal/agentbridge/session/session_result_test.go", "contains": "Result channel must close after one delivery"}
+  ],
+  "absent_surfaces": [
+    {"name": "direct ResumeSession API", "scope": ["internal/agentbridge"], "tokens": ["ResumeSession("], "reason": "resume is StartRequest input, not a separate daemon session API"},
+    {"name": "fork draft payload", "scope": ["internal/agentbridge", "internal/provider"], "tokens": ["fork=true", "thread/fork"], "reason": "fork is reserved and must not appear as implemented session behavior without new evidence"}
+  ],
+  "assertions": [
+    "SessionPinned is emitted as soon as provider EventSessionIdentified reaches providerEventDraft",
+    "resume is modeled as provider-neutral StartRequest.ResumeSessionID",
+    "fork remains reserved until implementation and evidence are added",
+    "close is a process/session terminal result, not a separate provider draft"
+  ]
+}
