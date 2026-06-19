@@ -1,0 +1,18 @@
+# 금지 패턴 카탈로그
+
+[Back to Security Redaction SSOT](../security-redaction.md)
+
+현재 C7 실행 카탈로그는 `internal/policy` 의 `secretRedactionPatterns` 가 구현한다. 패턴 ID 는 stable external evidence/audit 값이므로 이름 변경은 breaking-policy 다.
+
+| pattern ID | 의미 |
+| --- | --- |
+| `aws-access-key` | AWS access key (`AKIA...`, `ASIA...`) |
+| `gcp-api-key` | GCP API key (`AIza...`) |
+| `github-token` | GitHub classic/fine-grained token 계열 |
+| `gitlab-token` | GitLab personal/project token 계열 |
+| `anthropic-api-key` | Anthropic API key |
+| `openai-api-key` | OpenAI API key |
+| `jwt` | JWT 모양의 bearer token |
+| `pem-private-key` | PEM private key header |
+| `basic-auth-url` | `https://user:pass@host` 형태의 basic-auth URL |
+| `env-secret-assignment` | env assignment 형태의 `*_TOKEN=...`, `*_SECRET=...`, `*_KEY=...` 값 |

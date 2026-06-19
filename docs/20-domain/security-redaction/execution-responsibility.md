@@ -1,0 +1,12 @@
+# 실행 책임
+
+[Back to Security Redaction SSOT](../security-redaction.md)
+
+| 단계 | 주체 | 책임 |
+| --- | --- | --- |
+| 정책 소유 | C7 Security Redaction (본 문서) | 금지 패턴 catalog, marker 형식, audit category/severity/subject 규칙, version-affecting change 규칙 |
+| 1차 redaction | C4 Adapter ACL | provider raw 출력을 `ProviderEventDraft` 로 변환할 때 string 필드를 C7 catalog 로 스캔하고 `[REDACTED:<patternID>]` 로 치환한다. `Payload` / `Raw` / `Unknown` 모두 같은 규칙을 따른다. |
+| ToolRef.Args redaction | C4 ToolRef.Args | provider raw tool input 을 bounded string map 으로 flatten 할 때 sensitive key 또는 C7 pattern match 값을 `[redacted]` 로 치환한다. |
+| 2차 redaction + audit | C2 EventIngestor | `AppendDraft(...)` 에서 `CanonicalEvent` 적재 직전 `Payload` / `Unknown` 의 string 값을 다시 스캔한다. 매치되면 `[REDACTED:<patternID>]` 를 적용하고, redacted source event 와 같은 sink batch 에 audit event 를 함께 append 한다. |
+
+비-string scalar 는 그대로 둔다. string value 를 포함하는 nested map/slice 는 같은 catalog 로 재귀 스캔한다.

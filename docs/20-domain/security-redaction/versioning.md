@@ -1,0 +1,11 @@
+# Versioning
+
+[Back to Security Redaction SSOT](../security-redaction.md)
+
+- 새 secret pattern 추가: `change:additive`.
+- 기존 pattern 제거: `change:breaking-policy`.
+- pattern ID rename: `change:breaking-policy`.
+- Canonical marker 형식 변경: `change:breaking-policy`.
+- `ToolRef.Args` marker 형식 변경: `change:breaking-policy`.
+- audit payload field 추가: `change:additive`.
+- audit category/severity/subject 의미 변경: `change:breaking-policy`.

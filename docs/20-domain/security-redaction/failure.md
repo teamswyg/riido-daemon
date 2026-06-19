@@ -1,0 +1,5 @@
+# Redaction Failure
+
+[Back to Security Redaction SSOT](../security-redaction.md)
+
+패턴이 매치되었지만 redaction 을 적용할 수 없는 payload 형태가 들어오면 EventIngestor 는 해당 draft 를 거절하고 `BlockerRaised(category=SECURITY_REDACTION_FAILED)` 를 발행해야 한다. 현재 실행 subset 은 string / map / slice redaction 을 지원하고 비-string scalar 는 redaction 대상이 아니므로 실패로 보지 않는다.
