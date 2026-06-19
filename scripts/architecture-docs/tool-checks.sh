@@ -27,6 +27,7 @@ tool_tests=(
   ./tools/saasassignment
   ./tools/validationevidence
   ./tools/policybundleevidence
+  ./tools/toolusegateevidence
 )
 
 doc_tools=(
@@ -45,6 +46,7 @@ doc_tools=(
   saasassignment
   validationevidence
   policybundleevidence
+  toolusegateevidence
 )
 
 go test "${tool_tests[@]}" -count=1
