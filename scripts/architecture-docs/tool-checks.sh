@@ -23,6 +23,7 @@ tool_tests=(
   ./tools/branchgate
   ./tools/compatibilitygate
   ./tools/runtimeupgrade
+  ./tools/localdaemoncontract
   ./tools/saasassignment
   ./tools/validationevidence
   ./tools/policybundleevidence
@@ -40,6 +41,7 @@ doc_tools=(
   draftfields
   sessionlifecycle
   runtimeupgrade
+  localdaemoncontract
   saasassignment
   validationevidence
   policybundleevidence

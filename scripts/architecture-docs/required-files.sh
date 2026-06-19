@@ -18,6 +18,8 @@ required_files=(
   docs/20-domain/validation.riido.json
   docs/20-domain/runtime-scheduling/saas-assignment-source.md
   docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json
+  docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md
+  docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json
   docs/30-architecture/module-decomposition.md
   docs/30-architecture/cli-surface.md
   docs/30-architecture/config-reference.md
@@ -29,6 +31,7 @@ required_files=(
   docs/30-architecture/loop-engineering.md
   docs/30-architecture/loop-engineering.riido.json
   docs/30-architecture/loop-engineering/saas-assignment-source.riido.json
+  docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json
   docs/30-architecture/provider-real-cli-observation.md
   docs/30-architecture/provider-real-cli-observation.riido.json
   docs/30-architecture/runtime-secret-private-evidence.md
@@ -49,6 +52,7 @@ required_files=(
   docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md
   docs/50-roadmap/open-questions.md
   .github/workflows/policy-bundle-loader-evidence.yml
+  .github/workflows/local-daemon-contract-evidence.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml
 )

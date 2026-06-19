@@ -256,6 +256,23 @@
   - `command`: go run ./tools/runtimeupgrade -check-doc -evidence-out /tmp/runtime-upgrade-flow-evidence.json; proves runtime upgrade manifest matches generated reader docs and local source evidence
   - `workflow`: .github/workflows/runtime-upgrade-flow.yml; proves public CI uploads runtime upgrade flow evidence
 
+### local-daemon-contract-evidence
+
+- Owner: `C5 runtime scheduling`
+- Observe: The local daemon implementation contract described runtime pools, task DB sidecars, leases, and fencing as prose while the proof lived across scheduling, supervisor, taskdbplane, and cmd/riido files.
+  - Artifacts: `docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md`
+- Hypothesis: A manifest can generate the reader doc and prove runtime-scoped claim dispatch, pure selector boundaries, sidecar registry ownership, and lease fencing from source checks.
+  - Artifacts: `docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json`
+- Execute: Run localdaemoncontract to check generated docs, source checks, absent adapter/persistence imports in scheduling, and absent provider execution imports in taskdbplane.
+  - Artifacts: `tools/localdaemoncontract`, `.github/workflows/local-daemon-contract-evidence.yml`
+- Evaluate: The verifier rejects generated doc drift, missing source evidence, unknown fact references, scheduler boundary leaks, and taskdbplane provider execution leaks.
+  - Artifacts: `tools/localdaemoncontract/run_test.go`
+- Retrospective: Local daemon scheduling knowledge becomes executable contract evidence instead of a manually edited implementation note.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/localdaemoncontract -check-doc -evidence-out /tmp/local-daemon-contract-evidence.json; proves local daemon contract manifest matches generated docs, implementation references, and absent boundary rules
+  - `workflow`: .github/workflows/local-daemon-contract-evidence.yml; proves public CI uploads local daemon contract evidence
+
 ### saas-assignment-source-evidence
 
 - Owner: `daemon runtime scheduling`

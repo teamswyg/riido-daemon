@@ -1,0 +1,40 @@
+name: local-daemon-contract-evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/local-daemon-contract-evidence.yml"
+      - "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md"
+      - "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json"
+      - "cmd/riido/daemon_config*.go"
+      - "cmd/riido/daemon_supervisor_start.go"
+      - "internal/scheduling/**"
+      - "internal/agentbridge/supervisor/**"
+      - "internal/agentbridge/controlplane/taskdbplane/**"
+      - "tools/localdaemoncontract/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  local-daemon-contract-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify local daemon contract evidence
+        run: |
+          mkdir -p out
+          go test ./tools/localdaemoncontract -count=1
+          go run ./tools/localdaemoncontract \
+            -check-doc \
+            -evidence-out out/local-daemon-contract-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: local-daemon-contract-evidence
+          path: out/local-daemon-contract-evidence.json
+          if-no-files-found: error
