@@ -1,0 +1,30 @@
+# README: Repository Boundary
+
+[Back to README](../../README.md)
+
+This repository does:
+
+- provide the single `cmd/riido` CLI/local helper binary
+- implement Claude/Codex/OpenClaw/Cursor provider adapter ACLs
+- normalize provider raw stdout/RPC events into provider-neutral events/results
+- provide runtime actor, supervisor, scheduling, workdir, policy, validation, and
+  local task DB adapters
+- provide local-only IPC: Unix socket on macOS and named pipe boundary on Windows
+- manage Store review host integration, consent ledger, external tool provenance,
+  and review/demo mode contracts
+- consume `riido-control-plane` SaaS assignment APIs through daemon-side
+  polling/reporting adapters
+
+This repository does not:
+
+- include or auto-install provider CLI binaries
+- implement SaaS HTTP/SSE server handlers, RBAC, or control-plane stores
+- own Terraform, AWS, ECR, ECS, release evidence, or live deployment config
+- commit App Store/MSIX signing credentials, provisioning secrets, or live
+  submission evidence
+- redefine shared task/IR/provider capability contracts owned by `riido-contracts`
+- add public TCP/HTTP listeners to `cmd/riido`
+- reference or modify `riido_daemon_private` or `riido-daemon-private`
+
+Daemon owns the user's-device runtime side of AI Agent. Control-plane owns
+agent/task APIs, contracts own DTOs and enums, and infra owns deployment.
