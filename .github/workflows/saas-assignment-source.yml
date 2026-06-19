@@ -1,0 +1,38 @@
+name: saas-assignment-source
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/saas-assignment-source.yml"
+      - "docs/20-domain/runtime-scheduling/saas-assignment-source.md"
+      - "docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json"
+      - "docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md"
+      - "internal/agentbridge/controlplane/saasplane/**"
+      - "internal/agentbridge/supervisor/**"
+      - "tools/saasassignment/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  saas-assignment-source-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify SaaS assignment source evidence
+        run: |
+          mkdir -p out
+          go test ./tools/saasassignment -count=1
+          go run ./tools/saasassignment \
+            -check-doc \
+            -evidence-out out/saas-assignment-source-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: saas-assignment-source-evidence
+          path: out/saas-assignment-source-evidence.json
+          if-no-files-found: error

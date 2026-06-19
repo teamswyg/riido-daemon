@@ -1,0 +1,60 @@
+{
+  "schema_version": "riido-saas-assignment-source.v1",
+  "id": "saas-assignment-source",
+  "title": "SaaS Assignment Source Evidence",
+  "generated_doc": "docs/20-domain/runtime-scheduling/saas-assignment-source.md",
+  "migration_doc": "docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md",
+  "workflow": ".github/workflows/saas-assignment-source.yml",
+  "evidence_artifact": "saas-assignment-source-evidence",
+  "purpose": "Prove the daemon-side SaaS assignment source/reporter contract without claiming control-plane or client presentation ownership.",
+  "facts": [
+    {"name": "shared assignment contract", "status": "implemented", "summary": "SaaS adapter consumes assignment DTO/state/event constants from riido-contracts.", "source_checks": ["shared-contract-test", "shared-contract-import"]},
+    {"name": "poll start active cancel mapping", "status": "implemented", "summary": "Poll start/active become TaskRequest; poll cancel is delivered to the local cancellation watcher.", "source_checks": ["poll-action-switch", "poll-cancel-branch"]},
+    {"name": "long poll wait contract", "status": "implemented", "summary": "PollRequest.wait_ms defaults to 30 seconds and extends the HTTP timeout.", "source_checks": ["long-poll-default", "poll-wait-ms", "long-poll-wait-test"]},
+    {"name": "candidate backpressure", "status": "implemented", "summary": "Multiple candidate agents are short-polled first and only one candidate receives the long poll.", "source_checks": ["static-candidate-long-poll-test", "dynamic-candidate-long-poll-test"]},
+    {"name": "heartbeat stale cancellation", "status": "implemented", "summary": "Daemon forwards active assignment ids and cancels local watchers when heartbeat response omits a requested assignment.", "source_checks": ["heartbeat-default", "heartbeat-post", "stale-heartbeat-cancel-test"]},
+    {"name": "events endpoint owns progress and lifecycle reports", "status": "implemented", "summary": "Progress, lifecycle, running, session pin, terminal result, and coalesced text body reports are posted to /events.", "source_checks": ["event-post-path", "event-retry-test", "assignment-running-test", "partial-body-test"]},
+    {"name": "auth forwarding", "status": "implemented", "summary": "Device credentials and bearer token, when configured, are attached to SaaS HTTP requests.", "source_checks": ["device-secret-auth", "bearer-auth-test"]},
+    {"name": "dynamic runtime bindings", "status": "implemented", "summary": "Dynamic /v1/daemon/agent-bindings are cached and used to map runtime/provider scope to agent ids.", "source_checks": ["agent-bindings-path", "binding-cache-ttl", "dynamic-binding-claim-test"]}
+  ],
+  "boundaries": [
+    {"name": "control-plane stale deadline", "owner": "riido-control-plane", "summary": "The 20-second stale projection is upstream; daemon evidence only proves it honors omitted heartbeat refreshes."},
+    {"name": "task-thread presentation", "owner": "riido-client/control-plane read model", "summary": "Figma task-thread copy, cold collection rows, and busy/deleted agent messages are not daemon responsibilities."},
+    {"name": "agent authorization policy", "owner": "riido-control-plane authZ", "summary": "Public/private agent access policy is evaluated before daemon receives assignment snapshots."},
+    {"name": "private infra and stores", "owner": "riido-control-plane/riido-infra", "summary": "HTTP handlers, persistence, SSE fan-out, metrics, health read models, Terraform, and secrets are not daemon-owned."}
+  ],
+  "absent_surfaces": [
+    {"name": "thread-progress endpoint ownership", "scope": ["internal/agentbridge/controlplane/saasplane"], "tokens": ["thread-progress", "/thread-progress"], "reason": "daemon reports progress through /events and must not claim the cold task-thread endpoint"},
+    {"name": "client presentation copy ownership", "scope": ["internal/agentbridge/controlplane/saasplane", "internal/agentbridge/supervisor"], "tokens": ["지금은 다른 작업", "에이전트가 삭제", "node-id="], "reason": "client/control-plane own Figma copy and task-thread presentation"},
+    {"name": "private server package import", "scope": ["internal/agentbridge/controlplane/saasplane"], "tokens": ["internal/riidoaiserver", "cmd/riido_ai_server"], "reason": "public daemon must not import private control-plane implementation"}
+  ],
+  "source_checks": [
+    {"name": "shared-contract-test", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_contract_test.go", "contains": "TestPlaneUsesSharedAssignmentContractSurface"},
+    {"name": "shared-contract-import", "file": "internal/agentbridge/controlplane/saasplane/doc.go", "contains": "github.com/teamswyg/riido-contracts/assignment"},
+    {"name": "poll-action-switch", "file": "internal/agentbridge/controlplane/saasplane/task_claim_candidates.go", "contains": "case assignmentcontract.PollStart, assignmentcontract.PollActive"},
+    {"name": "poll-cancel-branch", "file": "internal/agentbridge/controlplane/saasplane/task_claim_candidates.go", "contains": "case assignmentcontract.PollCancel"},
+    {"name": "long-poll-default", "file": "internal/agentbridge/controlplane/saasplane/constants.go", "contains": "defaultLongPollWait       = 30 * time.Second"},
+    {"name": "poll-wait-ms", "file": "internal/agentbridge/controlplane/saasplane/agent_poll.go", "contains": "WaitMs:    pollWaitMilliseconds(wait)"},
+    {"name": "long-poll-wait-test", "file": "internal/agentbridge/controlplane/saasplane/http_client_long_poll_wait_test.go", "contains": "TestPlaneSendsLongPollWaitMsAndExtendsRequestTimeout"},
+    {"name": "static-candidate-long-poll-test", "file": "internal/agentbridge/controlplane/saasplane/http_client_long_poll_candidates_test.go", "contains": "TestPlaneShortPollsAllCandidatesThenLongPollsOne"},
+    {"name": "dynamic-candidate-long-poll-test", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_long_poll_test.go", "contains": "TestPlaneLongPollsOnlyOneDynamicCandidatePerRuntime"},
+    {"name": "heartbeat-default", "file": "internal/agentbridge/supervisor/config_normalize.go", "contains": "cfg.HeartbeatEvery = 5 * time.Second"},
+    {"name": "heartbeat-post", "file": "internal/agentbridge/controlplane/saasplane/runtime_heartbeat.go", "contains": "ActiveAssignmentIDs: assignmentIDs"},
+    {"name": "stale-heartbeat-cancel-test", "file": "internal/agentbridge/controlplane/saasplane/heartbeat_stale_cancellation_test.go", "contains": "TestPlaneDeliversCancellationFromUnrefreshedHeartbeat"},
+    {"name": "event-post-path", "file": "internal/agentbridge/controlplane/saasplane/agent_event_post.go", "contains": "\"/v1/agents/\"+url.PathEscape(assignment.AgentID)+\"/events\""},
+    {"name": "event-retry-test", "file": "internal/agentbridge/controlplane/saasplane/http_client_event_retry_test.go", "contains": "TestPlaneRetriesTransientEventPostWithIdempotencyKey"},
+    {"name": "assignment-running-test", "file": "internal/agentbridge/controlplane/saasplane/saasplane_claim_report_events_test.go", "contains": "EventAssignmentRunning"},
+    {"name": "partial-body-test", "file": "internal/agentbridge/controlplane/saasplane/textdelta_partial_body_test.go", "contains": "TestReportEventCoalescesTextDeltaIntoEvolvingBody"},
+    {"name": "device-secret-auth", "file": "internal/agentbridge/controlplane/saasplane/http_auth.go", "contains": "X-Riido-Device-Secret"},
+    {"name": "bearer-auth-test", "file": "internal/agentbridge/controlplane/saasplane/heartbeat_bearer_token_test.go", "contains": "TestPlaneSendsBearerToken"},
+    {"name": "agent-bindings-path", "file": "internal/agentbridge/controlplane/saasplane/agent_bindings_cache.go", "contains": "\"/v1/daemon/agent-bindings\""},
+    {"name": "binding-cache-ttl", "file": "internal/agentbridge/controlplane/saasplane/constants.go", "contains": "agentBindingCacheTTL = 5 * time.Second"},
+    {"name": "dynamic-binding-claim-test", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_dynamic_claim_test.go", "contains": "TestPlaneClaimsDynamicAgentBinding"}
+  ],
+  "assertions": [
+    "Implemented facts must point at local source evidence.",
+    "Upstream/client boundaries must not be described as daemon-owned behavior.",
+    "Reader docs must be generated from this manifest.",
+    "The daemon must not claim /thread-progress ownership while source code posts to /events."
+  ]
+}
