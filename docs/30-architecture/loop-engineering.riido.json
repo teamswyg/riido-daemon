@@ -30,6 +30,7 @@
     "docs/30-architecture/loop-engineering/assignment-fsm-evidence.riido.json",
     "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
     "docs/30-architecture/loop-engineering/store-distribution.riido.json",
+    "docs/30-architecture/loop-engineering/privacy-metadata-evidence.riido.json",
     "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",
     "docs/30-architecture/loop-engineering/security-redaction.riido.json",
     "docs/30-architecture/loop-engineering/runtime-secret-private-evidence.riido.json"

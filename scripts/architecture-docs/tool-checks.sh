@@ -31,6 +31,7 @@ tool_tests=(
   ./tools/nativeconfigmcp
   ./tools/fullaccessharness
   ./tools/assignmentfsm
+  ./tools/privacymetadata
 )
 
 doc_tools=(
@@ -53,6 +54,7 @@ doc_tools=(
   nativeconfigmcp
   fullaccessharness
   assignmentfsm
+  privacymetadata
 )
 
 go test "${tool_tests[@]}" -count=1

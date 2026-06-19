@@ -1,0 +1,36 @@
+{
+  "id": "privacy-metadata-evidence",
+  "owner": "C11 privacy metadata allowlist",
+  "observation": {
+    "summary": "Server-facing metadata docs described a C10/C11 privacy boundary by hand while the executable allowlist and Go projection shape lived in hostintegration.",
+    "artifacts": ["docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md"]
+  },
+  "hypothesis": {
+    "summary": "A verifier can render the reader doc from the privacy metadata allowlist and prove the server-facing struct shape still matches the allowlist.",
+    "artifacts": ["internal/hostintegration/privacy_metadata_allowlist.riido.json"]
+  },
+  "execution": {
+    "summary": "Run privacymetadata to validate source checks, allowlist surfaces, struct JSON paths, and generated doc drift.",
+    "artifacts": ["tools/privacymetadata", ".github/workflows/privacy-metadata-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects missing surfaces, server-facing struct path drift, missing privacy tests, and reader doc drift.",
+    "artifacts": ["tools/privacymetadata/run_test.go"]
+  },
+  "retrospective": {
+    "summary": "C10/C11 privacy metadata knowledge becomes generated from the allowlist instead of a manually maintained field table.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/privacymetadata -check-doc -evidence-out /tmp/privacy-metadata-evidence.json",
+      "proves": "privacy metadata doc matches the executable allowlist and Go server-facing metadata shape"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/privacy-metadata-evidence.yml",
+      "proves": "public CI uploads privacy metadata evidence"
+    }
+  ]
+}

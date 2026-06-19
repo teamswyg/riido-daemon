@@ -1,0 +1,39 @@
+name: privacy-metadata-evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/privacy-metadata-evidence.yml"
+      - "docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md"
+      - "docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.riido.json"
+      - "internal/hostintegration/privacy_metadata_allowlist.riido.json"
+      - "internal/hostintegration/privacy_metadata_allowlist*.go"
+      - "internal/hostintegration/store_client_metadata*.go"
+      - "internal/hostintegration/provider_routing_status.go"
+      - "tools/privacymetadata/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  privacy-metadata-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify privacy metadata evidence
+        run: |
+          mkdir -p out
+          go test ./tools/privacymetadata -count=1
+          go run ./tools/privacymetadata \
+            -check-doc \
+            -evidence-out out/privacy-metadata-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: privacy-metadata-evidence
+          path: out/privacy-metadata-evidence.json
+          if-no-files-found: error

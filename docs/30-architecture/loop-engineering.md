@@ -424,6 +424,23 @@
 - Evidence:
   - `command`: go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .; proves store distribution contract remains executable
 
+### privacy-metadata-evidence
+
+- Owner: `C11 privacy metadata allowlist`
+- Observe: Server-facing metadata docs described a C10/C11 privacy boundary by hand while the executable allowlist and Go projection shape lived in hostintegration.
+  - Artifacts: `docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md`
+- Hypothesis: A verifier can render the reader doc from the privacy metadata allowlist and prove the server-facing struct shape still matches the allowlist.
+  - Artifacts: `internal/hostintegration/privacy_metadata_allowlist.riido.json`
+- Execute: Run privacymetadata to validate source checks, allowlist surfaces, struct JSON paths, and generated doc drift.
+  - Artifacts: `tools/privacymetadata`, `.github/workflows/privacy-metadata-evidence.yml`
+- Evaluate: The verifier rejects missing surfaces, server-facing struct path drift, missing privacy tests, and reader doc drift.
+  - Artifacts: `tools/privacymetadata/run_test.go`
+- Retrospective: C10/C11 privacy metadata knowledge becomes generated from the allowlist instead of a manually maintained field table.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/privacymetadata -check-doc -evidence-out /tmp/privacy-metadata-evidence.json; proves privacy metadata doc matches the executable allowlist and Go server-facing metadata shape
+  - `workflow`: .github/workflows/privacy-metadata-evidence.yml; proves public CI uploads privacy metadata evidence
+
 ### provider-real-cli-observation
 
 - Owner: `provider-real-cli-observation workflow`

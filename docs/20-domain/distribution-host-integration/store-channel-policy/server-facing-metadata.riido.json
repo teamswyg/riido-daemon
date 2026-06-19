@@ -1,0 +1,20 @@
+{
+  "schema_version": "riido-privacy-metadata-evidence.v1",
+  "id": "privacy-metadata-evidence",
+  "title": "Server-Facing Metadata Evidence",
+  "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md",
+  "workflow": ".github/workflows/privacy-metadata-evidence.yml",
+  "evidence_artifact": "privacy-metadata-evidence",
+  "policy_artifact": "internal/hostintegration/privacy_metadata_allowlist.riido.json",
+  "purpose": "Generates the reader-facing C10/C11 metadata boundary from the executable privacy metadata allowlist and the Go server-facing metadata shape.",
+  "source_checks": [
+    {"name": "allowlist-loader", "file": "internal/hostintegration/privacy_metadata_allowlist.go", "contains": "func LoadPrivacyMetadataAllowlist() (PrivacyMetadataAllowlist, error)"},
+    {"name": "allowlist-schema", "file": "internal/hostintegration/privacy_metadata_allowlist_schema.go", "contains": "PrivacyMetadataAllowlistSchemaVersion = \"riido-privacy-metadata-allowlist.v1\""},
+    {"name": "server-facing-surface", "file": "internal/hostintegration/privacy_metadata_allowlist_schema.go", "contains": "PrivacySurfaceServerFacingClientMetadata = \"c11-server-facing-client-metadata\""},
+    {"name": "provider-status-surface", "file": "internal/hostintegration/privacy_metadata_allowlist_schema.go", "contains": "PrivacySurfaceProviderStatusSyncRequest  = \"c10-provider-status-sync-request\""},
+    {"name": "metadata-builder", "file": "internal/hostintegration/store_client_metadata.go", "contains": "func BuildServerFacingClientMetadata(input ServerFacingClientMetadataInput) (ServerFacingClientMetadata, error)"},
+    {"name": "shape-test", "file": "internal/hostintegration/privacy_metadata_allowlist_test.go", "contains": "TestPrivacyMetadataAllowlistMatchesServerFacingMetadataShape"},
+    {"name": "leak-test", "file": "internal/hostintegration/store_client_metadata_test.go", "contains": "TestStoreClientMetadataDoesNotLeakLocalPathsOrSecrets"},
+    {"name": "routing-vocabulary", "file": "internal/hostintegration/provider_routing_status.go", "contains": "ProviderRoutingStoreBlocked  ProviderRoutingStatus = \"store-blocked\""}
+  ]
+}
