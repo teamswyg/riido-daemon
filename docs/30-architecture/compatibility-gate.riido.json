@@ -1,0 +1,59 @@
+{
+  "schema_version": "riido-compatibility-gate.v1",
+  "id": "daemon-compatibility-gate",
+  "title": "Compatibility Gate Evidence",
+  "generated_doc": "docs/30-architecture/compatibility-gate.md",
+  "workflow": ".github/workflows/compatibility-gate.yml",
+  "evidence_artifact": "compatibility-gate-evidence",
+  "purpose": "The daemon starts a provider only when detection, host provenance, policy, scheduling requirements, and runtime freshness agree.",
+  "inputs": [
+    {"name": "provider detection and capability fingerprint", "owner": "C3 provider capability + C4 runtimeactor", "source_checks": ["capability-contract", "capability-fingerprint"]},
+    {"name": "user-selected executable provenance", "owner": "C11 hostintegration", "source_checks": ["provenance-precedence"]},
+    {"name": "store channel restrictions", "owner": "C11 + C7 store channel policy", "source_checks": ["store-channel-provider-path"]},
+    {"name": "unsafe bypass and native config permissions", "owner": "C7 policy bundle", "source_checks": ["unsafe-bypass-policy", "native-config-policy"]},
+    {"name": "task runtime requirements", "owner": "C5 scheduling", "source_checks": ["scheduling-eligibility"]}
+  ],
+  "gate_order": [
+    {"step": "resolve executable", "summary": "Resolve env override or PATH candidate before provider probing.", "source_checks": ["override-pin"]},
+    {"step": "fail closed on invalid override", "summary": "An explicit invalid override does not fall back to PATH.", "source_checks": ["override-fail-closed-test"]},
+    {"step": "allow OpenClaw adapter candidate selection", "summary": "Without an explicit override, OpenClaw may scan same-name PATH candidates until one satisfies the calendar-version gate.", "source_checks": ["openclaw-candidate-scan", "detected-executable-start"]},
+    {"step": "detect provider capability", "summary": "Adapter detect normalizes availability and fingerprint inputs into the capability contract.", "source_checks": ["capability-detect-start", "capability-fingerprint"]},
+    {"step": "apply host provenance", "summary": "Stronger provenance replaces weaker records, never the opposite.", "source_checks": ["provenance-precedence"]},
+    {"step": "apply policy gates", "summary": "Store, unsafe bypass, and native config policy decisions gate runtime use.", "source_checks": ["store-channel-provider-path", "unsafe-bypass-policy", "native-config-policy"]},
+    {"step": "select eligible runtime", "summary": "Scheduling chooses only compatible runtimes that satisfy task surfaces.", "source_checks": ["scheduling-eligibility", "scheduling-select"]},
+    {"step": "block unavailable runtime", "summary": "Unavailable provider capabilities are projected as blocked before execution.", "source_checks": ["runtime-blocked-unavailable"]}
+  ],
+  "outputs": [
+    "provider-neutral compatibility status",
+    "blocked/degraded reasons",
+    "detected fingerprint metadata",
+    "runtime status snapshots"
+  ],
+  "failure_semantics": [
+    {"case": "missing optional provider binary", "meaning": "unavailable, not fatal to daemon startup", "source_checks": ["runtime-blocked-unavailable"]},
+    {"case": "misconfigured explicit path", "meaning": "unavailable with fail-closed reason", "source_checks": ["override-fail-closed-test"]},
+    {"case": "policy/store violation", "meaning": "blocked and not runnable", "source_checks": ["store-channel-provider-path", "unsafe-bypass-policy"]},
+    {"case": "runtime fingerprint drift", "meaning": "handled by runtime upgrade flow", "source_checks": ["capability-fingerprint"]}
+  ],
+  "source_checks": [
+    {"name": "override-pin", "file": "internal/agentbridge/detectutil/resolve.go", "contains": "invalid override fails closed"},
+    {"name": "override-fail-closed-test", "file": "internal/agentbridge/detectutil/resolve_override_test.go", "contains": "TestResolveExecutableMissingOverrideFailsClosed"},
+    {"name": "openclaw-candidate-scan", "file": "internal/provider/openclaw/detect_path_candidates_test.go", "contains": "TestDetectScansPathCandidatesUntilSupportedVersion"},
+    {"name": "detected-executable-start", "file": "internal/agentbridge/runtimeactor/actor_detected_executable_test.go", "contains": "TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn"},
+    {"name": "capability-contract", "file": "internal/agentbridge/runtimeactor/capability.go", "contains": "github.com/teamswyg/riido-contracts/provider/capability"},
+    {"name": "capability-fingerprint", "file": "internal/agentbridge/runtimeactor/capability.go", "contains": "ComputeCapabilityFingerprint"},
+    {"name": "capability-detect-start", "file": "internal/agentbridge/runtimeactor/capability_detection_start_test.go", "contains": "TestRuntimeActorDetectsCapabilitiesOnStart"},
+    {"name": "provenance-precedence", "file": "internal/hostintegration/external_tool_registry_provenance_test.go", "contains": "TestExternalToolRegistryPreservesStrongestProvenance"},
+    {"name": "store-channel-provider-path", "file": "internal/policy/store_channel_provider_path_test.go", "contains": "TestStoreChannelPolicyMacAppStoreProviderPathRequiresOSGrantAndStoreReview"},
+    {"name": "unsafe-bypass-policy", "file": "internal/policy/unsafe_bypass_policy_test.go", "contains": "TestEvaluateUnsafeBypassDeniesHostAndUnknown"},
+    {"name": "native-config-policy", "file": "internal/policy/native_config_policy.go", "contains": "EvaluateNativeConfigHook"},
+    {"name": "scheduling-eligibility", "file": "internal/scheduling/eligibility.go", "contains": "EvaluateCapability applies the C5 pre-submit scheduling gate"},
+    {"name": "scheduling-select", "file": "internal/scheduling/pool_select_test.go", "contains": "TestSelectRuntimeChoosesEligibleRuntimeByCapability"},
+    {"name": "runtime-blocked-unavailable", "file": "internal/agentbridge/runtimeactor/capability_unavailable_provider_test.go", "contains": "TestRuntimeActorReconcilesUnavailableProviderAsBlocked"}
+  ],
+  "assertions": [
+    "Compatibility order is generated from this manifest.",
+    "Every gate input, step, and failure semantic points at source evidence.",
+    "Reader docs must not be manually edited."
+  ]
+}

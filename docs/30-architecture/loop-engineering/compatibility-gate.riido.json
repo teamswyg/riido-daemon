@@ -1,0 +1,31 @@
+{
+  "id": "compatibility-gate-evidence",
+  "owner": "daemon architecture",
+  "observation": {
+    "summary": "compatibility-gate.md described a pre-execute safety gate as prose while runtime evidence lived across detectutil, hostintegration, policy, scheduling, and runtimeactor."
+  },
+  "hypothesis": {
+    "summary": "A manifest can generate the reader doc and prove every gate input, step, and failure semantic points at source or test evidence."
+  },
+  "execution": {
+    "summary": "Run compatibilitygate to check generated docs, source evidence, and publish a compact evidence artifact."
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, source drift, duplicate source checks, unknown source references, and unproved gate rows."
+  },
+  "retrospective": {
+    "summary": "Compatibility gate knowledge becomes executable evidence rather than a manual architecture note."
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/compatibilitygate -check-doc -evidence-out /tmp/compatibility-gate-evidence.json",
+      "proves": "compatibility gate manifest matches generated reader docs and local source evidence"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/compatibility-gate.yml",
+      "proves": "public CI uploads compatibility gate evidence"
+    }
+  ]
+}
