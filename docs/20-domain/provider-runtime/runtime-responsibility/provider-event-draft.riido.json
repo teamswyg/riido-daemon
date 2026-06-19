@@ -1,0 +1,36 @@
+{
+  "schema_version": "riido-provider-draft-mapping.v1",
+  "id": "provider-event-draft-mapping",
+  "title": "ProviderEventDraft Output",
+  "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md",
+  "workflow": ".github/workflows/provider-draft-mapping.yml",
+  "evidence_artifact": "provider-draft-mapping-evidence",
+  "source": "internal/agentbridge/supervisor/provider_event_draft.go",
+  "mapped_events": [
+    {"event_kind": "lifecycle", "event_kind_const": "EventLifecycle", "event_type_const": "EventStatusUpdate", "event_type": "StatusUpdate"},
+    {"event_kind": "session_identified", "event_kind_const": "EventSessionIdentified", "event_type_const": "EventSessionPinned", "event_type": "SessionPinned"},
+    {"event_kind": "text_delta", "event_kind_const": "EventTextDelta", "event_type_const": "EventTextDelta", "event_type": "TextDelta"},
+    {"event_kind": "thinking_delta", "event_kind_const": "EventThinkingDelta", "event_type_const": "EventReasoningDelta", "event_type": "ReasoningDelta"},
+    {"event_kind": "tool_call_started", "event_kind_const": "EventToolCallStarted", "event_type_const": "EventToolCallStarted", "event_type": "ToolCallStarted"},
+    {"event_kind": "tool_call_completed", "event_kind_const": "EventToolCallCompleted", "event_type_const": "EventToolCallFinished", "event_type": "ToolCallFinished"},
+    {"event_kind": "tool_call_failed", "event_kind_const": "EventToolCallFailed", "event_type_const": "EventToolCallFinished", "event_type": "ToolCallFinished"},
+    {"event_kind": "tool_approval_needed", "event_kind_const": "EventToolApprovalNeeded", "event_type_const": "EventApprovalRequested", "event_type": "ApprovalRequested"},
+    {"event_kind": "usage_delta", "event_kind_const": "EventUsageDelta", "event_type_const": "EventUsageDelta", "event_type": "UsageDelta"},
+    {"event_kind": "log", "event_kind_const": "EventLog", "event_type_const": "EventLogLine", "event_type": "LogLine"},
+    {"event_kind": "warning", "event_kind_const": "EventWarning", "event_type_const": "EventLogLine", "event_type": "LogLine"},
+    {"event_kind": "error", "event_kind_const": "EventError", "event_type_const": "EventLogLine", "event_type": "LogLine"}
+  ],
+  "skipped_events": [
+    {"event_kind": "tool_call_delta", "event_kind_const": "EventToolCallDelta", "reason": "delta payload is not yet canonicalized by providerEventDraft"},
+    {"event_kind": "progress", "event_kind_const": "EventProgress", "reason": "progress is local telemetry, not provider raw canonical event mapping"},
+    {"event_kind": "result", "event_kind_const": "EventResult", "reason": "terminal provider result is handled by run controller transition logic"},
+    {"event_kind": "cancellation_requested", "event_kind_const": "EventCancellation", "reason": "cancellation is orchestration state, not provider Cat C output"},
+    {"event_kind": "timeout", "event_kind_const": "EventTimeout", "reason": "timeout is session actor transition input"},
+    {"event_kind": "process_exit", "event_kind_const": "EventProcessExit", "reason": "process exit is terminal/run-controller signal"}
+  ],
+  "assertions": [
+    "every runtime EventKind is either mapped or intentionally skipped",
+    "mapped events match provider_event_draft.go switch returns",
+    "skipped events are absent from provider_event_draft.go mapping"
+  ]
+}
