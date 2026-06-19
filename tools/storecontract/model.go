@@ -8,6 +8,7 @@ type contract struct {
 	StoreArtifactRoots       []string  `json:"store_artifact_roots"`
 	RequiredDocs             []string  `json:"required_docs"`
 	RequiredNoticeTerms      []string  `json:"required_notice_terms"`
+	ChannelFiles             []string  `json:"channel_files,omitempty"`
 	Channels                 []channel `json:"channels"`
 }
 

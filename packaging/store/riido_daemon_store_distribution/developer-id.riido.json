@@ -1,0 +1,22 @@
+{
+  "id": "developer-id",
+  "platform": "macos",
+  "status": "preferred-first",
+  "runtime_role": "local-helper-broker",
+  "background_rule": "explicit-consent",
+  "local_ipc_transport": "unix-socket",
+  "data_root": "user-application-support",
+  "update_mechanism": "self-managed",
+  "required_surfaces": [
+    "developer-id-signing",
+    "notarization",
+    "user-consented-background-helper",
+    "local-only-ipc"
+  ],
+  "forbidden_surfaces": [
+    "bundled-provider-cli",
+    "silent-provider-install",
+    "external-tcp-listener",
+    "arbitrary-home-scan"
+  ]
+}

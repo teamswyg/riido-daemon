@@ -1,0 +1,36 @@
+{
+  "id": "mac-app-store",
+  "platform": "macos",
+  "status": "requires-redesign",
+  "runtime_role": "sandboxed-login-item-helper",
+  "background_rule": "explicit-consent-and-store-review",
+  "local_ipc_transport": "unix-socket",
+  "data_root": "app-group-or-sandbox-container",
+  "update_mechanism": "app-store-managed",
+  "required_surfaces": [
+    "app-sandbox",
+    "app-group-or-container-ipc",
+    "security-scoped-workspace-grant",
+    "service-management-login-item-consent",
+    "helper-purpose-review-note",
+    "app-sandbox-entitlement-review-notes",
+    "app-store-managed-updates",
+    "privacy-policy",
+    "review-demo-mode",
+    "demo-review-account",
+    "privacy-metadata-allowlist",
+    "provider-non-bundling-review-note"
+  ],
+  "forbidden_surfaces": [
+    "bundled-provider-cli",
+    "silent-provider-install",
+    "direct-launchagent-install",
+    "self-updater",
+    "external-tcp-listener",
+    "arbitrary-home-scan",
+    "third-party-installer",
+    "shared-location-code-install",
+    "standalone-code-download",
+    "root-privilege-escalation"
+  ]
+}

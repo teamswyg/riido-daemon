@@ -1,0 +1,25 @@
+{
+  "id": "msix-sideload",
+  "platform": "windows",
+  "status": "preferred-first",
+  "runtime_role": "msix-packaged-helper-broker",
+  "background_rule": "explicit-consent",
+  "local_ipc_transport": "windows-named-pipe",
+  "data_root": "windows-package-local-data",
+  "update_mechanism": "self-managed",
+  "required_surfaces": [
+    "signed-msix-package",
+    "package-identity",
+    "windows-desktop-target-device-family",
+    "named-pipe-local-ipc",
+    "package-local-data",
+    "user-consented-background-helper"
+  ],
+  "forbidden_surfaces": [
+    "bundled-provider-cli",
+    "silent-provider-install",
+    "windows-service-default",
+    "external-tcp-listener",
+    "arbitrary-home-scan"
+  ]
+}
