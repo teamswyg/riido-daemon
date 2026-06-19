@@ -1,0 +1,23 @@
+# 10-11 Open Issues and Version-Affecting Changes
+
+[Back to enforcement locations](../enforcement-locations.md)
+
+## 10. 미결정 / 오픈 이슈
+
+[`../../50-roadmap/open-questions.md`](../../50-roadmap/open-questions.md) 위임.
+
+- `Q-SEC-001`: trust tier 결정의 **외부 신호 우선순위** (wrapper 매니페스트 vs daemon 시작 env vs 호스트 정책 파일).
+- `Q-SEC-003`: scoped token 의 발급 / 회수 메커니즘 (자체 발급 vs Vault / cloud KMS 위임).
+- `Q-SEC-004`: G-S6 (PreCompleteAuditGate)가 자동 `HumanReview` 로 강제하는 조건의 임계값.
+- `Q-SEC-006`: `quarantine` 분기의 workdir 격리 보존 기간 / 자동 삭제 정책.
+- `Q-SEC-007`: `CIControlledRunner` tier 의 “격리 보장 검증” 알고리즘 (어떤 신호를 신뢰할지).
+- `Q-SEC-008`: StoreChannelPolicyGate 의 blocked reason 을 Cat F IR 이벤트로 별도 추가할지, 기존 `PolicyViolationDetected` payload 로 흡수할지.
+
+## 11. version-affecting changes
+
+- 새 trust tier 추가는 `change:breaking-policy` (모든 정책 번들이 새 tier 의 정책을 추가해야 함).
+- 새 policy target 추가는 `change:breaking-policy` (정책 번들 schema 가 확장됨).
+- 새 게이트 추가는 `change:additive`. 게이트의 책임 변경 / 제거는 `change:breaking-policy`.
+- 우회 surface 의 “허용 매트릭스” (§5) 변경은 항상 `change:breaking-policy` + 정책 번들 버전 강제 증가.
+- secret redaction 변경의 version-affecting 규칙은 [`../security-redaction.md`](../security-redaction.md) §6 이 소유한다.
+- store channel 에서 금지된 surface 를 완화하는 변경은 `change:breaking-policy` 이며 C11 distribution SSOT 와 같은 PR 에서 갱신해야 한다.
