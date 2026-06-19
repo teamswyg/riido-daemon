@@ -90,6 +90,19 @@ required_files=(
   docs/20-domain/provider-runtime/runtime-responsibility/provider-adapter-port.md
   docs/20-domain/provider-runtime/runtime-responsibility/provider-adapter-port.riido.json
   .github/workflows/provider-runtime-responsibility-docs.yml
+  docs/20-domain/provider-runtime/adapter-acl.md
+  docs/20-domain/provider-runtime/adapter-acl.riido.json
+  docs/20-domain/provider-runtime/adapter-acl/raw-to-draft-rules.md
+  docs/20-domain/provider-runtime/adapter-acl/raw-to-draft-rules.riido.json
+  docs/20-domain/provider-runtime/adapter-acl/backpressure.md
+  docs/20-domain/provider-runtime/adapter-acl/backpressure.riido.json
+  docs/20-domain/provider-runtime/adapter-acl/bridge-boundary.md
+  docs/20-domain/provider-runtime/adapter-acl/bridge-boundary.riido.json
+  docs/20-domain/provider-runtime/adapter-acl/instruction-placement.md
+  docs/20-domain/provider-runtime/adapter-acl/instruction-placement.riido.json
+  docs/20-domain/provider-runtime/adapter-acl/detect-helper-boundary.md
+  docs/20-domain/provider-runtime/adapter-acl/detect-helper-boundary.riido.json
+  .github/workflows/provider-adapter-acl-docs.yml
   docs/20-domain/provider-runtime/integration-gates.md
   docs/20-domain/provider-runtime/integration-gates.riido.json
   docs/20-domain/provider-runtime/integration-gates/cursor-real-cli.md
@@ -294,6 +307,7 @@ required_files=(
   docs/30-architecture/loop-engineering/security-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/security-native-config-overlay-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-responsibility-docs.riido.json
+  docs/30-architecture/loop-engineering/provider-adapter-acl-docs.riido.json
   docs/30-architecture/loop-engineering/provider-integration-gate-docs.riido.json
   docs/30-architecture/loop-engineering/provider-runtime-boundary-docs.riido.json
   docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json

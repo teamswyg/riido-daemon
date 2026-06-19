@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-provider-adapter-acl-detail.v1",
+  "id": "raw-to-draft-rules",
+  "title": "Raw To Draft Rules",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-acl/raw-to-draft-rules.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Adapter parsers own provider-local `RawEvent` envelopes. Adapter translation maps those envelopes into provider-neutral run-scope events; supervisor draft construction maps those run events into canonical IR event types."},
+    {"kind": "ordered", "items": ["Known provider raw types map to registered domain `EventType` values through adapter translation and `providerEventDraft`.", "Unknown provider raw types must become non-transition provider observations or logs; they must not create FSM authority.", "Known raw types with unknown fields preserve unknown source data only through explicitly modeled draft payload/unknown surfaces.", "Derived meaning must be marked by the translating adapter when provider output did not directly report the fact.", "Provider transition-after-side facts are drafts only; ingest/orchestration decides state transitions."]},
+    {"kind": "paragraph", "text": "The adjacent [`event-ingestor-contract.md`](event-ingestor-contract.md) owns final `CanonicalEvent` envelope completion and validation."}
+  ]
+}

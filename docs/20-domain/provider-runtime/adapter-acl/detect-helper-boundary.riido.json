@@ -1,0 +1,12 @@
+{
+  "schema_version": "riido-provider-adapter-acl-detail.v1",
+  "id": "detect-helper-boundary",
+  "title": "Detect Helper Boundary",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-acl/detect-helper-boundary.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`internal/agentbridge/detectutil` is the shared detection helper for concrete provider adapters. Env override is a pin, not a hint: if the override path is absent or not a regular file, detection fails closed and does not fall back to PATH."},
+    {"kind": "ordered", "items": ["Override path candidate when `RIIDO_<PROVIDER>_PATH` is set.", "Process `PATH` candidates when no override exists.", "Login-shell `PATH` candidates read once per process with timeout.", "Well-known install directory candidates."]},
+    {"kind": "paragraph", "text": "`ResolveExecutableCandidates` returns no-override candidates in PATH order. Concrete adapters decide whether to probe one or several candidates. `RIIDO_OPENCLAW_PATH` remains a pin even when the pinned executable is too old or invalid."},
+    {"kind": "paragraph", "text": "Detect-selected executable path is capability snapshot execution evidence. `bridge.Run` and `runtimeactor.Submit` pass it into `StartRequest.Executable`; concrete provider adapters must not reinterpret it from PATH."}
+  ]
+}

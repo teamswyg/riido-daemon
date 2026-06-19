@@ -13,6 +13,7 @@ tool_tests=(
   ./tools/securityinvariantsdocs
   ./tools/securitynativeconfigoverlaydocs
   ./tools/providerruntimeresponsibilitydocs
+  ./tools/provideradapteracldocs
   ./tools/providerintegrationgatedocs
   ./tools/providerruntimeboundarydocs
   ./tools/workspaceinvariantsdocs
@@ -68,6 +69,7 @@ doc_tools=(
   securityinvariantsdocs
   securitynativeconfigoverlaydocs
   providerruntimeresponsibilitydocs
+  provideradapteracldocs
   providerintegrationgatedocs
   providerruntimeboundarydocs
   workspaceinvariantsdocs

@@ -1,0 +1,11 @@
+{
+  "schema_version": "riido-provider-adapter-acl-detail.v1",
+  "id": "backpressure",
+  "title": "Draft And Session Backpressure",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-acl/backpressure.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "C4 Provider Runtime owns provider process stream, provider draft/session event channel, actor mailbox sizes, and drop policy. C6 workspace, C7 policy, and C10 server do not redefine these values."},
+    {"kind": "table", "columns": ["Surface", "Implementation constant", "Value", "Policy"], "rows": [["process stdout chunk stream", "`internal/process.DefaultStdoutBuffer`", "`64`", "no-drop, blocking process backpressure"], ["process stderr chunk stream", "`internal/process.DefaultStderrBuffer`", "`64`", "no-drop, blocking process backpressure"], ["provider/session semantic event stream", "`internal/agentbridge/session.DefaultEventBuffer`", "`256`", "no-drop, blocking backpressure"], ["terminal result stream", "`internal/agentbridge/session.DefaultResultBuffer`", "`1`", "exactly one terminal result"], ["runtime actor mailbox", "`internal/agentbridge/runtimeactor.DefaultMailboxSize`", "`16`", "caller-context bounded send"], ["supervisor actor mailbox", "`internal/agentbridge/supervisor.DefaultMailboxSize`", "`64`", "caller-context bounded send"]]},
+    {"kind": "ordered", "items": ["stdout/stderr channels block when full; text/log/warning chunks are not dropped, overwritten, or reordered.", "session actor blocks when the event buffer is full until the consumer drains `Events()`.", "runtime actor and supervisor mailbox sends are bounded sends; caller context owns deadline / cancellation.", "callers must drain `Events()` until close. Result-only callers must discard-drain.", "C4 currently has no in-memory retry queue. Durable retry/outbox is a future C2/C10 decision.", "changing buffer/mailbox values requires one work unit to update this SSOT, implementation constants, default-size tests, and CI evidence."]}
+  ]
+}
