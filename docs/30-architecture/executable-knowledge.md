@@ -8,9 +8,9 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 33 |
+| Generated reader docs | 38 |
 | Direct SSOT docs | 1 |
-| Registered manual docs | 46 |
+| Registered manual docs | 41 |
 | Scanned docs | 80 |
 
 ## Registered Manual Surfaces
@@ -20,7 +20,6 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `agent-execution-unresolved-design` | daemon/control-plane/contracts boundary | promote remaining risk map into generated evidence/fsm/design registry | 14 |
 | `integration-matrix` | provider integration matrix | promote provider capability matrix into executable manifest and provider observation evidence | 6 |
 | `module-decomposition` | package architecture | generate package map and import rules from go list/import graph evidence | 6 |
-| `release-artifacts` | release packaging | generate artifact matrix from release workflow and packaging manifest | 5 |
 | `store-distribution` | store distribution | generate distribution architecture/readiness tables from store contract manifest | 15 |
 
 ## Assertions

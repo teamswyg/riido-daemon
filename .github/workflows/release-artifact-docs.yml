@@ -1,0 +1,50 @@
+name: release-artifact-docs
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/release-artifact-docs.yml"
+      - ".github/workflows/release-artifacts.yml"
+      - "docs/30-architecture/release-artifacts.riido.json"
+      - "docs/30-architecture/release-artifacts.md"
+      - "docs/30-architecture/release-artifacts/**"
+      - "scripts/build-release-package.sh"
+      - "scripts/publish-release-artifacts.sh"
+      - "scripts/install-riido-daemon.sh"
+      - "tools/releaseartifacts/**"
+  pull_request:
+    paths:
+      - ".github/workflows/release-artifact-docs.yml"
+      - ".github/workflows/release-artifacts.yml"
+      - "docs/30-architecture/release-artifacts.riido.json"
+      - "docs/30-architecture/release-artifacts.md"
+      - "docs/30-architecture/release-artifacts/**"
+      - "scripts/build-release-package.sh"
+      - "scripts/publish-release-artifacts.sh"
+      - "scripts/install-riido-daemon.sh"
+      - "tools/releaseartifacts/**"
+
+jobs:
+  release-artifact-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify release artifact docs
+        run: |
+          mkdir -p out
+          go test ./tools/releaseartifacts -count=1
+          go run ./tools/releaseartifacts \
+            -check-doc \
+            -evidence-out out/release-artifact-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: release-artifact-docs
+          path: out/release-artifact-docs.json
+          if-no-files-found: error

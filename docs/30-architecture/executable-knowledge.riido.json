@@ -58,19 +58,6 @@
       ]
     },
     {
-      "id": "release-artifacts",
-      "owner": "release packaging",
-      "reason": "release artifact knowledge remains hand-authored while builds are executable",
-      "next_artifact": "generate artifact matrix from release workflow and packaging manifest",
-      "paths": [
-        "docs/30-architecture/release-artifacts.md",
-        "docs/30-architecture/release-artifacts/assets.md",
-        "docs/30-architecture/release-artifacts/desktop-msix-cdn.md",
-        "docs/30-architecture/release-artifacts/installer.md",
-        "docs/30-architecture/release-artifacts/review-boundary.md"
-      ]
-    },
-    {
       "id": "store-distribution",
       "owner": "store distribution",
       "reason": "store distribution architecture docs remain hand-authored beside contract evidence",

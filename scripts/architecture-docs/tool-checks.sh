@@ -27,6 +27,7 @@ tool_tests=(
   ./tools/configreference
   ./tools/executablesearchpath
   ./tools/knowledgecoverage
+  ./tools/releaseartifacts
   ./tools/runtimeupgrade
   ./tools/localdaemoncontract
   ./tools/runtimeeligibility
@@ -58,6 +59,7 @@ doc_tools=(
   configreference
   executablesearchpath
   knowledgecoverage
+  releaseartifacts
   figmaboundarydocs
   localdaemoncontract
   runtimeeligibility
