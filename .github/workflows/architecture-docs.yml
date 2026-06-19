@@ -14,6 +14,7 @@ on:
       - "tools/figmaboundary/**"
       - "tools/agentexecutionevidence/**"
       - "tools/providervalidation/**"
+      - "tools/loopevidence/**"
   pull_request:
     paths:
       - ".github/workflows/architecture-docs.yml"
@@ -26,6 +27,7 @@ on:
       - "tools/figmaboundary/**"
       - "tools/agentexecutionevidence/**"
       - "tools/providervalidation/**"
+      - "tools/loopevidence/**"
 
 jobs:
   docs:
