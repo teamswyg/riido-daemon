@@ -1,0 +1,19 @@
+# Current Migration Slices
+
+[Back to Overview](../overview.md)
+
+| Slice | Status |
+| --- | --- |
+| RIID-4643 contracts import gate | consumed `riido-contracts v0.1.0`; compatibility gate only |
+| RIID-4645 local process / validation / lock core | moved `process`, `processexec`, `validation`, `lock`, `logging`, `jsontest`, C8/C9 docs |
+| RIID-4646 runtime scheduling domain | moved pure C5 `internal/scheduling` and runtime-scheduling docs |
+| RIID-4647 workspace native config domain | moved C6 `internal/workdir`, workspace docs, and native config generator support |
+| RIID-4964 active assignment resume recovery | uses pinned `provider_session_id` as `TaskRequest.ResumeSessionID` before fallback |
+| RIID-4964 assignment worktree URL hardening | accepts only public GitHub owner/repo forms and rejects userinfo/query/fragment/extra path |
+
+Out of scope for these slices:
+
+- provider adapters, runtime/session/supervisor actors before their dedicated moves
+- task DB, project, mwsd, local API, control-plane, infra, secrets, and local state
+- durable run-attempt table, recovery mode enum, web approval handoff
+- private repository credentials, signed clone URLs, or new worktree contract field

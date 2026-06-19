@@ -1,0 +1,29 @@
+# Retired Historical Source Boundary
+
+[Back to Overview](../overview.md)
+
+The first migration wave compared against former private `riido_daemon` source.
+That source is retired history only.
+
+New work must not read, compare, copy from, cherry-pick from, push to, open PRs
+against, merge, or otherwise modify `riido_daemon_private` /
+`riido-daemon-private`. Missing facts must be written into public SSOT or
+promoted to `riido-contracts`.
+
+Historical bounded contexts:
+
+| Context | Source paths |
+| --- | --- |
+| C3 Provider Capability | `internal/provider/capability` |
+| C4 Provider Runtime / Adapter | `internal/agentbridge`, `internal/provider/{claude,codex,openclaw,cursor}`, `pkg/agentbridge`, `internal/process` |
+| C5 Runtime Scheduling | `internal/scheduling`, `runtimeactor`, `supervisor` |
+| C6 Workspace / Native Config | `internal/workdir` |
+| C7 Security / Policy | `internal/policy` |
+| C8 Validation | `internal/validation` |
+| C9 Local Locking | `internal/lock` |
+| Local workspace projection / mwsd ACL | `internal/mwsdbridge`, `internal/project` |
+| C11 Distribution / Host Integration | `hostintegration`, `riidoapi`, `packaging/store`, `tools/storecontract`, `NOTICE.md` |
+
+Documentation sources include provider runtime/capability, security/redaction,
+distribution host integration, module decomposition, integration matrix,
+config-reference, store-distribution, and daemon roadmap/audit files.
