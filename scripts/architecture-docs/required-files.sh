@@ -41,6 +41,21 @@ required_files=(
   docs/20-domain/security-redaction/versioning.md
   docs/20-domain/security-redaction/versioning.riido.json
   .github/workflows/security-redaction-docs.yml
+  docs/20-domain/security/invariants.md
+  docs/20-domain/security/invariants.riido.json
+  docs/20-domain/security/invariants/scope.md
+  docs/20-domain/security/invariants/scope.riido.json
+  docs/20-domain/security/invariants/core.md
+  docs/20-domain/security/invariants/core.riido.json
+  docs/20-domain/security/invariants/trust-tier.md
+  docs/20-domain/security/invariants/trust-tier.riido.json
+  docs/20-domain/security/invariants/policy-bundle-model.md
+  docs/20-domain/security/invariants/policy-bundle-model.riido.json
+  docs/20-domain/security/invariants/policy-bundle-example.md
+  docs/20-domain/security/invariants/policy-bundle-example.riido.json
+  docs/20-domain/security/invariants/policy-targets.md
+  docs/20-domain/security/invariants/policy-targets.riido.json
+  .github/workflows/security-invariants-docs.yml
   docs/README.md
   docs/executable-knowledge.md
   docs/executable-knowledge.riido.json
@@ -139,6 +154,7 @@ required_files=(
   docs/30-architecture/loop-engineering/provider-public-migration-docs.riido.json
   docs/30-architecture/loop-engineering/locking-docs.riido.json
   docs/30-architecture/loop-engineering/security-redaction.riido.json
+  docs/30-architecture/loop-engineering/security-invariants-docs.riido.json
   docs/30-architecture/loop-engineering/cli-surface-evidence.riido.json
   docs/30-architecture/loop-engineering/config-reference-evidence.riido.json
   docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json

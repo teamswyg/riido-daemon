@@ -730,6 +730,24 @@
   - `command`: go run ./tools/redactiondrift; proves security hub docs do not redefine redaction marker or catalog details outside the SSOT
   - `workflow`: .github/workflows/security-redaction-docs.yml; proves public CI uploads security redaction doc evidence
 
+### security-invariants-docs
+
+- Owner: `daemon/security`
+- Observe: C7 invariant docs for trust tiers, policy bundle shape, policy targets, and store channel boundaries were manually edited while executable evidence already lived in internal/policy and runtime actor tests.
+  - Artifacts: `docs/20-domain/security/invariants.md`, `internal/policy`, `internal/agentbridge/runtimeactor`
+- Hypothesis: A security invariants manifest plus detail fragments can generate the reader docs and verify anchors for policy bundle defaults, runtime capability fingerprints, trust tiers, and store channel denial rules.
+  - Artifacts: `docs/20-domain/security/invariants.riido.json`, `docs/20-domain/security/invariants/core.riido.json`
+- Execute: Generate the invariant index and detail pages from executable ontology, while reusing policybundleevidence for the dedicated loader proof.
+  - Artifacts: `tools/securityinvariantsdocs`, `tools/policybundleevidence`, `.github/workflows/security-invariants-docs.yml`
+- Evaluate: The verifier rejects generated doc drift, invalid fragments, missing workflow wiring, missing source anchors, and detached policy-bundle loader evidence.
+  - Artifacts: `tools/securityinvariantsdocs/run_test.go`, `scripts/architecture-docs/tool-checks.sh`
+- Retrospective: Security invariant reader docs are now generated artifacts; the editable surface is the ontology and source-anchored verifier.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/securityinvariantsdocs -check-doc -evidence-out /tmp/security-invariants-docs.json; proves security invariant docs are generated and source anchors still exist
+  - `command`: go run ./tools/policybundleevidence -check-doc -evidence-out /tmp/policy-bundle-loader-evidence.json; proves the related policy-bundle loader surface remains independently verified
+  - `workflow`: .github/workflows/security-invariants-docs.yml; proves public CI uploads security invariant evidence
+
 ### runtime-secret-private-evidence
 
 - Owner: `riido-infra boundary, public daemon verifier`

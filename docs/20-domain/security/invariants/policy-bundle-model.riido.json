@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-security-invariant-detail.v1",
+  "id": "policy-bundle-model",
+  "title": "Security Invariants: Policy Bundle Model",
+  "generated_doc": "docs/20-domain/security/invariants/policy-bundle-model.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Policy bundle is the single decision source for this domain. Every gate receives the active policy bundle and returns allow, reject, or hold."},
+    {"kind": "code", "language": "txt", "code": "PolicyBundle {\n    SchemaVersion    string\n    Version          string\n    EffectiveSince   time.Time\n    SupersededAt     time.Time | null\n\n    TrustTierPolicies map[TrustTier]TrustTierPolicy\n    DefaultDeny       []PolicyTarget\n}\n\nTrustTierPolicy {\n    AllowedSurfaces   AllowedSurfaceSet\n    Sandbox           SandboxPolicy\n    NetworkEgress     EgressPolicy\n    Secrets           SecretsPolicy\n    ProtectedPaths    []PathPattern\n    DestructiveOps    DestructiveOpPolicy\n    MCPAllowlist      []MCPServerID\n    NativeConfigRules NativeConfigPolicy\n}"},
+    {"kind": "heading", "text": "Evolution"},
+    {"kind": "bullets", "items": ["Every new bundle has a new `Version`; versions are never overwritten.", "Even when a diff allows more, each task is evaluated with its start-time bundle.", "Moving an in-flight task to a new bundle follows T-POLICY in [`runtime-upgrade-flow.md`](../../../30-architecture/runtime-upgrade-flow.md)."]},
+    {"kind": "heading", "text": "Actor"},
+    {"kind": "bullets", "items": ["Policy bundles are deployed by human operator PR.", "Agents and daemon cannot change policy."]}
+  ]
+}

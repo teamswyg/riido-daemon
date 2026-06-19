@@ -1,0 +1,57 @@
+{
+  "id": "security-invariants-docs",
+  "owner": "daemon/security",
+  "observation": {
+    "summary": "C7 invariant docs for trust tiers, policy bundle shape, policy targets, and store channel boundaries were manually edited while executable evidence already lived in internal/policy and runtime actor tests.",
+    "artifacts": [
+      "docs/20-domain/security/invariants.md",
+      "internal/policy",
+      "internal/agentbridge/runtimeactor"
+    ]
+  },
+  "hypothesis": {
+    "summary": "A security invariants manifest plus detail fragments can generate the reader docs and verify anchors for policy bundle defaults, runtime capability fingerprints, trust tiers, and store channel denial rules.",
+    "artifacts": [
+      "docs/20-domain/security/invariants.riido.json",
+      "docs/20-domain/security/invariants/core.riido.json"
+    ]
+  },
+  "execution": {
+    "summary": "Generate the invariant index and detail pages from executable ontology, while reusing policybundleevidence for the dedicated loader proof.",
+    "artifacts": [
+      "tools/securityinvariantsdocs",
+      "tools/policybundleevidence",
+      ".github/workflows/security-invariants-docs.yml"
+    ]
+  },
+  "evaluation": {
+    "summary": "The verifier rejects generated doc drift, invalid fragments, missing workflow wiring, missing source anchors, and detached policy-bundle loader evidence.",
+    "artifacts": [
+      "tools/securityinvariantsdocs/run_test.go",
+      "scripts/architecture-docs/tool-checks.sh"
+    ]
+  },
+  "retrospective": {
+    "summary": "Security invariant reader docs are now generated artifacts; the editable surface is the ontology and source-anchored verifier.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/securityinvariantsdocs -check-doc -evidence-out /tmp/security-invariants-docs.json",
+      "proves": "security invariant docs are generated and source anchors still exist"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/policybundleevidence -check-doc -evidence-out /tmp/policy-bundle-loader-evidence.json",
+      "proves": "the related policy-bundle loader surface remains independently verified"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/security-invariants-docs.yml",
+      "proves": "public CI uploads security invariant evidence"
+    }
+  ]
+}

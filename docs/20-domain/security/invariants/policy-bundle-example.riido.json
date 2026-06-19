@@ -1,0 +1,10 @@
+{
+  "schema_version": "riido-security-invariant-detail.v1",
+  "id": "policy-bundle-example",
+  "title": "Security Invariants: Policy Bundle Example",
+  "generated_doc": "docs/20-domain/security/invariants/policy-bundle-example.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This example records the current `riido-policy-bundle.v1` JSON shape."},
+    {"kind": "code", "language": "json", "code": "{\n  \"schema_version\": \"riido-policy-bundle.v1\",\n  \"version\": \"policy-bundle.example.v1\",\n  \"effective_since\": \"2026-05-27T00:00:00Z\",\n  \"superseded_at\": null,\n  \"trust_tier_policies\": {\n    \"IsolatedContainer\": {\n      \"allowed_surfaces\": {\n        \"unsafe_bypass\": [\n          \"codex:--yolo\"\n        ],\n        \"native_config_hooks\": [\n          \"claude:command-hooks:audit\"\n        ],\n        \"native_config_files\": [],\n        \"tool_use\": [\n          \"tool:network-egress\"\n        ]\n      }\n    }\n  }\n}"}
+  ]
+}

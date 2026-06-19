@@ -1,0 +1,53 @@
+{
+  "schema_version": "riido-security-invariants-docs.v1",
+  "id": "security-invariants-docs",
+  "title": "Security / Policy SSOT: Invariants",
+  "generated_doc": "docs/20-domain/security/invariants.md",
+  "workflow": ".github/workflows/security-invariants-docs.yml",
+  "evidence_artifact": "security-invariants-docs",
+  "summary": [
+    "This executable ontology owns the C7 Security / Policy invariant surface: trust tiers, policy bundle shape, policy targets, unsafe bypass default-deny, and adjacent execution boundaries.",
+    "The policy-bundle loader remains a dedicated evidence artifact and is linked from this invariant index."
+  ],
+  "detail_pages": [
+    {"id": "scope", "title": "Scope", "path": "invariants/scope.md"},
+    {"id": "core", "title": "Core invariants", "path": "invariants/core.md"},
+    {"id": "trust-tier", "title": "Trust tier", "path": "invariants/trust-tier.md"},
+    {"id": "policy-bundle-model", "title": "Policy bundle model", "path": "invariants/policy-bundle-model.md"},
+    {"id": "policy-bundle-example", "title": "Policy bundle example", "path": "invariants/policy-bundle-example.md"},
+    {"id": "policy-targets", "title": "Policy targets", "path": "invariants/policy-targets.md"}
+  ],
+  "related_pages": [
+    {"title": "Policy bundle executable loader", "path": "invariants/policy-bundle-loader.md"}
+  ],
+  "fragments": {
+    "scope": "invariants/scope.riido.json",
+    "core": "invariants/core.riido.json",
+    "trust-tier": "invariants/trust-tier.riido.json",
+    "policy-bundle-model": "invariants/policy-bundle-model.riido.json",
+    "policy-bundle-example": "invariants/policy-bundle-example.riido.json",
+    "policy-targets": "invariants/policy-targets.riido.json"
+  },
+  "source_checks": [
+    {"name": "trust-tier-type", "file": "internal/policy/trust_tier.go", "contains": "type TrustTier string"},
+    {"name": "trust-tier-host", "file": "internal/policy/trust_tier.go", "contains": "TrustTierHost               TrustTier = \"Host\""},
+    {"name": "trust-tier-isolated", "file": "internal/policy/trust_tier.go", "contains": "TrustTierIsolatedContainer  TrustTier = \"IsolatedContainer\""},
+    {"name": "trust-tier-unknown", "file": "internal/policy/trust_tier.go", "contains": "TrustTierUnknown            TrustTier = \"Unknown\""},
+    {"name": "policy-bundle-type", "file": "internal/policy/bundle.go", "contains": "type PolicyBundle struct"},
+    {"name": "allowed-surface-set", "file": "internal/policy/bundle.go", "contains": "type AllowedSurfaceSet struct"},
+    {"name": "bundle-evaluate", "file": "internal/policy/bundle_evaluate.go", "contains": "EvaluateUnsafeBypassWithBundle"},
+    {"name": "host-unsafe-reject", "file": "internal/policy/bundle_unsafe_bypass_test.go", "contains": "TestParsePolicyBundleRejectsHostUnsafeBypass"},
+    {"name": "default-deny", "file": "internal/policy/bundle_default_test.go", "contains": "local default must not silently allow tool-use risk surfaces"},
+    {"name": "capability-policy-input", "file": "internal/agentbridge/runtimeactor/capability.go", "contains": "PolicyBundleVersion:   policyBundleVersion"},
+    {"name": "capability-policy-test", "file": "internal/agentbridge/runtimeactor/capability_fingerprint_policy_test.go", "contains": "TestRuntimeActorCapabilityFingerprintIncludesPolicyBundle"},
+    {"name": "tool-use-surfaces", "file": "internal/policy/tool_use_types.go", "contains": "ToolUseDestructiveCommand ToolUseSurface = \"tool:destructive-command\""},
+    {"name": "native-config-surface", "file": "internal/policy/native_config_policy.go", "contains": "NativeConfigHookClaudeCommandAudit"},
+    {"name": "store-channel-policy", "file": "internal/policy/store_channel.go", "contains": "EvaluateStoreChannelPolicy"},
+    {"name": "store-forbidden-test", "file": "internal/policy/store_channel_forbidden_surfaces_test.go", "contains": "TestStoreChannelPolicyAlwaysDeniesForbiddenSurfaces"}
+  ],
+  "assertions": [
+    "Security invariant reader docs must be generated from this ontology.",
+    "Every executable invariant claim must point at policy or runtime source evidence.",
+    "The policy-bundle loader remains a separate verifier consumed by this invariant index."
+  ]
+}

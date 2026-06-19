@@ -10,6 +10,7 @@ tool_tests=(
   ./tools/loopevidence
   ./tools/lockingdocs
   ./tools/securityredactiondocs
+  ./tools/securityinvariantsdocs
   ./tools/redactiondrift
   ./tools/providerintegrationevidence
   ./tools/providermigrationdocs
@@ -56,6 +57,7 @@ doc_tools=(
   contextmapdocs
   lockingdocs
   securityredactiondocs
+  securityinvariantsdocs
   semanticeventactivity
   eventauthority
   providerdraftmapping

@@ -1,0 +1,10 @@
+{
+  "schema_version": "riido-security-invariant-detail.v1",
+  "id": "core",
+  "title": "Security Invariants: Core",
+  "generated_doc": "docs/20-domain/security/invariants/core.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "These invariants are the primary domain promises."},
+    {"kind": "ordered", "items": ["`ExposesUnsafePermissionBypass=true` is a risk signal, not permission. Only this policy bundle gate decides whether the surface can be used. C3 Provider Capability SSOT is public `riido-contracts/provider/capability`.", "Provider-native approval bypass mode is always forbidden in `Host` trust tier. This covers Claude `--permission-mode bypassPermissions`, Codex `--yolo`, Codex `--dangerously-bypass-approvals-and-sandbox`, and equivalent wrapper manifest self-reported surfaces.", "Codex `--sandbox danger-full-access` is not in the unsafe approval-bypass list. It is a C4-selected, harness-managed host runtime envelope, not a caller/provider default sandbox surface.", "Default deny. Any surface not explicitly allowed by a policy bundle is rejected. Policy bundle versions only move forward; downgrade is forbidden.", "Policy decision and execution are separate. C7 decides whether a surface, path, or destructive action is allowed. Adjacent contexts perform flag delivery, file injection, process isolation, lint execution, and lease issue.", "Policy bundle is an input to `CapabilityFingerprint`. Policy changes invalidate leases and force task reevaluation; they cannot silently expand permission.", "Store channel policy is a security boundary. Store-forbidden surfaces cannot be used even when provider capability supports them. Channel enum and role model are owned by [`distribution-host-integration.md`](../../distribution-host-integration.md) (C11)."]}
+  ]
+}
