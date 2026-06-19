@@ -25,6 +25,7 @@ tool_tests=(
   ./tools/runtimeupgrade
   ./tools/saasassignment
   ./tools/validationevidence
+  ./tools/policybundleevidence
 )
 
 doc_tools=(
@@ -41,6 +42,7 @@ doc_tools=(
   runtimeupgrade
   saasassignment
   validationevidence
+  policybundleevidence
 )
 
 go test "${tool_tests[@]}" -count=1

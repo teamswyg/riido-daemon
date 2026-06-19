@@ -1,0 +1,39 @@
+name: policy-bundle-loader-evidence
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/policy-bundle-loader-evidence.yml"
+      - "docs/20-domain/security/invariants/policy-bundle-loader.md"
+      - "docs/20-domain/security/invariants/policy-bundle-loader.riido.json"
+      - "internal/policy/**"
+      - "cmd/riido/daemon_config*.go"
+      - "cmd/riido/daemon_policy_bundle_file_test.go"
+      - "cmd/riido/daemon_settings_defaults_test.go"
+      - "tools/policybundleevidence/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  policy-bundle-loader-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify policy bundle loader evidence
+        run: |
+          mkdir -p out
+          go test ./tools/policybundleevidence -count=1
+          go run ./tools/policybundleevidence \
+            -check-doc \
+            -evidence-out out/policy-bundle-loader-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: policy-bundle-loader-evidence
+          path: out/policy-bundle-loader-evidence.json
+          if-no-files-found: error

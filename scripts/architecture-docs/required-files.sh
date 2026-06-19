@@ -12,6 +12,8 @@ required_files=(
   docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md
   docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json
+  docs/20-domain/security/invariants/policy-bundle-loader.md
+  docs/20-domain/security/invariants/policy-bundle-loader.riido.json
   docs/20-domain/validation.md
   docs/20-domain/validation.riido.json
   docs/20-domain/runtime-scheduling/saas-assignment-source.md
@@ -46,6 +48,7 @@ required_files=(
   docs/30-architecture/riido-work-branch-gate.riido.json
   docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md
   docs/50-roadmap/open-questions.md
+  .github/workflows/policy-bundle-loader-evidence.yml
   .github/workflows/saas-assignment-source.yml
   .github/workflows/validation-evidence.yml
 )

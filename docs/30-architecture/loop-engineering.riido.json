@@ -22,6 +22,7 @@
     "docs/30-architecture/loop-engineering/runtime-upgrade-flow.riido.json",
     "docs/30-architecture/loop-engineering/saas-assignment-source.riido.json",
     "docs/30-architecture/loop-engineering/validation-evidence.riido.json",
+    "docs/30-architecture/loop-engineering/policy-bundle-loader-evidence.riido.json",
     "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
     "docs/30-architecture/loop-engineering/store-distribution.riido.json",
     "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",
