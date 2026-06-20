@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 296 |
+| Generated reader docs | 299 |
 | Direct SSOT docs | 1 |
 | Registered manual docs | 0 |
-| Scanned docs | 297 |
+| Scanned docs | 300 |
 
 ## Registered Manual Surfaces
 
@@ -27,6 +27,6 @@ _None._
 
 ## Assertions
 
-- repository docs markdown must be generated, direct-SSOT backed, or explicitly registered as manual debt
+- repository docs markdown and root entrypoint markdown must be generated, direct-SSOT backed, or explicitly registered as manual debt
 - manual debt registration is observable evidence when debt exists, not completion
 - zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed

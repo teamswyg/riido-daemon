@@ -1,0 +1,46 @@
+{
+  "schema_version": "riido-readme-page.v1",
+  "id": "readme-notice",
+  "title": "NOTICE",
+  "generated_doc": "NOTICE.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`riido-daemon` is an original Go implementation. No source code from any third-party project is directly incorporated into this repository."},
+    {"kind": "paragraph", "text": "This file enumerates the upstream projects whose behavior or interface contracts influenced the design, so operators and store reviewers can audit provenance."},
+    {"kind": "heading", "text": "1. Multica (`github.com/multica-ai/multica`)"},
+    {"kind": "paragraph", "text": "The Daemon / Runtime / Agent architecture, per-task workdir shape, mid-flight session pinning, native config injection, environment-blocklist principle, and provider command shapes were studied from Multica's open source release and reimplemented behavior-compatibly here."},
+    {"kind": "bullets", "items": [
+      "We did not copy Multica source code. The interface shapes were redesigned as Riido daemon packages such as `agentbridge`, `session`, `runtimeactor`, and provider adapter ACLs.",
+      "Multica's upstream license text currently describes itself as a **Modified Apache License, Version 2.0**, not plain Apache-2.0. Riido does not rely on that license for copied source because no Multica source is incorporated.",
+      "Migration scope and public daemon boundaries are tracked in [`docs/migration/daemon.md`](docs/migration/daemon.md)."
+    ]},
+    {"kind": "paragraph", "text": "Riido intentionally does not import or replicate Multica's server, web app, database, or deployment surfaces in this public daemon repository."},
+    {"kind": "heading", "text": "2. Provider CLI Wire Formats"},
+    {"kind": "paragraph", "text": "Stream / JSON-RPC / NDJSON shapes for each provider were learned from published vendor documentation and validated against actual binaries during integration testing. We do not redistribute any vendor code or bundle provider CLI executables in Riido artifacts."},
+    {"kind": "bullets", "items": [
+      "**Claude Code** (Anthropic) -- stream-json schema, permission mode, MCP config semantics, and approval frames are implemented as an ACL for an externally installed CLI.",
+      "**Codex** (OpenAI) -- app-server stdio JSON-RPC handshake and event frames are implemented as an ACL for an externally installed CLI.",
+      "**OpenClaw** -- JSON/NDJSON output, session resume, and version gate behavior are implemented as an ACL for an externally installed CLI.",
+      "**Cursor Agent** -- stream-json output, launch profile detection, and unsafe mode gates are implemented as an ACL for an externally installed CLI."
+    ]},
+    {"kind": "paragraph", "text": "Provider CLIs remain user-installed external tools. Store, MSIX, and Developer ID artifacts must not silently install, redistribute, or bundle Claude, Codex, OpenClaw, or Cursor executables."},
+    {"kind": "heading", "text": "3. Runtime + Toolchain"},
+    {"kind": "bullets", "items": [
+      "**Go** -- module and toolchain versions are pinned in `go.mod`.",
+      "**Riido contracts** -- shared public DTO/domain contracts come from `github.com/teamswyg/riido-contracts`, as declared in `go.mod`.",
+      "**Dependency boundary** -- public CI rejects non-Riido Go module dependencies. Verify with `go list -m all`."
+    ]},
+    {"kind": "heading", "text": "4. Distribution"},
+    {"kind": "paragraph", "text": "No vendored third-party code lives in this repository. If any future PR adds a non-Riido dependency:"},
+    {"kind": "bullets", "items": [
+      "The PR description must justify the dependency.",
+      "`NOTICE.md` must be updated to attribute the package, its license, and the upstream URL.",
+      "The dependency must be reviewed against store distribution and public CI policy before merge."
+    ]},
+    {"kind": "heading", "text": "5. Behavior-Compatible Reimplementation Policy"},
+    {"kind": "bullets", "items": [
+      "Command-flag lists, event-mapping tables, and high-level adapter shapes are re-derived from public documentation and reimplemented here as Go types and helpers.",
+      "We do not copy function bodies. If a future PR ever needs to copy upstream code, the file header must carry the upstream commit hash, the upstream license notice, and a CHANGES note, and this file must be updated."
+    ]},
+    {"kind": "paragraph", "text": "Currently nothing in `internal/`, `cmd/`, or `tools/` is copied from any upstream source."}
+  ]
+}

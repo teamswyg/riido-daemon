@@ -6,9 +6,10 @@
   "workflow": ".github/workflows/repo-executable-knowledge-coverage.yml",
   "evidence_artifact": "repo-executable-knowledge-coverage",
   "scan_roots": ["docs"],
+  "scan_files": ["README.md", "AGENTS.md", "NOTICE.md"],
   "manual_groups": [],
   "assertions": [
-    "repository docs markdown must be generated, direct-SSOT backed, or explicitly registered as manual debt",
+    "repository docs markdown and root entrypoint markdown must be generated, direct-SSOT backed, or explicitly registered as manual debt",
     "manual debt registration is observable evidence when debt exists, not completion",
     "zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed"
   ]

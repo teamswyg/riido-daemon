@@ -4,6 +4,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/readme-docs.yml"
+      - "README.md"
+      - "AGENTS.md"
+      - "NOTICE.md"
       - "docs/README.md"
       - "docs/readme/**"
       - "tools/readmedocs/**"
@@ -17,6 +20,9 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/readme-docs.yml"
+      - "README.md"
+      - "AGENTS.md"
+      - "NOTICE.md"
       - "docs/README.md"
       - "docs/readme/**"
       - "tools/readmedocs/**"

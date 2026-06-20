@@ -5,6 +5,9 @@
   "workflow": ".github/workflows/readme-docs.yml",
   "evidence_artifact": "readme-docs",
   "fragments": [
+    "root-readme.riido.json",
+    "agents.riido.json",
+    "notice.riido.json",
     "module-map.riido.json",
     "provider-cli.riido.json",
     "repository-boundary.riido.json",
@@ -12,6 +15,10 @@
   ],
   "source_checks": [
     {"name": "bridge-providers-cli", "file": "cmd/riido/bridge_model.go", "contains": "`riido bridge providers`"},
+    {"name": "module-path", "file": "go.mod", "contains": "module github.com/teamswyg/riido-daemon"},
+    {"name": "contracts-dependency", "file": "go.mod", "contains": "require github.com/teamswyg/riido-contracts"},
+    {"name": "branch-gate-workflow", "file": ".github/workflows/riido-work-branch.yml", "contains": "Verify PR branch came from Riido work unit branchName"},
+    {"name": "branch-gate-script", "file": "scripts/verify-riido-work-branch.sh", "contains": "branch must be the exact Riido branchName"},
     {"name": "daemon-command-surface", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandDaemon mainCommand = \"daemon\""},
     {"name": "task-source-env", "file": "cmd/riido/daemon_config.go", "contains": "envTaskDBSourcePath              = \"RIIDO_TASK_DB_SOURCE_PATH\""},
     {"name": "saas-device-env", "file": "cmd/riido/daemon_config.go", "contains": "envDeviceSecret                  = \"RIIDO_DEVICE_SECRET\""},
@@ -23,6 +30,7 @@
     {"name": "github-release-installer", "file": "scripts/install-riido-daemon.sh", "contains": "https://api.github.com/repos/$repo/releases?per_page=1"}
   ],
   "assertions": [
+    "root README, AGENTS, and NOTICE are generated from executable JSON fragments instead of reader-authored markdown",
     "README handoff pages are generated from executable JSON fragments instead of reader-authored markdown",
     "provider CLI names and override env keys must be anchored in adapter code or smoke scripts",
     "run and smoke commands must stay aligned with CLI command constants and installer behavior"

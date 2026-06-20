@@ -21,6 +21,9 @@ func scanDocs(root string, m manifest) ([]docClass, []string) {
 		}
 		docs = append(docs, found...)
 	}
+	for _, scanFile := range m.ScanFiles {
+		docs = append(docs, classifyDoc(root, scanFile, m, manualByPath))
+	}
 	slices.SortFunc(docs, func(a, b docClass) int {
 		return strings.Compare(a.Path, b.Path)
 	})
