@@ -14,7 +14,7 @@ func TestRenderedDocsCoverReadmeHandoffPages(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(renderedDocs(m)) != 4 {
-		t.Fatalf("rendered doc count = %d", len(renderedDocs(m)))
+	if got := len(renderedDocs(m)); got != len(m.Fragments) {
+		t.Fatalf("rendered doc count = %d, want %d", got, len(m.Fragments))
 	}
 }

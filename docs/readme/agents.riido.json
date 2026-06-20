@@ -1,0 +1,12 @@
+{
+  "schema_version": "riido-readme-page.v1",
+  "id": "readme-agents",
+  "title": "AGENTS.md",
+  "generated_doc": "AGENTS.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "This repository is SSOT-document-first. Before changing behavior or process, update the owning document under `docs/` in the same PR."},
+    {"kind": "heading", "text": "Work Branch Rule"},
+    {"kind": "paragraph", "text": "Every change starts from a Riido task. Use only the `branchName` returned by the Riido task creation response as the Git branch name."},
+    {"kind": "paragraph", "text": "The SSOT for this rule is [`docs/30-architecture/riido-work-branch-gate.md`](docs/30-architecture/riido-work-branch-gate.md). Pull requests that do not follow the Riido work-unit branch shape fail `.github/workflows/riido-work-branch.yml`."}
+  ]
+}

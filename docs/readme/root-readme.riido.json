@@ -1,0 +1,24 @@
+{
+  "schema_version": "riido-readme-page.v1",
+  "id": "readme-root",
+  "title": "riido-daemon",
+  "generated_doc": "README.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "`riido-daemon` is the public Go module for the Riido local daemon and CLI. It runs on the user's PC, detects external provider CLIs such as Claude Code, Codex, OpenClaw, and Cursor Agent, and connects them as executable runtimes without bundling or installing those CLIs."},
+    {"kind": "paragraph", "text": "This repository is the public/store-reviewable boundary for local helper, provider connection status, workspace grants, consent, local IPC, and daemon-side validation."},
+    {"kind": "heading", "text": "Read Next"},
+    {"kind": "links", "links": [
+      {"title": "Repository boundary", "path": "docs/readme/repository-boundary.md"},
+      {"title": "Document map", "path": "docs/readme/document-map.md"},
+      {"title": "Module map", "path": "docs/readme/module-map.md"},
+      {"title": "Provider CLI principles", "path": "docs/readme/provider-cli.md"},
+      {"title": "Run and smoke", "path": "docs/readme/run-and-smoke.md"},
+      {"title": "Verification", "path": "docs/readme/verification.md"}
+    ]},
+    {"kind": "heading", "text": "Module"},
+    {"kind": "code", "language": "text", "code": "github.com/teamswyg/riido-daemon"},
+    {"kind": "heading", "text": "Shared Contract Dependency"},
+    {"kind": "code", "language": "text", "code": "github.com/teamswyg/riido-contracts"},
+    {"kind": "paragraph", "text": "License: Apache-2.0."}
+  ]
+}

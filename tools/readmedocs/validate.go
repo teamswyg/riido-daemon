@@ -16,16 +16,16 @@ func validateManifest(repo string, m manifest) ([]string, []sourceCheckResult) {
 	if len(m.Assertions) == 0 {
 		problems = append(problems, "assertions are required")
 	}
-	problems = append(problems, validatePages(m.Pages)...)
+	problems = append(problems, validatePages(m.Pages, len(m.Fragments))...)
 	results, sourceProblems := validateSourceChecks(repo, m.SourceChecks)
 	problems = append(problems, sourceProblems...)
 	problems = append(problems, mustExist(repo, m.Workflow)...)
 	return problems, results
 }
 
-func validatePages(pages []page) []string {
-	if len(pages) != 4 {
-		return []string{"four readme handoff pages are required"}
+func validatePages(pages []page, want int) []string {
+	if len(pages) != want {
+		return []string{"readme page fragment count mismatch"}
 	}
 	var problems []string
 	seen := map[string]bool{}
