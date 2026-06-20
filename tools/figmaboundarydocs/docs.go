@@ -2,6 +2,7 @@ package main
 
 func renderedDocs(m manifest) map[string]string {
 	return map[string]string{
+		"docs/30-architecture/figma-ai-agent-daemon-boundary.md":                     renderRoot(m),
 		"docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md":   renderBoundaryCriteria(m),
 		"docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md":         renderChangeLoop(m),
 		"docs/30-architecture/figma-ai-agent-daemon-boundary/fixture-vocabulary.md":  renderFixtureVocabulary(m),
@@ -13,6 +14,7 @@ func renderedDocs(m manifest) map[string]string {
 
 func generatedDocPaths() []string {
 	return []string{
+		"docs/30-architecture/figma-ai-agent-daemon-boundary.md",
 		"docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md",
 		"docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md",
 		"docs/30-architecture/figma-ai-agent-daemon-boundary/fixture-vocabulary.md",

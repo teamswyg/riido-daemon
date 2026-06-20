@@ -9,12 +9,12 @@ func TestRunAgainstRepositoryEvidence(t *testing.T) {
 	}
 }
 
-func TestRenderedDocsCoverSixDetailSurfaces(t *testing.T) {
+func TestRenderedDocsCoverRootAndSixDetailSurfaces(t *testing.T) {
 	m, err := loadManifest("../..", defaultManifest)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(renderedDocs(m)) != 6 {
+	if len(renderedDocs(m)) != 7 {
 		t.Fatalf("rendered doc count = %d", len(renderedDocs(m)))
 	}
 }
