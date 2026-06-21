@@ -12,6 +12,7 @@ type evidence struct {
 	ManualByGroup              map[string]int        `json:"manual_by_group"`
 	ManualTopDirs              []manualDir           `json:"manual_top_dirs"`
 	ManualSamples              []manualSample        `json:"manual_samples"`
+	GeneratedOrigins           []generatedOrigin     `json:"generated_origins"`
 	ManifestInventory          manifestInventory     `json:"manifest_inventory"`
 	ManifestLoopCount          int                   `json:"manifest_loop_count"`
 	ManifestDirectLoopCount    int                   `json:"manifest_direct_loop_count"`
