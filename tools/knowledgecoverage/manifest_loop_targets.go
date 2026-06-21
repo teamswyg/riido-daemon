@@ -44,4 +44,5 @@ func collectManifestLoopDelegatedTargets(root, path string, targets map[string]b
 	if ok {
 		collectManifestLoopEntryFileTargets(root, path, entryFiles, targets)
 	}
+	collectManifestLoopPointerTargets(root, path, object, manifestLoopPointerFields(), targets)
 }

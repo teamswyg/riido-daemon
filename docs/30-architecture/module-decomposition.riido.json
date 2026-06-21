@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-module-decomposition.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/module-decomposition-docs.riido.json",
   "id": "architecture-module-decomposition",
   "title": "Module Decomposition SSOT",
   "generated_doc": "docs/30-architecture/module-decomposition.md",

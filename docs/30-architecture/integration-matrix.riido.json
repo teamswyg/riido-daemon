@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-integration-matrix-docs.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/integration-matrix-docs.riido.json",
   "id": "architecture-provider-integration-matrix",
   "title": "Provider Integration Matrix",
   "generated_doc": "docs/30-architecture/integration-matrix.md",
