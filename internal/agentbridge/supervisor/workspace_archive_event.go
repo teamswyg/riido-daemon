@@ -7,8 +7,11 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
-func (a *Actor) appendWorkspaceArchivedEvent(ctx context.Context, taskID string, events *workspaceEventContext, record workdir.ArchiveRecord) {
-	a.appendWorkspaceEvent(ctx, taskID, events, ir.EventWorkdirArchived, eventNativeConfigVersion(events), map[string]any{
+func (a *Actor) appendWorkspaceArchivedEvent(ctx context.Context, task *runningTask, record workdir.ArchiveRecord) {
+	if task == nil {
+		return
+	}
+	a.appendTaskWorkspaceEvent(ctx, task, ir.EventWorkdirArchived, eventNativeConfigVersion(task.events), map[string]any{
 		"workdirPath": record.WorkdirPath,
 		"archiveURI":  record.ArchiveURI,
 	})
