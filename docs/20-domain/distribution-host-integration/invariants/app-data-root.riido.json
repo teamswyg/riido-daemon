@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-distribution-host-invariants-detail.v1",
+  "loop_source": "docs/20-domain/distribution-host-integration/invariants.riido.json",
   "id": "app-data-root",
   "title": "AppDataRoot",
   "generated_doc": "docs/20-domain/distribution-host-integration/invariants/app-data-root.md",

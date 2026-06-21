@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-locking-detail.v1",
+  "loop_source": "docs/20-domain/locking.riido.json",
   "id": "local-file-lock",
   "title": "Local File Lock",
   "generated_doc": "docs/20-domain/locking/local-file-lock.md",

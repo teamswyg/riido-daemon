@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-distribution-host-page.v1",
+  "loop_source": "docs/20-domain/distribution-host-integration.riido.json",
   "id": "review-demo-mode",
   "title": "Review / Demo Mode",
   "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy/review-demo-mode.md",

@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-context-map-dependency-direction.v1",
+  "loop_source": "docs/20-domain/context-map.riido.json",
   "diagram": [
     "riido-contracts/task,ir,provider/capability",
     "        |",

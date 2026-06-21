@@ -2,6 +2,7 @@ package main
 
 type detailDoc struct {
 	SchemaVersion string  `json:"schema_version"`
+	LoopSource    string  `json:"loop_source"`
 	ID            string  `json:"id"`
 	Title         string  `json:"title"`
 	GeneratedDoc  string  `json:"generated_doc"`

@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-locking-detail.v1",
+  "loop_source": "docs/20-domain/locking.riido.json",
   "id": "request-metadata",
   "title": "Request Metadata",
   "generated_doc": "docs/20-domain/locking/request-metadata.md",

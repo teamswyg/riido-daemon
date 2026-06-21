@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-locking-detail.v1",
+  "loop_source": "docs/20-domain/locking.riido.json",
   "id": "adjacent-contracts",
   "title": "Adjacent SSOT Contracts",
   "generated_doc": "docs/20-domain/locking/adjacent-contracts.md",

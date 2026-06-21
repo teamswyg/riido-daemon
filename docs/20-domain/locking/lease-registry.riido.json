@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-locking-detail.v1",
+  "loop_source": "docs/20-domain/locking.riido.json",
   "id": "lease-registry",
   "title": "Local Task DB Lease Registry",
   "generated_doc": "docs/20-domain/locking/lease-registry.md",

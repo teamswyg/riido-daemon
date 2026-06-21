@@ -15,6 +15,7 @@ type manifest struct {
 	GeneratedDoc     string        `json:"generated_doc"`
 	Workflow         string        `json:"workflow"`
 	EvidenceArtifact string        `json:"evidence_artifact"`
+	Loop             evidenceLoop  `json:"loop"`
 	Summary          []string      `json:"summary"`
 	Parts            []link        `json:"parts"`
 	RelatedPages     []link        `json:"related_pages"`

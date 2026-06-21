@@ -8,6 +8,7 @@ type figmaSection struct {
 
 type splitRepoFragment struct {
 	SchemaVersion           string   `json:"schema_version"`
+	LoopSource              string   `json:"loop_source"`
 	Rules                   []string `json:"rules"`
 	DaemonMustNotRedefine   []string `json:"daemon_must_not_redefine"`
 	DownstreamBoundaryCheck string   `json:"downstream_boundary_check"`
@@ -16,6 +17,7 @@ type splitRepoFragment struct {
 
 type changeFragment struct {
 	SchemaVersion string   `json:"schema_version"`
+	LoopSource    string   `json:"loop_source"`
 	Summary       string   `json:"summary"`
 	SamePRUpdates []string `json:"same_pr_updates"`
 }

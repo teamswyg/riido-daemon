@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-distribution-host-invariants-detail.v1",
+  "loop_source": "docs/20-domain/distribution-host-integration/invariants.riido.json",
   "id": "external-tool-registry",
   "title": "ExternalToolRegistry",
   "generated_doc": "docs/20-domain/distribution-host-integration/invariants/external-tool-registry.md",
