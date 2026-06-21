@@ -2,6 +2,7 @@
   "schema_version": "riido-draft-field-surface.v1",
   "id": "provider-runtime-draft-field-surface",
   "title": "Draft Field Surface",
+  "loop_source": "docs/30-architecture/loop-engineering/draft-field-surface.riido.json",
   "allowed_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md",
   "forbidden_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md",
   "workflow": ".github/workflows/draft-fields.yml",

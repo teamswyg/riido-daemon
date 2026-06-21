@@ -8,9 +8,9 @@
   "scan_roots": ["docs/30-architecture"],
   "manual_groups": [],
   "manifest_loop_budget": {
-    "max_missing": 181,
+    "max_missing": 173,
     "max_missing_by_group": {
-      "docs": 181
+      "docs": 173
     }
   },
   "assertions": [

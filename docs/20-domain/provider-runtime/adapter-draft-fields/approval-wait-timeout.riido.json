@@ -2,6 +2,7 @@
   "schema_version": "riido-approval-wait-timeout.v1",
   "id": "provider-runtime-approval-wait-timeout",
   "title": "Approval Wait Timeout Ownership",
+  "loop_source": "docs/30-architecture/loop-engineering/approval-wait-timeout.riido.json",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md",
   "workflow": ".github/workflows/approval-wait-timeout.yml",
   "evidence_artifact": "approval-wait-timeout-evidence",

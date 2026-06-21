@@ -2,6 +2,7 @@
   "schema_version": "riido-shutdown-authority.v1",
   "id": "provider-runtime-cancel-interrupt-input",
   "title": "Cancel, Interrupt, And Input",
+  "loop_source": "docs/30-architecture/loop-engineering/shutdown-authority.riido.json",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md",
   "workflow": ".github/workflows/shutdown-authority.yml",
   "evidence_artifact": "shutdown-authority-evidence",

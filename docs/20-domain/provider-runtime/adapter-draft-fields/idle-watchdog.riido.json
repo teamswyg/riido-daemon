@@ -2,6 +2,7 @@
   "schema_version": "riido-semantic-event-activity.v1",
   "id": "provider-runtime-idle-watchdog",
   "title": "Idle Watchdog Semantic Activity",
+  "loop_source": "docs/30-architecture/loop-engineering/semantic-event-activity.riido.json",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md",
   "workflow": ".github/workflows/semantic-event-activity.yml",
   "evidence_artifact": "semantic-event-activity-evidence",

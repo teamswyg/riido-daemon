@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `159`
+- Complete manifest loops: `167`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `139`
-- Missing manifest loops: `181`
-- Missing loop budget: `181`
+- Delegated manifest loops: `147`
+- Missing manifest loops: `173`
+- Missing loop budget: `173`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 181 | 181 | `docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json`<br>`docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json`<br>`docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.riido.json` |
+| `docs` | 173 | 173 | `docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json`<br>`docs/20-domain/runtime-scheduling/invariants/core.riido.json`<br>`docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json` |
 
 ## Registered Manual Surfaces
 

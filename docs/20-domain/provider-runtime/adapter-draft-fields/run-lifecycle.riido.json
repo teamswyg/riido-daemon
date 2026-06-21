@@ -2,6 +2,7 @@
   "schema_version": "riido-terminal-result-mapping.v1",
   "id": "provider-runtime-terminal-result-mapping",
   "title": "Run Lifecycle",
+  "loop_source": "docs/30-architecture/loop-engineering/terminal-result-mapping.riido.json",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.md",
   "workflow": ".github/workflows/terminal-result-mapping.yml",
   "evidence_artifact": "terminal-result-mapping-evidence",
