@@ -5,6 +5,13 @@
   "generated_doc": "docs/20-domain/provider-runtime/adapter-acl.md",
   "workflow": ".github/workflows/provider-adapter-acl-docs.yml",
   "evidence_artifact": "provider-adapter-acl-docs",
+  "loop": {
+    "observation": "Adapter ACL detail pages are executable C4 fragments, but coverage previously treated each detail file as independent loop debt.",
+    "hypothesis": "The adapter ACL root can own the translation/backpressure/bridge/detect evidence loop while detail manifests delegate to it.",
+    "execute": "Generate the adapter ACL reader, load every declared detail fragment, verify provider bridge/source anchors, and publish adapter ACL evidence.",
+    "evaluate": "The verifier fails on stale docs, missing fragments, missing source anchors, or malformed adapter ACL detail records.",
+    "retrospective": "Adapter ACL knowledge stays one generated review surface with atomic fragment inputs for provider-specific boundaries."
+  },
   "summary": [
     "This executable ontology owns the C4 adapter ACL surfaces that translate provider raw streams into daemon-neutral drafts and orchestrated runtime execution.",
     "Canonical event append authority remains adjacent evidence owned by the EventIngestor contract."

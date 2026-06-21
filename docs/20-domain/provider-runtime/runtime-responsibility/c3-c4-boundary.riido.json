@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "loop_source": "docs/20-domain/provider-runtime/runtime-responsibility.riido.json",
   "id": "c3-c4-boundary",
   "title": "C3 / C4 Boundary",
   "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/c3-c4-boundary.md",

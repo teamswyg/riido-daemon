@@ -5,6 +5,13 @@
   "generated_doc": "docs/20-domain/provider-runtime/integration-gates.md",
   "workflow": ".github/workflows/provider-integration-gate-docs.yml",
   "evidence_artifact": "provider-integration-gate-docs",
+  "loop": {
+    "observation": "Provider integration gate detail pages are generated from a focused gate manifest, but the fragments still counted as loop-less debt.",
+    "hypothesis": "The integration-gates root can own the deterministic and opt-in provider evidence loop while each gate page delegates to it.",
+    "execute": "Generate the integration-gates reader, verify every declared gate fragment and source anchor, and publish gate evidence in CI.",
+    "evaluate": "The verifier fails on malformed gate fragments, stale generated docs, missing source anchors, or missing assertions.",
+    "retrospective": "Provider gate evidence remains discoverable through one reader while each adapter scope stays an isolated semantic fragment."
+  },
   "summary": [
     "This SSOT fixes the provider-runtime integration gate boundary as generated documentation, source anchors, and CI evidence.",
     "The gates describe which public daemon packages own local runtime scope, SaaS adapter scope, task DB scope, local API scope, project sync scope, and real provider evidence."

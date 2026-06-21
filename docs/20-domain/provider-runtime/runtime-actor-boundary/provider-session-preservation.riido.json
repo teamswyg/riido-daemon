@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "loop_source": "docs/20-domain/provider-runtime/runtime-actor-boundary.riido.json",
   "id": "provider-session-preservation",
   "title": "Provider Session Preservation",
   "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/provider-session-preservation.md",

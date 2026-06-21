@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-runtime-responsibility-detail.v1",
+  "loop_source": "docs/20-domain/provider-runtime/runtime-responsibility.riido.json",
   "id": "responsibility-statement",
   "title": "Responsibility Statement",
   "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/responsibility-statement.md",
