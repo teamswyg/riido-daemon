@@ -2,6 +2,7 @@
   "schema_version": "riido-compatibility-gate.v1",
   "id": "daemon-compatibility-gate",
   "title": "Compatibility Gate Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/compatibility-gate.riido.json",
   "generated_doc": "docs/30-architecture/compatibility-gate.md",
   "workflow": ".github/workflows/compatibility-gate.yml",
   "evidence_artifact": "compatibility-gate-evidence",

@@ -40,4 +40,8 @@ func collectManifestLoopDelegatedTargets(root, path string, targets map[string]b
 	if ok {
 		collectManifestLoopFragmentTargets(root, path, fragments, targets)
 	}
+	entryFiles, ok := object["entry_files"].([]any)
+	if ok {
+		collectManifestLoopEntryFileTargets(root, path, entryFiles, targets)
+	}
 }

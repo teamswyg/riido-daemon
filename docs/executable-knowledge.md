@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `237`
+- Complete manifest loops: `241`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `217`
-- Missing manifest loops: `103`
-- Missing loop budget: `103`
+- Delegated manifest loops: `221`
+- Missing manifest loops: `99`
+- Missing loop budget: `99`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 103 | 103 | `docs/30-architecture/compatibility-gate.riido.json`<br>`docs/30-architecture/config-reference/executable-search-path.riido.json`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json` |
+| `docs` | 99 | 99 | `docs/30-architecture/integration-matrix.riido.json`<br>`docs/30-architecture/module-decomposition/import-rules.riido.json`<br>`docs/30-architecture/module-decomposition/package-roles.riido.json` |
 
 ## Registered Manual Surfaces
 

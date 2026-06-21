@@ -3,6 +3,7 @@ package figmaboundary
 type boundaryManifest struct {
 	SchemaVersion                     string              `json:"schema_version"`
 	ID                                string              `json:"id"`
+	LoopSource                        string              `json:"loop_source,omitempty"`
 	RiidoTask                         string              `json:"riido_task"`
 	HardeningTasks                    []string            `json:"hardening_tasks"`
 	HumanDoc                          string              `json:"human_doc"`
