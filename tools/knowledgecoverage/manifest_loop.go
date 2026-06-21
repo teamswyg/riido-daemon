@@ -12,7 +12,11 @@ func scanManifestLoops(root string) (manifestLoopReport, error) {
 	report := manifestLoopReport{}
 	counts := map[string]int{}
 	samples := map[string][]string{}
-	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
+	delegatedTargets, err := scanManifestLoopDelegatedTargets(root)
+	if err != nil {
+		return report, err
+	}
+	err = filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
 		}
@@ -22,7 +26,7 @@ func scanManifestLoops(root string) (manifestLoopReport, error) {
 		if entry.IsDir() || !strings.HasSuffix(path, ".riido.json") {
 			return nil
 		}
-		scanManifestLoopPath(root, path, &report, counts, samples)
+		scanManifestLoopPath(root, path, delegatedTargets, &report, counts, samples)
 		return nil
 	})
 	report.MissingGroups = manifestGroups(counts)
@@ -30,9 +34,20 @@ func scanManifestLoops(root string) (manifestLoopReport, error) {
 	return report, err
 }
 
-func scanManifestLoopPath(root, path string, report *manifestLoopReport, counts map[string]int, samples map[string][]string) {
+func scanManifestLoopPath(
+	root string,
+	path string,
+	delegatedTargets map[string]bool,
+	report *manifestLoopReport,
+	counts map[string]int,
+	samples map[string][]string,
+) {
 	group := manifestGroup(root, path)
-	switch manifestLoopStatus(root, path) {
+	status := manifestLoopStatus(root, path)
+	if status == "missing" && delegatedTargets[path] {
+		status = "delegated"
+	}
+	switch status {
 	case "direct":
 		report.Complete++
 		report.Direct++

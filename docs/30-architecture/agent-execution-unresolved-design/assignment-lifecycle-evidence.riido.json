@@ -1,6 +1,7 @@
 {
   "schema_version": "riido-agent-execution-evidence.v1",
   "id": "agent-execution-risk-evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
   "riido_task": "RIID-4964",
   "human_doc": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md",
   "source_documents": [
