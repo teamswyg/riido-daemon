@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
@@ -18,10 +17,7 @@ func (a *Actor) blockPreparingRuntimeDrift(
 		if !preparingTaskDrifted(task, status) {
 			continue
 		}
-		cancelRunningTask(task)
-		reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
-		_ = a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, driftBlockedResult(task, status))
-		delete(inFlight, task.taskID)
+		a.finishTaskWithResult(ctx, inFlight, task, driftBlockedResult(task, status))
 	}
 }
 

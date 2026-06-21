@@ -8,32 +8,27 @@ import (
 
 func (a *Actor) finishActivationError(
 	ctx context.Context,
-	reportCtx context.Context,
 	task *runningTask,
 	msg *taskActivationMsg,
 	inFlight map[string]*runningTask,
 ) {
-	cancelRunningTask(task)
 	res := resultForActivationError(msg.err)
 	if msg.prepared != nil {
 		applyPreparedWorkspace(task, msg.prepared)
 		res = a.recordTerminalResult(ctx, task, res)
 	}
-	_ = a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, res)
-	delete(inFlight, task.taskID)
+	a.finishTaskWithResult(ctx, inFlight, task, res)
 }
 
 func (a *Actor) finishActivationMissingHandle(
-	reportCtx context.Context,
+	ctx context.Context,
 	task *runningTask,
 	inFlight map[string]*runningTask,
 ) {
-	_ = a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, agentbridge.Result{
+	a.finishTaskWithResult(ctx, inFlight, task, agentbridge.Result{
 		Status: agentbridge.ResultFailed,
 		Error:  "supervisor: runtime submit returned no session handle",
 	})
-	cancelRunningTask(task)
-	delete(inFlight, task.taskID)
 }
 
 func cancelRunningTask(task *runningTask) {

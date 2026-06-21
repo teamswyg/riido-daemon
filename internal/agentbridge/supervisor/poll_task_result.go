@@ -2,8 +2,6 @@ package supervisor
 
 import (
 	"context"
-
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 )
 
 func (a *Actor) handleTaskResult(
@@ -15,10 +13,9 @@ func (a *Actor) handleTaskResult(
 	reportCtx := ctx
 	res := msg.result
 	if running != nil {
-		reportCtx = controlplane.ContextWithTaskReport(ctx, running.report)
 		res = a.recordTerminalResult(ctx, running, msg.result)
-		cancelRunningTask(running)
+		a.finishTaskWithResult(ctx, inFlight, running, res)
+		return
 	}
 	_ = a.cfg.Reporter.CompleteTask(reportCtx, msg.taskID, res)
-	delete(inFlight, msg.taskID)
 }
