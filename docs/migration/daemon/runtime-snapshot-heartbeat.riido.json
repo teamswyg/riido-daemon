@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-docs.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-runtime-snapshot-heartbeat-docs.riido.json",
   "id": "migration-daemon-runtime-snapshot-heartbeat-docs",
   "title": "Riido Daemon Migration Plan: Runtime Snapshot Heartbeat",
   "workflow": ".github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml",

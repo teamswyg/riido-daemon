@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-runtime-snapshot-heartbeat-docs.riido.json",
   "id": "daemon-runtime-snapshot-heartbeat-aggregated-runtime-snapshot",
   "title": "RIID-4917: Aggregated Device / Runtime Snapshot Heartbeat",
   "generated_doc": "docs/migration/daemon/runtime-snapshot-heartbeat/aggregated-runtime-snapshot.md",
