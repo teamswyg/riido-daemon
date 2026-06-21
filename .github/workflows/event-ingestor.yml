@@ -45,3 +45,16 @@ jobs:
       - name: Verify EventIngestor redaction/audit gate
         run: |
           go test ./internal/policy ./internal/ir/ingest ./internal/workdir -run 'Redact|Secret|Ingest|RunEventSink|AppendEvents' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/event-ingestor.yml \
+            -evidence-out out/event-ingestor-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: event-ingestor-evidence
+          path: out/event-ingestor-evidence.json
+          if-no-files-found: error

@@ -51,3 +51,16 @@ jobs:
       - name: Verify controlplane port gates
         run: |
           go test ./internal/agentbridge/controlplane -run 'TaskReportContext|MemorySource|MemoryReporter|FileReporter|FileQueueSource' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/controlplane.yml \
+            -evidence-out out/controlplane-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: controlplane-evidence
+          path: out/controlplane-evidence.json
+          if-no-files-found: error

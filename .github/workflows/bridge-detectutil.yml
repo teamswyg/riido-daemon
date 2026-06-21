@@ -53,3 +53,16 @@ jobs:
       - name: Verify bridge/detect helper gates
         run: |
           go test ./internal/agentbridge/bridge ./internal/agentbridge/detectutil ./internal/agentbridge/session ./internal/process -run 'New|Detect|Run|Cancel|ProtocolDriver|TempFiles|ResolveExecutable|VersionProbe' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/bridge-detectutil.yml \
+            -evidence-out out/bridge-detectutil-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: bridge-detectutil-evidence
+          path: out/bridge-detectutil-evidence.json
+          if-no-files-found: error

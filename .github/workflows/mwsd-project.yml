@@ -64,3 +64,16 @@ jobs:
           go build -o /tmp/riido-mwsd-check ./cmd/riido
           go run ./cmd/riido --help >/tmp/riido-help.txt 2>&1
           grep -q 'riido mwsd <snapshot|projection|sync|orchestration|projects|status>' /tmp/riido-help.txt
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/mwsd-project.yml \
+            -evidence-out out/mwsd-project-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mwsd-project-evidence
+          path: out/mwsd-project-evidence.json
+          if-no-files-found: error

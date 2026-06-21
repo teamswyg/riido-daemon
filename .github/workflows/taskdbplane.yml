@@ -61,3 +61,16 @@ jobs:
       - name: Verify taskdbplane domain gates
         run: |
           go test ./internal/taskdb ./internal/agentbridge/controlplane/taskdbplane -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/taskdbplane.yml \
+            -evidence-out out/taskdbplane-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: taskdbplane-evidence
+          path: out/taskdbplane-evidence.json
+          if-no-files-found: error
