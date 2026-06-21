@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `321`
+- Complete manifest loops: `328`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `301`
-- Missing manifest loops: `19`
-- Missing loop budget: `19`
+- Delegated manifest loops: `308`
+- Missing manifest loops: `12`
+- Missing loop budget: `12`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 19 | 19 | `docs/migration/daemon/root.riido.json`<br>`docs/migration/daemon/runtime-snapshot-heartbeat/aggregated-runtime-snapshot.riido.json`<br>`docs/migration/daemon/runtime-snapshot-heartbeat/device-scoped-identity.riido.json` |
+| `docs` | 12 | 12 | `docs/migration/daemon/root.riido.json`<br>`docs/migration/daemon.riido.json`<br>`docs/readme/agents.riido.json` |
 
 ## Registered Manual Surfaces
 
