@@ -3,6 +3,7 @@ package main
 type evidenceManifest struct {
 	SchemaVersion string        `json:"schema_version"`
 	ID            string        `json:"id"`
+	LoopSource    string        `json:"loop_source,omitempty"`
 	RiidoTask     string        `json:"riido_task"`
 	HumanDoc      string        `json:"human_doc"`
 	SourceDocs    []string      `json:"source_documents"`
