@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `310`
+- Complete manifest loops: `316`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `290`
-- Missing manifest loops: `30`
-- Missing loop budget: `30`
+- Delegated manifest loops: `296`
+- Missing manifest loops: `24`
+- Missing loop budget: `24`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 30 | 30 | `docs/migration/daemon/overview/current-slices.riido.json`<br>`docs/migration/daemon/overview/migration-order.riido.json`<br>`docs/migration/daemon/overview/retired-source-boundary.riido.json` |
+| `docs` | 24 | 24 | `docs/migration/daemon/riidoapi-local-api/4684-local-api-adapter.riido.json`<br>`docs/migration/daemon/riidoapi-local-api/4685-task-api-bridge-cli.riido.json`<br>`docs/migration/daemon/riidoapi-local-api/4686-mwsdbridge-project-sync.riido.json` |
 
 ## Registered Manual Surfaces
 

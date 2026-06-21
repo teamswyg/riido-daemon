@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-overview-docs.riido.json",
   "id": "daemon-overview-current-slices",
   "title": "Current Migration Slices",
   "generated_doc": "docs/migration/daemon/overview/current-slices.md",
