@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `255`
+- Complete manifest loops: `258`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `235`
-- Missing manifest loops: `85`
-- Missing loop budget: `85`
+- Delegated manifest loops: `238`
+- Missing manifest loops: `82`
+- Missing loop budget: `82`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 85 | 85 | `docs/30-architecture/runtime-upgrade-flow.riido.json`<br>`docs/30-architecture/store-distribution.riido.json`<br>`docs/50-roadmap/open-questions.riido.json` |
+| `docs` | 82 | 82 | `docs/migration/cli/cli-daemon-split.riido.json`<br>`docs/migration/cli/current-slices.riido.json`<br>`docs/migration/cli/migration-order.riido.json` |
 
 ## Registered Manual Surfaces
 
