@@ -23,11 +23,6 @@
       "next": "add a compact package evidence tool or fold this workflow into an evidence-producing boundary workflow"
     },
     {
-      "path": ".github/workflows/ci.yml",
-      "reason": "broad CI currently reports status checks without durable JSON evidence",
-      "next": "emit a compact CI summary evidence artifact covering go test, vet, and generated checks"
-    },
-    {
       "path": ".github/workflows/cli.yml",
       "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
       "next": "add a compact CLI package evidence tool or bind this workflow to cli-surface evidence"
@@ -46,11 +41,6 @@
       "path": ".github/workflows/event-ingestor.yml",
       "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
       "next": "add event-ingestor evidence or fold this check into semantic-event activity evidence"
-    },
-    {
-      "path": ".github/workflows/go-ci.yml",
-      "reason": "broad Go CI currently reports status checks without durable JSON evidence",
-      "next": "emit a compact Go CI summary evidence artifact covering lint, test, and generator checks"
     },
     {
       "path": ".github/workflows/macos-external-provider-cli-ssot.yml",
@@ -153,6 +143,6 @@
     "hypothesis": "A daemon workflow evidence manifest can classify every executable workflow, fail on non-strict uploads or missing evidence-out bindings, and register remaining legacy workflows as explicit debt instead of silent CI behavior.",
     "execute": "Scan .yml and .yaml GitHub Actions workflows, classify evidence coverage, require fail-closed artifact uploads, require every evidence-out path to be uploaded, compare evidence-out capable tools with workflow invocations, and render a generated workflow evidence reader.",
     "evaluate": "The verifier fails on unregistered executable workflows, non-strict artifact uploads, missing evidence uploads, evidence-capable tools without workflow coverage, stale generated docs, unused accepted gaps, or workflow extension drift.",
-    "retrospective": "Daemon workflow observability becomes an executable migration surface: covered evidence workflows stay green, legacy workflows are visible debt, and future workflows cannot appear without evidence or a registered reason."
+    "retrospective": "Daemon workflow observability is now an executable migration surface: covered evidence workflows stay green, legacy workflows are visible debt, broad CI emits compact evidence, and future workflow drift cannot remain silent."
   }
 }

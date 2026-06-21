@@ -413,6 +413,22 @@
   - `command`: go run ./tools/workflowevidence -check-doc -evidence-out /tmp/workflow-evidence.json; proves daemon workflow evidence coverage is generated, current, and machine-readable
   - `workflow`: .github/workflows/workflow-evidence.yml; proves public CI uploads daemon workflow evidence artifacts
 
+### ci-evidence
+
+- Owner: `tools/cievidence and broad CI workflows`
+- Observe: The broad daemon CI workflows proved pass/fail status in GitHub but did not leave a durable JSON evidence artifact describing the expected dependency, lint, and test checks.
+  - Artifacts: `.github/workflows/ci.yml`, `.github/workflows/go-ci.yml`
+- Hypothesis: A compact CI evidence tool can verify the workflow command surface and let broad CI jobs upload evidence without duplicating their test execution.
+  - Artifacts: `tools/cievidence`
+- Execute: Scan the workflow file for required commands, emit JSON evidence, and run the evidence step with always() so failed CI attempts can still publish structural evidence.
+  - Artifacts: `tools/cievidence`, `.github/workflows/ci.yml`, `.github/workflows/go-ci.yml`
+- Evaluate: The verifier fails when a required dependency, lint, or test command disappears from the workflow, and workflow evidence fails if the produced evidence is not uploaded strictly.
+  - Artifacts: `docs/30-architecture/workflow-evidence.md`
+- Retrospective: Broad CI and Go CI now move from accepted evidence debt to covered workflow evidence while keeping the next debt-reduction slices focused on package and provider workflows.
+- Evidence:
+  - `command`: go run ./tools/cievidence -workflow .github/workflows/ci.yml -id ci -evidence-out /tmp/ci-evidence.json; proves the broad CI workflow contains the dependency and test command surface expected by daemon CI evidence
+  - `command`: go run ./tools/cievidence -workflow .github/workflows/go-ci.yml -id go-ci -evidence-out /tmp/go-ci-evidence.json; proves the Go CI workflow contains module download, golangci-lint, and test command evidence
+
 ### repo-executable-knowledge-coverage
 
 - Owner: `daemon/repo-docs`

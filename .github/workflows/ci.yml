@@ -24,3 +24,17 @@ jobs:
           fi
       - name: Test
         run: go test ./...
+      - name: Write CI evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/cievidence \
+            -workflow .github/workflows/ci.yml \
+            -id ci \
+            -evidence-out out/ci-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ci-evidence
+          path: out/ci-evidence.json
+          if-no-files-found: error
