@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-figma-boundary-provenance-docs.riido.json",
   "id": "daemon-figma-boundary-provenance-runtime-progress-numeric-args",
   "title": "RIID-4917: Runtime Progress Numeric Args",
   "generated_doc": "docs/migration/daemon/figma-boundary-provenance/runtime-progress-numeric-args.md",

@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-figma-boundary-provenance-docs.riido.json",
   "id": "daemon-figma-boundary-provenance-onboarding-draft-create",
   "title": "RIID-4859: Onboarding Draft-Create Boundary",
   "generated_doc": "docs/migration/daemon/figma-boundary-provenance/onboarding-draft-create.md",
