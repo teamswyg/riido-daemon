@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-riidoapi-local-api-docs.riido.json",
   "id": "daemon-riidoapi-local-api-4686",
   "title": "RIID-4686 - mwsdbridge/Project Projection Sync Migration",
   "generated_doc": "docs/migration/daemon/riidoapi-local-api/4686-mwsdbridge-project-sync.md",
