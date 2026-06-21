@@ -2,6 +2,7 @@
   "schema_version": "riido-local-daemon-contract.v1",
   "id": "local-daemon-contract-evidence",
   "title": "Local Daemon Implementation Contract Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/local-daemon-contract-evidence.riido.json",
   "generated_doc": "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md",
   "workflow": ".github/workflows/local-daemon-contract-evidence.yml",
   "evidence_artifact": "local-daemon-contract-evidence",

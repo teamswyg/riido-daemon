@@ -2,6 +2,7 @@
   "schema_version": "riido-runtime-scheduling-docs.v1",
   "id": "runtime-scheduling-docs",
   "title": "Runtime Scheduling SSOT",
+  "loop_source": "docs/30-architecture/loop-engineering/runtime-scheduling-docs.riido.json",
   "generated_doc": "docs/20-domain/runtime-scheduling.md",
   "workflow": ".github/workflows/runtime-scheduling-docs.yml",
   "evidence_artifact": "runtime-scheduling-docs",

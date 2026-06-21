@@ -2,6 +2,7 @@
   "schema_version": "riido-runtime-eligibility.v1",
   "id": "runtime-eligibility-evidence",
   "title": "Runtime Eligibility Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/runtime-eligibility-evidence.riido.json",
   "generated_doc": "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md",
   "workflow": ".github/workflows/runtime-eligibility-evidence.yml",
   "evidence_artifact": "runtime-eligibility-evidence",
