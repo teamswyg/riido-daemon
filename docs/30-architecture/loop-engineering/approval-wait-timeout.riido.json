@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "approval-wait-timeout",
   "owner": "tools/approvaltimeout and approval-wait-timeout workflow",
   "observation": {"summary": "Approval wait timeout ownership was prose-only while the rule spans provider draft mapping, semantic activity, session clocks, and reducer timeout behavior.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md"]},

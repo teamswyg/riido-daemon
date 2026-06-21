@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "repo-verification-evidence",
   "owner": "tools/repoverification and repo-verification workflow",
   "observation": {"summary": "README verification commands were a copy/paste list without machine evidence.", "artifacts": ["docs/readme/verification.riido.json"]},

@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "terminal-result-mapping",
   "owner": "tools/terminalresultmapping and terminal-result-mapping workflow",
   "observation": {"summary": "Run lifecycle terminal result rules were reader-only text while runtime mapped ResultStatus values in terminal_result_draft.go.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.md"]},

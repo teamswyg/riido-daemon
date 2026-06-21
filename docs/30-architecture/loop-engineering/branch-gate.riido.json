@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "branch-gate",
   "owner": "tools/branchgate and branch-gate-evidence workflow",
   "observation": {"summary": "Riido work branch rule was manually documented while the merge gate lived in a separate shell script.", "artifacts": ["docs/30-architecture/riido-work-branch-gate.md", "scripts/verify-riido-work-branch.sh"]},

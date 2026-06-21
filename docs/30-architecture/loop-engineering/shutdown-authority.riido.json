@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "shutdown-authority",
   "owner": "tools/shutdownauthority and shutdown-authority workflow",
   "observation": {"summary": "Cancel, interrupt, and input docs described shutdown authority as prose while pkg/lifecycle owned the runtime vocabulary and timeout policy.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md"]},

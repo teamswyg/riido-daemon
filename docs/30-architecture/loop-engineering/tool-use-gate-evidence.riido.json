@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "tool-use-gate-evidence",
   "owner": "C7 security policy",
   "observation": {

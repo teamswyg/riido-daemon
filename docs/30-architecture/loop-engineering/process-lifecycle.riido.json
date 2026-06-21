@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "process-lifecycle",
   "owner": "tools/processlifecycle and process-lifecycle workflow",
   "observation": {"summary": "Process lifecycle responsibilities were reader-only prose while lifecycle behavior spans Adapter, Parser, Process, Session, and Supervisor surfaces.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md"]},

@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "agent-execution-risk",
   "owner": "tools/agentexecutionevidence",
   "observation": {"summary": "Unresolved execution risks are represented as local, external, or remaining-boundary evidence.", "artifacts": ["docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json"]},

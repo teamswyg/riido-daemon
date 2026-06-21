@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "event-authority",
   "owner": "tools/eventauthority and event-authority workflow",
   "observation": {"summary": "EventIngestor append authority was described in Markdown while Draft and CanonicalEvent construction lived in Go source.", "artifacts": ["docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json"]},

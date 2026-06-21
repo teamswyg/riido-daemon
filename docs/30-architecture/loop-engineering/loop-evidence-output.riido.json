@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "loop-evidence-output",
   "owner": "daemon/evidence",
   "observation": {

@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "semantic-event-activity",
   "owner": "tools/semanticeventactivity and semantic-event-activity workflow",
   "observation": {"summary": "Idle watchdog semantic activity was described in Markdown while runtime classification lived in EventKind.IsSemanticActivity.", "artifacts": ["docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json"]},

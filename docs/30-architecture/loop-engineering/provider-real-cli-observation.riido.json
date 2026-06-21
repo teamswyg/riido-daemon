@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "provider-real-cli-observation",
   "owner": "provider-real-cli-observation workflow",
   "observation": {"summary": "Real provider CLI availability and integration status are observed through a scheduled/manual evidence artifact.", "artifacts": ["docs/30-architecture/provider-real-cli-observation.riido.json"]},
