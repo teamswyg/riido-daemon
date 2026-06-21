@@ -8,6 +8,9 @@ type evidence struct {
 	GeneratedCount             int                             `json:"generated_count"`
 	DirectSSOTCount            int                             `json:"direct_ssot_count"`
 	ManualCount                int                             `json:"manual_count"`
+	GeneratedOriginCount       int                             `json:"generated_origin_count"`
+	GeneratedWorkflowCovered   int                             `json:"generated_workflow_covered_count"`
+	GeneratedWorkflowMissing   int                             `json:"generated_workflow_missing_count"`
 	ManualGroups               []string                        `json:"manual_groups"`
 	ManualByGroup              map[string]int                  `json:"manual_by_group"`
 	ManualTopDirs              []manualDir                     `json:"manual_top_dirs"`
@@ -22,6 +25,7 @@ type evidence struct {
 	ManifestMissingLoopGroups  []manifestGroupCount            `json:"manifest_missing_loop_groups"`
 	ManifestMissingLoopSamples []manifestGroupSample           `json:"manifest_missing_loop_samples"`
 	ManifestLoopBudget         manifestLoopBudget              `json:"manifest_loop_budget"`
+	ProblemCount               int                             `json:"problem_count"`
 	ProblemSummaries           []string                        `json:"problem_summaries"`
 	EvidenceArtifact           string                          `json:"evidence_artifact"`
 	Loop                       evidenceLoop                    `json:"loop"`
