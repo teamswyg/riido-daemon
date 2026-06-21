@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-native-config-detail.v1",
   "id": "resolved-decisions",
   "title": "Resolved Workdir Decisions And Version-Affecting Changes",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/native-config-manifest/resolved-decisions.md",
   "blocks": [
     {"kind": "paragraph", "text": "The following RIID-4573 decisions are absorbed into this C6 SSOT and must not be reintroduced as roadmap open questions."},

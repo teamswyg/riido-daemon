@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-native-config-detail.v1",
   "id": "workspace-lock-policy",
   "title": "Workspace Lock Policy",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/native-config-manifest/workspace-lock-policy.md",
   "blocks": [
     {"kind": "paragraph", "text": "This document owns lock usage policy in domain language. The concrete `flock` or DB lease primitive is owned by C9 Locking."},
