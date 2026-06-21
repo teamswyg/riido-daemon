@@ -5,6 +5,7 @@
   "generated_doc": "docs/20-domain/runtime-scheduling/invariants/task-requirements.md",
   "workflow": ".github/workflows/task-requirements-evidence.yml",
   "evidence_artifact": "task-requirements-evidence",
+  "loop": {"observation": "Task required-surface rules were generated and verified against scheduling code but were still invisible as a direct evidence loop.", "hypothesis": "Declaring the task requirements loop makes provider-neutral surface drift observable through repository knowledge coverage.", "execute": "Generate task requirement docs and verify surface constants, capability mappings, metadata keys, fail-closed reasons, and public CI evidence upload.", "evaluate": "The verifier fails when scheduling constants, support mappings, metadata fallback, generated docs, or workflow wiring drift.", "retrospective": "Runtime scheduling readers consume generated docs while the manifest owns the task requirement ontology."},
   "purpose": "Proves provider-neutral task required surfaces from executable scheduling behavior, runtime capability projection, and request ingress code.",
   "surfaces": [
     {

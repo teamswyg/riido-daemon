@@ -15,6 +15,7 @@ type Manifest struct {
 	GeneratedDoc     string        `json:"generated_doc"`
 	Workflow         string        `json:"workflow"`
 	EvidenceArtifact string        `json:"evidence_artifact"`
+	Loop             evidenceLoop  `json:"loop"`
 	Purpose          string        `json:"purpose"`
 	DaemonEnvSource  string        `json:"daemon_env_source"`
 	Sections         []Section     `json:"sections"`
