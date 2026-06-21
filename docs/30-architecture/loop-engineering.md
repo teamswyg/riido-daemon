@@ -698,6 +698,23 @@
   - `command`: go run ./tools/assignmentfsm -check-doc -evidence-out /tmp/assignment-fsm-evidence.json; proves assignment FSM reader doc matches the contracts generated FSM and local/external consumption evidence
   - `workflow`: .github/workflows/assignment-fsm-evidence.yml; proves public CI uploads assignment FSM evidence
 
+### agent-execution-design-docs
+
+- Owner: `daemon/control-plane/contracts boundary`
+- Observe: Agent execution design docs were the final manual architecture group while evidence files and FSM manifests already existed.
+  - Artifacts: `docs/30-architecture/agent-execution-unresolved-design.md`, `docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence.riido.json`
+- Hypothesis: Design fragments plus assignment lifecycle evidence files can generate the reader docs and keep unresolved boundaries explicit.
+  - Artifacts: `docs/30-architecture/agent-execution-unresolved-design.riido.json`, `docs/30-architecture/agent-execution-unresolved-design/*.riido.json`
+- Execute: Run agentexecutiondesign to check generated docs, evidence file consumption, and public CI evidence upload.
+  - Artifacts: `tools/agentexecutiondesign`, `.github/workflows/agent-execution-design-docs.yml`
+- Evaluate: The verifier rejects generated doc drift and executable knowledge coverage can reach zero registered manual architecture docs.
+  - Artifacts: `docs/30-architecture/executable-knowledge.md`
+- Retrospective: Agent execution design knowledge becomes evidence-backed generated architecture instead of reader-authored unresolved prose.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/agentexecutiondesign -check-doc -evidence-out /tmp/agent-execution-design-docs.json; proves agent execution design docs are generated from fragments and assignment lifecycle evidence files
+  - `workflow`: .github/workflows/agent-execution-design-docs.yml; proves public CI uploads agent execution design docs evidence
+
 ### agent-execution-risk
 
 - Owner: `tools/agentexecutionevidence`
@@ -729,6 +746,23 @@
   - Artifacts: `docs/30-architecture/store-distribution.md`
 - Evidence:
   - `command`: go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo . -check-policy-table; proves store distribution contract and generated policy table remain executable
+
+### store-distribution-docs
+
+- Owner: `store distribution`
+- Observe: Store distribution architecture docs were reader-authored while package channels and surfaces already live in executable store contract shards.
+  - Artifacts: `docs/30-architecture/store-distribution.md`, `packaging/store/riido_daemon_store_distribution.riido.json`
+- Hypothesis: A store distribution docs manifest plus contract shard reader can generate architecture and daemon-change docs while detecting doc drift.
+  - Artifacts: `docs/30-architecture/store-distribution.riido.json`, `packaging/store/riido_daemon_store_distribution/*.riido.json`
+- Execute: Run storedistributiondocs to check generated docs and publish compact evidence in public CI.
+  - Artifacts: `tools/storedistributiondocs`, `.github/workflows/store-distribution-docs.yml`
+- Evaluate: The verifier rejects generated doc drift and the architecture coverage tool no longer classifies store-distribution as manual debt.
+  - Artifacts: `docs/30-architecture/executable-knowledge.md`
+- Retrospective: Store distribution architecture knowledge becomes contract-backed generated evidence instead of manually edited architecture prose.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evidence:
+  - `command`: go run ./tools/storedistributiondocs -check-doc -evidence-out /tmp/store-distribution-docs.json; proves store distribution architecture docs are generated from the docs manifest and store contract shards
+  - `workflow`: .github/workflows/store-distribution-docs.yml; proves public CI uploads store distribution docs evidence
 
 ### privacy-metadata-evidence
 
