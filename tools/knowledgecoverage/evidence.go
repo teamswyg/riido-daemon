@@ -19,6 +19,7 @@ func buildEvidence(root string, m manifest, docs []docClass, problems []string) 
 		status = "failed"
 		problems = append(problems, "manifest loop scan failed: "+err.Error())
 	}
+	origins := generatedOrigins(docs)
 	return evidence{
 		SchemaVersion:              "riido-executable-knowledge-coverage-result.v1",
 		ID:                         m.ID,
@@ -31,7 +32,8 @@ func buildEvidence(root string, m manifest, docs []docClass, problems []string) 
 		ManualByGroup:              manualCountsByGroup(docs),
 		ManualTopDirs:              manualTopDirs(docs, 12),
 		ManualSamples:              manualSamples(docs, 5),
-		GeneratedOrigins:           generatedOrigins(docs),
+		GeneratedOrigins:           origins,
+		GeneratedWorkflowCoverage:  scanGeneratedOriginWorkflowCoverage(root, origins),
 		ManifestInventory:          inventory,
 		ManifestLoopCount:          loops.Complete,
 		ManifestDirectLoopCount:    loops.Direct,

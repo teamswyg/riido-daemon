@@ -36,6 +36,13 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/runtimeupgrade -write-doc` | 1 | `docs/30-architecture/runtime-upgrade-flow.md` |
 | `go run ./tools/workflowevidence -write-doc` | 1 | `docs/30-architecture/workflow-evidence.md` |
 
+## Generated Origin Workflow Coverage
+
+- Covered generated origins: `18`
+- Missing workflow origins: `0`
+
+_None missing._
+
 ## Manifest Inventory
 
 | Group | Count | Sample paths |
@@ -74,8 +81,8 @@ _None._
 | --- | --- |
 | Observe | Architecture documentation can grow as generated readers while the architecture coverage gate itself does not expose its loop or the executable manifests that support the repository. |
 | Hypothesis | Making the architecture coverage manifest carry the loop plus bounded generated-reader and manifest inventory samples keeps architecture docs as generated human surfaces and makes the verifier intent visible in CI evidence. |
-| Execute | Scan docs/30-architecture markdown, classify generated/direct/manual surfaces, sample generated reader origins by generator, sample repository executable manifests by group, require manual debt registration, require a complete evidence loop, and publish JSON evidence from the workflow. |
-| Evaluate | The verifier fails on unregistered manual architecture prose, stale generated coverage, or missing evidence-loop phases in the coverage manifest while reporting generated-reader origins and manifest inventory groups. |
+| Execute | Scan docs/30-architecture markdown, classify generated/direct/manual surfaces, sample generated reader origins by generator, require generated origins to be referenced by public workflows, sample repository executable manifests by group, require manual debt registration, require a complete evidence loop, and publish JSON evidence from the workflow. |
+| Evaluate | The verifier fails on unregistered manual architecture prose, generated reader origins without workflow references, stale generated coverage, or missing evidence-loop phases in the coverage manifest while reporting generated-reader origins and manifest inventory groups. |
 | Retrospective | This keeps architecture coverage aligned with executable knowledge: the manifest is the SSOT, the reader is generated, and public CI preserves evidence for reader and executable-manifest surfaces. |
 
 ## Assertions
@@ -85,6 +92,7 @@ _None._
 - new unregistered architecture prose must fail CI before it can silently expand interpretation variance
 - the architecture executable knowledge coverage manifest must expose a complete evidence loop
 - architecture executable knowledge coverage must show generated reader origins as bounded samples
+- architecture executable knowledge generated reader origins must have public workflow references
 - architecture executable knowledge coverage must show repository executable manifest inventory as bounded samples
 - architecture executable knowledge coverage must show repository executable manifest loop debt as bounded samples
 - new loop-less executable manifest debt must not exceed the manifest_loop_budget

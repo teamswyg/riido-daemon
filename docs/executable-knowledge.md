@@ -81,6 +81,13 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/workflowevidence -write-doc` | 1 | `docs/30-architecture/workflow-evidence.md` |
 | `go run ./tools/workspacedocs -write-doc` | 1 | `docs/20-domain/workspace.md` |
 
+## Generated Origin Workflow Coverage
+
+- Covered generated origins: `63`
+- Missing workflow origins: `0`
+
+_None missing._
+
 ## Manifest Inventory
 
 | Group | Count | Sample paths |
@@ -119,8 +126,8 @@ _None._
 | --- | --- |
 | Observe | Daemon documentation coverage can be green while the coverage gate itself does not expose why it exists, what it executes, or which executable manifests exist outside the generated readers. |
 | Hypothesis | Embedding the observe/hypothesis/execute/evaluate/retrospective loop plus bounded generated-reader and manifest inventory samples in coverage evidence makes the documentation migration self-describing in public CI. |
-| Execute | Scan daemon markdown entrypoints, classify generated/direct/manual surfaces, sample generated reader origins by generator, sample repository executable manifests by group, require any manual debt to be registered, require this manifest to carry a complete evidence loop, and publish JSON evidence in GitHub Actions. |
-| Evaluate | The verifier fails when scanned markdown is unregistered manual prose, when the generated reader drifts, or when the coverage manifest omits any required evidence-loop phase while reporting generated-reader origins and manifest inventory groups. |
+| Execute | Scan daemon markdown entrypoints, classify generated/direct/manual surfaces, sample generated reader origins by generator, require generated origins to be referenced by public workflows, sample repository executable manifests by group, require any manual debt to be registered, require this manifest to carry a complete evidence loop, and publish JSON evidence in GitHub Actions. |
+| Evaluate | The verifier fails when scanned markdown is unregistered manual prose, when generated reader origins lack workflow references, when the generated reader drifts, or when the coverage manifest omits any required evidence-loop phase while reporting generated-reader origins and manifest inventory groups. |
 | Retrospective | This keeps daemon documentation coverage aligned with loop engineering: generated readers remain the human surface, the manifest remains the executable SSOT, and CI publishes durable evidence for both readers and executable manifests. |
 
 ## Assertions
@@ -130,6 +137,7 @@ _None._
 - zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed
 - the repository executable knowledge coverage manifest must expose a complete evidence loop
 - generated reader origins must be visible as bounded generator samples
+- generated reader origins must have public workflow references
 - repository executable manifest inventory must be visible as bounded group samples
 - repository executable manifest loop debt must be visible as bounded group samples
 - new loop-less executable manifest debt must not exceed the manifest_loop_budget
