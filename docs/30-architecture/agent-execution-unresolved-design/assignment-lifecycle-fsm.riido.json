@@ -2,6 +2,7 @@
   "schema_version": "riido-assignment-fsm-evidence.v1",
   "id": "assignment-fsm-evidence",
   "title": "Assignment Lifecycle FSM Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/assignment-fsm-evidence.riido.json",
   "generated_doc": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md",
   "workflow": ".github/workflows/assignment-fsm-evidence.yml",
   "evidence_artifact": "assignment-fsm-evidence",
