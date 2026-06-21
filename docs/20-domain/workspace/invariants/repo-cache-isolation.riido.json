@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-invariants-detail.v1",
   "id": "repo-cache-isolation",
   "title": "Workspace Invariants: Repo Cache Isolation",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/invariants/repo-cache-isolation.md",
   "blocks": [
     {"kind":"paragraph","text":"Code-modifying task workdirs and source repo caches are different directories. This page owns mode semantics; cache maintenance adapters remain future work unless source checks prove otherwise."},

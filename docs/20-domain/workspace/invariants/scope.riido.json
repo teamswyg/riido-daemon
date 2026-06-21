@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-invariants-detail.v1",
   "id": "scope",
   "title": "Workspace Invariants: Scope",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/invariants/scope.md",
   "blocks": [
     {"kind":"paragraph","text":"This SSOT fills the C6 Workspace / Native Config context. C6 owns deterministic task workdir materialization and native config injection, not policy decisions."},

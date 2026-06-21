@@ -2,6 +2,7 @@
   "schema_version": "riido-security-docs.v1",
   "id": "security-docs",
   "title": "Security / Policy SSOT",
+  "loop_source": "docs/30-architecture/loop-engineering/security-docs.riido.json",
   "generated_doc": "docs/20-domain/security.md",
   "workflow": ".github/workflows/security-docs.yml",
   "evidence_artifact": "security-docs",

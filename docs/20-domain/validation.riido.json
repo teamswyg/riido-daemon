@@ -2,6 +2,7 @@
   "schema_version": "riido-validation-evidence.v1",
   "id": "validation-evidence",
   "title": "Validation Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/validation-evidence.riido.json",
   "generated_doc": "docs/20-domain/validation.md",
   "workflow": ".github/workflows/validation-evidence.yml",
   "evidence_artifact": "validation-evidence",

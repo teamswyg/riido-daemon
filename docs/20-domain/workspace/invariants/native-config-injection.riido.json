@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-invariants-detail.v1",
   "id": "native-config-injection",
   "title": "Workspace Invariants: Native Config Injection",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/invariants/native-config-injection.md",
   "blocks": [
     {"kind":"paragraph","text":"C6 owns the injection mechanism. Policy bundles decide what must exist; Workspace creates files deterministically under provider-standard locations inside the task workdir."},
