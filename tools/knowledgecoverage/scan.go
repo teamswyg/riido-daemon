@@ -31,7 +31,9 @@ func scanDocs(root string, m manifest) ([]docClass, []string) {
 		problems = append(problems, "manifest loop scan failed: "+err.Error())
 		return docs, problems
 	}
-	return docs, append(problems, manifestLoopBudgetProblems(loops, m.ManifestLoopBudget)...)
+	problems = append(problems, manifestLoopBudgetProblems(loops, m.ManifestLoopBudget)...)
+	problems = append(problems, generatedOriginWorkflowProblems(root, generatedOrigins(docs))...)
+	return docs, problems
 }
 
 func scanRootDocs(root, scanRoot string, m manifest, manualByPath map[string]manualGroup) ([]docClass, error) {
