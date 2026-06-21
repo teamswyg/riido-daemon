@@ -18,11 +18,11 @@ func (a *Actor) handleTaskActivation(
 	}
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
 	if msg.err != nil {
-		a.finishActivationError(ctx, reportCtx, task, msg, inFlight)
+		a.finishActivationError(ctx, task, msg, inFlight)
 		return true
 	}
 	if msg.handle == nil {
-		a.finishActivationMissingHandle(reportCtx, task, inFlight)
+		a.finishActivationMissingHandle(ctx, task, inFlight)
 		return true
 	}
 	task.handle = msg.handle

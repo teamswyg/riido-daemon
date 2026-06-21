@@ -25,14 +25,6 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 	if err := a.cfg.Reporter.StartTask(reportCtx, req.ID); err != nil {
 		return true
 	}
-	eligibility := taskEligibility(status, req)
-	if !eligibility.Eligible {
-		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, agentbridge.Result{
-			Status: agentbridge.ResultBlocked,
-			Error:  "supervisor: runtime ineligible: " + eligibility.Summary(),
-		})
-		return true
-	}
 	pin := runtimePinForClaim(status, req)
 	taskCtx, cancel := context.WithCancel(ctx)
 	inFlight[req.ID] = &runningTask{
@@ -44,6 +36,14 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		report:                report,
 		runtime:               rt,
 		cancel:                cancel,
+	}
+	eligibility := taskEligibility(status, req)
+	if !eligibility.Eligible {
+		a.finishTaskWithResult(ctx, inFlight, inFlight[req.ID], agentbridge.Result{
+			Status: agentbridge.ResultBlocked,
+			Error:  "supervisor: runtime ineligible: " + eligibility.Summary(),
+		})
+		return true
 	}
 	go a.forwardCancellation(taskCtx, req.ID)
 	go a.prepareAndSubmit(taskCtx, status, rt, req)

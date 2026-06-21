@@ -3,6 +3,7 @@ package supervisor
 import (
 	"context"
 
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
@@ -22,6 +23,8 @@ type runningTask struct {
 
 	workspace *workdir.Workspace
 	events    *workspaceEventContext
+
+	terminalResult *agentbridge.Result
 }
 
 type preparedWorkspace struct {
