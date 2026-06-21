@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-daemon-lifecycle-cli-docs.riido.json",
   "id": "daemon-lifecycle-cli-approval-timeout-owner",
   "title": "RIID-4630: ApprovalRequested Timeout Owner Cleanup",
   "generated_doc": "docs/migration/daemon/daemon-lifecycle-cli/approval-timeout-owner.md",
