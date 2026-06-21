@@ -10,28 +10,28 @@
     ]
   },
   "hypothesis": {
-    "summary": "Adding a compact evidence JSON output lets local runs and public CI prove the loop count, open gap count, evidence item count, and verification status without scraping markdown.",
+    "summary": "Adding a compact evidence JSON output lets local runs and public CI prove the loop count, registered loop file count, phase coverage, open gap count, evidence item count, problem count, and verification status without scraping markdown.",
     "artifacts": [
       "tools/loopevidence/types.go",
       "tools/loopevidence/evidence.go"
     ]
   },
   "execution": {
-    "summary": "Add `-evidence-out` to loopevidence, keep markdown generation unchanged, and publish the JSON through a path-scoped workflow.",
+    "summary": "Add `-evidence-out` to loopevidence, publish phase coverage in JSON and the generated reader summary, and publish the JSON through a path-scoped workflow.",
     "artifacts": [
       "tools/loopevidence/main.go",
       ".github/workflows/loop-engineering-evidence.yml"
     ]
   },
   "evaluation": {
-    "summary": "The verifier writes `verified` evidence on clean runs and `failed` evidence with problem summaries when loop validation fails.",
+    "summary": "The verifier writes `verified` evidence with phase coverage and `problem_count=0` on clean runs, or `failed` evidence with problem summaries when loop validation fails.",
     "artifacts": [
       "tools/loopevidence/run_test.go",
       "scripts/architecture-docs/tool-checks.sh"
     ]
   },
   "retrospective": {
-    "summary": "Loop engineering evidence is now itself observable as JSON, so future slices can use the same evidence artifact pattern as domain doc generators.",
+    "summary": "Loop engineering evidence is now itself observable as JSON and exposes every required phase count, so future slices can use the same evidence artifact pattern as domain doc generators.",
     "artifacts": [
       "docs/30-architecture/loop-engineering.md"
     ]

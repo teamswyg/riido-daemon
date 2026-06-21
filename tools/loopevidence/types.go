@@ -50,13 +50,21 @@ type gap struct {
 }
 
 type evidenceReport struct {
-	SchemaVersion     string   `json:"schema_version"`
-	ID                string   `json:"id"`
-	Status            string   `json:"status"`
-	GeneratedDoc      string   `json:"generated_doc"`
-	LoopCount         int      `json:"loop_count"`
-	OpenGapCount      int      `json:"open_gap_count"`
-	EvidenceItemCount int      `json:"evidence_item_count"`
-	RequiredPhases    []string `json:"required_phases"`
-	ProblemSummaries  []string `json:"problem_summaries,omitempty"`
+	SchemaVersion           string          `json:"schema_version"`
+	ID                      string          `json:"id"`
+	Status                  string          `json:"status"`
+	GeneratedDoc            string          `json:"generated_doc"`
+	LoopCount               int             `json:"loop_count"`
+	RegisteredLoopFileCount int             `json:"registered_loop_file_count"`
+	OpenGapCount            int             `json:"open_gap_count"`
+	EvidenceItemCount       int             `json:"evidence_item_count"`
+	RequiredPhases          []string        `json:"required_phases"`
+	PhaseCoverage           []phaseCoverage `json:"phase_coverage"`
+	ProblemCount            int             `json:"problem_count"`
+	ProblemSummaries        []string        `json:"problem_summaries"`
+}
+
+type phaseCoverage struct {
+	Phase string `json:"phase"`
+	Count int    `json:"count"`
 }
