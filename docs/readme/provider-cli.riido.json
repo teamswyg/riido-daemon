@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-readme-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/readme-docs.riido.json",
   "id": "readme-provider-cli",
   "title": "README: Provider CLI Principles",
   "generated_doc": "docs/readme/provider-cli.md",

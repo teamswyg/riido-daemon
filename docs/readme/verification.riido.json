@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-repo-verification.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/repo-verification-evidence.riido.json",
   "id": "daemon-repo-verification",
   "title": "README Verification",
   "generated_doc": "docs/readme/verification.md",
