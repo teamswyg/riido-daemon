@@ -159,3 +159,16 @@ jobs:
           cache: false
       - name: Verify architecture docs
         run: scripts/verify-architecture-docs.sh
+      - name: Publish architecture executable knowledge evidence
+        run: |
+          mkdir -p out
+          go run ./tools/knowledgecoverage \
+            -manifest docs/30-architecture/executable-knowledge.riido.json \
+            -check-doc \
+            -evidence-out out/architecture-docs-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: architecture-docs-evidence
+          path: out/architecture-docs-evidence.json
+          if-no-files-found: error

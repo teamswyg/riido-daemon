@@ -8,6 +8,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
       - name: Verify PR branch came from Riido work unit branchName
         run: scripts/verify-riido-work-branch.sh "$GITHUB_HEAD_REF"
-
+      - name: Publish branch gate evidence
+        run: |
+          mkdir -p out
+          go run ./tools/branchgate \
+            -check-doc \
+            -check-script \
+            -evidence-out out/riido-work-branch-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: riido-work-branch-evidence
+          path: out/riido-work-branch-evidence.json
+          if-no-files-found: error

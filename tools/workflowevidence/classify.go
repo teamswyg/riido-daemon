@@ -3,9 +3,21 @@ package main
 import "strings"
 
 func hasExecutableStep(text string) bool {
+	if hasRunStep(text) {
+		return true
+	}
 	needles := []string{"go test", "go run", "pnpm", "npm", "terraform", "aws ", "curl", "docker"}
 	for _, needle := range needles {
 		if strings.Contains(text, needle) {
+			return true
+		}
+	}
+	return false
+}
+
+func hasRunStep(text string) bool {
+	for line := range strings.SplitSeq(text, "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "run:") {
 			return true
 		}
 	}
