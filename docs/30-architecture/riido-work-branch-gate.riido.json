@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-work-branch-gate.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/branch-gate.riido.json",
   "id": "riido-work-branch-gate",
   "title": "Riido Work Branch Gate",
   "generated_doc": "docs/30-architecture/riido-work-branch-gate.md",

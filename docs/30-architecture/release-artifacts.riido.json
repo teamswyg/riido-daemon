@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-release-artifacts.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/release-artifact-docs.riido.json",
   "id": "architecture-release-artifacts",
   "title": "Release Artifacts",
   "generated_doc": "docs/30-architecture/release-artifacts.md",
