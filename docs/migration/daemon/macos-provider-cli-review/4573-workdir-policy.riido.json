@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-macos-provider-cli-review-docs.riido.json",
   "id": "daemon-macos-provider-cli-review-4573",
   "title": "RIID-4573: Workdir Policy",
   "generated_doc": "docs/migration/daemon/macos-provider-cli-review/4573-workdir-policy.md",

@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-macos-provider-cli-review-docs.riido.json",
   "id": "daemon-macos-provider-cli-review-4658",
   "title": "RIID-4658: Claude Provider",
   "generated_doc": "docs/migration/daemon/macos-provider-cli-review/4658-claude-provider.md",
