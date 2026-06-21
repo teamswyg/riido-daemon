@@ -2,6 +2,7 @@
   "schema_version": "riido-security-redaction-docs.v1",
   "id": "security-redaction-docs",
   "title": "Security Redaction SSOT",
+  "loop_source": "docs/30-architecture/loop-engineering/security-redaction.riido.json",
   "generated_doc": "docs/20-domain/security-redaction.md",
   "workflow": ".github/workflows/security-redaction-docs.yml",
   "evidence_artifact": "security-redaction-docs",

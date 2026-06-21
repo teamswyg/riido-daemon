@@ -2,6 +2,7 @@
   "schema_version": "riido-security-redaction-detail.v1",
   "id": "audit-event",
   "title": "Audit Event",
+  "loop_source": "docs/30-architecture/loop-engineering/security-redaction.riido.json",
   "generated_doc": "docs/20-domain/security-redaction/audit-event.md",
   "blocks": [
     {"kind": "paragraph", "text": "EventIngestor 2차 redaction 이 발생하면 `PolicyViolationDetected` 를 append 한다."},

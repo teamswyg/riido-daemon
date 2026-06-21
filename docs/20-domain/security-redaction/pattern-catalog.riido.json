@@ -2,6 +2,7 @@
   "schema_version": "riido-security-redaction-detail.v1",
   "id": "pattern-catalog",
   "title": "금지 패턴 카탈로그",
+  "loop_source": "docs/30-architecture/loop-engineering/security-redaction.riido.json",
   "generated_doc": "docs/20-domain/security-redaction/pattern-catalog.md",
   "blocks": [
     {"kind": "paragraph", "text": "현재 C7 실행 카탈로그는 `internal/policy` 의 `secretRedactionPatterns` 가 구현한다. 패턴 ID 는 stable external evidence/audit 값이므로 이름 변경은 breaking-policy 다."},

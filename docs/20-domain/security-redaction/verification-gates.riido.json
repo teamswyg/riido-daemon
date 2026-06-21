@@ -2,6 +2,7 @@
   "schema_version": "riido-security-redaction-detail.v1",
   "id": "verification-gates",
   "title": "검증 게이트",
+  "loop_source": "docs/30-architecture/loop-engineering/security-redaction.riido.json",
   "generated_doc": "docs/20-domain/security-redaction/verification-gates.md",
   "blocks": [
     {"kind": "bullets", "items": [
