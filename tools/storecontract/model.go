@@ -3,6 +3,7 @@ package main
 type contract struct {
 	SchemaVersion            string    `json:"schema_version"`
 	Product                  string    `json:"product"`
+	Loop                     loopMeta  `json:"loop"`
 	ProviderCLIBundling      string    `json:"provider_cli_bundling"`
 	ExternalProviderCLINames []string  `json:"external_provider_cli_names"`
 	StoreArtifactRoots       []string  `json:"store_artifact_roots"`
@@ -14,6 +15,7 @@ type contract struct {
 
 type channel struct {
 	ID                string   `json:"id"`
+	LoopSource        string   `json:"loop_source"`
 	Platform          string   `json:"platform"`
 	Status            string   `json:"status"`
 	RuntimeRole       string   `json:"runtime_role"`

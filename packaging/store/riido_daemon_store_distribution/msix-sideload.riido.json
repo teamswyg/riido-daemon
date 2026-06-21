@@ -1,5 +1,6 @@
 {
   "id": "msix-sideload",
+  "loop_source": "packaging/store/riido_daemon_store_distribution.riido.json",
   "platform": "windows",
   "status": "preferred-first",
   "runtime_role": "msix-packaged-helper-broker",
