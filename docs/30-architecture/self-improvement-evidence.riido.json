@@ -62,5 +62,19 @@
         {"field": "problem_count", "equals": 0}
       ]
     }
+  ],
+  "closed_loop_classes": [
+    {
+      "id": "bug-fix",
+      "kind": "bug",
+      "description": "A bug fix is closed only when failure surfaces, regression checks, and broad CI are all verified.",
+      "evidence_ids": ["loop", "ci", "go-ci"]
+    },
+    {
+      "id": "feature-delivery",
+      "kind": "feature",
+      "description": "A feature is closed only when executable knowledge, workflow coverage, and loop evidence are all verified.",
+      "evidence_ids": ["knowledge", "workflow", "loop"]
+    }
   ]
 }

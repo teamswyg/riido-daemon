@@ -25,6 +25,13 @@ func renderMarkdown(m manifest) string {
 	for _, item := range m.Required {
 		renderAssertions(&b, item)
 	}
+	b.WriteString("\n## Closed Loop Classes\n\n")
+	b.WriteString("| Class | Kind | Evidence |\n")
+	b.WriteString("| --- | --- | --- |\n")
+	for _, item := range m.ClosedLoops {
+		fmt.Fprintf(&b, "| `%s` | `%s` | `%s` |\n",
+			item.ID, item.Kind, strings.Join(item.EvidenceIDs, "`, `"))
+	}
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }
 

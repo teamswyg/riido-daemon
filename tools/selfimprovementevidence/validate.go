@@ -18,13 +18,16 @@ func validateManifest(m manifest) error {
 	if len(m.Required) == 0 {
 		return errors.New("required_evidence is required")
 	}
+	if len(m.ClosedLoops) == 0 {
+		return errors.New("closed_loop_classes is required")
+	}
 	seen := map[string]bool{}
 	for _, item := range m.Required {
 		if err := validateRequired(item, seen); err != nil {
 			return err
 		}
 	}
-	return nil
+	return validateClosedLoops(m.ClosedLoops, seen)
 }
 
 func validateRequired(item requiredEvidence, seen map[string]bool) error {

@@ -18,3 +18,12 @@ func mustMkdir(t *testing.T, path string) {
 		t.Fatal(err)
 	}
 }
+
+func mustRead(t *testing.T, path string) []byte {
+	t.Helper()
+	body, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return body
+}
