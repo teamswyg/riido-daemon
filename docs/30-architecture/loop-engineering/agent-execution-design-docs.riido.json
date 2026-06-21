@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "agent-execution-design-docs",
   "owner": "daemon/control-plane/contracts boundary",
   "observation": {

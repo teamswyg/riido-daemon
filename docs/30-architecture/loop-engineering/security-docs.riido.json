@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "security-docs",
   "owner": "daemon/security",
   "observation": {

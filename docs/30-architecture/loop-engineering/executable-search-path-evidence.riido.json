@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "executable-search-path-evidence",
   "owner": "C4 provider runtime",
   "observation": {

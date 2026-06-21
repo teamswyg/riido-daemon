@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "migration-daemon-figma-boundary-provenance-docs",
   "owner": "daemon/migration",
   "observation": {

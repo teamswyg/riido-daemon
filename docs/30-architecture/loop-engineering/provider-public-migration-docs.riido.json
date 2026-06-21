@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "schema_version": "riido-loop.v1",
   "id": "provider-public-migration-docs",
   "owner": "daemon/domain",

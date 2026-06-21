@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "store-distribution",
   "owner": "tools/storecontract",
   "observation": {"summary": "Store channel claims are observed through a package/distribution contract and generated policy table.", "artifacts": ["packaging/store/riido_daemon_store_distribution.riido.json", "docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md"]},

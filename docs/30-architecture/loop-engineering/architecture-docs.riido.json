@@ -1,4 +1,5 @@
 {
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
   "id": "architecture-docs",
   "owner": "architecture-docs workflow",
   "observation": {"summary": "Architecture docs, migration docs, and roadmap changes are observed through path-scoped CI.", "artifacts": [".github/workflows/architecture-docs.yml"]},
