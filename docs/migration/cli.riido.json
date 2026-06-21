@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-docs.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-cli-docs.riido.json",
   "id": "migration-cli-docs",
   "title": "Riido CLI Migration Plan",
   "workflow": ".github/workflows/migration-cli-docs.yml",

@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `258`
+- Complete manifest loops: `268`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `238`
-- Missing manifest loops: `82`
-- Missing loop budget: `82`
+- Delegated manifest loops: `248`
+- Missing manifest loops: `72`
+- Missing loop budget: `72`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 82 | 82 | `docs/migration/cli/cli-daemon-split.riido.json`<br>`docs/migration/cli/current-slices.riido.json`<br>`docs/migration/cli/migration-order.riido.json` |
+| `docs` | 72 | 72 | `docs/migration/daemon/codex-auth-full-access/codex-auth-harness.riido.json`<br>`docs/migration/daemon/codex-auth-full-access/cursor-provider-adapter.riido.json`<br>`docs/migration/daemon/codex-auth-full-access/openclaw-provider-adapter.riido.json` |
 
 ## Registered Manual Surfaces
 
