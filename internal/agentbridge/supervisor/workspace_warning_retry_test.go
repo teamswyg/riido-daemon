@@ -2,9 +2,7 @@ package supervisor
 
 import (
 	"context"
-	"strings"
 	"testing"
-	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -25,19 +23,7 @@ func TestSupervisorRetriesWorkspaceWarningBeforeTerminalReport(t *testing.T) {
 
 	actor.retryEventReports(ctx, inFlight)
 	expectStateEventAttempt(t, reporter, 2)
-	expectWorkspaceWarning(t, reporter.reporterProbe)
+	expectWorkspaceWarning(t, reporter.reporterProbe, "terminal result event append failed")
 	actor.retryTerminalReports(ctx, inFlight)
 	expectTaskResultCompleted(t, reporter.reporterProbe)
-}
-
-func expectWorkspaceWarning(t *testing.T, reporter *reporterProbe) {
-	t.Helper()
-	select {
-	case ev := <-reporter.events:
-		if !strings.Contains(ev.Text, "terminal result event append failed") {
-			t.Fatalf("workspace warning text = %q", ev.Text)
-		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("workspace warning was not retried")
-	}
 }
