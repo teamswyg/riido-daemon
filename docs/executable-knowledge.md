@@ -13,6 +13,14 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Registered manual docs | 0 |
 | Scanned docs | 300 |
 
+## Manifest Inventory
+
+| Group | Count | Sample paths |
+| --- | ---: | --- |
+| `docs` | 333 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
+| `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
+
 ## Registered Manual Surfaces
 
 _None._
@@ -29,11 +37,11 @@ _None._
 
 | Step | Evidence |
 | --- | --- |
-| Observe | Daemon documentation coverage can be green while the coverage gate itself does not expose why it exists, what it executes, or how reviewers should evaluate the generated evidence. |
-| Hypothesis | Embedding the observe/hypothesis/execute/evaluate/retrospective loop in the coverage manifest and generated evidence makes the documentation migration self-describing in public CI. |
-| Execute | Scan daemon markdown entrypoints, classify generated/direct/manual surfaces, require any manual debt to be registered, require this manifest to carry a complete evidence loop, and publish JSON evidence in GitHub Actions. |
-| Evaluate | The verifier fails when scanned markdown is unregistered manual prose, when the generated reader drifts, or when the coverage manifest omits any required evidence-loop phase. |
-| Retrospective | This keeps daemon documentation coverage aligned with loop engineering: generated readers remain the human surface, the manifest remains the executable SSOT, and CI publishes the durable evidence artifact. |
+| Observe | Daemon documentation coverage can be green while the coverage gate itself does not expose why it exists, what it executes, or which executable manifests exist outside the generated readers. |
+| Hypothesis | Embedding the observe/hypothesis/execute/evaluate/retrospective loop plus bounded manifest inventory samples in coverage evidence makes the documentation migration self-describing in public CI. |
+| Execute | Scan daemon markdown entrypoints, classify generated/direct/manual surfaces, sample repository executable manifests by group, require any manual debt to be registered, require this manifest to carry a complete evidence loop, and publish JSON evidence in GitHub Actions. |
+| Evaluate | The verifier fails when scanned markdown is unregistered manual prose, when the generated reader drifts, or when the coverage manifest omits any required evidence-loop phase while reporting manifest inventory groups and samples. |
+| Retrospective | This keeps daemon documentation coverage aligned with loop engineering: generated readers remain the human surface, the manifest remains the executable SSOT, and CI publishes durable evidence for both readers and executable manifests. |
 
 ## Assertions
 
@@ -41,3 +49,4 @@ _None._
 - manual debt registration is observable evidence when debt exists, not completion
 - zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed
 - the repository executable knowledge coverage manifest must expose a complete evidence loop
+- repository executable manifest inventory must be visible as bounded group samples

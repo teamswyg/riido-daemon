@@ -13,6 +13,14 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Registered manual docs | 0 |
 | Scanned docs | 80 |
 
+## Manifest Inventory
+
+| Group | Count | Sample paths |
+| --- | ---: | --- |
+| `docs` | 333 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
+| `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
+
 ## Registered Manual Surfaces
 
 _None._
@@ -29,11 +37,11 @@ _None._
 
 | Step | Evidence |
 | --- | --- |
-| Observe | Architecture documentation can grow as generated readers while the architecture coverage gate itself does not expose its observe/hypothesis/execute/evaluate/retrospective chain. |
-| Hypothesis | Making the architecture coverage manifest carry the loop keeps architecture docs as generated human surfaces and makes the verifier intent visible in CI evidence. |
-| Execute | Scan docs/30-architecture markdown, classify generated/direct/manual surfaces, require manual debt registration, require a complete evidence loop, and publish JSON evidence from the workflow. |
-| Evaluate | The verifier fails on unregistered manual architecture prose, stale generated coverage, or missing evidence-loop phases in the coverage manifest. |
-| Retrospective | This keeps architecture coverage aligned with executable knowledge: the manifest is the SSOT, the reader is generated, and public CI preserves the evidence artifact. |
+| Observe | Architecture documentation can grow as generated readers while the architecture coverage gate itself does not expose its loop or the executable manifests that support the repository. |
+| Hypothesis | Making the architecture coverage manifest carry the loop and bounded manifest inventory keeps architecture docs as generated human surfaces and makes the verifier intent visible in CI evidence. |
+| Execute | Scan docs/30-architecture markdown, classify generated/direct/manual surfaces, sample repository executable manifests by group, require manual debt registration, require a complete evidence loop, and publish JSON evidence from the workflow. |
+| Evaluate | The verifier fails on unregistered manual architecture prose, stale generated coverage, or missing evidence-loop phases in the coverage manifest while reporting manifest inventory groups and samples. |
+| Retrospective | This keeps architecture coverage aligned with executable knowledge: the manifest is the SSOT, the reader is generated, and public CI preserves evidence for reader and executable-manifest surfaces. |
 
 ## Assertions
 
@@ -41,3 +49,4 @@ _None._
 - manual surface registration is debt inventory, not a replacement for executable SSOT
 - new unregistered architecture prose must fail CI before it can silently expand interpretation variance
 - the architecture executable knowledge coverage manifest must expose a complete evidence loop
+- architecture executable knowledge coverage must show repository executable manifest inventory as bounded samples

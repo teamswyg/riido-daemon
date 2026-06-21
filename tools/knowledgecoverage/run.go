@@ -23,7 +23,7 @@ func run(repoRoot, manifestPath, evidenceOut string, writeDoc, checkDoc bool) er
 		return err
 	}
 	if evidenceOut != "" {
-		if err := writeJSON(resolvePath(root, evidenceOut), buildEvidence(m, docs, problems)); err != nil {
+		if err := writeJSON(resolvePath(root, evidenceOut), buildEvidence(root, m, docs, problems)); err != nil {
 			return err
 		}
 	}
@@ -34,7 +34,7 @@ func run(repoRoot, manifestPath, evidenceOut string, writeDoc, checkDoc bool) er
 }
 
 func maybeWriteOrCheckDoc(root string, m manifest, docs []docClass, problems []string, writeDoc, checkDoc bool) error {
-	rendered := renderDoc(m, docs, problems)
+	rendered := renderDoc(root, m, docs, problems)
 	path := resolvePath(root, m.GeneratedDoc)
 	if writeDoc {
 		if err := writeText(path, rendered); err != nil {

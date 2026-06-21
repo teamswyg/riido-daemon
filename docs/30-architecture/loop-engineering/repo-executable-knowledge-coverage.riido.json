@@ -2,30 +2,30 @@
   "id": "repo-executable-knowledge-coverage",
   "owner": "daemon/repo-docs",
   "observation": {
-    "summary": "repo-wide docs coverage can pass while the coverage manifest itself does not expose a complete evidence loop",
+    "summary": "repo-wide docs coverage can pass while executable .riido.json manifest distribution remains invisible in the coverage artifact",
     "artifacts": ["docs/executable-knowledge.riido.json"]
   },
   "hypothesis": {
-    "summary": "the repo-wide coverage manifest should publish its observe/hypothesis/execute/evaluate/retrospective chain as machine-readable CI evidence",
+    "summary": "the repo-wide coverage manifest should publish both its evidence loop and bounded manifest inventory samples as machine-readable CI evidence",
     "artifacts": ["tools/knowledgecoverage"]
   },
   "execution": {
-    "summary": "require repo-wide knowledge coverage manifests to carry a complete loop and render that loop into generated reader output",
+    "summary": "require repo-wide knowledge coverage manifests to carry a complete loop and render manifest inventory groups plus samples into generated reader output",
     "artifacts": [".github/workflows/repo-executable-knowledge-coverage.yml"]
   },
   "evaluation": {
-    "summary": "coverage check must pass while reporting generated/direct/manual counts and embedding the complete evidence loop",
+    "summary": "coverage check must pass while reporting generated/direct/manual counts, the complete evidence loop, and bounded manifest inventory samples",
     "artifacts": ["docs/executable-knowledge.md"]
   },
   "retrospective": {
-    "summary": "coverage gates now describe their own loop in public CI artifacts, reducing review-time interpretation variance",
+    "summary": "coverage gates now describe their own loop and executable manifest distribution in public CI artifacts, reducing review-time interpretation variance",
     "artifacts": ["docs/30-architecture/loop-engineering.md"]
   },
   "evidence": [
     {
       "kind": "command",
       "ref": "go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out /tmp/repo-executable-knowledge-coverage.json",
-      "proves": "repo-wide docs are generated, direct-SSOT backed, or registered as manual debt and the coverage manifest exposes a complete evidence loop"
+      "proves": "repo-wide docs are generated, direct-SSOT backed, or registered as manual debt, and the coverage manifest exposes a complete evidence loop plus manifest inventory samples"
     },
     {
       "kind": "workflow",
