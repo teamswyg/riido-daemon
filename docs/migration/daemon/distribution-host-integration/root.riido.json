@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json",
   "id": "daemon-distribution-host-integration-root",
   "title": "Riido Daemon Migration Plan: Distribution Host Integration",
   "generated_doc": "docs/migration/daemon/distribution-host-integration.md",

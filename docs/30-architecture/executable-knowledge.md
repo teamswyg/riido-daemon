@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `283`
+- Complete manifest loops: `293`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `263`
-- Missing manifest loops: `57`
-- Missing loop budget: `57`
+- Delegated manifest loops: `273`
+- Missing manifest loops: `47`
+- Missing loop budget: `47`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 57 | 57 | `docs/migration/daemon/distribution-host-integration/agentbridge-root-provider-runtime.riido.json`<br>`docs/migration/daemon/distribution-host-integration/distribution-host-domain.riido.json`<br>`docs/migration/daemon/distribution-host-integration/event-ingestor-boundary.riido.json` |
+| `docs` | 47 | 47 | `docs/migration/daemon/figma-boundary-provenance/coverage-provenance.riido.json`<br>`docs/migration/daemon/figma-boundary-provenance/detect-selected-executable.riido.json`<br>`docs/migration/daemon/figma-boundary-provenance/device-principal-config.riido.json` |
 
 ## Registered Manual Surfaces
 

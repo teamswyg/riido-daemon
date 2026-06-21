@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json",
   "id": "daemon-distribution-host-domain",
   "title": "RIID-4648: Distribution Host Integration Domain",
   "generated_doc": "docs/migration/daemon/distribution-host-integration/distribution-host-domain.md",

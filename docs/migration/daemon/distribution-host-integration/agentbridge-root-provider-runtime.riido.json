@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json",
   "id": "daemon-agentbridge-root-provider-runtime",
   "title": "RIID-4651: Agentbridge Root Provider Runtime Domain",
   "generated_doc": "docs/migration/daemon/distribution-host-integration/agentbridge-root-provider-runtime.md",
