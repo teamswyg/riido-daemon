@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-daemon-lifecycle-cli-docs.riido.json",
   "id": "daemon-lifecycle-cli-figma-boundary-projection",
   "title": "RIID-4813: Figma AI Agent Daemon Boundary Projection",
   "generated_doc": "docs/migration/daemon/daemon-lifecycle-cli/figma-boundary-projection.md",
