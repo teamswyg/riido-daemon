@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-real-cli-observation.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/provider-real-cli-observation.riido.json",
   "id": "provider-real-cli-observation",
   "title": "Provider Real CLI Observation",
   "generated_doc": "docs/30-architecture/provider-real-cli-observation.md",

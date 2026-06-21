@@ -12,6 +12,10 @@ func manifestLoopPointerFields() []string {
 	}
 }
 
+func manifestLoopPointerArrayFields() []string {
+	return []string{"provider_files"}
+}
+
 func collectManifestLoopPointerTargets(
 	root string,
 	ownerPath string,
@@ -24,7 +28,7 @@ func collectManifestLoopPointerTargets(
 		if !ok {
 			continue
 		}
-		target, ok := manifestSiblingSourcePath(root, ownerPath, source)
+		target, ok := manifestLoopReferencePath(root, ownerPath, source)
 		if ok && strings.HasSuffix(target, ".riido.json") {
 			targets[target] = true
 		}
