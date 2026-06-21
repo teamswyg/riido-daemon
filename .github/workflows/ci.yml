@@ -29,6 +29,7 @@ jobs:
         run: |
           mkdir -p out
           go run ./tools/cievidence \
+            -manifest docs/30-architecture/ci-evidence.riido.json \
             -workflow .github/workflows/ci.yml \
             -id ci \
             -evidence-out out/ci-evidence.json
