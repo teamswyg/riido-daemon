@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-codex-auth-full-access-docs.riido.json",
   "id": "daemon-codex-auth-full-access-supervisor-migration",
   "title": "RIID-4662: Supervisor Migration",
   "generated_doc": "docs/migration/daemon/codex-auth-full-access/supervisor-migration.md",
