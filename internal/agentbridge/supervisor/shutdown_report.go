@@ -5,20 +5,20 @@ import (
 	"time"
 )
 
-const shutdownReportRetryEvery = 50 * time.Millisecond
+const shutdownRetryEvery = 50 * time.Millisecond
 
 func (a *Actor) drainShutdownReports(ctx context.Context, inFlight map[string]*runningTask) {
 	for len(inFlight) > 0 {
 		a.retryEventReports(ctx, inFlight)
 		a.retryTerminalReports(ctx, inFlight)
-		if len(inFlight) == 0 || waitShutdownReportRetry(ctx) {
+		if len(inFlight) == 0 || waitShutdownRetry(ctx) {
 			return
 		}
 	}
 }
 
-func waitShutdownReportRetry(ctx context.Context) bool {
-	timer := time.NewTimer(shutdownReportRetryEvery)
+func waitShutdownRetry(ctx context.Context) bool {
+	timer := time.NewTimer(shutdownRetryEvery)
 	defer timer.Stop()
 	select {
 	case <-ctx.Done():
