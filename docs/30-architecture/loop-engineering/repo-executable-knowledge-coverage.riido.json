@@ -2,30 +2,30 @@
   "id": "repo-executable-knowledge-coverage",
   "owner": "daemon/repo-docs",
   "observation": {
-    "summary": "repo-wide docs probe found generated architecture coverage but unobserved manual surfaces outside docs/30-architecture",
+    "summary": "repo-wide docs coverage can pass while the coverage manifest itself does not expose a complete evidence loop",
     "artifacts": ["docs/executable-knowledge.riido.json"]
   },
   "hypothesis": {
-    "summary": "manual docs outside architecture must be registered as observable debt before they can be safely converted slice by slice",
+    "summary": "the repo-wide coverage manifest should publish its observe/hypothesis/execute/evaluate/retrospective chain as machine-readable CI evidence",
     "artifacts": ["tools/knowledgecoverage"]
   },
   "execution": {
-    "summary": "add repo-wide knowledge coverage with prefix-registered manual debt groups and a public CI artifact",
+    "summary": "require repo-wide knowledge coverage manifests to carry a complete loop and render that loop into generated reader output",
     "artifacts": [".github/workflows/repo-executable-knowledge-coverage.yml"]
   },
   "evaluation": {
-    "summary": "coverage check must pass while reporting generated, direct SSOT, and registered manual counts",
+    "summary": "coverage check must pass while reporting generated/direct/manual counts and embedding the complete evidence loop",
     "artifacts": ["docs/executable-knowledge.md"]
   },
   "retrospective": {
-    "summary": "the next conversion slices should reduce prefix-registered manual counts rather than add more narrative docs",
+    "summary": "coverage gates now describe their own loop in public CI artifacts, reducing review-time interpretation variance",
     "artifacts": ["docs/30-architecture/loop-engineering.md"]
   },
   "evidence": [
     {
       "kind": "command",
       "ref": "go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out /tmp/repo-executable-knowledge-coverage.json",
-      "proves": "repo-wide docs are generated, direct-SSOT backed, or registered as manual debt"
+      "proves": "repo-wide docs are generated, direct-SSOT backed, or registered as manual debt and the coverage manifest exposes a complete evidence loop"
     },
     {
       "kind": "workflow",

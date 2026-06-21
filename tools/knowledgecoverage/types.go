@@ -11,6 +11,7 @@ type manifest struct {
 	ScanFiles        []string      `json:"scan_files"`
 	ManualGroups     []manualGroup `json:"manual_groups"`
 	Assertions       []string      `json:"assertions"`
+	Loop             evidenceLoop  `json:"loop"`
 }
 
 type manualGroup struct {
@@ -43,6 +44,15 @@ type evidence struct {
 	ManualSamples    []manualSample `json:"manual_samples"`
 	ProblemSummaries []string       `json:"problem_summaries"`
 	EvidenceArtifact string         `json:"evidence_artifact"`
+	Loop             evidenceLoop   `json:"loop"`
+}
+
+type evidenceLoop struct {
+	Observation   string `json:"observation"`
+	Hypothesis    string `json:"hypothesis"`
+	Execute       string `json:"execute"`
+	Evaluate      string `json:"evaluate"`
+	Retrospective string `json:"retrospective"`
 }
 
 type manualDir struct {

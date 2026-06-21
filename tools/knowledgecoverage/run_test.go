@@ -42,8 +42,8 @@ func TestRenderDocShowsNoneForZeroManualDebt(t *testing.T) {
 	m := fixtureManifest()
 	m.ManualGroups = nil
 	got := renderDoc(m, []docClass{{Path: "docs/generated.md", Kind: "generated"}}, nil)
-	if strings.Count(got, "_None._") != 3 {
-		t.Fatalf("expected all manual sections to show none:\n%s", got)
+	if strings.Count(got, "_None._") != 3 || !strings.Contains(got, "## Evidence Loop") {
+		t.Fatalf("expected manual none sections and evidence loop:\n%s", got)
 	}
 }
 
