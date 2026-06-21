@@ -12,10 +12,17 @@ func (a *Actor) appendWorkspaceEvent(ctx context.Context, taskID string, events 
 		return
 	}
 	if _, err := events.ingestor.Append(ctx, events.draft(eventType, nativeConfigVersion, payload)); err != nil {
-		_ = a.cfg.Reporter.ReportEvent(ctx, taskID, agentbridge.Event{
+		a.forwardReportEvent(taskEventMsg{taskID: taskID, event: agentbridge.Event{
 			Kind: agentbridge.EventWarning,
 			Text: "workspace event append failed: " + string(eventType),
 			Err:  err.Error(),
-		})
+		}})
+	}
+}
+
+func (a *Actor) forwardReportEvent(msg taskEventMsg) {
+	select {
+	case a.mailbox <- envelope{taskReport: &msg}:
+	case <-a.stoppedCh:
 	}
 }

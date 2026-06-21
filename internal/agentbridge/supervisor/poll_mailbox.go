@@ -13,6 +13,9 @@ func (a *Actor) handleMailboxMessage(
 	case msg.taskEvent != nil:
 		a.handleTaskEvent(ctx, msg.taskEvent, inFlight)
 		return false
+	case msg.taskReport != nil:
+		a.handleTaskReportEvent(ctx, msg.taskReport, inFlight)
+		return false
 	case msg.taskResult != nil:
 		a.handleTaskResult(ctx, msg.taskResult, inFlight)
 		return true

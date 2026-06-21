@@ -8,6 +8,7 @@ import (
 type envelope struct {
 	taskActivation *taskActivationMsg
 	taskEvent      *taskEventMsg
+	taskReport     *taskEventMsg
 	taskResult     *taskResultMsg
 	cancel         *cancelMsg
 }
