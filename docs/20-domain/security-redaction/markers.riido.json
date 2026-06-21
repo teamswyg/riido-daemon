@@ -2,6 +2,7 @@
   "schema_version": "riido-security-redaction-detail.v1",
   "id": "markers",
   "title": "Marker",
+  "loop_source": "docs/30-architecture/loop-engineering/security-redaction.riido.json",
   "generated_doc": "docs/20-domain/security-redaction/markers.md",
   "blocks": [
     {"kind": "paragraph", "text": "Canonical IR payload redaction marker 는 다음 형식이다."},

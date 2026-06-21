@@ -2,6 +2,7 @@
   "schema_version": "riido-security-redaction-detail.v1",
   "id": "execution-responsibility",
   "title": "실행 책임",
+  "loop_source": "docs/30-architecture/loop-engineering/security-redaction.riido.json",
   "generated_doc": "docs/20-domain/security-redaction/execution-responsibility.md",
   "blocks": [
     {"kind": "table", "columns": ["단계", "주체", "책임"], "rows": [
