@@ -2,15 +2,18 @@ package main
 
 func buildEvidence(m manifest, docPath string, problems []string) evidenceReport {
 	return evidenceReport{
-		SchemaVersion:     "riido-loop-evidence-result.v1",
-		ID:                m.ID,
-		Status:            statusFor(problems),
-		GeneratedDoc:      docPath,
-		LoopCount:         len(m.Loops),
-		OpenGapCount:      len(m.OpenGaps),
-		EvidenceItemCount: evidenceItemCount(m.Loops),
-		RequiredPhases:    m.RequiredPhases,
-		ProblemSummaries:  problems,
+		SchemaVersion:           "riido-loop-evidence-result.v1",
+		ID:                      m.ID,
+		Status:                  statusFor(problems),
+		GeneratedDoc:            docPath,
+		LoopCount:               len(m.Loops),
+		RegisteredLoopFileCount: len(m.LoopFiles),
+		OpenGapCount:            len(m.OpenGaps),
+		EvidenceItemCount:       evidenceItemCount(m.Loops),
+		RequiredPhases:          m.RequiredPhases,
+		PhaseCoverage:           phaseCoverageRows(m),
+		ProblemCount:            len(problems),
+		ProblemSummaries:        append([]string{}, problems...),
 	}
 }
 
