@@ -7,12 +7,22 @@
   "evidence_artifact": "executable-knowledge-coverage",
   "scan_roots": ["docs/30-architecture"],
   "manual_groups": [],
+  "manifest_loop_budget": {
+    "max_missing": 338,
+    "max_missing_by_group": {
+      "docs": 331,
+      "packaging": 5,
+      "internal": 2
+    }
+  },
   "assertions": [
     "30-architecture markdown must be generated, backed by a direct .riido.json, or registered as a manual surface with a next executable artifact",
     "manual surface registration is debt inventory, not a replacement for executable SSOT",
     "new unregistered architecture prose must fail CI before it can silently expand interpretation variance",
     "the architecture executable knowledge coverage manifest must expose a complete evidence loop",
-    "architecture executable knowledge coverage must show repository executable manifest inventory as bounded samples"
+    "architecture executable knowledge coverage must show repository executable manifest inventory as bounded samples",
+    "architecture executable knowledge coverage must show repository executable manifest loop debt as bounded samples",
+    "new loop-less executable manifest debt must not exceed the manifest_loop_budget"
   ],
   "loop": {
     "observation": "Architecture documentation can grow as generated readers while the architecture coverage gate itself does not expose its loop or the executable manifests that support the repository.",

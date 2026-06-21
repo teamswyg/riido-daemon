@@ -8,12 +8,22 @@
   "scan_roots": ["docs"],
   "scan_files": ["README.md", "AGENTS.md", "NOTICE.md"],
   "manual_groups": [],
+  "manifest_loop_budget": {
+    "max_missing": 338,
+    "max_missing_by_group": {
+      "docs": 331,
+      "packaging": 5,
+      "internal": 2
+    }
+  },
   "assertions": [
     "repository docs markdown and root entrypoint markdown must be generated, direct-SSOT backed, or explicitly registered as manual debt",
     "manual debt registration is observable evidence when debt exists, not completion",
     "zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed",
     "the repository executable knowledge coverage manifest must expose a complete evidence loop",
-    "repository executable manifest inventory must be visible as bounded group samples"
+    "repository executable manifest inventory must be visible as bounded group samples",
+    "repository executable manifest loop debt must be visible as bounded group samples",
+    "new loop-less executable manifest debt must not exceed the manifest_loop_budget"
   ],
   "loop": {
     "observation": "Daemon documentation coverage can be green while the coverage gate itself does not expose why it exists, what it executes, or which executable manifests exist outside the generated readers.",

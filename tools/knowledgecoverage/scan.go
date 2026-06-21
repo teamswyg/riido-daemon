@@ -27,7 +27,13 @@ func scanDocs(root string, m manifest) ([]docClass, []string) {
 	slices.SortFunc(docs, func(a, b docClass) int {
 		return strings.Compare(a.Path, b.Path)
 	})
-	return docs, append(problems, validateManualEntries(root, m, docs)...)
+	problems = append(problems, validateManualEntries(root, m, docs)...)
+	loops, err := scanManifestLoops(root)
+	if err != nil {
+		problems = append(problems, "manifest loop scan failed: "+err.Error())
+		return docs, problems
+	}
+	return docs, append(problems, manifestLoopBudgetProblems(loops, m.ManifestLoopBudget)...)
 }
 
 func scanRootDocs(root, scanRoot string, m manifest, manualByPath map[string]manualGroup) ([]docClass, error) {
