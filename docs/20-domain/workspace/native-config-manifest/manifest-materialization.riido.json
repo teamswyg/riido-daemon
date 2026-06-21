@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-native-config-detail.v1",
   "id": "manifest-materialization",
   "title": "Native Config Manifest And Materialization",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/native-config-manifest/manifest-materialization.md",
   "blocks": [
     {"kind": "paragraph", "text": "The executable SSOT for provider native config file plans is `internal/workdir/native_config_plan.riido.json` (`riido-native-config-plan.v1`). `go generate ./internal/workdir` compiles it through `tools/riidogen/templates/native_config_plan.go.gotmpl` into `internal/workdir/native_config_plan_gen.go`."},

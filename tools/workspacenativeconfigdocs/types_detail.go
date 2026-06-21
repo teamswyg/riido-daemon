@@ -4,6 +4,7 @@ type detailDoc struct {
 	SchemaVersion string  `json:"schema_version"`
 	ID            string  `json:"id"`
 	Title         string  `json:"title"`
+	LoopSource    string  `json:"loop_source,omitempty"`
 	GeneratedDoc  string  `json:"generated_doc"`
 	Blocks        []block `json:"blocks"`
 }

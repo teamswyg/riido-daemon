@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `215`
+- Complete manifest loops: `222`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `195`
-- Missing manifest loops: `125`
-- Missing loop budget: `125`
+- Delegated manifest loops: `202`
+- Missing manifest loops: `118`
+- Missing loop budget: `118`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 125 | 125 | `docs/20-domain/workspace/native-config-manifest/adjacent-contracts.riido.json`<br>`docs/20-domain/workspace/native-config-manifest/manifest-materialization.riido.json`<br>`docs/20-domain/workspace/native-config-manifest/native-config-version.riido.json` |
+| `docs` | 118 | 118 | `docs/20-domain/workspace.riido.json`<br>`docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence/external.riido.json`<br>`docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-evidence/local-approval.riido.json` |
 
 ## Registered Manual Surfaces
 

@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-native-config-docs.v1",
   "id": "workspace-native-config-docs",
   "title": "Workspace / Native Config SSOT: Native Config Manifest",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-native-config-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/native-config-manifest.md",
   "workflow": ".github/workflows/workspace-native-config-docs.yml",
   "evidence_artifact": "workspace-native-config-docs",
