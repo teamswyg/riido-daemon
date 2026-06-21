@@ -2,6 +2,7 @@
   "schema_version": "riido-tool-use-gate.v1",
   "id": "tool-use-gate-evidence",
   "title": "Tool Use Gate Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/tool-use-gate-evidence.riido.json",
   "generated_doc": "docs/20-domain/security/enforcement-locations/tool-use-gates.md",
   "workflow": ".github/workflows/tool-use-gate-evidence.yml",
   "evidence_artifact": "tool-use-gate-evidence",

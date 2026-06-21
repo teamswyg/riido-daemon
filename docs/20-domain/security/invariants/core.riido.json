@@ -2,6 +2,7 @@
   "schema_version": "riido-security-invariant-detail.v1",
   "id": "core",
   "title": "Security Invariants: Core",
+  "loop_source": "docs/30-architecture/loop-engineering/security-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/security/invariants/core.md",
   "blocks": [
     {"kind": "paragraph", "text": "These invariants are the primary domain promises."},

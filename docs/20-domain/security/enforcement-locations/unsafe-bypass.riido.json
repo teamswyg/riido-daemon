@@ -2,6 +2,7 @@
   "schema_version": "riido-unsafe-bypass-evidence.v1",
   "id": "unsafe-bypass-enforcement",
   "title": "Unsafe Bypass Enforcement",
+  "loop_source": "docs/30-architecture/loop-engineering/unsafe-bypass-evidence.riido.json",
   "generated_doc": "docs/20-domain/security/enforcement-locations/unsafe-bypass.md",
   "workflow": ".github/workflows/unsafe-bypass-evidence.yml",
   "evidence_artifact": "unsafe-bypass-evidence",
