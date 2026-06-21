@@ -27,6 +27,7 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 			a.stopRun(runtimes, inFlight, a.drainStopLevel(level), nil)
 			return
 		case <-poll.C:
+			a.retryEventReports(ctx, inFlight)
 			a.retryTerminalReports(ctx, inFlight)
 			claimed := a.claimAvailable(ctx, runtimes, inFlight)
 			resetTimer(poll, a.nextPollInterval(claimed, len(inFlight)))

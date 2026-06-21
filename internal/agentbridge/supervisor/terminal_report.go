@@ -26,6 +26,9 @@ func (a *Actor) flushTerminalReport(
 	if task == nil || task.terminalResult == nil {
 		return false
 	}
+	if len(task.pendingEvents) > 0 {
+		return false
+	}
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
 	if err := a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, *task.terminalResult); err != nil {
 		return false
