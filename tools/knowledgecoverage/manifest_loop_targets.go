@@ -8,6 +8,16 @@ import (
 
 func scanManifestLoopDelegatedTargets(root string) (map[string]bool, error) {
 	targets := map[string]bool{}
+	for {
+		changed, err := scanManifestLoopDelegatedTargetPass(root, targets)
+		if err != nil || !changed {
+			return targets, err
+		}
+	}
+}
+
+func scanManifestLoopDelegatedTargetPass(root string, targets map[string]bool) (bool, error) {
+	changed := false
 	err := filepath.WalkDir(root, func(path string, entry os.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -18,13 +28,15 @@ func scanManifestLoopDelegatedTargets(root string) (map[string]bool, error) {
 		if entry.IsDir() || !strings.HasSuffix(path, ".riido.json") {
 			return nil
 		}
-		if manifestLoopStatus(root, path) == "missing" {
+		if manifestLoopStatus(root, path) == "missing" && !targets[path] {
 			return nil
 		}
+		before := len(targets)
 		collectManifestLoopDelegatedTargets(root, path, targets)
+		changed = changed || len(targets) > before
 		return nil
 	})
-	return targets, err
+	return changed, err
 }
 
 func collectManifestLoopDelegatedTargets(root, path string, targets map[string]bool) {
@@ -45,4 +57,5 @@ func collectManifestLoopDelegatedTargets(root, path string, targets map[string]b
 		collectManifestLoopEntryFileTargets(root, path, entryFiles, targets)
 	}
 	collectManifestLoopPointerTargets(root, path, object, manifestLoopPointerFields(), targets)
+	collectManifestLoopPointerArrayTargets(root, path, object, manifestLoopPointerArrayFields(), targets)
 }
