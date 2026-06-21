@@ -33,27 +33,11 @@ func collectManifestLoopDelegatedTargets(root, path string, targets map[string]b
 		return
 	}
 	files, ok := object["evidence_files"].(map[string]any)
-	if !ok {
-		return
+	if ok {
+		collectManifestLoopFileMapTargets(root, path, files, targets)
 	}
-	for _, value := range files {
-		collectManifestLoopFileTargets(root, path, value, targets)
-	}
-}
-
-func collectManifestLoopFileTargets(root, ownerPath string, value any, targets map[string]bool) {
-	items, ok := value.([]any)
-	if !ok {
-		return
-	}
-	for _, item := range items {
-		source, ok := item.(string)
-		if !ok {
-			continue
-		}
-		target, ok := manifestSiblingSourcePath(root, ownerPath, source)
-		if ok && strings.HasSuffix(target, ".riido.json") {
-			targets[target] = true
-		}
+	fragments, ok := object["fragments"].(map[string]any)
+	if ok {
+		collectManifestLoopFragmentTargets(root, path, fragments, targets)
 	}
 }

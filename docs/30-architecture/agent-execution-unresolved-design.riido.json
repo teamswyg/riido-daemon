@@ -2,6 +2,7 @@
   "schema_version": "riido-agent-execution-design-docs.v1",
   "id": "agent-execution-design-docs",
   "title": "Agent Execution Design SSOT",
+  "loop_source": "docs/30-architecture/loop-engineering/agent-execution-design-docs.riido.json",
   "generated_doc": "docs/30-architecture/agent-execution-unresolved-design.md",
   "workflow": ".github/workflows/agent-execution-design-docs.yml",
   "evidence_artifact": "agent-execution-design-docs",
