@@ -1285,6 +1285,38 @@
   - `command`: go test ./internal/hostintegration ./cmd/riido ./tools/storecontract -count=1; proves local IPC, helper runtime, consent, CLI defaults, and store distribution contracts still match the generated boundary
   - `workflow`: .github/workflows/distribution-host-local-ipc-docs.yml; proves public CI uploads distribution host local IPC evidence
 
+### runtime-reserved-gap-surfacing
+
+- Owner: `daemon-runtime-upgrade-flow`
+- Observe: Runtime upgrade flow evidence reports three reserved rules, but the root loop-engineering open gap registry still rendered as none.
+  - Artifacts: `docs/30-architecture/runtime-upgrade-flow.riido.json`, `tools/runtimeupgrade/evidence.go`
+- Hypothesis: Promoting reserved runtime rules into root open gaps makes evidence debt observable without claiming implementation.
+  - Artifacts: `docs/30-architecture/loop-engineering.riido.json`
+- Execute: Add three runtime upgrade open gaps and regenerate the loop-engineering reader from the SSOT manifest.
+  - Artifacts: `docs/30-architecture/loop-engineering.md`
+- Evaluate: loopevidence must report open_gap_count=3 while runtimeupgrade continues to report reserved_rules=3.
+  - Artifacts: `tools/loopevidence`, `tools/runtimeupgrade`
+- Retrospective: Reserved rules stay valid executable knowledge, but now surface as explicit next-artifact debt in the root loop view.
+- Evidence:
+  - `command`: go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json; proves root loop evidence exposes runtime reserved gaps
+  - `command`: go run ./tools/runtimeupgrade -check-doc -evidence-out /tmp/runtime-upgrade-flow-evidence.json; proves runtime upgrade evidence still distinguishes reserved rules from implemented rules
+
 ## Open Gaps
 
-_None._
+### runtime-active-drift-cancellation
+
+- Owner: `docs/30-architecture/runtime-upgrade-flow.riido.json`
+- Current handling: Runtime upgrade flow evidence reports this as a reserved rule, not an implemented invariant.
+- Required next artifact: runtimeactor test proving in-flight fingerprint, policy, or native-config drift cancels the active session and reports a terminal blocked or failed result
+
+### runtime-no-silent-upgrade-e2e
+
+- Owner: `docs/30-architecture/runtime-upgrade-flow.riido.json`
+- Current handling: Lease pinning and stale report rejection are implemented, but Preparing/Running end-to-end drift cancellation is still reserved.
+- Required next artifact: end-to-end test covering Preparing and Running drift without manual restart
+
+### dirty-workdir-reinjection-zero-threshold
+
+- Owner: `docs/30-architecture/runtime-upgrade-flow.riido.json`
+- Current handling: The zero-threshold policy is recorded as a reserved native-config rule and referenced by Q-WS-006, but runtime enforcement evidence is not yet claimed.
+- Required next artifact: workdir or supervisor test proving dirty Preparing/Running workdirs never receive in-place native config reinjection

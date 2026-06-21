@@ -1,0 +1,46 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "runtime-reserved-gap-surfacing",
+  "owner": "daemon-runtime-upgrade-flow",
+  "observation": {
+    "summary": "Runtime upgrade flow evidence reports three reserved rules, but the root loop-engineering open gap registry still rendered as none.",
+    "artifacts": [
+      "docs/30-architecture/runtime-upgrade-flow.riido.json",
+      "tools/runtimeupgrade/evidence.go"
+    ]
+  },
+  "hypothesis": {
+    "summary": "Promoting reserved runtime rules into root open gaps makes evidence debt observable without claiming implementation.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.riido.json"
+    ]
+  },
+  "execution": {
+    "summary": "Add three runtime upgrade open gaps and regenerate the loop-engineering reader from the SSOT manifest.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md"
+    ]
+  },
+  "evaluation": {
+    "summary": "loopevidence must report open_gap_count=3 while runtimeupgrade continues to report reserved_rules=3.",
+    "artifacts": [
+      "tools/loopevidence",
+      "tools/runtimeupgrade"
+    ]
+  },
+  "retrospective": {
+    "summary": "Reserved rules stay valid executable knowledge, but now surface as explicit next-artifact debt in the root loop view."
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json",
+      "proves": "root loop evidence exposes runtime reserved gaps"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/runtimeupgrade -check-doc -evidence-out /tmp/runtime-upgrade-flow-evidence.json",
+      "proves": "runtime upgrade evidence still distinguishes reserved rules from implemented rules"
+    }
+  ]
+}

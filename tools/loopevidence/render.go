@@ -20,7 +20,7 @@ func renderMarkdown(m manifest) string {
 	b.WriteString("## Open Gaps\n\n")
 	if len(m.OpenGaps) == 0 {
 		b.WriteString("_None._\n")
-		return b.String()
+		return normalizeEOF(b.String())
 	}
 	for _, item := range m.OpenGaps {
 		fmt.Fprintf(&b, "### %s\n\n", item.ID)
@@ -28,7 +28,11 @@ func renderMarkdown(m manifest) string {
 		fmt.Fprintf(&b, "- Current handling: %s\n", item.CurrentHandling)
 		fmt.Fprintf(&b, "- Required next artifact: %s\n\n", item.RequiredNextArtifact)
 	}
-	return b.String()
+	return normalizeEOF(b.String())
+}
+
+func normalizeEOF(value string) string {
+	return strings.TrimRight(value, "\n") + "\n"
 }
 
 func renderLoop(b *strings.Builder, item loop) {
