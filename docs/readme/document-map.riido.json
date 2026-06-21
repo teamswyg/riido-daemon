@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-doc-map.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/doc-map-evidence.riido.json",
   "id": "daemon-doc-map",
   "title": "riido-daemon 문서 지도",
   "generated_docs": {

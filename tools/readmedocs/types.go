@@ -10,6 +10,7 @@ type options struct {
 
 type manifest struct {
 	SchemaVersion    string        `json:"schema_version"`
+	LoopSource       string        `json:"loop_source,omitempty"`
 	ID               string        `json:"id"`
 	Title            string        `json:"title"`
 	Workflow         string        `json:"workflow"`

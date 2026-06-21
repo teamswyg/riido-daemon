@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-readme-pages.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/readme-docs.riido.json",
   "id": "daemon-readme-handoff-pages",
   "title": "README Handoff Pages",
   "workflow": ".github/workflows/readme-docs.yml",
