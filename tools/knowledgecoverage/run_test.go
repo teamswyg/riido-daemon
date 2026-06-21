@@ -39,11 +39,14 @@ func TestKnowledgeCoverageAllowsZeroManualGroups(t *testing.T) {
 }
 
 func TestRenderDocShowsNoneForZeroManualDebt(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "docs/generated.riido.json", "{}\n")
 	m := fixtureManifest()
 	m.ManualGroups = nil
-	got := renderDoc(m, []docClass{{Path: "docs/generated.md", Kind: "generated"}}, nil)
-	if strings.Count(got, "_None._") != 3 || !strings.Contains(got, "## Evidence Loop") {
-		t.Fatalf("expected manual none sections and evidence loop:\n%s", got)
+	got := renderDoc(root, m, []docClass{{Path: "docs/generated.md", Kind: "generated"}}, nil)
+	if strings.Count(got, "_None._") != 3 || !strings.Contains(got, "## Manifest Inventory") ||
+		!strings.Contains(got, "## Evidence Loop") {
+		t.Fatalf("expected manual none sections, manifest inventory, and evidence loop:\n%s", got)
 	}
 }
 

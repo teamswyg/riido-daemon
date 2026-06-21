@@ -1,6 +1,6 @@
 package main
 
-func buildEvidence(m manifest, docs []docClass, problems []string) evidence {
+func buildEvidence(root string, m manifest, docs []docClass, problems []string) evidence {
 	counts := countDocs(docs)
 	status := "verified"
 	if len(problems) > 0 {
@@ -9,21 +9,27 @@ func buildEvidence(m manifest, docs []docClass, problems []string) evidence {
 	if problems == nil {
 		problems = []string{}
 	}
+	inventory, err := scanManifestInventory(root)
+	if err != nil {
+		status = "failed"
+		problems = append(problems, "manifest inventory scan failed: "+err.Error())
+	}
 	return evidence{
-		SchemaVersion:    "riido-executable-knowledge-coverage-result.v1",
-		ID:               m.ID,
-		Status:           status,
-		ScannedCount:     len(docs),
-		GeneratedCount:   counts["generated"],
-		DirectSSOTCount:  counts["direct_ssot"],
-		ManualCount:      counts["manual_registered"],
-		ManualGroups:     manualGroupIDs(m),
-		ManualByGroup:    manualCountsByGroup(docs),
-		ManualTopDirs:    manualTopDirs(docs, 12),
-		ManualSamples:    manualSamples(docs, 5),
-		ProblemSummaries: problems,
-		EvidenceArtifact: m.EvidenceArtifact,
-		Loop:             m.Loop,
+		SchemaVersion:     "riido-executable-knowledge-coverage-result.v1",
+		ID:                m.ID,
+		Status:            status,
+		ScannedCount:      len(docs),
+		GeneratedCount:    counts["generated"],
+		DirectSSOTCount:   counts["direct_ssot"],
+		ManualCount:       counts["manual_registered"],
+		ManualGroups:      manualGroupIDs(m),
+		ManualByGroup:     manualCountsByGroup(docs),
+		ManualTopDirs:     manualTopDirs(docs, 12),
+		ManualSamples:     manualSamples(docs, 5),
+		ManifestInventory: inventory,
+		ProblemSummaries:  problems,
+		EvidenceArtifact:  m.EvidenceArtifact,
+		Loop:              m.Loop,
 	}
 }
 

@@ -366,18 +366,18 @@
 ### executable-knowledge-coverage
 
 - Owner: `architecture knowledge surface`
-- Observe: Architecture coverage can classify reader docs but still leave the coverage manifest's own evidence loop implicit.
+- Observe: Architecture coverage can classify reader docs but still leave executable manifest distribution implicit.
   - Artifacts: `docs/30-architecture`
-- Hypothesis: The architecture coverage manifest should be executable knowledge too: complete loop metadata must be required and published as evidence.
+- Hypothesis: The architecture coverage manifest should be executable knowledge too: complete loop metadata and bounded manifest inventory samples must be published as evidence.
   - Artifacts: `docs/30-architecture/executable-knowledge.riido.json`
-- Execute: Run knowledgecoverage to classify 30-architecture Markdown and require complete evidence-loop metadata on the coverage manifest.
+- Execute: Run knowledgecoverage to classify 30-architecture Markdown, require complete evidence-loop metadata, and publish manifest inventory groups plus samples.
   - Artifacts: `tools/knowledgecoverage`, `.github/workflows/executable-knowledge-coverage.yml`
-- Evaluate: The verifier rejects unregistered manual architecture docs, stale generated readers, and coverage manifests missing any loop phase.
+- Evaluate: The verifier rejects unregistered manual architecture docs, stale generated readers, and coverage manifests missing any loop phase while reporting manifest inventory samples.
   - Artifacts: `docs/30-architecture/executable-knowledge.md`
-- Retrospective: Architecture coverage now explains its own loop in the generated reader and public CI evidence artifact.
+- Retrospective: Architecture coverage now explains its own loop and manifest distribution in the generated reader and public CI evidence artifact.
   - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
-  - `command`: go run ./tools/knowledgecoverage -check-doc -evidence-out /tmp/executable-knowledge-coverage.json; proves architecture markdown knowledge is generated, direct-SSOT backed, or registered as manual debt and the manifest exposes a complete evidence loop
+  - `command`: go run ./tools/knowledgecoverage -check-doc -evidence-out /tmp/executable-knowledge-coverage.json; proves architecture markdown knowledge is generated, direct-SSOT backed, or registered as manual debt, and the manifest exposes a complete evidence loop plus manifest inventory samples
   - `workflow`: .github/workflows/executable-knowledge-coverage.yml; proves public CI uploads executable knowledge coverage evidence
 
 ### loop-evidence-output
@@ -400,18 +400,18 @@
 ### repo-executable-knowledge-coverage
 
 - Owner: `daemon/repo-docs`
-- Observe: repo-wide docs coverage can pass while the coverage manifest itself does not expose a complete evidence loop
+- Observe: repo-wide docs coverage can pass while executable .riido.json manifest distribution remains invisible in the coverage artifact
   - Artifacts: `docs/executable-knowledge.riido.json`
-- Hypothesis: the repo-wide coverage manifest should publish its observe/hypothesis/execute/evaluate/retrospective chain as machine-readable CI evidence
+- Hypothesis: the repo-wide coverage manifest should publish both its evidence loop and bounded manifest inventory samples as machine-readable CI evidence
   - Artifacts: `tools/knowledgecoverage`
-- Execute: require repo-wide knowledge coverage manifests to carry a complete loop and render that loop into generated reader output
+- Execute: require repo-wide knowledge coverage manifests to carry a complete loop and render manifest inventory groups plus samples into generated reader output
   - Artifacts: `.github/workflows/repo-executable-knowledge-coverage.yml`
-- Evaluate: coverage check must pass while reporting generated/direct/manual counts and embedding the complete evidence loop
+- Evaluate: coverage check must pass while reporting generated/direct/manual counts, the complete evidence loop, and bounded manifest inventory samples
   - Artifacts: `docs/executable-knowledge.md`
-- Retrospective: coverage gates now describe their own loop in public CI artifacts, reducing review-time interpretation variance
+- Retrospective: coverage gates now describe their own loop and executable manifest distribution in public CI artifacts, reducing review-time interpretation variance
   - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
-  - `command`: go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out /tmp/repo-executable-knowledge-coverage.json; proves repo-wide docs are generated, direct-SSOT backed, or registered as manual debt and the coverage manifest exposes a complete evidence loop
+  - `command`: go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out /tmp/repo-executable-knowledge-coverage.json; proves repo-wide docs are generated, direct-SSOT backed, or registered as manual debt, and the coverage manifest exposes a complete evidence loop plus manifest inventory samples
   - `workflow`: .github/workflows/repo-executable-knowledge-coverage.yml; proves public CI uploads repo-wide executable knowledge coverage evidence
 
 ### knowledge-coverage-breakdown
