@@ -13,6 +13,74 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Registered manual docs | 0 |
 | Scanned docs | 301 |
 
+## Generated Reader Origins
+
+| Generator | Count | Sample paths |
+| --- | ---: | --- |
+| `go run ./tools/migrationdocs -write-doc` | 62 | `docs/migration/cli.md`<br>`docs/migration/cli/cli-daemon-split.md`<br>`docs/migration/cli/current-slices.md` |
+| `go run ./tools/storedistributiondocs -write-doc` | 15 | `docs/30-architecture/store-distribution.md`<br>`docs/30-architecture/store-distribution/architecture.md`<br>`docs/30-architecture/store-distribution/architecture/decisions.md` |
+| `go run ./tools/agentexecutiondesign -write-doc` | 14 | `docs/30-architecture/agent-execution-unresolved-design.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md` |
+| `go run ./tools/configreference -write-doc` | 11 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
+| `go run ./tools/providerintegrationgatedocs -write-doc` | 10 | `docs/20-domain/provider-runtime/integration-gates.md`<br>`docs/20-domain/provider-runtime/integration-gates/cursor-real-cli.md`<br>`docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.md` |
+| `go run ./tools/workspaceinvariantsdocs -write-doc` | 10 | `docs/20-domain/workspace/invariants.md`<br>`docs/20-domain/workspace/invariants/core.md`<br>`docs/20-domain/workspace/invariants/directory-layout.md` |
+| `go run ./tools/providerruntimeboundarydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-actor-boundary.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/control-plane-port.md` |
+| `go run ./tools/providerruntimeresponsibilitydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-responsibility.md`<br>`docs/20-domain/provider-runtime/runtime-responsibility/agent-client-nonresponsibilities.md`<br>`docs/20-domain/provider-runtime/runtime-responsibility/c3-c4-boundary.md` |
+| `go run ./tools/contextmapdocs -write-doc` | 8 | `docs/20-domain/context-map.md`<br>`docs/20-domain/context-map/acl-locations.md`<br>`docs/20-domain/context-map/bounded-contexts.md` |
+| `go run ./tools/securityredactiondocs -write-doc` | 8 | `docs/20-domain/security-redaction.md`<br>`docs/20-domain/security-redaction/audit-event.md`<br>`docs/20-domain/security-redaction/execution-responsibility.md` |
+| `go run ./tools/clisurface -write-doc` | 7 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
+| `go run ./tools/figmaboundarydocs -write-doc` | 7 | `docs/30-architecture/figma-ai-agent-daemon-boundary.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md` |
+| `go run ./tools/providermigrationdocs -write-doc` | 7 | `docs/20-domain/provider-runtime/public-migration-status.md`<br>`docs/20-domain/provider-runtime/public-migration-status/claude.md`<br>`docs/20-domain/provider-runtime/public-migration-status/codex.md` |
+| `go run ./tools/readmedocs -write-doc` | 7 | `AGENTS.md`<br>`NOTICE.md`<br>`README.md` |
+| `go run ./tools/securityinvariantsdocs -write-doc` | 7 | `docs/20-domain/security/invariants.md`<br>`docs/20-domain/security/invariants/core.md`<br>`docs/20-domain/security/invariants/policy-bundle-example.md` |
+| `go run ./tools/securitynativeconfigoverlaydocs -write-doc` | 7 | `docs/20-domain/security/native-config-overlay.md`<br>`docs/20-domain/security/native-config-overlay/gate-result-ir.md`<br>`docs/20-domain/security/native-config-overlay/overlay-decision.md` |
+| `go run ./tools/workspacenativeconfigdocs -write-doc` | 7 | `docs/20-domain/workspace/native-config-manifest.md`<br>`docs/20-domain/workspace/native-config-manifest/adjacent-contracts.md`<br>`docs/20-domain/workspace/native-config-manifest/manifest-materialization.md` |
+| `go run ./tools/distributionhostinvariantsdocs -write-doc` | 6 | `docs/20-domain/distribution-host-integration/invariants.md`<br>`docs/20-domain/distribution-host-integration/invariants/app-data-root.md`<br>`docs/20-domain/distribution-host-integration/invariants/channels-and-roles.md` |
+| `go run ./tools/distributionhostlocalipcdocs -write-doc` | 6 | `docs/20-domain/distribution-host-integration/local-ipc.md`<br>`docs/20-domain/distribution-host-integration/local-ipc/consent-ledger.md`<br>`docs/20-domain/distribution-host-integration/local-ipc/endpoint-model.md` |
+| `go run ./tools/integrationmatrix -write-doc` | 6 | `docs/30-architecture/integration-matrix.md`<br>`docs/30-architecture/integration-matrix/assertions.md`<br>`docs/30-architecture/integration-matrix/change-procedure.md` |
+| `go run ./tools/lockingdocs -write-doc` | 6 | `docs/20-domain/locking.md`<br>`docs/20-domain/locking/acquire-release.md`<br>`docs/20-domain/locking/adjacent-contracts.md` |
+| `go run ./tools/moduledecomposition -write-doc` | 6 | `docs/30-architecture/module-decomposition.md`<br>`docs/30-architecture/module-decomposition/12-factor-boundary.md`<br>`docs/30-architecture/module-decomposition/change-procedure.md` |
+| `go run ./tools/provideradapteracldocs -write-doc` | 6 | `docs/20-domain/provider-runtime/adapter-acl.md`<br>`docs/20-domain/provider-runtime/adapter-acl/backpressure.md`<br>`docs/20-domain/provider-runtime/adapter-acl/bridge-boundary.md` |
+| `go run ./tools/distributionhostdocs -write-doc` | 5 | `docs/20-domain/distribution-host-integration.md`<br>`docs/20-domain/distribution-host-integration/store-channel-policy.md`<br>`docs/20-domain/distribution-host-integration/store-channel-policy/open-questions.md` |
+| `go run ./tools/releaseartifacts -write-doc` | 5 | `docs/30-architecture/release-artifacts.md`<br>`docs/30-architecture/release-artifacts/assets.md`<br>`docs/30-architecture/release-artifacts/desktop-msix-cdn.md` |
+| `go run ./tools/providerruntimedocs -write-doc` | 4 | `docs/20-domain/provider-runtime.md`<br>`docs/20-domain/provider-runtime/adapter-draft-fields.md`<br>`docs/20-domain/provider-runtime/overview.md` |
+| `go run ./tools/securitydocs -write-doc` | 4 | `docs/20-domain/security.md`<br>`docs/20-domain/security/enforcement-locations.md`<br>`docs/20-domain/security/enforcement-locations/audit-and-contracts.md` |
+| `go run ./tools/runtimeschedulingdocs -write-doc` | 3 | `docs/20-domain/runtime-scheduling.md`<br>`docs/20-domain/runtime-scheduling/invariants.md`<br>`docs/20-domain/runtime-scheduling/invariants/core.md` |
+| `go run ./tools/docmap -write` | 2 | `docs/README.md`<br>`docs/readme/document-map.md` |
+| `go run ./tools/draftfields -write-doc` | 2 | `docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md`<br>`docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md` |
+| `go run ./tools/knowledgecoverage -write-doc` | 2 | `docs/30-architecture/executable-knowledge.md`<br>`docs/executable-knowledge.md` |
+| `go run ./tools/saasassignment -write-doc` | 2 | `docs/20-domain/runtime-scheduling/saas-assignment-source.md`<br>`docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md` |
+| `go run ./tools/approvaltimeout -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md` |
+| `go run ./tools/assignmentfsm -write-doc` | 1 | `docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md` |
+| `go run ./tools/branchgate -write-doc` | 1 | `docs/30-architecture/riido-work-branch-gate.md` |
+| `go run ./tools/compatibilitygate -write-doc` | 1 | `docs/30-architecture/compatibility-gate.md` |
+| `go run ./tools/eventauthority -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md` |
+| `go run ./tools/executablesearchpath -write-doc` | 1 | `docs/30-architecture/config-reference/executable-search-path.md` |
+| `go run ./tools/fullaccessharness -write-doc` | 1 | `docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md` |
+| `go run ./tools/localdaemoncontract -write-doc` | 1 | `docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md` |
+| `go run ./tools/loopevidence -write` | 1 | `docs/30-architecture/loop-engineering.md` |
+| `go run ./tools/nativeconfigmcp -write-doc` | 1 | `docs/20-domain/security/enforcement-locations/native-config-and-mcp.md` |
+| `go run ./tools/policybundleevidence -write-doc` | 1 | `docs/20-domain/security/invariants/policy-bundle-loader.md` |
+| `go run ./tools/privacymetadata -write-doc` | 1 | `docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md` |
+| `go run ./tools/processlifecycle -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md` |
+| `go run ./tools/providerdraftmapping -write-doc` | 1 | `docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md` |
+| `go run ./tools/providerintegrationevidence -write-doc` | 1 | `docs/30-architecture/provider-real-cli-observation.md` |
+| `go run ./tools/repoverification -write-doc` | 1 | `docs/readme/verification.md` |
+| `go run ./tools/roadmapdocs -write-doc` | 1 | `docs/50-roadmap/open-questions.md` |
+| `go run ./tools/runtimeeligibility -write-doc` | 1 | `docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md` |
+| `go run ./tools/runtimesecretevidence -write-doc` | 1 | `docs/30-architecture/runtime-secret-private-evidence.md` |
+| `go run ./tools/runtimeupgrade -write-doc` | 1 | `docs/30-architecture/runtime-upgrade-flow.md` |
+| `go run ./tools/semanticeventactivity -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md` |
+| `go run ./tools/sessionlifecycle -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md` |
+| `go run ./tools/shutdownauthority -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md` |
+| `go run ./tools/storecontract -write-policy-table` | 1 | `docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md` |
+| `go run ./tools/taskrequirements -write-doc` | 1 | `docs/20-domain/runtime-scheduling/invariants/task-requirements.md` |
+| `go run ./tools/terminalresultmapping -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.md` |
+| `go run ./tools/toolusegateevidence -write-doc` | 1 | `docs/20-domain/security/enforcement-locations/tool-use-gates.md` |
+| `go run ./tools/unsafebypassevidence -write-doc` | 1 | `docs/20-domain/security/enforcement-locations/unsafe-bypass.md` |
+| `go run ./tools/validationevidence -write-doc` | 1 | `docs/20-domain/validation.md` |
+| `go run ./tools/workflowevidence -write-doc` | 1 | `docs/30-architecture/workflow-evidence.md` |
+| `go run ./tools/workspacedocs -write-doc` | 1 | `docs/20-domain/workspace.md` |
+
 ## Manifest Inventory
 
 | Group | Count | Sample paths |
@@ -50,9 +118,9 @@ _None._
 | Step | Evidence |
 | --- | --- |
 | Observe | Daemon documentation coverage can be green while the coverage gate itself does not expose why it exists, what it executes, or which executable manifests exist outside the generated readers. |
-| Hypothesis | Embedding the observe/hypothesis/execute/evaluate/retrospective loop plus bounded manifest inventory samples in coverage evidence makes the documentation migration self-describing in public CI. |
-| Execute | Scan daemon markdown entrypoints, classify generated/direct/manual surfaces, sample repository executable manifests by group, require any manual debt to be registered, require this manifest to carry a complete evidence loop, and publish JSON evidence in GitHub Actions. |
-| Evaluate | The verifier fails when scanned markdown is unregistered manual prose, when the generated reader drifts, or when the coverage manifest omits any required evidence-loop phase while reporting manifest inventory groups and samples. |
+| Hypothesis | Embedding the observe/hypothesis/execute/evaluate/retrospective loop plus bounded generated-reader and manifest inventory samples in coverage evidence makes the documentation migration self-describing in public CI. |
+| Execute | Scan daemon markdown entrypoints, classify generated/direct/manual surfaces, sample generated reader origins by generator, sample repository executable manifests by group, require any manual debt to be registered, require this manifest to carry a complete evidence loop, and publish JSON evidence in GitHub Actions. |
+| Evaluate | The verifier fails when scanned markdown is unregistered manual prose, when the generated reader drifts, or when the coverage manifest omits any required evidence-loop phase while reporting generated-reader origins and manifest inventory groups. |
 | Retrospective | This keeps daemon documentation coverage aligned with loop engineering: generated readers remain the human surface, the manifest remains the executable SSOT, and CI publishes durable evidence for both readers and executable manifests. |
 
 ## Assertions
@@ -61,6 +129,7 @@ _None._
 - manual debt registration is observable evidence when debt exists, not completion
 - zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed
 - the repository executable knowledge coverage manifest must expose a complete evidence loop
+- generated reader origins must be visible as bounded generator samples
 - repository executable manifest inventory must be visible as bounded group samples
 - repository executable manifest loop debt must be visible as bounded group samples
 - new loop-less executable manifest debt must not exceed the manifest_loop_budget

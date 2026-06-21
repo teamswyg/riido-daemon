@@ -25,10 +25,11 @@ type manualGroup struct {
 }
 
 type docClass struct {
-	Path   string
-	Kind   string
-	Group  string
-	Reason string
+	Path      string
+	Kind      string
+	Group     string
+	Reason    string
+	Generator string
 }
 
 type manifestLoopBudget struct {
@@ -53,4 +54,10 @@ type manualSample struct {
 	Group  string `json:"group"`
 	Path   string `json:"path"`
 	Reason string `json:"reason"`
+}
+
+type generatedOrigin struct {
+	Generator string   `json:"generator"`
+	Count     int      `json:"count"`
+	Samples   []string `json:"samples"`
 }

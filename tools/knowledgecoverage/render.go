@@ -17,6 +17,7 @@ func renderDoc(root string, m manifest, docs []docClass, problems []string) stri
 	fmt.Fprintf(&b, "| Direct SSOT docs | %d |\n", e.DirectSSOTCount)
 	fmt.Fprintf(&b, "| Registered manual docs | %d |\n", e.ManualCount)
 	fmt.Fprintf(&b, "| Scanned docs | %d |\n\n", e.ScannedCount)
+	renderGeneratedOrigins(&b, e.GeneratedOrigins)
 	renderManifestInventory(&b, e.ManifestInventory)
 	renderManifestLoopInventory(&b, e)
 	b.WriteString("## Registered Manual Surfaces\n\n")

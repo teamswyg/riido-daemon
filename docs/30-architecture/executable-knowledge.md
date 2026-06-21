@@ -13,6 +13,29 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Registered manual docs | 0 |
 | Scanned docs | 81 |
 
+## Generated Reader Origins
+
+| Generator | Count | Sample paths |
+| --- | ---: | --- |
+| `go run ./tools/storedistributiondocs -write-doc` | 15 | `docs/30-architecture/store-distribution.md`<br>`docs/30-architecture/store-distribution/architecture.md`<br>`docs/30-architecture/store-distribution/architecture/decisions.md` |
+| `go run ./tools/agentexecutiondesign -write-doc` | 14 | `docs/30-architecture/agent-execution-unresolved-design.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md` |
+| `go run ./tools/configreference -write-doc` | 11 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
+| `go run ./tools/clisurface -write-doc` | 7 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
+| `go run ./tools/figmaboundarydocs -write-doc` | 7 | `docs/30-architecture/figma-ai-agent-daemon-boundary.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md` |
+| `go run ./tools/integrationmatrix -write-doc` | 6 | `docs/30-architecture/integration-matrix.md`<br>`docs/30-architecture/integration-matrix/assertions.md`<br>`docs/30-architecture/integration-matrix/change-procedure.md` |
+| `go run ./tools/moduledecomposition -write-doc` | 6 | `docs/30-architecture/module-decomposition.md`<br>`docs/30-architecture/module-decomposition/12-factor-boundary.md`<br>`docs/30-architecture/module-decomposition/change-procedure.md` |
+| `go run ./tools/releaseartifacts -write-doc` | 5 | `docs/30-architecture/release-artifacts.md`<br>`docs/30-architecture/release-artifacts/assets.md`<br>`docs/30-architecture/release-artifacts/desktop-msix-cdn.md` |
+| `go run ./tools/assignmentfsm -write-doc` | 1 | `docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md` |
+| `go run ./tools/branchgate -write-doc` | 1 | `docs/30-architecture/riido-work-branch-gate.md` |
+| `go run ./tools/compatibilitygate -write-doc` | 1 | `docs/30-architecture/compatibility-gate.md` |
+| `go run ./tools/executablesearchpath -write-doc` | 1 | `docs/30-architecture/config-reference/executable-search-path.md` |
+| `go run ./tools/knowledgecoverage -write-doc` | 1 | `docs/30-architecture/executable-knowledge.md` |
+| `go run ./tools/loopevidence -write` | 1 | `docs/30-architecture/loop-engineering.md` |
+| `go run ./tools/providerintegrationevidence -write-doc` | 1 | `docs/30-architecture/provider-real-cli-observation.md` |
+| `go run ./tools/runtimesecretevidence -write-doc` | 1 | `docs/30-architecture/runtime-secret-private-evidence.md` |
+| `go run ./tools/runtimeupgrade -write-doc` | 1 | `docs/30-architecture/runtime-upgrade-flow.md` |
+| `go run ./tools/workflowevidence -write-doc` | 1 | `docs/30-architecture/workflow-evidence.md` |
+
 ## Manifest Inventory
 
 | Group | Count | Sample paths |
@@ -50,9 +73,9 @@ _None._
 | Step | Evidence |
 | --- | --- |
 | Observe | Architecture documentation can grow as generated readers while the architecture coverage gate itself does not expose its loop or the executable manifests that support the repository. |
-| Hypothesis | Making the architecture coverage manifest carry the loop and bounded manifest inventory keeps architecture docs as generated human surfaces and makes the verifier intent visible in CI evidence. |
-| Execute | Scan docs/30-architecture markdown, classify generated/direct/manual surfaces, sample repository executable manifests by group, require manual debt registration, require a complete evidence loop, and publish JSON evidence from the workflow. |
-| Evaluate | The verifier fails on unregistered manual architecture prose, stale generated coverage, or missing evidence-loop phases in the coverage manifest while reporting manifest inventory groups and samples. |
+| Hypothesis | Making the architecture coverage manifest carry the loop plus bounded generated-reader and manifest inventory samples keeps architecture docs as generated human surfaces and makes the verifier intent visible in CI evidence. |
+| Execute | Scan docs/30-architecture markdown, classify generated/direct/manual surfaces, sample generated reader origins by generator, sample repository executable manifests by group, require manual debt registration, require a complete evidence loop, and publish JSON evidence from the workflow. |
+| Evaluate | The verifier fails on unregistered manual architecture prose, stale generated coverage, or missing evidence-loop phases in the coverage manifest while reporting generated-reader origins and manifest inventory groups. |
 | Retrospective | This keeps architecture coverage aligned with executable knowledge: the manifest is the SSOT, the reader is generated, and public CI preserves evidence for reader and executable-manifest surfaces. |
 
 ## Assertions
@@ -61,6 +84,7 @@ _None._
 - manual surface registration is debt inventory, not a replacement for executable SSOT
 - new unregistered architecture prose must fail CI before it can silently expand interpretation variance
 - the architecture executable knowledge coverage manifest must expose a complete evidence loop
+- architecture executable knowledge coverage must show generated reader origins as bounded samples
 - architecture executable knowledge coverage must show repository executable manifest inventory as bounded samples
 - architecture executable knowledge coverage must show repository executable manifest loop debt as bounded samples
 - new loop-less executable manifest debt must not exceed the manifest_loop_budget

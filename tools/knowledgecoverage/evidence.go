@@ -31,6 +31,7 @@ func buildEvidence(root string, m manifest, docs []docClass, problems []string) 
 		ManualByGroup:              manualCountsByGroup(docs),
 		ManualTopDirs:              manualTopDirs(docs, 12),
 		ManualSamples:              manualSamples(docs, 5),
+		GeneratedOrigins:           generatedOrigins(docs),
 		ManifestInventory:          inventory,
 		ManifestLoopCount:          loops.Complete,
 		ManifestDirectLoopCount:    loops.Direct,
