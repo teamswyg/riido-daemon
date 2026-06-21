@@ -1,10 +1,11 @@
 package main
 
 type manifest struct {
-	SchemaVersion string         `json:"schema_version"`
-	ID            string         `json:"id"`
-	LoopSource    string         `json:"loop_source"`
-	Workflows     []workflowSpec `json:"workflows"`
+	SchemaVersion   string         `json:"schema_version"`
+	ID              string         `json:"id"`
+	LoopSource      string         `json:"loop_source"`
+	WorkflowSources []string       `json:"workflow_sources,omitempty"`
+	Workflows       []workflowSpec `json:"workflows"`
 }
 
 type workflowSpec struct {

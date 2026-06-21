@@ -53,3 +53,16 @@ jobs:
       - name: Verify Cursor adapter gates
         run: |
           go test ./internal/provider/cursor -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/provider-cursor.yml \
+            -evidence-out out/provider-cursor-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-cursor-evidence
+          path: out/provider-cursor-evidence.json
+          if-no-files-found: error

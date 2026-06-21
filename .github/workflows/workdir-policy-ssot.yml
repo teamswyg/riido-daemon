@@ -62,3 +62,16 @@ jobs:
         run: |
           go test ./internal/workdir -run 'Archive|CleanupArchivedBefore|NativeConfigVersion|NativeConfig' -count=1
           go test ./cmd/riido -run 'WorkdirCleanup|DaemonSettings' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/workdir-policy-ssot.yml \
+            -evidence-out out/workdir-policy-ssot-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: workdir-policy-ssot-evidence
+          path: out/workdir-policy-ssot-evidence.json
+          if-no-files-found: error

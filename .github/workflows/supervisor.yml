@@ -69,3 +69,16 @@ jobs:
       - name: Verify supervisor black-box/domain gates
         run: |
           go test ./internal/agentbridge/supervisor -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/supervisor.yml \
+            -evidence-out out/supervisor-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: supervisor-evidence
+          path: out/supervisor-evidence.json
+          if-no-files-found: error

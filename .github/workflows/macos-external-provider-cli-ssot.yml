@@ -45,3 +45,16 @@ jobs:
         run: |
           grep -q "mac-app-store provider CLI execution requires App Review approval" internal/policy/store_channel.go
           go test ./internal/policy -run 'StoreChannelPolicyMacAppStoreProviderPathRequiresOSGrantAndStoreReview' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/macos-external-provider-cli-ssot.yml \
+            -evidence-out out/macos-external-provider-cli-ssot-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: macos-external-provider-cli-ssot-evidence
+          path: out/macos-external-provider-cli-ssot-evidence.json
+          if-no-files-found: error

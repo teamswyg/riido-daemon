@@ -41,3 +41,16 @@ jobs:
       - name: Verify session actor gates
         run: |
           go test ./internal/agentbridge/session ./internal/process -run 'Session|ProtocolDriver|Burst|Goroutine|TempFiles|Timeout|Cancellation|ProcessExit|DefaultBuffers|ToolStart|AutoApproval' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/session-actor.yml \
+            -evidence-out out/session-actor-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: session-actor-evidence
+          path: out/session-actor-evidence.json
+          if-no-files-found: error

@@ -51,6 +51,28 @@ jobs:
           path: ${{ env.RIIDO_RELEASE_ARTIFACT_PATH }}
           if-no-files-found: error
 
+  evidence:
+    if: always() && (github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Write release artifact evidence
+        run: |
+          mkdir -p out
+          go run ./tools/releaseartifacts \
+            -evidence-out out/release-artifacts-evidence.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: release-artifacts-evidence
+          path: out/release-artifacts-evidence.json
+          if-no-files-found: error
+
   release:
     if: startsWith(github.ref, 'refs/tags/v')
     needs: build

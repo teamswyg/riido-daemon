@@ -38,3 +38,16 @@ jobs:
       - name: Test approval timeout semantics
         run: |
           go test ./internal/agentbridge ./internal/agentbridge/session -run 'SemanticActivity|Approval|Timeout' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/approval-timeout-ssot.yml \
+            -evidence-out out/approval-timeout-ssot-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: approval-timeout-ssot-evidence
+          path: out/approval-timeout-ssot-evidence.json
+          if-no-files-found: error

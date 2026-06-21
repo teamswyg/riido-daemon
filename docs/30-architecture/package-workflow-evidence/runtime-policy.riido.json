@@ -1,0 +1,25 @@
+{
+  "schema_version": "riido-daemon-package-workflow-evidence.v1",
+  "id": "package-workflow-runtime-policy",
+  "loop_source": "docs/30-architecture/package-workflow-evidence.riido.json",
+  "workflows": [
+    {
+      "id": "supervisor",
+      "workflow": ".github/workflows/supervisor.yml",
+      "evidence_artifact": "supervisor-evidence",
+      "required_fragments": ["Verify supervisor dependency boundary", "Verify supervisor black-box/domain gates", "go test ./internal/agentbridge/supervisor -count=1"]
+    },
+    {
+      "id": "toolargs-toolpolicy",
+      "workflow": ".github/workflows/toolargs-toolpolicy.yml",
+      "evidence_artifact": "toolargs-toolpolicy-evidence",
+      "required_fragments": ["Verify toolargs/toolpolicy gates", "go test ./internal/agentbridge/toolargs ./internal/agentbridge/toolpolicy ./internal/policy -run 'ToolArgs|ToolUse|ToolPolicy|Classify|AutoApprover|ToolStartGate|DecisionFor' -count=1"]
+    },
+    {
+      "id": "workdir-policy-ssot",
+      "workflow": ".github/workflows/workdir-policy-ssot.yml",
+      "evidence_artifact": "workdir-policy-ssot-evidence",
+      "required_fragments": ["Verify Q-WS decisions live in C6/C7/runtime SSOT", "go run ./tools/runtimeupgrade -check-doc", "go test ./internal/workdir -run 'Archive|CleanupArchivedBefore|NativeConfigVersion|NativeConfig' -count=1"]
+    }
+  ]
+}
