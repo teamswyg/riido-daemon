@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-runtime-upgrade-flow.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/runtime-upgrade-flow.riido.json",
   "id": "daemon-runtime-upgrade-flow",
   "title": "Runtime Upgrade Flow Evidence",
   "generated_doc": "docs/30-architecture/runtime-upgrade-flow.md",

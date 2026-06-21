@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-store-distribution-docs.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/store-distribution-docs.riido.json",
   "id": "store-distribution-docs",
   "title": "Store Distribution Architecture SSOT",
   "generated_doc": "docs/30-architecture/store-distribution.md",

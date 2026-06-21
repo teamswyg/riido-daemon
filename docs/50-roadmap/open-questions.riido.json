@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-roadmap-open-questions.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/roadmap-docs.riido.json",
   "id": "daemon-open-questions",
   "title": "Open Questions",
   "generated_doc": "docs/50-roadmap/open-questions.md",
