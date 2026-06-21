@@ -28,6 +28,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
       - name: Verify Q-CTX-005 is closed in owning SSOT
         run: |
           if grep -q "Q-CTX-005" docs/50-roadmap/open-questions.md; then
@@ -44,3 +48,24 @@ jobs:
           grep -q "provider process 를 직접 spawn 하지 않는다" docs/20-domain/distribution-host-integration.md
           grep -q "provider CLI 를 bundle / download / silently install 하지 않는다" docs/20-domain/distribution-host-integration.md
           grep -q "public repositories never store secrets" docs/30-architecture/store-distribution.md
+      - name: Publish Store App ownership evidence
+        run: |
+          mkdir -p out/store-app-ownership
+          go run ./tools/distributionhostdocs \
+            -check-doc \
+            -evidence-out out/store-app-ownership/distribution-host-docs.json
+          go run ./tools/storedistributiondocs \
+            -check-doc \
+            -evidence-out out/store-app-ownership/store-distribution-docs.json
+          go run ./tools/moduledecomposition \
+            -check-doc \
+            -evidence-out out/store-app-ownership/module-decomposition-docs.json
+          go run ./tools/migrationdocs \
+            -check-doc \
+            -evidence-out out/store-app-ownership/migration-docs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: store-app-ownership-evidence
+          path: out/store-app-ownership/*.json
+          if-no-files-found: error
