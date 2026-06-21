@@ -16,10 +16,11 @@ func TestSupervisorRetriesPrepareWorkspaceWarning(t *testing.T) {
 	}
 	task := &runningTask{taskID: "t-1"}
 	inFlight := map[string]*runningTask{task.taskID: task}
+	detachedReports := []detachedReport{}
 	ctx := context.Background()
 
 	actor.appendWorkspaceEvent(ctx, task.taskID, failingWorkspaceEvents(t), ir.EventWorkdirCreated, "", nil)
-	actor.handleMailboxMessage(ctx, expectReportOnlyEvent(t, actor), inFlight)
+	actor.handleMailboxMessage(ctx, expectReportOnlyEvent(t, actor), inFlight, &detachedReports)
 	expectStateEventAttempt(t, reporter, 1)
 
 	actor.retryEventReports(ctx, inFlight)

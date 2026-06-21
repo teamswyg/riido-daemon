@@ -8,6 +8,7 @@ func (a *Actor) handleTaskResult(
 	ctx context.Context,
 	msg *taskResultMsg,
 	inFlight map[string]*runningTask,
+	detachedReports *[]detachedReport,
 ) {
 	running := inFlight[msg.taskID]
 	reportCtx := ctx
@@ -17,5 +18,5 @@ func (a *Actor) handleTaskResult(
 		a.finishTaskWithResult(ctx, inFlight, running, res)
 		return
 	}
-	_ = a.cfg.Reporter.CompleteTask(reportCtx, msg.taskID, res)
+	a.reportOrRetainDetached(reportCtx, detachedReports, detachedResult(msg.taskID, res))
 }

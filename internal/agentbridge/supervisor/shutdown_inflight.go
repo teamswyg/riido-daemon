@@ -7,11 +7,16 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-func (a *Actor) cancelInFlightTasks(ctx context.Context, inFlight map[string]*runningTask, finishedAt time.Time) {
+func (a *Actor) cancelInFlightTasks(
+	ctx context.Context,
+	inFlight map[string]*runningTask,
+	detachedReports *[]detachedReport,
+	finishedAt time.Time,
+) {
 	for _, task := range inFlight {
 		a.cancelInFlightTask(ctx, inFlight, task, finishedAt)
 	}
-	a.drainShutdownReports(ctx, inFlight)
+	a.drainShutdownReports(ctx, inFlight, detachedReports)
 }
 
 func (a *Actor) cancelInFlightTask(
