@@ -22,6 +22,13 @@ func fixtureManifest() manifest {
 			Paths:        []string{"docs/30-architecture/known.md"},
 		}},
 		Assertions: []string{"fixture assertion"},
+		Loop: evidenceLoop{
+			Observation:   "fixture observation",
+			Hypothesis:    "fixture hypothesis",
+			Execute:       "fixture execute",
+			Evaluate:      "fixture evaluate",
+			Retrospective: "fixture retrospective",
+		},
 	}
 }
 

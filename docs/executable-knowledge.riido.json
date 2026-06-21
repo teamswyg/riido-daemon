@@ -11,6 +11,14 @@
   "assertions": [
     "repository docs markdown and root entrypoint markdown must be generated, direct-SSOT backed, or explicitly registered as manual debt",
     "manual debt registration is observable evidence when debt exists, not completion",
-    "zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed"
-  ]
+    "zero registered manual docs means every scanned markdown file is generated or direct-SSOT backed",
+    "the repository executable knowledge coverage manifest must expose a complete evidence loop"
+  ],
+  "loop": {
+    "observation": "Daemon documentation coverage can be green while the coverage gate itself does not expose why it exists, what it executes, or how reviewers should evaluate the generated evidence.",
+    "hypothesis": "Embedding the observe/hypothesis/execute/evaluate/retrospective loop in the coverage manifest and generated evidence makes the documentation migration self-describing in public CI.",
+    "execute": "Scan daemon markdown entrypoints, classify generated/direct/manual surfaces, require any manual debt to be registered, require this manifest to carry a complete evidence loop, and publish JSON evidence in GitHub Actions.",
+    "evaluate": "The verifier fails when scanned markdown is unregistered manual prose, when the generated reader drifts, or when the coverage manifest omits any required evidence-loop phase.",
+    "retrospective": "This keeps daemon documentation coverage aligned with loop engineering: generated readers remain the human surface, the manifest remains the executable SSOT, and CI publishes the durable evidence artifact."
+  }
 }

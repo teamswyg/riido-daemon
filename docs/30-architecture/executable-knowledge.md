@@ -25,8 +25,19 @@ _None._
 
 _None._
 
+## Evidence Loop
+
+| Step | Evidence |
+| --- | --- |
+| Observe | Architecture documentation can grow as generated readers while the architecture coverage gate itself does not expose its observe/hypothesis/execute/evaluate/retrospective chain. |
+| Hypothesis | Making the architecture coverage manifest carry the loop keeps architecture docs as generated human surfaces and makes the verifier intent visible in CI evidence. |
+| Execute | Scan docs/30-architecture markdown, classify generated/direct/manual surfaces, require manual debt registration, require a complete evidence loop, and publish JSON evidence from the workflow. |
+| Evaluate | The verifier fails on unregistered manual architecture prose, stale generated coverage, or missing evidence-loop phases in the coverage manifest. |
+| Retrospective | This keeps architecture coverage aligned with executable knowledge: the manifest is the SSOT, the reader is generated, and public CI preserves the evidence artifact. |
+
 ## Assertions
 
 - 30-architecture markdown must be generated, backed by a direct .riido.json, or registered as a manual surface with a next executable artifact
 - manual surface registration is debt inventory, not a replacement for executable SSOT
 - new unregistered architecture prose must fail CI before it can silently expand interpretation variance
+- the architecture executable knowledge coverage manifest must expose a complete evidence loop

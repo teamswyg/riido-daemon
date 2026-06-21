@@ -45,6 +45,7 @@ func renderDoc(m manifest, docs []docClass, problems []string) string {
 			fmt.Fprintf(&b, "| `%s` | `%s` |\n", sample.Group, sample.Path)
 		}
 	}
+	renderLoop(&b, m.Loop)
 	b.WriteString("\n## Assertions\n\n")
 	for _, assertion := range m.Assertions {
 		b.WriteString("- " + assertion + "\n")

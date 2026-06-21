@@ -2,30 +2,30 @@
   "id": "executable-knowledge-coverage",
   "owner": "architecture knowledge surface",
   "observation": {
-    "summary": "Architecture docs still include reader-authored Markdown that is not generated and has no direct .riido.json sibling.",
+    "summary": "Architecture coverage can classify reader docs but still leave the coverage manifest's own evidence loop implicit.",
     "artifacts": ["docs/30-architecture"]
   },
   "hypothesis": {
-    "summary": "A coverage verifier can make manual prose visible as registered debt and fail CI when new unregistered interpretation variance appears.",
+    "summary": "The architecture coverage manifest should be executable knowledge too: complete loop metadata must be required and published as evidence.",
     "artifacts": ["docs/30-architecture/executable-knowledge.riido.json"]
   },
   "execution": {
-    "summary": "Run knowledgecoverage to classify 30-architecture Markdown as generated, direct SSOT, or registered manual surface.",
+    "summary": "Run knowledgecoverage to classify 30-architecture Markdown and require complete evidence-loop metadata on the coverage manifest.",
     "artifacts": ["tools/knowledgecoverage", ".github/workflows/executable-knowledge-coverage.yml"]
   },
   "evaluation": {
-    "summary": "The verifier rejects unregistered manual architecture docs and reports generated/direct/manual counts.",
+    "summary": "The verifier rejects unregistered manual architecture docs, stale generated readers, and coverage manifests missing any loop phase.",
     "artifacts": ["docs/30-architecture/executable-knowledge.md"]
   },
   "retrospective": {
-    "summary": "Loop engineering gaps become a machine-checked inventory instead of an informal review note.",
+    "summary": "Architecture coverage now explains its own loop in the generated reader and public CI evidence artifact.",
     "artifacts": ["docs/30-architecture/loop-engineering.md"]
   },
   "evidence": [
     {
       "kind": "command",
       "ref": "go run ./tools/knowledgecoverage -check-doc -evidence-out /tmp/executable-knowledge-coverage.json",
-      "proves": "architecture markdown knowledge is generated, direct-SSOT backed, or registered as manual debt"
+      "proves": "architecture markdown knowledge is generated, direct-SSOT backed, or registered as manual debt and the manifest exposes a complete evidence loop"
     },
     {
       "kind": "workflow",

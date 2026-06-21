@@ -23,6 +23,7 @@ func buildEvidence(m manifest, docs []docClass, problems []string) evidence {
 		ManualSamples:    manualSamples(docs, 5),
 		ProblemSummaries: problems,
 		EvidenceArtifact: m.EvidenceArtifact,
+		Loop:             m.Loop,
 	}
 }
 
