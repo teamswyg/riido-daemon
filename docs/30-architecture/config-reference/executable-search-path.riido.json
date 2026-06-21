@@ -2,6 +2,7 @@
   "schema_version": "riido-executable-search-path.v1",
   "id": "executable-search-path-evidence",
   "title": "Executable Search Path Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/executable-search-path-evidence.riido.json",
   "generated_doc": "docs/30-architecture/config-reference/executable-search-path.md",
   "workflow": ".github/workflows/executable-search-path-evidence.yml",
   "evidence_artifact": "executable-search-path-evidence",

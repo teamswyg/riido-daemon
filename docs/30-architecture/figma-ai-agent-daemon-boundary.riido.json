@@ -1,6 +1,7 @@
 {
   "schema_version": "riido-figma-ai-agent-daemon-boundary.v1",
   "id": "figma-v1-22-ai-agent-daemon-boundary",
+  "loop_source": "docs/30-architecture/loop-engineering/figma-boundary-docs.riido.json",
   "riido_task": "RIID-4813",
   "hardening_tasks": ["RIID-4843", "RIID-4859"],
   "human_doc": "docs/30-architecture/figma-ai-agent-daemon-boundary.md",
