@@ -47,3 +47,4 @@ jobs:
         with:
           name: unsafe-bypass-evidence
           path: /tmp/unsafe-bypass-evidence.json
+          if-no-files-found: error

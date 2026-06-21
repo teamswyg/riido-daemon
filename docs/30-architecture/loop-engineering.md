@@ -397,6 +397,22 @@
   - `command`: go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json; proves loop engineering markdown and machine-readable evidence are current
   - `workflow`: .github/workflows/loop-engineering-evidence.yml; proves public CI uploads loop engineering evidence
 
+### workflow-evidence
+
+- Owner: `tools/workflowevidence and workflow-evidence workflow`
+- Observe: Daemon had many executable GitHub Actions workflows, but legacy package and provider workflows could pass without durable JSON evidence while evidence-producing workflows used mixed upload path shapes.
+  - Artifacts: `.github/workflows`, `docs/30-architecture/workflow-evidence.riido.json`
+- Hypothesis: A workflow evidence verifier can make missing evidence artifacts visible, reject non-strict artifact uploads, understand glob or directory evidence uploads, and keep legacy workflow gaps registered as debt.
+  - Artifacts: `tools/workflowevidence`
+- Execute: Scan all .yml and .yaml workflows, classify covered workflows, accepted gaps, strict uploads, evidence-out upload bindings, and evidence-capable tool coverage, then emit workflow evidence JSON.
+  - Artifacts: `tools/workflowevidence`, `.github/workflows/workflow-evidence.yml`
+- Evaluate: The verifier fails on unregistered executable workflows, missing evidence-out uploads, non-strict artifact uploads, missing evidence tool coverage, missing evidence tool bindings, stale generated docs, or unused accepted gaps.
+  - Artifacts: `docs/30-architecture/workflow-evidence.md`
+- Retrospective: Daemon workflow observability now has a generated reader and CI gate: 72 workflows are evidence-covered, 26 legacy workflows are explicit accepted debt, and future workflow drift cannot remain silent.
+- Evidence:
+  - `command`: go run ./tools/workflowevidence -check-doc -evidence-out /tmp/workflow-evidence.json; proves daemon workflow evidence coverage is generated, current, and machine-readable
+  - `workflow`: .github/workflows/workflow-evidence.yml; proves public CI uploads daemon workflow evidence artifacts
+
 ### repo-executable-knowledge-coverage
 
 - Owner: `daemon/repo-docs`
