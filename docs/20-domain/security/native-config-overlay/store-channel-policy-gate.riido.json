@@ -2,6 +2,7 @@
   "schema_version": "riido-security-native-config-overlay-detail.v1",
   "id": "store-channel-policy-gate",
   "title": "Native Config Overlay: StoreChannelPolicyGate",
+  "loop_source": "docs/30-architecture/loop-engineering/security-native-config-overlay-docs.riido.json",
   "generated_doc": "docs/20-domain/security/native-config-overlay/store-channel-policy-gate.md",
   "blocks": [
     {"kind": "paragraph", "text": "`StoreChannelPolicyGate` is not a seventh runtime security gate. It is a pre-runtime decision made after C11 Distribution / Host Integration determines distribution channel and consent state."},

@@ -2,6 +2,7 @@
   "schema_version": "riido-security-native-config-overlay-detail.v1",
   "id": "overlay-decision",
   "title": "Native Config Overlay: T-CFG Decision",
+  "loop_source": "docs/30-architecture/loop-engineering/security-native-config-overlay-docs.riido.json",
   "generated_doc": "docs/20-domain/security/native-config-overlay/overlay-decision.md",
   "blocks": [
     {"kind": "paragraph", "text": "T-CFG treats provider-native config overlay as default-deny. Primary instruction file materialization is the deterministic default surface owned by C6 Workspace."},

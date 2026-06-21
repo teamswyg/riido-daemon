@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `186`
+- Complete manifest loops: `195`
 - Direct manifest loops: `20`
-- Delegated manifest loops: `166`
-- Missing manifest loops: `154`
-- Missing loop budget: `154`
+- Delegated manifest loops: `175`
+- Missing manifest loops: `145`
+- Missing loop budget: `145`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 154 | 154 | `docs/20-domain/security/invariants/policy-bundle-loader.riido.json`<br>`docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json`<br>`docs/20-domain/security/native-config-overlay/gate-result-ir.riido.json` |
+| `docs` | 145 | 145 | `docs/20-domain/security-redaction/audit-event.riido.json`<br>`docs/20-domain/security-redaction/execution-responsibility.riido.json`<br>`docs/20-domain/security-redaction/failure.riido.json` |
 
 ## Registered Manual Surfaces
 

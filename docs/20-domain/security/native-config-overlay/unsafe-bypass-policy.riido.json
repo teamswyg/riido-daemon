@@ -2,6 +2,7 @@
   "schema_version": "riido-security-native-config-overlay-detail.v1",
   "id": "unsafe-bypass-policy",
   "title": "Native Config Overlay: Unsafe Permission Bypass Policy",
+  "loop_source": "docs/30-architecture/loop-engineering/security-native-config-overlay-docs.riido.json",
   "generated_doc": "docs/20-domain/security/native-config-overlay/unsafe-bypass-policy.md",
   "blocks": [
     {"kind": "paragraph", "text": "This matrix refines the security invariant for `ExposesUnsafePermissionBypass`. Provider-native approval bypass is a policy surface, not a provider default."},

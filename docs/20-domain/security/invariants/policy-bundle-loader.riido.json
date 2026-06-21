@@ -2,6 +2,7 @@
   "schema_version": "riido-policy-bundle-loader-evidence.v1",
   "id": "policy-bundle-loader-evidence",
   "title": "Policy Bundle Loader Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/policy-bundle-loader-evidence.riido.json",
   "generated_doc": "docs/20-domain/security/invariants/policy-bundle-loader.md",
   "workflow": ".github/workflows/policy-bundle-loader-evidence.yml",
   "evidence_artifact": "policy-bundle-loader-evidence",
