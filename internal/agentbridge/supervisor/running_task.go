@@ -25,6 +25,7 @@ type runningTask struct {
 	events    *workspaceEventContext
 
 	terminalResult *agentbridge.Result
+	pendingEvents  []agentbridge.Event
 }
 
 type preparedWorkspace struct {

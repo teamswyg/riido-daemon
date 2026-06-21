@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 )
 
 func (a *Actor) handleTaskActivation(
@@ -16,7 +15,6 @@ func (a *Actor) handleTaskActivation(
 	if task == nil {
 		return false
 	}
-	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
 	if msg.err != nil {
 		a.finishActivationError(ctx, task, msg, inFlight)
 		return true
@@ -32,7 +30,7 @@ func (a *Actor) handleTaskActivation(
 		forwardActivatedSession(a, task)
 		return false
 	}
-	_ = a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, agentbridge.Event{
+	a.reportTaskEvent(ctx, task, agentbridge.Event{
 		Kind:  agentbridge.EventLifecycle,
 		Phase: agentbridge.StateRunning,
 	})
