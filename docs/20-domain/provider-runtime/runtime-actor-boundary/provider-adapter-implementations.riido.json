@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-runtime-boundary-detail.v1",
+  "loop_source": "docs/20-domain/provider-runtime/runtime-actor-boundary.riido.json",
   "id": "provider-adapter-implementations",
   "title": "Provider Adapter Implementations",
   "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary/provider-adapter-implementations.md",

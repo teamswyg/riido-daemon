@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-adapter-acl-detail.v1",
+  "loop_source": "docs/20-domain/provider-runtime/adapter-acl.riido.json",
   "id": "instruction-placement",
   "title": "Agent Instruction Placement And Effectiveness Probe",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-acl/instruction-placement.md",

@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-runtime-page.v1",
+  "loop_source": "docs/20-domain/provider-runtime.riido.json",
   "id": "overview",
   "title": "Provider Runtime / Adapter SSOT: Overview",
   "generated_doc": "docs/20-domain/provider-runtime/overview.md",

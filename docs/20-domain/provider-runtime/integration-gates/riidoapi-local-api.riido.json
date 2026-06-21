@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-integration-gate-detail.v1",
+  "loop_source": "docs/20-domain/provider-runtime/integration-gates.riido.json",
   "id": "riidoapi-local-api",
   "title": "Local API Adapter Scope",
   "generated_doc": "docs/20-domain/provider-runtime/integration-gates/riidoapi-local-api.md",

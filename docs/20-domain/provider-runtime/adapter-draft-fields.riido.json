@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-provider-runtime-page.v1",
+  "loop_source": "docs/20-domain/provider-runtime.riido.json",
   "id": "adapter-draft-fields",
   "title": "Provider Runtime / Adapter SSOT: Adapter Draft Fields",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields.md",

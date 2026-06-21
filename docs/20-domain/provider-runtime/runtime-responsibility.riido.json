@@ -5,6 +5,13 @@
   "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility.md",
   "workflow": ".github/workflows/provider-runtime-responsibility-docs.yml",
   "evidence_artifact": "provider-runtime-responsibility-docs",
+  "loop": {
+    "observation": "Runtime responsibility fragments define nonresponsibilities and adapter boundaries, but lacked explicit loop provenance in coverage.",
+    "hypothesis": "The runtime-responsibility root can own the responsibility evidence loop and let detail fragments delegate to it.",
+    "execute": "Generate the responsibility reader, load every responsibility fragment, verify source checks and assertions, and publish responsibility evidence.",
+    "evaluate": "The verifier fails on stale generated docs, malformed fragments, missing source anchors, or responsibility assertions that drift from code.",
+    "retrospective": "Provider runtime responsibility remains executable ontology rather than narrative ownership prose."
+  },
   "summary": [
     "This SSOT fixes the C4 Provider Runtime / Adapter responsibility boundary as generated documentation, source anchors, and CI evidence.",
     "The provider runtime owns process/session/raw provider event normalization. It does not own canonical IR persistence, task leasing, client profile presentation, policy interpretation, or Figma UI semantics."

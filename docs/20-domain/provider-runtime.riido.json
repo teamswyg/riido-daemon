@@ -5,6 +5,7 @@
   "generated_doc": "docs/20-domain/provider-runtime.md",
   "workflow": ".github/workflows/provider-runtime-docs.yml",
   "evidence_artifact": "provider-runtime-docs",
+  "loop": {"observation": "Provider runtime wrapper docs generate the C4 reader, but page fragments and sub-surfaces were still visible as loop-less manifest debt.", "hypothesis": "The provider-runtime root can own the C4 wrapper evidence loop while focused sub-surfaces delegate or own narrower loops.", "execute": "Generate the provider-runtime reader, verify compatibility markers, source anchors, and linked page fragments, and publish provider-runtime evidence in public CI.", "evaluate": "The verifier fails when root markers, source checks, generated docs, or declared page fragments drift from the executable manifest.", "retrospective": "C4 remains reviewable through a single generated wrapper while implementation-specific fragments stay small and delegated."},
   "summary": [
     "This C4 entrypoint is generated from executable provider-runtime wrapper SSOT and delegates detailed ownership to focused provider runtime evidence tools.",
     "The root remains a compatibility surface for existing CI anchors while the source of those anchors moves into this manifest."

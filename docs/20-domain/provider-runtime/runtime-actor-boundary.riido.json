@@ -5,6 +5,13 @@
   "generated_doc": "docs/20-domain/provider-runtime/runtime-actor-boundary.md",
   "workflow": ".github/workflows/provider-runtime-boundary-docs.yml",
   "evidence_artifact": "provider-runtime-boundary-docs",
+  "loop": {
+    "observation": "RuntimeActor boundary detail pages describe one actor/port/session concept each, but coverage counted them as standalone loop-less manifests.",
+    "hypothesis": "The runtime boundary root can own the C4 actor boundary loop while detail pages delegate to the generated boundary reader.",
+    "execute": "Generate the runtime boundary reader, load every detail page, verify actor/control-plane/session/source anchors, and publish boundary evidence.",
+    "evaluate": "The verifier fails on stale docs, malformed detail pages, missing source checks, or missing C4 boundary assertions.",
+    "retrospective": "Runtime actor complexity stays hidden behind one generated reader while detail fragments remain small concept records."
+  },
   "summary": [
     "This SSOT fixes the C4 RuntimeActor, supervisor, control-plane port, session preservation, adapter ACL, and open issue boundaries as generated documentation plus source anchors.",
     "The boundary is intentionally local to the public daemon repository; SaaS HTTP handlers, infra, Terraform, deployment state, and private server stores are adjacent contracts, not runtime actor responsibilities."
