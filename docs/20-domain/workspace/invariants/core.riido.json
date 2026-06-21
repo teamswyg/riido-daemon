@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-invariants-detail.v1",
   "id": "core",
   "title": "Workspace Invariants: Core",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/invariants/core.md",
   "blocks": [
     {"kind":"paragraph","text":"Primary invariant: Workspace does not decide policy. Workspace deterministically materializes the policy/native config bundle allowed by C7 Security into the task workdir."},

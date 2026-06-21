@@ -2,6 +2,7 @@
   "schema_version": "riido-workspace-invariants-detail.v1",
   "id": "local-archive-manifest",
   "title": "Workspace Invariants: Local Archive Manifest",
+  "loop_source": "docs/30-architecture/loop-engineering/workspace-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/workspace/invariants/local-archive-manifest.md",
   "blocks": [
     {"kind":"paragraph","text":"The local filesystem adapter writes `riido-workdir-archive.v1` after `ArchiveWorkspace` observes a terminal result. The manifest is written atomically to the run root."},
