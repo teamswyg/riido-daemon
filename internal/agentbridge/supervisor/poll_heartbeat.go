@@ -7,19 +7,24 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
-func (a *Actor) reportRuntimeHeartbeats(ctx context.Context, runtimes []*runtimeactor.Actor) {
+func (a *Actor) reportRuntimeHeartbeats(
+	ctx context.Context,
+	runtimes []*runtimeactor.Actor,
+	inFlight map[string]*runningTask,
+) {
 	for _, rt := range runtimes {
-		hb, err := rt.HeartbeatPayload(ctx)
+		status, err := rt.Status(ctx)
 		if err != nil {
 			continue
 		}
+		a.blockPreparingRuntimeDrift(ctx, inFlight, status)
 		_ = a.cfg.Source.Heartbeat(ctx, controlplane.RuntimeHeartbeat{
-			RuntimeID:      hb.RuntimeID,
-			UptimeSeconds:  hb.UptimeSeconds,
-			DeviceName:     hb.DeviceName,
-			SlotLimit:      hb.SlotLimit,
-			SlotsInUse:     hb.SlotsInUse,
-			RunningTaskIDs: hb.RunningTaskIDs,
+			RuntimeID:      status.RuntimeID,
+			UptimeSeconds:  status.UptimeSeconds,
+			DeviceName:     status.DeviceName,
+			SlotLimit:      status.MaxConcurrent,
+			SlotsInUse:     status.RunningSessions,
+			RunningTaskIDs: runtimeTaskIDs(status.RunningTasks),
 		})
 	}
 }

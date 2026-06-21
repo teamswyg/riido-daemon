@@ -35,7 +35,7 @@ func (a *Actor) handleSubmit(
 	if err != nil {
 		return nil, err
 	}
-	handle := registerRunningSubmit(inFlight, msg.req.ID, string(msg.req.Provider), sess)
+	handle := registerRunningSubmit(inFlight, msg.req.ID, string(msg.req.Provider), capView.CapabilityFingerprint, sess)
 	watchSubmitCompletion(msg.req.ID, sess.Done(), a.stoppedCh, completeCh)
 	return handle, nil
 }

@@ -12,6 +12,7 @@ func (a *Actor) refreshDueCapabilities(
 	adapters map[string]agentbridge.Adapter,
 	caps []Capability,
 	detectedAt map[string]time.Time,
+	inFlight map[string]*runningTask,
 ) {
 	for idx := range caps {
 		capView := caps[idx]
@@ -26,6 +27,7 @@ func (a *Actor) refreshDueCapabilities(
 		if err != nil {
 			continue
 		}
+		blockRuntimeDriftedTasks(ctx, inFlight, capView, refreshed)
 		caps[idx] = refreshed
 		detectedAt[capView.Provider] = a.cfg.Now()
 	}

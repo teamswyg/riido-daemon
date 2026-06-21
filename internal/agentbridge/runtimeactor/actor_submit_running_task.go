@@ -6,13 +6,15 @@ func registerRunningSubmit(
 	inFlight map[string]*runningTask,
 	taskID string,
 	provider string,
+	capabilityFingerprint string,
 	sess *session.Session,
 ) *SessionHandle {
 	handle := &SessionHandle{TaskID: taskID, session: sess}
 	inFlight[taskID] = &runningTask{
-		taskID:   taskID,
-		provider: provider,
-		handle:   handle,
+		taskID:                taskID,
+		provider:              provider,
+		capabilityFingerprint: capabilityFingerprint,
+		handle:                handle,
 	}
 	return handle
 }

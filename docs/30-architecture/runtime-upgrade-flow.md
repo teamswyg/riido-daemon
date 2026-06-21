@@ -26,13 +26,13 @@ Invariant: An active provider run must not silently move to a different runtime 
 | refresh capability before future work | `implemented` |  | Status and submit paths refresh due capabilities so later claims can use fresh fingerprints. | `capability-refresh-status`, `capability-refresh-submit` |
 | pin runtime lease identity | `implemented` |  | C5 lease identity binds RuntimeID and CapabilityFingerprint. | `lease-pinning`, `lease-active-require` |
 | reject stale runtime report identity | `implemented` |  | TaskDB start rejects expired leases, mismatched fencing tokens, and mismatched capability fingerprints. | `lease-start-reject`, `lease-active-require` |
-| cancel active run on runtime-pinned drift | `reserved` |  | Running-session drift cancellation is required but not claimed as implemented by this repo slice. | requires: runtimeactor test proving in-flight fingerprint/policy/native-config drift cancels the active session and reports a terminal blocked/failed result |
+| cancel active run on runtime-pinned drift | `implemented` |  | Status refresh compares active task runtime pins against refreshed capability fingerprints and terminates drifted sessions as blocked. | `active-runtime-drift-cancel` |
 
 ## Policy
 
 | Item | Status | Decisions | Summary / Owner | Evidence |
 | --- | --- | --- | --- | --- |
-| no silent upgrade while preparing or running | `reserved` |  | The invariant is documented and partially enforced by lease pins, but active actor drift cancellation needs direct evidence. | requires: end-to-end test covering Preparing and Running drift without manual restart |
+| no silent upgrade while preparing or running | `implemented` |  | Preparing drift is blocked before provider start; Running drift is blocked through runtimeactor terminal injection. | `preparing-runtime-drift-block`, `active-runtime-drift-cancel` |
 | retry and resume decisions stay outside provider adapters | `implemented` |  | Provider runtime receives StartRequest metadata and terminal results; scheduling/control-plane owns claim/retry identity. | `submit-start-request`, `terminal-result-path` |
 | provider CLI version detection does not self-update | `implemented` |  | OpenClaw detects and rejects versions; it reports upgrade guidance but does not install or self-update. | `openclaw-version-gate` |
 
@@ -42,13 +42,7 @@ Invariant: An active provider run must not silently move to a different runtime 
 | --- | --- | --- | --- | --- |
 | native config version is policy-bound | `implemented` |  | NativeConfigVersion changes when policy bundle version or native config content changes. | `native-config-version-test` |
 | prepared metadata carries native config version | `implemented` |  | Supervisor applies NativeConfigVersion to task metadata before provider start. | `workspace-metadata-native-config` |
-| dirty workdir reinjection threshold is zero | `reserved` | `Q-WS-006` | The closed policy decision is that automatic threshold for a dirty workdir is zero; this repo slice does not yet prove the runtime enforcement path. | requires: workdir/supervisor test proving dirty Preparing/Running workdirs never receive in-place native config reinjection |
-
-## Forbidden Claims
-
-| Claim | Reason |
-| --- | --- |
-| `active runtime drift implemented claim` | active Running drift cancellation is reserved until runtimeactor enforcement evidence exists |
+| dirty workdir reinjection threshold is zero | `implemented` | `Q-WS-006` | Dirty Running workdirs are blocked on runtime drift without in-place native config reinjection. | `dirty-workdir-no-reinject` |
 
 ## Assertions
 

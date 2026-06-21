@@ -54,10 +54,11 @@ func defaultSessionConfig(cfg Config) Config {
 
 func newSessionHandle(cfg Config, running process.RunningProcess) *Session {
 	return &Session{
-		events:  make(chan agentbridge.Event, cfg.EventBuffer),
-		result:  make(chan agentbridge.Result, cfg.ResultBuffer),
-		cancel:  make(chan cancelRequest, 1),
-		done:    make(chan struct{}),
-		running: running,
+		events:   make(chan agentbridge.Event, cfg.EventBuffer),
+		result:   make(chan agentbridge.Result, cfg.ResultBuffer),
+		cancel:   make(chan cancelRequest, 1),
+		terminal: make(chan terminalRequest, 1),
+		done:     make(chan struct{}),
+		running:  running,
 	}
 }

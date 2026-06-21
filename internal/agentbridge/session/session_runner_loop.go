@@ -12,6 +12,8 @@ func (r *sessionRunner) loop() {
 			r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventCancellation, Err: r.ctx.Err().Error()})
 		case req := <-r.sess.cancel:
 			r.cancel(req)
+		case req := <-r.sess.terminal:
+			r.terminal(req)
 		case <-r.hardC:
 			r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
 		case <-r.idleC:

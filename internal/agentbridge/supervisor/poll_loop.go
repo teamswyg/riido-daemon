@@ -30,7 +30,7 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 			claimed := a.claimAvailable(ctx, runtimes, inFlight)
 			resetTimer(poll, a.nextPollInterval(claimed, len(inFlight)))
 		case <-heartbeat.C:
-			a.reportRuntimeHeartbeats(ctx, runtimes)
+			a.reportRuntimeHeartbeats(ctx, runtimes, inFlight)
 		case msg := <-a.mailbox:
 			if a.handleMailboxMessage(ctx, msg, inFlight) {
 				resetTimer(poll, a.cfg.PollEvery)

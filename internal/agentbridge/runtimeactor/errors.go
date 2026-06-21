@@ -17,4 +17,6 @@ var (
 	ErrProviderUnavailable = errors.New("runtimeactor: provider unavailable")
 	// ErrDuplicateTaskID — Submit with a taskID that is already running.
 	ErrDuplicateTaskID = errors.New("runtimeactor: duplicate task id")
+	// ErrRuntimePinViolated — a running task's runtime identity changed.
+	ErrRuntimePinViolated = errors.New("runtimeactor: runtime pin violated")
 )

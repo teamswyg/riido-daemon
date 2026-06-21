@@ -31,8 +31,18 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		})
 		return true
 	}
+	pin := runtimePinForClaim(status, req)
 	taskCtx, cancel := context.WithCancel(ctx)
-	inFlight[req.ID] = &runningTask{taskID: req.ID, ctx: taskCtx, report: report, runtime: rt, cancel: cancel}
+	inFlight[req.ID] = &runningTask{
+		taskID:                req.ID,
+		provider:              string(req.Provider),
+		runtimeID:             status.RuntimeID,
+		capabilityFingerprint: pin.capabilityFingerprint,
+		ctx:                   taskCtx,
+		report:                report,
+		runtime:               rt,
+		cancel:                cancel,
+	}
 	go a.forwardCancellation(taskCtx, req.ID)
 	go a.prepareAndSubmit(taskCtx, status, rt, req)
 	return true
