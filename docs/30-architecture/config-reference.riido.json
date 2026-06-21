@@ -5,6 +5,7 @@
   "generated_doc": "docs/30-architecture/config-reference.md",
   "workflow": ".github/workflows/config-reference-evidence.yml",
   "evidence_artifact": "config-reference-evidence",
+  "loop": {"observation": "Daemon env and flag behavior was already generated and verified, but the config manifest was still counted as loop-less knowledge.", "hypothesis": "Declaring the existing config-reference evidence loop makes env/flag drift visible to repository knowledge coverage without changing runtime behavior.", "execute": "Generate the config reference, verify daemon env constants, parser tests, detail docs, and public CI evidence upload.", "evaluate": "The verifier fails when generated docs, source anchors, env constants, parser tests, or workflow wiring drift from this manifest.", "retrospective": "Config documentation remains generated for readers while the executable manifest owns the daemon configuration evidence loop."},
   "purpose": "Keeps the public riido-daemon env and flag catalog generated from a manifest and verified against daemon config source constants.",
   "daemon_env_source": "cmd/riido/daemon_config.go",
   "sections": [

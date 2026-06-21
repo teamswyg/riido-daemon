@@ -5,6 +5,7 @@
   "generated_doc": "docs/20-domain/provider-runtime/public-migration-status.md",
   "workflow": ".github/workflows/provider-public-migration-docs.yml",
   "evidence_artifact": "provider-public-migration-docs",
+  "loop": {"observation": "Provider public migration status already generated reader docs and package evidence, but the manifest was not counted as a direct evidence loop.", "hypothesis": "Declaring the migration-status loop makes provider package migration drift visible without folding this special evidence into the provider-runtime wrapper.", "execute": "Generate public migration docs, verify provider pages, implementation package paths, workflow evidence, and migration boundary assertions.", "evaluate": "The verifier fails when generated docs, provider ids, implementation artifacts, source files, or workflow wiring drift.", "retrospective": "Migration status stays a focused direct loop because skipped provider gates and package moves need their own evidence semantics."},
   "summary": [
     "This manifest tracks which Provider Runtime / Adapter surfaces have moved into public riido-daemon.",
     "The reader docs are generated so migration status cannot drift from package, gate, and boundary evidence."

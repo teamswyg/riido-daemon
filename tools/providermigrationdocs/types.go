@@ -9,15 +9,16 @@ type options struct {
 }
 
 type manifest struct {
-	SchemaVersion    string   `json:"schema_version"`
-	ID               string   `json:"id"`
-	Title            string   `json:"title"`
-	GeneratedDoc     string   `json:"generated_doc"`
-	Workflow         string   `json:"workflow"`
-	EvidenceArtifact string   `json:"evidence_artifact"`
-	Summary          []string `json:"summary"`
-	Pages            []page   `json:"pages"`
-	Assertions       []string `json:"assertions"`
+	SchemaVersion    string       `json:"schema_version"`
+	ID               string       `json:"id"`
+	Title            string       `json:"title"`
+	GeneratedDoc     string       `json:"generated_doc"`
+	Workflow         string       `json:"workflow"`
+	EvidenceArtifact string       `json:"evidence_artifact"`
+	Loop             evidenceLoop `json:"loop"`
+	Summary          []string     `json:"summary"`
+	Pages            []page       `json:"pages"`
+	Assertions       []string     `json:"assertions"`
 }
 
 type page struct {

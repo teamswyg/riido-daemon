@@ -5,6 +5,7 @@
   "generated_doc": "docs/30-architecture/cli-surface.md",
   "workflow": ".github/workflows/cli-surface-evidence.yml",
   "evidence_artifact": "cli-surface-evidence",
+  "loop": {"observation": "The CLI surface manifest already drove generated docs and black-box checks, but repository knowledge coverage still treated it as loop-less.", "hypothesis": "Declaring the existing CLI surface evidence loop makes command-boundary drift part of the executable knowledge budget.", "execute": "Generate the CLI surface docs, run source-boundary checks, black-box command checks, and public CI evidence upload.", "evaluate": "The verifier fails when usage output, source vocabulary, forbidden listener checks, generated docs, or workflow wiring drift.", "retrospective": "The human-readable CLI docs stay generated while the manifest remains the source of truth for local command boundaries."},
   "purpose": "Keeps the public cmd/riido command surface generated from a manifest and verified against black-box CLI output plus source boundaries.",
   "command_groups": [
     {
