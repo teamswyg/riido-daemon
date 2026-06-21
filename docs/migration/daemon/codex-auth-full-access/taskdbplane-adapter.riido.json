@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-codex-auth-full-access-docs.riido.json",
   "id": "daemon-codex-auth-full-access-taskdbplane-adapter",
   "title": "RIID-4683: Taskdbplane Local Task DB Adapter",
   "generated_doc": "docs/migration/daemon/codex-auth-full-access/taskdbplane-adapter.md",

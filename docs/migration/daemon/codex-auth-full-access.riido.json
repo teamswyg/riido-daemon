@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-docs.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-codex-auth-full-access-docs.riido.json",
   "id": "migration-daemon-codex-auth-full-access-docs",
   "title": "Riido Daemon Migration Plan: Codex Auth / Full Access",
   "workflow": ".github/workflows/migration-daemon-codex-auth-full-access-docs.yml",

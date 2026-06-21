@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-codex-auth-full-access-docs.riido.json",
   "id": "daemon-codex-auth-full-access-codex-auth-harness",
   "title": "RIID-4881 / RIID-4917: Codex Auth And Full-Access Harness",
   "generated_doc": "docs/migration/daemon/codex-auth-full-access/codex-auth-harness.md",
