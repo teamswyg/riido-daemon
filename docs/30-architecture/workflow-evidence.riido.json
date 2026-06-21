@@ -1,0 +1,158 @@
+{
+  "schema_version": "riido-daemon-workflow-evidence.v1",
+  "id": "daemon-workflow-evidence",
+  "title": "Daemon Workflow Evidence",
+  "generated_doc": "docs/30-architecture/workflow-evidence.md",
+  "workflow": ".github/workflows/workflow-evidence.yml",
+  "evidence_artifact": "workflow-evidence",
+  "workflow_root": ".github/workflows",
+  "accepted_gaps": [
+    {
+      "path": ".github/workflows/agentbridge-root.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add a compact package evidence tool or fold this workflow into an evidence-producing boundary workflow"
+    },
+    {
+      "path": ".github/workflows/approval-timeout-ssot.yml",
+      "reason": "legacy SSOT check predates workflow evidence artifacts",
+      "next": "replace raw command-only verification with the approval-timeout evidence workflow or emit a dedicated JSON evidence file"
+    },
+    {
+      "path": ".github/workflows/bridge-detectutil.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add a compact package evidence tool or fold this workflow into an evidence-producing boundary workflow"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "reason": "broad CI currently reports status checks without durable JSON evidence",
+      "next": "emit a compact CI summary evidence artifact covering go test, vet, and generated checks"
+    },
+    {
+      "path": ".github/workflows/cli.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add a compact CLI package evidence tool or bind this workflow to cli-surface evidence"
+    },
+    {
+      "path": ".github/workflows/controlplane.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add a compact package evidence tool or fold this workflow into an evidence-producing boundary workflow"
+    },
+    {
+      "path": ".github/workflows/daemon-lifecycle.yml",
+      "reason": "legacy package workflow overlaps lifecycle evidence but does not emit evidence-out itself",
+      "next": "bind this workflow to lifecycle evidence or retire it behind process-lifecycle evidence"
+    },
+    {
+      "path": ".github/workflows/event-ingestor.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add event-ingestor evidence or fold this check into semantic-event activity evidence"
+    },
+    {
+      "path": ".github/workflows/go-ci.yml",
+      "reason": "broad Go CI currently reports status checks without durable JSON evidence",
+      "next": "emit a compact Go CI summary evidence artifact covering lint, test, and generator checks"
+    },
+    {
+      "path": ".github/workflows/macos-external-provider-cli-ssot.yml",
+      "reason": "legacy SSOT check predates workflow evidence artifacts",
+      "next": "emit provider CLI SSOT evidence or fold the check into provider integration evidence"
+    },
+    {
+      "path": ".github/workflows/mwsd-project.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add a compact package evidence tool or bind to the relevant local API evidence surface"
+    },
+    {
+      "path": ".github/workflows/provider-claude.yml",
+      "reason": "provider package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "emit provider-specific adapter evidence or fold this into provider integration evidence"
+    },
+    {
+      "path": ".github/workflows/provider-codex.yml",
+      "reason": "provider package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "emit provider-specific adapter evidence or fold this into provider integration evidence"
+    },
+    {
+      "path": ".github/workflows/provider-cursor.yml",
+      "reason": "provider package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "emit provider-specific adapter evidence or fold this into provider integration evidence"
+    },
+    {
+      "path": ".github/workflows/provider-openclaw.yml",
+      "reason": "provider package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "emit provider-specific adapter evidence or fold this into provider integration evidence"
+    },
+    {
+      "path": ".github/workflows/provider-runtime-backpressure.yml",
+      "reason": "provider runtime check predates workflow evidence artifacts",
+      "next": "emit backpressure evidence or fold this invariant into provider runtime evidence"
+    },
+    {
+      "path": ".github/workflows/release-artifacts.yml",
+      "reason": "release workflow uploads build artifacts but does not yet emit a separate evidence-out JSON summary",
+      "next": "add release artifact summary evidence alongside binaries and checksums"
+    },
+    {
+      "path": ".github/workflows/riidoapi.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add local API evidence or bind this workflow to migration/local API evidence"
+    },
+    {
+      "path": ".github/workflows/runtimeactor.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add runtime actor evidence or fold this check into runtime upgrade evidence"
+    },
+    {
+      "path": ".github/workflows/saasplane.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add SaaS plane evidence or bind this workflow to SaaS assignment source evidence"
+    },
+    {
+      "path": ".github/workflows/session-actor.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add session actor evidence or fold this check into session lifecycle evidence"
+    },
+    {
+      "path": ".github/workflows/store-distribution-contract.yml",
+      "reason": "store contract emits a JSON output with -out, but it is not yet normalized to evidence-out vocabulary",
+      "next": "rename the tool flag or add evidence-out alias and bind the uploaded store contract JSON as evidence"
+    },
+    {
+      "path": ".github/workflows/supervisor.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add supervisor evidence or fold this check into process lifecycle evidence"
+    },
+    {
+      "path": ".github/workflows/taskdbplane.yml",
+      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
+      "next": "add task database plane evidence or bind this workflow to local daemon contract evidence"
+    },
+    {
+      "path": ".github/workflows/toolargs-toolpolicy.yml",
+      "reason": "legacy policy check predates workflow evidence artifacts",
+      "next": "emit tool argument policy evidence or fold this check into tool-use gate evidence"
+    },
+    {
+      "path": ".github/workflows/workdir-policy-ssot.yml",
+      "reason": "legacy SSOT check predates workflow evidence artifacts",
+      "next": "emit workdir policy evidence or fold this check into workspace/native-config evidence"
+    }
+  ],
+  "assertions": [
+    "workflows with executable checks must either publish evidence artifacts or be registered as accepted gaps",
+    "artifact uploads must fail closed with if-no-files-found:error",
+    "each evidence-out path must be uploaded by a strict artifact step",
+    "every evidence-out capable tool must be invoked by at least one workflow",
+    "every evidence-out capable tool must have an evidence-out invocation bound to an uploaded artifact",
+    "workflow inventory must include both .yml and .yaml GitHub Actions files",
+    "accepted gaps are debt, not completion",
+    "legacy build and provider workflows remain visible debt until they emit durable evidence"
+  ],
+  "loop": {
+    "observation": "Daemon has many public GitHub Actions workflows, but legacy build and provider checks can pass or fail without a durable JSON evidence artifact, making loop-engineering claims weaker than control-plane workflow evidence.",
+    "hypothesis": "A daemon workflow evidence manifest can classify every executable workflow, fail on non-strict uploads or missing evidence-out bindings, and register remaining legacy workflows as explicit debt instead of silent CI behavior.",
+    "execute": "Scan .yml and .yaml GitHub Actions workflows, classify evidence coverage, require fail-closed artifact uploads, require every evidence-out path to be uploaded, compare evidence-out capable tools with workflow invocations, and render a generated workflow evidence reader.",
+    "evaluate": "The verifier fails on unregistered executable workflows, non-strict artifact uploads, missing evidence uploads, evidence-capable tools without workflow coverage, stale generated docs, unused accepted gaps, or workflow extension drift.",
+    "retrospective": "Daemon workflow observability becomes an executable migration surface: covered evidence workflows stay green, legacy workflows are visible debt, and future workflows cannot appear without evidence or a registered reason."
+  }
+}

@@ -55,3 +55,4 @@ jobs:
         with:
           name: store-distribution-contract
           path: /tmp/store-distribution-contract.json
+          if-no-files-found: error
