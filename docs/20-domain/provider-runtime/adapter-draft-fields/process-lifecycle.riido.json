@@ -2,6 +2,7 @@
   "schema_version": "riido-process-lifecycle.v1",
   "id": "provider-runtime-process-lifecycle",
   "title": "Process Lifecycle",
+  "loop_source": "docs/30-architecture/loop-engineering/process-lifecycle.riido.json",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md",
   "workflow": ".github/workflows/process-lifecycle.yml",
   "evidence_artifact": "process-lifecycle-evidence",

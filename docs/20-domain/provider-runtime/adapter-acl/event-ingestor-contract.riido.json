@@ -2,6 +2,7 @@
   "schema_version": "riido-event-authority.v1",
   "id": "provider-runtime-event-ingestor-authority",
   "title": "EventIngestor Contract",
+  "loop_source": "docs/30-architecture/loop-engineering/event-authority.riido.json",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md",
   "workflow": ".github/workflows/event-authority.yml",
   "evidence_artifact": "event-authority-evidence",

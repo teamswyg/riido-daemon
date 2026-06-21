@@ -2,6 +2,7 @@
   "schema_version": "riido-session-lifecycle.v1",
   "id": "provider-runtime-session-lifecycle",
   "title": "Session Lifecycle",
+  "loop_source": "docs/30-architecture/loop-engineering/session-lifecycle.riido.json",
   "generated_doc": "docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md",
   "workflow": ".github/workflows/session-lifecycle.yml",
   "evidence_artifact": "session-lifecycle-evidence",
