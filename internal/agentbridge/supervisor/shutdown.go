@@ -8,10 +8,15 @@ import (
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
-func (a *Actor) shutdown(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, inFlight map[string]*runningTask) {
+func (a *Actor) shutdown(
+	ctx lifecycle.Context,
+	runtimes []*runtimeactor.Actor,
+	inFlight map[string]*runningTask,
+	detachedReports *[]detachedReport,
+) {
 	stdCtx := ctx.Context()
 	finishedAt := time.Now().UTC()
-	a.cancelInFlightTasks(stdCtx, inFlight, finishedAt)
+	a.cancelInFlightTasks(stdCtx, inFlight, detachedReports, finishedAt)
 	a.deregisterRuntimes(stdCtx, runtimes)
 }
 
