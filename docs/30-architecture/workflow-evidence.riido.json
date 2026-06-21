@@ -103,11 +103,6 @@
       "next": "add session actor evidence or fold this check into session lifecycle evidence"
     },
     {
-      "path": ".github/workflows/store-distribution-contract.yml",
-      "reason": "store contract emits a JSON output with -out, but it is not yet normalized to evidence-out vocabulary",
-      "next": "rename the tool flag or add evidence-out alias and bind the uploaded store contract JSON as evidence"
-    },
-    {
       "path": ".github/workflows/supervisor.yml",
       "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
       "next": "add supervisor evidence or fold this check into process lifecycle evidence"

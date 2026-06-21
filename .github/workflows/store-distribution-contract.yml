@@ -50,7 +50,7 @@ jobs:
           -contract packaging/store/riido_daemon_store_distribution.riido.json
           -repo .
           -check-policy-table
-          -out /tmp/store-distribution-contract.json
+          -evidence-out /tmp/store-distribution-contract.json
       - uses: actions/upload-artifact@v4
         with:
           name: store-distribution-contract
