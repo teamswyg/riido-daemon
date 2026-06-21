@@ -413,6 +413,22 @@
   - `command`: go run ./tools/workflowevidence -check-doc -evidence-out /tmp/workflow-evidence.json; proves daemon workflow evidence coverage is generated, current, and machine-readable
   - `workflow`: .github/workflows/workflow-evidence.yml; proves public CI uploads daemon workflow evidence artifacts
 
+### package-workflow-evidence
+
+- Owner: `tools/packageworkflowevidence and legacy package workflows`
+- Observe: Several package and boundary workflows executed Go tests and source boundary checks, but remained green-check-only CI without evidence artifacts.
+  - Artifacts: `.github/workflows/agentbridge-root.yml`, `.github/workflows/runtimeactor.yml`
+- Hypothesis: A compact workflow-command evidence manifest can make these legacy package gates observable without moving their domain semantics into one large tool.
+  - Artifacts: `docs/30-architecture/package-workflow-evidence.riido.json`
+- Execute: Run packageworkflowevidence from each registered workflow to prove the expected command fragments remain present, then upload strict JSON artifacts.
+  - Artifacts: `tools/packageworkflowevidence`, `.github/workflows/*`
+- Evaluate: workflowevidence must move registered package workflows from accepted_gap to covered, and packageworkflowevidence must fail if a required command fragment disappears.
+  - Artifacts: `docs/30-architecture/workflow-evidence.md`
+- Retrospective: Package workflows become evidence-producing orchestration while existing domain-specific tests and source gates keep their ownership.
+- Evidence:
+  - `command`: go run ./tools/packageworkflowevidence -workflow .github/workflows/agentbridge-root.yml -evidence-out /tmp/agentbridge-root-evidence.json; proves registered package workflow command fragments are present
+  - `workflow`: .github/workflows/workflow-evidence.yml; proves public CI reports package workflows as covered evidence surfaces
+
 ### ci-evidence
 
 - Owner: `tools/cievidence and broad CI workflows`

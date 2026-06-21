@@ -8,19 +8,9 @@
   "workflow_root": ".github/workflows",
   "accepted_gaps": [
     {
-      "path": ".github/workflows/agentbridge-root.yml",
-      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
-      "next": "add a compact package evidence tool or fold this workflow into an evidence-producing boundary workflow"
-    },
-    {
       "path": ".github/workflows/approval-timeout-ssot.yml",
       "reason": "legacy SSOT check predates workflow evidence artifacts",
       "next": "replace raw command-only verification with the approval-timeout evidence workflow or emit a dedicated JSON evidence file"
-    },
-    {
-      "path": ".github/workflows/bridge-detectutil.yml",
-      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
-      "next": "add a compact package evidence tool or fold this workflow into an evidence-producing boundary workflow"
     },
     {
       "path": ".github/workflows/cli.yml",
@@ -28,29 +18,14 @@
       "next": "add a compact CLI package evidence tool or bind this workflow to cli-surface evidence"
     },
     {
-      "path": ".github/workflows/controlplane.yml",
-      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
-      "next": "add a compact package evidence tool or fold this workflow into an evidence-producing boundary workflow"
-    },
-    {
       "path": ".github/workflows/daemon-lifecycle.yml",
       "reason": "legacy package workflow overlaps lifecycle evidence but does not emit evidence-out itself",
       "next": "bind this workflow to lifecycle evidence or retire it behind process-lifecycle evidence"
     },
     {
-      "path": ".github/workflows/event-ingestor.yml",
-      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
-      "next": "add event-ingestor evidence or fold this check into semantic-event activity evidence"
-    },
-    {
       "path": ".github/workflows/macos-external-provider-cli-ssot.yml",
       "reason": "legacy SSOT check predates workflow evidence artifacts",
       "next": "emit provider CLI SSOT evidence or fold the check into provider integration evidence"
-    },
-    {
-      "path": ".github/workflows/mwsd-project.yml",
-      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
-      "next": "add a compact package evidence tool or bind to the relevant local API evidence surface"
     },
     {
       "path": ".github/workflows/provider-claude.yml",
@@ -83,16 +58,6 @@
       "next": "add release artifact summary evidence alongside binaries and checksums"
     },
     {
-      "path": ".github/workflows/riidoapi.yml",
-      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
-      "next": "add local API evidence or bind this workflow to migration/local API evidence"
-    },
-    {
-      "path": ".github/workflows/runtimeactor.yml",
-      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
-      "next": "add runtime actor evidence or fold this check into runtime upgrade evidence"
-    },
-    {
       "path": ".github/workflows/saasplane.yml",
       "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
       "next": "add SaaS plane evidence or bind this workflow to SaaS assignment source evidence"
@@ -106,11 +71,6 @@
       "path": ".github/workflows/supervisor.yml",
       "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
       "next": "add supervisor evidence or fold this check into process lifecycle evidence"
-    },
-    {
-      "path": ".github/workflows/taskdbplane.yml",
-      "reason": "legacy package workflow records check status only and has no workflow-level evidence artifact yet",
-      "next": "add task database plane evidence or bind this workflow to local daemon contract evidence"
     },
     {
       "path": ".github/workflows/toolargs-toolpolicy.yml",

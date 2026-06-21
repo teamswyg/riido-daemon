@@ -63,3 +63,16 @@ jobs:
       - name: Verify riidoapi black-box/domain gates
         run: |
           go test ./internal/riidoapi ./internal/taskdb ./internal/hostintegration ./internal/validation -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/riidoapi.yml \
+            -evidence-out out/riidoapi-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: riidoapi-evidence
+          path: out/riidoapi-evidence.json
+          if-no-files-found: error

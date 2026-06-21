@@ -47,3 +47,16 @@ jobs:
       - name: Verify agentbridge root domain
         run: |
           go test ./internal/agentbridge -run 'Reduce|Telemetry|FilterBlockedArgs|Semantic|States|Lifecycle' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/agentbridge-root.yml \
+            -evidence-out out/agentbridge-root-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agentbridge-root-evidence
+          path: out/agentbridge-root-evidence.json
+          if-no-files-found: error
