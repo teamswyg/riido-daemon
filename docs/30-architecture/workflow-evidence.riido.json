@@ -11,6 +11,7 @@
     "workflows with executable checks must either publish evidence artifacts or be registered as accepted gaps",
     "artifact uploads must fail closed with if-no-files-found:error",
     "each evidence-out path must be uploaded by a strict artifact step",
+    "workflow evidence must expose status distribution as top-level evidence",
     "every evidence-out capable tool must be invoked by at least one workflow",
     "every evidence-out capable tool must have an evidence-out invocation bound to an uploaded artifact",
     "workflow inventory must include both .yml and .yaml GitHub Actions files",

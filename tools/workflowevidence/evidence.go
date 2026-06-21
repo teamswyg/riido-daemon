@@ -19,6 +19,7 @@ func newEvidence(m manifest, result auditResult) evidence {
 		Status:                      status,
 		WorkflowCount:               len(result.Records),
 		CoveredCount:                result.Covered,
+		StatusCounts:                workflowStatusCounts(result.Records),
 		AcceptedGapCount:            result.Accepted,
 		EvidenceToolCount:           result.EvidenceTools,
 		EvidenceToolCoveredCount:    result.EvidenceToolCovered,

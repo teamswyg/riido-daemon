@@ -19,6 +19,9 @@ func TestWorkflowEvidence(t *testing.T) {
 	if got.Status != "verified" || got.WorkflowCount == 0 || got.CoveredCount == 0 {
 		t.Fatalf("unexpected evidence: %+v", got)
 	}
+	if len(got.StatusCounts) == 0 {
+		t.Fatalf("missing status counts: %+v", got)
+	}
 }
 
 func readJSON(path string, out any) error {
