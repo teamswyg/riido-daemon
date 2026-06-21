@@ -6,11 +6,12 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-func TestShouldRetainOnlyStateReportEvents(t *testing.T) {
+func TestShouldRetainStateAndWarningReportEvents(t *testing.T) {
 	want := map[agentbridge.EventKind]bool{
 		agentbridge.EventLifecycle:          true,
 		agentbridge.EventSessionIdentified:  true,
 		agentbridge.EventToolApprovalNeeded: true,
+		agentbridge.EventWarning:            true,
 		agentbridge.EventCancellation:       true,
 		agentbridge.EventTimeout:            true,
 		agentbridge.EventProcessExit:        true,

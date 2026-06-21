@@ -14,12 +14,16 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 	if res.Workdir == "" && running.workspace != nil {
 		res.Workdir = running.workspace.Workdir
 	}
-	a.appendTerminalResultEvent(ctx, running.taskID, running.events, res)
-	a.archiveTerminalWorkspace(ctx, running.taskID, running.workspace, running.events, res)
+	a.appendTaskTerminalResultEvent(ctx, running, res)
+	a.archiveTerminalWorkspace(ctx, running, res)
 	return res
 }
 
-func (a *Actor) archiveTerminalWorkspace(ctx context.Context, taskID string, ws *workdir.Workspace, events *workspaceEventContext, res agentbridge.Result) {
+func (a *Actor) archiveTerminalWorkspace(ctx context.Context, task *runningTask, res agentbridge.Result) {
+	if task == nil {
+		return
+	}
+	ws := task.workspace
 	if ws == nil || a.cfg.Workdir == nil {
 		return
 	}
@@ -32,10 +36,10 @@ func (a *Actor) archiveTerminalWorkspace(ctx context.Context, taskID string, ws 
 		ArchivedAt:   res.FinishedAt,
 	})
 	if err == nil {
-		a.appendWorkspaceArchivedEvent(ctx, taskID, events, record)
+		a.appendWorkspaceArchivedEvent(ctx, task, record)
 		return
 	}
-	_ = a.cfg.Reporter.ReportEvent(ctx, taskID, agentbridge.Event{
+	a.reportTaskEvent(ctx, task, agentbridge.Event{
 		Kind: agentbridge.EventWarning,
 		Text: "workspace archive failed",
 		Err:  err.Error(),

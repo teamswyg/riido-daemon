@@ -9,6 +9,7 @@ func shouldRetainReportEvent(ev agentbridge.Event) bool {
 	case agentbridge.EventLifecycle,
 		agentbridge.EventSessionIdentified,
 		agentbridge.EventToolApprovalNeeded,
+		agentbridge.EventWarning,
 		agentbridge.EventCancellation,
 		agentbridge.EventTimeout,
 		agentbridge.EventProcessExit:
