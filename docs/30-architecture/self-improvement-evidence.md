@@ -34,3 +34,10 @@
 | `ci` | `problem_count` | `0` |
 | `go-ci` | `status` | `verified` |
 | `go-ci` | `problem_count` | `0` |
+
+## Closed Loop Classes
+
+| Class | Kind | Evidence |
+| --- | --- | --- |
+| `bug-fix` | `bug` | `loop`, `ci`, `go-ci` |
+| `feature-delivery` | `feature` | `knowledge`, `workflow`, `loop` |

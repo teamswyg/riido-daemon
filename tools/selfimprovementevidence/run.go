@@ -1,9 +1,6 @@
 package main
 
-import (
-	"fmt"
-	"path/filepath"
-)
+import "fmt"
 
 func run(opts options) error {
 	m, err := loadManifest(opts.Manifest)
@@ -33,31 +30,4 @@ func run(opts options) error {
 		return fmt.Errorf("self-improvement evidence invalid: %v", report.Problems)
 	}
 	return nil
-}
-
-func buildReport(dir string, m manifest) report {
-	out := newReport(m)
-	for _, item := range m.Required {
-		path := filepath.Join(dir, item.File)
-		data, err := readEvidence(path)
-		if err != nil {
-			out.Problems = append(out.Problems, err.Error())
-			continue
-		}
-		checks, problems := evaluate(item, data)
-		out.Checks = append(out.Checks, checks...)
-		out.Problems = append(out.Problems, problems...)
-	}
-	for _, check := range out.Checks {
-		if check.Status == statusVerified {
-			out.PassingCount++
-		}
-	}
-	out.CheckCount = len(out.Checks)
-	out.ProblemCount = len(out.Problems)
-	out.VerifiedCount = countVerifiedEvidence(out.Checks, m.Required)
-	if out.ProblemCount > 0 {
-		out.Status = statusFailed
-	}
-	return out
 }

@@ -1361,14 +1361,14 @@
 - Observe: Loop, workflow, knowledge, and CI evidence were individually verified but still manually summarized by reviewers.
   - Artifacts: `docs/30-architecture/loop-engineering.md`, `docs/30-architecture/workflow-evidence.md`, `docs/executable-knowledge.md`, `docs/30-architecture/ci-evidence.riido.json`
 - Hypothesis: A small meta verifier can make the repository's self-improvement health observable without duplicating domain verifiers.
-- Execute: Collect required evidence JSON files, validate SSOT-declared assertions, render a generated reader, and upload one compact evidence artifact.
+- Execute: Collect required evidence JSON files, validate SSOT-declared assertions, classify bug and feature closure loops, render a generated reader, and upload one compact evidence artifact.
   - Artifacts: `docs/30-architecture/self-improvement-evidence.riido.json`, `tools/selfimprovementevidence`
 - Evaluate: The verifier fails when a required evidence file is missing, a declared assertion fails, generated docs drift, or CI wiring stops publishing evidence.
   - Artifacts: `.github/workflows/self-improvement-evidence.yml`
 - Retrospective: Reviewers inspect one generated self-improvement surface while source verifiers remain focused on their own domains.
   - Artifacts: `docs/30-architecture/self-improvement-evidence.md`
 - Evidence:
-  - `command`: go run ./tools/selfimprovementevidence -manifest docs/30-architecture/self-improvement-evidence.riido.json -evidence-dir out -check-doc -evidence-out out/self-improvement-evidence.json; proves core evidence outputs satisfy the declared self-improvement assertions
+  - `command`: go run ./tools/selfimprovementevidence -manifest docs/30-architecture/self-improvement-evidence.riido.json -evidence-dir out -check-doc -evidence-out out/self-improvement-evidence.json; proves core evidence outputs satisfy the declared self-improvement assertions and bug/feature closure classes
   - `workflow`: .github/workflows/self-improvement-evidence.yml; proves public CI preserves the aggregate evidence artifact
 
 ## Open Gaps
