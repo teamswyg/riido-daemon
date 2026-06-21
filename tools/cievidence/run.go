@@ -5,15 +5,28 @@ import (
 	"os"
 )
 
+const (
+	defaultManifest = "docs/30-architecture/ci-evidence.riido.json"
+	evidenceSchema  = "riido-daemon-ci-evidence.v1"
+)
+
 func run(opts options) error {
 	if opts.Workflow == "" || opts.ID == "" || opts.EvidenceOut == "" {
 		return fmt.Errorf("workflow, id, and evidence-out are required")
+	}
+	m, err := loadManifest(opts.Manifest)
+	if err != nil {
+		return err
+	}
+	spec, err := findWorkflow(m, opts.Workflow, opts.ID)
+	if err != nil {
+		return err
 	}
 	body, err := os.ReadFile(opts.Workflow)
 	if err != nil {
 		return fmt.Errorf("read workflow: %w", err)
 	}
-	report := buildEvidence(opts, string(body))
+	report := buildEvidence(m, spec, string(body))
 	if err := writeJSON(opts.EvidenceOut, report); err != nil {
 		return err
 	}
@@ -23,21 +36,24 @@ func run(opts options) error {
 	return nil
 }
 
-func buildEvidence(opts options, text string) evidence {
-	requiredCommands := requiredCommandsFor(opts.Workflow)
+func buildEvidence(m manifest, spec workflowSpec, text string) evidence {
 	report := evidence{
-		SchemaVersion: "riido-daemon-ci-evidence.v1",
-		ID:            opts.ID,
-		Status:        "verified",
-		Workflow:      opts.Workflow,
+		SchemaVersion:    evidenceSchema,
+		ID:               spec.ID,
+		Status:           "verified",
+		Workflow:         spec.Workflow,
+		EvidenceArtifact: spec.EvidenceArtifact,
+		LoopSource:       m.LoopSource,
+		Problems:         []string{},
 	}
-	for _, command := range requiredCommands {
+	for _, command := range spec.RequiredCommands {
 		found := workflowContainsCommand(text, command)
 		report.Required = append(report.Required, required{Command: command, Found: found})
 		if !found {
 			report.Problems = append(report.Problems, "missing command "+command)
 		}
 	}
+	report.ProblemCount = len(report.Problems)
 	if len(report.Problems) > 0 {
 		report.Status = "failed"
 	}
