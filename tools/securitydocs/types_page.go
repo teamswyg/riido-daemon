@@ -4,6 +4,7 @@ type page struct {
 	SchemaVersion string  `json:"schema_version"`
 	ID            string  `json:"id"`
 	Title         string  `json:"title"`
+	LoopSource    string  `json:"loop_source,omitempty"`
 	GeneratedDoc  string  `json:"generated_doc"`
 	BackTitle     string  `json:"back_title"`
 	BackPath      string  `json:"back_path"`

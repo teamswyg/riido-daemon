@@ -2,6 +2,7 @@
   "schema_version": "riido-saas-assignment-source.v1",
   "id": "saas-assignment-source",
   "title": "SaaS Assignment Source Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/saas-assignment-source.riido.json",
   "generated_doc": "docs/20-domain/runtime-scheduling/saas-assignment-source.md",
   "migration_doc": "docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md",
   "workflow": ".github/workflows/saas-assignment-source.yml",
