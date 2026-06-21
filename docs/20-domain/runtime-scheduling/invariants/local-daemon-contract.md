@@ -16,6 +16,7 @@ Proves the public daemon runtime scheduling contract from executable code refere
 | --- | --- | --- |
 | daemon exposes local task sources by env | cmd/riido owns the local queue and task DB source environment surface. | `daemon-env-task-queue`, `daemon-env-task-db` |
 | supervisor owns runtime pool dispatch | daemon startup wires runtime actors into SupervisorActor and supervisor claims work by runtime id. | `supervisor-runtime-pool`, `supervisor-runtime-claim`, `supervisor-runtime-heartbeat` |
+| supervisor gates provider start on accepted start report | provider preparation and execution do not begin when StartTask reporting is rejected. | `supervisor-start-report-gate` |
 | scheduler selection is pure C5 logic | SelectRuntime orders candidates without locks, persistence, provider execution, or process side effects. | `scheduler-pure-selector`, `scheduler-runtime-pin` |
 | task DB uses sidecar runtime registries | taskdbplane stores runtime registry and lease registry next to the task DB without changing the task DB schema. | `taskdb-runtime-registry-schema`, `taskdb-runtime-lease-schema`, `taskdb-runtime-registry-path`, `taskdb-runtime-lease-path` |
 | task DB claims only the selected runtime | taskdbplane reuses SelectRuntime and only lets the selected runtime id claim the queued row. | `taskdb-select-runtime`, `taskdb-selected-runtime-only`, `taskdb-acquire-runtime-lease` |

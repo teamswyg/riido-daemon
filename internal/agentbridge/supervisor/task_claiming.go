@@ -22,7 +22,9 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 	report := reportContextFor(req)
 	reportCtx := controlplane.ContextWithTaskReport(ctx, report)
 
-	_ = a.cfg.Reporter.StartTask(reportCtx, req.ID)
+	if err := a.cfg.Reporter.StartTask(reportCtx, req.ID); err != nil {
+		return true
+	}
 	eligibility := taskEligibility(status, req)
 	if !eligibility.Eligible {
 		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, agentbridge.Result{
