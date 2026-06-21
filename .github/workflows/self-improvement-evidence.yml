@@ -1,0 +1,64 @@
+name: self-improvement-evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/self-improvement-evidence.yml"
+      - ".github/workflows/ci.yml"
+      - ".github/workflows/go-ci.yml"
+      - ".github/workflows/loop-engineering-evidence.yml"
+      - ".github/workflows/repo-executable-knowledge-coverage.yml"
+      - ".github/workflows/workflow-evidence.yml"
+      - "docs/30-architecture/ci-evidence.riido.json"
+      - "docs/30-architecture/loop-engineering.riido.json"
+      - "docs/30-architecture/loop-engineering/**"
+      - "docs/30-architecture/self-improvement-evidence.md"
+      - "docs/30-architecture/self-improvement-evidence.riido.json"
+      - "docs/executable-knowledge.riido.json"
+      - "tools/cievidence/**"
+      - "tools/knowledgecoverage/**"
+      - "tools/loopevidence/**"
+      - "tools/selfimprovementevidence/**"
+      - "tools/workflowevidence/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+      - "docs/30-architecture/**"
+      - "docs/executable-knowledge.riido.json"
+      - "tools/cievidence/**"
+      - "tools/knowledgecoverage/**"
+      - "tools/loopevidence/**"
+      - "tools/selfimprovementevidence/**"
+      - "tools/workflowevidence/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  self-improvement-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify self-improvement evidence
+        run: |
+          mkdir -p out
+          go test ./tools/selfimprovementevidence -count=1
+          go run ./tools/loopevidence -check -evidence-out out/loop-engineering-evidence.json
+          go run ./tools/workflowevidence -check-doc -evidence-out out/workflow-evidence.json
+          go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out out/repo-executable-knowledge-coverage.json
+          go run ./tools/cievidence -manifest docs/30-architecture/ci-evidence.riido.json -workflow .github/workflows/ci.yml -id ci -evidence-out out/ci-evidence.json
+          go run ./tools/cievidence -manifest docs/30-architecture/ci-evidence.riido.json -workflow .github/workflows/go-ci.yml -id go-ci -evidence-out out/go-ci-evidence.json
+          go run ./tools/selfimprovementevidence -manifest docs/30-architecture/self-improvement-evidence.riido.json -evidence-dir out -check-doc -evidence-out out/self-improvement-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: self-improvement-evidence
+          path: out/*.json
+          if-no-files-found: error

@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 301 |
+| Generated reader docs | 302 |
 | Direct SSOT docs | 0 |
 | Registered manual docs | 0 |
-| Scanned docs | 301 |
+| Scanned docs | 302 |
 
 ## Generated Reader Origins
 
@@ -69,6 +69,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/runtimeeligibility -write-doc` | 1 | `docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md` |
 | `go run ./tools/runtimesecretevidence -write-doc` | 1 | `docs/30-architecture/runtime-secret-private-evidence.md` |
 | `go run ./tools/runtimeupgrade -write-doc` | 1 | `docs/30-architecture/runtime-upgrade-flow.md` |
+| `go run ./tools/selfimprovementevidence -write-doc` | 1 | `docs/30-architecture/self-improvement-evidence.md` |
 | `go run ./tools/semanticeventactivity -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md` |
 | `go run ./tools/sessionlifecycle -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md` |
 | `go run ./tools/shutdownauthority -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md` |
@@ -83,7 +84,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Generated Origin Workflow Coverage
 
-- Covered generated origins: `63`
+- Covered generated origins: `64`
 - Missing workflow origins: `0`
 
 _None missing._
@@ -92,15 +93,15 @@ _None missing._
 
 | Group | Count | Sample paths |
 | --- | ---: | --- |
-| `docs` | 345 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `docs` | 347 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
 | `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
 | `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `352`
-- Direct manifest loops: `21`
-- Delegated manifest loops: `331`
+- Complete manifest loops: `354`
+- Direct manifest loops: `22`
+- Delegated manifest loops: `332`
 - Missing manifest loops: `0`
 - Missing loop budget: `0`
 

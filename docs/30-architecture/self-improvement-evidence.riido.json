@@ -1,0 +1,66 @@
+{
+  "schema_version": "riido-daemon-self-improvement-evidence.v1",
+  "id": "daemon-self-improvement-evidence",
+  "title": "Self Improvement Evidence",
+  "generated_doc": "docs/30-architecture/self-improvement-evidence.md",
+  "workflow": ".github/workflows/self-improvement-evidence.yml",
+  "evidence_artifact": "self-improvement-evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/self-improvement-evidence.riido.json",
+  "loop": {
+    "observation": "Core evidence outputs were individually green, but aggregate health was still inferred manually.",
+    "hypothesis": "SSOT-declared assertions over existing evidence JSON make self-improvement health executable.",
+    "execute": "Run source evidence tools, load their JSON outputs, verify required assertions, and publish the aggregate evidence artifact.",
+    "evaluate": "The verifier fails when required evidence is missing, an assertion fails, the generated reader drifts, or workflow artifact upload disappears.",
+    "retrospective": "The aggregate remains a thin evidence sidecar while domain ownership stays in the existing loop, workflow, knowledge, and CI tools."
+  },
+  "required_evidence": [
+    {
+      "id": "loop",
+      "file": "loop-engineering-evidence.json",
+      "description": "Observe/Hypothesis/Execute/Evaluate/Retrospective coverage",
+      "assertions": [
+        {"field": "status", "equals": "verified"},
+        {"field": "problem_count", "equals": 0},
+        {"field": "open_gap_count", "equals": 0}
+      ]
+    },
+    {
+      "id": "workflow",
+      "file": "workflow-evidence.json",
+      "description": "Workflow evidence coverage and tool binding",
+      "assertions": [
+        {"field": "status", "equals": "verified"},
+        {"field": "unregistered_gaps", "empty": true}
+      ]
+    },
+    {
+      "id": "knowledge",
+      "file": "repo-executable-knowledge-coverage.json",
+      "description": "Executable knowledge coverage",
+      "assertions": [
+        {"field": "status", "equals": "verified"},
+        {"field": "manual_count", "equals": 0},
+        {"field": "manifest_missing_loop_count", "equals": 0},
+        {"field": "generated_workflow_missing_count", "equals": 0}
+      ]
+    },
+    {
+      "id": "ci",
+      "file": "ci-evidence.json",
+      "description": "Broad CI command evidence",
+      "assertions": [
+        {"field": "status", "equals": "verified"},
+        {"field": "problem_count", "equals": 0}
+      ]
+    },
+    {
+      "id": "go-ci",
+      "file": "go-ci-evidence.json",
+      "description": "Lint and Go CI command evidence",
+      "assertions": [
+        {"field": "status", "equals": "verified"},
+        {"field": "problem_count", "equals": 0}
+      ]
+    }
+  ]
+}
