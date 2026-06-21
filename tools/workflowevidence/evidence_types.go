@@ -6,6 +6,7 @@ type evidence struct {
 	Status                      string           `json:"status"`
 	WorkflowCount               int              `json:"workflow_count"`
 	CoveredCount                int              `json:"covered_count"`
+	StatusCounts                []statusCount    `json:"status_counts"`
 	AcceptedGapCount            int              `json:"accepted_gap_count"`
 	EvidenceToolCount           int              `json:"evidence_tool_count"`
 	EvidenceToolCoveredCount    int              `json:"evidence_tool_covered_count"`

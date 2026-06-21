@@ -4,6 +4,7 @@
 
 - workflow count: `101`
 - evidence covered: `98`
+- workflow statuses: `covered=98`, `metadata_only=3`
 - evidence tools covered: `65/65`
 - evidence tools bound to artifacts: `65/65`
 - accepted gaps: `0`
@@ -132,6 +133,7 @@
 - workflows with executable checks must either publish evidence artifacts or be registered as accepted gaps
 - artifact uploads must fail closed with if-no-files-found:error
 - each evidence-out path must be uploaded by a strict artifact step
+- workflow evidence must expose status distribution as top-level evidence
 - every evidence-out capable tool must be invoked by at least one workflow
 - every evidence-out capable tool must have an evidence-out invocation bound to an uploaded artifact
 - workflow inventory must include both .yml and .yaml GitHub Actions files
