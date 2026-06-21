@@ -2,6 +2,7 @@
   "schema_version": "riido-security-page.v1",
   "id": "open-issues-and-versioning",
   "title": "10-11 Open Issues and Version-Affecting Changes",
+  "loop_source": "docs/30-architecture/loop-engineering/security-docs.riido.json",
   "generated_doc": "docs/20-domain/security/enforcement-locations/open-issues-and-versioning.md",
   "back_title": "enforcement locations",
   "back_path": "../enforcement-locations.md",

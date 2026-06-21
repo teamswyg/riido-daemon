@@ -2,6 +2,7 @@
   "schema_version": "riido-native-config-mcp.v1",
   "id": "native-config-mcp-evidence",
   "title": "Native Config and MCP Lifecycle Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/native-config-mcp-evidence.riido.json",
   "generated_doc": "docs/20-domain/security/enforcement-locations/native-config-and-mcp.md",
   "workflow": ".github/workflows/native-config-mcp-evidence.yml",
   "evidence_artifact": "native-config-mcp-evidence",

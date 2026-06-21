@@ -2,6 +2,7 @@
   "schema_version": "riido-security-page.v1",
   "id": "enforcement-locations",
   "title": "Security / Policy SSOT: Enforcement Locations",
+  "loop_source": "docs/30-architecture/loop-engineering/security-docs.riido.json",
   "generated_doc": "docs/20-domain/security/enforcement-locations.md",
   "back_title": "security.md",
   "back_path": "../security.md",
