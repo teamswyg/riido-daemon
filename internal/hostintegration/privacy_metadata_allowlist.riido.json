@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-privacy-metadata-allowlist.v1",
+  "loop": {"observation": "The embedded privacy allowlist is executable policy data, but repository coverage still counted it as internal loop debt.", "hypothesis": "Declaring the allowlist evidence loop makes local-path and secret leakage boundaries visible as executable knowledge.", "execute": "Run privacymetadata and hostintegration tests to validate allowlist surfaces, server-facing JSON shapes, generated docs, and public CI evidence upload.", "evaluate": "The verifier fails when allowed/forbidden paths, required privacy surfaces, server-facing struct shape, generated docs, or workflow wiring drift.", "retrospective": "C10/C11 privacy metadata remains embedded runtime policy while reader-facing metadata docs are generated from the same allowlist."},
   "surfaces": [
     {
       "id": "c11-server-facing-client-metadata",

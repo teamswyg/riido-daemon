@@ -1,5 +1,6 @@
 {
   "id": "mac-app-store",
+  "loop_source": "packaging/store/riido_daemon_store_distribution.riido.json",
   "platform": "macos",
   "status": "requires-redesign",
   "runtime_role": "sandboxed-login-item-helper",

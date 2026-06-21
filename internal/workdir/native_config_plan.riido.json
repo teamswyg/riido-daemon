@@ -1,6 +1,7 @@
 {
   "schema_version": "riido-native-config-plan.v1",
   "manifest_schema_version": "riido-native-config-manifest.v1",
+  "loop": {"observation": "The native config plan is compiled into Go code and reader docs, but the IR file itself was still counted as internal loop debt.", "hypothesis": "Declaring the native-config-plan loop makes provider file-plan drift observable at the executable IR boundary.", "execute": "Run riidogen/workspace native config evidence to verify code generation, manifest materialization docs, provider hook mappings, and workdir tests.", "evaluate": "The verifier fails when generated Go, provider file plans, hook mappings, source anchors, generated docs, or workflow wiring drift.", "retrospective": "Provider native config behavior stays generated from IR rather than being redefined in hand-written code or prose."},
   "default": {
     "primary_instruction_file": "AGENTS.md",
     "manifest_file": ".riido/native-config-manifest.json",

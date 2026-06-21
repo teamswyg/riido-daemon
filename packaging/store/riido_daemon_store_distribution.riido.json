@@ -1,6 +1,7 @@
 {
   "schema_version": "riido-store-distribution-contract.v1",
   "product": "riido_daemon",
+  "loop": {"observation": "Store distribution channel shards and review constraints were executable through storecontract but remained counted as packaging loop debt.", "hypothesis": "The root store distribution contract can own the packaging evidence loop while channel shard manifests delegate to it.", "execute": "Run storecontract against the root contract, verify channel shard files, required docs, notice terms, policy-table output, forbidden provider bundling, and public CI artifact upload.", "evaluate": "The verifier fails when channel files, review surfaces, notice terms, policy table output, package roots, or workflow evidence drift from the contract.", "retrospective": "Packaging store knowledge stays in executable contract data while reader docs and policy tables remain generated evidence."},
   "provider_cli_bundling": "forbidden",
   "external_provider_cli_names": [
     "claude",

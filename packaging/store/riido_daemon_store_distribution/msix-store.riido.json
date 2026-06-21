@@ -1,5 +1,6 @@
 {
   "id": "msix-store",
+  "loop_source": "packaging/store/riido_daemon_store_distribution.riido.json",
   "platform": "windows",
   "status": "requires-policy-gate",
   "runtime_role": "msix-packaged-full-trust-helper-tray",
