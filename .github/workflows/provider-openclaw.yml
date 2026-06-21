@@ -51,3 +51,16 @@ jobs:
       - name: Verify OpenClaw adapter gates
         run: |
           go test ./internal/provider/openclaw -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/provider-openclaw.yml \
+            -evidence-out out/provider-openclaw-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: provider-openclaw-evidence
+          path: out/provider-openclaw-evidence.json
+          if-no-files-found: error

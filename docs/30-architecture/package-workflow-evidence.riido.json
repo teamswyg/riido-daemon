@@ -2,85 +2,12 @@
   "schema_version": "riido-daemon-package-workflow-evidence.v1",
   "id": "daemon-package-workflow-evidence",
   "loop_source": "docs/30-architecture/loop-engineering/package-workflow-evidence.riido.json",
-  "workflows": [
-    {
-      "id": "agentbridge-root",
-      "workflow": ".github/workflows/agentbridge-root.yml",
-      "evidence_artifact": "agentbridge-root-evidence",
-      "required_fragments": [
-        "Verify agentbridge stays provider neutral",
-        "go list -f '{{range .Imports}}{{println .}}{{end}}' ./internal/agentbridge",
-        "go test ./internal/agentbridge -run 'Reduce|Telemetry|FilterBlockedArgs|Semantic|States|Lifecycle' -count=1"
-      ]
-    },
-    {
-      "id": "bridge-detectutil",
-      "workflow": ".github/workflows/bridge-detectutil.yml",
-      "evidence_artifact": "bridge-detectutil-evidence",
-      "required_fragments": [
-        "Verify bridge/detectutil stay provider neutral",
-        "go list -f '{{range .Imports}}{{println .}}{{end}}' ./internal/agentbridge/bridge ./internal/agentbridge/detectutil",
-        "go test ./internal/agentbridge/bridge ./internal/agentbridge/detectutil ./internal/agentbridge/session ./internal/process -run 'New|Detect|Run|Cancel|ProtocolDriver|TempFiles|ResolveExecutable|VersionProbe' -count=1"
-      ]
-    },
-    {
-      "id": "controlplane",
-      "workflow": ".github/workflows/controlplane.yml",
-      "evidence_artifact": "controlplane-evidence",
-      "required_fragments": [
-        "Verify controlplane root stays provider neutral",
-        "go list -f '{{range .Imports}}{{println .}}{{end}}' ./internal/agentbridge/controlplane",
-        "go test ./internal/agentbridge/controlplane -run 'TaskReportContext|MemorySource|MemoryReporter|FileReporter|FileQueueSource' -count=1"
-      ]
-    },
-    {
-      "id": "event-ingestor",
-      "workflow": ".github/workflows/event-ingestor.yml",
-      "evidence_artifact": "event-ingestor-evidence",
-      "required_fragments": [
-        "Verify EventIngestor redaction/audit gate",
-        "go test ./internal/policy ./internal/ir/ingest ./internal/workdir -run 'Redact|Secret|Ingest|RunEventSink|AppendEvents' -count=1"
-      ]
-    },
-    {
-      "id": "mwsd-project",
-      "workflow": ".github/workflows/mwsd-project.yml",
-      "evidence_artifact": "mwsd-project-evidence",
-      "required_fragments": [
-        "Verify mwsd/project public boundary",
-        "go test ./internal/mwsdbridge ./internal/project ./cmd/riido -count=1",
-        "go build -o /tmp/riido-mwsd-check ./cmd/riido"
-      ]
-    },
-    {
-      "id": "riidoapi",
-      "workflow": ".github/workflows/riidoapi.yml",
-      "evidence_artifact": "riidoapi-evidence",
-      "required_fragments": [
-        "Verify riidoapi public boundary",
-        "go list -f '{{range .Imports}}{{println .}}{{end}}{{range .TestImports}}{{println .}}{{end}}{{range .XTestImports}}{{println .}}{{end}}' ./internal/riidoapi",
-        "go test ./internal/riidoapi ./internal/taskdb ./internal/hostintegration ./internal/validation -count=1"
-      ]
-    },
-    {
-      "id": "runtimeactor",
-      "workflow": ".github/workflows/runtimeactor.yml",
-      "evidence_artifact": "runtimeactor-evidence",
-      "required_fragments": [
-        "Verify runtimeactor stays provider neutral",
-        "go list -f '{{range .Imports}}{{println .}}{{end}}' ./internal/agentbridge/runtimeactor",
-        "go test ./internal/agentbridge/runtimeactor ./internal/agentbridge/session ./internal/process -run 'RuntimeActor|Capability|DetectedFingerprint|ProtocolDriver|Stop|Cancel|Heartbeat|Mailbox|Slot|Submit|Goroutine' -count=1"
-      ]
-    },
-    {
-      "id": "taskdbplane",
-      "workflow": ".github/workflows/taskdbplane.yml",
-      "evidence_artifact": "taskdbplane-evidence",
-      "required_fragments": [
-        "Verify taskdbplane public boundary",
-        "go list -f '{{range .Imports}}{{println .}}{{end}}{{range .TestImports}}{{println .}}{{end}}{{range .XTestImports}}{{println .}}{{end}}' ./internal/taskdb ./internal/agentbridge/controlplane/taskdbplane",
-        "go test ./internal/taskdb ./internal/agentbridge/controlplane/taskdbplane -count=1"
-      ]
-    }
-  ]
+  "workflow_sources": [
+    "package-workflow-evidence/boundaries.riido.json",
+    "package-workflow-evidence/local-planes.riido.json",
+    "package-workflow-evidence/provider-adapters.riido.json",
+    "package-workflow-evidence/runtime-operations.riido.json",
+    "package-workflow-evidence/runtime-policy.riido.json"
+  ],
+  "workflows": []
 }

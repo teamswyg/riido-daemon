@@ -9,6 +9,17 @@ import (
 )
 
 func loadManifest(path string) (manifest, error) {
+	m, err := readManifest(path)
+	if err != nil {
+		return m, err
+	}
+	if err := loadWorkflowSources(filepath.Dir(path), &m); err != nil {
+		return m, err
+	}
+	return m, validateManifest(m)
+}
+
+func readManifest(path string) (manifest, error) {
 	var m manifest
 	data, err := os.ReadFile(path)
 	if err != nil {
@@ -19,7 +30,21 @@ func loadManifest(path string) (manifest, error) {
 	if err := dec.Decode(&m); err != nil {
 		return m, fmt.Errorf("decode manifest: %w", err)
 	}
-	return m, validateManifest(m)
+	return m, nil
+}
+
+func loadWorkflowSources(base string, m *manifest) error {
+	for _, source := range m.WorkflowSources {
+		part, err := readManifest(filepath.Join(base, source))
+		if err != nil {
+			return err
+		}
+		if part.SchemaVersion != manifestSchema || len(part.Workflows) == 0 {
+			return fmt.Errorf("invalid workflow source %s", source)
+		}
+		m.Workflows = append(m.Workflows, part.Workflows...)
+	}
+	return nil
 }
 
 func writeJSON(path string, value evidence) error {

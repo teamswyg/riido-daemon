@@ -1,0 +1,31 @@
+{
+  "schema_version": "riido-daemon-package-workflow-evidence.v1",
+  "id": "package-workflow-runtime-operations",
+  "loop_source": "docs/30-architecture/package-workflow-evidence.riido.json",
+  "workflows": [
+    {
+      "id": "approval-timeout-ssot",
+      "workflow": ".github/workflows/approval-timeout-ssot.yml",
+      "evidence_artifact": "approval-timeout-ssot-evidence",
+      "required_fragments": ["Verify Q-RT-003 owner moved out of open questions", "grep -q \"Q-RT-003.*closed\" docs/20-domain/provider-runtime.md", "go test ./internal/agentbridge ./internal/agentbridge/session -run 'SemanticActivity|Approval|Timeout' -count=1"]
+    },
+    {
+      "id": "provider-runtime-backpressure",
+      "workflow": ".github/workflows/provider-runtime-backpressure.yml",
+      "evidence_artifact": "provider-runtime-backpressure-evidence",
+      "required_fragments": ["Verify provider runtime backpressure SSOT constants", "Test provider runtime backpressure gates", "go test ./internal/process ./internal/process/processexec ./internal/agentbridge/session ./internal/agentbridge/runtimeactor ./internal/agentbridge/supervisor -run 'Backpressure|Default.*Buffer|Default.*Mailbox|MailboxBackpressure|StdoutStderrBurst' -count=1"]
+    },
+    {
+      "id": "saasplane",
+      "workflow": ".github/workflows/saasplane.yml",
+      "evidence_artifact": "saasplane-evidence",
+      "required_fragments": ["Verify saasplane public boundary", "Verify saasplane black-box/domain gates", "go test ./internal/agentbridge/controlplane/... -count=1"]
+    },
+    {
+      "id": "session-actor",
+      "workflow": ".github/workflows/session-actor.yml",
+      "evidence_artifact": "session-actor-evidence",
+      "required_fragments": ["Verify session actor gates", "go test ./internal/agentbridge/session ./internal/process -run 'Session|ProtocolDriver|Burst|Goroutine|TempFiles|Timeout|Cancellation|ProcessExit|DefaultBuffers|ToolStart|AutoApproval' -count=1"]
+    }
+  ]
+}

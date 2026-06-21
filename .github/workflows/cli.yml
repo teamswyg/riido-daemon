@@ -71,3 +71,16 @@ jobs:
           grep -q 'riido mwsd <snapshot|projection|sync|orchestration|projects|status>' /tmp/riido-help.txt
           grep -q 'riido daemon start' /tmp/riido-help.txt
           go run ./cmd/riido bridge providers | grep -q '"name": "codex"'
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/cli.yml \
+            -evidence-out out/cli-evidence.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cli-evidence
+          path: out/cli-evidence.json
+          if-no-files-found: error
