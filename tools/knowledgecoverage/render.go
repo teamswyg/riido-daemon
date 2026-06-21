@@ -18,6 +18,7 @@ func renderDoc(root string, m manifest, docs []docClass, problems []string) stri
 	fmt.Fprintf(&b, "| Registered manual docs | %d |\n", e.ManualCount)
 	fmt.Fprintf(&b, "| Scanned docs | %d |\n\n", e.ScannedCount)
 	renderManifestInventory(&b, e.ManifestInventory)
+	renderManifestLoopInventory(&b, e)
 	b.WriteString("## Registered Manual Surfaces\n\n")
 	byGroup := e.ManualByGroup
 	if len(m.ManualGroups) == 0 {

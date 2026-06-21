@@ -21,6 +21,20 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
 | `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
 
+## Manifest Loop Inventory
+
+- Complete manifest loops: `2`
+- Direct manifest loops: `2`
+- Delegated manifest loops: `0`
+- Missing manifest loops: `338`
+- Missing loop budget: `338`
+
+| Group | Missing loops | Budget | Sample paths |
+| --- | ---: | ---: | --- |
+| `docs` | 331 | 331 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `packaging` | 5 | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
+| `internal` | 2 | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
+
 ## Registered Manual Surfaces
 
 _None._
@@ -50,3 +64,5 @@ _None._
 - new unregistered architecture prose must fail CI before it can silently expand interpretation variance
 - the architecture executable knowledge coverage manifest must expose a complete evidence loop
 - architecture executable knowledge coverage must show repository executable manifest inventory as bounded samples
+- architecture executable knowledge coverage must show repository executable manifest loop debt as bounded samples
+- new loop-less executable manifest debt must not exceed the manifest_loop_budget
