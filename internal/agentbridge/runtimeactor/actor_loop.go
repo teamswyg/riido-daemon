@@ -28,7 +28,7 @@ func (a *Actor) run(caps []Capability, detectedAt map[string]time.Time) {
 			delete(inFlight, taskID)
 
 		case msg := <-a.statusCh:
-			a.refreshDueCapabilities(msg.ctx, adapters, caps, detectedAt)
+			a.refreshDueCapabilities(msg.ctx, adapters, caps, detectedAt, inFlight)
 			msg.reply <- statusReply{
 				status: a.buildStatus(caps, inFlight),
 				hb:     a.buildHeartbeat(inFlight),

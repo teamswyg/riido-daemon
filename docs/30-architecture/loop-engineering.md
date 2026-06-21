@@ -1351,20 +1351,4 @@
 
 ## Open Gaps
 
-### runtime-active-drift-cancellation
-
-- Owner: `docs/30-architecture/runtime-upgrade-flow.riido.json`
-- Current handling: Runtime upgrade flow evidence reports this as a reserved rule, not an implemented invariant.
-- Required next artifact: runtimeactor test proving in-flight fingerprint, policy, or native-config drift cancels the active session and reports a terminal blocked or failed result
-
-### runtime-no-silent-upgrade-e2e
-
-- Owner: `docs/30-architecture/runtime-upgrade-flow.riido.json`
-- Current handling: Lease pinning and stale report rejection are implemented, but Preparing/Running end-to-end drift cancellation is still reserved.
-- Required next artifact: end-to-end test covering Preparing and Running drift without manual restart
-
-### dirty-workdir-reinjection-zero-threshold
-
-- Owner: `docs/30-architecture/runtime-upgrade-flow.riido.json`
-- Current handling: The zero-threshold policy is recorded as a reserved native-config rule and referenced by Q-WS-006, but runtime enforcement evidence is not yet claimed.
-- Required next artifact: workdir or supervisor test proving dirty Preparing/Running workdirs never receive in-place native config reinjection
+_None._

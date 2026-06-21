@@ -10,10 +10,11 @@ import (
 
 // Session is the public handle the caller uses to consume events and result.
 type Session struct {
-	events chan agentbridge.Event
-	result chan agentbridge.Result
-	cancel chan cancelRequest
-	done   chan struct{}
+	events   chan agentbridge.Event
+	result   chan agentbridge.Result
+	cancel   chan cancelRequest
+	terminal chan terminalRequest
+	done     chan struct{}
 
 	running process.RunningProcess
 }
@@ -21,6 +22,11 @@ type Session struct {
 type cancelRequest struct {
 	ctx   context.Context
 	cause error
+}
+
+type terminalRequest struct {
+	ctx    context.Context
+	result agentbridge.Result
 }
 
 // Events returns the event stream. It is closed when the session terminates.

@@ -32,7 +32,7 @@
     {"name": "daemon-env-task-db", "file": "cmd/riido/daemon_config.go", "contains": "envTaskDBSourcePath              = \"RIIDO_TASK_DB_SOURCE_PATH\""},
     {"name": "supervisor-runtime-pool", "file": "cmd/riido/daemon_supervisor_start.go", "contains": "Runtimes:            runtimes"},
     {"name": "supervisor-runtime-claim", "file": "internal/agentbridge/supervisor/task_claiming.go", "contains": "a.cfg.Source.ClaimTask(claimCtx, status.RuntimeID)"},
-    {"name": "supervisor-runtime-heartbeat", "file": "internal/agentbridge/supervisor/poll_heartbeat.go", "contains": "RunningTaskIDs: hb.RunningTaskIDs"},
+    {"name": "supervisor-runtime-heartbeat", "file": "internal/agentbridge/supervisor/poll_heartbeat.go", "contains": "RunningTaskIDs: runtimeTaskIDs(status.RunningTasks)"},
     {"name": "scheduler-pure-selector", "file": "internal/scheduling/pool.go", "contains": "provider execution side effects happen here"},
     {"name": "scheduler-runtime-pin", "file": "internal/scheduling/lease.go", "contains": "The (RuntimeID, CapabilityFingerprint) pair IS the runtime pin"},
     {"name": "taskdb-runtime-registry-schema", "file": "internal/agentbridge/controlplane/taskdbplane/taskdbplane.go", "contains": "RuntimeRegistrySchemaVersion      = \"riido-runtime-registry.v1\""},

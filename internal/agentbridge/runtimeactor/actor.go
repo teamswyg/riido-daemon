@@ -25,7 +25,8 @@ type Actor struct {
 
 // runningTask is the actor's per-task bookkeeping.
 type runningTask struct {
-	taskID   string
-	provider string
-	handle   *SessionHandle
+	taskID                string
+	provider              string
+	capabilityFingerprint string
+	handle                *SessionHandle
 }
