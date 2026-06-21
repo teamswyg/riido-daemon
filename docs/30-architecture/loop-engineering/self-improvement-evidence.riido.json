@@ -1,0 +1,41 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "self-improvement-evidence",
+  "owner": "architecture",
+  "observation": {
+    "summary": "Loop, workflow, knowledge, and CI evidence were individually verified but still manually summarized by reviewers.",
+    "artifacts": [
+      "docs/30-architecture/loop-engineering.md",
+      "docs/30-architecture/workflow-evidence.md",
+      "docs/executable-knowledge.md",
+      "docs/30-architecture/ci-evidence.riido.json"
+    ]
+  },
+  "hypothesis": {
+    "summary": "A small meta verifier can make the repository's self-improvement health observable without duplicating domain verifiers."
+  },
+  "execution": {
+    "summary": "Collect required evidence JSON files, validate SSOT-declared assertions, render a generated reader, and upload one compact evidence artifact.",
+    "artifacts": ["docs/30-architecture/self-improvement-evidence.riido.json", "tools/selfimprovementevidence"]
+  },
+  "evaluation": {
+    "summary": "The verifier fails when a required evidence file is missing, a declared assertion fails, generated docs drift, or CI wiring stops publishing evidence.",
+    "artifacts": [".github/workflows/self-improvement-evidence.yml"]
+  },
+  "retrospective": {
+    "summary": "Reviewers inspect one generated self-improvement surface while source verifiers remain focused on their own domains.",
+    "artifacts": ["docs/30-architecture/self-improvement-evidence.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/selfimprovementevidence -manifest docs/30-architecture/self-improvement-evidence.riido.json -evidence-dir out -check-doc -evidence-out out/self-improvement-evidence.json",
+      "proves": "core evidence outputs satisfy the declared self-improvement assertions"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/self-improvement-evidence.yml",
+      "proves": "public CI preserves the aggregate evidence artifact"
+    }
+  ]
+}
