@@ -5,6 +5,13 @@
   "generated_doc": "docs/20-domain/distribution-host-integration/invariants.md",
   "workflow": ".github/workflows/distribution-host-invariants-docs.yml",
   "evidence_artifact": "distribution-host-invariants-docs",
+  "loop": {
+    "observation": "Distribution-host invariant details are generated from a focused sub-reader, but each detail manifest previously looked like independent loop debt.",
+    "hypothesis": "The invariants manifest can own the C11 invariant loop while detail manifests delegate to it.",
+    "execute": "Generate the invariants reader, load every detail fragment, verify hostintegration and store-distribution anchors, and publish invariant evidence.",
+    "evaluate": "The verifier fails on stale docs, missing fragments, malformed detail records, missing assertions, or missing source anchors.",
+    "retrospective": "C11 invariants stay one reviewable generated surface while detail manifests remain atomic semantic inputs."
+  },
   "summary": [
     "This SSOT fixes C11 host-integration invariants as generated documentation bound to `internal/hostintegration` executable models and store-distribution contracts.",
     "The generated reader docs cover distribution channels, runtime roles, external provider CLI provenance, approved app data roots, and workspace grant materialization boundaries."

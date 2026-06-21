@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-distribution-host-local-ipc-detail.v1",
+  "loop_source": "docs/20-domain/distribution-host-integration/local-ipc.riido.json",
   "id": "endpoint-model",
   "title": "Local IPC Endpoint Model",
   "generated_doc": "docs/20-domain/distribution-host-integration/local-ipc/endpoint-model.md",

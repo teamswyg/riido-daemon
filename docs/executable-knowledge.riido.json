@@ -9,9 +9,9 @@
   "scan_files": ["README.md", "AGENTS.md", "NOTICE.md"],
   "manual_groups": [],
   "manifest_loop_budget": {
-    "max_missing": 338,
+    "max_missing": 306,
     "max_missing_by_group": {
-      "docs": 331,
+      "docs": 299,
       "packaging": 5,
       "internal": 2
     }

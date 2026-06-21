@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-privacy-metadata-evidence.v1",
+  "loop_source": "docs/20-domain/distribution-host-integration.riido.json",
   "id": "privacy-metadata-evidence",
   "title": "Server-Facing Metadata Evidence",
   "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md",

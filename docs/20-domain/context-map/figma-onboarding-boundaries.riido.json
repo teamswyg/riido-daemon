@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-context-map-figma-onboarding-boundaries.v1",
+  "loop_source": "docs/20-domain/context-map.riido.json",
   "sections": [
     {
       "refs": ["node-id=42-3014", "node-id=137-6746", "node-id=138-7389", "node-id=164-26969", "node-id=164-30192", "node-id=164-27719", "node-id=164-30206"],

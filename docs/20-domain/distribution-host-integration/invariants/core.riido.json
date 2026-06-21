@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-distribution-host-invariants-detail.v1",
+  "loop_source": "docs/20-domain/distribution-host-integration/invariants.riido.json",
   "id": "core",
   "title": "Scope and Core Invariants",
   "generated_doc": "docs/20-domain/distribution-host-integration/invariants/core.md",

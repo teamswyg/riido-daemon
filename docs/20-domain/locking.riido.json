@@ -5,6 +5,13 @@
   "generated_doc": "docs/20-domain/locking.md",
   "workflow": ".github/workflows/locking-docs.yml",
   "evidence_artifact": "locking-docs",
+  "loop": {
+    "observation": "Locking detail manifests are inputs to the C9 generated lease reader, but coverage previously treated each detail page as independent loop debt.",
+    "hypothesis": "The locking root manifest can own the evidence loop for C9 lease semantics while detail pages delegate to that generated reader.",
+    "execute": "Generate the locking reader, load every declared detail manifest, verify source checks for file locks, leases, fencing, and metadata, and publish locking evidence.",
+    "evaluate": "The verifier fails on stale generated docs, missing detail pages, missing source anchors, or malformed locking fragments.",
+    "retrospective": "C9 locking knowledge remains executable and generated while fragment files stay focused on one lease concept each."
+  },
   "summary": [
     "C9 Locking / Lease owns local file lock primitives, task DB sidecar lease registry mechanics, and fencing token infrastructure rules.",
     "C9 does not decide runtime eligibility, task lifecycle state semantics, or provider process execution."

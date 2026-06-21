@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-distribution-host-local-ipc-detail.v1",
+  "loop_source": "docs/20-domain/distribution-host-integration/local-ipc.riido.json",
   "id": "consent-ledger",
   "title": "ConsentLedger",
   "generated_doc": "docs/20-domain/distribution-host-integration/local-ipc/consent-ledger.md",

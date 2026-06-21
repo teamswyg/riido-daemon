@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-store-channel-policy-table.v1",
+  "loop_source": "docs/20-domain/distribution-host-integration.riido.json",
   "id": "store-channel-policy-table",
   "generated_doc": "docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md",
   "generated_by": "tools/storecontract",

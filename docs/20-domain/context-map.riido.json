@@ -5,6 +5,13 @@
   "generated_doc": "docs/20-domain/context-map.md",
   "workflow": ".github/workflows/context-map-docs.yml",
   "evidence_artifact": "context-map-docs",
+  "loop": {
+    "observation": "Context map child manifests are executable fragments used by this generated reader, but coverage previously counted them as loop-less standalone manifests.",
+    "hypothesis": "The context-map root can own the evidence loop while fragment manifests delegate to it, reducing exposed review surface without duplicating loop prose in every fragment.",
+    "execute": "Generate the context map reader, load every declared fragment, verify source and boundary anchors, and publish context-map evidence in public CI.",
+    "evaluate": "The verifier fails when a declared fragment is malformed, missing, stale, or no longer represented in the generated context map reader.",
+    "retrospective": "Context ownership remains a single generated SSOT surface while leaf fragments stay small data inputs with explicit loop provenance."
+  },
   "riido_task": "RIID-4711",
   "task_title": "[Daemon] Architecture SSOT docs migration",
   "intro": "This entrypoint owns the public riido-daemon bounded-context map after the repository split.",

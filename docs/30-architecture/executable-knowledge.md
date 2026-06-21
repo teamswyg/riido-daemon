@@ -23,15 +23,15 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `2`
-- Direct manifest loops: `2`
-- Delegated manifest loops: `0`
-- Missing manifest loops: `338`
-- Missing loop budget: `338`
+- Complete manifest loops: `34`
+- Direct manifest loops: `7`
+- Delegated manifest loops: `27`
+- Missing manifest loops: `306`
+- Missing loop budget: `306`
 
 | Group | Missing loops | Budget | Sample paths |
 | --- | ---: | ---: | --- |
-| `docs` | 331 | 331 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `docs` | 299 | 299 | `docs/20-domain/provider-runtime/adapter-acl/backpressure.riido.json`<br>`docs/20-domain/provider-runtime/adapter-acl/bridge-boundary.riido.json`<br>`docs/20-domain/provider-runtime/adapter-acl/detect-helper-boundary.riido.json` |
 | `packaging` | 5 | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
 | `internal` | 2 | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
 

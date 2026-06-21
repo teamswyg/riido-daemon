@@ -5,6 +5,13 @@
   "generated_doc": "docs/20-domain/distribution-host-integration/local-ipc.md",
   "workflow": ".github/workflows/distribution-host-local-ipc-docs.yml",
   "evidence_artifact": "distribution-host-local-ipc-docs",
+  "loop": {
+    "observation": "Local IPC detail manifests are generated from the focused C11 local IPC reader, but coverage previously counted them as loop-less executable documents.",
+    "hypothesis": "The local IPC manifest can own the helper/runtime and consent evidence loop while platform detail pages delegate to it.",
+    "execute": "Generate the local IPC reader, load every detail fragment, verify hostintegration, CLI, packaging, and consent anchors, and publish local IPC evidence.",
+    "evaluate": "The verifier fails when endpoint, helper, provider, Windows, consent, source-check, or generated-reader evidence drifts.",
+    "retrospective": "Local IPC remains inspectable as one generated surface with atomic detail inputs for platform-specific host behavior."
+  },
   "summary": [
     "This SSOT fixes the C11 local IPC, helper-runtime, consent, and store-safe local execution boundaries as generated documentation.",
     "The generated pages are bound to `internal/hostintegration`, local daemon IPC defaults, and store-distribution contract gates."

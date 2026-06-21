@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-context-map-split-repo-ownership.v1",
+  "loop_source": "docs/20-domain/context-map.riido.json",
   "rules": [
     "riido-daemon must not redefine shared task/IR/provider capability facts.",
     "When both daemon and control-plane need the same DTO/schema, promote it to riido-contracts first.",
