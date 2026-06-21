@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 func run(opt options) error {
 	root, err := findRepoRoot(opt.Repo)
@@ -10,6 +13,9 @@ func run(opt options) error {
 	m, err := loadManifest(repoPath(root, opt.Manifest))
 	if err != nil {
 		return err
+	}
+	if problems := validateManifest(m); len(problems) > 0 {
+		return fmt.Errorf("invalid workflow evidence manifest: %s", strings.Join(problems, "; "))
 	}
 	result, err := auditWorkflows(root, m)
 	if err != nil {
