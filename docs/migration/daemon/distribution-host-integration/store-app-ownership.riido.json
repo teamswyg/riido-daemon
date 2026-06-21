@@ -1,5 +1,6 @@
 {
   "schema_version": "riido-migration-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/migration-daemon-distribution-host-integration-docs.riido.json",
   "id": "daemon-store-app-ownership",
   "title": "RIID-4570: Store App Repo / Adapter Ownership",
   "generated_doc": "docs/migration/daemon/distribution-host-integration/store-app-ownership.md",
