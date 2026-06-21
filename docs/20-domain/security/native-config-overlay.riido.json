@@ -2,6 +2,7 @@
   "schema_version": "riido-security-native-config-overlay-docs.v1",
   "id": "security-native-config-overlay-docs",
   "title": "Security / Policy SSOT: Native Config Overlay",
+  "loop_source": "docs/30-architecture/loop-engineering/security-native-config-overlay-docs.riido.json",
   "generated_doc": "docs/20-domain/security/native-config-overlay.md",
   "workflow": ".github/workflows/security-native-config-overlay-docs.yml",
   "evidence_artifact": "security-native-config-overlay-docs",

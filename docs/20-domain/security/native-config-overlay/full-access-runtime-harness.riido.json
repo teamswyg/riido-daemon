@@ -2,6 +2,7 @@
   "schema_version": "riido-full-access-harness.v1",
   "id": "full-access-harness-evidence",
   "title": "Provider Full-Access Runtime Harness Evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/full-access-harness-evidence.riido.json",
   "generated_doc": "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md",
   "workflow": ".github/workflows/full-access-harness-evidence.yml",
   "evidence_artifact": "full-access-harness-evidence",
