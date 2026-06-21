@@ -2,6 +2,7 @@
   "schema_version": "riido-provider-draft-mapping.v1",
   "id": "provider-event-draft-mapping",
   "title": "ProviderEventDraft Output",
+  "loop_source": "docs/30-architecture/loop-engineering/provider-draft-mapping.riido.json",
   "generated_doc": "docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md",
   "workflow": ".github/workflows/provider-draft-mapping.yml",
   "evidence_artifact": "provider-draft-mapping-evidence",

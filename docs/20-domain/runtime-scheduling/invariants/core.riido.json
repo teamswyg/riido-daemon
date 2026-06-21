@@ -2,6 +2,7 @@
   "schema_version": "riido-runtime-scheduling-core.v1",
   "id": "runtime-scheduling-core",
   "title": "Scope and Core Invariants",
+  "loop_source": "docs/30-architecture/loop-engineering/runtime-scheduling-docs.riido.json",
   "generated_doc": "docs/20-domain/runtime-scheduling/invariants/core.md",
   "context": "This document fills the C5 Runtime Scheduling context with executable core invariants.",
   "responsibilities": [
