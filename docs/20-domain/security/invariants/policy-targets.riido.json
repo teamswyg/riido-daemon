@@ -2,6 +2,7 @@
   "schema_version": "riido-security-invariant-detail.v1",
   "id": "policy-targets",
   "title": "Security Invariants: Policy Targets",
+  "loop_source": "docs/30-architecture/loop-engineering/security-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/security/invariants/policy-targets.md",
   "blocks": [
     {"kind": "paragraph", "text": "Each target is a member of `AllowedSurfaceSet` and is decided independently by trust tier."},

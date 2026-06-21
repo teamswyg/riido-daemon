@@ -2,6 +2,7 @@
   "schema_version": "riido-security-invariant-detail.v1",
   "id": "trust-tier",
   "title": "Security Invariants: Trust Tier",
+  "loop_source": "docs/30-architecture/loop-engineering/security-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/security/invariants/trust-tier.md",
   "blocks": [
     {"kind": "paragraph", "text": "Trust tier means the isolation level of the runtime execution environment."},

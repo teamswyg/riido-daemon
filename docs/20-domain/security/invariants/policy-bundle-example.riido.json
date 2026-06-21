@@ -2,6 +2,7 @@
   "schema_version": "riido-security-invariant-detail.v1",
   "id": "policy-bundle-example",
   "title": "Security Invariants: Policy Bundle Example",
+  "loop_source": "docs/30-architecture/loop-engineering/security-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/security/invariants/policy-bundle-example.md",
   "blocks": [
     {"kind": "paragraph", "text": "This example records the current `riido-policy-bundle.v1` JSON shape."},

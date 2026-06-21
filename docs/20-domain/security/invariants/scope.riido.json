@@ -2,6 +2,7 @@
   "schema_version": "riido-security-invariant-detail.v1",
   "id": "scope",
   "title": "Security Invariants: Scope",
+  "loop_source": "docs/30-architecture/loop-engineering/security-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/security/invariants/scope.md",
   "blocks": [
     {"kind": "paragraph", "text": "This SSOT fills the C7 Security / Policy context. C7 is cross-cutting and supplies decisions to C3, C4, C5, C6, and C8."},

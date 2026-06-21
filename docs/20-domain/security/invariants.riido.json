@@ -2,6 +2,7 @@
   "schema_version": "riido-security-invariants-docs.v1",
   "id": "security-invariants-docs",
   "title": "Security / Policy SSOT: Invariants",
+  "loop_source": "docs/30-architecture/loop-engineering/security-invariants-docs.riido.json",
   "generated_doc": "docs/20-domain/security/invariants.md",
   "workflow": ".github/workflows/security-invariants-docs.yml",
   "evidence_artifact": "security-invariants-docs",
