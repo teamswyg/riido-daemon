@@ -3,8 +3,9 @@ package main
 import "time"
 
 const (
-	statusPassed = "passed"
-	statusFailed = "failed"
+	statusPassed  = "passed"
+	statusPartial = "partial"
+	statusFailed  = "failed"
 )
 
 type config struct {
@@ -47,11 +48,14 @@ type config struct {
 }
 
 type runEvidence struct {
-	SchemaVersion string         `json:"schema_version"`
-	ID            string         `json:"id"`
-	ObservedAt    string         `json:"observed_at"`
-	ExpiresAt     string         `json:"expires_at"`
-	Status        string         `json:"status"`
-	Artifacts     runArtifacts   `json:"artifacts"`
-	Steps         []stepEvidence `json:"steps"`
+	SchemaVersion  string         `json:"schema_version"`
+	ID             string         `json:"id"`
+	ObservedAt     string         `json:"observed_at"`
+	ExpiresAt      string         `json:"expires_at"`
+	Status         string         `json:"status"`
+	CoverageStatus string         `json:"coverage_status"`
+	ProviderStatus string         `json:"provider_status,omitempty"`
+	Artifacts      runArtifacts   `json:"artifacts"`
+	OpenRepairs    []runRepair    `json:"open_repairs,omitempty"`
+	Steps          []stepEvidence `json:"steps"`
 }

@@ -42,11 +42,12 @@ func run(cfg config) (string, error) {
 func newEvidence(cfg config, observed time.Time) runEvidence {
 	expires := observed.Add(*cfg.validFor)
 	return runEvidence{
-		SchemaVersion: "riido-local-qa-run-result.v1",
-		ID:            "local-qa-run",
-		ObservedAt:    observed.Format(time.RFC3339),
-		ExpiresAt:     expires.Format(time.RFC3339),
-		Status:        statusPassed,
+		SchemaVersion:  "riido-local-qa-run-result.v1",
+		ID:             "local-qa-run",
+		ObservedAt:     observed.Format(time.RFC3339),
+		ExpiresAt:      expires.Format(time.RFC3339),
+		Status:         statusPassed,
+		CoverageStatus: statusPassed,
 		Artifacts: runArtifacts{
 			ProviderEvidence: *cfg.providerEvidence,
 			ProductEvidence:  *cfg.productEvidence,
