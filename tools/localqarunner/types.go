@@ -15,6 +15,7 @@ type config struct {
 	releaseEvidence      *string
 	productLab           *string
 	scheduleEvidence     *string
+	infraEvidence        *string
 	runEvidence          *string
 	dashboardHTML        *string
 	coverageManifest     *string

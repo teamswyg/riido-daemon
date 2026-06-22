@@ -16,7 +16,8 @@
     {"kind": "command", "ref": "go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json", "proves": "provider real CLI status, freshness, and repair classification are machine-readable"},
     {"kind": "command", "ref": "go run ./tools/localreleaseacceptance -evidence-out .riido-local/evidence/local-release-acceptance.json", "proves": "the public install script can replace an existing daemon binary in a sandbox and report the installed version without touching the user install"},
     {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -release-evidence .riido-local/evidence/local-release-acceptance.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "local acceptance coverage and repair status are rendered into a reviewable dashboard"},
-    {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -product-evidence .riido-local/evidence/ai-agent-product-acceptance.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "contract API evidence updates frontend handoff coverage rows without mocks"}
+    {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -product-evidence .riido-local/evidence/ai-agent-product-acceptance.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "contract API evidence updates frontend handoff coverage rows without mocks"},
+    {"kind": "command", "ref": "go run ./tools/localqadashboard -infra-evidence .riido-local/evidence/local-qa-dashboard-infra-evidence.json", "proves": "private infra evidence for the S3-hosted local QA dashboard is visible in the central local QA dashboard without committing raw Terraform state or AWS CLI payloads"}
   ],
   "boundary_rules": [
     {
@@ -45,6 +46,7 @@
     {"id": "contract.task.thread_message", "title": "Task thread message endpoint sends follow-up comments by thread_id", "tier": "weekly", "surface": "task-contract", "evidence": "external"},
     {"id": "local.qa.s3_publish", "title": "Local QA evidence publishes latest and timestamped dashboard artifacts to private S3", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
     {"id": "local.qa.daily_schedule", "title": "macOS LaunchAgent schedules local QA once per day without token env vars", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
+    {"id": "infra.local_qa_dashboard", "title": "Private infra verifies S3 dashboard bucket security and latest object", "tier": "release", "surface": "infra-evidence", "evidence": "external"},
     {"id": "release.fresh.install", "title": "Fresh macOS install verifies daemon update script", "tier": "release", "surface": "release", "evidence": "external"},
     {"id": "figma.intent.catalog", "title": "Figma AI Agent screen intent manifest is loaded into local contract lab", "tier": "daily", "surface": "figma", "evidence": "external"},
     {"id": "figma.onboarding", "title": "Onboarding Figma screenshot reference is verified and linked", "tier": "weekly", "surface": "figma", "evidence": "external"},

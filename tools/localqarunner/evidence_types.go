@@ -6,6 +6,7 @@ type runArtifacts struct {
 	ReleaseEvidence  string `json:"release_evidence,omitempty"`
 	ProductLab       string `json:"product_lab,omitempty"`
 	ScheduleEvidence string `json:"schedule_evidence,omitempty"`
+	InfraEvidence    string `json:"infra_evidence,omitempty"`
 	DashboardHTML    string `json:"dashboard_html"`
 	S3Prefix         string `json:"s3_prefix,omitempty"`
 }
