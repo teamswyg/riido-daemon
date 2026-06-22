@@ -1,6 +1,14 @@
 package main
 
 func runDashboardStep(root string, cfg config, evidence *runEvidence) {
+	runDashboardStepID(root, cfg, evidence, "dashboard-render")
+}
+
+func runFinalDashboardStep(root string, cfg config, evidence *runEvidence) {
+	runDashboardStepID(root, cfg, evidence, "dashboard-render-final")
+}
+
+func runDashboardStepID(root string, cfg config, evidence *runEvidence, id string) {
 	args := []string{
 		"run", *cfg.dashboardTool,
 		"-provider-evidence", *cfg.providerEvidence,
@@ -13,7 +21,7 @@ func runDashboardStep(root string, cfg config, evidence *runEvidence) {
 	if *cfg.productEvidence != "" {
 		args = append(args, "-product-evidence", *cfg.productEvidence)
 	}
-	appendStep(evidence, runStep(root, "dashboard-render", "go", args...))
+	appendStep(evidence, runStep(root, id, "go", args...))
 }
 
 func runProductStep(root string, cfg config, evidence *runEvidence) string {
