@@ -15,6 +15,8 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 			Providers:  []providerEvidence{{ID: "codex", Version: "codex-cli", IntegrationStatus: "passed"}},
 		},
 		Run: localRunEvidence{
+			ObservedAt:     "2026-06-22T01:00:00Z",
+			ExpiresAt:      "2026-06-23T01:00:00Z",
 			Status:         "passed",
 			CoverageStatus: "partial",
 			OpenRepairs: []repairEvidence{{
@@ -34,9 +36,12 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Coverage Status", "provider_auth_required", "2026-06-23T00:00:00Z", "provider.codex", "passed"} {
+	for _, want := range []string{"Coverage Status", "provider_auth_required", "2026-06-23T01:00:00Z", "provider.codex", "passed"} {
 		if !strings.Contains(html, want) {
 			t.Fatalf("rendered dashboard missing %q", want)
 		}
+	}
+	if strings.Contains(html, "2026-06-23T00:00:00Z") {
+		t.Fatal("rendered dashboard used provider expiry instead of run expiry")
 	}
 }

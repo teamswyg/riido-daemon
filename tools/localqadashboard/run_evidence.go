@@ -3,6 +3,8 @@ package main
 import "encoding/json"
 
 type localRunEvidence struct {
+	ObservedAt     string           `json:"observed_at"`
+	ExpiresAt      string           `json:"expires_at"`
 	Status         string           `json:"status"`
 	CoverageStatus string           `json:"coverage_status"`
 	ProviderStatus string           `json:"provider_status,omitempty"`
