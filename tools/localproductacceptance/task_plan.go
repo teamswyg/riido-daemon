@@ -23,8 +23,9 @@ func taskMutationPlanFor(
 	payload map[string]any,
 	taskID string,
 	source string,
+	agents agentFixture,
 ) (taskMutationPlan, bool) {
-	candidates := taskFlowAgentCandidates(cfg, payload)
+	candidates := taskFlowAgentCandidates(cfg, payload, agents)
 	if len(candidates) < 2 {
 		return taskMutationPlan{}, false
 	}
@@ -47,12 +48,15 @@ func taskFlowTaskID(cfg config, discovery map[string]any) (string, string) {
 	return "local-qa-" + time.Now().UTC().Format("20060102T150405Z"), "generated"
 }
 
-func taskFlowAgentCandidates(cfg config, payload map[string]any) []taskAgentCandidate {
+func taskFlowAgentCandidates(cfg config, payload map[string]any, agents agentFixture) []taskAgentCandidate {
 	if *cfg.firstAgentID != "" && *cfg.secondAgentID != "" {
 		return []taskAgentCandidate{
 			{AgentID: *cfg.firstAgentID},
 			{AgentID: *cfg.secondAgentID},
 		}
+	}
+	if len(agents.Candidates) >= 2 {
+		return append([]taskAgentCandidate(nil), agents.Candidates...)
 	}
 	return prioritizeTaskAgentCandidates(taskAgentCandidates(payload))
 }

@@ -8,5 +8,8 @@ func appendProductTaskArgs(args []string, cfg config) []string {
 	if *cfg.productMutations {
 		args = append(args, "-run-task-mutations")
 	}
+	if *cfg.productPrepareDaemon {
+		args = append(args, "-prepare-saas-daemon")
+	}
 	return args
 }

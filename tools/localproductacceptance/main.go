@@ -35,6 +35,10 @@ func main() {
 		taskFixture:   flag.Bool("create-task-fixture", true, "create a development task fixture when no real task id is available"),
 		runMutations:  flag.Bool("run-task-mutations", false, "create real task assignments/comments when ids are supplied"),
 		commentBody:   flag.String("comment-body", os.Getenv("RIIDO_E2E_COMMENT_BODY"), "optional task thread message body for mutation flow"),
+		prepareDaemon: flag.Bool("prepare-saas-daemon", false, "enroll local QA devices and start dedicated SaaS-connected daemons before task mutations"),
+		daemonBinary:  flag.String("daemon-binary", ".riido-local/bin/riido-local-qa", "stable riido binary path used by dedicated local QA daemons"),
+		daemonRunDir:  flag.String("daemon-run-dir", ".riido-local/run/product-saas", "runtime directory for dedicated local QA daemon sockets and pid files"),
+		daemonSlots:   flag.Int("daemon-slot-count", 2, "number of dedicated local QA SaaS daemons to prepare"),
 	}
 	flag.Parse()
 
@@ -53,20 +57,4 @@ func main() {
 	}
 	fmt.Println("local-product-acceptance:", status)
 	os.Exit(1)
-}
-
-func getenvDefault(key, fallback string) string {
-	if value := os.Getenv(key); value != "" {
-		return value
-	}
-	return fallback
-}
-
-func firstEnv(keys ...string) string {
-	for _, key := range keys {
-		if value := os.Getenv(key); value != "" {
-			return value
-		}
-	}
-	return ""
 }

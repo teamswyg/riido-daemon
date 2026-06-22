@@ -11,16 +11,27 @@ func contractAPIScenarios(cfg config) []scenario {
 		return apiSkippedScenarios(missing)
 	}
 	client := newAPIClient(*cfg.agentHost, *cfg.apiToken)
+	prep := prepareSaaSDaemons(cfg, client)
+	prep = waitForPreparedSaaSRuntimes(cfg, client, prep)
 	discovery, discoveryPayload := apiQueryPayload(client, "contract.task.discovery", http.MethodGet,
 		base+"/tasks/assigned-agent-profiles", nil, summarizeAssignedProfiles)
+	devices, _ := apiQueryPayload(client, "contract.api.devices", http.MethodGet,
+		base+"/devices", nil, summarizeDevices)
+	agents := maybeCreateAgentFixtures(cfg, client, base, prep)
 	out := []scenario{
 		apiQuery(client, "contract.api.bootstrap", http.MethodGet, base+"/bootstrap", nil, summarizeBootstrap),
-		apiQuery(client, "contract.api.devices", http.MethodGet, base+"/devices", nil, summarizeDevices),
+	}
+	out = append(out, prep.Scenarios...)
+	out = append(out, devices)
+	out = append(out, agents.Scenarios...)
+	out = append(out,
 		apiQuery(client, "contract.api.profile_thumbnail.intent", http.MethodPost,
 			base+"/profile-thumbnails/uploads", thumbnailIntentBody(), summarizeUploadIntent),
 		discovery,
-	}
-	return append(out, taskFlowScenarios(client, cfg, discoveryPayload)...)
+	)
+	out = append(out, taskFlowScenarios(client, cfg, discoveryPayload, agents)...)
+	out = append(out, cleanupSaaSDaemons(*cfg.daemonBinary, prep)...)
+	return out
 }
 
 func missingAPIConfig(cfg config) *repair {
