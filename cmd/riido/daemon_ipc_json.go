@@ -11,7 +11,8 @@ func writeDaemonJSON(conn net.Conn, value any) error {
 
 func writeUnknownDaemonMethod(conn net.Conn, method daemonMethod) error {
 	return writeDaemonJSON(conn, map[string]any{
-		"error":  "unknown method",
-		"method": string(method),
+		"schema_version": DaemonStatusSchemaVersion,
+		"error":          "unknown method",
+		"method":         string(method),
 	})
 }
