@@ -31,7 +31,7 @@ jobs:
           go run ./tools/policybundleevidence \
             -check-doc \
             -evidence-out out/policy-bundle-loader-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: policy-bundle-loader-evidence

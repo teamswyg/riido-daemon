@@ -40,7 +40,7 @@ jobs:
           go run ./tools/migrationdocs -manifest docs/migration/daemon/macos-provider-cli-review.riido.json -check-doc -evidence-out out/migration-daemon-macos-provider-cli-review-docs.json
           go run ./tools/docmap -check -evidence-out out/doc-map-evidence.json
           go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out out/knowledge-coverage.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: migration-daemon-macos-provider-cli-review-docs

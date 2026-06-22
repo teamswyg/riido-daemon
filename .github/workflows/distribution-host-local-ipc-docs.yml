@@ -50,7 +50,7 @@ jobs:
           go run ./tools/distributionhostlocalipcdocs \
             -check-doc \
             -evidence-out out/distribution-host-local-ipc-docs.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: distribution-host-local-ipc-docs

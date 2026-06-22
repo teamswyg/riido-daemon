@@ -41,7 +41,7 @@ jobs:
           go run ./tools/taskrequirements \
             -check-doc \
             -evidence-out out/task-requirements-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: task-requirements-evidence

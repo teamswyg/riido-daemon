@@ -52,7 +52,7 @@ jobs:
           go run ./tools/packageworkflowevidence \
             -workflow .github/workflows/event-ingestor.yml \
             -evidence-out out/event-ingestor-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: event-ingestor-evidence

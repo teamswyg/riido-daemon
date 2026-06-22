@@ -166,7 +166,7 @@ jobs:
             -manifest docs/30-architecture/executable-knowledge.riido.json \
             -check-doc \
             -evidence-out out/architecture-docs-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: architecture-docs-evidence

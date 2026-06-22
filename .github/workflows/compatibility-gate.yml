@@ -32,7 +32,7 @@ jobs:
           go run ./tools/compatibilitygate \
             -check-doc \
             -evidence-out out/compatibility-gate-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: compatibility-gate-evidence

@@ -34,7 +34,7 @@ jobs:
           go run ./tools/runtimeupgrade \
             -check-doc \
             -evidence-out out/runtime-upgrade-flow-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: runtime-upgrade-flow-evidence

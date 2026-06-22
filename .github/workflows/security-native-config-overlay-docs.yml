@@ -67,7 +67,7 @@ jobs:
           go run ./tools/runtimesecretevidence \
             -check-doc \
             -evidence-out out/runtime-secret-private-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: security-native-config-overlay-docs

@@ -28,7 +28,7 @@ jobs:
             -check-doc \
             -run-commands \
             -evidence-out out/repo-verification-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: repo-verification-evidence

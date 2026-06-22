@@ -42,7 +42,7 @@ jobs:
           go run ./tools/workspacedocs -check-doc -evidence-out out/workspace-docs.json
           go run ./tools/workspaceinvariantsdocs -check-doc -evidence-out out/workspace-invariants-docs.json
           go run ./tools/workspacenativeconfigdocs -check-doc -evidence-out out/workspace-native-config-docs.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: workspace-docs

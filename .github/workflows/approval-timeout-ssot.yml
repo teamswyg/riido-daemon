@@ -45,7 +45,7 @@ jobs:
           go run ./tools/packageworkflowevidence \
             -workflow .github/workflows/approval-timeout-ssot.yml \
             -evidence-out out/approval-timeout-ssot-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: approval-timeout-ssot-evidence

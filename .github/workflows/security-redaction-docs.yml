@@ -45,7 +45,7 @@ jobs:
             -check-doc \
             -evidence-out out/security-redaction-docs.json
           go run ./tools/redactiondrift
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: security-redaction-docs
