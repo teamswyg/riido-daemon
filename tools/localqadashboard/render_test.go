@@ -27,7 +27,12 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 				Summary:    "login required",
 			}},
 		},
-		CoverageRows: []coverageRow{{ID: "provider.codex", Title: "Codex", Status: "passed"}},
+		CoverageRows: []coverageRow{{
+			ID:         "figma.onboarding",
+			Title:      "Onboarding",
+			Status:     "passed",
+			Screenshot: "screenshots/ai-agent-product-acceptance/figma-onboarding.png",
+		}},
 		CoverageSummary: coverageSummary{
 			Total:  1,
 			Passed: 1,
@@ -41,7 +46,8 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 		"freshness-status",
 		`data-expires="2026-06-23T01:00:00Z"`,
 		"provider_auth_required",
-		"provider.codex",
+		"figma.onboarding",
+		`<img class="shot"`,
 		"passed",
 	} {
 		if !strings.Contains(html, want) {
