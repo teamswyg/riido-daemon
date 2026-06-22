@@ -30,6 +30,9 @@ func (c Client) roundTrip(ctx context.Context, method Method) ([]byte, error) {
 		return nil, fmt.Errorf("connect mwsd socket: %w", err)
 	}
 	defer conn.Close()
+	if err := applyRoundTripDeadline(ctx, conn); err != nil {
+		return nil, err
+	}
 
 	body, err := json.Marshal(request{Method: method})
 	if err != nil {
