@@ -47,12 +47,12 @@ go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/r
 
 Only one source should be selected as the production source.
 
-OpenClaw local model speed is owned by OpenClaw config. If OpenClaw uses a slow Ollama default, repair config if needed and switch it to a verified local model before QA. The provider integration test now tries `ollama/qwen3:8b` first, then falls back to `ollama/llama3.2:latest` and `ollama/qwen2.5-coder:1.5b`; it can still be pinned with `RIIDO_OPENCLAW_INTEGRATION_MODEL`:
+OpenClaw local model speed is owned by OpenClaw config. If OpenClaw uses a slow Ollama default, repair config if needed and switch it to a verified faster local model before QA. The provider integration test now tries `ollama/llama3.2:latest` first, then falls back to `ollama/qwen3:8b` and `ollama/qwen2.5-coder:1.5b`; it can still be pinned with `RIIDO_OPENCLAW_INTEGRATION_MODEL`:
 
 ```bash
 openclaw doctor --fix
-openclaw models set ollama/qwen3:8b
-RIIDO_OPENCLAW_INTEGRATION_MODEL=ollama/qwen3:8b \
+openclaw models set ollama/llama3.2:latest
+RIIDO_OPENCLAW_INTEGRATION_MODEL=ollama/llama3.2:latest \
 AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -race -count=1 -run TestIntegration -v
 ```
 

@@ -1,22 +1,32 @@
 package openclaw
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
-func TestOpenClawIntegrationModelCanBeOverridden(t *testing.T) {
-	t.Setenv(openClawIntegrationModelEnv, " ollama/fast-local ")
-	got := openClawIntegrationModels()
-	if len(got) != 1 || got[0] != "ollama/fast-local" {
-		t.Fatalf("models=%v", got)
+func TestIntegrationModelCandidatesPreferFastLocalModel(t *testing.T) {
+	t.Setenv(openClawIntegrationModelEnv, "")
+
+	got := IntegrationModelCandidates()
+	want := []string{
+		"ollama/llama3.2:latest",
+		"ollama/qwen3:8b",
+		"ollama/qwen2.5-coder:1.5b",
+	}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("IntegrationModelCandidates() = %v, want %v", got, want)
 	}
 }
 
-func TestOpenClawIntegrationPrefersStableLocalModel(t *testing.T) {
-	t.Setenv(openClawIntegrationModelEnv, "")
-	got := openClawIntegrationModels()
-	if len(got) != 3 || got[0] != openClawStableIntegrationModel {
-		t.Fatalf("models=%v", got)
-	}
-	if got[1] != openClawFastIntegrationModel {
-		t.Fatalf("models=%v", got)
+func TestIntegrationModelCandidatesAllowsOperatorPin(t *testing.T) {
+	t.Setenv(openClawIntegrationModelEnv, "ollama/custom-fast")
+
+	got := IntegrationModelCandidates()
+	want := []string{"ollama/custom-fast"}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("IntegrationModelCandidates() = %v, want %v", got, want)
 	}
 }

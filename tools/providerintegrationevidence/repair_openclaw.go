@@ -26,6 +26,6 @@ func openClawModelConfigRepair() repair {
 		Owner:            "local_operator",
 		Mode:             "manual",
 		Summary:          "OpenClaw ran, but filesystem side effects in the daemon-selected cwd are not verified for this local configuration.",
-		SuggestedCommand: "openclaw doctor --fix && openclaw models set ollama/qwen3:8b && AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -race -count=1 -run TestIntegration -v",
+		SuggestedCommand: "openclaw doctor --fix && openclaw models set ollama/llama3.2:latest && AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -race -count=1 -run TestIntegration -v",
 	}
 }
