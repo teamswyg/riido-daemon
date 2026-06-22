@@ -9,7 +9,7 @@ import (
 func TestApplyProviderEvidenceMarksCoveragePartial(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "provider.json")
-	body := `{"status":"partial","providers":[{"id":"cursor","repair":{"class":"provider_auth_required","owner":"human","mode":"manual","summary":"login required"}}]}`
+	body := `{"status":"partial","providers":[{"id":"cursor","repair":{"class":"provider_auth_required","owner":"human","mode":"manual","summary":"login required","suggested_command":"cursor-agent login"}}]}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +21,7 @@ func TestApplyProviderEvidenceMarksCoveragePartial(t *testing.T) {
 	if evidence.CoverageStatus != statusPartial || evidence.ProviderStatus != statusPartial {
 		t.Fatalf("coverage=%q provider=%q", evidence.CoverageStatus, evidence.ProviderStatus)
 	}
-	if len(evidence.OpenRepairs) != 1 || evidence.OpenRepairs[0].ProviderID != "cursor" {
+	if len(evidence.OpenRepairs) != 1 || evidence.OpenRepairs[0].SuggestedCommand == "" {
 		t.Fatalf("repairs=%+v", evidence.OpenRepairs)
 	}
 }
