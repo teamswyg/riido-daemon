@@ -21,6 +21,7 @@ type config struct {
 	labOut        *string
 	screenshots   *string
 	storageState  *string
+	figmaManifest *string
 	validFor      *time.Duration
 	probeRoutes   *bool
 	browserE2E    *bool
