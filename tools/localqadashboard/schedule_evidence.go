@@ -6,17 +6,28 @@ import (
 )
 
 type scheduleEvidence struct {
-	Status              string `json:"status"`
-	Label               string `json:"label"`
-	PlistPath           string `json:"plist_path"`
-	StdoutPath          string `json:"stdout_path"`
-	StderrPath          string `json:"stderr_path"`
-	Hour                int    `json:"hour"`
-	Minute              int    `json:"minute"`
-	RunAtLoad           bool   `json:"run_at_load"`
-	CommandHasTokenText bool   `json:"command_has_token_text"`
-	S3PrefixConfigured  bool   `json:"s3_prefix_configured"`
-	CommandPreview      string `json:"command_preview"`
+	Status              string          `json:"status"`
+	Label               string          `json:"label"`
+	Installed           bool            `json:"installed"`
+	PlistPath           string          `json:"plist_path"`
+	StdoutPath          string          `json:"stdout_path"`
+	StderrPath          string          `json:"stderr_path"`
+	Hour                int             `json:"hour"`
+	Minute              int             `json:"minute"`
+	RunAtLoad           bool            `json:"run_at_load"`
+	CommandHasTokenText bool            `json:"command_has_token_text"`
+	S3PrefixConfigured  bool            `json:"s3_prefix_configured"`
+	CommandPreview      string          `json:"command_preview"`
+	Launchd             launchdEvidence `json:"launchd"`
+}
+
+type launchdEvidence struct {
+	Checked         bool   `json:"checked"`
+	Loaded          bool   `json:"loaded"`
+	State           string `json:"state"`
+	Runs            int    `json:"runs"`
+	LastExitCode    string `json:"last_exit_code"`
+	CalendarTrigger bool   `json:"calendar_trigger"`
 }
 
 func scheduleEvidenceScenarios(path string) []externalScenario {
@@ -36,15 +47,24 @@ func scheduleEvidenceScenarios(path string) []externalScenario {
 		Status:         evidence.Status,
 		FailureSummary: scheduleEvidenceDetail(evidence),
 	}
-	if evidence.CommandHasTokenText || !evidence.S3PrefixConfigured {
+	if scheduleEvidenceFailed(evidence) {
 		scenario.Status = statusFailed
 	}
 	return []externalScenario{scenario}
 }
 
+func scheduleEvidenceFailed(e scheduleEvidence) bool {
+	if !e.Installed || e.CommandHasTokenText || !e.S3PrefixConfigured {
+		return true
+	}
+	return !e.Launchd.Checked || !e.Launchd.Loaded || !e.Launchd.CalendarTrigger
+}
+
 func scheduleEvidenceDetail(e scheduleEvidence) string {
 	return fmt.Sprintf(
-		"label=%s time=%02d:%02d run_at_load=%t plist=%s stdout=%s stderr=%s command=%s",
-		e.Label, e.Hour, e.Minute, e.RunAtLoad, e.PlistPath, e.StdoutPath, e.StderrPath, e.CommandPreview,
+		"label=%s time=%02d:%02d run_at_load=%t launchd_loaded=%t launchd_state=%s runs=%d last_exit=%s calendar_trigger=%t plist=%s stdout=%s stderr=%s command=%s",
+		e.Label, e.Hour, e.Minute, e.RunAtLoad, e.Launchd.Loaded, e.Launchd.State,
+		e.Launchd.Runs, e.Launchd.LastExitCode, e.Launchd.CalendarTrigger,
+		e.PlistPath, e.StdoutPath, e.StderrPath, e.CommandPreview,
 	)
 }

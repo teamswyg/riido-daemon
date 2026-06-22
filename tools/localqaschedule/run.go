@@ -20,10 +20,28 @@ func run(cfg config) (string, error) {
 			return "", err
 		}
 	}
-	if err := writeScheduleEvidence(cfg, paths, command); err != nil {
+	live, err := launchdEvidenceForRun(cfg, paths)
+	if err != nil {
+		return "", err
+	}
+	if err := writeScheduleEvidence(cfg, paths, command, live); err != nil {
 		return "", err
 	}
 	return paths.plist, nil
+}
+
+func launchdEvidenceForRun(cfg config, paths schedulePaths) (launchdEvidence, error) {
+	if !*cfg.install {
+		return launchdEvidence{}, nil
+	}
+	live, err := inspectLaunchAgent(paths, *cfg.label)
+	if err != nil {
+		return launchdEvidence{}, err
+	}
+	if !live.CalendarTrigger {
+		return launchdEvidence{}, fmt.Errorf("launchd calendar trigger missing for %s", *cfg.label)
+	}
+	return live, nil
 }
 
 func validateTime(hour, minute int) error {
