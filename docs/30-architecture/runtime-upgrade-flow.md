@@ -27,6 +27,7 @@ Invariant: An active provider run must not silently move to a different runtime 
 | pin runtime lease identity | `implemented` |  | C5 lease identity binds RuntimeID and CapabilityFingerprint. | `lease-pinning`, `lease-active-require` |
 | reject stale runtime report identity | `implemented` |  | TaskDB start rejects expired leases, mismatched fencing tokens, and mismatched capability fingerprints. | `lease-start-reject`, `lease-active-require` |
 | cancel active run on runtime-pinned drift | `implemented` |  | Status refresh compares active task runtime pins against refreshed capability fingerprints and terminates drifted sessions as blocked. | `active-runtime-drift-cancel` |
+| replace installed daemon binary after verified download | `implemented` |  | Installer verifies the selected release asset and checksum before removing the existing daemon binary and installing the replacement. | `installer-delete-old-binary`, `installer-delete-before-install-test` |
 
 ## Policy
 

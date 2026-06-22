@@ -66,6 +66,7 @@ main() {
   sha256_check "$tmp_dir/$asset" "$tmp_dir/SHA256SUMS"
   mkdir -p "$install_dir"
   tar -xzf "$tmp_dir/$asset" -C "$tmp_dir"
+  rm -f "$install_dir/riido"
   install -m 0755 "$tmp_dir/riido" "$install_dir/riido"
   echo "riido-daemon installed: $install_dir/riido"
   echo "riido-daemon version: $resolved_version"
