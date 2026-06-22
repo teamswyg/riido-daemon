@@ -12,6 +12,7 @@ func run(inputPath, externalPath, releasePath, runPath, schedulePath, manifestPa
 	external.Scenarios = append(external.Scenarios, runEvidenceScenarios(runPath)...)
 	external.Scenarios = append(external.Scenarios, scheduleEvidenceScenarios(schedulePath)...)
 	external.Scenarios = append(external.Scenarios, releaseEvidenceScenarios(releasePath)...)
+	runEvidence, _ := loadLocalRunEvidence(runPath)
 	manifest, err := loadCoverageManifest(manifestPath)
 	if err != nil {
 		return err
@@ -19,6 +20,7 @@ func run(inputPath, externalPath, releasePath, runPath, schedulePath, manifestPa
 	rows, summary := buildCoverage(manifest, evidence, external)
 	rendered, err := renderDashboard(dashboardView{
 		Evidence:        evidence,
+		Run:             runEvidence,
 		CoverageRows:    rows,
 		CoverageSummary: summary,
 	})
