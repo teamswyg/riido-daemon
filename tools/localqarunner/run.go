@@ -37,6 +37,7 @@ func newEvidence(cfg config, observed time.Time) runEvidence {
 		Status:        statusPassed,
 		Artifacts: runArtifacts{
 			ProviderEvidence: *cfg.providerEvidence,
+			ProductEvidence:  *cfg.productEvidence,
 			DashboardHTML:    *cfg.dashboardHTML,
 			S3Prefix:         *cfg.s3Prefix,
 		},

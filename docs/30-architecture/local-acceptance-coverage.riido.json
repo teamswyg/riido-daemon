@@ -11,9 +11,10 @@
   },
   "evidence_artifacts": [
     {"kind": "command", "ref": "go run ./tools/localqarunner", "proves": "provider evidence, dashboard rendering, run evidence, and optional S3 publication execute as one local acceptance gate"},
-    {"kind": "command", "ref": "go run ./tools/localqaschedule -repo $(pwd) -install", "proves": "macOS launchd can schedule the local acceptance gate once per day"},
+    {"kind": "command", "ref": "go run ./tools/localqaschedule -repo $(pwd) -product-evidence /path/to/riido-client/.riido-local/evidence/ai-agent-product-acceptance.json -install", "proves": "macOS launchd can schedule the local acceptance gate once per day and include product acceptance evidence when present"},
     {"kind": "command", "ref": "go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json", "proves": "provider real CLI status, freshness, and repair classification are machine-readable"},
-    {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "local acceptance coverage and repair status are rendered into a reviewable dashboard"}
+    {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "local acceptance coverage and repair status are rendered into a reviewable dashboard"},
+    {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -product-evidence /path/to/riido-client/.riido-local/evidence/ai-agent-product-acceptance.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "product acceptance evidence from the real frontend updates product coverage rows without mocks"}
   ],
   "scenarios": [
     {"id": "provider.codex", "title": "Codex provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "codex"},
@@ -22,6 +23,9 @@
     {"id": "provider.openclaw", "title": "OpenClaw provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "openclaw"},
     {"id": "contract.ui.golden", "title": "Contract UI golden screens match generated SaaS contract", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
     {"id": "product.login", "title": "Development user can log in from local frontend", "tier": "weekly", "surface": "product", "evidence": "external"},
+    {"id": "product.runtimes.view", "title": "Runtime settings page renders real development devices response", "tier": "weekly", "surface": "product", "evidence": "external"},
+    {"id": "product.agent.list", "title": "Agent settings page renders real development bootstrap response", "tier": "weekly", "surface": "product", "evidence": "external"},
+    {"id": "product.agent.form", "title": "Agent create form can be opened with real runtime/model options", "tier": "weekly", "surface": "product", "evidence": "external"},
     {"id": "product.agent.create", "title": "User can create/update an AI agent", "tier": "weekly", "surface": "product", "evidence": "external"},
     {"id": "product.task.assign", "title": "Task can assign multiple provider agents without collision", "tier": "weekly", "surface": "product", "evidence": "external"},
     {"id": "product.codex.execute", "title": "Codex executes task and control-plane/UI reflect result", "tier": "weekly", "surface": "product", "evidence": "external"},

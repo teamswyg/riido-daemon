@@ -18,6 +18,8 @@ func classifyRepair(providerID, status, summary string, available bool) repair {
 	switch {
 	case strings.Contains(text, "not logged in") || strings.Contains(text, "account missing"):
 		return authRepair(providerID)
+	case strings.Contains(text, "hard timeout") || strings.Contains(text, "timeout"):
+		return providerTimeoutRepair()
 	case strings.Contains(text, "config invalid") || strings.Contains(text, "invalid config"):
 		return openClawConfigRepair()
 	case localBackendUnavailable(text):
@@ -31,6 +33,15 @@ func classifyRepair(providerID, status, summary string, available bool) repair {
 			Mode:    "manual",
 			Summary: "Inspect failure_summary and add a more specific repair classifier.",
 		}
+	}
+}
+
+func providerTimeoutRepair() repair {
+	return repair{
+		Class:   "provider_timeout",
+		Owner:   "engineer",
+		Mode:    "manual",
+		Summary: "Provider integration exceeded its hard timeout; inspect provider responsiveness or tune the acceptance timeout.",
 	}
 }
 

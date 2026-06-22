@@ -1,7 +1,12 @@
 package main
 
-func buildCoverage(m coverageManifest, e providerEvidenceFile) ([]coverageRow, coverageSummary) {
+func buildCoverage(
+	m coverageManifest,
+	e providerEvidenceFile,
+	x externalEvidenceFile,
+) ([]coverageRow, coverageSummary) {
 	providers := providerIndex(e.Providers)
+	externals := externalIndex(x.Scenarios)
 	rows := make([]coverageRow, 0, len(m.Scenarios))
 	for _, scenario := range m.Scenarios {
 		row := coverageRow{
@@ -14,9 +19,20 @@ func buildCoverage(m coverageManifest, e providerEvidenceFile) ([]coverageRow, c
 		if scenario.Evidence == "provider" {
 			row = providerCoverageRow(row, providers[scenario.ProviderID])
 		}
+		if scenario.Evidence == "external" {
+			row = externalCoverageRow(row, externals[scenario.ID])
+		}
 		rows = append(rows, row)
 	}
 	return rows, summarizeCoverage(rows)
+}
+
+func externalIndex(scenarios []externalScenario) map[string]externalScenario {
+	out := map[string]externalScenario{}
+	for _, scenario := range scenarios {
+		out[scenario.ID] = scenario
+	}
+	return out
 }
 
 func providerIndex(providers []providerEvidence) map[string]providerEvidence {
@@ -25,6 +41,21 @@ func providerIndex(providers []providerEvidence) map[string]providerEvidence {
 		out[provider.ID] = provider
 	}
 	return out
+}
+
+func externalCoverageRow(row coverageRow, scenario externalScenario) coverageRow {
+	if scenario.ID == "" {
+		return row
+	}
+	row.Status = scenario.Status
+	row.Detail = scenario.FailureSummary
+	if scenario.Screenshot != "" {
+		row.Detail = scenario.Screenshot
+	}
+	if scenario.Repair != nil {
+		row.Repair = *scenario.Repair
+	}
+	return row
 }
 
 func providerCoverageRow(row coverageRow, provider providerEvidence) coverageRow {

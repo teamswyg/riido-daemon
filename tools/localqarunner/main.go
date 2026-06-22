@@ -14,6 +14,7 @@ func main() {
 	cfg := config{
 		repo:              flag.String("repo", ".", "repository root"),
 		providerEvidence:  flag.String("provider-evidence", ".riido-local/evidence/provider-real-cli-observation.json", "provider evidence JSON"),
+		productEvidence:   flag.String("product-evidence", os.Getenv("RIIDO_LOCAL_QA_PRODUCT_EVIDENCE"), "optional product acceptance evidence JSON"),
 		runEvidence:       &runEvidence,
 		dashboardHTML:     flag.String("dashboard", ".riido-local/dashboard/index.html", "dashboard HTML output"),
 		coverageManifest:  flag.String("coverage-manifest", "docs/30-architecture/local-acceptance-coverage.riido.json", "coverage manifest JSON"),

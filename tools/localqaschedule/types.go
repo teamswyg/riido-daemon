@@ -1,14 +1,15 @@
 package main
 
 type config struct {
-	repo      *string
-	s3Prefix  *string
-	label     *string
-	plistPath *string
-	hour      *int
-	minute    *int
-	install   *bool
-	runAtLoad *bool
+	repo            *string
+	s3Prefix        *string
+	productEvidence *string
+	label           *string
+	plistPath       *string
+	hour            *int
+	minute          *int
+	install         *bool
+	runAtLoad       *bool
 }
 
 type schedulePaths struct {
