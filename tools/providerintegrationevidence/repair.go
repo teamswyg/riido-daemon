@@ -22,6 +22,8 @@ func classifyRepair(providerID, status, summary string, available bool) repair {
 		return openClawConfigRepair()
 	case localBackendUnavailable(text):
 		return openClawBackendRepair()
+	case strings.Contains(text, "completed without writing expected artifact"):
+		return providerSideEffectRepair()
 	default:
 		return repair{
 			Class:   "provider_integration_unclassified",
@@ -29,6 +31,15 @@ func classifyRepair(providerID, status, summary string, available bool) repair {
 			Mode:    "manual",
 			Summary: "Inspect failure_summary and add a more specific repair classifier.",
 		}
+	}
+}
+
+func providerSideEffectRepair() repair {
+	return repair{
+		Class:   "provider_side_effect_missing",
+		Owner:   "engineer",
+		Mode:    "manual",
+		Summary: "Provider completed but did not perform the required filesystem side effect.",
 	}
 }
 

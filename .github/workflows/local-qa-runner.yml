@@ -1,0 +1,41 @@
+name: local-qa-runner
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/local-qa-runner.yml"
+      - "docs/30-architecture/local-acceptance-coverage.riido.json"
+      - "docs/readme/run-and-smoke.md"
+      - "docs/readme/run-and-smoke.riido.json"
+      - "tools/localqadashboard/**"
+      - "tools/localqarunner/**"
+      - "tools/localqaschedule/**"
+      - "tools/providerintegrationevidence/**"
+      - "internal/provider/**"
+      - "go.mod"
+      - "go.sum"
+  workflow_dispatch:
+
+jobs:
+  local-qa-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify local QA runner wiring
+        run: |
+          mkdir -p out
+          go run ./tools/localqarunner \
+            -run-integration=false \
+            -provider-evidence out/provider-real-cli-observation.json \
+            -dashboard out/index.html \
+            -evidence-out out/local-qa-run.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: local-qa-runner
+          path: out/*
+          if-no-files-found: error

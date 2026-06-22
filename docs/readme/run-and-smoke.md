@@ -38,10 +38,19 @@ go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/r
 
 Only one source should be selected as the production source.
 
-Generate local daily provider evidence and a human-readable dashboard before deployment:
+Run local acceptance verification before deployment. The runner keeps provider failures as evidence, renders the dashboard, and optionally publishes to the private local QA evidence bucket:
 
 ```bash
-mkdir -p .riido-local/evidence
-go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json
-go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -out .riido-local/dashboard/index.html
+RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
+go run ./tools/localqarunner
 ```
+
+Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI:
+
+```bash
+RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
+go run ./tools/localqaschedule -repo "$(pwd)" -hour 9 -minute 0 -install
+launchctl print gui/$(id -u)/io.riido.local-qa
+```
+
+Local artifacts are written under `.riido-local/evidence/` and `.riido-local/dashboard/`. The dashboard shows what passed, failed, skipped, remains not verified, and when the evidence expires.
