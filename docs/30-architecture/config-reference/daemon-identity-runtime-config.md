@@ -7,7 +7,7 @@
 | Variable | Consumer | Default | Meaning |
 | --- | --- | --- | --- |
 | `RIIDO_DAEMON_ID` | daemon identity | RIIDO_DEVICE_ID in SaaS mode, else agentd-local | stable daemon/runtime slot id |
-| `RIIDO_DAEMON_VERSION` | daemon config and supervisor events | riido-agentd v0.0.0 | daemon binary version label |
+| `RIIDO_DAEMON_VERSION` | daemon config and supervisor events | riido-agentd <binary build version> | daemon binary version label |
 | `RIIDO_DAEMON_PROFILE` | daemon status and diagnostics | local | user-facing daemon profile; dev/development enables loopback pprof by default |
 | `RIIDO_SERVER_URL` | daemon status | empty | display-only server URL unless SaaS source is configured |
 | `RIIDO_DEVICE_ID` | saasplane | empty | device principal id |

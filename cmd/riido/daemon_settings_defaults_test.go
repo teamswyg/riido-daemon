@@ -8,6 +8,10 @@ import (
 )
 
 func TestLoadDaemonSettingsDefaultWorkdirRoot(t *testing.T) {
+	old := binaryVersion
+	binaryVersion = "v-default"
+	t.Cleanup(func() { binaryVersion = old })
+
 	settings, err := loadDaemonSettingsFromEnvWithHome(
 		func(string) string { return "" },
 		func() (string, error) { return "host", nil },
@@ -28,7 +32,7 @@ func TestLoadDaemonSettingsDefaultWorkdirRoot(t *testing.T) {
 		settings.PolicyBundleDoc.AllowsNativeConfigFile(policy.TrustTierHost, policy.NativeConfigFileCodexTaskScopedHome) {
 		t.Fatalf("default policy bundle doc = %+v", settings.PolicyBundleDoc)
 	}
-	if settings.DaemonVersion != "riido-agentd v0.0.0" ||
+	if settings.DaemonVersion != "riido-agentd v-default" ||
 		settings.WorkdirRetention != 0 ||
 		settings.WorkdirCleanupEvery != 0 {
 		t.Fatalf("default settings mismatch: %+v", settings)

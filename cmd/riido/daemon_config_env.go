@@ -31,7 +31,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 
 	return daemonSettings{
 		DaemonID:             defaultDaemonID(getenv(envDaemonID), controlPlane.deviceID),
-		DaemonVersion:        textutil.Default(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
+		DaemonVersion:        textutil.Default(getenv(envDaemonVersion), agentDaemonVersionLabel()),
 		Profile:              identity.profile,
 		ServerURL:            strings.TrimSpace(getenv(envServerURL)),
 		DeviceID:             controlPlane.deviceID,
