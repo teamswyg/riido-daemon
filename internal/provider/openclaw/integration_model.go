@@ -6,10 +6,10 @@ import (
 )
 
 const (
-	openClawFastIntegrationModel     = "ollama/qwen2.5-coder:1.5b"
-	openClawDefaultIntegrationModel  = "ollama/llama3.2:latest"
-	openClawFallbackIntegrationModel = "ollama/qwen3:8b"
-	openClawIntegrationModelEnv      = "RIIDO_OPENCLAW_INTEGRATION_MODEL"
+	openClawStableIntegrationModel = "ollama/qwen3:8b"
+	openClawFastIntegrationModel   = "ollama/llama3.2:latest"
+	openClawLegacyIntegrationModel = "ollama/qwen2.5-coder:1.5b"
+	openClawIntegrationModelEnv    = "RIIDO_OPENCLAW_INTEGRATION_MODEL"
 )
 
 func IntegrationModelCandidates() []string {
@@ -17,9 +17,9 @@ func IntegrationModelCandidates() []string {
 		return []string{model}
 	}
 	return []string{
+		openClawStableIntegrationModel,
 		openClawFastIntegrationModel,
-		openClawDefaultIntegrationModel,
-		openClawFallbackIntegrationModel,
+		openClawLegacyIntegrationModel,
 	}
 }
 
