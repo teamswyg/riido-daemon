@@ -29,6 +29,7 @@ type providerEvidence struct {
 }
 
 type repairEvidence struct {
+	ProviderID       string `json:"provider_id,omitempty"`
 	Class            string `json:"class"`
 	Owner            string `json:"owner"`
 	Mode             string `json:"mode"`

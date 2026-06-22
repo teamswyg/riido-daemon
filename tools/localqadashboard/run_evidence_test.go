@@ -17,3 +17,15 @@ func TestRunEvidenceScenariosReportsS3Publish(t *testing.T) {
 		t.Fatalf("scenarios=%+v", got)
 	}
 }
+
+func TestLoadLocalRunEvidenceReadsOpenRepairs(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "run.json")
+	body := `{"status":"passed","coverage_status":"partial","open_repairs":[{"provider_id":"cursor","class":"provider_auth_required","owner":"human","mode":"manual","summary":"login"}]}`
+	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	got, ok := loadLocalRunEvidence(path)
+	if !ok || got.CoverageStatus != "partial" || got.OpenRepairs[0].ProviderID != "cursor" {
+		t.Fatalf("run=%+v ok=%v", got, ok)
+	}
+}

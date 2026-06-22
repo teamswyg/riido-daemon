@@ -3,7 +3,11 @@ package main
 import "encoding/json"
 
 type localRunEvidence struct {
-	Steps []localRunStep `json:"steps"`
+	Status         string           `json:"status"`
+	CoverageStatus string           `json:"coverage_status"`
+	ProviderStatus string           `json:"provider_status,omitempty"`
+	OpenRepairs    []repairEvidence `json:"open_repairs,omitempty"`
+	Steps          []localRunStep   `json:"steps"`
 }
 
 type localRunStep struct {
@@ -12,15 +16,23 @@ type localRunStep struct {
 }
 
 func runEvidenceScenarios(path string) []externalScenario {
-	data, ok := readOptional(path)
+	run, ok := loadLocalRunEvidence(path)
 	if !ok {
 		return nil
 	}
+	return []externalScenario{s3PublishScenario(run.Steps)}
+}
+
+func loadLocalRunEvidence(path string) (localRunEvidence, bool) {
+	data, ok := readOptional(path)
+	if !ok {
+		return localRunEvidence{}, false
+	}
 	var run localRunEvidence
 	if json.Unmarshal(data, &run) != nil {
-		return nil
+		return localRunEvidence{}, false
 	}
-	return []externalScenario{s3PublishScenario(run.Steps)}
+	return run, true
 }
 
 func s3PublishScenario(steps []localRunStep) externalScenario {

@@ -14,6 +14,17 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 			Platform:   evidencePlatform{OS: "darwin", Arch: "arm64"},
 			Providers:  []providerEvidence{{ID: "codex", Version: "codex-cli", IntegrationStatus: "passed"}},
 		},
+		Run: localRunEvidence{
+			Status:         "passed",
+			CoverageStatus: "partial",
+			OpenRepairs: []repairEvidence{{
+				ProviderID: "cursor",
+				Class:      "provider_auth_required",
+				Owner:      "human",
+				Mode:       "manual",
+				Summary:    "login required",
+			}},
+		},
 		CoverageRows: []coverageRow{{ID: "provider.codex", Title: "Codex", Status: "passed"}},
 		CoverageSummary: coverageSummary{
 			Total:  1,
@@ -23,7 +34,7 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"partial", "2026-06-23T00:00:00Z", "provider.codex", "passed"} {
+	for _, want := range []string{"Coverage Status", "provider_auth_required", "2026-06-23T00:00:00Z", "provider.codex", "passed"} {
 		if !strings.Contains(html, want) {
 			t.Fatalf("rendered dashboard missing %q", want)
 		}

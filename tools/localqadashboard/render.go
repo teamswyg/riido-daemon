@@ -36,11 +36,14 @@ h2{margin-top:28px}
 <main>
 <h1>Riido Local QA Evidence</h1>
 <section class="summary">
-<div class="card"><div>Status</div><div class="status">{{.Evidence.Status}}</div></div>
+<div class="card"><div>Run</div><div class="status">{{.Run.Status}}</div></div>
+<div class="card"><div>Coverage Status</div><div class="status">{{.Run.CoverageStatus}}</div></div>
+<div class="card"><div>Provider Status</div><div class="status">{{.Evidence.Status}}</div></div>
 <div class="card"><div>Observed</div><div>{{.Evidence.ObservedAt}}</div></div>
 <div class="card"><div>Expires</div><div>{{.Evidence.ExpiresAt}}</div></div>
 <div class="card"><div>Coverage</div><div>{{.CoverageSummary.Passed}}/{{.CoverageSummary.Total}} passed</div></div>
 </section>
+{{if .Run.OpenRepairs}}<h2>Open Repairs</h2><table><thead><tr><th>Provider</th><th>Class</th><th>Owner</th><th>Mode</th><th>Summary</th></tr></thead><tbody>{{range .Run.OpenRepairs}}<tr><td>{{.ProviderID}}</td><td>{{.Class}}</td><td>{{.Owner}}</td><td>{{.Mode}}</td><td>{{.Summary}}{{if .SuggestedCommand}}<br><code>{{.SuggestedCommand}}</code>{{end}}</td></tr>{{end}}</tbody></table>{{end}}
 <h2>Coverage</h2>
 <table><thead><tr><th>Scenario</th><th>Tier</th><th>Surface</th><th>Status</th><th>Repair</th></tr></thead><tbody>
 {{range .CoverageRows}}<tr><td>{{.Title}}<br><code>{{.ID}}</code></td><td>{{.Tier}}</td><td>{{.Surface}}</td><td class="status">{{.Status}}</td><td>{{if .Repair.Class}}{{.Repair.Class}}<br>{{.Repair.Summary}}{{if .Repair.SuggestedCommand}}<br><code>{{.Repair.SuggestedCommand}}</code>{{end}}{{else}}{{.Detail}}{{end}}{{if .Screenshot}}<br><a href="{{.Screenshot}}">screenshot</a>{{end}}</td></tr>{{end}}
