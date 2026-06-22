@@ -21,5 +21,6 @@ Archives contain:
 - LICENSE
 - NOTICE.md
 - VERSION
+- binary version command reports VERSION
 
 Checksums are published as `SHA256SUMS` by the release publish script.

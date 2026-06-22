@@ -3,12 +3,13 @@ package main
 type mainCommand string
 
 const (
-	mainCommandMwsd   mainCommand = "mwsd"
-	mainCommandTask   mainCommand = "task"
-	mainCommandServe  mainCommand = "serve"
-	mainCommandAPI    mainCommand = "api"
-	mainCommandBridge mainCommand = "bridge"
-	mainCommandDaemon mainCommand = "daemon"
+	mainCommandMwsd    mainCommand = "mwsd"
+	mainCommandTask    mainCommand = "task"
+	mainCommandServe   mainCommand = "serve"
+	mainCommandAPI     mainCommand = "api"
+	mainCommandBridge  mainCommand = "bridge"
+	mainCommandDaemon  mainCommand = "daemon"
+	mainCommandVersion mainCommand = "version"
 )
 
 type daemonCommand string

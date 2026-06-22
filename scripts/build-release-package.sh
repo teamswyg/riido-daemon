@@ -15,7 +15,7 @@ if [ "$goos" = "windows" ]; then
 fi
 
 GOOS="$goos" GOARCH="$goarch" go build \
-  -trimpath -ldflags "-s -w" -o "$package_dir/$binary" ./cmd/riido
+  -trimpath -ldflags "-s -w -X main.binaryVersion=$version" -o "$package_dir/$binary" ./cmd/riido
 cp LICENSE NOTICE.md "$package_dir/"
 printf '%s\n' "$version" > "$package_dir/VERSION"
 

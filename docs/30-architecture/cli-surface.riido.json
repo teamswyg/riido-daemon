@@ -49,6 +49,14 @@
       "source_checks": ["main-command-bridge", "bridge-subcommand-vocabulary"]
     },
     {
+      "name": "version",
+      "owner": "cmd/riido release artifact identity",
+      "boundary": "binary release tag evidence without daemon IPC",
+      "subcommands": [],
+      "usage_tokens": ["riido version"],
+      "source_checks": ["main-command-version", "run-version-dispatch"]
+    },
+    {
       "name": "daemon",
       "owner": "internal/agentbridge/runtimeactor, supervisor, control-plane adapters",
       "boundary": "local runtime lifecycle, health, readiness, metrics, stop, and logs",
@@ -59,18 +67,20 @@
   ],
   "providers": ["claude", "codex", "openclaw", "cursor"],
   "source_checks": [
-    {"name": "main-command-serve", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandServe  mainCommand = \"serve\""},
-    {"name": "main-command-api", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandAPI    mainCommand = \"api\""},
-    {"name": "main-command-mwsd", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandMwsd   mainCommand = \"mwsd\""},
-    {"name": "main-command-task", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandTask   mainCommand = \"task\""},
-    {"name": "main-command-bridge", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandBridge mainCommand = \"bridge\""},
-    {"name": "main-command-daemon", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandDaemon mainCommand = \"daemon\""},
+    {"name": "main-command-serve", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandServe   mainCommand = \"serve\""},
+    {"name": "main-command-api", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandAPI     mainCommand = \"api\""},
+    {"name": "main-command-mwsd", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandMwsd    mainCommand = \"mwsd\""},
+    {"name": "main-command-task", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandTask    mainCommand = \"task\""},
+    {"name": "main-command-bridge", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandBridge  mainCommand = \"bridge\""},
+    {"name": "main-command-daemon", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandDaemon  mainCommand = \"daemon\""},
+    {"name": "main-command-version", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandVersion mainCommand = \"version\""},
     {"name": "api-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "apiCommandValidate   apiCommand = \"validate\""},
     {"name": "mwsd-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "mwsdCommandOrchestration mwsdCommand = \"orchestration\""},
     {"name": "task-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "taskCommandValidate   taskCommand = \"validate\""},
     {"name": "bridge-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "bridgeCommandDetect    bridgeCommand = \"detect\""},
     {"name": "daemon-subcommand-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "daemonCommandMetrics daemonCommand = \"metrics\""},
-    {"name": "run-serve-dispatch", "file": "cmd/riido/main.go", "contains": "return runServe(args[1:])"}
+    {"name": "run-serve-dispatch", "file": "cmd/riido/main.go", "contains": "return runServe(args[1:])"},
+    {"name": "run-version-dispatch", "file": "cmd/riido/main.go", "contains": "return runVersion(args[1:])"}
   ],
   "forbidden_source_tokens": [
     {"name": "no-public-http-listener", "root": "cmd/riido", "suffix": ".go", "contains": "http.ListenAndServe"},

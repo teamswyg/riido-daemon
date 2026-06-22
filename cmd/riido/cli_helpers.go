@@ -26,6 +26,7 @@ func printUsage() {
 	fmt.Fprintln(os.Stderr, "  riido task evidence <task-id> --command COMMAND --approval-id ID [--exit-code N] [--result RESULT] [--provider PROVIDER] [--decision-llm LLM] [--command-id ID] [--validation-gate GATE] [--provider-run-id ID] [--provider-run-result RESULT] [--actor ACTOR] [--source SOURCE] [--summary TEXT] [--task-db PATH]")
 	fmt.Fprintln(os.Stderr, "  riido task validate <task-id> --command COMMAND --approval-id ID [--workdir PATH] [--timeout-seconds N] [--provider PROVIDER] [--decision-llm LLM] [--command-id ID] [--validation-gate GATE] [--actor ACTOR] [--source SOURCE] [--summary TEXT] [--task-db PATH]")
 	fmt.Fprintln(os.Stderr, "  riido bridge <providers|detect>")
+	fmt.Fprintln(os.Stderr, "  riido version")
 	fmt.Fprintln(os.Stderr, "  riido daemon start [--foreground] [--socket PATH] [--pid-file PATH] [--log-file PATH] [--lock-file PATH]")
 	fmt.Fprintln(os.Stderr, "  riido daemon status [--socket PATH]")
 	fmt.Fprintln(os.Stderr, "  riido daemon health [--socket PATH]")
