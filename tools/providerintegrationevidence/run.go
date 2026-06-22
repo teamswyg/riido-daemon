@@ -4,9 +4,13 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 )
 
-func run(repoRoot, manifestPath, evidenceOut string, writeDoc, checkDoc, runIntegration bool) error {
+func run(repoRoot, manifestPath, evidenceOut string, writeDoc, checkDoc, runIntegration bool, validFor time.Duration) error {
+	if validFor <= 0 {
+		return fmt.Errorf("valid-for must be positive")
+	}
 	root, err := filepath.Abs(repoRoot)
 	if err != nil {
 		return fmt.Errorf("resolve repo root: %w", err)
@@ -24,7 +28,7 @@ func run(repoRoot, manifestPath, evidenceOut string, writeDoc, checkDoc, runInte
 	if evidenceOut == "" && !runIntegration {
 		return nil
 	}
-	evidence, err := observeProviders(root, loaded, runIntegration)
+	evidence, err := observeProviders(root, loaded, runIntegration, validFor)
 	if evidenceOut != "" {
 		if writeErr := writeJSON(resolvePath(root, evidenceOut), evidence); writeErr != nil {
 			return writeErr

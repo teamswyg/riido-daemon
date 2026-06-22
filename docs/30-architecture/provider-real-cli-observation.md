@@ -12,13 +12,20 @@ Evidence artifact: `provider-real-cli-observation`.
 
 | Provider | Executable | Override Env | Integration Command |
 | --- | --- | --- | --- |
-| Claude Code | `claude` | `RIIDO_CLAUDE_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/claude -race -run TestIntegration -v` |
-| Codex | `codex` | `RIIDO_CODEX_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/codex -race -run TestIntegration -v` |
-| OpenClaw | `openclaw` | `RIIDO_OPENCLAW_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -race -run TestIntegration -v` |
-| Cursor Agent | `cursor-agent` | `RIIDO_CURSOR_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -race -run TestIntegration -v` |
+| Claude Code | `claude` | `RIIDO_CLAUDE_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/claude -race -count=1 -run TestIntegration -v` |
+| Codex | `codex` | `RIIDO_CODEX_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/codex -race -count=1 -run TestIntegration -v` |
+| OpenClaw | `openclaw` | `RIIDO_OPENCLAW_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -race -count=1 -run TestIntegration -v` |
+| Cursor Agent | `cursor-agent` | `RIIDO_CURSOR_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -race -count=1 -run TestIntegration -v` |
 
 ## Semantics
 
 - Missing executables are recorded as observed `skipped`, not PASS.
 - Available executables run provider `TestIntegration` with `AGENTBRIDGE_INTEGRATION=1`.
 - Available-provider integration failure fails the workflow after writing evidence.
+- Local daily evidence is fresh for 24h and records `expires_at` for dashboard gating.
+
+## Local Daily Evidence
+
+```bash
+go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json
+```

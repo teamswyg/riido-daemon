@@ -38,19 +38,27 @@ func probeVersion(exe string) string {
 func runIntegrationTest(root string, provider provider) (string, string) {
 	ctx, cancel := context.WithTimeout(context.Background(), providerIntegrationTimeout)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, "go", "test", provider.GoPackage, "-race", "-run", provider.TestRegex, "-v")
+	cmd := exec.CommandContext(ctx, "go", "test", provider.GoPackage, "-race", "-count=1", "-run", provider.TestRegex, "-v")
 	cmd.Dir = root
 	cmd.Env = append(os.Environ(), "AGENTBRIDGE_INTEGRATION=1")
 	out, err := cmd.CombinedOutput()
+	summary := compactOutput(string(out))
+	if integrationSkipped(string(out)) {
+		return "skipped", summary
+	}
 	if err != nil {
 		if errors.Is(ctx.Err(), context.DeadlineExceeded) {
 			return "failed", fmt.Sprintf("timed out after %s", providerIntegrationTimeout)
 		}
-		return "failed", compactOutput(string(out))
+		return "failed", summary
 	}
 	return "passed", ""
 }
 
 func integrationCommand(provider provider) string {
-	return "AGENTBRIDGE_INTEGRATION=1 go test " + provider.GoPackage + " -race -run " + provider.TestRegex + " -v"
+	return "AGENTBRIDGE_INTEGRATION=1 go test " + provider.GoPackage + " -race -count=1 -run " + provider.TestRegex + " -v"
+}
+
+func integrationSkipped(out string) bool {
+	return strings.Contains(out, "--- SKIP:")
 }

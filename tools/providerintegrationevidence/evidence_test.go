@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"testing"
+	"time"
 )
 
 func TestDocCheckDoesNotProbeProviderExecutables(t *testing.T) {
@@ -21,7 +22,7 @@ func TestDocCheckDoesNotProbeProviderExecutables(t *testing.T) {
 	}
 	t.Setenv("RIIDO_FAKE_PROVIDER_PATH", probe)
 	mustWrite(t, docPath, renderMarkdown(mustLoad(t, manifestPath)))
-	if err := run(dir, manifestPath, "", false, true, false); err != nil {
+	if err := run(dir, manifestPath, "", false, true, false, 24*time.Hour); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(marker); !os.IsNotExist(err) {
@@ -38,7 +39,7 @@ func TestEvidenceOnlyRecordsObservedStatus(t *testing.T) {
 	t.Setenv("RIIDO_FAKE_PROVIDER_PATH", exe)
 	mustWrite(t, docPath, renderMarkdown(mustLoad(t, manifestPath)))
 	evidencePath := filepath.Join(dir, "evidence.json")
-	if err := run(dir, manifestPath, evidencePath, false, true, false); err != nil {
+	if err := run(dir, manifestPath, evidencePath, false, true, false, 24*time.Hour); err != nil {
 		t.Fatal(err)
 	}
 	data, err := os.ReadFile(evidencePath)
@@ -58,15 +59,15 @@ func TestEvidenceOnlyRecordsObservedStatus(t *testing.T) {
 	if evidence.Providers[0].IntegrationStatus != "observed" {
 		t.Fatalf("integration_status=%q", evidence.Providers[0].IntegrationStatus)
 	}
+	assertFreshEvidence(t, evidence)
 }
 
-func newFixture(t *testing.T) (string, string, string) {
+func assertFreshEvidence(t *testing.T, evidence evidenceFile) {
 	t.Helper()
-	dir := t.TempDir()
-	manifestPath := filepath.Join(dir, "manifest.json")
-	docPath := filepath.Join(dir, "doc.md")
-	mustWrite(t, filepath.Join(dir, "workflow.yml"), "name: test\n")
-	data := `{"schema_version":"riido-provider-real-cli-observation.v1","id":"test","title":"Test","generated_doc":"doc.md","workflow":"workflow.yml","evidence_artifact":"artifact","providers":[{"id":"fake","display_name":"Fake","default_executable":"missing-riido-provider","override_env":"RIIDO_FAKE_PROVIDER_PATH","go_package":".","test_regex":"TestIntegration"}]}`
-	mustWrite(t, manifestPath, data)
-	return dir, manifestPath, docPath
+	if evidence.ExpiresAt == "" || evidence.FreshForSeconds != int64((24*time.Hour).Seconds()) {
+		t.Fatalf("expiration evidence missing: %+v", evidence)
+	}
+	if evidence.Platform.OS != runtime.GOOS || evidence.Platform.Arch != runtime.GOARCH {
+		t.Fatalf("platform=%+v, want %s/%s", evidence.Platform, runtime.GOOS, runtime.GOARCH)
+	}
 }

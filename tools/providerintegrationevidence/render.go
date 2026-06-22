@@ -27,5 +27,10 @@ func renderMarkdown(m manifest) string {
 	b.WriteString("- Missing executables are recorded as observed `skipped`, not PASS.\n")
 	b.WriteString("- Available executables run provider `TestIntegration` with `AGENTBRIDGE_INTEGRATION=1`.\n")
 	b.WriteString("- Available-provider integration failure fails the workflow after writing evidence.\n")
+	b.WriteString("- Local daily evidence is fresh for 24h and records `expires_at` for dashboard gating.\n")
+	b.WriteString("\n## Local Daily Evidence\n\n")
+	b.WriteString("```bash\n")
+	b.WriteString("go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json\n")
+	b.WriteString("```\n")
 	return b.String()
 }

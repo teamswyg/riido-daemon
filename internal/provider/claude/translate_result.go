@@ -12,14 +12,23 @@ func translateResult(raw agentbridge.RawEvent) []agentbridge.Event {
 }
 
 func claudeResult(raw agentbridge.RawEvent) agentbridge.Result {
+	isError := boolField(raw.Payload, "is_error")
+	output := stringField(raw.Payload, "result")
+	errText := stringField(raw.Payload, "error")
+	if isError && errText == "" {
+		errText = output
+	}
 	return agentbridge.Result{
-		Status: claudeResultStatus(wireResultSubtype(stringField(raw.Payload, "subtype"))),
-		Output: stringField(raw.Payload, "result"),
-		Error:  stringField(raw.Payload, "error"),
+		Status: claudeResultStatus(wireResultSubtype(stringField(raw.Payload, "subtype")), isError),
+		Output: output,
+		Error:  errText,
 	}
 }
 
-func claudeResultStatus(subtype wireResultSubtype) agentbridge.ResultStatus {
+func claudeResultStatus(subtype wireResultSubtype, isError bool) agentbridge.ResultStatus {
+	if isError {
+		return agentbridge.ResultFailed
+	}
 	switch subtype {
 	case wireResultSubtypeError, wireResultSubtypeExecutionError:
 		return agentbridge.ResultFailed

@@ -2,14 +2,23 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"time"
 )
 
-func observeProviders(root string, m manifest, runIntegration bool) (evidenceFile, error) {
+func observeProviders(root string, m manifest, runIntegration bool, validFor time.Duration) (evidenceFile, error) {
+	now := time.Now().UTC()
 	file := evidenceFile{
-		SchemaVersion: "riido-provider-real-cli-observation-result.v1",
-		ID:            m.ID,
-		ObservedAt:    time.Now().UTC().Format(time.RFC3339),
+		SchemaVersion:   "riido-provider-real-cli-observation-result.v1",
+		ID:              m.ID,
+		ObservedAt:      now.Format(time.RFC3339),
+		ExpiresAt:       now.Add(validFor).Format(time.RFC3339),
+		FreshForSeconds: int64(validFor.Seconds()),
+		RunIntegration:  runIntegration,
+		Platform: evidencePlatform{
+			OS:   runtime.GOOS,
+			Arch: runtime.GOARCH,
+		},
 	}
 	var failed []string
 	for _, provider := range m.Providers {
@@ -27,18 +36,27 @@ func observeProviders(root string, m manifest, runIntegration bool) (evidenceFil
 }
 
 func aggregateStatus(providers []providerEvidence) string {
-	status := "skipped"
+	var observed, passed, skipped int
 	for _, provider := range providers {
 		switch provider.IntegrationStatus {
 		case "failed":
 			return "failed"
 		case "passed":
-			status = "passed"
+			passed++
 		case "observed":
-			if status == "skipped" {
-				status = "observed"
-			}
+			observed++
+		case "skipped":
+			skipped++
 		}
 	}
-	return status
+	if passed > 0 && skipped > 0 {
+		return "partial"
+	}
+	if passed > 0 {
+		return "passed"
+	}
+	if observed > 0 {
+		return "observed"
+	}
+	return "skipped"
 }

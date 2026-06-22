@@ -3,6 +3,8 @@ package openclaw
 import (
 	"context"
 	"os"
+	"os/exec"
+	"strings"
 	"testing"
 	"time"
 
@@ -37,5 +39,34 @@ func requireOpenClawDetectAvailable(
 	if !det.Available {
 		t.Skipf("openclaw Detect reported Available=false: %s", det.Reason)
 	}
+	requireOpenClawConfigUsable(t, ctx, det.Executable)
 	return det
+}
+
+func requireOpenClawConfigUsable(t *testing.T, ctx context.Context, exe string) {
+	t.Helper()
+	cmd := exec.CommandContext(ctx, exe, configProbeArgs()...)
+	out, _ := cmd.CombinedOutput()
+	text := strings.ToLower(string(out))
+	if strings.Contains(text, "config invalid") || strings.Contains(text, "invalid config") {
+		t.Skip("openclaw config invalid; run openclaw doctor --fix")
+	}
+	if strings.Contains(text, "connection refused by the provider endpoint") ||
+		strings.Contains(text, "failovererror") {
+		t.Skip("openclaw local model backend unavailable")
+	}
+}
+
+func configProbeArgs() []string {
+	return []string{
+		"agent",
+		"--local",
+		"--json",
+		"--session-id",
+		"riido-config-probe",
+		"--message",
+		"riido config probe",
+		"--timeout",
+		"1",
+	}
 }

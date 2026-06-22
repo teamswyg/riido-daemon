@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"time"
 )
 
 func main() {
@@ -13,9 +14,10 @@ func main() {
 	writeDoc := flag.Bool("write-doc", false, "write generated markdown")
 	checkDoc := flag.Bool("check-doc", false, "check generated markdown")
 	runIntegration := flag.Bool("run-integration", false, "run available provider TestIntegration tests")
+	validFor := flag.Duration("valid-for", 24*time.Hour, "freshness window for generated evidence")
 	flag.Parse()
 
-	if err := run(*repo, *manifestPath, *evidenceOut, *writeDoc, *checkDoc, *runIntegration); err != nil {
+	if err := run(*repo, *manifestPath, *evidenceOut, *writeDoc, *checkDoc, *runIntegration, *validFor); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

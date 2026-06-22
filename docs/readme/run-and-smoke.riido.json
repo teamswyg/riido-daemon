@@ -20,6 +20,8 @@
       "`RIIDO_TASK_DB_SOURCE_PATH`",
       "`RIIDO_SAAS_URL` + `RIIDO_DEVICE_ID` + `RIIDO_DEVICE_SECRET`"
     ]},
-    {"kind": "paragraph", "text": "Only one source should be selected as the production source."}
+    {"kind": "paragraph", "text": "Only one source should be selected as the production source."},
+    {"kind": "paragraph", "text": "Generate local daily provider evidence and a human-readable dashboard before deployment:"},
+    {"kind": "code", "language": "bash", "code": "mkdir -p .riido-local/evidence\ngo run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json\ngo run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -out .riido-local/dashboard/index.html"}
   ]
 }

@@ -37,3 +37,11 @@ go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/r
 - `RIIDO_SAAS_URL` + `RIIDO_DEVICE_ID` + `RIIDO_DEVICE_SECRET`
 
 Only one source should be selected as the production source.
+
+Generate local daily provider evidence and a human-readable dashboard before deployment:
+
+```bash
+mkdir -p .riido-local/evidence
+go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json
+go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -out .riido-local/dashboard/index.html
+```
