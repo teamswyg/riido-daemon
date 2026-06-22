@@ -2,6 +2,7 @@ package main
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -53,5 +54,13 @@ func TestRunFailsMissingEvidence(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatal("expected missing evidence failure")
+	}
+	report := readReport(t, filepath.Join(root, "report.json"))
+	joined := strings.Join(report.Problems, "\n")
+	if !strings.Contains(joined, "go run ./tools/loopevidence") {
+		t.Fatalf("missing producer command in %q", joined)
+	}
+	if !strings.Contains(joined, "loop.json") {
+		t.Fatalf("missing expected evidence file in %q", joined)
 	}
 }

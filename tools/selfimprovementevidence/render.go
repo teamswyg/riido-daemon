@@ -14,10 +14,11 @@ func renderMarkdown(m manifest) string {
 	fmt.Fprintf(&b, "- Evidence artifact: `%s`\n", m.EvidenceArtifact)
 	fmt.Fprintf(&b, "- Loop source: `%s`\n\n", m.LoopSource)
 	b.WriteString("## Required Evidence\n\n")
-	b.WriteString("| Evidence | File | Purpose |\n")
-	b.WriteString("| --- | --- | --- |\n")
+	b.WriteString("| Evidence | File | Producer | Purpose |\n")
+	b.WriteString("| --- | --- | --- | --- |\n")
 	for _, item := range m.Required {
-		fmt.Fprintf(&b, "| `%s` | `%s` | %s |\n", item.ID, item.File, item.Description)
+		fmt.Fprintf(&b, "| `%s` | `%s` | `%s` | %s |\n",
+			item.ID, item.File, item.Producer, item.Description)
 	}
 	b.WriteString("\n## Assertions\n\n")
 	b.WriteString("| Evidence | Field | Expected |\n")

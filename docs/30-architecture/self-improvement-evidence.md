@@ -9,13 +9,13 @@
 
 ## Required Evidence
 
-| Evidence | File | Purpose |
-| --- | --- | --- |
-| `loop` | `loop-engineering-evidence.json` | Observe/Hypothesis/Execute/Evaluate/Retrospective coverage |
-| `workflow` | `workflow-evidence.json` | Workflow evidence coverage and tool binding |
-| `knowledge` | `repo-executable-knowledge-coverage.json` | Executable knowledge coverage |
-| `ci` | `ci-evidence.json` | Broad CI command evidence |
-| `go-ci` | `go-ci-evidence.json` | Lint and Go CI command evidence |
+| Evidence | File | Producer | Purpose |
+| --- | --- | --- | --- |
+| `loop` | `loop-engineering-evidence.json` | `go run ./tools/loopevidence -check -evidence-out <evidence-dir>/loop-engineering-evidence.json` | Observe/Hypothesis/Execute/Evaluate/Retrospective coverage |
+| `workflow` | `workflow-evidence.json` | `go run ./tools/workflowevidence -check-doc -evidence-out <evidence-dir>/workflow-evidence.json` | Workflow evidence coverage and tool binding |
+| `knowledge` | `repo-executable-knowledge-coverage.json` | `go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out <evidence-dir>/repo-executable-knowledge-coverage.json` | Executable knowledge coverage |
+| `ci` | `ci-evidence.json` | `go run ./tools/cievidence -manifest docs/30-architecture/ci-evidence.riido.json -workflow .github/workflows/ci.yml -id ci -evidence-out <evidence-dir>/ci-evidence.json` | Broad CI command evidence |
+| `go-ci` | `go-ci-evidence.json` | `go run ./tools/cievidence -manifest docs/30-architecture/ci-evidence.riido.json -workflow .github/workflows/go-ci.yml -id go-ci -evidence-out <evidence-dir>/go-ci-evidence.json` | Lint and Go CI command evidence |
 
 ## Assertions
 

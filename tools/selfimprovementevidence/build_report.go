@@ -26,9 +26,10 @@ func buildReport(dir string, m manifest) report {
 }
 
 func collectEvidence(out *report, dir string, item requiredEvidence) {
-	data, err := readEvidence(filepath.Join(dir, item.File))
+	path := filepath.Join(dir, item.File)
+	data, err := readEvidence(path)
 	if err != nil {
-		out.Problems = append(out.Problems, err.Error())
+		out.Problems = append(out.Problems, missingEvidenceProblem(item, path, err))
 		out.Checks = append(out.Checks, missingEvidenceCheck(item.ID))
 		return
 	}
