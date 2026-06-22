@@ -21,6 +21,7 @@ func startPolicyBundleActor(
 	t.Helper()
 	actor, err := New(Config{
 		DaemonID:            "daemon-1",
+		RiidoDaemonVersion:  testRiidoDaemonVersion,
 		Runtime:             rt,
 		Source:              source,
 		Reporter:            reporter,

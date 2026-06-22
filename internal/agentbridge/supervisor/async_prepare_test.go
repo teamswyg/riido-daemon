@@ -22,13 +22,14 @@ func TestSupervisorHeartbeatContinuesDuringWorkspaceMaterialization(t *testing.T
 	rt := startNamedRuntime(t, fake, "rt-codex", "codex")
 
 	actor, err := New(Config{
-		DaemonID:       "daemon-1",
-		Runtime:        rt,
-		Source:         source,
-		Reporter:       reporter,
-		Workdir:        workdir.NewFSAdapter(t.TempDir()),
-		PollEvery:      10 * time.Millisecond,
-		HeartbeatEvery: 20 * time.Millisecond,
+		DaemonID:           "daemon-1",
+		RiidoDaemonVersion: testRiidoDaemonVersion,
+		Runtime:            rt,
+		Source:             source,
+		Reporter:           reporter,
+		Workdir:            workdir.NewFSAdapter(t.TempDir()),
+		PollEvery:          10 * time.Millisecond,
+		HeartbeatEvery:     20 * time.Millisecond,
 	})
 	if err != nil {
 		t.Fatal(err)

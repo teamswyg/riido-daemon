@@ -27,6 +27,7 @@ func startNativeConfigInstructionOnlyActor(
 	rt := startNamedRuntime(t, fake, "rt-"+string(provider), string(provider))
 	actor, err := New(Config{
 		DaemonID:            "daemon-1",
+		RiidoDaemonVersion:  testRiidoDaemonVersion,
 		Runtime:             rt,
 		Source:              source,
 		Reporter:            reporter,

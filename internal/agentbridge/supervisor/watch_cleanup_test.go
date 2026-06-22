@@ -34,12 +34,13 @@ func startWatchCleanupSupervisor(
 ) *Actor {
 	t.Helper()
 	actor, err := New(Config{
-		DaemonID:       "daemon-watch-cleanup",
-		Runtime:        startRuntime(t, fake),
-		Source:         source,
-		Reporter:       reporter,
-		PollEvery:      10 * time.Millisecond,
-		HeartbeatEvery: time.Hour,
+		DaemonID:           "daemon-watch-cleanup",
+		RiidoDaemonVersion: testRiidoDaemonVersion,
+		Runtime:            startRuntime(t, fake),
+		Source:             source,
+		Reporter:           reporter,
+		PollEvery:          10 * time.Millisecond,
+		HeartbeatEvery:     time.Hour,
 	})
 	if err != nil {
 		t.Fatalf("New: %v", err)
