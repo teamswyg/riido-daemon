@@ -20,6 +20,7 @@ func runDashboardStep(root string, cfg config, evidence *runEvidence) {
 		"-provider-evidence", *cfg.providerEvidence,
 		"-run-evidence", *cfg.runEvidence,
 		"-schedule-evidence", *cfg.scheduleEvidence,
+		"-release-evidence", *cfg.releaseEvidence,
 		"-coverage-manifest", *cfg.coverageManifest,
 		"-out", *cfg.dashboardHTML,
 	}

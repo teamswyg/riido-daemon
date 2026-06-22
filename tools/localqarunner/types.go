@@ -11,6 +11,7 @@ type config struct {
 	repo               *string
 	providerEvidence   *string
 	productEvidence    *string
+	releaseEvidence    *string
 	productLab         *string
 	scheduleEvidence   *string
 	runEvidence        *string
@@ -20,6 +21,7 @@ type config struct {
 	validFor           *time.Duration
 	providerTool       *string
 	productTool        *string
+	releaseTool        *string
 	dashboardTool      *string
 	clientRoot         *string
 	productAgentHost   *string
@@ -32,6 +34,7 @@ type config struct {
 	productAgentID2    *string
 	productCommentBody *string
 	runIntegration     *bool
+	runRelease         *bool
 	runProduct         *bool
 	productMutations   *bool
 	productBrowserE2E  *bool
@@ -47,28 +50,4 @@ type runEvidence struct {
 	Status        string         `json:"status"`
 	Artifacts     runArtifacts   `json:"artifacts"`
 	Steps         []stepEvidence `json:"steps"`
-}
-
-type runArtifacts struct {
-	ProviderEvidence string `json:"provider_evidence"`
-	ProductEvidence  string `json:"product_evidence,omitempty"`
-	ProductLab       string `json:"product_lab,omitempty"`
-	ScheduleEvidence string `json:"schedule_evidence,omitempty"`
-	DashboardHTML    string `json:"dashboard_html"`
-	S3Prefix         string `json:"s3_prefix,omitempty"`
-}
-
-type stepEvidence struct {
-	ID         string `json:"id"`
-	Status     string `json:"status"`
-	Command    string `json:"command"`
-	ExitCode   int    `json:"exit_code"`
-	OutputTail string `json:"output_tail,omitempty"`
-}
-
-type uploadSpec struct {
-	id        string
-	source    string
-	target    string
-	recursive bool
 }
