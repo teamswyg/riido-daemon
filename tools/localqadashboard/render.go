@@ -41,6 +41,7 @@ h2{margin-top:28px}
 <div class="card"><div>Provider Status</div><div class="status">{{.Evidence.Status}}</div></div>
 <div class="card"><div>Observed</div><div>{{.ObservedAt}}</div></div>
 <div class="card"><div>Expires</div><div>{{.ExpiresAt}}</div></div>
+<div class="card"><div>Freshness</div><div id="freshness-status" class="status" data-expires="{{.ExpiresAt}}">unknown</div></div>
 <div class="card"><div>Coverage</div><div>{{.CoverageSummary.Passed}}/{{.CoverageSummary.Total}} passed</div></div>
 </section>
 {{if .Run.OpenRepairs}}<h2>Open Repairs</h2><table><thead><tr><th>Provider</th><th>Class</th><th>Owner</th><th>Mode</th><th>Summary</th></tr></thead><tbody>{{range .Run.OpenRepairs}}<tr><td>{{.ProviderID}}</td><td>{{.Class}}</td><td>{{.Owner}}</td><td>{{.Mode}}</td><td>{{.Summary}}{{if .SuggestedCommand}}<br><code>{{.SuggestedCommand}}</code>{{end}}</td></tr>{{end}}</tbody></table>{{end}}
@@ -64,5 +65,8 @@ h2{margin-top:28px}
 </tbody>
 </table>
 </main>
+<script>
+(function(){var el=document.getElementById("freshness-status");if(!el){return;}var expires=Date.parse(el.dataset.expires);if(Number.isNaN(expires)){el.textContent="unknown";return;}var now=Date.now();el.textContent=now<expires?"fresh":"expired";el.title="Evaluated in browser at "+new Date(now).toISOString();})();
+</script>
 </body>
 </html>`))

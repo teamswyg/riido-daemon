@@ -36,7 +36,14 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{"Coverage Status", "provider_auth_required", "2026-06-23T01:00:00Z", "provider.codex", "passed"} {
+	for _, want := range []string{
+		"Coverage Status",
+		"freshness-status",
+		`data-expires="2026-06-23T01:00:00Z"`,
+		"provider_auth_required",
+		"provider.codex",
+		"passed",
+	} {
 		if !strings.Contains(html, want) {
 			t.Fatalf("rendered dashboard missing %q", want)
 		}
