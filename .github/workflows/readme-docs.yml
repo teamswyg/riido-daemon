@@ -48,7 +48,7 @@ jobs:
           go run ./tools/readmedocs -check-doc -evidence-out out/readme-docs.json
           go run ./tools/docmap -check -evidence-out out/doc-map-evidence.json
           go run ./tools/repoverification -check-doc -evidence-out out/repo-verification-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: readme-docs

@@ -71,7 +71,7 @@ jobs:
           go run ./tools/packageworkflowevidence \
             -workflow .github/workflows/mwsd-project.yml \
             -evidence-out out/mwsd-project-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: mwsd-project-evidence

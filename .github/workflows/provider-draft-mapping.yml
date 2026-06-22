@@ -29,7 +29,7 @@ jobs:
           go run ./tools/providerdraftmapping \
             -check-doc \
             -evidence-out out/provider-draft-mapping-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: provider-draft-mapping-evidence

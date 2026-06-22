@@ -43,7 +43,7 @@ jobs:
           go run ./tools/unsafebypassevidence
           -check-doc
           -evidence-out /tmp/unsafe-bypass-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         with:
           name: unsafe-bypass-evidence
           path: /tmp/unsafe-bypass-evidence.json

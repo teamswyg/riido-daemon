@@ -39,7 +39,7 @@ jobs:
           go run ./tools/figmaboundarydocs \
             -check-doc \
             -evidence-out out/figma-boundary-docs.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: figma-boundary-docs

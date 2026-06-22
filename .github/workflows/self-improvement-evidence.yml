@@ -56,7 +56,7 @@ jobs:
           go run ./tools/cievidence -manifest docs/30-architecture/ci-evidence.riido.json -workflow .github/workflows/ci.yml -id ci -evidence-out out/ci-evidence.json
           go run ./tools/cievidence -manifest docs/30-architecture/ci-evidence.riido.json -workflow .github/workflows/go-ci.yml -id go-ci -evidence-out out/go-ci-evidence.json
           go run ./tools/selfimprovementevidence -manifest docs/30-architecture/self-improvement-evidence.riido.json -evidence-dir out -check-doc -evidence-out out/self-improvement-evidence.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: self-improvement-evidence

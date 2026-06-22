@@ -42,7 +42,7 @@ jobs:
           go run ./tools/releaseartifacts \
             -check-doc \
             -evidence-out out/release-artifact-docs.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: release-artifact-docs

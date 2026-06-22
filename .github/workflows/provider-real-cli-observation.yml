@@ -30,7 +30,7 @@ jobs:
             -check-doc \
             -run-integration \
             -evidence-out out/provider-real-cli-observation.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: provider-real-cli-observation
