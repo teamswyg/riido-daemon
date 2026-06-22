@@ -32,7 +32,11 @@ func serveTestAPIWithState(t *testing.T, state task.TaskState) (string, string, 
 	ctx, cancel := context.WithCancel(context.Background())
 	errs := make(chan error, 1)
 	go func() {
-		errs <- NewServer(Config{SocketPath: socketPath, TaskDBPath: taskDBPath}).Serve(ctx)
+		errs <- NewServer(Config{
+			AppVersion: "riido-daemon test.v1",
+			SocketPath: socketPath,
+			TaskDBPath: taskDBPath,
+		}).Serve(ctx)
 	}()
 	waitForAPI(t, socketPath)
 	return socketPath, taskDBPath, stopTestAPI(t, cancel, errs)

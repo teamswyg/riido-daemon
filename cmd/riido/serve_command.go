@@ -51,5 +51,10 @@ func runServe(args []string) error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	fmt.Fprintf(os.Stderr, "riido serve transport=%s socket=%s task_db=%s\n", transport, socketPath, taskDBPath)
-	return riidoapi.NewServer(riidoapi.Config{SocketPath: socketPath, TaskDBPath: taskDBPath, Transport: transport}).Serve(ctx)
+	return riidoapi.NewServer(riidoapi.Config{
+		AppVersion: versionLabel(),
+		SocketPath: socketPath,
+		TaskDBPath: taskDBPath,
+		Transport:  transport,
+	}).Serve(ctx)
 }

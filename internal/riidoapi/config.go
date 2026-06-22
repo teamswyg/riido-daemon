@@ -1,6 +1,7 @@
 package riidoapi
 
 type Config struct {
+	AppVersion string         `json:"app_version"`
 	SocketPath string         `json:"socket_path"`
 	TaskDBPath string         `json:"task_db_path"`
 	Transport  LocalTransport `json:"transport"`

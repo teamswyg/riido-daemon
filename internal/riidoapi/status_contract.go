@@ -2,6 +2,7 @@ package riidoapi
 
 type Status struct {
 	SchemaVersion       string `json:"schema_version"`
+	AppVersion          string `json:"app_version"`
 	Transport           string `json:"transport"`
 	SocketPath          string `json:"socket_path"`
 	TaskDBPath          string `json:"task_db_path"`
