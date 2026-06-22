@@ -6,10 +6,8 @@ import (
 	"strings"
 )
 
-const launchdPath = "/opt/homebrew/bin:/usr/local/bin:/usr/local/go/bin:/usr/bin:/bin:/usr/sbin:/sbin"
-
 func localQACommand(cfg config, paths schedulePaths) string {
-	cmd := "cd " + shellQuote(paths.repo) + " && PATH=" + shellQuote(launchdPath)
+	cmd := "cd " + shellQuote(paths.repo) + " && PATH=" + shellQuote(launchdPath())
 	cmd += " go run ./tools/localqarunner"
 	if *cfg.s3Prefix != "" {
 		cmd += " -s3-prefix " + shellQuote(*cfg.s3Prefix)
