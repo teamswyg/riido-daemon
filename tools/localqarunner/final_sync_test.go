@@ -3,7 +3,7 @@ package main
 import "testing"
 
 func TestFinalDashboardUploadsSyncLatestAndStampedRunEvidence(t *testing.T) {
-	cfg := uploadTestConfig("", "", "", "")
+	cfg := uploadTestConfig("", "", "", "", "")
 	got := finalDashboardUploads(cfg, "20260622T000000Z", "s3://bucket/daily")
 	if len(got) != 4 {
 		t.Fatalf("uploads=%d", len(got))

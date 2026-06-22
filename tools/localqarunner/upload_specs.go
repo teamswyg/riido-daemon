@@ -27,6 +27,12 @@ func uploads(cfg config, stamp string) []uploadSpec {
 			upload("schedule-evidence-"+stamp, *cfg.scheduleEvidence, prefix+"/"+stamp+"/local-qa-schedule.json"),
 		)
 	}
+	if *cfg.infraEvidence != "" && fileExists(*cfg.infraEvidence) {
+		specs = append(specs,
+			upload("infra-evidence", *cfg.infraEvidence, prefix+"/latest/local-qa-dashboard-infra-evidence.json"),
+			upload("infra-evidence-"+stamp, *cfg.infraEvidence, prefix+"/"+stamp+"/local-qa-dashboard-infra-evidence.json"),
+		)
+	}
 	if *cfg.productScreenshots != "" && dirExists(*cfg.productScreenshots) {
 		specs = append(specs,
 			uploadDir("product-screenshots", *cfg.productScreenshots, prefix+"/latest/screenshots/ai-agent-product-acceptance/"),

@@ -54,6 +54,7 @@ func newEvidence(cfg config, observed time.Time) runEvidence {
 			ReleaseEvidence:  *cfg.releaseEvidence,
 			ProductLab:       *cfg.productLab,
 			ScheduleEvidence: *cfg.scheduleEvidence,
+			InfraEvidence:    *cfg.infraEvidence,
 			DashboardHTML:    *cfg.dashboardHTML,
 			S3Prefix:         *cfg.s3Prefix,
 		},

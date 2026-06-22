@@ -14,6 +14,7 @@ func main() {
 	productLab := ".riido-local/contract-lab/index.html"
 	productScreenshots := ".riido-local/screenshots/ai-agent-product-acceptance"
 	scheduleEvidence := ".riido-local/evidence/local-qa-schedule.json"
+	infraEvidence := ".riido-local/evidence/local-qa-dashboard-infra-evidence.json"
 	flag.StringVar(&runEvidence, "run-evidence", runEvidence, "local QA run evidence JSON")
 	flag.StringVar(&runEvidence, "evidence-out", runEvidence, "alias for -run-evidence")
 	cfg := config{
@@ -23,6 +24,7 @@ func main() {
 		releaseEvidence:      flag.String("release-evidence", releaseEvidence, "release install evidence JSON"),
 		productLab:           flag.String("product-lab", productLab, "frontend contract lab HTML output"),
 		scheduleEvidence:     flag.String("schedule-evidence", scheduleEvidence, "local QA schedule evidence JSON"),
+		infraEvidence:        flag.String("infra-evidence", infraEvidence, "private infra dashboard evidence JSON"),
 		runEvidence:          &runEvidence,
 		dashboardHTML:        flag.String("dashboard", ".riido-local/dashboard/index.html", "dashboard HTML output"),
 		coverageManifest:     flag.String("coverage-manifest", "docs/30-architecture/local-acceptance-coverage.riido.json", "coverage manifest JSON"),

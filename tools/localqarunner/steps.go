@@ -14,6 +14,7 @@ func runDashboardStepID(root string, cfg config, evidence *runEvidence, id strin
 		"-provider-evidence", *cfg.providerEvidence,
 		"-run-evidence", *cfg.runEvidence,
 		"-schedule-evidence", *cfg.scheduleEvidence,
+		"-infra-evidence", *cfg.infraEvidence,
 		"-release-evidence", *cfg.releaseEvidence,
 		"-coverage-manifest", *cfg.coverageManifest,
 		"-out", *cfg.dashboardHTML,
