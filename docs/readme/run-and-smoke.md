@@ -38,11 +38,11 @@ go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/r
 
 Only one source should be selected as the production source.
 
-Run local acceptance verification before deployment. The runner keeps provider failures as evidence, renders the dashboard, and optionally publishes to the private local QA evidence bucket:
+Run local acceptance verification before deployment. The runner keeps provider failures as evidence, renders the dashboard, and optionally publishes to the private local QA evidence bucket. Product acceptance probes live here; `riido-client` is only an observed read-only target:
 
 ```bash
 RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
-go run ./tools/localqarunner
+go run ./tools/localqarunner -run-product -client-root ../riido-client
 ```
 
 Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI:

@@ -1,9 +1,17 @@
 package main
 
-import "testing"
+import (
+	"os"
+	"path/filepath"
+	"testing"
+)
 
 func TestUploadsIncludeProductEvidenceWhenConfigured(t *testing.T) {
-	cfg := uploadTestConfig()
+	product := filepath.Join(t.TempDir(), "product.json")
+	if err := os.WriteFile(product, []byte("{}"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cfg := uploadTestConfig(product)
 	got := uploads(cfg, "20260622T000000Z")
 	if len(got) != 8 {
 		t.Fatalf("uploads=%d", len(got))
@@ -13,9 +21,8 @@ func TestUploadsIncludeProductEvidenceWhenConfigured(t *testing.T) {
 	}
 }
 
-func uploadTestConfig() config {
+func uploadTestConfig(product string) config {
 	provider := ".riido-local/provider.json"
-	product := ".riido-local/product.json"
 	run := ".riido-local/run.json"
 	dashboard := ".riido-local/index.html"
 	prefix := "s3://bucket/daily"

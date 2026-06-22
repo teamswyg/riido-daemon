@@ -17,6 +17,12 @@ func run(cfg config) (string, error) {
 	if providerStatus == statusFailed && !*cfg.continueOnFailure {
 		return finishRun(root, cfg, evidence)
 	}
+	if *cfg.runProduct {
+		productStatus := runProductStep(root, cfg, &evidence)
+		if productStatus == statusFailed && !*cfg.continueOnFailure {
+			return finishRun(root, cfg, evidence)
+		}
+	}
 	runDashboardStep(root, cfg, &evidence)
 	if *cfg.s3Prefix != "" {
 		if _, err := finishRun(root, cfg, evidence); err != nil {

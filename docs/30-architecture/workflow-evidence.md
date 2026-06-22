@@ -5,8 +5,8 @@
 - workflow count: `103`
 - evidence covered: `103`
 - workflow statuses: `covered=103`
-- evidence tools covered: `67/67`
-- evidence tools bound to artifacts: `67/67`
+- evidence tools covered: `68/68`
+- evidence tools bound to artifacts: `68/68`
 - accepted gaps: `0`
 - non-strict artifact uploads: `0`
 - missing evidence uploads: `0`
@@ -56,7 +56,7 @@
 | `.github/workflows/go-ci.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/integration-matrix-docs.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/local-daemon-contract-evidence.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
-| `.github/workflows/local-qa-runner.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
+| `.github/workflows/local-qa-runner.yml` | `covered` | `2` | `2/2` | `true` | `1/1` | - |
 | `.github/workflows/locking-docs.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/loop-engineering-evidence.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/macos-external-provider-cli-ssot.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |

@@ -8,6 +8,7 @@ on:
       - "docs/readme/run-and-smoke.md"
       - "docs/readme/run-and-smoke.riido.json"
       - "tools/localqadashboard/**"
+      - "tools/localproductacceptance/**"
       - "tools/localqarunner/**"
       - "tools/localqaschedule/**"
       - "tools/providerintegrationevidence/**"
@@ -28,7 +29,14 @@ jobs:
       - name: Verify local QA runner wiring
         run: |
           mkdir -p out
+          mkdir -p tmp-client
+          git -C tmp-client init
+          go run ./tools/localproductacceptance \
+            -client-root tmp-client \
+            -probe-routes=false \
+            -evidence-out out/ai-agent-product-acceptance.json
           go run ./tools/localqarunner \
+            -run-product=false \
             -run-integration=false \
             -provider-evidence out/provider-real-cli-observation.json \
             -dashboard out/index.html \

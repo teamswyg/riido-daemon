@@ -17,8 +17,13 @@ type config struct {
 	s3Prefix          *string
 	validFor          *time.Duration
 	providerTool      *string
+	productTool       *string
 	dashboardTool     *string
+	clientRoot        *string
+	productBaseURL    *string
+	productWorkspace  *string
 	runIntegration    *bool
+	runProduct        *bool
 	continueOnFailure *bool
 }
 
