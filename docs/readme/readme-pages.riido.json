@@ -11,6 +11,7 @@
     "notice.riido.json",
     "module-map.riido.json",
     "provider-cli.riido.json",
+    "local-acceptance.riido.json",
     "repository-boundary.riido.json",
     "run-and-smoke.riido.json"
   ],
@@ -28,6 +29,10 @@
     {"name": "openclaw-override", "file": "internal/provider/openclaw/detect_config.go", "contains": "const EnvOverride = \"RIIDO_OPENCLAW_PATH\""},
     {"name": "cursor-override", "file": "internal/provider/cursor/constants.go", "contains": "EnvOverride       = \"RIIDO_CURSOR_PATH\""},
     {"name": "integration-smoke-gate", "file": "scripts/integration-smoke.sh", "contains": "AGENTBRIDGE_INTEGRATION=1 go test \"./internal/provider/$provider\" -race -run TestIntegration -v"},
+    {"name": "local-qa-coverage-status", "file": "tools/localqarunner/types.go", "contains": "CoverageStatus string"},
+    {"name": "local-qa-open-repairs", "file": "tools/localqarunner/types.go", "contains": "OpenRepairs"},
+    {"name": "local-qa-provider-aggregate", "file": "tools/localqarunner/provider_evidence.go", "contains": "mergeCoverageStatus"},
+    {"name": "local-qa-no-token-schedule-evidence", "file": "tools/localqaschedule/evidence.go", "contains": "CommandHasTokenText"},
     {"name": "github-release-installer", "file": "scripts/install-riido-daemon.sh", "contains": "https://api.github.com/repos/$repo/releases?per_page=1"}
   ],
   "assertions": [

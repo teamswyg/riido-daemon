@@ -12,6 +12,7 @@ This repository is the public/store-reviewable boundary for local helper, provid
 - [Document map](docs/readme/document-map.md)
 - [Module map](docs/readme/module-map.md)
 - [Provider CLI principles](docs/readme/provider-cli.md)
+- [Local acceptance evidence](docs/readme/local-acceptance.md)
 - [Run and smoke](docs/readme/run-and-smoke.md)
 - [Verification](docs/readme/verification.md)
 
