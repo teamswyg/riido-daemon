@@ -1,19 +1,5 @@
 package main
 
-func runProviderStep(root string, cfg config, evidence *runEvidence) string {
-	args := []string{"run", *cfg.providerTool, "-repo", root, "-check-doc"}
-	if *cfg.runIntegration {
-		args = append(args, "-run-integration")
-	}
-	args = append(args,
-		"-valid-for", cfg.validFor.String(),
-		"-evidence-out", *cfg.providerEvidence,
-	)
-	step := runStep(root, "provider-evidence", "go", args...)
-	appendStep(evidence, step)
-	return step.Status
-}
-
 func runDashboardStep(root string, cfg config, evidence *runEvidence) {
 	args := []string{
 		"run", *cfg.dashboardTool,
