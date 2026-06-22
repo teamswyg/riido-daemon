@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	openClawStableIntegrationModel = "ollama/qwen3:8b"
 	openClawFastIntegrationModel   = "ollama/llama3.2:latest"
+	openClawStableIntegrationModel = "ollama/qwen3:8b"
 	openClawLegacyIntegrationModel = "ollama/qwen2.5-coder:1.5b"
 	openClawIntegrationModelEnv    = "RIIDO_OPENCLAW_INTEGRATION_MODEL"
 )
@@ -17,8 +17,8 @@ func IntegrationModelCandidates() []string {
 		return []string{model}
 	}
 	return []string{
-		openClawStableIntegrationModel,
 		openClawFastIntegrationModel,
+		openClawStableIntegrationModel,
 		openClawLegacyIntegrationModel,
 	}
 }
