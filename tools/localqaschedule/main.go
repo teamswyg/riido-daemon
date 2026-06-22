@@ -32,6 +32,7 @@ func main() {
 		hour:             flag.Int("hour", 9, "daily run hour, local time"),
 		minute:           flag.Int("minute", 0, "daily run minute, local time"),
 		install:          flag.Bool("install", false, "load the LaunchAgent with launchctl"),
+		inspect:          flag.Bool("inspect", false, "inspect the loaded LaunchAgent without reinstalling"),
 		runAtLoad:        flag.Bool("run-at-load", false, "run once when the LaunchAgent loads"),
 	}
 	flag.Parse()

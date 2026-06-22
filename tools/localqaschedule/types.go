@@ -24,6 +24,7 @@ type config struct {
 	hour             *int
 	minute           *int
 	install          *bool
+	inspect          *bool
 	runAtLoad        *bool
 }
 

@@ -57,7 +57,10 @@ func scheduleEvidenceFailed(e scheduleEvidence) bool {
 	if !e.Installed || e.CommandHasTokenText || !e.S3PrefixConfigured {
 		return true
 	}
-	return !e.Launchd.Checked || !e.Launchd.Loaded || !e.Launchd.CalendarTrigger
+	if !e.Launchd.Checked || !e.Launchd.Loaded || !e.Launchd.CalendarTrigger {
+		return true
+	}
+	return e.Launchd.Runs <= 0 || e.Launchd.LastExitCode != "0"
 }
 
 func scheduleEvidenceDetail(e scheduleEvidence) string {

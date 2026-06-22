@@ -18,7 +18,7 @@ func writeScheduleEvidence(
 		ID:                  "local-qa-schedule",
 		Status:              "passed",
 		Label:               *cfg.label,
-		Installed:           *cfg.install,
+		Installed:           *cfg.install || live.Loaded,
 		PlistPath:           paths.plist,
 		StdoutPath:          paths.stdout,
 		StderrPath:          paths.stderr,
