@@ -7,7 +7,7 @@ func TestTaskMutationPlanUsesGeneratedTaskAndAssignableAgents(t *testing.T) {
 	plan, ok := taskMutationPlanFor(cfg, map[string]any{"agents": []any{
 		map[string]any{"agent_id": "agent-a", "runtime_kind": "codex"},
 		map[string]any{"agent_id": "agent-b", "runtime_kind": "codex"},
-	}}, "task-a", "test")
+	}}, "task-a", "test", agentFixture{})
 	if !ok {
 		t.Fatal("plan not selected")
 	}
@@ -19,6 +19,18 @@ func TestTaskMutationPlanUsesGeneratedTaskAndAssignableAgents(t *testing.T) {
 	}
 	if plan.CommentBody == "" {
 		t.Fatalf("comment body missing: %+v", plan)
+	}
+}
+
+func TestTaskMutationPlanPrefersPreparedAgentFixture(t *testing.T) {
+	cfg := taskPlanTestConfig(t, "", "", "", "")
+	fixture := agentFixture{Candidates: []taskAgentCandidate{
+		{AgentID: "agent-prepared-a", RuntimeKind: "codex"},
+		{AgentID: "agent-prepared-b", RuntimeKind: "codex"},
+	}}
+	plan, ok := taskMutationPlanFor(cfg, nil, "task-a", "test", fixture)
+	if !ok || plan.Pair.First.AgentID != "agent-prepared-a" {
+		t.Fatalf("plan=%+v ok=%v", plan, ok)
 	}
 }
 

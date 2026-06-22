@@ -39,22 +39,28 @@ func distinctAssignmentScenario(plan taskMutationPlan, first, second scenario) s
 	secondAssignment, _ := second.Observed["assignment_id"].(string)
 	firstThread, _ := first.Observed["thread_id"].(string)
 	secondThread, _ := second.Observed["thread_id"].(string)
+	firstRun, _ := first.Observed["run_id"].(string)
+	secondRun, _ := second.Observed["run_id"].(string)
 	out.Observed = map[string]any{
 		"assignment_ids_distinct": firstAssignment != "" && firstAssignment != secondAssignment,
 		"thread_ids_distinct":     firstThread != "" && firstThread != secondThread,
+		"run_ids_distinct":        firstRun != "" && firstRun != secondRun,
 		"task_id_source":          plan.TaskIDSource,
 		"same_runtime_kind_pair":  plan.Pair.First.RuntimeKind != "" && plan.Pair.First.RuntimeKind == plan.Pair.Second.RuntimeKind,
 		"first_runtime_kind":      plan.Pair.First.RuntimeKind,
 		"second_runtime_kind":     plan.Pair.Second.RuntimeKind,
+		"frontend_dedupe_key":     "thread_id",
 	}
 	if first.Status != statusPassed || second.Status != statusPassed {
 		out.Status = statusFailed
 		out.FailureSummary = "one or more assignment creates failed"
 		out.Repair = apiRuntimeRepair()
 	}
-	if out.Observed["assignment_ids_distinct"] != true || out.Observed["thread_ids_distinct"] != true {
+	if out.Observed["assignment_ids_distinct"] != true ||
+		out.Observed["thread_ids_distinct"] != true ||
+		out.Observed["run_ids_distinct"] != true {
 		out.Status = statusFailed
-		out.FailureSummary = "multi assignment collapsed by assignment_id or thread_id"
+		out.FailureSummary = "multi assignment collapsed by assignment_id, thread_id, or run_id"
 	}
 	return out
 }

@@ -16,10 +16,18 @@ func taskFixtureBlocked(fixture taskFixture) bool {
 		fixture.Create.ID != "" && fixture.Create.Status != statusPassed
 }
 
-func finishTaskFlow(cfg config, fixture taskFixture, out, tail []scenario) []scenario {
+func finishTaskFlow(
+	cfg config,
+	client apiClient,
+	fixture taskFixture,
+	agents agentFixture,
+	out []scenario,
+	tail []scenario,
+) []scenario {
 	out = append(out, tail...)
 	if fixture.Created() {
 		out = append(out, cleanupTaskFixture(cfg, fixture))
 	}
+	out = append(out, cleanupAgentFixtures(client, workspaceBase(*cfg.workspaceID), agents)...)
 	return out
 }

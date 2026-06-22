@@ -33,6 +33,10 @@ type config struct {
 	taskFixture   *bool
 	runMutations  *bool
 	commentBody   *string
+	prepareDaemon *bool
+	daemonBinary  *string
+	daemonRunDir  *string
+	daemonSlots   *int
 }
 
 type evidenceFile struct {

@@ -2,14 +2,15 @@ package main
 
 import "net/http"
 
-func taskFlowScenarios(client apiClient, cfg config, discovery map[string]any) []scenario {
+func taskFlowScenarios(client apiClient, cfg config, discovery map[string]any, agents agentFixture) []scenario {
 	base := workspaceBase(*cfg.workspaceID)
 	taskID, source := taskFlowTaskID(cfg, discovery)
 	fixture := maybeCreateTaskFixture(cfg, source)
 	out := taskFixtureScenarios(fixture)
 	if taskFixtureBlocked(fixture) {
 		summary := "Create a development task fixture or set RIIDO_E2E_TASK_ID."
-		return append(out, taskSkipped(false, summary)...)
+		tail := taskSkipped(false, summary)
+		return finishTaskFlow(cfg, client, fixture, agents, out, tail)
 	}
 	if fixture.Created() {
 		taskID, source = fixture.TaskID, "created-fixture"
@@ -22,18 +23,19 @@ func taskFlowScenarios(client apiClient, cfg config, discovery map[string]any) [
 	if shouldSkipGeneratedTaskFlow(assignable, source) {
 		summary := "Set RIIDO_E2E_TASK_ID to a real accessible task; generated task was rejected."
 		out[0] = skippedTaskScenario(assignable, summary)
-		return append(out, taskSkipped(false, summary)...)
+		tail := taskSkipped(false, summary)
+		return finishTaskFlow(cfg, client, fixture, agents, out, tail)
 	}
 	if !*cfg.runMutations {
 		return append(out, taskSkipped(false, "Pass -run-task-mutations with two agent ids.")...)
 	}
-	plan, ok := taskMutationPlanFor(cfg, payload, taskID, source)
+	plan, ok := taskMutationPlanFor(cfg, payload, taskID, source, agents)
 	if !ok {
 		tail := taskSkipped(false, "Need at least two assignable AI agents.")
-		return finishTaskFlow(cfg, fixture, out, tail)
+		return finishTaskFlow(cfg, client, fixture, agents, out, tail)
 	}
 	tail := taskMutationScenarios(client, base, plan)
-	return finishTaskFlow(cfg, fixture, out, tail)
+	return finishTaskFlow(cfg, client, fixture, agents, out, tail)
 }
 
 func shouldSkipGeneratedTaskFlow(assignable scenario, source string) bool {
