@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"errors"
 	"net"
 	"net/http"
@@ -39,12 +38,18 @@ func startDaemonPprofServer(ctx lifecycle.Context, addr string, log logging.Logg
 	done := make(chan struct{})
 	shutdownCh := make(chan struct{})
 	var requestShutdown sync.Once
+	var shutdownServer sync.Once
+	stopServer := func() {
+		shutdownServer.Do(func() {
+			shutdownDaemonPprofServer(server)
+		})
+	}
 	go func() {
 		select {
 		case <-ctx.Done():
 		case <-shutdownCh:
 		}
-		shutdownDaemonPprofServer(server)
+		stopServer()
 	}()
 	go func() {
 		defer close(done)
@@ -55,16 +60,10 @@ func startDaemonPprofServer(ctx lifecycle.Context, addr string, log logging.Logg
 	log.Printf("pprof listening addr=%s path=/debug/pprof/", actualAddr)
 	return func() {
 		requestShutdown.Do(func() { close(shutdownCh) })
-		shutdownDaemonPprofServer(server)
+		stopServer()
 		select {
 		case <-done:
 		case <-time.After(daemonPprofShutdownTimeout):
 		}
 	}, actualAddr, nil
-}
-
-func shutdownDaemonPprofServer(server *http.Server) {
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), daemonPprofShutdownTimeout)
-	defer cancel()
-	_ = server.Shutdown(shutdownCtx)
 }
