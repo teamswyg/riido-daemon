@@ -44,6 +44,8 @@ func newEvidence(cfg config, observed time.Time) runEvidence {
 		Artifacts: runArtifacts{
 			ProviderEvidence: *cfg.providerEvidence,
 			ProductEvidence:  *cfg.productEvidence,
+			ProductLab:       *cfg.productLab,
+			ScheduleEvidence: *cfg.scheduleEvidence,
 			DashboardHTML:    *cfg.dashboardHTML,
 			S3Prefix:         *cfg.s3Prefix,
 		},

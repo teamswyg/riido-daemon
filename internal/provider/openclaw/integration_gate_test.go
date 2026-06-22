@@ -56,17 +56,3 @@ func requireOpenClawConfigUsable(t *testing.T, ctx context.Context, exe string) 
 		t.Skip("openclaw local model backend unavailable")
 	}
 }
-
-func configProbeArgs() []string {
-	return []string{
-		"agent",
-		"--local",
-		"--json",
-		"--session-id",
-		"riido-config-probe",
-		"--message",
-		"Say OK only.",
-		"--timeout",
-		"30",
-	}
-}

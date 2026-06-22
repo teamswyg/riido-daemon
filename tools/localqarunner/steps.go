@@ -18,6 +18,8 @@ func runDashboardStep(root string, cfg config, evidence *runEvidence) {
 	args := []string{
 		"run", *cfg.dashboardTool,
 		"-provider-evidence", *cfg.providerEvidence,
+		"-run-evidence", *cfg.runEvidence,
+		"-schedule-evidence", *cfg.scheduleEvidence,
 		"-coverage-manifest", *cfg.coverageManifest,
 		"-out", *cfg.dashboardHTML,
 	}
@@ -33,8 +35,18 @@ func runProductStep(root string, cfg config, evidence *runEvidence) string {
 		"-client-root", *cfg.clientRoot,
 		"-base-url", *cfg.productBaseURL,
 		"-workspace-id", *cfg.productWorkspace,
+		"-screenshots", *cfg.productScreenshots,
+		"-storage-state", *cfg.productStorage,
+		"-agent-host", *cfg.productAgentHost,
 		"-valid-for", cfg.validFor.String(),
 		"-evidence-out", *cfg.productEvidence,
+		"-lab-out", *cfg.productLab,
+	}
+	if *cfg.productBrowserE2E {
+		args = append(args, "-browser-e2e")
+	}
+	if *cfg.productStartClient {
+		args = append(args, "-start-client")
 	}
 	step := runStep(root, "product-acceptance", "go", args...)
 	appendStep(evidence, step)
@@ -45,6 +57,9 @@ func runUploadSteps(root string, cfg config, evidence *runEvidence) {
 	stamp := timestampSlug(evidence.ObservedAt)
 	for _, upload := range uploads(cfg, stamp) {
 		args := []string{"s3", "cp", upload.source, upload.target}
+		if upload.recursive {
+			args = append(args, "--recursive")
+		}
 		args = append(args, "--cache-control", "no-store")
 		appendStep(evidence, runStep(root, upload.id, "aws", args...))
 	}

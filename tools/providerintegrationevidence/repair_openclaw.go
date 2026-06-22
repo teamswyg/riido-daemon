@@ -19,3 +19,13 @@ func openClawBackendRepair() repair {
 		SuggestedCommand: "brew services start ollama || ollama serve",
 	}
 }
+
+func openClawModelConfigRepair() repair {
+	return repair{
+		Class:            "openclaw_model_config_required",
+		Owner:            "local_operator",
+		Mode:             "manual",
+		Summary:          "OpenClaw ran but did not perform the required file side effect; point OpenClaw at a fast tool-capable local model and rerun QA.",
+		SuggestedCommand: "openclaw doctor --fix && openclaw models set llama3.2:latest && go run ./tools/localqarunner -run-product",
+	}
+}

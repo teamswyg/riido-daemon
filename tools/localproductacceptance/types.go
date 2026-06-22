@@ -5,16 +5,29 @@ import "time"
 const (
 	statusPassed  = "passed"
 	statusFailed  = "failed"
+	statusPartial = "partial"
 	statusSkipped = "skipped"
 )
 
 type config struct {
-	clientRoot  *string
-	baseURL     *string
-	workspaceID *string
-	evidenceOut *string
-	validFor    *time.Duration
-	probeRoutes *bool
+	clientRoot    *string
+	baseURL       *string
+	apiToken      *string
+	workspaceID   *string
+	taskID        *string
+	firstAgentID  *string
+	secondAgentID *string
+	evidenceOut   *string
+	labOut        *string
+	screenshots   *string
+	storageState  *string
+	validFor      *time.Duration
+	probeRoutes   *bool
+	browserE2E    *bool
+	startClient   *bool
+	agentHost     *string
+	runMutations  *bool
+	commentBody   *string
 }
 
 type evidenceFile struct {
@@ -27,11 +40,14 @@ type evidenceFile struct {
 }
 
 type scenario struct {
-	ID             string  `json:"id"`
-	Status         string  `json:"status"`
-	FailureSummary string  `json:"failure_summary,omitempty"`
-	Screenshot     string  `json:"screenshot,omitempty"`
-	Repair         *repair `json:"repair,omitempty"`
+	ID             string         `json:"id"`
+	Status         string         `json:"status"`
+	Method         string         `json:"method,omitempty"`
+	Endpoint       string         `json:"endpoint,omitempty"`
+	FailureSummary string         `json:"failure_summary,omitempty"`
+	Screenshot     string         `json:"screenshot,omitempty"`
+	Observed       map[string]any `json:"observed,omitempty"`
+	Repair         *repair        `json:"repair,omitempty"`
 }
 
 type repair struct {

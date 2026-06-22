@@ -38,8 +38,15 @@ func TestClassifyRepairProviderTimeout(t *testing.T) {
 }
 
 func TestClassifyRepairSideEffectMissing(t *testing.T) {
-	got := classifyRepair("openclaw", "failed", "completed without writing expected artifact", true)
+	got := classifyRepair("codex", "failed", "completed without writing expected artifact", true)
 	if got.Class != "provider_side_effect_missing" || got.Owner != "engineer" {
+		t.Fatalf("repair=%+v", got)
+	}
+}
+
+func TestClassifyRepairOpenClawSideEffectUsesModelConfig(t *testing.T) {
+	got := classifyRepair("openclaw", "failed", "completed without writing expected artifact", true)
+	if got.Class != "openclaw_model_config_required" || got.Owner != "local_operator" {
 		t.Fatalf("repair=%+v", got)
 	}
 }

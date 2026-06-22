@@ -13,9 +13,6 @@ func buildCommandArgs(req agentbridge.StartRequest, sessionID string) ([]string,
 		"--json",
 		"--session-id", sessionID,
 	}
-	if req.Model != "" {
-		args = append(args, "--model", req.Model)
-	}
 	args = append(args, "--message", buildMessage(req.SystemPrompt, req.Prompt))
 
 	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, BlockedArgs())

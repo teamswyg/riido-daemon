@@ -43,7 +43,7 @@ h2{margin-top:28px}
 </section>
 <h2>Coverage</h2>
 <table><thead><tr><th>Scenario</th><th>Tier</th><th>Surface</th><th>Status</th><th>Repair</th></tr></thead><tbody>
-{{range .CoverageRows}}<tr><td>{{.Title}}<br><code>{{.ID}}</code></td><td>{{.Tier}}</td><td>{{.Surface}}</td><td class="status">{{.Status}}</td><td>{{if .Repair.Class}}{{.Repair.Class}}<br>{{.Repair.Summary}}{{if .Repair.SuggestedCommand}}<br><code>{{.Repair.SuggestedCommand}}</code>{{end}}{{else}}{{.Detail}}{{end}}</td></tr>{{end}}
+{{range .CoverageRows}}<tr><td>{{.Title}}<br><code>{{.ID}}</code></td><td>{{.Tier}}</td><td>{{.Surface}}</td><td class="status">{{.Status}}</td><td>{{if .Repair.Class}}{{.Repair.Class}}<br>{{.Repair.Summary}}{{if .Repair.SuggestedCommand}}<br><code>{{.Repair.SuggestedCommand}}</code>{{end}}{{else}}{{.Detail}}{{end}}{{if .Screenshot}}<br><a href="{{.Screenshot}}">screenshot</a>{{end}}</td></tr>{{end}}
 </tbody></table>
 <h2>Provider Evidence</h2>
 <table>
