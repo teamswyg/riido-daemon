@@ -8,7 +8,8 @@ func testConfig() config {
 	storage := "/tmp/state.json"
 	taskID, first, second, comment := "task-a", "agent-a", "agent-b", "hi"
 	hour, minute := 9, 5
-	install, runAtLoad, runProduct, startClient, mutations := false, false, true, true, true
+	install, inspect, runAtLoad := false, false, false
+	runProduct, startClient, mutations := true, true, true
 	return config{
 		repo:             &repo,
 		s3Prefix:         &s3,
@@ -33,6 +34,7 @@ func testConfig() config {
 		hour:             &hour,
 		minute:           &minute,
 		install:          &install,
+		inspect:          &inspect,
 		runAtLoad:        &runAtLoad,
 	}
 }

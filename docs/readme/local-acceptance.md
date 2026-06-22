@@ -33,7 +33,7 @@ go run ./tools/localqarunner -run-product
 
 ## Daily Schedule
 
-`go run ./tools/localqaschedule -install` installs `io.riido.local-qa` as a macOS LaunchAgent. The schedule evidence must show `installed=true`, `command_has_token_text=false`, `s3_prefix_configured=true`, `launchd.checked=true`, `launchd.loaded=true`, and `launchd.calendar_trigger=true` before the dashboard is trusted as daily local evidence.
+`go run ./tools/localqaschedule -install` installs `io.riido.local-qa` as a macOS LaunchAgent. After the first scheduled run or a manual `launchctl kickstart`, run `go run ./tools/localqaschedule -inspect` to refresh live launchd evidence without reinstalling. The schedule evidence must show `installed=true`, `command_has_token_text=false`, `s3_prefix_configured=true`, `launchd.checked=true`, `launchd.loaded=true`, `launchd.calendar_trigger=true`, `launchd.runs>0`, and `launchd.last_exit_code=0` before the dashboard is trusted as daily local evidence.
 
 The dashboard `local.qa.daily_schedule` row must also display live launchd context such as `launchd_state`, `runs`, `last_exit`, plist path, stdout/stderr paths, and the redacted command preview. A passing row proves both the declarative plist and the loaded user LaunchAgent were observed.
 

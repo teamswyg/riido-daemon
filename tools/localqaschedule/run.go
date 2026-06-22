@@ -31,7 +31,7 @@ func run(cfg config) (string, error) {
 }
 
 func launchdEvidenceForRun(cfg config, paths schedulePaths) (launchdEvidence, error) {
-	if !*cfg.install {
+	if !*cfg.install && !*cfg.inspect {
 		return launchdEvidence{}, nil
 	}
 	live, err := inspectLaunchAgent(paths, *cfg.label)
