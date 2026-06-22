@@ -19,7 +19,7 @@
     {"platform": "Windows amd64", "goos": "windows", "goarch": "amd64", "format": "zip"},
     {"platform": "Windows arm64", "goos": "windows", "goarch": "arm64", "format": "zip"}
   ],
-  "archive_contents": ["riido or riido.exe", "LICENSE", "NOTICE.md", "VERSION"],
+  "archive_contents": ["riido or riido.exe", "LICENSE", "NOTICE.md", "VERSION", "binary version command reports VERSION"],
   "installer": {
     "command": "curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh",
     "supported_goos": ["darwin", "linux"],
@@ -56,7 +56,10 @@
     {"name": "publish-checksums", "file": "scripts/publish-release-artifacts.sh", "contains": "sha256sum riido-daemon_* > SHA256SUMS"},
     {"name": "install-prerelease-latest", "file": "scripts/install-riido-daemon.sh", "contains": "releases?per_page=1"},
     {"name": "install-checksum-verification", "file": "scripts/install-riido-daemon.sh", "contains": "checksum mismatch"},
-    {"name": "install-dir-override", "file": "scripts/install-riido-daemon.sh", "contains": "RIIDO_DAEMON_INSTALL_DIR"}
+    {"name": "install-dir-override", "file": "scripts/install-riido-daemon.sh", "contains": "RIIDO_DAEMON_INSTALL_DIR"},
+    {"name": "build-package-binary-version-ldflags", "file": "scripts/build-release-package.sh", "contains": "-X main.binaryVersion=$version"},
+    {"name": "binary-version-command", "file": "cmd/riido/version.go", "contains": "riido-daemon "},
+    {"name": "binary-version-command-test", "file": "cmd/riido/version_test.go", "contains": "TestVersionCommandPrintsBinaryVersion"}
   ],
   "detail_docs": [
     {"title": "Decision and Asset Names", "path": "docs/30-architecture/release-artifacts/assets.md"},
@@ -68,6 +71,7 @@
     "Release assets are generated from v* tags and dry-run built on pull requests.",
     "Provider CLIs and secrets are never bundled in riido-daemon release archives.",
     "GitHub Releases are the immutable daemon binary source; CDN latest is only a mutable mirror.",
-    "Installer behavior must stay derivable from the install script and release target manifest."
+    "Installer behavior must stay derivable from the install script and release target manifest.",
+    "The executable must expose the same release tag through `riido version` and `riido --version`."
   ]
 }

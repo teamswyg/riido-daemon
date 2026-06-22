@@ -28,3 +28,4 @@ Define how riido-daemon public release assets are built, published, installed, a
 - Provider CLIs and secrets are never bundled in riido-daemon release archives.
 - GitHub Releases are the immutable daemon binary source; CDN latest is only a mutable mirror.
 - Installer behavior must stay derivable from the install script and release target manifest.
+- The executable must expose the same release tag through `riido version` and `riido --version`.

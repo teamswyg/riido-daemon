@@ -11,6 +11,7 @@
 | `riido mwsd ...` | internal/mwsdbridge, internal/project, internal/taskdb | reads MWSD snapshots and promotes local workspace/task projections |
 | `riido task ...` | internal/taskdb, internal/validation | local guarded task mutation, evidence, and validation over JSON task DB |
 | `riido bridge ...` | provider adapter packages | provider list/detect smoke surface without executing provider tasks |
+| `riido version` | cmd/riido release artifact identity | binary release tag evidence without daemon IPC |
 | `riido daemon ...` | internal/agentbridge/runtimeactor, supervisor, control-plane adapters | local runtime lifecycle, health, readiness, metrics, stop, and logs |
 
 `printUsage()` in `cmd/riido/main.go` is the executable usage matrix. This document describes command ownership; it does not replace usage text.

@@ -17,6 +17,7 @@ Keeps the public cmd/riido command surface generated from a manifest and verifie
 | `mwsd` | `snapshot`, `projection`, `sync`, `orchestration`, `projects`, `status` | internal/mwsdbridge, internal/project, internal/taskdb | reads MWSD snapshots and promotes local workspace/task projections | `main-command-mwsd`, `mwsd-subcommand-vocabulary` |
 | `task` | `list`, `transition`, `evidence`, `validate` | internal/taskdb, internal/validation | local guarded task mutation, evidence, and validation over JSON task DB | `main-command-task`, `task-subcommand-vocabulary` |
 | `bridge` | `providers`, `detect` | provider adapter packages | provider list/detect smoke surface without executing provider tasks | `main-command-bridge`, `bridge-subcommand-vocabulary` |
+| `version` | _none_ | cmd/riido release artifact identity | binary release tag evidence without daemon IPC | `main-command-version`, `run-version-dispatch` |
 | `daemon` | `start`, `status`, `health`, `ready`, `metrics`, `stop`, `logs` | internal/agentbridge/runtimeactor, supervisor, control-plane adapters | local runtime lifecycle, health, readiness, metrics, stop, and logs | `main-command-daemon`, `daemon-subcommand-vocabulary` |
 
 ## Provider Smoke Surface

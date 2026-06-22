@@ -20,7 +20,7 @@
     {"name": "contracts-dependency", "file": "go.mod", "contains": "require github.com/teamswyg/riido-contracts"},
     {"name": "branch-gate-workflow", "file": ".github/workflows/riido-work-branch.yml", "contains": "Verify PR branch came from Riido work unit branchName"},
     {"name": "branch-gate-script", "file": "scripts/verify-riido-work-branch.sh", "contains": "branch must be the exact Riido branchName"},
-    {"name": "daemon-command-surface", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandDaemon mainCommand = \"daemon\""},
+    {"name": "daemon-command-surface", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandVersion mainCommand = \"version\""},
     {"name": "task-source-env", "file": "cmd/riido/daemon_config.go", "contains": "envTaskDBSourcePath              = \"RIIDO_TASK_DB_SOURCE_PATH\""},
     {"name": "saas-device-env", "file": "cmd/riido/daemon_config.go", "contains": "envDeviceSecret                  = \"RIIDO_DEVICE_SECRET\""},
     {"name": "claude-override", "file": "internal/provider/claude/detect.go", "contains": "const EnvOverride = \"RIIDO_CLAUDE_PATH\""},

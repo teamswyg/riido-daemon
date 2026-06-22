@@ -21,6 +21,9 @@ func run(args []string) error {
 		printUsage()
 		return nil
 	}
+	if args[0] == "--version" || args[0] == "-v" {
+		return runVersion(nil)
+	}
 	switch mainCommand(args[0]) {
 	case mainCommandMwsd:
 		return runMwsd(args[1:])
@@ -34,6 +37,8 @@ func run(args []string) error {
 		return runBridge(args[1:])
 	case mainCommandDaemon:
 		return runDaemon(args[1:])
+	case mainCommandVersion:
+		return runVersion(args[1:])
 	default:
 		printUsage()
 		return fmt.Errorf("unknown command: %s", args[0])
