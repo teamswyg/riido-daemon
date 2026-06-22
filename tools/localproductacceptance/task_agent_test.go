@@ -25,3 +25,17 @@ func TestChooseTaskAgentPairFallsBackToFirstTwo(t *testing.T) {
 		t.Fatalf("pair=%+v ok=%v", pair, ok)
 	}
 }
+
+func TestPrioritizeTaskAgentCandidatesKeepsSameRuntimeKindFirst(t *testing.T) {
+	agents := prioritizeTaskAgentCandidates([]taskAgentCandidate{
+		{AgentID: "agent-a", RuntimeKind: "codex"},
+		{AgentID: "agent-b", RuntimeKind: "openclaw"},
+		{AgentID: "agent-c", RuntimeKind: "codex"},
+	})
+	if agents[0].AgentID != "agent-a" || agents[1].AgentID != "agent-c" {
+		t.Fatalf("agents=%+v", agents)
+	}
+	if agents[2].AgentID != "agent-b" {
+		t.Fatalf("fallback candidate lost: %+v", agents)
+	}
+}

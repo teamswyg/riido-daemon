@@ -30,13 +30,18 @@ func shouldSkipGeneratedTaskFlow(assignable scenario, source string) bool {
 }
 
 func taskMutationScenarios(client apiClient, base string, plan taskMutationPlan) []scenario {
-	first := createAssignment(client, "contract.task.assignment.create.first", base, plan.TaskID, plan.Pair.First.AgentID)
-	second := createAssignment(client, "contract.task.assignment.create.second", base, plan.TaskID, plan.Pair.Second.AgentID)
-	out := []scenario{first, second, distinctAssignmentScenario(plan, first, second)}
+	run := createAssignmentRun(client, base, plan)
+	out := append([]scenario{}, run.Scenarios...)
+	if !run.OK {
+		out = append(out, assignmentBlockedScenarios(run)...)
+		return append(out, cleanupPartialTaskAssignments(client, base, plan.TaskID, run)...)
+	}
+	plan.Pair = run.Pair
+	out = append(out, distinctAssignmentScenario(plan, run.First, run.Second))
 	out = append(out, apiQuery(client, "contract.task.thread_subscription", http.MethodGet,
 		taskEndpoint(base, plan.TaskID, "/thread-stream-subscription"), nil, summarizeSubscription))
-	out = append(out, sseReplayScenario(client, base, first, second))
-	out = append(out, threadMessageScenario(client, base, plan, first))
+	out = append(out, sseReplayScenario(client, base, run.First, run.Second))
+	out = append(out, threadMessageScenario(client, base, plan, run.First))
 	out = append(out, cleanupTaskAssignments(client, base, plan)...)
 	return out
 }

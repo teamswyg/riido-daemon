@@ -14,6 +14,7 @@ type taskMutationPlan struct {
 	TaskID       string
 	TaskIDSource string
 	Pair         taskAgentPair
+	Candidates   []taskAgentCandidate
 	CommentBody  string
 }
 
@@ -23,14 +24,15 @@ func taskMutationPlanFor(
 	taskID string,
 	source string,
 ) (taskMutationPlan, bool) {
-	pair, ok := taskFlowAgentPair(cfg, payload)
-	if !ok {
+	candidates := taskFlowAgentCandidates(cfg, payload)
+	if len(candidates) < 2 {
 		return taskMutationPlan{}, false
 	}
 	return taskMutationPlan{
 		TaskID:       taskID,
 		TaskIDSource: source,
-		Pair:         pair,
+		Pair:         taskAgentPair{First: candidates[0], Second: candidates[1]},
+		Candidates:   candidates,
 		CommentBody:  taskCommentBody(cfg, taskID),
 	}, true
 }
@@ -45,14 +47,14 @@ func taskFlowTaskID(cfg config, discovery map[string]any) (string, string) {
 	return "local-qa-" + time.Now().UTC().Format("20060102T150405Z"), "generated"
 }
 
-func taskFlowAgentPair(cfg config, payload map[string]any) (taskAgentPair, bool) {
+func taskFlowAgentCandidates(cfg config, payload map[string]any) []taskAgentCandidate {
 	if *cfg.firstAgentID != "" && *cfg.secondAgentID != "" {
-		return taskAgentPair{
-			First:  taskAgentCandidate{AgentID: *cfg.firstAgentID},
-			Second: taskAgentCandidate{AgentID: *cfg.secondAgentID},
-		}, true
+		return []taskAgentCandidate{
+			{AgentID: *cfg.firstAgentID},
+			{AgentID: *cfg.secondAgentID},
+		}
 	}
-	return chooseTaskAgentPair(taskAgentCandidates(payload))
+	return prioritizeTaskAgentCandidates(taskAgentCandidates(payload))
 }
 
 func taskCommentBody(cfg config, taskID string) string {

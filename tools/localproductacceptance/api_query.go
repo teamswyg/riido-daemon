@@ -12,7 +12,8 @@ func apiQueryPayload(client apiClient, id, method, path string, body any, summar
 		out.Status = statusFailed
 		out.FailureSummary = err.Error()
 		out.Observed = map[string]any{"status_code": statusCode}
-		out.Repair = apiRuntimeRepair()
+		observePayloadError(&out, payload)
+		out.Repair = apiRepairForPayload(payload)
 		return out, payload
 	}
 	out.Status = statusPassed
