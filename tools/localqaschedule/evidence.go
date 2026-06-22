@@ -7,7 +7,12 @@ import (
 	"strings"
 )
 
-func writeScheduleEvidence(cfg config, paths schedulePaths, command string) error {
+func writeScheduleEvidence(
+	cfg config,
+	paths schedulePaths,
+	command string,
+	live launchdEvidence,
+) error {
 	evidence := scheduleEvidence{
 		SchemaVersion:       "riido-local-qa-schedule.v1",
 		ID:                  "local-qa-schedule",
@@ -25,6 +30,7 @@ func writeScheduleEvidence(cfg config, paths schedulePaths, command string) erro
 		TaskIDConfigured:    strings.TrimSpace(*cfg.productTaskID) != "",
 		CommandHasTokenText: commandMentionsToken(command),
 		CommandPreview:      safeCommandPreview(command),
+		Launchd:             live,
 	}
 	return writeJSON(scheduleEvidencePath(cfg, paths), evidence)
 }
