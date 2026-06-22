@@ -35,6 +35,6 @@
     {"kind": "code", "language": "bash", "code": "go run ./tools/localreleaseacceptance \\\n  -evidence-out .riido-local/evidence/local-release-acceptance.json"},
     {"kind": "paragraph", "text": "Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI. It runs once per day and uploads latest plus timestamped evidence when `RIIDO_LOCAL_QA_S3_PREFIX` is set:"},
     {"kind": "code", "language": "bash", "code": "RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \\\ngo run ./tools/localqaschedule -repo \"$(pwd)\" -hour 9 -minute 0 -install\nlaunchctl print gui/$(id -u)/io.riido.local-qa"},
-    {"kind": "paragraph", "text": "Local artifacts are written under `.riido-local/evidence/` and `.riido-local/dashboard/`. The dashboard shows what passed, failed, skipped, remains not verified, and when the evidence expires."}
+    {"kind": "paragraph", "text": "Local artifacts are written under `.riido-local/evidence/` and `.riido-local/dashboard/`. The dashboard shows what passed, failed, skipped, remains not verified, when the evidence expires, and the macOS LaunchAgent label/time/log paths/command preview that prove the daily local E2E schedule is installed without token text."}
   ]
 }

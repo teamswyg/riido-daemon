@@ -10,6 +10,7 @@ func run(cfg config) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	command := localQACommand(cfg, paths)
 	body := renderPlist(cfg, paths)
 	if err := writeText(paths.plist, body); err != nil {
 		return "", fmt.Errorf("write plist: %w", err)
@@ -19,7 +20,7 @@ func run(cfg config) (string, error) {
 			return "", err
 		}
 	}
-	if err := writeScheduleEvidence(cfg, paths, body); err != nil {
+	if err := writeScheduleEvidence(cfg, paths, command); err != nil {
 		return "", err
 	}
 	return paths.plist, nil
