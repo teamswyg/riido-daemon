@@ -24,6 +24,7 @@ type requiredEvidence struct {
 	ID          string      `json:"id"`
 	File        string      `json:"file"`
 	Description string      `json:"description"`
+	Producer    string      `json:"producer_command"`
 	Assertions  []assertion `json:"assertions"`
 }
 

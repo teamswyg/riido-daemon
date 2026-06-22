@@ -18,63 +18,40 @@
       "id": "loop",
       "file": "loop-engineering-evidence.json",
       "description": "Observe/Hypothesis/Execute/Evaluate/Retrospective coverage",
-      "assertions": [
-        {"field": "status", "equals": "verified"},
-        {"field": "problem_count", "equals": 0},
-        {"field": "open_gap_count", "equals": 0}
-      ]
+      "producer_command": "go run ./tools/loopevidence -check -evidence-out <evidence-dir>/loop-engineering-evidence.json",
+      "assertions": [{"field": "status", "equals": "verified"}, {"field": "problem_count", "equals": 0}, {"field": "open_gap_count", "equals": 0}]
     },
     {
       "id": "workflow",
       "file": "workflow-evidence.json",
       "description": "Workflow evidence coverage and tool binding",
-      "assertions": [
-        {"field": "status", "equals": "verified"},
-        {"field": "unregistered_gaps", "empty": true}
-      ]
+      "producer_command": "go run ./tools/workflowevidence -check-doc -evidence-out <evidence-dir>/workflow-evidence.json",
+      "assertions": [{"field": "status", "equals": "verified"}, {"field": "unregistered_gaps", "empty": true}]
     },
     {
       "id": "knowledge",
       "file": "repo-executable-knowledge-coverage.json",
       "description": "Executable knowledge coverage",
-      "assertions": [
-        {"field": "status", "equals": "verified"},
-        {"field": "manual_count", "equals": 0},
-        {"field": "manifest_missing_loop_count", "equals": 0},
-        {"field": "generated_workflow_missing_count", "equals": 0}
-      ]
+      "producer_command": "go run ./tools/knowledgecoverage -manifest docs/executable-knowledge.riido.json -check-doc -evidence-out <evidence-dir>/repo-executable-knowledge-coverage.json",
+      "assertions": [{"field": "status", "equals": "verified"}, {"field": "manual_count", "equals": 0}, {"field": "manifest_missing_loop_count", "equals": 0}, {"field": "generated_workflow_missing_count", "equals": 0}]
     },
     {
       "id": "ci",
       "file": "ci-evidence.json",
       "description": "Broad CI command evidence",
-      "assertions": [
-        {"field": "status", "equals": "verified"},
-        {"field": "problem_count", "equals": 0}
-      ]
+      "producer_command": "go run ./tools/cievidence -manifest docs/30-architecture/ci-evidence.riido.json -workflow .github/workflows/ci.yml -id ci -evidence-out <evidence-dir>/ci-evidence.json",
+      "assertions": [{"field": "status", "equals": "verified"}, {"field": "problem_count", "equals": 0}]
     },
     {
       "id": "go-ci",
       "file": "go-ci-evidence.json",
       "description": "Lint and Go CI command evidence",
-      "assertions": [
-        {"field": "status", "equals": "verified"},
-        {"field": "problem_count", "equals": 0}
-      ]
+      "producer_command": "go run ./tools/cievidence -manifest docs/30-architecture/ci-evidence.riido.json -workflow .github/workflows/go-ci.yml -id go-ci -evidence-out <evidence-dir>/go-ci-evidence.json",
+      "assertions": [{"field": "status", "equals": "verified"}, {"field": "problem_count", "equals": 0}]
     }
   ],
   "closed_loop_classes": [
-    {
-      "id": "bug-fix",
-      "kind": "bug",
-      "description": "A bug fix is closed only when failure surfaces, regression checks, and broad CI are all verified.",
-      "evidence_ids": ["loop", "ci", "go-ci"]
-    },
-    {
-      "id": "feature-delivery",
-      "kind": "feature",
-      "description": "A feature is closed only when executable knowledge, workflow coverage, and loop evidence are all verified.",
-      "evidence_ids": ["knowledge", "workflow", "loop"]
-    }
+    {"id": "bug-fix", "kind": "bug", "description": "A bug fix is closed only when failure surfaces, regression checks, and broad CI are all verified.", "evidence_ids": ["loop", "ci", "go-ci"]},
+    {"id": "feature-delivery", "kind": "feature", "description": "A feature is closed only when executable knowledge, workflow coverage, and loop evidence are all verified.", "evidence_ids": ["knowledge", "workflow", "loop"]}
   ]
 }

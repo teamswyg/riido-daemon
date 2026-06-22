@@ -17,7 +17,7 @@ func writeFixtureManifest(t *testing.T, root string) string {
   "workflow":".github/workflows/self-improvement-evidence.yml",
   "evidence_artifact":"self-improvement-evidence",
   "loop_source":"docs/30-architecture/loop-engineering/self-improvement-evidence.riido.json",
-  "required_evidence":[{"id":"loop","file":"loop.json","description":"loop","assertions":[{"field":"status","equals":"verified"},{"field":"problem_count","equals":0}]}],
+  "required_evidence":[{"id":"loop","file":"loop.json","description":"loop","producer_command":"go run ./tools/loopevidence -evidence-out <evidence-dir>/loop.json","assertions":[{"field":"status","equals":"verified"},{"field":"problem_count","equals":0}]}],
   "closed_loop_classes":[
     {"id":"bug","kind":"bug","description":"bug closure","evidence_ids":["loop"]},
     {"id":"feature","kind":"feature","description":"feature closure","evidence_ids":["loop"]}

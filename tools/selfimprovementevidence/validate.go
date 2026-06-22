@@ -31,8 +31,8 @@ func validateManifest(m manifest) error {
 }
 
 func validateRequired(item requiredEvidence, seen map[string]bool) error {
-	if item.ID == "" || item.File == "" || item.Description == "" {
-		return errors.New("required evidence id, file, and description are required")
+	if item.ID == "" || item.File == "" || item.Description == "" || item.Producer == "" {
+		return errors.New("required evidence id, file, description, and producer_command are required")
 	}
 	if seen[item.ID] {
 		return fmt.Errorf("duplicate required evidence %s", item.ID)
