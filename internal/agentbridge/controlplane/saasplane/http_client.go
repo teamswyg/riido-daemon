@@ -3,7 +3,6 @@ package saasplane
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -49,13 +48,7 @@ func (p *Plane) doJSON(ctx context.Context, method, path string, body []byte, ou
 		}
 
 		if resp.StatusCode >= 200 && resp.StatusCode < 300 {
-			if out == nil {
-				_ = resp.Body.Close()
-				return nil
-			}
-			err = json.NewDecoder(resp.Body).Decode(out)
-			_ = resp.Body.Close()
-			return err
+			return decodeJSONResponse(resp, out, method, path)
 		}
 
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
