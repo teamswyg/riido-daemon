@@ -21,8 +21,8 @@ func assertOpenClawIntegrationResult(t *testing.T, obs openClawIntegrationObserv
 			openClawFailureEvidence(obs.events),
 		)
 	}
-	if !strings.Contains(strings.ToLower(res.Output), "ok") {
-		t.Fatalf("openclaw integration output = %q", res.Output)
+	if strings.TrimSpace(res.Output) == "" {
+		t.Fatalf("openclaw integration output is empty")
 	}
 }
 

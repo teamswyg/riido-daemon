@@ -22,7 +22,8 @@ Evidence artifact: `provider-real-cli-observation`.
 - Missing executables are recorded as observed `skipped`, not PASS.
 - Available executables run provider `TestIntegration` with `AGENTBRIDGE_INTEGRATION=1`.
 - Available-provider integration failure fails the workflow after writing evidence.
-- OpenClaw model speed is configured through OpenClaw itself; if config is invalid run `openclaw doctor --fix`, then `openclaw models set llama3.2:latest` or another fast tool-capable local model before QA.
+- OpenClaw model speed is configured through OpenClaw itself; if config is invalid run `openclaw doctor --fix`, then `openclaw models set qwen3.5-4b-q4:latest` or another fast tool-capable local model before QA.
+- OpenClaw text completion does not prove daemon-selected cwd filesystem side effects; the integration artifact gate records that distinction explicitly.
 - Local daily evidence is fresh for 24h and records `expires_at` for dashboard gating.
 
 ## Local Daily Evidence

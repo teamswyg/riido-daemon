@@ -31,6 +31,7 @@ func openClawIntegrationRequest(
 		Prompt:     openClawIntegrationPrompt(),
 		Cwd:        workdir,
 		Executable: detect.Executable,
+		CustomArgs: []string{"--thinking", "off"},
 	}
 	return req, openClawIntegrationExpected{
 		sessionID:    sessionID,

@@ -51,7 +51,7 @@ OpenClaw local model speed is owned by OpenClaw config. If OpenClaw uses a slow 
 
 ```bash
 openclaw doctor --fix
-openclaw models set llama3.2:latest
+openclaw models set qwen3.5-4b-q4:latest
 ```
 
 Run local acceptance verification before deployment. The runner keeps provider failures as evidence, calls the real development AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:

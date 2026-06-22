@@ -46,7 +46,7 @@ func TestClassifyRepairSideEffectMissing(t *testing.T) {
 
 func TestClassifyRepairOpenClawSideEffectUsesModelConfig(t *testing.T) {
 	got := classifyRepair("openclaw", "failed", "completed without writing expected artifact", true)
-	if got.Class != "openclaw_model_config_required" || got.Owner != "local_operator" {
+	if got.Class != "openclaw_cwd_side_effect_unverified" || got.Owner != "local_operator" {
 		t.Fatalf("repair=%+v", got)
 	}
 }

@@ -24,7 +24,7 @@
     ]},
     {"kind": "paragraph", "text": "Only one source should be selected as the production source."},
     {"kind": "paragraph", "text": "OpenClaw local model speed is owned by OpenClaw config. If OpenClaw uses a slow Ollama default, repair config if needed and switch it to a faster tool-capable local model before QA:"},
-    {"kind": "code", "language": "bash", "code": "openclaw doctor --fix\nopenclaw models set llama3.2:latest"},
+    {"kind": "code", "language": "bash", "code": "openclaw doctor --fix\nopenclaw models set qwen3.5-4b-q4:latest"},
     {"kind": "paragraph", "text": "Run local acceptance verification before deployment. The runner keeps provider failures as evidence, calls the real development AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:"},
     {"kind": "code", "language": "bash", "code": "RIIDO_AI_AGENT_TOKEN=<token> \\\nRIIDO_E2E_WORKSPACE_ID=<workspace_id> \\\nRIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \\\ngo run ./tools/localqarunner -run-product"},
     {"kind": "paragraph", "text": "`teamswyg/riido-client` is not the implementation target for this harness and must not receive Codex/local-QA commits. The daemon-owned contract lab writes `.riido-local/contract-lab/index.html` to show frontend developers the exact endpoint order and identifier rules."},
