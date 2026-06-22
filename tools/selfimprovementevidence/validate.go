@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"strings"
 )
 
 func validateManifest(m manifest) error {
@@ -33,6 +34,9 @@ func validateManifest(m manifest) error {
 func validateRequired(item requiredEvidence, seen map[string]bool) error {
 	if item.ID == "" || item.File == "" || item.Description == "" || item.Producer == "" {
 		return errors.New("required evidence id, file, description, and producer_command are required")
+	}
+	if !strings.Contains(item.Producer, "<evidence-dir>/"+item.File) {
+		return fmt.Errorf("%s producer_command must write <evidence-dir>/%s", item.ID, item.File)
 	}
 	if seen[item.ID] {
 		return fmt.Errorf("duplicate required evidence %s", item.ID)
