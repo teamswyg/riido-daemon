@@ -1,0 +1,37 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "figma-visual-golden",
+  "owner": "local-product-acceptance",
+  "observation": {
+    "summary": "Local QA loaded Figma intent entries but did not expose visual references for humans reviewing the dashboard.",
+    "artifacts": ["docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json"]
+  },
+  "hypothesis": {
+    "summary": "Small PNG references captured from authoritative Figma nodes can make daemon-owned Figma boundary evidence visible without claiming riido-client pixel parity.",
+    "artifacts": ["docs/30-architecture/figma-ai-agent-daemon-boundary/golden/golden.riido.json"]
+  },
+  "execution": {
+    "summary": "Verify golden node identity, dimensions, and SHA-256, then copy verified references into local QA screenshots for dashboard and S3 publication.",
+    "artifacts": ["tools/localproductacceptance/figma_golden_verify.go", "tools/localproductacceptance/figma_golden_copy.go"]
+  },
+  "evaluation": {
+    "summary": "The verifier fails when the golden PNG hash, dimensions, or node id diverges from the executable manifest.",
+    "artifacts": ["tools/localproductacceptance/figma_intent_test.go", "tools/localproductacceptance/figma_golden_load.go"]
+  },
+  "retrospective": {
+    "summary": "Figma rows now move from hidden visual debt to dashboard-visible screenshot references while the true frontend pixel comparison remains outside daemon ownership.",
+    "artifacts": ["docs/readme/run-and-smoke.md", "docs/30-architecture/local-acceptance-coverage.riido.json"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localproductacceptance -probe-routes=false -evidence-out .riido-local/evidence/ai-agent-product-acceptance.json",
+      "proves": "Figma golden references are verified and copied into local QA screenshot evidence"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localqadashboard -product-evidence .riido-local/evidence/ai-agent-product-acceptance.json",
+      "proves": "Figma screenshot links render in the local QA dashboard"
+    }
+  ]
+}

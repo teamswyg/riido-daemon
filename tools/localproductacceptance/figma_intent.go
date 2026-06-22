@@ -15,15 +15,16 @@ type figmaIntentEntry struct {
 	ClientOwnedFacts []string `json:"client_owned_facts"`
 }
 
-func figmaIntentScenarios(path string) []scenario {
+func figmaIntentScenarios(path, goldenPath, screenshotDir string) []scenario {
 	entries, err := loadFigmaIntentEntries(path)
 	if err != nil {
 		return failedFigmaIntentScenarios(path, err)
 	}
+	goldens, goldenErr := loadFigmaGoldenCatalog(goldenPath)
 	return []scenario{
 		figmaCatalogScenario(path, entries),
-		figmaScreenScenario("figma.onboarding", entries, "온보딩"),
-		figmaScreenScenario("figma.runtime.settings", entries, "런타임 설정페이지"),
+		figmaScreenScenario("figma.onboarding", entries, "온보딩", goldens, goldenErr, screenshotDir),
+		figmaScreenScenario("figma.runtime.settings", entries, "런타임 설정페이지", goldens, goldenErr, screenshotDir),
 	}
 }
 

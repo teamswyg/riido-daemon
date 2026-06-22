@@ -1,0 +1,31 @@
+{
+  "schema_version": "riido-figma-visual-golden.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/figma-visual-golden.riido.json",
+  "file_key": "MUOd9lctoEHASUStN3vUuK",
+  "captured_at": "2026-06-22T13:40:00Z",
+  "source": "figma-mcp-get-screenshot",
+  "screens": [
+    {
+      "scenario_id": "figma.onboarding",
+      "node_id": "42:3014",
+      "name": "Wireframe - 온보딩",
+      "golden_path": "onboarding.png",
+      "width": 1400,
+      "height": 722,
+      "original_width": 146569,
+      "original_height": 75574,
+      "sha256": "7f8eda4bef63966f550eeceaf47a8c813c82289f22cdea3401b7a044f4be6b73"
+    },
+    {
+      "scenario_id": "figma.runtime.settings",
+      "node_id": "162:23090",
+      "name": "런타임 설정페이지",
+      "golden_path": "runtime-settings.png",
+      "width": 976,
+      "height": 1400,
+      "original_width": 4140,
+      "original_height": 5976,
+      "sha256": "f599c0482dbf3e3f979429b8885e50d873956dc49ccb4986c1e8d1bf30473f68"
+    }
+  ]
+}

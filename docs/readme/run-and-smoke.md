@@ -74,6 +74,8 @@ go run ./tools/localqarunner -run-product -product-task-mutations
 
 `teamswyg/riido-client` is not the implementation target for this harness and must not receive Codex/local-QA commits. The daemon-owned contract lab writes `.riido-local/contract-lab/index.html` to show frontend developers the exact endpoint order and identifier rules.
 
+Figma visual rows are backed by golden screenshot references captured from the source Figma nodes. The product acceptance tool verifies node identity, PNG dimensions, and SHA-256 before copying the reference into `.riido-local/screenshots/ai-agent-product-acceptance/` for the dashboard/S3 handoff. This proves the daemon-side Figma boundary is visible and stable; it does not claim riido-client pixel parity.
+
 The release row is backed by a sandboxed installer run. It seeds an old `riido` binary under a temporary `RIIDO_DAEMON_INSTALL_DIR`, serves a local fake GitHub release asset to the public install script, verifies checksum/install behavior, and executes the installed binary's `version` command. This proves the update path without modifying the developer's real install:
 
 ```bash

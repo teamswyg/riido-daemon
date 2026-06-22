@@ -24,6 +24,7 @@ func main() {
 		screenshots:   flag.String("screenshots", ".riido-local/screenshots/ai-agent-product-acceptance", "browser screenshot output dir"),
 		storageState:  flag.String("storage-state", getenvDefault("RIIDO_E2E_STORAGE_STATE", ".riido-local/private/riido-client-storage-state.json"), "Playwright storage state path"),
 		figmaManifest: flag.String("figma-manifest", "docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json", "Figma screen intent manifest"),
+		figmaGolden:   flag.String("figma-golden", "docs/30-architecture/figma-ai-agent-daemon-boundary/golden/golden.riido.json", "Figma visual golden manifest"),
 		validFor:      flag.Duration("valid-for", 24*time.Hour, "freshness window"),
 		probeRoutes:   flag.Bool("probe-routes", true, "probe local frontend routes"),
 		browserE2E:    flag.Bool("browser-e2e", false, "run Playwright product browser checks"),
