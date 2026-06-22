@@ -38,7 +38,7 @@ func runStep(root, id, exe string, args ...string) stepEvidence {
 }
 
 func localQAEnv() []string {
-	path := "/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+	path := localQAPath()
 	return append(os.Environ(), "PATH="+path+":"+os.Getenv("PATH"))
 }
 

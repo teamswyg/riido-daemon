@@ -24,6 +24,7 @@ func TestRenderPlistIncludesDailySchedule(t *testing.T) {
 		"-product-task-id &#39;task-a&#39;",
 		"-product-agent-id-1 &#39;agent-a&#39;",
 		"-product-agent-id-2 &#39;agent-b&#39;",
+		".local/bin",
 	} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("plist missing %q:\n%s", want, got)
