@@ -22,3 +22,11 @@ func versionLabel() string {
 	}
 	return "riido-daemon " + version
 }
+
+func agentDaemonVersionLabel() string {
+	version := strings.TrimSpace(binaryVersion)
+	if version == "" {
+		version = "dev"
+	}
+	return "riido-agentd " + version
+}
