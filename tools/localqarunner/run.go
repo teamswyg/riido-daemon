@@ -29,12 +29,12 @@ func run(cfg config) (string, error) {
 			return finishRun(root, cfg, evidence)
 		}
 	}
+	if _, err := finishRun(root, cfg, evidence); err != nil {
+		return statusFailed, err
+	}
 	runDashboardStep(root, cfg, &evidence)
 	if *cfg.s3Prefix != "" {
-		if _, err := finishRun(root, cfg, evidence); err != nil {
-			return statusFailed, err
-		}
-		runUploadSteps(root, cfg, &evidence)
+		return runS3Phase(root, cfg, evidence)
 	}
 	return finishRun(root, cfg, evidence)
 }
