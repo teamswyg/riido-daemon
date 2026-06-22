@@ -51,6 +51,7 @@
   "source_checks": [
     {"name": "workflow-build-matrix", "file": ".github/workflows/release-artifacts.yml", "contains": "darwin/arm64/tar"},
     {"name": "workflow-tag-release", "file": ".github/workflows/release-artifacts.yml", "contains": "startsWith(github.ref, 'refs/tags/v')"},
+    {"name": "workflow-release-script-checkout", "file": ".github/workflows/release-artifacts.yml", "contains": "Checkout release scripts"},
     {"name": "build-package-trimpath", "file": "scripts/build-release-package.sh", "contains": "-trimpath -ldflags"},
     {"name": "build-package-artifact-env", "file": "scripts/build-release-package.sh", "contains": "RIIDO_RELEASE_ARTIFACT_NAME"},
     {"name": "publish-checksums", "file": "scripts/publish-release-artifacts.sh", "contains": "sha256sum riido-daemon_* > SHA256SUMS"},

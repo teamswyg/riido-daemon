@@ -78,6 +78,9 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout release scripts
+        uses: actions/checkout@v6.0.3
+
       - uses: actions/download-artifact@v8.0.1
         with:
           path: dist
