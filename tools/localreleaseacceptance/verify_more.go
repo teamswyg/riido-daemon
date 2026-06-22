@@ -33,9 +33,9 @@ func installedVersion(ctx context.Context, binary string) (string, error) {
 	return strings.TrimSpace(out.String()), nil
 }
 
-func failedScenario(summary string) scenario {
+func failedScenario(id, summary string) scenario {
 	return scenario{
-		ID:             "release.fresh.install",
+		ID:             id,
 		Status:         statusFailed,
 		FailureSummary: summary,
 	}

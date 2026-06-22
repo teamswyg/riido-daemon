@@ -10,24 +10,25 @@ import (
 )
 
 func verifyInstaller(ctx context.Context, root string, fixture installFixture) (scenario, string) {
+	const id = "release.fresh.install"
 	binary := filepath.Join(fixture.installDir, "riido")
 	if err := os.WriteFile(binary, []byte("old daemon\n"), 0o755); err != nil {
-		return failedScenario("seed old daemon: " + err.Error()), ""
+		return failedScenario(id, "seed old daemon: "+err.Error()), ""
 	}
 	if output, err := runInstaller(ctx, root, fixture); err != nil {
-		return failedScenario("installer failed: " + err.Error() + " " + output), ""
+		return failedScenario(id, "installer failed: "+err.Error()+" "+output), ""
 	}
 	if err := assertMarkerAbsent(fixture.marker); err != nil {
-		return failedScenario(err.Error()), ""
+		return failedScenario(id, err.Error()), ""
 	}
 	version, err := installedVersion(ctx, binary)
 	if err != nil {
-		return failedScenario(err.Error()), version
+		return failedScenario(id, err.Error()), version
 	}
 	if !strings.Contains(version, releaseVersion) {
-		return failedScenario("installed version output did not include " + releaseVersion), version
+		return failedScenario(id, "installed version output did not include "+releaseVersion), version
 	}
-	return scenario{ID: "release.fresh.install", Status: statusPassed}, version
+	return scenario{ID: id, Status: statusPassed}, version
 }
 
 func runInstaller(ctx context.Context, root string, fixture installFixture) (string, error) {

@@ -8,9 +8,10 @@ const (
 )
 
 type options struct {
-	Repo        string
-	EvidenceOut string
-	ValidFor    time.Duration
+	Repo          string
+	EvidenceOut   string
+	ValidFor      time.Duration
+	ReleaseAPIURL string
 }
 
 type evidenceFile struct {
@@ -24,9 +25,12 @@ type evidenceFile struct {
 }
 
 type artifacts struct {
-	InstallDir      string `json:"install_dir"`
-	InstalledBinary string `json:"installed_binary"`
-	VersionOutput   string `json:"version_output,omitempty"`
+	InstallDir       string   `json:"install_dir"`
+	InstalledBinary  string   `json:"installed_binary"`
+	VersionOutput    string   `json:"version_output,omitempty"`
+	LatestReleaseTag string   `json:"latest_release_tag,omitempty"`
+	ExpectedAsset    string   `json:"expected_asset,omitempty"`
+	ReleaseAssets    []string `json:"release_assets,omitempty"`
 }
 
 type scenario struct {
