@@ -9,10 +9,17 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-func assertOpenClawIntegrationResult(t *testing.T, res agentbridge.Result) {
+func assertOpenClawIntegrationResult(t *testing.T, obs openClawIntegrationObservation) {
 	t.Helper()
+	res := obs.result
 	if res.Status != agentbridge.ResultCompleted {
-		t.Fatalf("openclaw integration did not complete: %+v", res)
+		t.Fatalf(
+			"openclaw integration did not complete: status=%s error=%q output=%q events=%q",
+			res.Status,
+			res.Error,
+			res.Output,
+			openClawFailureEvidence(obs.events),
+		)
 	}
 	if !strings.Contains(strings.ToLower(res.Output), "ok") {
 		t.Fatalf("openclaw integration output = %q", res.Output)

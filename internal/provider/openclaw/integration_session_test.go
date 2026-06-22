@@ -16,7 +16,7 @@ func runOpenClawIntegrationSession(
 	ctx context.Context,
 	req agentbridge.StartRequest,
 	sessionID string,
-) agentbridge.Result {
+) openClawIntegrationObservation {
 	t.Helper()
 	spawn, err := BuildStart(req, StartOptions{SessionID: sessionID})
 	if err != nil {
@@ -26,8 +26,8 @@ func runOpenClawIntegrationSession(
 	if err != nil {
 		t.Fatalf("Start: %v", err)
 	}
-	go drainOpenClawIntegrationEvents(sess)
-	return <-sess.Result()
+	events := collectOpenClawIntegrationEvents(sess)
+	return openClawIntegrationObservation{result: <-sess.Result(), events: <-events}
 }
 
 func startOpenClawIntegrationSession(
@@ -54,7 +54,14 @@ func processCommandFromStart(spawn agentbridge.StartCommand) process.Command {
 	}
 }
 
-func drainOpenClawIntegrationEvents(sess *session.Session) {
-	for range sess.Events() {
-	}
+func collectOpenClawIntegrationEvents(sess *session.Session) <-chan []agentbridge.Event {
+	done := make(chan []agentbridge.Event, 1)
+	go func() {
+		var events []agentbridge.Event
+		for ev := range sess.Events() {
+			events = append(events, ev)
+		}
+		done <- events
+	}()
+	return done
 }

@@ -15,3 +15,11 @@ func mapField(m map[string]any, key string) map[string]any {
 	nested, _ := m[key].(map[string]any)
 	return nested
 }
+
+func boolField(m map[string]any, key string) bool {
+	if m == nil {
+		return false
+	}
+	value, _ := m[key].(bool)
+	return value
+}

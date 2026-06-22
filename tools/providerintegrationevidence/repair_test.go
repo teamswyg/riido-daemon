@@ -1,0 +1,31 @@
+package main
+
+import "testing"
+
+func TestClassifyRepairAuthRequired(t *testing.T) {
+	got := classifyRepair("claude", "skipped", "Not logged in", true)
+	if got.Class != "provider_auth_required" || got.Owner != "human" {
+		t.Fatalf("repair=%+v", got)
+	}
+}
+
+func TestClassifyRepairOpenClawBackend(t *testing.T) {
+	got := classifyRepair("openclaw", "skipped", "openclaw local model backend unavailable", true)
+	if got.Class != "local_backend_unavailable" || got.Mode != "candidate_auto" {
+		t.Fatalf("repair=%+v", got)
+	}
+}
+
+func TestClassifyRepairOpenClawCooldown(t *testing.T) {
+	got := classifyRepair("openclaw", "failed", "Provider ollama is in cooldown; All models failed", true)
+	if got.Class != "local_backend_unavailable" || got.Owner != "local_operator" {
+		t.Fatalf("repair=%+v", got)
+	}
+}
+
+func TestClassifyRepairMissingExecutable(t *testing.T) {
+	got := classifyRepair("cursor", "skipped", "executable not found", false)
+	if got.Class != "provider_executable_missing" {
+		t.Fatalf("repair=%+v", got)
+	}
+}

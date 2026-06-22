@@ -1,0 +1,30 @@
+{
+  "schema_version": "riido-local-acceptance-coverage.v1",
+  "id": "local-acceptance-coverage",
+  "title": "Local Acceptance Verification Coverage",
+  "loop": {
+    "observation": "Provider real CLI checks produced useful evidence, but product, Figma, release, and repair coverage were still inferred from separate artifacts.",
+    "hypothesis": "A local acceptance coverage manifest can make verified, skipped, failed, and not-verified product surfaces visible before release.",
+    "execute": "Render provider evidence and scenario coverage into the local QA dashboard, then publish the resulting evidence JSON, HTML, and screenshot.",
+    "evaluate": "The dashboard and tests fail or surface gaps when provider evidence is stale, repair classification is missing, or product/Figma/release scenarios remain unverified.",
+    "retrospective": "Provider QA remains a daily input while uncovered product acceptance scenarios become explicit queue items instead of hidden confidence debt."
+  },
+  "evidence_artifacts": [
+    {"kind": "command", "ref": "go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json", "proves": "provider real CLI status, freshness, and repair classification are machine-readable"},
+    {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "local acceptance coverage and repair status are rendered into a reviewable dashboard"}
+  ],
+  "scenarios": [
+    {"id": "provider.codex", "title": "Codex provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "codex"},
+    {"id": "provider.claude", "title": "Claude provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "claude"},
+    {"id": "provider.cursor", "title": "Cursor provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "cursor"},
+    {"id": "provider.openclaw", "title": "OpenClaw provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "openclaw"},
+    {"id": "contract.ui.golden", "title": "Contract UI golden screens match generated SaaS contract", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
+    {"id": "product.login", "title": "Development user can log in from local frontend", "tier": "weekly", "surface": "product", "evidence": "external"},
+    {"id": "product.agent.create", "title": "User can create/update an AI agent", "tier": "weekly", "surface": "product", "evidence": "external"},
+    {"id": "product.task.assign", "title": "Task can assign multiple provider agents without collision", "tier": "weekly", "surface": "product", "evidence": "external"},
+    {"id": "product.codex.execute", "title": "Codex executes task and control-plane/UI reflect result", "tier": "weekly", "surface": "product", "evidence": "external"},
+    {"id": "figma.onboarding", "title": "Onboarding flow visual contract is compared with Figma intent", "tier": "weekly", "surface": "figma", "evidence": "external"},
+    {"id": "figma.runtime.settings", "title": "Runtime settings visual contract is compared with Figma intent", "tier": "weekly", "surface": "figma", "evidence": "external"},
+    {"id": "release.fresh.install", "title": "Fresh macOS install verifies daemon update and provider setup", "tier": "release", "surface": "release", "evidence": "external"}
+  ]
+}

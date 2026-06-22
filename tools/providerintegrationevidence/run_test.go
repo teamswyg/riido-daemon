@@ -4,10 +4,11 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestCurrentManifestAndGeneratedDoc(t *testing.T) {
-	if err := run("../..", "docs/30-architecture/provider-real-cli-observation.riido.json", "", false, true, false); err != nil {
+	if err := run("../..", "docs/30-architecture/provider-real-cli-observation.riido.json", "", false, true, false, 24*time.Hour); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -29,11 +30,17 @@ func TestEvidenceOutputRecordsSkippedProviders(t *testing.T) {
 	mustWrite(t, manifestPath, data)
 	mustWrite(t, filepath.Join(dir, "workflow.yml"), "name: test\n")
 	mustWrite(t, docPath, renderMarkdown(mustLoad(t, manifestPath)))
-	if err := run(dir, manifestPath, evidencePath, false, true, true); err != nil {
+	if err := run(dir, manifestPath, evidencePath, false, true, true, 24*time.Hour); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := os.Stat(evidencePath); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestRejectsNonPositiveFreshnessWindow(t *testing.T) {
+	if err := run(".", "missing.json", "", false, false, false, 0); err == nil {
+		t.Fatal("expected valid-for validation error")
 	}
 }
 
