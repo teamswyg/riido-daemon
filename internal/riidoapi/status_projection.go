@@ -5,6 +5,7 @@ import "github.com/teamswyg/riido-daemon/internal/taskdb"
 func statusFromDB(config Config, db taskdb.TaskDB) Status {
 	return Status{
 		SchemaVersion:       StatusSchemaVersion,
+		AppVersion:          config.AppVersion,
 		Transport:           string(normalizeLocalTransport(config.Transport)),
 		SocketPath:          config.SocketPath,
 		TaskDBPath:          config.TaskDBPath,

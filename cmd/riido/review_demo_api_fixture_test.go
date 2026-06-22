@@ -21,6 +21,7 @@ func serveReviewDemoCLIAPI(t *testing.T) (string, func()) {
 
 	go func() {
 		errs <- riidoapi.NewServer(riidoapi.Config{
+			AppVersion: "riido-daemon test.v1",
 			SocketPath: socketPath,
 			TaskDBPath: taskDBPath,
 		}).Serve(ctx)

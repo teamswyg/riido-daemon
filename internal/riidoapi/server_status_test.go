@@ -33,6 +33,9 @@ func assertStatus(t *testing.T, status Status, taskDBPath string) {
 	if status.Transport != string(LocalTransportUnixSocket) {
 		t.Fatalf("unexpected API transport: %s", status.Transport)
 	}
+	if status.AppVersion != "riido-daemon test.v1" {
+		t.Fatalf("unexpected app version: %s", status.AppVersion)
+	}
 	if status.TaskCount != 1 || status.EvidenceCount != 0 || status.CommandReceiptCount != 0 {
 		t.Fatalf("unexpected status counts: %#v", status)
 	}
