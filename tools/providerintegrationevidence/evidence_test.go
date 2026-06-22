@@ -56,18 +56,11 @@ func TestEvidenceOnlyRecordsObservedStatus(t *testing.T) {
 	if evidence.Providers[0].ExecutableRef != "$RIIDO_FAKE_PROVIDER_PATH" {
 		t.Fatalf("executable_ref=%q", evidence.Providers[0].ExecutableRef)
 	}
+	if evidence.Providers[0].ExecutablePath != exe {
+		t.Fatalf("executable_path=%q, want %q", evidence.Providers[0].ExecutablePath, exe)
+	}
 	if evidence.Providers[0].IntegrationStatus != "observed" {
 		t.Fatalf("integration_status=%q", evidence.Providers[0].IntegrationStatus)
 	}
 	assertFreshEvidence(t, evidence)
-}
-
-func assertFreshEvidence(t *testing.T, evidence evidenceFile) {
-	t.Helper()
-	if evidence.ExpiresAt == "" || evidence.FreshForSeconds != int64((24*time.Hour).Seconds()) {
-		t.Fatalf("expiration evidence missing: %+v", evidence)
-	}
-	if evidence.Platform.OS != runtime.GOOS || evidence.Platform.Arch != runtime.GOARCH {
-		t.Fatalf("platform=%+v, want %s/%s", evidence.Platform, runtime.GOOS, runtime.GOARCH)
-	}
 }

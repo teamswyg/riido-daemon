@@ -8,29 +8,20 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-const (
-	openClawIntegrationArtifactName = "riido-openclaw-side-effect.txt"
-	openClawIntegrationArtifactBody = "RIIDO_OPENCLAW_FILESYSTEM_SIDE_EFFECT_OK"
-)
-
-type openClawIntegrationExpected struct {
-	sessionID    string
-	workdir      string
-	artifactName string
-	artifactBody string
-}
-
 func openClawIntegrationRequest(
 	t *testing.T,
 	detect agentbridge.DetectResult,
+	model string,
 ) (agentbridge.StartRequest, openClawIntegrationExpected) {
 	t.Helper()
 	sessionID := "integration-openclaw-" + strconv.FormatInt(time.Now().UnixNano(), 36)
 	workdir := t.TempDir()
+	preseedOpenClawIntegrationWorkspace(t, workdir)
 	req := agentbridge.StartRequest{
 		Prompt:     openClawIntegrationPrompt(),
 		Cwd:        workdir,
 		Executable: detect.Executable,
+		Model:      model,
 		CustomArgs: []string{"--thinking", "off"},
 	}
 	return req, openClawIntegrationExpected{
@@ -42,10 +33,11 @@ func openClawIntegrationRequest(
 }
 
 func openClawIntegrationPrompt() string {
-	return `In the current working directory, create a file named ` +
-		openClawIntegrationArtifactName +
-		` with exactly this content and no trailing commentary in the file: ` +
-		openClawIntegrationArtifactBody + `
+	return `Use the write tool exactly once.
+Path: ` + openClawIntegrationArtifactName + `
+Content:
+` + openClawIntegrationArtifactBody + `
 
-After the file is written, respond with exactly "ok".`
+Do not add quotes, punctuation, spaces, or a trailing newline.
+After writing the file, respond with exactly "ok".`
 }
