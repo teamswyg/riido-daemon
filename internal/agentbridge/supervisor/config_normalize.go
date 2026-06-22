@@ -12,9 +12,6 @@ func normalizeConfig(cfg Config) (Config, error) {
 		return cfg, err
 	}
 	applyTimingDefaults(&cfg)
-	if cfg.RiidoDaemonVersion == "" {
-		cfg.RiidoDaemonVersion = "riido-agentd v0.0.0"
-	}
 	if err := applyPolicyDefaults(&cfg); err != nil {
 		return cfg, err
 	}
@@ -27,6 +24,9 @@ func normalizeConfig(cfg Config) (Config, error) {
 func validateRequiredConfig(cfg Config) error {
 	if cfg.DaemonID == "" {
 		return errors.New("supervisor: DaemonID is required")
+	}
+	if cfg.RiidoDaemonVersion == "" {
+		return errors.New("supervisor: RiidoDaemonVersion is required")
 	}
 	if len(configuredRuntimes(cfg)) == 0 {
 		return errors.New("supervisor: at least one Runtime is required")

@@ -14,6 +14,9 @@ func startRoutingSupervisor(t *testing.T, cfg Config) *Actor {
 	if cfg.HeartbeatEvery == 0 {
 		cfg.HeartbeatEvery = time.Hour
 	}
+	if cfg.RiidoDaemonVersion == "" {
+		cfg.RiidoDaemonVersion = testRiidoDaemonVersion
+	}
 	actor, err := New(cfg)
 	if err != nil {
 		t.Fatal(err)

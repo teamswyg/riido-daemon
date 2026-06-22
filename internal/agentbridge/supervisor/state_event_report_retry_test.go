@@ -19,13 +19,14 @@ func TestSupervisorRetriesStateEventBeforeTerminalReport(t *testing.T) {
 	fake.NextRunning = running
 	rt := startRuntime(t, fake)
 	actor, err := New(Config{
-		DaemonID:       "daemon-1",
-		Runtime:        rt,
-		Source:         source,
-		Reporter:       reporter,
-		Workdir:        workdir.NewFSAdapter(t.TempDir()),
-		PollEvery:      10 * time.Millisecond,
-		HeartbeatEvery: time.Hour,
+		DaemonID:           "daemon-1",
+		RiidoDaemonVersion: testRiidoDaemonVersion,
+		Runtime:            rt,
+		Source:             source,
+		Reporter:           reporter,
+		Workdir:            workdir.NewFSAdapter(t.TempDir()),
+		PollEvery:          10 * time.Millisecond,
+		HeartbeatEvery:     time.Hour,
 	})
 	if err != nil {
 		t.Fatal(err)

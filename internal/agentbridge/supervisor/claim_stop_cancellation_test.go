@@ -29,12 +29,13 @@ func startClaimCancellationSupervisor(
 ) *Actor {
 	t.Helper()
 	actor, err := New(Config{
-		DaemonID:       daemonID,
-		Runtime:        startRuntime(t, process.NewFake()),
-		Source:         source,
-		Reporter:       newReporterProbe(),
-		PollEvery:      10 * time.Millisecond,
-		HeartbeatEvery: time.Hour,
+		DaemonID:           daemonID,
+		RiidoDaemonVersion: testRiidoDaemonVersion,
+		Runtime:            startRuntime(t, process.NewFake()),
+		Source:             source,
+		Reporter:           newReporterProbe(),
+		PollEvery:          10 * time.Millisecond,
+		HeartbeatEvery:     time.Hour,
 	})
 	if err != nil {
 		t.Fatalf("New: %v", err)
