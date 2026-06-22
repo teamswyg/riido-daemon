@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
@@ -19,6 +20,14 @@ func writeHealth(conn net.Conn) {
 	_ = writeDaemonJSON(conn, map[string]string{
 		"schema_version": DaemonStatusSchemaVersion,
 		"health":         "ok",
+	})
+}
+
+func writeDaemonDecodeError(conn net.Conn, err error) error {
+	return writeDaemonJSON(conn, map[string]string{
+		"schema_version": DaemonStatusSchemaVersion,
+		"error":          "decode request",
+		"detail":         fmt.Sprint(err),
 	})
 }
 
