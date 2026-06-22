@@ -65,8 +65,8 @@ func configProbeArgs() []string {
 		"--session-id",
 		"riido-config-probe",
 		"--message",
-		"riido config probe",
+		"Say OK only.",
 		"--timeout",
-		"1",
+		"30",
 	}
 }

@@ -10,6 +10,8 @@
     "retrospective": "Provider QA remains a daily input while uncovered product acceptance scenarios become explicit queue items instead of hidden confidence debt."
   },
   "evidence_artifacts": [
+    {"kind": "command", "ref": "go run ./tools/localqarunner", "proves": "provider evidence, dashboard rendering, run evidence, and optional S3 publication execute as one local acceptance gate"},
+    {"kind": "command", "ref": "go run ./tools/localqaschedule -repo $(pwd) -install", "proves": "macOS launchd can schedule the local acceptance gate once per day"},
     {"kind": "command", "ref": "go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json", "proves": "provider real CLI status, freshness, and repair classification are machine-readable"},
     {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "local acceptance coverage and repair status are rendered into a reviewable dashboard"}
   ],
