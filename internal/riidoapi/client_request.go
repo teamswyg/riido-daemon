@@ -23,6 +23,9 @@ func (c Client) Request(ctx context.Context, method string, params, out any) err
 		return fmt.Errorf("connect riido API %s endpoint: %w", transport, err)
 	}
 	defer conn.Close()
+	if err := applyClientDeadline(ctx, conn); err != nil {
+		return err
+	}
 	if err := writeRequest(conn, method, params); err != nil {
 		return err
 	}
