@@ -17,6 +17,12 @@ func run(cfg config) (string, error) {
 	if providerStatus == statusFailed && !*cfg.continueOnFailure {
 		return finishRun(root, cfg, evidence)
 	}
+	if *cfg.runRelease {
+		releaseStatus := runReleaseStep(root, cfg, &evidence)
+		if releaseStatus == statusFailed && !*cfg.continueOnFailure {
+			return finishRun(root, cfg, evidence)
+		}
+	}
 	if *cfg.runProduct {
 		productStatus := runProductStep(root, cfg, &evidence)
 		if productStatus == statusFailed && !*cfg.continueOnFailure {
@@ -44,6 +50,7 @@ func newEvidence(cfg config, observed time.Time) runEvidence {
 		Artifacts: runArtifacts{
 			ProviderEvidence: *cfg.providerEvidence,
 			ProductEvidence:  *cfg.productEvidence,
+			ReleaseEvidence:  *cfg.releaseEvidence,
 			ProductLab:       *cfg.productLab,
 			ScheduleEvidence: *cfg.scheduleEvidence,
 			DashboardHTML:    *cfg.dashboardHTML,

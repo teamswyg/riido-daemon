@@ -54,7 +54,7 @@ openclaw doctor --fix
 openclaw models set llama3.2:latest
 ```
 
-Run local acceptance verification before deployment. The runner keeps provider failures as evidence, calls the real development AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:
+Run local acceptance verification before deployment. The runner keeps provider failures as evidence, verifies the daemon install/update script in a sandbox, calls the real development AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:
 
 ```bash
 RIIDO_AI_AGENT_TOKEN=<token> \
@@ -73,6 +73,13 @@ go run ./tools/localqarunner -run-product -product-task-mutations
 ```
 
 `teamswyg/riido-client` is not the implementation target for this harness and must not receive Codex/local-QA commits. The daemon-owned contract lab writes `.riido-local/contract-lab/index.html` to show frontend developers the exact endpoint order and identifier rules.
+
+The release row is backed by a sandboxed installer run. It seeds an old `riido` binary under a temporary `RIIDO_DAEMON_INSTALL_DIR`, serves a local fake GitHub release asset to the public install script, verifies checksum/install behavior, and executes the installed binary's `version` command. This proves the update path without modifying the developer's real install:
+
+```bash
+go run ./tools/localreleaseacceptance \
+  -evidence-out .riido-local/evidence/local-release-acceptance.json
+```
 
 Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI. It runs once per day and uploads latest plus timestamped evidence when `RIIDO_LOCAL_QA_S3_PREFIX` is set:
 

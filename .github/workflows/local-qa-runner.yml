@@ -11,6 +11,7 @@ on:
       - "tools/localproductacceptance/**"
       - "tools/localqarunner/**"
       - "tools/localqaschedule/**"
+      - "tools/localreleaseacceptance/**"
       - "tools/providerintegrationevidence/**"
       - "internal/provider/**"
       - "go.mod"
@@ -35,10 +36,13 @@ jobs:
             -client-root tmp-client \
             -probe-routes=false \
             -evidence-out out/ai-agent-product-acceptance.json
+          go run ./tools/localreleaseacceptance \
+            -evidence-out out/local-release-acceptance.json
           go run ./tools/localqarunner \
             -run-product=false \
             -run-integration=false \
             -provider-evidence out/provider-real-cli-observation.json \
+            -release-evidence out/local-release-acceptance.json \
             -dashboard out/index.html \
             -evidence-out out/local-qa-run.json
           go run ./tools/localqaschedule \

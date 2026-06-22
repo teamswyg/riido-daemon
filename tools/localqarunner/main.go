@@ -10,6 +10,7 @@ import (
 func main() {
 	runEvidence := ".riido-local/evidence/local-qa-run.json"
 	productEvidence := ".riido-local/evidence/ai-agent-product-acceptance.json"
+	releaseEvidence := ".riido-local/evidence/local-release-acceptance.json"
 	productLab := ".riido-local/contract-lab/index.html"
 	scheduleEvidence := ".riido-local/evidence/local-qa-schedule.json"
 	flag.StringVar(&runEvidence, "run-evidence", runEvidence, "local QA run evidence JSON")
@@ -18,6 +19,7 @@ func main() {
 		repo:               flag.String("repo", ".", "repository root"),
 		providerEvidence:   flag.String("provider-evidence", ".riido-local/evidence/provider-real-cli-observation.json", "provider evidence JSON"),
 		productEvidence:    flag.String("product-evidence", productEvidence, "product acceptance evidence JSON"),
+		releaseEvidence:    flag.String("release-evidence", releaseEvidence, "release install evidence JSON"),
 		productLab:         flag.String("product-lab", productLab, "frontend contract lab HTML output"),
 		scheduleEvidence:   flag.String("schedule-evidence", scheduleEvidence, "local QA schedule evidence JSON"),
 		runEvidence:        &runEvidence,
@@ -27,6 +29,7 @@ func main() {
 		validFor:           flag.Duration("valid-for", 24*time.Hour, "freshness window for generated evidence"),
 		providerTool:       flag.String("provider-tool", "./tools/providerintegrationevidence", "provider evidence tool package"),
 		productTool:        flag.String("product-tool", "./tools/localproductacceptance", "product acceptance tool package"),
+		releaseTool:        flag.String("release-tool", "./tools/localreleaseacceptance", "release acceptance tool package"),
 		dashboardTool:      flag.String("dashboard-tool", "./tools/localqadashboard", "dashboard tool package"),
 		clientRoot:         flag.String("client-root", getenvDefault("RIIDO_LOCAL_QA_CLIENT_ROOT", "../riido-client"), "external riido-client worktree"),
 		productAgentHost:   flag.String("product-agent-host", getenvDefault("NEXT_PUBLIC_AI_AGENT_HOST", "https://development.ai-api.riido.io"), "AI Agent API host"),
@@ -39,6 +42,7 @@ func main() {
 		productAgentID2:    flag.String("product-agent-id-2", os.Getenv("RIIDO_E2E_AGENT_ID_2"), "second agent id for product task mutation flow"),
 		productCommentBody: flag.String("product-comment-body", os.Getenv("RIIDO_E2E_COMMENT_BODY"), "thread message body for product mutation flow"),
 		runIntegration:     flag.Bool("run-integration", true, "run available provider TestIntegration tests"),
+		runRelease:         flag.Bool("run-release", true, "run sandboxed daemon install/update acceptance"),
 		runProduct:         flag.Bool("run-product", false, "run daemon-owned product acceptance probes"),
 		productMutations:   flag.Bool("product-task-mutations", true, "create, verify, and clean up real task assignments in product acceptance"),
 		productBrowserE2E:  flag.Bool("product-browser-e2e", false, "deprecated route-browser checks; contract lab is the default"),
