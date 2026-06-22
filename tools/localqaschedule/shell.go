@@ -14,6 +14,14 @@ func localQACommand(cfg config, paths schedulePaths) string {
 	if *cfg.s3Prefix != "" {
 		cmd += " -s3-prefix " + shellQuote(*cfg.s3Prefix)
 	}
+	if *cfg.runProduct {
+		cmd += " -run-product"
+		cmd += " -client-root " + shellQuote(*cfg.clientRoot)
+		cmd += " -product-base-url " + shellQuote(*cfg.productBaseURL)
+		if *cfg.productWorkspace != "" {
+			cmd += " -product-workspace-id " + shellQuote(*cfg.productWorkspace)
+		}
+	}
 	if *cfg.productEvidence != "" {
 		cmd += " -product-evidence " + shellQuote(*cfg.productEvidence)
 	}
