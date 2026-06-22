@@ -10,6 +10,7 @@ const (
 type config struct {
 	repo              *string
 	providerEvidence  *string
+	productEvidence   *string
 	runEvidence       *string
 	dashboardHTML     *string
 	coverageManifest  *string
@@ -33,6 +34,7 @@ type runEvidence struct {
 
 type runArtifacts struct {
 	ProviderEvidence string `json:"provider_evidence"`
+	ProductEvidence  string `json:"product_evidence,omitempty"`
 	DashboardHTML    string `json:"dashboard_html"`
 	S3Prefix         string `json:"s3_prefix,omitempty"`
 }

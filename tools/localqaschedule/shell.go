@@ -14,6 +14,9 @@ func localQACommand(cfg config, paths schedulePaths) string {
 	if *cfg.s3Prefix != "" {
 		cmd += " -s3-prefix " + shellQuote(*cfg.s3Prefix)
 	}
+	if *cfg.productEvidence != "" {
+		cmd += " -product-evidence " + shellQuote(*cfg.productEvidence)
+	}
 	return cmd
 }
 

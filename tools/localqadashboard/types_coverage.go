@@ -23,6 +23,7 @@ type coverageRow struct {
 	Surface string
 	Status  string
 	Repair  repairEvidence
+	Detail  string
 }
 
 type coverageSummary struct {

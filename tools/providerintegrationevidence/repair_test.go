@@ -30,6 +30,13 @@ func TestClassifyRepairMissingExecutable(t *testing.T) {
 	}
 }
 
+func TestClassifyRepairProviderTimeout(t *testing.T) {
+	got := classifyRepair("codex", "failed", "Error:hard timeout", true)
+	if got.Class != "provider_timeout" || got.Owner != "engineer" {
+		t.Fatalf("repair=%+v", got)
+	}
+}
+
 func TestClassifyRepairSideEffectMissing(t *testing.T) {
 	got := classifyRepair("openclaw", "failed", "completed without writing expected artifact", true)
 	if got.Class != "provider_side_effect_missing" || got.Owner != "engineer" {

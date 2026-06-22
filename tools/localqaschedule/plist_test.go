@@ -14,6 +14,7 @@ func TestRenderPlistIncludesDailySchedule(t *testing.T) {
 		"<key>Minute</key><integer>5</integer>",
 		"go run ./tools/localqarunner",
 		"s3://bucket/daily",
+		"/tmp/product.json",
 	} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("plist missing %q:\n%s", want, got)
@@ -28,8 +29,9 @@ func TestShellQuoteEscapesSingleQuote(t *testing.T) {
 }
 
 func testConfig() config {
-	repo, s3, label, plist := ".", "s3://bucket/daily", "io.test", ""
+	repo, s3 := ".", "s3://bucket/daily"
+	product, label, plist := "/tmp/product.json", "io.test", ""
 	hour, minute := 9, 5
 	install, runAtLoad := false, false
-	return config{&repo, &s3, &label, &plist, &hour, &minute, &install, &runAtLoad}
+	return config{&repo, &s3, &product, &label, &plist, &hour, &minute, &install, &runAtLoad}
 }

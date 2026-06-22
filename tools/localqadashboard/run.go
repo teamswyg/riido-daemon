@@ -1,7 +1,11 @@
 package main
 
-func run(inputPath, manifestPath, outputPath string) error {
+func run(inputPath, externalPath, manifestPath, outputPath string) error {
 	evidence, err := loadProviderEvidence(inputPath)
+	if err != nil {
+		return err
+	}
+	external, err := loadExternalEvidence(externalPath)
 	if err != nil {
 		return err
 	}
@@ -9,7 +13,7 @@ func run(inputPath, manifestPath, outputPath string) error {
 	if err != nil {
 		return err
 	}
-	rows, summary := buildCoverage(manifest, evidence)
+	rows, summary := buildCoverage(manifest, evidence, external)
 	rendered, err := renderDashboard(dashboardView{
 		Evidence:        evidence,
 		CoverageRows:    rows,
