@@ -27,8 +27,8 @@ func runtimeBindingRepair() *repair {
 		Class:            "ai_agent_runtime_binding_required",
 		Owner:            "control-plane/daemon",
 		Mode:             "manual",
-		Summary:          "Runtime snapshot/binding is missing; start the daemon and verify agent runtime registration.",
-		SuggestedCommand: "riido daemon stop --force || true; riido daemon start",
+		Summary:          "SaaS runtime snapshot/binding is missing; start a SaaS-connected daemon with device credentials and verify runtime registration.",
+		SuggestedCommand: "riido daemon stop --force || true; RIIDO_SAAS_URL=https://development.ai-api.riido.io RIIDO_DEVICE_ID=<device_id> RIIDO_DEVICE_SECRET=<device_secret> riido daemon start",
 	}
 }
 

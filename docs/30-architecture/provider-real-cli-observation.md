@@ -22,7 +22,7 @@ Evidence artifact: `provider-real-cli-observation`.
 - Missing executables are recorded as observed `skipped`, not PASS.
 - Available executables run provider `TestIntegration` with `AGENTBRIDGE_INTEGRATION=1`.
 - Available-provider integration failure fails the workflow after writing evidence.
-- OpenClaw model speed is configured through OpenClaw itself; the integration test defaults to `ollama/llama3.2:latest`, falls back to `ollama/qwen3:8b`, and can be pinned with `RIIDO_OPENCLAW_INTEGRATION_MODEL` before QA.
+- OpenClaw model speed is configured through OpenClaw itself; the integration test tries `ollama/qwen2.5-coder:1.5b` first, falls back to `ollama/llama3.2:latest` and `ollama/qwen3:8b`, records candidates in evidence, and can be pinned with `RIIDO_OPENCLAW_INTEGRATION_MODEL` before QA.
 - OpenClaw text completion does not prove daemon-selected cwd filesystem side effects; the integration artifact gate records that distinction explicitly.
 - Local daily evidence is fresh for 24h and records `expires_at` for dashboard gating.
 

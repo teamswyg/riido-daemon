@@ -11,6 +11,7 @@ func observeProvider(root string, provider provider, runIntegration bool) provid
 		ExecutableRef:      executableRef(provider, override, found),
 		ExecutablePath:     exe,
 		IntegrationCommand: integrationCommand(provider),
+		Observed:           providerObserved(provider),
 	}
 	if !found {
 		ev.IntegrationStatus = "skipped"

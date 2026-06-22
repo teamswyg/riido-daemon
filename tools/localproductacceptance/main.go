@@ -30,6 +30,9 @@ func main() {
 		browserE2E:    flag.Bool("browser-e2e", false, "run Playwright product browser checks"),
 		startClient:   flag.Bool("start-client", false, "start riido-client dev server if base URL is down"),
 		agentHost:     flag.String("agent-host", getenvDefault("NEXT_PUBLIC_AI_AGENT_HOST", "https://development.ai-api.riido.io"), "client AI Agent API host"),
+		riidoAPIHost:  flag.String("riido-api-host", getenvDefault("RIIDO_E2E_RIIDO_API_HOST", "https://development.api.riido.io"), "Riido product API host for task fixtures"),
+		teamID:        flag.String("team-id", os.Getenv("RIIDO_E2E_TEAM_ID"), "team id for automatic task fixture creation"),
+		taskFixture:   flag.Bool("create-task-fixture", true, "create a development task fixture when no real task id is available"),
 		runMutations:  flag.Bool("run-task-mutations", false, "create real task assignments/comments when ids are supplied"),
 		commentBody:   flag.String("comment-body", os.Getenv("RIIDO_E2E_COMMENT_BODY"), "optional task thread message body for mutation flow"),
 	}

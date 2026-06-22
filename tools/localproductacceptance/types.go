@@ -28,6 +28,9 @@ type config struct {
 	browserE2E    *bool
 	startClient   *bool
 	agentHost     *string
+	riidoAPIHost  *string
+	teamID        *string
+	taskFixture   *bool
 	runMutations  *bool
 	commentBody   *string
 }

@@ -27,8 +27,7 @@ func newAPIClient(base, token string) apiClient {
 
 func (c apiClient) call(method, path string, body any) (map[string]any, int, error) {
 	data, status, err := c.callBytes(context.Background(), method, path, body)
-	var decoded map[string]any
-	_ = json.Unmarshal(data, &decoded)
+	decoded := decodeObjectPayload(data)
 	if err != nil {
 		return decoded, status, err
 	}
