@@ -7,31 +7,24 @@ import (
 	"strings"
 )
 
-type scheduleEvidence struct {
-	SchemaVersion       string `json:"schema_version"`
-	ID                  string `json:"id"`
-	Status              string `json:"status"`
-	PlistPath           string `json:"plist_path"`
-	Hour                int    `json:"hour"`
-	Minute              int    `json:"minute"`
-	S3PrefixConfigured  bool   `json:"s3_prefix_configured"`
-	TaskMutations       bool   `json:"task_mutations"`
-	TaskIDConfigured    bool   `json:"task_id_configured"`
-	CommandHasTokenText bool   `json:"command_has_token_text"`
-}
-
 func writeScheduleEvidence(cfg config, paths schedulePaths, command string) error {
 	evidence := scheduleEvidence{
 		SchemaVersion:       "riido-local-qa-schedule.v1",
 		ID:                  "local-qa-schedule",
 		Status:              "passed",
+		Label:               *cfg.label,
+		Installed:           *cfg.install,
 		PlistPath:           paths.plist,
+		StdoutPath:          paths.stdout,
+		StderrPath:          paths.stderr,
 		Hour:                *cfg.hour,
 		Minute:              *cfg.minute,
+		RunAtLoad:           *cfg.runAtLoad,
 		S3PrefixConfigured:  strings.TrimSpace(*cfg.s3Prefix) != "",
 		TaskMutations:       *cfg.taskMutations,
 		TaskIDConfigured:    strings.TrimSpace(*cfg.productTaskID) != "",
 		CommandHasTokenText: commandMentionsToken(command),
+		CommandPreview:      safeCommandPreview(command),
 	}
 	return writeJSON(scheduleEvidencePath(cfg, paths), evidence)
 }
@@ -46,6 +39,13 @@ func writeJSON(path string, v any) error {
 
 func commandMentionsToken(command string) bool {
 	return strings.Contains(strings.ToLower(command), "token")
+}
+
+func safeCommandPreview(command string) string {
+	if commandMentionsToken(command) {
+		return "[redacted: command contains token text]"
+	}
+	return command
 }
 
 func scheduleEvidencePath(cfg config, paths schedulePaths) string {
