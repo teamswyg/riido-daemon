@@ -47,11 +47,11 @@ go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/r
 
 Only one source should be selected as the production source.
 
-OpenClaw local model speed is owned by OpenClaw config. If OpenClaw uses a slow Ollama default, repair config if needed and switch it to a faster tool-capable local model before QA:
+OpenClaw local model speed is owned by OpenClaw config. If OpenClaw uses a slow Ollama default, repair config if needed and switch it to a faster tool-capable local model before QA. The provider integration test defaults to `ollama/llama3.2:latest`, falls back to `ollama/qwen3:8b`, and can be pinned with `RIIDO_OPENCLAW_INTEGRATION_MODEL`:
 
 ```bash
 openclaw doctor --fix
-openclaw models set qwen3.5-4b-q4:latest
+openclaw models set llama3.2:latest
 ```
 
 Run local acceptance verification before deployment. The runner keeps provider failures as evidence, calls the real development AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:

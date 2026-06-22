@@ -44,13 +44,18 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 	}
 
 	args, dropped := buildCommandArgs(req, sessionID)
+	env, tempFiles, err := buildStartEnv(req)
+	if err != nil {
+		return agentbridge.StartCommand{}, err
+	}
 
 	return agentbridge.StartCommand{
 		Executable:  exe,
 		Args:        args,
-		Env:         buildEnv(req.Env),
+		Env:         env,
 		Dir:         req.Cwd,
 		StdinMode:   agentbridge.StdinNone,
 		DroppedArgs: dropped,
+		TempFiles:   tempFiles,
 	}, nil
 }

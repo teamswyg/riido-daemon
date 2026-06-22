@@ -1,10 +1,6 @@
 package openclaw
 
-import (
-	"fmt"
-
-	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-)
+import "github.com/teamswyg/riido-daemon/internal/agentbridge"
 
 func buildCommandArgs(req agentbridge.StartRequest, sessionID string) ([]string, []string) {
 	args := []string{
@@ -19,10 +15,10 @@ func buildCommandArgs(req agentbridge.StartRequest, sessionID string) ([]string,
 	return append(args, kept...), dropped
 }
 
-func buildEnv(env map[string]string) []string {
+func envList(env map[string]string) []string {
 	out := make([]string, 0, len(env))
 	for k, v := range env {
-		out = append(out, fmt.Sprintf("%s=%s", k, v))
+		out = append(out, k+"="+v)
 	}
 	return out
 }

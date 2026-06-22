@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"strings"
 	"time"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
 )
 
 const (
@@ -16,13 +18,7 @@ const (
 )
 
 func resolveExecutable(defaultName, override string) (string, bool) {
-	if override != "" {
-		if info, err := os.Stat(override); err == nil && !info.IsDir() && info.Mode()&0o111 != 0 {
-			return override, true
-		}
-	}
-	path, err := exec.LookPath(defaultName)
-	return path, err == nil
+	return detectutil.ResolveExecutable(defaultName, override)
 }
 
 func probeVersion(exe string) string {

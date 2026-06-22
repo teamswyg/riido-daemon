@@ -4,11 +4,12 @@ import "os"
 
 func observeProvider(root string, provider provider, runIntegration bool) providerEvidence {
 	override := os.Getenv(provider.OverrideEnv)
-	exe, found := resolveExecutable(provider.DefaultExecutable, override)
+	exe, found := resolveProviderExecutable(provider, override)
 	ev := providerEvidence{
 		ID:                 provider.ID,
 		Available:          found,
 		ExecutableRef:      executableRef(provider, override, found),
+		ExecutablePath:     exe,
 		IntegrationCommand: integrationCommand(provider),
 	}
 	if !found {
