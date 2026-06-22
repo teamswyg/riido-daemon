@@ -36,6 +36,7 @@
     {"id": "contract.api.bootstrap", "title": "Development bootstrap endpoint returns workspace agent/device read model", "tier": "daily", "surface": "control-plane-contract", "evidence": "external"},
     {"id": "contract.api.devices", "title": "Development devices endpoint exposes runtimes and provider_version", "tier": "daily", "surface": "control-plane-contract", "evidence": "external"},
     {"id": "contract.api.profile_thumbnail.intent", "title": "Profile thumbnail upload intent returns S3 POST handoff fields", "tier": "daily", "surface": "control-plane-contract", "evidence": "external"},
+    {"id": "contract.task.discovery", "title": "Task assignment candidate discovery reads assigned-agent-profiles", "tier": "daily", "surface": "task-contract", "evidence": "external"},
     {"id": "contract.task.assignable_agents", "title": "Task participant dropdown can read assignable agents", "tier": "weekly", "surface": "task-contract", "evidence": "external"},
     {"id": "contract.task.multi_assignment", "title": "Task can assign multiple provider agents without collision", "tier": "weekly", "surface": "task-contract", "evidence": "external"},
     {"id": "contract.task.thread_subscription", "title": "Task thread SSE subscription exposes active thread filters", "tier": "weekly", "surface": "task-contract", "evidence": "external"},

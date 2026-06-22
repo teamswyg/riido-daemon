@@ -4,6 +4,14 @@ func summarizeAssignableAgents(payload map[string]any) map[string]any {
 	return map[string]any{"agents_count": arrayLen(payload["agents"])}
 }
 
+func summarizeAssignedProfiles(payload map[string]any) map[string]any {
+	profiles, _ := payload["assigned_agent_profiles"].(map[string]any)
+	return map[string]any{
+		"workspace_id_present":     stringPresent(payload["workspace_id"]),
+		"assigned_task_keys_count": len(profiles),
+	}
+}
+
 func summarizeTaskAction(payload map[string]any) map[string]any {
 	return map[string]any{
 		"agent_id":          payload["agent_id"],

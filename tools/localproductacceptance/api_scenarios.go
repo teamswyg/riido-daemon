@@ -16,6 +16,8 @@ func contractAPIScenarios(cfg config) []scenario {
 		apiQuery(client, "contract.api.devices", http.MethodGet, base+"/devices", nil, summarizeDevices),
 		apiQuery(client, "contract.api.profile_thumbnail.intent", http.MethodPost,
 			base+"/profile-thumbnails/uploads", thumbnailIntentBody(), summarizeUploadIntent),
+		apiQuery(client, "contract.task.discovery", http.MethodGet,
+			base+"/tasks/assigned-agent-profiles", nil, summarizeAssignedProfiles),
 	}
 	return append(out, taskFlowScenarios(client, cfg)...)
 }
