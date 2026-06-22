@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/logging"
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
@@ -25,9 +26,21 @@ func TestStartDaemonPprofServerServesIndex(t *testing.T) {
 	}
 }
 
+func TestStartDaemonPprofServerStopIsIdempotent(t *testing.T) {
+	ctx, cancel := lifecycle.WithCancel(lifecycle.Background())
+	defer cancel()
+	stop, _, err := startDaemonPprofServer(ctx, "127.0.0.1:0", logging.NewWriterLogger(io.Discard))
+	if err != nil {
+		t.Fatal(err)
+	}
+	stop()
+	stop()
+}
+
 func readDaemonPprofIndex(t *testing.T, addr string) string {
 	t.Helper()
-	res, err := http.Get("http://" + addr + "/debug/pprof/")
+	client := http.Client{Timeout: time.Second}
+	res, err := client.Get("http://" + addr + "/debug/pprof/")
 	if err != nil {
 		t.Fatal(err)
 	}
