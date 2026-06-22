@@ -11,15 +11,16 @@ func contractAPIScenarios(cfg config) []scenario {
 		return apiSkippedScenarios(missing)
 	}
 	client := newAPIClient(*cfg.agentHost, *cfg.apiToken)
+	discovery, discoveryPayload := apiQueryPayload(client, "contract.task.discovery", http.MethodGet,
+		base+"/tasks/assigned-agent-profiles", nil, summarizeAssignedProfiles)
 	out := []scenario{
 		apiQuery(client, "contract.api.bootstrap", http.MethodGet, base+"/bootstrap", nil, summarizeBootstrap),
 		apiQuery(client, "contract.api.devices", http.MethodGet, base+"/devices", nil, summarizeDevices),
 		apiQuery(client, "contract.api.profile_thumbnail.intent", http.MethodPost,
 			base+"/profile-thumbnails/uploads", thumbnailIntentBody(), summarizeUploadIntent),
-		apiQuery(client, "contract.task.discovery", http.MethodGet,
-			base+"/tasks/assigned-agent-profiles", nil, summarizeAssignedProfiles),
+		discovery,
 	}
-	return append(out, taskFlowScenarios(client, cfg)...)
+	return append(out, taskFlowScenarios(client, cfg, discoveryPayload)...)
 }
 
 func missingAPIConfig(cfg config) *repair {

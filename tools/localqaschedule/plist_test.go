@@ -19,6 +19,9 @@ func TestRenderPlistIncludesDailySchedule(t *testing.T) {
 		"-client-root &#39;/tmp/client&#39;",
 		"-product-storage-state &#39;/tmp/state.json&#39;",
 		"-product-start-client",
+		"-product-task-id &#39;task-a&#39;",
+		"-product-agent-id-1 &#39;agent-a&#39;",
+		"-product-agent-id-2 &#39;agent-b&#39;",
 	} {
 		if !strings.Contains(got, want) {
 			t.Fatalf("plist missing %q:\n%s", want, got)
@@ -37,8 +40,9 @@ func testConfig() config {
 	product, label, plist, evidence := "/tmp/product.json", "io.test", "", "/tmp/schedule.json"
 	clientRoot, baseURL, workspace := "/tmp/client", "http://localhost:3000", "W1"
 	storage := "/tmp/state.json"
+	taskID, first, second, comment := "task-a", "agent-a", "agent-b", "hi"
 	hour, minute := 9, 5
-	install, runAtLoad, runProduct, startClient := false, false, true, true
+	install, runAtLoad, runProduct, startClient, mutations := false, false, true, true, true
 	return config{
 		repo:             &repo,
 		s3Prefix:         &s3,
@@ -48,6 +52,11 @@ func testConfig() config {
 		productBaseURL:   &baseURL,
 		productWorkspace: &workspace,
 		productStorage:   &storage,
+		productTaskID:    &taskID,
+		productAgentID1:  &first,
+		productAgentID2:  &second,
+		productComment:   &comment,
+		taskMutations:    &mutations,
 		startClient:      &startClient,
 		runProduct:       &runProduct,
 		label:            &label,

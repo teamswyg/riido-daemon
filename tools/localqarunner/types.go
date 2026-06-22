@@ -27,8 +27,13 @@ type config struct {
 	productWorkspace   *string
 	productScreenshots *string
 	productStorage     *string
+	productTaskID      *string
+	productAgentID1    *string
+	productAgentID2    *string
+	productCommentBody *string
 	runIntegration     *bool
 	runProduct         *bool
+	productMutations   *bool
 	productBrowserE2E  *bool
 	productStartClient *bool
 	continueOnFailure  *bool

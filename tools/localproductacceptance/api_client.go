@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,6 +26,16 @@ func newAPIClient(base, token string) apiClient {
 }
 
 func (c apiClient) call(method, path string, body any) (map[string]any, int, error) {
+	data, status, err := c.callBytes(context.Background(), method, path, body)
+	var decoded map[string]any
+	_ = json.Unmarshal(data, &decoded)
+	if err != nil {
+		return decoded, status, err
+	}
+	return decoded, status, nil
+}
+
+func (c apiClient) callBytes(ctx context.Context, method, path string, body any) ([]byte, int, error) {
 	var reader io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)
@@ -33,7 +44,7 @@ func (c apiClient) call(method, path string, body any) (map[string]any, int, err
 		}
 		reader = bytes.NewReader(data)
 	}
-	req, err := http.NewRequest(method, c.base+path, reader)
+	req, err := http.NewRequestWithContext(ctx, method, c.base+path, reader)
 	if err != nil {
 		return nil, 0, fmt.Errorf("build request: %w", err)
 	}
@@ -47,10 +58,8 @@ func (c apiClient) call(method, path string, body any) (map[string]any, int, err
 	}
 	defer resp.Body.Close()
 	data, _ := io.ReadAll(io.LimitReader(resp.Body, 512*1024))
-	var decoded map[string]any
-	_ = json.Unmarshal(data, &decoded)
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return decoded, resp.StatusCode, fmt.Errorf("http status %d", resp.StatusCode)
+		return data, resp.StatusCode, fmt.Errorf("http status %d", resp.StatusCode)
 	}
-	return decoded, resp.StatusCode, nil
+	return data, resp.StatusCode, nil
 }

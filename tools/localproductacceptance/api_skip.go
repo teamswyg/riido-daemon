@@ -8,6 +8,7 @@ func apiSkippedScenarios(repair *repair) []scenario {
 		"contract.task.assignable_agents",
 		"contract.task.multi_assignment",
 		"contract.task.thread_subscription",
+		"contract.task.sse_replay",
 		"contract.task.thread_message",
 	}
 	out := make([]scenario, 0, len(ids))

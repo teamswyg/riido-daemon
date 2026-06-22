@@ -63,6 +63,15 @@ RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
 go run ./tools/localqarunner -run-product
 ```
 
+Task multi-assignment, SSE replay, and thread-message probes need a real task that the development token can access. If `RIIDO_E2E_TASK_ID` is absent, the probe tries a generated task id and records a partial `task_flow_config_required` evidence row when SaaS rejects it. To close the full task E2E loop, provide a real task id; agent ids are optional because the probe picks two assignable agents and prefers the same `runtime_kind` pair:
+
+```bash
+RIIDO_E2E_TASK_ID=<real_task_id> \
+RIIDO_E2E_COMMENT_BODY='local QA follow-up' \
+RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
+go run ./tools/localqarunner -run-product -product-task-mutations
+```
+
 `teamswyg/riido-client` is not the implementation target for this harness and must not receive Codex/local-QA commits. The daemon-owned contract lab writes `.riido-local/contract-lab/index.html` to show frontend developers the exact endpoint order and identifier rules.
 
 Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI. It runs once per day and uploads latest plus timestamped evidence when `RIIDO_LOCAL_QA_S3_PREFIX` is set:

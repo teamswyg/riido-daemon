@@ -9,6 +9,11 @@ type config struct {
 	productBaseURL   *string
 	productWorkspace *string
 	productStorage   *string
+	productTaskID    *string
+	productAgentID1  *string
+	productAgentID2  *string
+	productComment   *string
+	taskMutations    *bool
 	startClient      *bool
 	runProduct       *bool
 	label            *string
