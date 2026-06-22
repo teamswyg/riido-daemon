@@ -50,12 +50,10 @@ func stopDaemonProcessByPID(pid int, timeout time.Duration) error {
 	if err := signalDaemonProcessTerm(proc); err != nil {
 		return daemonWrapf(ErrDaemonProcess, "stop.terminate", err, "terminate daemon process")
 	}
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
-		if !daemonProcessExists(proc) {
-			return nil
-		}
-		time.Sleep(50 * time.Millisecond)
+	if waitDaemonShutdownCondition(timeout, func() bool {
+		return !daemonProcessExists(proc)
+	}) {
+		return nil
 	}
 	if err := signalDaemonProcessKill(proc); err != nil {
 		return daemonWrapf(ErrDaemonProcess, "stop.kill", err, "kill daemon process")

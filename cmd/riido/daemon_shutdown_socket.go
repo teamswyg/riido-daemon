@@ -29,14 +29,12 @@ func tryShutdownViaSocket(socket string, timeout time.Duration, level lifecycle.
 }
 
 func waitDaemonSocketClosed(socket string, timeout time.Duration) bool {
-	deadline := time.Now().Add(timeout)
-	for time.Now().Before(deadline) {
+	return waitDaemonShutdownCondition(timeout, func() bool {
 		c, err := net.DialTimeout("unix", socket, 100*time.Millisecond)
 		if err != nil {
 			return true
 		}
 		_ = c.Close()
-		time.Sleep(50 * time.Millisecond)
-	}
-	return false
+		return false
+	})
 }
