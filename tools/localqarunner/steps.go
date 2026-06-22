@@ -39,6 +39,8 @@ func runProductStep(root string, cfg config, evidence *runEvidence) string {
 		"-screenshots", *cfg.productScreenshots,
 		"-storage-state", *cfg.productStorage,
 		"-agent-host", *cfg.productAgentHost,
+		"-riido-api-host", *cfg.productRiidoHost,
+		"-team-id", *cfg.productTeamID,
 		"-valid-for", cfg.validFor.String(),
 		"-evidence-out", *cfg.productEvidence,
 		"-lab-out", *cfg.productLab,
@@ -49,6 +51,9 @@ func runProductStep(root string, cfg config, evidence *runEvidence) string {
 	}
 	if *cfg.productStartClient {
 		args = append(args, "-start-client")
+	}
+	if !*cfg.productTaskFixture {
+		args = append(args, "-create-task-fixture=false")
 	}
 	step := runStep(root, "product-acceptance", "go", args...)
 	appendStep(evidence, step)

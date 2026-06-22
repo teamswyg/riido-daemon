@@ -38,15 +38,16 @@ type evidencePlatform struct {
 }
 
 type providerEvidence struct {
-	ID                 string  `json:"id"`
-	Available          bool    `json:"available"`
-	ExecutableRef      string  `json:"executable_ref"`
-	ExecutablePath     string  `json:"executable_path,omitempty"`
-	Version            string  `json:"version,omitempty"`
-	IntegrationStatus  string  `json:"integration_status"`
-	IntegrationCommand string  `json:"integration_command"`
-	FailureSummary     string  `json:"failure_summary,omitempty"`
-	Repair             *repair `json:"repair,omitempty"`
+	ID                 string         `json:"id"`
+	Available          bool           `json:"available"`
+	ExecutableRef      string         `json:"executable_ref"`
+	ExecutablePath     string         `json:"executable_path,omitempty"`
+	Version            string         `json:"version,omitempty"`
+	IntegrationStatus  string         `json:"integration_status"`
+	IntegrationCommand string         `json:"integration_command"`
+	FailureSummary     string         `json:"failure_summary,omitempty"`
+	Observed           map[string]any `json:"observed,omitempty"`
+	Repair             *repair        `json:"repair,omitempty"`
 }
 
 type repair struct {

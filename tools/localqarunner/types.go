@@ -25,8 +25,10 @@ type config struct {
 	dashboardTool      *string
 	clientRoot         *string
 	productAgentHost   *string
+	productRiidoHost   *string
 	productBaseURL     *string
 	productWorkspace   *string
+	productTeamID      *string
 	productScreenshots *string
 	productStorage     *string
 	productTaskID      *string
@@ -39,6 +41,7 @@ type config struct {
 	productMutations   *bool
 	productBrowserE2E  *bool
 	productStartClient *bool
+	productTaskFixture *bool
 	continueOnFailure  *bool
 }
 

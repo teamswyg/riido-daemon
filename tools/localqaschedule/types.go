@@ -7,13 +7,16 @@ type config struct {
 	productEvidence  *string
 	clientRoot       *string
 	productBaseURL   *string
+	productRiidoHost *string
 	productWorkspace *string
+	productTeamID    *string
 	productStorage   *string
 	productTaskID    *string
 	productAgentID1  *string
 	productAgentID2  *string
 	productComment   *string
 	taskMutations    *bool
+	taskFixture      *bool
 	startClient      *bool
 	runProduct       *bool
 	label            *string
