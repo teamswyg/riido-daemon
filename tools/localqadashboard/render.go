@@ -28,6 +28,7 @@ main{max-width:1120px;margin:0 auto}
 table{width:100%;border-collapse:collapse;background:white;border:1px solid #deded8}
 th,td{padding:10px;border-bottom:1px solid #ededeb;text-align:left;vertical-align:top}
 code{font-size:12px;word-break:break-word}
+.shot{display:block;max-width:220px;max-height:160px;margin-top:8px;border:1px solid #deded8;border-radius:6px}
 details{max-width:420px}
 h2{margin-top:28px}
 </style>
@@ -47,7 +48,7 @@ h2{margin-top:28px}
 {{if .Run.OpenRepairs}}<h2>Open Repairs</h2><table><thead><tr><th>Provider</th><th>Class</th><th>Owner</th><th>Mode</th><th>Summary</th></tr></thead><tbody>{{range .Run.OpenRepairs}}<tr><td>{{.ProviderID}}</td><td>{{.Class}}</td><td>{{.Owner}}</td><td>{{.Mode}}</td><td>{{.Summary}}{{if .SuggestedCommand}}<br><code>{{.SuggestedCommand}}</code>{{end}}</td></tr>{{end}}</tbody></table>{{end}}
 <h2>Coverage</h2>
 <table><thead><tr><th>Scenario</th><th>Tier</th><th>Surface</th><th>Status</th><th>Repair</th></tr></thead><tbody>
-{{range .CoverageRows}}<tr><td>{{.Title}}<br><code>{{.ID}}</code></td><td>{{.Tier}}</td><td>{{.Surface}}</td><td class="status">{{.Status}}</td><td>{{if .Repair.Class}}{{.Repair.Class}}<br>{{.Repair.Summary}}{{if .Repair.SuggestedCommand}}<br><code>{{.Repair.SuggestedCommand}}</code>{{end}}{{else}}{{.Detail}}{{end}}{{if .Screenshot}}<br><a href="{{.Screenshot}}">screenshot</a>{{end}}</td></tr>{{end}}
+{{range .CoverageRows}}<tr><td>{{.Title}}<br><code>{{.ID}}</code></td><td>{{.Tier}}</td><td>{{.Surface}}</td><td class="status">{{.Status}}</td><td>{{if .Repair.Class}}{{.Repair.Class}}<br>{{.Repair.Summary}}{{if .Repair.SuggestedCommand}}<br><code>{{.Repair.SuggestedCommand}}</code>{{end}}{{else}}{{.Detail}}{{end}}{{if .Screenshot}}<br><a href="{{.Screenshot}}">screenshot<img class="shot" src="{{.Screenshot}}" alt="{{.ID}} screenshot"></a>{{end}}</td></tr>{{end}}
 </tbody></table>
 <h2>Provider Evidence</h2>
 <table>
