@@ -58,10 +58,14 @@ func providerSideEffectRepair() repair {
 }
 
 func authRepair(providerID string) repair {
-	return repair{
+	rep := repair{
 		Class:   "provider_auth_required",
 		Owner:   "human",
 		Mode:    "manual",
 		Summary: providerID + " requires an authenticated local provider session.",
 	}
+	if providerID == "cursor" {
+		rep.SuggestedCommand = "cursor-agent login && AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -race -count=1 -run TestIntegration -v"
+	}
+	return rep
 }

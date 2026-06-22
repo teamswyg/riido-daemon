@@ -9,6 +9,13 @@ func TestClassifyRepairAuthRequired(t *testing.T) {
 	}
 }
 
+func TestClassifyRepairCursorAuthIncludesAction(t *testing.T) {
+	got := classifyRepair("cursor", "skipped", "account missing", true)
+	if got.SuggestedCommand == "" {
+		t.Fatalf("repair=%+v", got)
+	}
+}
+
 func TestClassifyRepairOpenClawBackend(t *testing.T) {
 	got := classifyRepair("openclaw", "skipped", "openclaw local model backend unavailable", true)
 	if got.Class != "local_backend_unavailable" || got.Mode != "candidate_auto" {
