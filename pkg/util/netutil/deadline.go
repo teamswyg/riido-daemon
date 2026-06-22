@@ -1,4 +1,4 @@
-package mwsdbridge
+package netutil
 
 import (
 	"context"
@@ -6,13 +6,13 @@ import (
 	"net"
 )
 
-func applyRoundTripDeadline(ctx context.Context, conn net.Conn) error {
+func ApplyContextDeadline(ctx context.Context, conn net.Conn, surface string) error {
 	deadline, ok := ctx.Deadline()
 	if !ok {
 		return nil
 	}
 	if err := conn.SetDeadline(deadline); err != nil {
-		return fmt.Errorf("set mwsd socket deadline: %w", err)
+		return fmt.Errorf("set %s deadline: %w", surface, err)
 	}
 	return nil
 }

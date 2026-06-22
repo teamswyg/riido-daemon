@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"net"
+
+	"github.com/teamswyg/riido-daemon/pkg/util/netutil"
 )
 
 // Request sends one mwsd method request and decodes the response data.
@@ -30,7 +32,7 @@ func (c Client) roundTrip(ctx context.Context, method Method) ([]byte, error) {
 		return nil, fmt.Errorf("connect mwsd socket: %w", err)
 	}
 	defer conn.Close()
-	if err := applyRoundTripDeadline(ctx, conn); err != nil {
+	if err := netutil.ApplyContextDeadline(ctx, conn, "mwsd socket"); err != nil {
 		return nil, err
 	}
 

@@ -8,6 +8,8 @@ import (
 	"io"
 	"net"
 	"time"
+
+	"github.com/teamswyg/riido-daemon/pkg/util/netutil"
 )
 
 func (c Client) Request(ctx context.Context, method string, params, out any) error {
@@ -23,7 +25,7 @@ func (c Client) Request(ctx context.Context, method string, params, out any) err
 		return fmt.Errorf("connect riido API %s endpoint: %w", transport, err)
 	}
 	defer conn.Close()
-	if err := applyClientDeadline(ctx, conn); err != nil {
+	if err := netutil.ApplyContextDeadline(ctx, conn, "riido API endpoint"); err != nil {
 		return err
 	}
 	if err := writeRequest(conn, method, params); err != nil {
