@@ -47,6 +47,20 @@ func sameRuntimeKindPair(agents []taskAgentCandidate) (taskAgentPair, bool) {
 	return taskAgentPair{}, false
 }
 
+func prioritizeTaskAgentCandidates(agents []taskAgentCandidate) []taskAgentCandidate {
+	pair, ok := chooseTaskAgentPair(agents)
+	if !ok {
+		return agents
+	}
+	out := []taskAgentCandidate{pair.First, pair.Second}
+	for _, agent := range agents {
+		if agent.AgentID != pair.First.AgentID && agent.AgentID != pair.Second.AgentID {
+			out = append(out, agent)
+		}
+	}
+	return out
+}
+
 func stringValue(value any) string {
 	out, _ := value.(string)
 	return out

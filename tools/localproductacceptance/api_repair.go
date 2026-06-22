@@ -1,5 +1,7 @@
 package main
 
+import "strings"
+
 func apiConfigRepair(class, summary string) *repair {
 	return &repair{Class: class, Owner: "local-qa", Mode: "manual", Summary: summary}
 }
@@ -10,6 +12,23 @@ func apiRuntimeRepair() *repair {
 		Owner:   "control-plane",
 		Mode:    "manual",
 		Summary: "Check token, workspace permission, and development.ai-api.riido.io availability.",
+	}
+}
+
+func apiRepairForPayload(payload map[string]any) *repair {
+	if strings.Contains(payloadErrorSummary(payload), "runtime binding") {
+		return runtimeBindingRepair()
+	}
+	return apiRuntimeRepair()
+}
+
+func runtimeBindingRepair() *repair {
+	return &repair{
+		Class:            "ai_agent_runtime_binding_required",
+		Owner:            "control-plane/daemon",
+		Mode:             "manual",
+		Summary:          "Runtime snapshot/binding is missing; start the daemon and verify agent runtime registration.",
+		SuggestedCommand: "riido daemon stop --force || true; riido daemon start",
 	}
 }
 

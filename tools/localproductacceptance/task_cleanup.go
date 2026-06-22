@@ -11,9 +11,12 @@ func cleanupTaskAssignments(client apiClient, base string, plan taskMutationPlan
 }
 
 func stopAssignment(client apiClient, base, taskID, agentID string) scenario {
+	return stopAssignmentWithID(client, base, taskID, agentID, "contract.task.assignment.cleanup.first.stop")
+}
+
+func stopAssignmentWithID(client apiClient, base, taskID, agentID, id string) scenario {
 	path := taskEndpoint(base, taskID, "/agent-assignments/"+agentID+"/stop")
-	return apiQuery(client, "contract.task.assignment.cleanup.first.stop",
-		http.MethodPost, path, nil, summarizeTaskAction)
+	return apiQuery(client, id, http.MethodPost, path, nil, summarizeTaskAction)
 }
 
 func deleteAssignment(client apiClient, base, taskID, agentID, id string) scenario {

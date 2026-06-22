@@ -63,7 +63,7 @@ RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
 go run ./tools/localqarunner -run-product
 ```
 
-Task multi-assignment, SSE replay, and thread-message probes need a real task that the development token can access. If `RIIDO_E2E_TASK_ID` is absent, the probe tries a generated task id and records a partial `task_flow_config_required` evidence row when SaaS rejects it. To close the full task E2E loop, provide a real task id; agent ids are optional because the probe picks two assignable agents and prefers the same `runtime_kind` pair:
+Task multi-assignment, SSE replay, and thread-message probes need a real task that the development token can access. If `RIIDO_E2E_TASK_ID` is absent, the probe tries a generated task id and records a partial `task_flow_config_required` evidence row when SaaS rejects it. To close the full task E2E loop, provide a real task id; agent ids are optional because the probe tries assignable candidates, prefers the same `runtime_kind` pair, and records `ai_agent_runtime_binding_required` repair evidence when SaaS has agents but no live daemon/runtime binding:
 
 ```bash
 RIIDO_E2E_TASK_ID=<real_task_id> \
