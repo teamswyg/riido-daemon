@@ -16,6 +16,7 @@ func handleDaemonConn(conn net.Conn, flags startFlags, settings daemonSettings, 
 	req, ok, err := readDaemonRequest(conn)
 	if err != nil {
 		log.Printf("decode request: %v", err)
+		_ = writeDaemonDecodeError(conn, err)
 	}
 	if !ok {
 		return
