@@ -10,6 +10,15 @@ Install latest macOS/Linux release:
 curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh
 ```
 
+Existing installs use the same script to update in place. Stop the daemon, reinstall, then check the version:
+
+```bash
+riido daemon stop --force || true
+curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh
+riido version
+riido daemon start
+```
+
 `latest` is resolved through the GitHub Releases API because public daemon release currently uses the pre-release channel instead of GitHub's stable `/releases/latest` endpoint.
 
 Install a specific release:
@@ -38,14 +47,25 @@ go run ./cmd/riido daemon stop --socket /tmp/riido-agentd.sock --pid-file /tmp/r
 
 Only one source should be selected as the production source.
 
-Run local acceptance verification before deployment. The runner keeps provider failures as evidence, renders the dashboard, and optionally publishes to the private local QA evidence bucket. Product acceptance probes live here; `riido-client` is only an observed read-only target:
+OpenClaw local model speed is owned by OpenClaw config. If OpenClaw uses a slow Ollama default, repair config if needed and switch it to a faster tool-capable local model before QA:
 
 ```bash
-RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
-go run ./tools/localqarunner -run-product -client-root ../riido-client
+openclaw doctor --fix
+openclaw models set llama3.2:latest
 ```
 
-Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI:
+Run local acceptance verification before deployment. The runner keeps provider failures as evidence, calls the real development AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:
+
+```bash
+RIIDO_AI_AGENT_TOKEN=<token> \
+RIIDO_E2E_WORKSPACE_ID=<workspace_id> \
+RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
+go run ./tools/localqarunner -run-product
+```
+
+`teamswyg/riido-client` is not the implementation target for this harness and must not receive Codex/local-QA commits. The daemon-owned contract lab writes `.riido-local/contract-lab/index.html` to show frontend developers the exact endpoint order and identifier rules.
+
+Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI. It runs once per day and uploads latest plus timestamped evidence when `RIIDO_LOCAL_QA_S3_PREFIX` is set:
 
 ```bash
 RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \

@@ -41,6 +41,10 @@ jobs:
             -provider-evidence out/provider-real-cli-observation.json \
             -dashboard out/index.html \
             -evidence-out out/local-qa-run.json
+          go run ./tools/localqaschedule \
+            -repo "$(pwd)" \
+            -s3-prefix s3://example-local-qa-evidence/daily \
+            -evidence-out out/local-qa-schedule.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:

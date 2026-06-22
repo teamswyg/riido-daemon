@@ -17,13 +17,14 @@ type coverageScenario struct {
 }
 
 type coverageRow struct {
-	ID      string
-	Title   string
-	Tier    string
-	Surface string
-	Status  string
-	Repair  repairEvidence
-	Detail  string
+	ID         string
+	Title      string
+	Tier       string
+	Surface    string
+	Status     string
+	Repair     repairEvidence
+	Detail     string
+	Screenshot string
 }
 
 type coverageSummary struct {

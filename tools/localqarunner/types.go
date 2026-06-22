@@ -8,23 +8,30 @@ const (
 )
 
 type config struct {
-	repo              *string
-	providerEvidence  *string
-	productEvidence   *string
-	runEvidence       *string
-	dashboardHTML     *string
-	coverageManifest  *string
-	s3Prefix          *string
-	validFor          *time.Duration
-	providerTool      *string
-	productTool       *string
-	dashboardTool     *string
-	clientRoot        *string
-	productBaseURL    *string
-	productWorkspace  *string
-	runIntegration    *bool
-	runProduct        *bool
-	continueOnFailure *bool
+	repo               *string
+	providerEvidence   *string
+	productEvidence    *string
+	productLab         *string
+	scheduleEvidence   *string
+	runEvidence        *string
+	dashboardHTML      *string
+	coverageManifest   *string
+	s3Prefix           *string
+	validFor           *time.Duration
+	providerTool       *string
+	productTool        *string
+	dashboardTool      *string
+	clientRoot         *string
+	productAgentHost   *string
+	productBaseURL     *string
+	productWorkspace   *string
+	productScreenshots *string
+	productStorage     *string
+	runIntegration     *bool
+	runProduct         *bool
+	productBrowserE2E  *bool
+	productStartClient *bool
+	continueOnFailure  *bool
 }
 
 type runEvidence struct {
@@ -40,6 +47,8 @@ type runEvidence struct {
 type runArtifacts struct {
 	ProviderEvidence string `json:"provider_evidence"`
 	ProductEvidence  string `json:"product_evidence,omitempty"`
+	ProductLab       string `json:"product_lab,omitempty"`
+	ScheduleEvidence string `json:"schedule_evidence,omitempty"`
 	DashboardHTML    string `json:"dashboard_html"`
 	S3Prefix         string `json:"s3_prefix,omitempty"`
 }
@@ -50,4 +59,11 @@ type stepEvidence struct {
 	Command    string `json:"command"`
 	ExitCode   int    `json:"exit_code"`
 	OutputTail string `json:"output_tail,omitempty"`
+}
+
+type uploadSpec struct {
+	id        string
+	source    string
+	target    string
+	recursive bool
 }

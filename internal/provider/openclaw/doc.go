@@ -10,5 +10,6 @@
 //     or TaskID to --session-id. Empty fallback is never allowed.
 //   - When the caller passes a SystemPrompt, we inline it into --message
 //     because not every OpenClaw build supports --system-prompt.
-//   - Model is treated as an agent/profile name, not an LLM identifier.
+//   - The installed CLI does not accept --model for agent runs. Model
+//     selection is owned by OpenClaw config, for example `openclaw models set`.
 package openclaw

@@ -9,6 +9,24 @@ func uploads(cfg config, stamp string) []uploadSpec {
 			upload("product-evidence-"+stamp, *cfg.productEvidence, prefix+"/"+stamp+"/ai-agent-product-acceptance.json"),
 		)
 	}
+	if *cfg.productLab != "" && fileExists(*cfg.productLab) {
+		specs = append(specs,
+			upload("product-lab", *cfg.productLab, prefix+"/latest/contract-lab/index.html"),
+			upload("product-lab-"+stamp, *cfg.productLab, prefix+"/"+stamp+"/contract-lab/index.html"),
+		)
+	}
+	if *cfg.scheduleEvidence != "" && fileExists(*cfg.scheduleEvidence) {
+		specs = append(specs,
+			upload("schedule-evidence", *cfg.scheduleEvidence, prefix+"/latest/local-qa-schedule.json"),
+			upload("schedule-evidence-"+stamp, *cfg.scheduleEvidence, prefix+"/"+stamp+"/local-qa-schedule.json"),
+		)
+	}
+	if *cfg.productScreenshots != "" && dirExists(*cfg.productScreenshots) {
+		specs = append(specs,
+			uploadDir("product-screenshots", *cfg.productScreenshots, prefix+"/latest/screenshots/ai-agent-product-acceptance/"),
+			uploadDir("product-screenshots-"+stamp, *cfg.productScreenshots, prefix+"/"+stamp+"/screenshots/ai-agent-product-acceptance/"),
+		)
+	}
 	return specs
 }
 
@@ -25,4 +43,8 @@ func baseUploads(cfg config, stamp, prefix string) []uploadSpec {
 
 func upload(id, source, target string) uploadSpec {
 	return uploadSpec{id: "upload-" + id, source: source, target: target}
+}
+
+func uploadDir(id, source, target string) uploadSpec {
+	return uploadSpec{id: "upload-" + id, source: source, target: target, recursive: true}
 }

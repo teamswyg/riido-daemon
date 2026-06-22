@@ -19,6 +19,9 @@ func run(cfg config) (string, error) {
 			return "", err
 		}
 	}
+	if err := writeScheduleEvidence(cfg, paths, body); err != nil {
+		return "", err
+	}
 	return paths.plist, nil
 }
 

@@ -18,6 +18,10 @@ func localQACommand(cfg config, paths schedulePaths) string {
 		cmd += " -run-product"
 		cmd += " -client-root " + shellQuote(*cfg.clientRoot)
 		cmd += " -product-base-url " + shellQuote(*cfg.productBaseURL)
+		cmd += " -product-storage-state " + shellQuote(*cfg.productStorage)
+		if *cfg.startClient {
+			cmd += " -product-start-client"
+		}
 		if *cfg.productWorkspace != "" {
 			cmd += " -product-workspace-id " + shellQuote(*cfg.productWorkspace)
 		}

@@ -9,6 +9,8 @@
   "blocks": [
     {"kind": "paragraph", "text": "Install latest macOS/Linux release:"},
     {"kind": "code", "language": "bash", "code": "curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh"},
+    {"kind": "paragraph", "text": "Existing installs use the same script to update in place. Stop the daemon, reinstall, then check the version:"},
+    {"kind": "code", "language": "bash", "code": "riido daemon stop --force || true\ncurl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh\nriido version\nriido daemon start"},
     {"kind": "paragraph", "text": "`latest` is resolved through the GitHub Releases API because public daemon release currently uses the pre-release channel instead of GitHub's stable `/releases/latest` endpoint."},
     {"kind": "paragraph", "text": "Install a specific release:"},
     {"kind": "code", "language": "bash", "code": "RIIDO_DAEMON_VERSION=v0.0.1 \\\ncurl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh"},
@@ -21,9 +23,12 @@
       "`RIIDO_SAAS_URL` + `RIIDO_DEVICE_ID` + `RIIDO_DEVICE_SECRET`"
     ]},
     {"kind": "paragraph", "text": "Only one source should be selected as the production source."},
-    {"kind": "paragraph", "text": "Run local acceptance verification before deployment. The runner keeps provider failures as evidence, renders the dashboard, and optionally publishes to the private local QA evidence bucket. Product acceptance probes live here; `riido-client` is only an observed read-only target:"},
-    {"kind": "code", "language": "bash", "code": "RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \\\ngo run ./tools/localqarunner -run-product -client-root ../riido-client"},
-    {"kind": "paragraph", "text": "Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI:"},
+    {"kind": "paragraph", "text": "OpenClaw local model speed is owned by OpenClaw config. If OpenClaw uses a slow Ollama default, repair config if needed and switch it to a faster tool-capable local model before QA:"},
+    {"kind": "code", "language": "bash", "code": "openclaw doctor --fix\nopenclaw models set llama3.2:latest"},
+    {"kind": "paragraph", "text": "Run local acceptance verification before deployment. The runner keeps provider failures as evidence, calls the real development AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:"},
+    {"kind": "code", "language": "bash", "code": "RIIDO_AI_AGENT_TOKEN=<token> \\\nRIIDO_E2E_WORKSPACE_ID=<workspace_id> \\\nRIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \\\ngo run ./tools/localqarunner -run-product"},
+    {"kind": "paragraph", "text": "`teamswyg/riido-client` is not the implementation target for this harness and must not receive Codex/local-QA commits. The daemon-owned contract lab writes `.riido-local/contract-lab/index.html` to show frontend developers the exact endpoint order and identifier rules."},
+    {"kind": "paragraph", "text": "Install the macOS daily local acceptance schedule. This is a developer-local LaunchAgent, not CI. It runs once per day and uploads latest plus timestamped evidence when `RIIDO_LOCAL_QA_S3_PREFIX` is set:"},
     {"kind": "code", "language": "bash", "code": "RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \\\ngo run ./tools/localqaschedule -repo \"$(pwd)\" -hour 9 -minute 0 -install\nlaunchctl print gui/$(id -u)/io.riido.local-qa"},
     {"kind": "paragraph", "text": "Local artifacts are written under `.riido-local/evidence/` and `.riido-local/dashboard/`. The dashboard shows what passed, failed, skipped, remains not verified, and when the evidence expires."}
   ]

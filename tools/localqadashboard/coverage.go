@@ -43,21 +43,6 @@ func providerIndex(providers []providerEvidence) map[string]providerEvidence {
 	return out
 }
 
-func externalCoverageRow(row coverageRow, scenario externalScenario) coverageRow {
-	if scenario.ID == "" {
-		return row
-	}
-	row.Status = scenario.Status
-	row.Detail = scenario.FailureSummary
-	if scenario.Screenshot != "" {
-		row.Detail = scenario.Screenshot
-	}
-	if scenario.Repair != nil {
-		row.Repair = *scenario.Repair
-	}
-	return row
-}
-
 func providerCoverageRow(row coverageRow, provider providerEvidence) coverageRow {
 	if provider.ID == "" {
 		return row

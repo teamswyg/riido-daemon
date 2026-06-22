@@ -1,6 +1,6 @@
 package main
 
-func run(inputPath, externalPath, manifestPath, outputPath string) error {
+func run(inputPath, externalPath, runPath, schedulePath, manifestPath, outputPath string) error {
 	evidence, err := loadProviderEvidence(inputPath)
 	if err != nil {
 		return err
@@ -9,6 +9,8 @@ func run(inputPath, externalPath, manifestPath, outputPath string) error {
 	if err != nil {
 		return err
 	}
+	external.Scenarios = append(external.Scenarios, runEvidenceScenarios(runPath)...)
+	external.Scenarios = append(external.Scenarios, scheduleEvidenceScenarios(schedulePath)...)
 	manifest, err := loadCoverageManifest(manifestPath)
 	if err != nil {
 		return err

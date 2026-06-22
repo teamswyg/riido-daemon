@@ -11,6 +11,7 @@ func run(cfg config) (string, error) {
 	if err != nil {
 		return statusFailed, fmt.Errorf("resolve client root: %w", err)
 	}
+	hydrateConfigFromStorage(cfg)
 	observed := time.Now().UTC()
 	evidence := evidenceFile{
 		SchemaVersion: "riido-product-acceptance.v1",
@@ -23,24 +24,28 @@ func run(cfg config) (string, error) {
 	if err := writeEvidence(*cfg.evidenceOut, evidence); err != nil {
 		return statusFailed, err
 	}
+	if err := writeContractLab(*cfg.labOut, evidence); err != nil {
+		return statusFailed, err
+	}
 	return evidence.Status, nil
 }
 
 func summarize(scenarios []scenario) string {
+	status := statusPassed
 	for _, scenario := range scenarios {
 		if scenario.Status == statusFailed {
 			return statusFailed
 		}
+		if scenario.Status == statusSkipped {
+			status = statusPartial
+		}
 	}
-	return statusPassed
+	return status
 }
 
 func buildScenarios(clientRoot string, cfg config) []scenario {
 	out := []scenario{clientReadOnlyScenario(clientRoot)}
-	if !*cfg.probeRoutes {
-		return out
-	}
-	out = append(out, loginScenario(*cfg.baseURL))
-	out = append(out, workspaceRouteScenarios(*cfg.baseURL, *cfg.workspaceID)...)
+	out = append(out, contractAPIScenarios(cfg)...)
+	out = append(out, contractUIScenario(*cfg.labOut))
 	return out
 }
