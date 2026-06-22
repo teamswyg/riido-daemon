@@ -10,13 +10,13 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 		Evidence: providerEvidenceFile{
 			Status:     "partial",
 			ObservedAt: "2026-06-22T00:00:00Z",
-			ExpiresAt:  "2026-06-23T00:00:00Z",
+			ExpiresAt:  "2999-06-23T00:00:00Z",
 			Platform:   evidencePlatform{OS: "darwin", Arch: "arm64"},
 			Providers:  []providerEvidence{{ID: "codex", Version: "codex-cli", IntegrationStatus: "passed"}},
 		},
 		Run: localRunEvidence{
 			ObservedAt:     "2026-06-22T01:00:00Z",
-			ExpiresAt:      "2026-06-23T01:00:00Z",
+			ExpiresAt:      "2999-06-23T01:00:00Z",
 			Status:         "passed",
 			CoverageStatus: "partial",
 			OpenRepairs: []repairEvidence{{
@@ -45,7 +45,8 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 	for _, want := range []string{
 		"Coverage Status",
 		"freshness-status",
-		`data-expires="2026-06-23T01:00:00Z"`,
+		`data-expires="2999-06-23T01:00:00Z"`,
+		">fresh</div>",
 		"provider_auth_required",
 		"cursor-agent login",
 		"figma.onboarding",
@@ -56,7 +57,7 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 			t.Fatalf("rendered dashboard missing %q", want)
 		}
 	}
-	if strings.Contains(html, "2026-06-23T00:00:00Z") {
+	if strings.Contains(html, "2999-06-23T00:00:00Z") {
 		t.Fatal("rendered dashboard used provider expiry instead of run expiry")
 	}
 }

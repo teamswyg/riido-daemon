@@ -1,5 +1,7 @@
 package main
 
+import "time"
+
 type dashboardView struct {
 	Evidence        providerEvidenceFile
 	Run             localRunEvidence
@@ -19,4 +21,15 @@ func (view dashboardView) ExpiresAt() string {
 		return view.Run.ExpiresAt
 	}
 	return view.Evidence.ExpiresAt
+}
+
+func (view dashboardView) FreshnessStatus() string {
+	expires, err := time.Parse(time.RFC3339, view.ExpiresAt())
+	if err != nil {
+		return "unknown"
+	}
+	if time.Now().UTC().Before(expires) {
+		return "fresh"
+	}
+	return "expired"
 }
