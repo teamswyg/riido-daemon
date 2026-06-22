@@ -10,11 +10,18 @@ import (
 )
 
 func tryShutdownViaSocket(socket string, timeout time.Duration, level lifecycle.ShutdownLevel) bool {
-	conn, err := net.DialTimeout("unix", socket, 500*time.Millisecond)
+	if timeout <= 0 {
+		return false
+	}
+	deadline := time.Now().Add(timeout)
+	conn, err := net.DialTimeout("unix", socket, shutdownSocketDialTimeout(timeout))
 	if err != nil {
 		return false
 	}
-	_ = conn.SetDeadline(time.Now().Add(1 * time.Second))
+	if err := conn.SetDeadline(deadline); err != nil {
+		_ = conn.Close()
+		return false
+	}
 	if err := json.NewEncoder(conn).Encode(daemonRequest{
 		Method:        daemonMethodShutdown,
 		ShutdownLevel: level.String(),
@@ -25,7 +32,7 @@ func tryShutdownViaSocket(socket string, timeout time.Duration, level lifecycle.
 	}
 	_, _ = io.ReadAll(conn)
 	_ = conn.Close()
-	return waitDaemonSocketClosed(socket, timeout)
+	return waitDaemonSocketClosedUntil(socket, deadline)
 }
 
 func waitDaemonSocketClosed(socket string, timeout time.Duration) bool {
@@ -37,4 +44,16 @@ func waitDaemonSocketClosed(socket string, timeout time.Duration) bool {
 		_ = c.Close()
 		return false
 	})
+}
+
+func shutdownSocketDialTimeout(timeout time.Duration) time.Duration {
+	return min(timeout, 500*time.Millisecond)
+}
+
+func waitDaemonSocketClosedUntil(socket string, deadline time.Time) bool {
+	remaining := time.Until(deadline)
+	if remaining <= 0 {
+		return false
+	}
+	return waitDaemonSocketClosed(socket, remaining)
 }
