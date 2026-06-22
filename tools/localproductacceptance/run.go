@@ -46,7 +46,7 @@ func summarize(scenarios []scenario) string {
 func buildScenarios(clientRoot string, cfg config) []scenario {
 	out := []scenario{clientReadOnlyScenario(clientRoot)}
 	out = append(out, contractAPIScenarios(cfg)...)
-	out = append(out, figmaIntentScenarios(*cfg.figmaManifest)...)
+	out = append(out, figmaIntentScenarios(*cfg.figmaManifest, *cfg.figmaGolden, *cfg.screenshots)...)
 	out = append(out, contractUIScenario(*cfg.labOut))
 	return out
 }

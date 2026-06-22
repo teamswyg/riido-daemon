@@ -47,7 +47,7 @@
     {"id": "local.qa.daily_schedule", "title": "macOS LaunchAgent schedules local QA once per day without token env vars", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
     {"id": "release.fresh.install", "title": "Fresh macOS install verifies daemon update script", "tier": "release", "surface": "release", "evidence": "external"},
     {"id": "figma.intent.catalog", "title": "Figma AI Agent screen intent manifest is loaded into local contract lab", "tier": "daily", "surface": "figma", "evidence": "external"},
-    {"id": "figma.onboarding", "title": "Onboarding flow visual contract is compared with Figma intent", "tier": "weekly", "surface": "figma", "evidence": "external"},
-    {"id": "figma.runtime.settings", "title": "Runtime settings visual contract is compared with Figma intent", "tier": "weekly", "surface": "figma", "evidence": "external"}
+    {"id": "figma.onboarding", "title": "Onboarding Figma screenshot reference is verified and linked", "tier": "weekly", "surface": "figma", "evidence": "external"},
+    {"id": "figma.runtime.settings", "title": "Runtime settings Figma screenshot reference is verified and linked", "tier": "weekly", "surface": "figma", "evidence": "external"}
   ]
 }

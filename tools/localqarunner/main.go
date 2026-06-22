@@ -12,6 +12,7 @@ func main() {
 	productEvidence := ".riido-local/evidence/ai-agent-product-acceptance.json"
 	releaseEvidence := ".riido-local/evidence/local-release-acceptance.json"
 	productLab := ".riido-local/contract-lab/index.html"
+	productScreenshots := ".riido-local/screenshots/ai-agent-product-acceptance"
 	scheduleEvidence := ".riido-local/evidence/local-qa-schedule.json"
 	flag.StringVar(&runEvidence, "run-evidence", runEvidence, "local QA run evidence JSON")
 	flag.StringVar(&runEvidence, "evidence-out", runEvidence, "alias for -run-evidence")
@@ -35,7 +36,7 @@ func main() {
 		productAgentHost:   flag.String("product-agent-host", getenvDefault("NEXT_PUBLIC_AI_AGENT_HOST", "https://development.ai-api.riido.io"), "AI Agent API host"),
 		productBaseURL:     flag.String("product-base-url", getenvDefault("RIIDO_E2E_BASE_URL", "http://localhost:3000"), "local frontend base URL"),
 		productWorkspace:   flag.String("product-workspace-id", os.Getenv("RIIDO_E2E_WORKSPACE_ID"), "workspace id for product contract probes"),
-		productScreenshots: flag.String("product-screenshots", "", "optional deprecated browser screenshot output dir"),
+		productScreenshots: flag.String("product-screenshots", productScreenshots, "product acceptance screenshot output dir"),
 		productStorage:     flag.String("product-storage-state", getenvDefault("RIIDO_E2E_STORAGE_STATE", ".riido-local/private/riido-client-storage-state.json"), "Playwright storage state path"),
 		productTaskID:      flag.String("product-task-id", os.Getenv("RIIDO_E2E_TASK_ID"), "task id for product task flow; generated when empty"),
 		productAgentID1:    flag.String("product-agent-id-1", os.Getenv("RIIDO_E2E_AGENT_ID_1"), "first agent id for product task mutation flow"),

@@ -22,6 +22,7 @@ type config struct {
 	screenshots   *string
 	storageState  *string
 	figmaManifest *string
+	figmaGolden   *string
 	validFor      *time.Duration
 	probeRoutes   *bool
 	browserE2E    *bool

@@ -1,7 +1,5 @@
 package main
 
-import "strings"
-
 func figmaCatalogScenario(path string, entries []figmaIntentEntry) scenario {
 	return scenario{
 		ID:       "figma.intent.catalog",
@@ -14,38 +12,30 @@ func figmaCatalogScenario(path string, entries []figmaIntentEntry) scenario {
 	}
 }
 
-func figmaScreenScenario(id string, entries []figmaIntentEntry, needle string) scenario {
+func figmaScreenScenario(
+	id string,
+	entries []figmaIntentEntry,
+	needle string,
+	goldens map[string]figmaGoldenScreen,
+	goldenErr error,
+	screenshotDir string,
+) scenario {
 	matches := matchingFigmaEntries(entries, needle)
-	status := statusSkipped
-	repairInfo := &repair{
-		Class:   "figma_visual_golden_required",
-		Owner:   "local-qa",
-		Mode:    "manual",
-		Summary: "Figma intent is loaded, but screenshot/golden visual comparison is not implemented yet.",
-	}
 	if len(matches) == 0 {
-		status = statusFailed
-		repairInfo = &repair{
-			Class:   "figma_intent_missing",
-			Owner:   "local-qa",
-			Mode:    "manual",
-			Summary: "Figma intent manifest does not contain the expected screen family.",
-		}
+		return figmaIntentMissingScenario(id, matches)
+	}
+	if goldenErr != nil {
+		return figmaGoldenRequiredScenario(id, matches, goldenErr)
+	}
+	golden := goldens[id]
+	screenshot, observed, err := verifyFigmaGolden(id, matches, golden, screenshotDir)
+	if err != nil {
+		return figmaGoldenStaleScenario(id, matches, err)
 	}
 	return scenario{
-		ID:       id,
-		Status:   status,
-		Observed: figmaObserved(matches),
-		Repair:   repairInfo,
+		ID:         id,
+		Status:     statusPassed,
+		Screenshot: screenshot,
+		Observed:   observed,
 	}
-}
-
-func matchingFigmaEntries(entries []figmaIntentEntry, needle string) []figmaIntentEntry {
-	var out []figmaIntentEntry
-	for _, entry := range entries {
-		if strings.Contains(entry.Name, needle) {
-			out = append(out, entry)
-		}
-	}
-	return out
 }

@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/local-qa-runner.yml"
+      - "docs/30-architecture/figma-ai-agent-daemon-boundary/golden/**"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
       - "docs/readme/run-and-smoke.md"
       - "docs/readme/run-and-smoke.riido.json"
