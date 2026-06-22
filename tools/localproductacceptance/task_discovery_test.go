@@ -17,3 +17,15 @@ func TestSummarizeAssignedProfilesCountsTaskKeys(t *testing.T) {
 		t.Fatalf("assigned_task_keys_count = %v", got["assigned_task_keys_count"])
 	}
 }
+
+func TestFirstAssignedProfileTaskIDIsDeterministic(t *testing.T) {
+	got := firstAssignedProfileTaskID(map[string]any{
+		"assigned_agent_profiles": map[string]any{
+			"task-b": map[string]any{},
+			"task-a": map[string]any{},
+		},
+	})
+	if got != "task-a" {
+		t.Fatalf("task=%q", got)
+	}
+}

@@ -15,6 +15,8 @@ type scheduleEvidence struct {
 	Hour                int    `json:"hour"`
 	Minute              int    `json:"minute"`
 	S3PrefixConfigured  bool   `json:"s3_prefix_configured"`
+	TaskMutations       bool   `json:"task_mutations"`
+	TaskIDConfigured    bool   `json:"task_id_configured"`
 	CommandHasTokenText bool   `json:"command_has_token_text"`
 }
 
@@ -27,6 +29,8 @@ func writeScheduleEvidence(cfg config, paths schedulePaths, command string) erro
 		Hour:                *cfg.hour,
 		Minute:              *cfg.minute,
 		S3PrefixConfigured:  strings.TrimSpace(*cfg.s3Prefix) != "",
+		TaskMutations:       *cfg.taskMutations,
+		TaskIDConfigured:    strings.TrimSpace(*cfg.productTaskID) != "",
 		CommandHasTokenText: commandMentionsToken(command),
 	}
 	return writeJSON(scheduleEvidencePath(cfg, paths), evidence)

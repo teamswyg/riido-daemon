@@ -2,31 +2,42 @@ package main
 
 import "net/http"
 
-func taskFlowScenarios(client apiClient, cfg config) []scenario {
+func taskFlowScenarios(client apiClient, cfg config, discovery map[string]any) []scenario {
 	base := workspaceBase(*cfg.workspaceID)
-	if *cfg.taskID == "" {
-		return taskSkipped(true, "Set RIIDO_E2E_TASK_ID to verify a real task flow.")
-	}
-	out := []scenario{
-		apiQuery(client, "contract.task.assignable_agents", http.MethodGet,
-			taskEndpoint(base, *cfg.taskID, "/assignable-agents"), nil, summarizeAssignableAgents),
+	taskID, source := taskFlowTaskID(cfg, discovery)
+	assignable, payload := apiQueryPayload(client, "contract.task.assignable_agents", http.MethodGet,
+		taskEndpoint(base, taskID, "/assignable-agents"), nil, summarizeAssignableAgents)
+	assignable.Observed["task_id"] = taskID
+	assignable.Observed["task_id_source"] = source
+	out := []scenario{assignable}
+	if shouldSkipGeneratedTaskFlow(assignable, source) {
+		summary := "Set RIIDO_E2E_TASK_ID to a real accessible task; generated task was rejected."
+		out[0] = skippedTaskScenario(assignable, summary)
+		return append(out, taskSkipped(false, summary)...)
 	}
 	if !*cfg.runMutations {
 		return append(out, taskSkipped(false, "Pass -run-task-mutations with two agent ids.")...)
 	}
-	return append(out, taskMutationScenarios(client, cfg, base)...)
+	plan, ok := taskMutationPlanFor(cfg, payload, taskID, source)
+	if !ok {
+		return append(out, taskSkipped(false, "Need at least two assignable AI agents.")...)
+	}
+	return append(out, taskMutationScenarios(client, base, plan)...)
 }
 
-func taskMutationScenarios(client apiClient, cfg config, base string) []scenario {
-	if *cfg.firstAgentID == "" || *cfg.secondAgentID == "" {
-		return taskSkipped(false, "Set RIIDO_E2E_AGENT_ID_1 and RIIDO_E2E_AGENT_ID_2.")
-	}
-	first := createAssignment(client, "contract.task.assignment.create.first", base, *cfg.taskID, *cfg.firstAgentID)
-	second := createAssignment(client, "contract.task.assignment.create.second", base, *cfg.taskID, *cfg.secondAgentID)
-	out := []scenario{first, second, distinctAssignmentScenario(first, second)}
+func shouldSkipGeneratedTaskFlow(assignable scenario, source string) bool {
+	return source == "generated" && assignable.Status == statusFailed
+}
+
+func taskMutationScenarios(client apiClient, base string, plan taskMutationPlan) []scenario {
+	first := createAssignment(client, "contract.task.assignment.create.first", base, plan.TaskID, plan.Pair.First.AgentID)
+	second := createAssignment(client, "contract.task.assignment.create.second", base, plan.TaskID, plan.Pair.Second.AgentID)
+	out := []scenario{first, second, distinctAssignmentScenario(plan, first, second)}
 	out = append(out, apiQuery(client, "contract.task.thread_subscription", http.MethodGet,
-		taskEndpoint(base, *cfg.taskID, "/thread-stream-subscription"), nil, summarizeSubscription))
-	out = append(out, maybeThreadMessage(client, cfg, base, first))
+		taskEndpoint(base, plan.TaskID, "/thread-stream-subscription"), nil, summarizeSubscription))
+	out = append(out, sseReplayScenario(client, base, first, second))
+	out = append(out, threadMessageScenario(client, base, plan, first))
+	out = append(out, cleanupTaskAssignments(client, base, plan)...)
 	return out
 }
 
@@ -36,20 +47,11 @@ func createAssignment(client apiClient, id, base, taskID, agentID string) scenar
 		taskEndpoint(base, taskID, "/agent-assignments"), body, summarizeTaskAction)
 }
 
-func maybeThreadMessage(client apiClient, cfg config, base string, assigned scenario) scenario {
-	threadID, _ := assigned.Observed["thread_id"].(string)
-	if *cfg.commentBody == "" || threadID == "" {
-		return failTaskScenario("contract.task.thread_message", "Set -comment-body after assignment creates a thread.")
-	}
-	path := taskEndpoint(base, *cfg.taskID, "/threads/"+threadID+"/messages")
-	return apiQuery(client, "contract.task.thread_message", http.MethodPost,
-		path, map[string]any{"body": *cfg.commentBody}, summarizeTaskAction)
-}
-
 func taskSkipped(includeAssignable bool, summary string) []scenario {
 	out := []scenario{
 		failTaskScenario("contract.task.multi_assignment", summary),
 		failTaskScenario("contract.task.thread_subscription", summary),
+		failTaskScenario("contract.task.sse_replay", summary),
 		failTaskScenario("contract.task.thread_message", summary),
 	}
 	if includeAssignable {

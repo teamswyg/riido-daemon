@@ -25,9 +25,30 @@ func localQACommand(cfg config, paths schedulePaths) string {
 		if *cfg.productWorkspace != "" {
 			cmd += " -product-workspace-id " + shellQuote(*cfg.productWorkspace)
 		}
+		cmd += productTaskCommandArgs(cfg)
 	}
 	if *cfg.productEvidence != "" {
 		cmd += " -product-evidence " + shellQuote(*cfg.productEvidence)
+	}
+	return cmd
+}
+
+func productTaskCommandArgs(cfg config) string {
+	var cmd string
+	if *cfg.productTaskID != "" {
+		cmd += " -product-task-id " + shellQuote(*cfg.productTaskID)
+	}
+	if *cfg.productAgentID1 != "" {
+		cmd += " -product-agent-id-1 " + shellQuote(*cfg.productAgentID1)
+	}
+	if *cfg.productAgentID2 != "" {
+		cmd += " -product-agent-id-2 " + shellQuote(*cfg.productAgentID2)
+	}
+	if *cfg.productComment != "" {
+		cmd += " -product-comment-body " + shellQuote(*cfg.productComment)
+	}
+	if !*cfg.taskMutations {
+		cmd += " -product-task-mutations=false"
 	}
 	return cmd
 }

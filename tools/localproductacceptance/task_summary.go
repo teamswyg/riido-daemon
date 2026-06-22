@@ -33,7 +33,7 @@ func summarizeSubscription(payload map[string]any) map[string]any {
 	}
 }
 
-func distinctAssignmentScenario(first, second scenario) scenario {
+func distinctAssignmentScenario(plan taskMutationPlan, first, second scenario) scenario {
 	out := scenario{ID: "contract.task.multi_assignment", Status: statusPassed}
 	firstAssignment, _ := first.Observed["assignment_id"].(string)
 	secondAssignment, _ := second.Observed["assignment_id"].(string)
@@ -42,6 +42,10 @@ func distinctAssignmentScenario(first, second scenario) scenario {
 	out.Observed = map[string]any{
 		"assignment_ids_distinct": firstAssignment != "" && firstAssignment != secondAssignment,
 		"thread_ids_distinct":     firstThread != "" && firstThread != secondThread,
+		"task_id_source":          plan.TaskIDSource,
+		"same_runtime_kind_pair":  plan.Pair.First.RuntimeKind != "" && plan.Pair.First.RuntimeKind == plan.Pair.Second.RuntimeKind,
+		"first_runtime_kind":      plan.Pair.First.RuntimeKind,
+		"second_runtime_kind":     plan.Pair.Second.RuntimeKind,
 	}
 	if first.Status != statusPassed || second.Status != statusPassed {
 		out.Status = statusFailed

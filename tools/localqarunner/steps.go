@@ -42,6 +42,7 @@ func runProductStep(root string, cfg config, evidence *runEvidence) string {
 		"-evidence-out", *cfg.productEvidence,
 		"-lab-out", *cfg.productLab,
 	}
+	args = appendProductTaskArgs(args, cfg)
 	if *cfg.productBrowserE2E {
 		args = append(args, "-browser-e2e")
 	}
