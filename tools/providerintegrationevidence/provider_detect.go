@@ -20,8 +20,11 @@ func resolveOpenClawExecutable(override string) (string, bool) {
 	res, err := openclaw.Detect(ctx, agentbridge.DetectEnv{
 		EnvOverride: map[string]string{openclaw.EnvOverride: override},
 	})
-	if err != nil || !res.Available || res.Executable == "" {
+	if err != nil {
 		return resolveExecutable(openclaw.DefaultExecutable, override)
+	}
+	if !res.Available {
+		return res.Executable, false
 	}
 	return res.Executable, true
 }

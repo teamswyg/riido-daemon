@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 302 |
+| Generated reader docs | 303 |
 | Direct SSOT docs | 0 |
 | Registered manual docs | 0 |
-| Scanned docs | 302 |
+| Scanned docs | 303 |
 
 ## Generated Reader Origins
 
@@ -26,11 +26,11 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/providerruntimeboundarydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-actor-boundary.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/control-plane-port.md` |
 | `go run ./tools/providerruntimeresponsibilitydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-responsibility.md`<br>`docs/20-domain/provider-runtime/runtime-responsibility/agent-client-nonresponsibilities.md`<br>`docs/20-domain/provider-runtime/runtime-responsibility/c3-c4-boundary.md` |
 | `go run ./tools/contextmapdocs -write-doc` | 8 | `docs/20-domain/context-map.md`<br>`docs/20-domain/context-map/acl-locations.md`<br>`docs/20-domain/context-map/bounded-contexts.md` |
+| `go run ./tools/readmedocs -write-doc` | 8 | `AGENTS.md`<br>`NOTICE.md`<br>`README.md` |
 | `go run ./tools/securityredactiondocs -write-doc` | 8 | `docs/20-domain/security-redaction.md`<br>`docs/20-domain/security-redaction/audit-event.md`<br>`docs/20-domain/security-redaction/execution-responsibility.md` |
 | `go run ./tools/clisurface -write-doc` | 7 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
 | `go run ./tools/figmaboundarydocs -write-doc` | 7 | `docs/30-architecture/figma-ai-agent-daemon-boundary.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md` |
 | `go run ./tools/providermigrationdocs -write-doc` | 7 | `docs/20-domain/provider-runtime/public-migration-status.md`<br>`docs/20-domain/provider-runtime/public-migration-status/claude.md`<br>`docs/20-domain/provider-runtime/public-migration-status/codex.md` |
-| `go run ./tools/readmedocs -write-doc` | 7 | `AGENTS.md`<br>`NOTICE.md`<br>`README.md` |
 | `go run ./tools/securityinvariantsdocs -write-doc` | 7 | `docs/20-domain/security/invariants.md`<br>`docs/20-domain/security/invariants/core.md`<br>`docs/20-domain/security/invariants/policy-bundle-example.md` |
 | `go run ./tools/securitynativeconfigoverlaydocs -write-doc` | 7 | `docs/20-domain/security/native-config-overlay.md`<br>`docs/20-domain/security/native-config-overlay/gate-result-ir.md`<br>`docs/20-domain/security/native-config-overlay/overlay-decision.md` |
 | `go run ./tools/workspacenativeconfigdocs -write-doc` | 7 | `docs/20-domain/workspace/native-config-manifest.md`<br>`docs/20-domain/workspace/native-config-manifest/adjacent-contracts.md`<br>`docs/20-domain/workspace/native-config-manifest/manifest-materialization.md` |
@@ -93,15 +93,15 @@ _None missing._
 
 | Group | Count | Sample paths |
 | --- | ---: | --- |
-| `docs` | 350 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `docs` | 351 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
 | `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
 | `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `357`
+- Complete manifest loops: `358`
 - Direct manifest loops: `23`
-- Delegated manifest loops: `334`
+- Delegated manifest loops: `335`
 - Missing manifest loops: `0`
 - Missing loop budget: `0`
 

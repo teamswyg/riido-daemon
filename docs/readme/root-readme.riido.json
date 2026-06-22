@@ -13,6 +13,7 @@
       {"title": "Document map", "path": "docs/readme/document-map.md"},
       {"title": "Module map", "path": "docs/readme/module-map.md"},
       {"title": "Provider CLI principles", "path": "docs/readme/provider-cli.md"},
+      {"title": "Local acceptance evidence", "path": "docs/readme/local-acceptance.md"},
       {"title": "Run and smoke", "path": "docs/readme/run-and-smoke.md"},
       {"title": "Verification", "path": "docs/readme/verification.md"}
     ]},

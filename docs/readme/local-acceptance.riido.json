@@ -1,0 +1,32 @@
+{
+  "schema_version": "riido-readme-page.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/readme-docs.riido.json",
+  "id": "readme-local-acceptance",
+  "title": "README: Local Acceptance Evidence",
+  "generated_doc": "docs/readme/local-acceptance.md",
+  "back_title": "README",
+  "back_path": "../../README.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Local acceptance is a developer-Mac evidence gate, not CI. It proves the latest daemon can run real provider checks, sandboxed update checks, development AI Agent contract probes, Figma golden references, dashboard rendering, and private S3 publication from one local command."},
+    {"kind": "code", "language": "bash", "code": "RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \\\ngo run ./tools/localqarunner -run-product"},
+    {"kind": "heading", "text": "Evidence Files"},
+    {"kind": "table", "columns": ["Artifact", "Meaning"], "rows": [
+      ["`.riido-local/evidence/local-qa-run.json`", "Top-level execution result, coverage completeness, provider aggregate status, open repair queue, upload steps, and artifact paths."],
+      ["`.riido-local/evidence/provider-real-cli-observation.json`", "Claude, Codex, OpenClaw, and Cursor real CLI availability/integration evidence."],
+      ["`.riido-local/evidence/ai-agent-product-acceptance.json`", "Development API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios."],
+      ["`.riido-local/dashboard/index.html`", "Human-readable local dashboard rendered from evidence JSON."],
+      ["`s3://riido-ai-server-production-local-qa-evidence/daily/latest/`", "Private latest dashboard/evidence handoff, plus timestamped immutable copies."]
+    ]},
+    {"kind": "heading", "text": "Status Semantics"},
+    {"kind": "table", "columns": ["Field", "Read As"], "rows": [
+      ["`status`", "Runner execution status. `passed` means the harness completed its commands and uploads."],
+      ["`coverage_status`", "Acceptance completeness. `partial` means at least one verified surface still needs explicit repair or human action."],
+      ["`provider_status`", "Provider aggregate from real CLI evidence. Cursor auth can make this `partial` while the harness still exits successfully."],
+      ["`open_repairs`", "Machine-readable repair queue. Example: `cursor/provider_auth_required/human/manual`."]
+    ]},
+    {"kind": "heading", "text": "Daily Schedule"},
+    {"kind": "paragraph", "text": "`go run ./tools/localqaschedule -install` installs `io.riido.local-qa` as a macOS LaunchAgent. The schedule evidence must show `command_has_token_text=false` and `s3_prefix_configured=true` before the dashboard is trusted as daily local evidence."},
+    {"kind": "heading", "text": "Repository Boundary"},
+    {"kind": "paragraph", "text": "The harness may read `../riido-client` storage state for a real development token, but it must not commit, push, or merge changes to `teamswyg/riido-client`. Frontend handoff is produced by the daemon-owned React contract lab under `.riido-local/contract-lab/`."}
+  ]
+}
