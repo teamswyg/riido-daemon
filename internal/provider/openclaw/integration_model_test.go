@@ -10,10 +10,13 @@ func TestOpenClawIntegrationModelCanBeOverridden(t *testing.T) {
 	}
 }
 
-func TestOpenClawIntegrationPrefersFastLocalModel(t *testing.T) {
+func TestOpenClawIntegrationPrefersStableLocalModel(t *testing.T) {
 	t.Setenv(openClawIntegrationModelEnv, "")
 	got := openClawIntegrationModels()
-	if len(got) < 2 || got[0] != openClawFastIntegrationModel {
+	if len(got) != 3 || got[0] != openClawStableIntegrationModel {
+		t.Fatalf("models=%v", got)
+	}
+	if got[1] != openClawFastIntegrationModel {
 		t.Fatalf("models=%v", got)
 	}
 }
