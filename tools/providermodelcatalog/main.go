@@ -35,8 +35,18 @@ func buildCatalog() (catalog, error) {
 	if providers["claude"], err = claudeModels(); err != nil {
 		return catalog{}, fmt.Errorf("claude model catalog: %w", err)
 	}
-	return catalog{
+	if providers["codex"], err = codexModels(); err != nil {
+		return catalog{}, fmt.Errorf("codex model catalog: %w", err)
+	}
+	if providers["openclaw"], err = openClawModels(); err != nil {
+		return catalog{}, fmt.Errorf("openclaw model catalog: %w", err)
+	}
+	result := catalog{
 		SchemaVersion: "riido-provider-model-catalog.v1",
 		Providers:     providers,
-	}, nil
+	}
+	if err := validateCatalog(result); err != nil {
+		return catalog{}, err
+	}
+	return result, nil
 }
