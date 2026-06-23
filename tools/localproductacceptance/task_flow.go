@@ -8,9 +8,18 @@ func taskFlowScenarios(client apiClient, cfg config, discovery map[string]any, a
 	fixture := maybeCreateTaskFixture(cfg, source)
 	out := taskFixtureScenarios(fixture)
 	if taskFixtureBlocked(fixture) {
-		summary := "Create a development task fixture or set RIIDO_E2E_TASK_ID."
-		tail := taskSkipped(false, summary)
-		return finishTaskFlow(cfg, client, fixture, agents, out, tail)
+		fallback := existingTaskFallback(newAPIClient(*cfg.riidoAPIHost, *cfg.apiToken), fixture.TeamID)
+		if fallback.Scenario.ID != "" {
+			out = append(out, fallback.Scenario)
+		}
+		if fallback.TaskID != "" {
+			out = markFixtureFallback(out, fallback)
+			taskID, source = fallback.TaskID, "readable-task-fallback"
+		} else {
+			summary := "Create a development task fixture or set RIIDO_E2E_TASK_ID."
+			tail := taskSkipped(false, summary)
+			return finishTaskFlow(cfg, client, fixture, agents, out, tail)
+		}
 	}
 	if fixture.Created() {
 		taskID, source = fixture.TaskID, "created-fixture"

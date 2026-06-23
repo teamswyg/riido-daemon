@@ -30,7 +30,7 @@ func cursorAccountAvailable(ctx context.Context) (bool, string) {
 	cmd := exec.CommandContext(probeCtx, DefaultExecutable, "about")
 	out, _ := cmd.CombinedOutput()
 	if strings.Contains(strings.ToLower(string(out)), "not logged in") {
-		return false, "cursor-agent account missing; run cursor-agent login or set CURSOR_API_KEY"
+		return false, "cursor-agent account missing; run cursor-agent login or set " + APIKeyEnv
 	}
 	return true, ""
 }

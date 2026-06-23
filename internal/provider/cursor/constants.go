@@ -9,6 +9,7 @@ const (
 	Name              = string(providercatalog.KindCursor)
 	DefaultExecutable = "cursor-agent"
 	EnvOverride       = "RIIDO_CURSOR_PATH"
+	APIKeyEnv         = "CURSOR_API_KEY"
 	MaxLineBytes      = 10 * 1024 * 1024
 )
 
