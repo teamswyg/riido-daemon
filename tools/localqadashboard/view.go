@@ -35,8 +35,5 @@ func (view dashboardView) FreshnessStatus() string {
 }
 
 func (view dashboardView) DeploymentGateStatus() string {
-	if view.Run.CoverageStatus == statusPassed {
-		return "ready"
-	}
-	return "blocked"
+	return deploymentGateStatus(view.Run)
 }

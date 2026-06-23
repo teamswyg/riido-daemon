@@ -22,7 +22,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 
 | Artifact | Meaning |
 | --- | --- |
-| `.riido-local/evidence/local-qa-run.json` | Top-level execution result, coverage completeness, provider aggregate status, open repair queue, upload steps, and artifact paths. |
+| `.riido-local/evidence/local-qa-run.json` | Top-level execution result, deployment gate status, coverage completeness, provider aggregate status, open repair queue, upload steps, and artifact paths. |
 | `.riido-local/evidence/provider-real-cli-observation.json` | Claude, Codex, OpenClaw, and Cursor real CLI availability/integration evidence. |
 | `.riido-local/evidence/ai-agent-product-acceptance.json` | Development API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios. |
 | `.riido-local/evidence/local-qa-dashboard-infra-evidence.json` | Optional private infra readback proving the S3-hosted dashboard bucket is Terraform-managed, private, encrypted, lifecycle-managed, and serving the latest index object. |
@@ -34,6 +34,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | Field | Read As |
 | --- | --- |
 | `status` | Runner execution status. `passed` means the harness completed its commands and uploads. |
+| `deployment_gate` | Machine-readable release gate. `status=blocked` includes blocker codes such as `coverage_status_not_passed` and `open_repairs_present`; run the embedded `strict_command` for deployment-time proof. |
 | `coverage_status` | Acceptance completeness. `partial` means at least one verified surface still needs explicit repair or human action. |
 | `strict_coverage` | Deployment-gate mode. When true, any non-passed `coverage_status` makes `status=failed` even if evidence was still rendered and uploaded. |
 | `provider_status` | Provider aggregate from real CLI evidence. Cursor auth can make this `partial` while the harness still exits successfully. |
