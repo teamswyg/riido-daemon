@@ -15,6 +15,7 @@ func TestRenderPlistIncludesDailySchedule(t *testing.T) {
 		"go run ./tools/localqarunner",
 		"s3://bucket/daily",
 		"/tmp/product.json",
+		"-coverage-evidence &#39;/tmp/coverage.json&#39;",
 		"-run-product",
 		"-client-root &#39;/tmp/client&#39;",
 		"-product-storage-state &#39;/tmp/state.json&#39;",

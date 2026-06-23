@@ -8,11 +8,13 @@ import (
 
 func main() {
 	productEvidence := ".riido-local/evidence/ai-agent-product-acceptance.json"
+	coverageEvidence := ".riido-local/evidence/local-qa-coverage.json"
 	cfg := config{
 		repo:             flag.String("repo", ".", "repository root"),
 		s3Prefix:         flag.String("s3-prefix", os.Getenv("RIIDO_LOCAL_QA_S3_PREFIX"), "optional S3 prefix"),
 		evidenceOut:      flag.String("evidence-out", ".riido-local/evidence/local-qa-schedule.json", "schedule evidence JSON"),
 		productEvidence:  flag.String("product-evidence", productEvidence, "product acceptance evidence JSON"),
+		coverageEvidence: flag.String("coverage-evidence", coverageEvidence, "local QA coverage snapshot JSON"),
 		clientRoot:       flag.String("client-root", getenvDefault("RIIDO_LOCAL_QA_CLIENT_ROOT", "../riido-client"), "external riido-client worktree"),
 		productBaseURL:   flag.String("product-base-url", getenvDefault("RIIDO_E2E_BASE_URL", "http://localhost:3000"), "local frontend base URL"),
 		productRiidoHost: flag.String("product-riido-api-host", getenvDefault("RIIDO_E2E_RIIDO_API_HOST", "https://development.api.riido.io"), "Riido product API host"),

@@ -9,7 +9,7 @@ import (
 
 func TestScheduleEvidenceScenariosRejectsTokenText(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "schedule.json")
-	body := `{"status":"passed","installed":true,"s3_prefix_configured":true,"command_has_token_text":true,"launchd":{"checked":true,"loaded":true,"calendar_trigger":true}}`
+	body := `{"status":"passed","installed":true,"s3_prefix_configured":true,"coverage_evidence":"coverage.json","command_has_token_text":true,"launchd":{"checked":true,"loaded":true,"calendar_trigger":true}}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -21,7 +21,7 @@ func TestScheduleEvidenceScenariosRejectsTokenText(t *testing.T) {
 
 func TestScheduleEvidenceScenariosIncludesInstallDetail(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "schedule.json")
-	body := `{"status":"passed","label":"io.riido.local-qa","installed":true,"hour":9,"minute":0,"s3_prefix_configured":true,"command_preview":"go run ./tools/localqarunner","launchd":{"checked":true,"loaded":true,"state":"not running","runs":1,"last_exit_code":"0","calendar_trigger":true}}`
+	body := `{"status":"passed","label":"io.riido.local-qa","installed":true,"hour":9,"minute":0,"s3_prefix_configured":true,"coverage_evidence":"coverage.json","command_preview":"go run ./tools/localqarunner","launchd":{"checked":true,"loaded":true,"state":"not running","runs":1,"last_exit_code":"0","calendar_trigger":true}}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -38,11 +38,14 @@ func TestScheduleEvidenceScenariosIncludesInstallDetail(t *testing.T) {
 	if !strings.Contains(got[0].FailureSummary, "calendar_trigger=true") {
 		t.Fatalf("summary=%q", got[0].FailureSummary)
 	}
+	if !strings.Contains(got[0].FailureSummary, "coverage=coverage.json") {
+		t.Fatalf("summary=%q", got[0].FailureSummary)
+	}
 }
 
 func TestScheduleEvidenceScenariosRequiresLaunchdLiveState(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "schedule.json")
-	body := `{"status":"passed","installed":true,"s3_prefix_configured":true}`
+	body := `{"status":"passed","installed":true,"s3_prefix_configured":true,"coverage_evidence":"coverage.json"}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -54,7 +57,7 @@ func TestScheduleEvidenceScenariosRequiresLaunchdLiveState(t *testing.T) {
 
 func TestScheduleEvidenceScenariosRequiresSuccessfulLaunchdRun(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "schedule.json")
-	body := `{"status":"passed","installed":true,"s3_prefix_configured":true,"launchd":{"checked":true,"loaded":true,"calendar_trigger":true,"runs":0,"last_exit_code":"(never exited)"}}`
+	body := `{"status":"passed","installed":true,"s3_prefix_configured":true,"coverage_evidence":"coverage.json","launchd":{"checked":true,"loaded":true,"calendar_trigger":true,"runs":0,"last_exit_code":"(never exited)"}}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}

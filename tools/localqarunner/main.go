@@ -35,6 +35,7 @@ func main() {
 		providerTool:         flag.String("provider-tool", "./tools/providerintegrationevidence", "provider evidence tool package"),
 		productTool:          flag.String("product-tool", "./tools/localproductacceptance", "product acceptance tool package"),
 		releaseTool:          flag.String("release-tool", "./tools/localreleaseacceptance", "release acceptance tool package"),
+		scheduleTool:         flag.String("schedule-tool", "./tools/localqaschedule", "local QA schedule evidence tool package"),
 		dashboardTool:        flag.String("dashboard-tool", "./tools/localqadashboard", "dashboard tool package"),
 		clientRoot:           flag.String("client-root", getenvDefault("RIIDO_LOCAL_QA_CLIENT_ROOT", "../riido-client"), "external riido-client worktree"),
 		productAgentHost:     flag.String("product-agent-host", getenvDefault("NEXT_PUBLIC_AI_AGENT_HOST", "https://development.ai-api.riido.io"), "AI Agent API host"),

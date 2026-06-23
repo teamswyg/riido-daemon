@@ -1,9 +1,6 @@
 package main
 
-import (
-	"encoding/json"
-	"fmt"
-)
+import "encoding/json"
 
 type scheduleEvidence struct {
 	Status              string          `json:"status"`
@@ -17,6 +14,7 @@ type scheduleEvidence struct {
 	RunAtLoad           bool            `json:"run_at_load"`
 	CommandHasTokenText bool            `json:"command_has_token_text"`
 	S3PrefixConfigured  bool            `json:"s3_prefix_configured"`
+	CoverageEvidence    string          `json:"coverage_evidence"`
 	CommandPreview      string          `json:"command_preview"`
 	Launchd             launchdEvidence `json:"launchd"`
 }
@@ -54,20 +52,17 @@ func scheduleEvidenceScenarios(path string) []externalScenario {
 }
 
 func scheduleEvidenceFailed(e scheduleEvidence) bool {
-	if !e.Installed || e.CommandHasTokenText || !e.S3PrefixConfigured {
+	if !e.Installed || e.CommandHasTokenText || !e.S3PrefixConfigured || e.CoverageEvidence == "" {
 		return true
 	}
 	if !e.Launchd.Checked || !e.Launchd.Loaded || !e.Launchd.CalendarTrigger {
 		return true
 	}
-	return e.Launchd.Runs <= 0 || e.Launchd.LastExitCode != "0"
-}
-
-func scheduleEvidenceDetail(e scheduleEvidence) string {
-	return fmt.Sprintf(
-		"label=%s time=%02d:%02d run_at_load=%t launchd_loaded=%t launchd_state=%s runs=%d last_exit=%s calendar_trigger=%t plist=%s stdout=%s stderr=%s command=%s",
-		e.Label, e.Hour, e.Minute, e.RunAtLoad, e.Launchd.Loaded, e.Launchd.State,
-		e.Launchd.Runs, e.Launchd.LastExitCode, e.Launchd.CalendarTrigger,
-		e.PlistPath, e.StdoutPath, e.StderrPath, e.CommandPreview,
-	)
+	if e.Launchd.Runs <= 0 {
+		return true
+	}
+	if e.Launchd.LastExitCode == "0" {
+		return false
+	}
+	return e.Launchd.State != "running"
 }

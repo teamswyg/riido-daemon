@@ -25,6 +25,7 @@ type config struct {
 	providerTool         *string
 	productTool          *string
 	releaseTool          *string
+	scheduleTool         *string
 	dashboardTool        *string
 	clientRoot           *string
 	productAgentHost     *string

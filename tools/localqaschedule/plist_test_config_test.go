@@ -2,7 +2,8 @@ package main
 
 func testConfig() config {
 	repo, s3 := ".", "s3://bucket/daily"
-	product, label, plist, evidence := "/tmp/product.json", "io.test", "", "/tmp/schedule.json"
+	product, coverage := "/tmp/product.json", "/tmp/coverage.json"
+	label, plist, evidence := "io.test", "", "/tmp/schedule.json"
 	clientRoot, baseURL, workspace := "/tmp/client", "http://localhost:3000", "W1"
 	riidoHost, teamID := "https://development.api.riido.io", "team-a"
 	storage := "/tmp/state.json"
@@ -15,6 +16,7 @@ func testConfig() config {
 		s3Prefix:         &s3,
 		evidenceOut:      &evidence,
 		productEvidence:  &product,
+		coverageEvidence: &coverage,
 		clientRoot:       &clientRoot,
 		productBaseURL:   &baseURL,
 		productRiidoHost: &riidoHost,
