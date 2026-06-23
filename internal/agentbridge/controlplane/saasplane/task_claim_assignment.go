@@ -18,9 +18,6 @@ func (p *Plane) claimStartOrActiveAssignment(
 		return nil, nil
 	}
 	if poll.Action == assignmentcontract.PollActive && assignmentResumeSessionID(assignment) == "" {
-		if err := p.failUnresumableActiveAssignment(ctx, assignment); err != nil {
-			return nil, err
-		}
 		return nil, nil
 	}
 	if err := p.saveAssignmentRuntime(ctx, assignment, runtimeID); err != nil {
