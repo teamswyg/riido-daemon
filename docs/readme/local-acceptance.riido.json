@@ -9,6 +9,8 @@
   "blocks": [
     {"kind": "paragraph", "text": "Local acceptance is a developer-Mac evidence gate, not CI. It proves the latest daemon can run real provider checks, sandboxed update checks, development AI Agent contract probes, Figma golden references, dashboard rendering, and private S3 publication from one local command."},
     {"kind": "code", "language": "bash", "code": "RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \\\ngo run ./tools/localqarunner -run-product"},
+    {"kind": "paragraph", "text": "Daily evidence mode keeps running and publishing even when coverage is partial, so the dashboard can show the repair queue. Deployment gate mode is stricter: use `-strict-coverage` when the release decision requires every coverage row to pass locally."},
+    {"kind": "code", "language": "bash", "code": "RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \\\ngo run ./tools/localqarunner -run-product -strict-coverage"},
     {"kind": "heading", "text": "Evidence Files"},
     {"kind": "table", "columns": ["Artifact", "Meaning"], "rows": [
       ["`.riido-local/evidence/local-qa-run.json`", "Top-level execution result, coverage completeness, provider aggregate status, open repair queue, upload steps, and artifact paths."],
@@ -22,6 +24,7 @@
     {"kind": "table", "columns": ["Field", "Read As"], "rows": [
       ["`status`", "Runner execution status. `passed` means the harness completed its commands and uploads."],
       ["`coverage_status`", "Acceptance completeness. `partial` means at least one verified surface still needs explicit repair or human action."],
+      ["`strict_coverage`", "Deployment-gate mode. When true, any non-passed `coverage_status` makes `status=failed` even if evidence was still rendered and uploaded."],
       ["`provider_status`", "Provider aggregate from real CLI evidence. Cursor auth can make this `partial` while the harness still exits successfully."],
       ["`open_repairs`", "Machine-readable repair queue. Example: `cursor/provider_auth_required/human/manual`."]
     ]},

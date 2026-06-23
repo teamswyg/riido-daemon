@@ -11,6 +11,13 @@ RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
 go run ./tools/localqarunner -run-product
 ```
 
+Daily evidence mode keeps running and publishing even when coverage is partial, so the dashboard can show the repair queue. Deployment gate mode is stricter: use `-strict-coverage` when the release decision requires every coverage row to pass locally.
+
+```bash
+RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
+go run ./tools/localqarunner -run-product -strict-coverage
+```
+
 ## Evidence Files
 
 | Artifact | Meaning |
@@ -28,6 +35,7 @@ go run ./tools/localqarunner -run-product
 | --- | --- |
 | `status` | Runner execution status. `passed` means the harness completed its commands and uploads. |
 | `coverage_status` | Acceptance completeness. `partial` means at least one verified surface still needs explicit repair or human action. |
+| `strict_coverage` | Deployment-gate mode. When true, any non-passed `coverage_status` makes `status=failed` even if evidence was still rendered and uploaded. |
 | `provider_status` | Provider aggregate from real CLI evidence. Cursor auth can make this `partial` while the harness still exits successfully. |
 | `open_repairs` | Machine-readable repair queue. Example: `cursor/provider_auth_required/human/manual`. |
 

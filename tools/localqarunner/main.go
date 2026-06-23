@@ -55,6 +55,7 @@ func main() {
 		productTaskFixture:   flag.Bool("product-create-task-fixture", true, "create and clean up a development task when product task id is empty"),
 		productPrepareDaemon: flag.Bool("product-prepare-saas-daemon", true, "prepare dedicated SaaS-connected local QA daemons for product mutations"),
 		continueOnFailure:    flag.Bool("continue-on-failure", true, "continue rendering/upload after provider failures"),
+		strictCoverage:       flag.Bool("strict-coverage", false, "fail when coverage_status is not passed"),
 	}
 	flag.Parse()
 
