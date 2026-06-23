@@ -23,6 +23,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | Artifact | Meaning |
 | --- | --- |
 | `.riido-local/evidence/local-qa-run.json` | Top-level execution result, deployment gate status, coverage completeness, provider aggregate status, open repair queue, upload steps, and artifact paths. |
+| `.riido-local/evidence/local-qa-coverage.json` | Machine-readable coverage rows and summary embedded into `local-qa-run.json` and uploaded beside the dashboard. |
 | `.riido-local/evidence/provider-real-cli-observation.json` | Claude, Codex, OpenClaw, and Cursor real CLI availability/integration evidence. |
 | `.riido-local/evidence/ai-agent-product-acceptance.json` | Development API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios. |
 | `.riido-local/evidence/local-qa-dashboard-infra-evidence.json` | Optional private infra readback proving the S3-hosted dashboard bucket is Terraform-managed, private, encrypted, lifecycle-managed, and serving the latest index object. |
@@ -42,7 +43,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 
 ## Daily Schedule
 
-`go run ./tools/localqaschedule -install` installs `io.riido.local-qa` as a macOS LaunchAgent. After the first scheduled run or a manual `launchctl kickstart`, run `go run ./tools/localqaschedule -inspect` to refresh live launchd evidence without reinstalling. The schedule evidence must show `installed=true`, `command_has_token_text=false`, `s3_prefix_configured=true`, `launchd.checked=true`, `launchd.loaded=true`, `launchd.calendar_trigger=true`, `launchd.runs>0`, and `launchd.last_exit_code=0` before the dashboard is trusted as daily local evidence.
+`go run ./tools/localqaschedule -install` installs `io.riido.local-qa` as a macOS LaunchAgent. After the first scheduled run or a manual `launchctl kickstart`, run `go run ./tools/localqaschedule -inspect` to refresh live launchd evidence without reinstalling. The schedule evidence must show `installed=true`, `command_has_token_text=false`, `s3_prefix_configured=true`, `coverage_evidence=.riido-local/evidence/local-qa-coverage.json`, `launchd.checked=true`, `launchd.loaded=true`, `launchd.calendar_trigger=true`, and `launchd.runs>0`. The dashboard accepts either `launchd.last_exit_code=0` for a completed run or `launchd.state=running` while the LaunchAgent is producing the current evidence.
 
 The dashboard `local.qa.daily_schedule` row must also display live launchd context such as `launchd_state`, `runs`, `last_exit`, plist path, stdout/stderr paths, and the redacted command preview. A passing row proves both the declarative plist and the loaded user LaunchAgent were observed.
 

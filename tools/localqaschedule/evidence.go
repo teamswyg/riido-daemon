@@ -26,6 +26,7 @@ func writeScheduleEvidence(
 		Minute:              *cfg.minute,
 		RunAtLoad:           *cfg.runAtLoad,
 		S3PrefixConfigured:  strings.TrimSpace(*cfg.s3Prefix) != "",
+		CoverageEvidence:    *cfg.coverageEvidence,
 		TaskMutations:       *cfg.taskMutations,
 		TaskIDConfigured:    strings.TrimSpace(*cfg.productTaskID) != "",
 		CommandHasTokenText: commandMentionsToken(command),

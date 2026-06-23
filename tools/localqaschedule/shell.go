@@ -32,6 +32,9 @@ func localQACommand(cfg config, paths schedulePaths) string {
 	if *cfg.productEvidence != "" {
 		cmd += " -product-evidence " + shellQuote(*cfg.productEvidence)
 	}
+	if *cfg.coverageEvidence != "" {
+		cmd += " -coverage-evidence " + shellQuote(*cfg.coverageEvidence)
+	}
 	return cmd
 }
 

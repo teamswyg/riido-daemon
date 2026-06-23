@@ -13,6 +13,7 @@ type scheduleEvidence struct {
 	Minute              int             `json:"minute"`
 	RunAtLoad           bool            `json:"run_at_load"`
 	S3PrefixConfigured  bool            `json:"s3_prefix_configured"`
+	CoverageEvidence    string          `json:"coverage_evidence"`
 	TaskMutations       bool            `json:"task_mutations"`
 	TaskIDConfigured    bool            `json:"task_id_configured"`
 	CommandHasTokenText bool            `json:"command_has_token_text"`

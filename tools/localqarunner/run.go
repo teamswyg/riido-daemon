@@ -29,6 +29,7 @@ func run(cfg config) (string, error) {
 			return finishRun(root, cfg, evidence)
 		}
 	}
+	runScheduleInspectStep(root, cfg, &evidence)
 	if _, err := finishRun(root, cfg, evidence); err != nil {
 		return statusFailed, err
 	}

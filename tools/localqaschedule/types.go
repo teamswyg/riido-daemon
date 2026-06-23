@@ -5,6 +5,7 @@ type config struct {
 	s3Prefix         *string
 	evidenceOut      *string
 	productEvidence  *string
+	coverageEvidence *string
 	clientRoot       *string
 	productBaseURL   *string
 	productRiidoHost *string
