@@ -10,6 +10,7 @@ func appendStep(evidence *runEvidence, step stepEvidence) {
 }
 
 func finishRun(root string, cfg config, evidence runEvidence) (string, error) {
+	evidence = applyDeploymentGate(evidence)
 	evidence = applyStrictCoverage(evidence)
 	path := runEvidenceAbs(root, cfg)
 	if err := writeJSON(path, evidence); err != nil {
