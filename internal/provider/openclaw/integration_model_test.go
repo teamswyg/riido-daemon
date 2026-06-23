@@ -12,7 +12,6 @@ func TestIntegrationModelCandidatesPreferFastLocalModel(t *testing.T) {
 	want := []string{
 		"ollama/llama3.2:latest",
 		"ollama/qwen3:8b",
-		"ollama/qwen2.5-coder:1.5b",
 	}
 
 	if !reflect.DeepEqual(got, want) {
