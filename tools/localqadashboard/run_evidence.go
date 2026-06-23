@@ -23,7 +23,7 @@ func runEvidenceScenarios(path string) []externalScenario {
 	if !ok {
 		return nil
 	}
-	return []externalScenario{s3PublishScenario(run.Steps)}
+	return withScenarioSource([]externalScenario{s3PublishScenario(run.Steps)}, path, run.ExpiresAt)
 }
 
 func loadLocalRunEvidence(path string) (localRunEvidence, bool) {

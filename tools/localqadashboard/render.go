@@ -48,8 +48,8 @@ h2{margin-top:28px}
 </section>
 {{if .Run.OpenRepairs}}<h2>Open Repairs</h2><table><thead><tr><th>Provider</th><th>Class</th><th>Owner</th><th>Mode</th><th>Summary</th></tr></thead><tbody>{{range .Run.OpenRepairs}}<tr><td>{{.ProviderID}}</td><td>{{.Class}}</td><td>{{.Owner}}</td><td>{{.Mode}}</td><td>{{.Summary}}{{if .SuggestedCommand}}<br><code>{{.SuggestedCommand}}</code>{{end}}</td></tr>{{end}}</tbody></table>{{end}}
 <h2>Coverage</h2>
-<table><thead><tr><th>Scenario</th><th>Tier</th><th>Surface</th><th>Status</th><th>Repair</th></tr></thead><tbody>
-{{range .CoverageRows}}<tr><td>{{.Title}}<br><code>{{.ID}}</code></td><td>{{.Tier}}</td><td>{{.Surface}}</td><td class="status">{{.Status}}</td><td>{{if .Repair.Class}}{{.Repair.Class}}<br>{{.Repair.Summary}}{{if .Repair.SuggestedCommand}}<br><code>{{.Repair.SuggestedCommand}}</code>{{end}}{{else}}{{.Detail}}{{end}}{{if .Screenshot}}<br><a href="{{.Screenshot}}">screenshot<img class="shot" src="{{.Screenshot}}" alt="{{.ID}} screenshot"></a>{{end}}</td></tr>{{end}}
+<table><thead><tr><th>Scenario</th><th>Tier</th><th>Surface</th><th>Status</th><th>Evidence</th><th>Repair</th></tr></thead><tbody>
+{{range .CoverageRows}}<tr><td>{{.Title}}<br><code>{{.ID}}</code></td><td>{{.Tier}}</td><td>{{.Surface}}</td><td class="status">{{.Status}}</td><td>{{if .Evidence}}<code>{{.Evidence}}</code>{{end}}{{if .ExpiresAt}}<br>expires {{.ExpiresAt}}{{end}}</td><td>{{if .Repair.Class}}{{.Repair.Class}}<br>{{.Repair.Summary}}{{if .Repair.SuggestedCommand}}<br><code>{{.Repair.SuggestedCommand}}</code>{{end}}{{else}}{{.Detail}}{{end}}{{if .Screenshot}}<br><a href="{{.Screenshot}}">screenshot<img class="shot" src="{{.Screenshot}}" alt="{{.ID}} screenshot"></a>{{end}}</td></tr>{{end}}
 </tbody></table>
 <h2>Provider Evidence</h2>
 <table>

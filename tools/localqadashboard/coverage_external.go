@@ -6,6 +6,8 @@ func externalCoverageRow(row coverageRow, scenario externalScenario) coverageRow
 	}
 	row.Status = scenario.Status
 	row.Detail = scenario.FailureSummary
+	row.Evidence = scenario.Evidence
+	row.ExpiresAt = scenario.ExpiresAt
 	if scenario.Screenshot != "" {
 		row.Screenshot = screenshotHref(scenario.Screenshot)
 	}

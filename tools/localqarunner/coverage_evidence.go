@@ -20,13 +20,15 @@ type runCoverageSummary struct {
 }
 
 type runCoverageRow struct {
-	ID      string     `json:"id"`
-	Title   string     `json:"title"`
-	Tier    string     `json:"tier"`
-	Surface string     `json:"surface"`
-	Status  string     `json:"status"`
-	Repair  *runRepair `json:"repair,omitempty"`
-	Detail  string     `json:"detail,omitempty"`
+	ID        string     `json:"id"`
+	Title     string     `json:"title"`
+	Tier      string     `json:"tier"`
+	Surface   string     `json:"surface"`
+	Status    string     `json:"status"`
+	Evidence  string     `json:"evidence,omitempty"`
+	ExpiresAt string     `json:"expires_at,omitempty"`
+	Repair    *runRepair `json:"repair,omitempty"`
+	Detail    string     `json:"detail,omitempty"`
 }
 
 func applyCoverageEvidence(root string, cfg config, evidence *runEvidence) error {

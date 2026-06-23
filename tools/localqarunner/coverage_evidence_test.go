@@ -10,7 +10,8 @@ func TestApplyCoverageEvidenceEmbedsRowsAndStatus(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "coverage.json")
 	body := `{"summary":{"total":2,"passed":1,"skipped":1},"rows":[` +
-		`{"id":"provider.cursor","title":"Cursor","status":"skipped"}]}`
+		`{"id":"provider.cursor","title":"Cursor","status":"skipped",` +
+		`"evidence":"provider.json","expires_at":"2999-01-01T00:00:00Z"}]}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -24,6 +25,9 @@ func TestApplyCoverageEvidenceEmbedsRowsAndStatus(t *testing.T) {
 	}
 	if len(evidence.Coverage.Rows) != 1 || evidence.Coverage.Rows[0].ID != "provider.cursor" {
 		t.Fatalf("rows=%+v", evidence.Coverage.Rows)
+	}
+	if evidence.Coverage.Rows[0].Evidence == "" || evidence.Coverage.Rows[0].ExpiresAt == "" {
+		t.Fatalf("row provenance missing: %+v", evidence.Coverage.Rows[0])
 	}
 }
 

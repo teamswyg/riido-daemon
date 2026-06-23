@@ -15,6 +15,8 @@ type coverageSnapshotRow struct {
 	Tier       string          `json:"tier"`
 	Surface    string          `json:"surface"`
 	Status     string          `json:"status"`
+	Evidence   string          `json:"evidence,omitempty"`
+	ExpiresAt  string          `json:"expires_at,omitempty"`
 	Repair     *repairEvidence `json:"repair,omitempty"`
 	Detail     string          `json:"detail,omitempty"`
 	Screenshot string          `json:"screenshot,omitempty"`
@@ -25,8 +27,9 @@ func coverageSnapshotRows(rows []coverageRow) []coverageSnapshotRow {
 	for _, row := range rows {
 		out = append(out, coverageSnapshotRow{
 			ID: row.ID, Title: row.Title, Tier: row.Tier, Surface: row.Surface,
-			Status: row.Status, Repair: coverageSnapshotRepair(row.Repair),
-			Detail: row.Detail, Screenshot: row.Screenshot,
+			Status: row.Status, Evidence: row.Evidence, ExpiresAt: row.ExpiresAt,
+			Repair: coverageSnapshotRepair(row.Repair), Detail: row.Detail,
+			Screenshot: row.Screenshot,
 		})
 	}
 	return out

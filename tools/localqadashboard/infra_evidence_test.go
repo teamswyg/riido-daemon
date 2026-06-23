@@ -16,6 +16,9 @@ func TestInfraEvidenceScenariosPassesPrivateS3Dashboard(t *testing.T) {
 	if len(got) != 1 || got[0].Status != statusPassed {
 		t.Fatalf("scenarios=%+v", got)
 	}
+	if got[0].Evidence != path {
+		t.Fatalf("infra provenance missing: %+v", got[0])
+	}
 }
 
 func TestInfraEvidenceScenariosFailsWhenBucketIsPublic(t *testing.T) {

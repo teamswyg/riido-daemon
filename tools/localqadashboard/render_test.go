@@ -32,6 +32,8 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 			ID:         "figma.onboarding",
 			Title:      "Onboarding",
 			Status:     "passed",
+			Evidence:   "figma.json",
+			ExpiresAt:  "2999-06-23T01:00:00Z",
 			Screenshot: "screenshots/ai-agent-product-acceptance/figma-onboarding.png",
 		}},
 		CoverageSummary: coverageSummary{
@@ -53,6 +55,8 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 		"provider_auth_required",
 		"cursor-agent login",
 		"figma.onboarding",
+		"figma.json",
+		"expires 2999-06-23T01:00:00Z",
 		`<img class="shot"`,
 		"passed",
 	} {

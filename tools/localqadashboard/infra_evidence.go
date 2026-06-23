@@ -33,6 +33,7 @@ func infraEvidenceScenarios(path string) []externalScenario {
 		ID:             "infra.local_qa_dashboard",
 		Status:         status,
 		FailureSummary: infraEvidenceDetail(evidence),
+		Evidence:       path,
 	}}
 }
 
