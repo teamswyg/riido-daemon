@@ -27,6 +27,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | `.riido-local/evidence/provider-real-cli-observation.json` | Claude, Codex, OpenClaw, and Cursor real CLI availability/integration evidence. |
 | `.riido-local/evidence/ai-agent-product-acceptance.json` | Development API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios. |
 | `.riido-local/evidence/local-qa-dashboard-infra-evidence.json` | Optional private infra readback proving the S3-hosted dashboard bucket is Terraform-managed, private, encrypted, lifecycle-managed, and serving the latest index object. |
+| `.riido-local/contract-lab/index.html` | React frontend handoff generated from real product evidence. It renders API cards plus visual evidence images for Figma golden scenarios. |
 | `.riido-local/dashboard/index.html` | Human-readable local dashboard rendered from evidence JSON. |
 | `s3://riido-ai-server-production-local-qa-evidence/daily/latest/` | Private latest dashboard/evidence handoff, plus timestamped immutable copies. |
 

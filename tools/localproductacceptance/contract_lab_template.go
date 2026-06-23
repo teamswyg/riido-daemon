@@ -21,6 +21,7 @@ var contractLabTemplate = template.Must(template.New("contract-lab").Parse(`<!do
     code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     pre { white-space: pre-wrap; background: #f1f4f8; padding: 10px; border-radius: 6px; }
     .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; background: #e7edf5; font-size: 12px; }
+    .shot { display: block; width: 100%; max-height: 260px; object-fit: contain; background: #f1f4f8; border: 1px solid #dce2ea; border-radius: 6px; margin-top: 10px; }
   </style>
 </head>
 <body><main id="root"></main>
@@ -29,13 +30,22 @@ var contractLabTemplate = template.Must(template.New("contract-lab").Parse(`<!do
 import React from "https://esm.sh/react@18.3.1";
 import { createRoot } from "https://esm.sh/react-dom@18.3.1/client";
 const evidence = JSON.parse(document.getElementById("evidence").textContent);
+function screenshotHref(path) {
+  const prefix = ".riido-local/screenshots/";
+  return path && path.startsWith(prefix) ? "../screenshots/" + path.slice(prefix.length) : path;
+}
 function Card({s}) {
+  const shot = screenshotHref(s.screenshot);
   return React.createElement("section", {className: "card " + s.status}, [
     React.createElement("h2", {key: "h"}, s.id),
     React.createElement("span", {key: "p", className: "pill"}, s.status),
     s.method && React.createElement("p", {key: "m"}, s.method + " " + s.endpoint),
     s.failure_summary && React.createElement("p", {key: "f"}, s.failure_summary),
     s.repair && React.createElement("p", {key: "r"}, s.repair.summary),
+    shot && React.createElement("a", {key: "s", href: shot}, [
+      "visual evidence",
+      React.createElement("img", {key: "i", className: "shot", src: shot, alt: s.id + " screenshot"})
+    ]),
     s.observed && React.createElement("pre", {key: "o"}, JSON.stringify(s.observed, null, 2)),
   ]);
 }
