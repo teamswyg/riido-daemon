@@ -11,6 +11,7 @@ import (
 
 type openClawConfig struct {
 	Agents openClawConfigAgents `json:"agents"`
+	Models openClawConfigModels `json:"models"`
 }
 
 type openClawConfigAgents struct {
@@ -23,6 +24,19 @@ type openClawConfigDefaults struct {
 
 type openClawConfigDefaultModel struct {
 	Primary string `json:"primary"`
+}
+
+type openClawConfigModels struct {
+	Providers map[string]openClawConfigProvider `json:"providers"`
+}
+
+type openClawConfigProvider struct {
+	Models []openClawConfigModel `json:"models"`
+}
+
+type openClawConfigModel struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }
 
 func openClawRuntimeModels(userHome func() (string, error)) []runtimeactor.RuntimeModel {
@@ -45,10 +59,13 @@ func parseOpenClawRuntimeModels(body []byte) []runtimeactor.RuntimeModel {
 	if err := json.Unmarshal(body, &cfg); err != nil {
 		return nil
 	}
-	modelID := strings.TrimSpace(cfg.Agents.Defaults.Model.Primary)
-	model, ok := runtimeModelRecord(modelID, modelID, true)
-	if !ok {
-		return nil
+	defaultID := strings.TrimSpace(cfg.Agents.Defaults.Model.Primary)
+	models := openClawConfiguredModels(cfg)
+	if len(models) == 0 {
+		model, ok := runtimeModelRecord(defaultID, defaultID, true)
+		if ok {
+			return []runtimeactor.RuntimeModel{model}
+		}
 	}
-	return []runtimeactor.RuntimeModel{model}
+	return normalizeRuntimeModels(models, defaultID)
 }

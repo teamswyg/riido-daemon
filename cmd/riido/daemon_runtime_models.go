@@ -20,7 +20,7 @@ func daemonRuntimeModels(provider string) []runtimeactor.RuntimeModel {
 	case openclaw.Name:
 		return openClawRuntimeModels(os.UserHomeDir)
 	case claude.Name:
-		return nil
+		return claudeRuntimeModels()
 	default:
 		return nil
 	}

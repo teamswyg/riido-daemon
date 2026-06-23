@@ -4,26 +4,29 @@ import (
 	"bufio"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
 func codexRuntimeModels(userHome func() (string, error)) []runtimeactor.RuntimeModel {
-	modelID := codexConfiguredModelID(userHome)
-	if modelID == "" {
+	home := runtimeModelHome(userHome)
+	if home == "" {
 		return nil
 	}
-	return []runtimeactor.RuntimeModel{{ModelID: modelID, Label: modelID, IsDefault: true}}
+	modelID := codexConfiguredModelIDFromHome(home)
+	if models := codexRuntimeModelsFromCache(home, modelID); len(models) > 0 {
+		return models
+	}
+	model, ok := runtimeModelRecord(modelID, modelID, true)
+	if !ok {
+		return nil
+	}
+	return []runtimeactor.RuntimeModel{model}
 }
 
-func codexConfiguredModelID(userHome func() (string, error)) string {
-	if userHome == nil {
-		return ""
-	}
-	home, err := userHome()
-	if err != nil || strings.TrimSpace(home) == "" {
+func codexConfiguredModelIDFromHome(home string) string {
+	if strings.TrimSpace(home) == "" {
 		return ""
 	}
 	body, err := os.ReadFile(filepath.Join(home, ".codex", "config.toml"))
@@ -46,18 +49,4 @@ func codexModelValueFromConfig(body string) string {
 		}
 	}
 	return ""
-}
-
-func parseCodexModelValue(rawValue string) string {
-	value := strings.TrimSpace(rawValue)
-	if unquoted, err := strconv.Unquote(value); err == nil {
-		return strings.TrimSpace(unquoted)
-	}
-	if commentAt := strings.Index(value, "#"); commentAt >= 0 {
-		value = strings.TrimSpace(value[:commentAt])
-		if unquoted, err := strconv.Unquote(value); err == nil {
-			return strings.TrimSpace(unquoted)
-		}
-	}
-	return strings.TrimSpace(value)
 }
