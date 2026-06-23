@@ -1,13 +1,28 @@
 package main
 
+import "encoding/json"
+
 type providerRunEvidence struct {
 	Status    string                `json:"status"`
 	Providers []providerRunProvider `json:"providers"`
 }
 
 type providerRunProvider struct {
-	ID     string     `json:"id"`
-	Repair *runRepair `json:"repair,omitempty"`
+	ID                string          `json:"id"`
+	Available         bool            `json:"available"`
+	Version           string          `json:"version,omitempty"`
+	IntegrationStatus string          `json:"integration_status,omitempty"`
+	Observed          json.RawMessage `json:"observed,omitempty"`
+	Repair            *runRepair      `json:"repair,omitempty"`
+}
+
+type runProviderSummary struct {
+	ID                string          `json:"id"`
+	Available         bool            `json:"available"`
+	Version           string          `json:"version,omitempty"`
+	IntegrationStatus string          `json:"integration_status,omitempty"`
+	Observed          json.RawMessage `json:"observed,omitempty"`
+	Repair            *runRepair      `json:"repair,omitempty"`
 }
 
 type runRepair struct {

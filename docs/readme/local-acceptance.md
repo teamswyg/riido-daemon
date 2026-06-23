@@ -39,6 +39,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | `coverage_status` | Acceptance completeness. `partial` means at least one verified surface still needs explicit repair or human action. |
 | `strict_coverage` | Deployment-gate mode. When true, any non-passed `coverage_status` makes `status=failed` even if evidence was still rendered and uploaded. |
 | `provider_status` | Provider aggregate from real CLI evidence. Cursor auth can make this `partial` while the harness still exits successfully. |
+| `provider_summary` | Compact provider rows embedded from real CLI evidence: id, availability, version, integration status, safe observed metadata, and repair data. |
 | `open_repairs` | Machine-readable repair queue. Example: `cursor/provider_auth_required/human/manual`. |
 
 ## Daily Schedule
