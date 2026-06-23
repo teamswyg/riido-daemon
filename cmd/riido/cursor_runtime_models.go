@@ -6,7 +6,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
@@ -20,18 +19,40 @@ type cursorConfigModel struct {
 }
 
 func cursorRuntimeModels(userHome func() (string, error)) []runtimeactor.RuntimeModel {
+	defaultModel := cursorRuntimeDefaultModel(userHome)
+	if models := generatedProviderRuntimeModels(cursorProviderName, defaultModel.ModelID); len(models) > 0 {
+		return models
+	}
+	return cursorRuntimeModelsFallback(defaultModel)
+}
+
+func cursorRuntimeModelsFallback(defaultModel runtimeactor.RuntimeModel) []runtimeactor.RuntimeModel {
+	if models := cursorRuntimeModelsFromCommand(defaultModel.ModelID); len(models) > 0 {
+		return models
+	}
+	if defaultModel.ModelID != "" {
+		return []runtimeactor.RuntimeModel{defaultModel}
+	}
+	return nil
+}
+
+func cursorRuntimeDefaultModel(userHome func() (string, error)) runtimeactor.RuntimeModel {
 	if userHome == nil {
-		return nil
+		return runtimeactor.RuntimeModel{}
 	}
 	home, err := userHome()
 	if err != nil || strings.TrimSpace(home) == "" {
-		return nil
+		return runtimeactor.RuntimeModel{}
 	}
 	body, err := os.ReadFile(filepath.Join(home, ".cursor", "cli-config.json"))
 	if err != nil {
-		return nil
+		return runtimeactor.RuntimeModel{}
 	}
-	return parseCursorRuntimeModels(body)
+	models := parseCursorRuntimeModels(body)
+	if len(models) == 0 {
+		return runtimeactor.RuntimeModel{}
+	}
+	return models[0]
 }
 
 func parseCursorRuntimeModels(body []byte) []runtimeactor.RuntimeModel {
@@ -49,11 +70,4 @@ func parseCursorRuntimeModels(body []byte) []runtimeactor.RuntimeModel {
 		return nil
 	}
 	return []runtimeactor.RuntimeModel{model}
-}
-
-func normalizeCursorRuntimeModelID(modelID string) string {
-	if strings.TrimSpace(modelID) == "auto" {
-		return providercatalog.DefaultCursorModelID
-	}
-	return strings.TrimSpace(modelID)
 }
