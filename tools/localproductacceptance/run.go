@@ -36,7 +36,7 @@ func summarize(scenarios []scenario) string {
 		if scenario.Status == statusFailed {
 			return statusFailed
 		}
-		if scenario.Status == statusSkipped {
+		if scenario.Status == statusSkipped || scenario.Status == statusPartial {
 			status = statusPartial
 		}
 	}
@@ -45,8 +45,15 @@ func summarize(scenarios []scenario) string {
 
 func buildScenarios(clientRoot string, cfg config) []scenario {
 	out := []scenario{clientReadOnlyScenario(clientRoot)}
-	out = append(out, contractAPIScenarios(cfg)...)
+	contract := contractAPIScenarios(cfg)
+	out = append(out, contract...)
+	out = append(out, domainJourneyScenarios(cfg, contract)...)
 	out = append(out, figmaIntentScenarios(*cfg.figmaManifest, *cfg.figmaGolden, *cfg.screenshots)...)
-	out = append(out, contractUIScenario(*cfg.labOut))
+	out = append(out, qaLoopScenario(*cfg.validFor, *cfg.figmaManifest, *cfg.labOut, *cfg.manualOut))
+	out = append(out, featureUIScenario())
+	out = append(out, qaI18NScenario())
+	out = append(out, qaSystemScenario())
+	out = append(out, evidenceGapScenario(out, cfg))
+	out = append(out, contractUIScenario(*cfg.labOut, *cfg.manualOut))
 	return out
 }

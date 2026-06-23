@@ -12,6 +12,7 @@ func runScheduleInspectStep(root string, cfg config, evidence *runEvidence) {
 		"-s3-prefix", *cfg.s3Prefix,
 		"-client-root", *cfg.clientRoot,
 		"-product-base-url", *cfg.productBaseURL,
+		"-product-agent-host", *cfg.productAgentHost,
 		"-product-riido-api-host", *cfg.productRiidoHost,
 		"-product-storage-state", *cfg.productStorage,
 		"-product-evidence", *cfg.productEvidence,

@@ -8,6 +8,7 @@ type config struct {
 	coverageEvidence *string
 	clientRoot       *string
 	productBaseURL   *string
+	productAgentHost *string
 	productRiidoHost *string
 	productWorkspace *string
 	productTeamID    *string

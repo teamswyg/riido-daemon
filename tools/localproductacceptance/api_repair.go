@@ -8,10 +8,10 @@ func apiConfigRepair(class, summary string) *repair {
 
 func apiRuntimeRepair() *repair {
 	return &repair{
-		Class:   "development_api_unavailable_or_unauthorized",
+		Class:   "staging_api_unavailable_or_unauthorized",
 		Owner:   "control-plane",
 		Mode:    "manual",
-		Summary: "Check token, workspace permission, and development.ai-api.riido.io availability.",
+		Summary: "Check token, workspace permission, and staging.ai-api.riido.io availability.",
 	}
 }
 
@@ -28,7 +28,7 @@ func runtimeBindingRepair() *repair {
 		Owner:            "control-plane/daemon",
 		Mode:             "manual",
 		Summary:          "SaaS runtime snapshot/binding is missing; start a SaaS-connected daemon with device credentials and verify runtime registration.",
-		SuggestedCommand: "riido daemon stop --force || true; RIIDO_SAAS_URL=https://development.ai-api.riido.io RIIDO_DEVICE_ID=<device_id> RIIDO_DEVICE_SECRET=<device_secret> riido daemon start",
+		SuggestedCommand: "riido daemon stop --force || true; RIIDO_SAAS_URL=https://staging.ai-api.riido.io RIIDO_DEVICE_ID=<device_id> RIIDO_DEVICE_SECRET=<device_secret> riido daemon start",
 	}
 }
 

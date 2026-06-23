@@ -19,6 +19,8 @@ type config struct {
 	secondAgentID *string
 	evidenceOut   *string
 	labOut        *string
+	manualOut     *string
+	domainCache   *string
 	screenshots   *string
 	storageState  *string
 	figmaManifest *string

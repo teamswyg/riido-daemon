@@ -5,11 +5,17 @@ on:
     paths:
       - ".github/workflows/local-qa-runner.yml"
       - "docs/30-architecture/figma-ai-agent-daemon-boundary/golden/**"
+      - "docs/30-architecture/figma-ai-agent-daemon-boundary/feature-ui.dsl.json"
+      - "docs/30-architecture/qa-i18n.dsl.json"
+      - "docs/30-architecture/qa-system.dsl.json"
+      - "docs/30-architecture/domain-fixture-journey.dsl.json"
+      - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
       - "docs/readme/run-and-smoke.md"
       - "docs/readme/run-and-smoke.riido.json"
       - "tools/localqadashboard/**"
       - "tools/localproductacceptance/**"
+      - "tools/qadslsync/**"
       - "tools/localqarunner/**"
       - "tools/localqaschedule/**"
       - "tools/localreleaseacceptance/**"
@@ -28,6 +34,10 @@ jobs:
         with:
           go-version-file: go.mod
           cache: false
+      - name: Generate QA DSL artifacts
+        run: |
+          go generate ./tools/localproductacceptance
+          git diff --exit-code -- tools/localproductacceptance/*.generated.json
       - name: Verify local QA runner wiring
         run: |
           mkdir -p out
@@ -36,7 +46,22 @@ jobs:
           go run ./tools/localproductacceptance \
             -client-root tmp-client \
             -probe-routes=false \
-            -evidence-out out/ai-agent-product-acceptance.json
+            -storage-state /tmp/no-riido-storage-state.json \
+            -workspace-id "" \
+            -api-token "" \
+            -evidence-out out/ai-agent-product-acceptance.json \
+            -lab-out out/contract-lab/index.html \
+            -manual-evidence-out out/manual-qa-evidence.json
+          test -s out/contract-lab/index.html
+          grep -q "contract.ui.feature_dsl" out/ai-agent-product-acceptance.json
+          grep -q "contract.ui.i18n_dsl" out/ai-agent-product-acceptance.json
+          grep -q "translation_coverage" out/ai-agent-product-acceptance.json
+          grep -q "coverage_ratio" out/ai-agent-product-acceptance.json
+          grep -q "local.qa.dsl_system_audit" out/ai-agent-product-acceptance.json
+          grep -q "execution_counts" out/ai-agent-product-acceptance.json
+          grep -q "inference_required_count" out/ai-agent-product-acceptance.json
+          grep -q "local.qa.evidence_gap_candidates" out/ai-agent-product-acceptance.json
+          grep -q "domain.fixture_journey" out/ai-agent-product-acceptance.json
           go run ./tools/localreleaseacceptance \
             -evidence-out out/local-release-acceptance.json
           go run ./tools/localqarunner \
@@ -44,12 +69,28 @@ jobs:
             -run-integration=false \
             -provider-evidence out/provider-real-cli-observation.json \
             -release-evidence out/local-release-acceptance.json \
+            -coverage-evidence out/local-qa-coverage.json \
+            -schedule-evidence out/local-qa-schedule.json \
             -dashboard out/index.html \
             -evidence-out out/local-qa-run.json
           go run ./tools/localqaschedule \
             -repo "$(pwd)" \
             -s3-prefix s3://example-local-qa-evidence/daily \
             -evidence-out out/local-qa-schedule.json
+          grep -q "daily-evidence-sweep" out/local-qa-schedule.json
+          go run ./tools/localqadashboard \
+            -provider-evidence out/provider-real-cli-observation.json \
+            -product-evidence out/ai-agent-product-acceptance.json \
+            -release-evidence out/local-release-acceptance.json \
+            -run-evidence out/local-qa-run.json \
+            -schedule-evidence out/local-qa-schedule.json \
+            -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json \
+            -out out/index.html \
+            -coverage-out out/local-qa-coverage.json
+          grep -q "local.qa.daily_trigger" out/local-qa-coverage.json
+          grep -q "contract.ui.i18n_dsl" out/local-qa-coverage.json
+          grep -q "local.qa.dsl_system_audit" out/local-qa-coverage.json
+          grep -q "domain.fixture.thread" out/local-qa-coverage.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:

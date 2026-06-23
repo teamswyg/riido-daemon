@@ -58,6 +58,8 @@ func newEvidence(cfg config, observed time.Time) runEvidence {
 			ProductEvidence:  *cfg.productEvidence,
 			ReleaseEvidence:  *cfg.releaseEvidence,
 			CoverageEvidence: *cfg.coverageEvidence,
+			ManualEvidence:   *cfg.manualEvidence,
+			DomainCache:      *cfg.domainCache,
 			ProductLab:       *cfg.productLab,
 			ScheduleEvidence: *cfg.scheduleEvidence,
 			InfraEvidence:    *cfg.infraEvidence,

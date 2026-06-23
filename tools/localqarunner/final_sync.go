@@ -32,12 +32,19 @@ func syncFinalRunEvidence(root string, cfg config, observedAt string) error {
 }
 
 func finalDashboardUploads(cfg config, stamp, prefix string) []uploadSpec {
-	return []uploadSpec{
+	uploads := []uploadSpec{
 		upload("dashboard-html-final", *cfg.dashboardHTML, prefix+"/latest/index.html"),
 		upload("coverage-evidence-final", *cfg.coverageEvidence, prefix+"/latest/local-qa-coverage.json"),
 		upload("dashboard-html-final-"+stamp, *cfg.dashboardHTML, prefix+"/"+stamp+"/index.html"),
 		upload("coverage-evidence-final-"+stamp, *cfg.coverageEvidence, prefix+"/"+stamp+"/local-qa-coverage.json"),
 	}
+	if *cfg.manualEvidence != "" && fileExists(*cfg.manualEvidence) {
+		uploads = append(uploads,
+			upload("manual-evidence-final", *cfg.manualEvidence, prefix+"/latest/manual-qa-evidence.json"),
+			upload("manual-evidence-final-"+stamp, *cfg.manualEvidence, prefix+"/"+stamp+"/manual-qa-evidence.json"),
+		)
+	}
+	return uploads
 }
 
 func finalRunEvidenceUploads(cfg config, stamp, prefix string) []uploadSpec {

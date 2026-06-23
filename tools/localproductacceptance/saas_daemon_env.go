@@ -6,7 +6,7 @@ func saasDaemonEnv(slot saasDaemonSlot, host string) []string {
 		"RIIDO_DEVICE_ID=" + slot.Credential.DeviceID,
 		"RIIDO_DEVICE_SECRET=" + slot.Credential.DeviceSecret,
 		"RIIDO_DEVICE_NAME=" + slot.Credential.DisplayName,
-		"RIIDO_DAEMON_PROFILE=development",
+		"RIIDO_DAEMON_PROFILE=staging",
 		"RIIDO_DAEMON_PPROF_ADDR=127.0.0.1:0",
 		"RIIDO_RUNTIME_OWNER=local-qa",
 		"RIIDO_WORKDIR_ROOT=" + slot.Workdir,

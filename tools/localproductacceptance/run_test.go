@@ -18,3 +18,10 @@ func TestSummarizeReturnsPartialWhenScenarioSkipped(t *testing.T) {
 		t.Fatalf("status=%q", got)
 	}
 }
+
+func TestSummarizeTreatsPartialScenarioAsPartial(t *testing.T) {
+	got := summarize([]scenario{{ID: "local.qa.dsl_system_audit", Status: statusPartial}})
+	if got != statusPartial {
+		t.Fatalf("summarize partial scenario = %q, want %q", got, statusPartial)
+	}
+}

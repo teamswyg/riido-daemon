@@ -5,7 +5,7 @@ func testConfig() config {
 	product, coverage := "/tmp/product.json", "/tmp/coverage.json"
 	label, plist, evidence := "io.test", "", "/tmp/schedule.json"
 	clientRoot, baseURL, workspace := "/tmp/client", "http://localhost:3000", "W1"
-	riidoHost, teamID := "https://development.api.riido.io", "team-a"
+	agentHost, riidoHost, teamID := "https://staging.ai-api.riido.io", "https://staging.api.riido.io", "team-a"
 	storage := "/tmp/state.json"
 	taskID, first, second, comment := "task-a", "agent-a", "agent-b", "hi"
 	hour, minute := 9, 5
@@ -19,6 +19,7 @@ func testConfig() config {
 		coverageEvidence: &coverage,
 		clientRoot:       &clientRoot,
 		productBaseURL:   &baseURL,
+		productAgentHost: &agentHost,
 		productRiidoHost: &riidoHost,
 		productWorkspace: &workspace,
 		productTeamID:    &teamID,

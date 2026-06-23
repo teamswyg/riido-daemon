@@ -13,6 +13,8 @@ func main() {
 	releaseEvidence := ".riido-local/evidence/local-release-acceptance.json"
 	productLab := ".riido-local/contract-lab/index.html"
 	productScreenshots := ".riido-local/screenshots/ai-agent-product-acceptance"
+	manualEvidence := ".riido-local/evidence/manual-qa-evidence.json"
+	domainCache := ".riido-local/evidence/domain-fixture-journey-cache.json"
 	coverageEvidence := ".riido-local/evidence/local-qa-coverage.json"
 	scheduleEvidence := ".riido-local/evidence/local-qa-schedule.json"
 	infraEvidence := ".riido-local/evidence/local-qa-dashboard-infra-evidence.json"
@@ -24,6 +26,8 @@ func main() {
 		productEvidence:      flag.String("product-evidence", productEvidence, "product acceptance evidence JSON"),
 		releaseEvidence:      flag.String("release-evidence", releaseEvidence, "release install evidence JSON"),
 		coverageEvidence:     flag.String("coverage-evidence", coverageEvidence, "local QA coverage snapshot JSON"),
+		manualEvidence:       flag.String("manual-evidence", manualEvidence, "manual human QA evidence JSON exported by the contract lab"),
+		domainCache:          flag.String("domain-cache", getenvDefault("RIIDO_DOMAIN_FIXTURE_CACHE", domainCache), "domain fixture journey cache JSON"),
 		productLab:           flag.String("product-lab", productLab, "frontend contract lab HTML output"),
 		scheduleEvidence:     flag.String("schedule-evidence", scheduleEvidence, "local QA schedule evidence JSON"),
 		infraEvidence:        flag.String("infra-evidence", infraEvidence, "private infra dashboard evidence JSON"),
@@ -38,8 +42,8 @@ func main() {
 		scheduleTool:         flag.String("schedule-tool", "./tools/localqaschedule", "local QA schedule evidence tool package"),
 		dashboardTool:        flag.String("dashboard-tool", "./tools/localqadashboard", "dashboard tool package"),
 		clientRoot:           flag.String("client-root", getenvDefault("RIIDO_LOCAL_QA_CLIENT_ROOT", "../riido-client"), "external riido-client worktree"),
-		productAgentHost:     flag.String("product-agent-host", getenvDefault("NEXT_PUBLIC_AI_AGENT_HOST", "https://development.ai-api.riido.io"), "AI Agent API host"),
-		productRiidoHost:     flag.String("product-riido-api-host", getenvDefault("RIIDO_E2E_RIIDO_API_HOST", "https://development.api.riido.io"), "Riido product API host"),
+		productAgentHost:     flag.String("product-agent-host", getenvDefault("NEXT_PUBLIC_AI_AGENT_HOST", "https://staging.ai-api.riido.io"), "AI Agent API host"),
+		productRiidoHost:     flag.String("product-riido-api-host", getenvDefault("RIIDO_E2E_RIIDO_API_HOST", "https://staging.api.riido.io"), "Riido product API host"),
 		productBaseURL:       flag.String("product-base-url", getenvDefault("RIIDO_E2E_BASE_URL", "http://localhost:3000"), "local frontend base URL"),
 		productWorkspace:     flag.String("product-workspace-id", os.Getenv("RIIDO_E2E_WORKSPACE_ID"), "workspace id for product contract probes"),
 		productTeamID:        flag.String("product-team-id", os.Getenv("RIIDO_E2E_TEAM_ID"), "team id for automatic task fixture creation"),
@@ -55,7 +59,7 @@ func main() {
 		productMutations:     flag.Bool("product-task-mutations", true, "create, verify, and clean up real task assignments in product acceptance"),
 		productBrowserE2E:    flag.Bool("product-browser-e2e", false, "deprecated route-browser checks; contract lab is the default"),
 		productStartClient:   flag.Bool("product-start-client", false, "start external client dev server when base URL is down"),
-		productTaskFixture:   flag.Bool("product-create-task-fixture", true, "create and clean up a development task when product task id is empty"),
+		productTaskFixture:   flag.Bool("product-create-task-fixture", true, "create and clean up a staging task when product task id is empty"),
 		productPrepareDaemon: flag.Bool("product-prepare-saas-daemon", true, "prepare dedicated SaaS-connected local QA daemons for product mutations"),
 		continueOnFailure:    flag.Bool("continue-on-failure", true, "continue rendering/upload after provider failures"),
 		strictCoverage:       flag.Bool("strict-coverage", false, "fail when coverage_status is not passed"),

@@ -15,11 +15,21 @@ func TestFigmaIntentScenariosUseGoldenReferences(t *testing.T) {
 	if byID["figma.intent.catalog"].Status != statusPassed {
 		t.Fatalf("catalog status = %q", byID["figma.intent.catalog"].Status)
 	}
+	if byID["figma.intent.catalog"].Observed["entries"] == nil {
+		t.Fatalf("catalog entries missing: %+v", byID["figma.intent.catalog"].Observed)
+	}
 	onboarding := byID["figma.onboarding"]
 	if onboarding.Status != statusPassed {
 		t.Fatalf("onboarding status = %q", onboarding.Status)
 	}
 	if onboarding.Screenshot == "" || onboarding.Observed["golden"] == nil {
 		t.Fatalf("onboarding golden evidence missing: %+v", onboarding)
+	}
+	runtimeDetail := byID["figma.runtime.detail"]
+	if runtimeDetail.Status != statusPassed {
+		t.Fatalf("runtime detail status = %q", runtimeDetail.Status)
+	}
+	if runtimeDetail.Observed["entries"] == nil {
+		t.Fatalf("runtime detail observed entries missing: %+v", runtimeDetail.Observed)
 	}
 }

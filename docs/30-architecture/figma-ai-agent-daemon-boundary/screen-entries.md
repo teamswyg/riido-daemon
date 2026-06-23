@@ -11,6 +11,7 @@
 | `153:15935` | 추가 기획 내용 | Accepts only already-authorized task/subtask assignments. It does not extend assignment to project, milestone, intake, AI property filler, or mention surfaces. |
 | `156:19307` | 메뉴바 | No executable daemon behavior. Menu navigation can open a screen that later reads SaaS/device data, but the daemon does not own route labels or availability. |
 | `162:23090` | 런타임 설정페이지 | Owns local current-device lifecycle facts and executes accepted agent-bound lifecycle commands. SaaS owns the remote read model projected to the client. |
+| `1179:27360` | 런타임 상세페이지 | Projects one selected runtime's local identity, provider version, liveness, device, owner, and assigned-agent linkage as facts consumed by the SaaS/client read model. It does not own back navigation, row presentation, agent hover state, or agent edit navigation. |
 | `432:37336` | 에이전트 설정페이지 | Consumes the assigned runtime, selected model, and instruction snapshot during provider execution. It does not create, update, delete, timestamp, or validate saved agent records. |
 | `134:6542` | 에이전트 추가 | No direct daemon mutation. The daemon only sees the resulting assignment/runtime values if the created agent is later assigned. |
 | `432:35713` | 에이전트 목록 | No list rendering ownership. The daemon may contribute liveness evidence that SaaS projects, but it does not order, filter, or style agent rows. |

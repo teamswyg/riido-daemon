@@ -16,7 +16,7 @@ func taskFlowScenarios(client apiClient, cfg config, discovery map[string]any, a
 			out = markFixtureFallback(out, fallback)
 			taskID, source = fallback.TaskID, "readable-task-fallback"
 		} else {
-			summary := "Create a development task fixture or set RIIDO_E2E_TASK_ID."
+			summary := "Create a staging task fixture or set RIIDO_E2E_TASK_ID."
 			tail := taskSkipped(false, summary)
 			return finishTaskFlow(cfg, client, fixture, agents, out, tail)
 		}

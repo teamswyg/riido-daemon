@@ -56,7 +56,7 @@ RIIDO_OPENCLAW_INTEGRATION_MODEL=ollama/llama3.2:latest \
 AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -race -count=1 -run TestIntegration -v
 ```
 
-Run local acceptance verification before deployment. The runner keeps provider failures as evidence, verifies the daemon install/update script in a sandbox, calls the real development AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:
+Run local acceptance verification before deployment. The runner keeps provider failures as evidence, verifies the daemon install/update script in a sandbox, calls the real staging AI Agent API directly, renders a React contract lab, renders the dashboard, and optionally publishes to the private local QA evidence bucket. The product probe can recover the API token and workspace id from `.riido-local/private/riido-client-storage-state.json`, so the LaunchAgent does not need token env vars:
 
 ```bash
 RIIDO_AI_AGENT_TOKEN=<token> \
@@ -72,7 +72,7 @@ RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
 go run ./tools/localqarunner -run-product -strict-coverage
 ```
 
-Task multi-assignment, SSE replay, and thread-message probes need a development task plus a SaaS-connected daemon runtime binding. If `RIIDO_E2E_TASK_ID` is absent, the probe first tries to create a temporary development task through `development.api.riido.io`, runs the real AI Agent API flow against it, and records a cleanup scenario after deleting the task. When the token can read tasks but cannot create task fixtures, the probe falls back to a readable existing task, records `contract.task.fixture.fallback_existing`, marks `contract.task.fixture.create` as skipped with the 403 evidence preserved, and still verifies assignment/SSE/thread-message behavior. Agent ids are optional because the probe tries assignable candidates, prefers the same `runtime_kind` pair, and records `ai_agent_runtime_binding_required` repair evidence when SaaS has agents but no live daemon/runtime binding:
+Task multi-assignment, SSE replay, and thread-message probes need a staging task plus a SaaS-connected daemon runtime binding. If `RIIDO_E2E_TASK_ID` is absent, the probe first tries to create a temporary staging task through `staging.api.riido.io`, runs the real AI Agent API flow against it, and records a cleanup scenario after deleting the task. When the token can read tasks but cannot create task fixtures, the probe falls back to a readable existing task, records `contract.task.fixture.fallback_existing`, marks `contract.task.fixture.create` as skipped with the 403 evidence preserved, and still verifies assignment/SSE/thread-message behavior. Agent ids are optional because the probe tries assignable candidates, prefers the same `runtime_kind` pair, and records `ai_agent_runtime_binding_required` repair evidence when SaaS has agents but no live daemon/runtime binding:
 
 ```bash
 RIIDO_E2E_COMMENT_BODY='local QA follow-up' \

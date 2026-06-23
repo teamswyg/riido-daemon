@@ -21,6 +21,18 @@ func uploads(cfg config, stamp string) []uploadSpec {
 			upload("coverage-evidence-"+stamp, *cfg.coverageEvidence, prefix+"/"+stamp+"/local-qa-coverage.json"),
 		)
 	}
+	if *cfg.manualEvidence != "" && fileExists(*cfg.manualEvidence) {
+		specs = append(specs,
+			upload("manual-evidence", *cfg.manualEvidence, prefix+"/latest/manual-qa-evidence.json"),
+			upload("manual-evidence-"+stamp, *cfg.manualEvidence, prefix+"/"+stamp+"/manual-qa-evidence.json"),
+		)
+	}
+	if *cfg.domainCache != "" && fileExists(*cfg.domainCache) {
+		specs = append(specs,
+			upload("domain-cache", *cfg.domainCache, prefix+"/latest/domain-fixture-journey-cache.json"),
+			upload("domain-cache-"+stamp, *cfg.domainCache, prefix+"/"+stamp+"/domain-fixture-journey-cache.json"),
+		)
+	}
 	if *cfg.productLab != "" && fileExists(*cfg.productLab) {
 		specs = append(specs,
 			upload("product-lab", *cfg.productLab, prefix+"/latest/contract-lab/index.html"),

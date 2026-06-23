@@ -25,6 +25,7 @@ func figmaIntentScenarios(path, goldenPath, screenshotDir string) []scenario {
 		figmaCatalogScenario(path, entries),
 		figmaScreenScenario("figma.onboarding", entries, "온보딩", goldens, goldenErr, screenshotDir),
 		figmaScreenScenario("figma.runtime.settings", entries, "런타임 설정페이지", goldens, goldenErr, screenshotDir),
+		figmaIntentScenario("figma.runtime.detail", entries, "런타임 상세페이지"),
 	}
 }
 

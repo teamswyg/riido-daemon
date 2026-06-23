@@ -19,6 +19,8 @@ func uploadTestConfig(product, release, coverage, lab, schedule, infra string) c
 	provider := ".riido-local/provider.json"
 	run := ".riido-local/run.json"
 	dashboard := ".riido-local/index.html"
+	manual := ""
+	domainCache := ""
 	screenshots := ".riido-local/screenshots"
 	prefix := "s3://bucket/daily"
 	return config{
@@ -26,6 +28,8 @@ func uploadTestConfig(product, release, coverage, lab, schedule, infra string) c
 		productEvidence:    &product,
 		releaseEvidence:    &release,
 		coverageEvidence:   &coverage,
+		manualEvidence:     &manual,
+		domainCache:        &domainCache,
 		productLab:         &lab,
 		scheduleEvidence:   &schedule,
 		infraEvidence:      &infra,

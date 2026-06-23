@@ -19,6 +19,22 @@ func TestFinalDashboardUploadsSyncLatestAndStampedRunEvidence(t *testing.T) {
 	}
 }
 
+func TestFinalDashboardUploadsIncludeManualEvidenceWhenPresent(t *testing.T) {
+	manual := writeUploadFixture(t, "manual.json", "{}")
+	cfg := uploadTestConfig("", "", ".riido-local/coverage.json", "", "", "")
+	cfg.manualEvidence = &manual
+	got := finalDashboardUploads(cfg, "20260622T000000Z", "s3://bucket/daily")
+	if len(got) != 6 {
+		t.Fatalf("uploads=%d", len(got))
+	}
+	if got[4].target != "s3://bucket/daily/latest/manual-qa-evidence.json" {
+		t.Fatalf("manual latest target=%q", got[4].target)
+	}
+	if got[5].target != "s3://bucket/daily/20260622T000000Z/manual-qa-evidence.json" {
+		t.Fatalf("manual stamped target=%q", got[5].target)
+	}
+}
+
 func TestFinalRunEvidenceUploadsSyncLatestAndStampedRunEvidence(t *testing.T) {
 	cfg := uploadTestConfig("", "", ".riido-local/coverage.json", "", "", "")
 	got := finalRunEvidenceUploads(cfg, "20260622T000000Z", "s3://bucket/daily")

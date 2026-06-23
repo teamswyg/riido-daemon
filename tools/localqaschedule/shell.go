@@ -16,6 +16,7 @@ func localQACommand(cfg config, paths schedulePaths) string {
 		cmd += " -run-product"
 		cmd += " -client-root " + shellQuote(*cfg.clientRoot)
 		cmd += " -product-base-url " + shellQuote(*cfg.productBaseURL)
+		cmd += " -product-agent-host " + shellQuote(*cfg.productAgentHost)
 		cmd += " -product-riido-api-host " + shellQuote(*cfg.productRiidoHost)
 		cmd += " -product-storage-state " + shellQuote(*cfg.productStorage)
 		if *cfg.startClient {

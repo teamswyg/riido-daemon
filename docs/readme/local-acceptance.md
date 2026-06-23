@@ -25,7 +25,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | `.riido-local/evidence/local-qa-run.json` | Top-level execution result, deployment gate status, coverage completeness, provider aggregate status, open repair queue, upload steps, and artifact paths. |
 | `.riido-local/evidence/local-qa-coverage.json` | Machine-readable coverage rows and summary embedded into `local-qa-run.json`; each row carries the source evidence artifact and expiry when known. |
 | `.riido-local/evidence/provider-real-cli-observation.json` | Claude, Codex, OpenClaw, and Cursor real CLI availability/integration evidence. |
-| `.riido-local/evidence/ai-agent-product-acceptance.json` | Development API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios. |
+| `.riido-local/evidence/ai-agent-product-acceptance.json` | Staging API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios. |
 | `.riido-local/evidence/local-qa-dashboard-infra-evidence.json` | Optional private infra readback proving the S3-hosted dashboard bucket is Terraform-managed, encrypted, lifecycle-managed, serving the latest index object, and either private or CIDR-limited for object reads. |
 | `.riido-local/contract-lab/index.html` | React frontend handoff generated from real product evidence. It renders API cards plus visual evidence images for Figma golden scenarios. |
 | `.riido-local/dashboard/index.html` | Human-readable local dashboard rendered from evidence JSON. |
@@ -53,4 +53,4 @@ The dashboard `local.qa.daily_schedule` row must also display live launchd conte
 
 ## Repository Boundary
 
-The harness may read `../riido-client` storage state for a real development token, but it must not commit, push, or merge changes to `teamswyg/riido-client`. Frontend handoff is produced by the daemon-owned React contract lab under `.riido-local/contract-lab/`.
+The harness may read `../riido-client` storage state for a real staging token, but it must not commit, push, or merge changes to `teamswyg/riido-client`. Frontend handoff is produced by the daemon-owned React contract lab under `.riido-local/contract-lab/`.

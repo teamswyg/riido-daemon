@@ -46,4 +46,16 @@ func TestWriteScheduleEvidenceIncludesCoveragePath(t *testing.T) {
 	if got.CommandHasTokenText {
 		t.Fatal("command should not contain token text")
 	}
+	if got.Trigger.ID != dailyEvidenceSweepID {
+		t.Fatalf("trigger id=%q", got.Trigger.ID)
+	}
+	if got.Trigger.CommonName != dailyEvidenceSweepCommonName {
+		t.Fatalf("trigger common name=%q", got.Trigger.CommonName)
+	}
+	if got.Trigger.TimeLocal != "09:05" {
+		t.Fatalf("trigger time=%q", got.Trigger.TimeLocal)
+	}
+	if len(got.Trigger.Evidence) == 0 {
+		t.Fatal("trigger evidence refs missing")
+	}
 }

@@ -16,7 +16,16 @@ type scheduleEvidence struct {
 	S3PrefixConfigured  bool            `json:"s3_prefix_configured"`
 	CoverageEvidence    string          `json:"coverage_evidence"`
 	CommandPreview      string          `json:"command_preview"`
+	Trigger             triggerEvidence `json:"trigger"`
 	Launchd             launchdEvidence `json:"launchd"`
+}
+
+type triggerEvidence struct {
+	ID         string `json:"id"`
+	Name       string `json:"name"`
+	CommonName string `json:"common_name"`
+	Cadence    string `json:"cadence"`
+	TimeLocal  string `json:"time_local"`
 }
 
 type launchdEvidence struct {
@@ -49,7 +58,16 @@ func scheduleEvidenceScenarios(path string) []externalScenario {
 	if scheduleEvidenceFailed(evidence) {
 		scenario.Status = statusFailed
 	}
-	return []externalScenario{scenario}
+	triggerScenario := externalScenario{
+		ID:             "local.qa.daily_trigger",
+		Status:         evidence.Status,
+		FailureSummary: triggerEvidenceDetail(evidence),
+		Evidence:       path,
+	}
+	if scheduleEvidenceFailed(evidence) || evidence.Trigger.ID != "daily-evidence-sweep" {
+		triggerScenario.Status = statusFailed
+	}
+	return []externalScenario{scenario, triggerScenario}
 }
 
 func scheduleEvidenceFailed(e scheduleEvidence) bool {

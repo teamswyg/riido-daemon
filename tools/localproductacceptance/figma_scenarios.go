@@ -7,6 +7,7 @@ func figmaCatalogScenario(path string, entries []figmaIntentEntry) scenario {
 		Endpoint: path,
 		Observed: map[string]any{
 			"entries_count": len(entries),
+			"entries":       figmaObservedEntries(entries),
 			"screen_names":  figmaScreenNames(entries),
 		},
 	}
@@ -37,5 +38,17 @@ func figmaScreenScenario(
 		Status:     statusPassed,
 		Screenshot: screenshot,
 		Observed:   observed,
+	}
+}
+
+func figmaIntentScenario(id string, entries []figmaIntentEntry, needle string) scenario {
+	matches := matchingFigmaEntries(entries, needle)
+	if len(matches) == 0 {
+		return figmaIntentMissingScenario(id, matches)
+	}
+	return scenario{
+		ID:       id,
+		Status:   statusPassed,
+		Observed: figmaObserved(matches),
 	}
 }

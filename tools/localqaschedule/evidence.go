@@ -31,6 +31,7 @@ func writeScheduleEvidence(
 		TaskIDConfigured:    strings.TrimSpace(*cfg.productTaskID) != "",
 		CommandHasTokenText: commandMentionsToken(command),
 		CommandPreview:      safeCommandPreview(command),
+		Trigger:             dailyTriggerEvidence(cfg),
 		Launchd:             live,
 	}
 	return writeJSON(scheduleEvidencePath(cfg, paths), evidence)

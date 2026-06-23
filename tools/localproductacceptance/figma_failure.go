@@ -27,5 +27,11 @@ func failedFigmaIntentScenarios(path string, err error) []scenario {
 			FailureSummary: err.Error(),
 			Repair:         repair,
 		},
+		{
+			ID:             "figma.runtime.detail",
+			Status:         statusFailed,
+			FailureSummary: err.Error(),
+			Repair:         repair,
+		},
 	}
 }

@@ -40,6 +40,8 @@ func runProductStep(root string, cfg config, evidence *runEvidence) string {
 		"-valid-for", cfg.validFor.String(),
 		"-evidence-out", *cfg.productEvidence,
 		"-lab-out", *cfg.productLab,
+		"-manual-evidence-out", *cfg.manualEvidence,
+		"-domain-cache", *cfg.domainCache,
 	}
 	args = appendProductTaskArgs(args, cfg)
 	if *cfg.productBrowserE2E {

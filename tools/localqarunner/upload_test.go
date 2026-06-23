@@ -33,3 +33,35 @@ func TestUploadsIncludeProductEvidenceWhenConfigured(t *testing.T) {
 		t.Fatalf("infra latest target=%q", got[16].target)
 	}
 }
+
+func TestUploadsIncludeManualEvidenceWhenPresent(t *testing.T) {
+	manual := writeUploadFixture(t, "manual.json", "{}")
+	cfg := uploadTestConfig("", "", "", "", "", "")
+	cfg.manualEvidence = &manual
+	got := uploads(cfg, "20260622T000000Z")
+	if len(got) != 8 {
+		t.Fatalf("uploads=%d", len(got))
+	}
+	if got[6].target != "s3://bucket/daily/latest/manual-qa-evidence.json" {
+		t.Fatalf("manual latest target=%q", got[6].target)
+	}
+	if got[7].target != "s3://bucket/daily/20260622T000000Z/manual-qa-evidence.json" {
+		t.Fatalf("manual stamped target=%q", got[7].target)
+	}
+}
+
+func TestUploadsIncludeDomainCacheWhenPresent(t *testing.T) {
+	domainCache := writeUploadFixture(t, "domain-cache.json", "{}")
+	cfg := uploadTestConfig("", "", "", "", "", "")
+	cfg.domainCache = &domainCache
+	got := uploads(cfg, "20260622T000000Z")
+	if len(got) != 8 {
+		t.Fatalf("uploads=%d", len(got))
+	}
+	if got[6].target != "s3://bucket/daily/latest/domain-fixture-journey-cache.json" {
+		t.Fatalf("domain latest target=%q", got[6].target)
+	}
+	if got[7].target != "s3://bucket/daily/20260622T000000Z/domain-fixture-journey-cache.json" {
+		t.Fatalf("domain stamped target=%q", got[7].target)
+	}
+}

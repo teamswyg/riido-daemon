@@ -18,7 +18,20 @@ type scheduleEvidence struct {
 	TaskIDConfigured    bool            `json:"task_id_configured"`
 	CommandHasTokenText bool            `json:"command_has_token_text"`
 	CommandPreview      string          `json:"command_preview"`
+	Trigger             triggerEvidence `json:"trigger"`
 	Launchd             launchdEvidence `json:"launchd"`
+}
+
+type triggerEvidence struct {
+	ID              string   `json:"id"`
+	Name            string   `json:"name"`
+	CommonName      string   `json:"common_name"`
+	Cadence         string   `json:"cadence"`
+	TimeLocal       string   `json:"time_local"`
+	EntryPoint      string   `json:"entrypoint"`
+	FreshnessWindow string   `json:"freshness_window"`
+	ClosedLoop      string   `json:"closed_loop"`
+	Evidence        []string `json:"evidence"`
 }
 
 type launchdEvidence struct {
