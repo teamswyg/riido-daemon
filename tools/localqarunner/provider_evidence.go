@@ -16,9 +16,34 @@ func applyProviderEvidence(root string, cfg config, evidence *runEvidence) error
 		return fmt.Errorf("parse provider evidence: %w", err)
 	}
 	evidence.ProviderStatus = file.Status
+	evidence.ProviderSummary = providerSummaries(file.Providers)
 	evidence.CoverageStatus = mergeCoverageStatus(evidence.CoverageStatus, file.Status)
 	appendProviderRepairs(evidence, file.Providers)
 	return nil
+}
+
+func providerSummaries(providers []providerRunProvider) []runProviderSummary {
+	out := make([]runProviderSummary, 0, len(providers))
+	for _, provider := range providers {
+		out = append(out, runProviderSummary{
+			ID:                provider.ID,
+			Available:         provider.Available,
+			Version:           provider.Version,
+			IntegrationStatus: provider.IntegrationStatus,
+			Observed:          provider.Observed,
+			Repair:            providerRepair(provider),
+		})
+	}
+	return out
+}
+
+func providerRepair(provider providerRunProvider) *runRepair {
+	if provider.Repair == nil {
+		return nil
+	}
+	repair := *provider.Repair
+	repair.ProviderID = provider.ID
+	return &repair
 }
 
 func mergeCoverageStatus(current, observed string) string {
@@ -36,11 +61,10 @@ func mergeCoverageStatus(current, observed string) string {
 
 func appendProviderRepairs(evidence *runEvidence, providers []providerRunProvider) {
 	for _, provider := range providers {
-		if provider.Repair == nil {
+		repair := providerRepair(provider)
+		if repair == nil {
 			continue
 		}
-		repair := *provider.Repair
-		repair.ProviderID = provider.ID
-		evidence.OpenRepairs = append(evidence.OpenRepairs, repair)
+		evidence.OpenRepairs = append(evidence.OpenRepairs, *repair)
 	}
 }
