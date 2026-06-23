@@ -2,6 +2,8 @@ package saasplane
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"net/url"
 	"time"
 
@@ -16,7 +18,15 @@ func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string, wait t
 		RuntimeID: runtimeID,
 		WaitMs:    pollWaitMilliseconds(wait),
 	}, &out)
+	if isStaleAgentBindingPollError(err) {
+		p.invalidateAgentBindingsCache(ctx)
+	}
 	return out, err
+}
+
+func isStaleAgentBindingPollError(err error) bool {
+	var statusErr httpStatusError
+	return errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusBadRequest
 }
 
 func pollWaitMilliseconds(wait time.Duration) int {
