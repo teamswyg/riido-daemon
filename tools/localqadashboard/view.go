@@ -33,3 +33,10 @@ func (view dashboardView) FreshnessStatus() string {
 	}
 	return "expired"
 }
+
+func (view dashboardView) DeploymentGateStatus() string {
+	if view.Run.CoverageStatus == statusPassed {
+		return "ready"
+	}
+	return "blocked"
+}

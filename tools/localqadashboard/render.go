@@ -44,6 +44,7 @@ h2{margin-top:28px}
 <div class="card"><div>Expires</div><div>{{.ExpiresAt}}</div></div>
 <div class="card"><div>Freshness</div><div id="freshness-status" class="status" data-expires="{{.ExpiresAt}}">{{.FreshnessStatus}}</div></div>
 <div class="card"><div>Coverage</div><div>{{.CoverageSummary.Passed}}/{{.CoverageSummary.Total}} passed</div></div>
+<div class="card"><div>Deployment Gate</div><div class="status">{{.DeploymentGateStatus}}</div><div><code>go run ./tools/localqarunner -run-product -strict-coverage</code></div></div>
 </section>
 {{if .Run.OpenRepairs}}<h2>Open Repairs</h2><table><thead><tr><th>Provider</th><th>Class</th><th>Owner</th><th>Mode</th><th>Summary</th></tr></thead><tbody>{{range .Run.OpenRepairs}}<tr><td>{{.ProviderID}}</td><td>{{.Class}}</td><td>{{.Owner}}</td><td>{{.Mode}}</td><td>{{.Summary}}{{if .SuggestedCommand}}<br><code>{{.SuggestedCommand}}</code>{{end}}</td></tr>{{end}}</tbody></table>{{end}}
 <h2>Coverage</h2>
