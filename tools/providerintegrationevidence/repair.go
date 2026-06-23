@@ -65,7 +65,10 @@ func authRepair(providerID string) repair {
 		Summary: providerID + " requires an authenticated local provider session.",
 	}
 	if providerID == "cursor" {
-		rep.SuggestedCommand = "cursor-agent login && AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -race -count=1 -run TestIntegration -v"
+		rep.Summary = "cursor requires cursor-agent login or CURSOR_API_KEY."
+		rep.SuggestedCommand = "cursor-agent login && " +
+			"AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -race -count=1 -run TestIntegration -v; " +
+			"# headless: CURSOR_API_KEY=<key> AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -race -count=1 -run TestIntegration -v"
 	}
 	return rep
 }

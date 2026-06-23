@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestClassifyRepairAuthRequired(t *testing.T) {
 	got := classifyRepair("claude", "skipped", "Not logged in", true)
@@ -11,7 +14,10 @@ func TestClassifyRepairAuthRequired(t *testing.T) {
 
 func TestClassifyRepairCursorAuthIncludesAction(t *testing.T) {
 	got := classifyRepair("cursor", "skipped", "account missing", true)
-	if got.SuggestedCommand == "" {
+	if !strings.Contains(got.SuggestedCommand, "cursor-agent login") {
+		t.Fatalf("repair=%+v", got)
+	}
+	if !strings.Contains(got.SuggestedCommand, "CURSOR_API_KEY") {
 		t.Fatalf("repair=%+v", got)
 	}
 }
