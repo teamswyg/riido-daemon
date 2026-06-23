@@ -3,7 +3,6 @@ package codex
 import (
 	"context"
 	"testing"
-	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/session"
@@ -46,7 +45,7 @@ func startCodexIntegrationSession(
 		Process:        processexec.New(),
 		Spawn:          processCommandFromStart(spawn),
 		Request:        req,
-		HardTimeout:    45 * time.Second,
+		HardTimeout:    codexIntegrationHardTimeout,
 		ProtocolDriver: driver,
 	})
 }

@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"testing"
-	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -19,7 +18,7 @@ func requireCodexIntegration(t *testing.T) context.Context {
 		t.Skipf("codex not on $PATH: %v", err)
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), codexIntegrationContextTimeout)
 	t.Cleanup(cancel)
 	requireCodexDetectAvailable(t, ctx)
 	return ctx
