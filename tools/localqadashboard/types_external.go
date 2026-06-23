@@ -7,6 +7,7 @@ type externalEvidenceFile struct {
 	ExpiresAt     string             `json:"expires_at"`
 	Status        string             `json:"status"`
 	Scenarios     []externalScenario `json:"scenarios"`
+	Evidence      string             `json:"-"`
 }
 
 type externalScenario struct {
@@ -15,4 +16,6 @@ type externalScenario struct {
 	FailureSummary string          `json:"failure_summary,omitempty"`
 	Screenshot     string          `json:"screenshot,omitempty"`
 	Repair         *repairEvidence `json:"repair,omitempty"`
+	Evidence       string          `json:"evidence,omitempty"`
+	ExpiresAt      string          `json:"expires_at,omitempty"`
 }

@@ -44,6 +44,7 @@ func scheduleEvidenceScenarios(path string) []externalScenario {
 		ID:             "local.qa.daily_schedule",
 		Status:         evidence.Status,
 		FailureSummary: scheduleEvidenceDetail(evidence),
+		Evidence:       path,
 	}
 	if scheduleEvidenceFailed(evidence) {
 		scenario.Status = statusFailed

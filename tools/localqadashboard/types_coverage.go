@@ -22,6 +22,8 @@ type coverageRow struct {
 	Tier       string         `json:"tier"`
 	Surface    string         `json:"surface"`
 	Status     string         `json:"status"`
+	Evidence   string         `json:"evidence,omitempty"`
+	ExpiresAt  string         `json:"expires_at,omitempty"`
 	Repair     repairEvidence `json:"-"`
 	Detail     string         `json:"detail,omitempty"`
 	Screenshot string         `json:"screenshot,omitempty"`

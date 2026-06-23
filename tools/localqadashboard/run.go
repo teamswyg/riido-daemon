@@ -21,6 +21,7 @@ func run(inputPath, externalPath, releasePath, runPath, schedulePath, infraPath 
 		return err
 	}
 	rows, summary := buildCoverage(manifest, evidence, external)
+	rows = withFallbackExpiry(rows, runEvidence.ExpiresAt)
 	if err := writeCoverageSnapshot(coveragePath, rows, summary); err != nil {
 		return err
 	}

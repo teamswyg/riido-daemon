@@ -32,6 +32,9 @@ func TestScheduleEvidenceScenariosIncludesInstallDetail(t *testing.T) {
 	if got[0].Status != statusPassed {
 		t.Fatalf("status=%s", got[0].Status)
 	}
+	if got[0].Evidence != path {
+		t.Fatalf("schedule provenance missing: %+v", got[0])
+	}
 	if !strings.Contains(got[0].FailureSummary, "launchd_loaded=true") {
 		t.Fatalf("summary=%q", got[0].FailureSummary)
 	}

@@ -11,5 +11,5 @@ func releaseEvidenceScenarios(path string) []externalScenario {
 	if json.Unmarshal(data, &evidence) != nil {
 		return nil
 	}
-	return evidence.Scenarios
+	return withScenarioSource(evidence.Scenarios, path, evidence.ExpiresAt)
 }

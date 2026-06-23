@@ -5,7 +5,7 @@ func buildCoverage(
 	e providerEvidenceFile,
 	x externalEvidenceFile,
 ) ([]coverageRow, coverageSummary) {
-	providers := providerIndex(e.Providers)
+	providers := providerIndex(e)
 	externals := externalIndex(x.Scenarios)
 	rows := make([]coverageRow, 0, len(m.Scenarios))
 	for _, scenario := range m.Scenarios {
@@ -35,9 +35,15 @@ func externalIndex(scenarios []externalScenario) map[string]externalScenario {
 	return out
 }
 
-func providerIndex(providers []providerEvidence) map[string]providerEvidence {
+func providerIndex(e providerEvidenceFile) map[string]providerEvidence {
 	out := map[string]providerEvidence{}
-	for _, provider := range providers {
+	for _, provider := range e.Providers {
+		if provider.EvidenceArtifact == "" {
+			provider.EvidenceArtifact = e.EvidenceArtifact
+		}
+		if provider.ExpiresAt == "" {
+			provider.ExpiresAt = e.ExpiresAt
+		}
 		out[provider.ID] = provider
 	}
 	return out
@@ -48,6 +54,8 @@ func providerCoverageRow(row coverageRow, provider providerEvidence) coverageRow
 		return row
 	}
 	row.Status = provider.IntegrationStatus
+	row.Evidence = provider.EvidenceArtifact
+	row.ExpiresAt = provider.ExpiresAt
 	if provider.Repair != nil {
 		row.Repair = *provider.Repair
 	}

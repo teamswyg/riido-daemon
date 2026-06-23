@@ -1,15 +1,16 @@
 package main
 
 type providerEvidenceFile struct {
-	SchemaVersion   string             `json:"schema_version"`
-	ID              string             `json:"id"`
-	ObservedAt      string             `json:"observed_at"`
-	ExpiresAt       string             `json:"expires_at"`
-	FreshForSeconds int64              `json:"fresh_for_seconds"`
-	Status          string             `json:"status"`
-	RunIntegration  bool               `json:"run_integration"`
-	Platform        evidencePlatform   `json:"platform"`
-	Providers       []providerEvidence `json:"providers"`
+	SchemaVersion    string             `json:"schema_version"`
+	ID               string             `json:"id"`
+	ObservedAt       string             `json:"observed_at"`
+	ExpiresAt        string             `json:"expires_at"`
+	FreshForSeconds  int64              `json:"fresh_for_seconds"`
+	Status           string             `json:"status"`
+	RunIntegration   bool               `json:"run_integration"`
+	Platform         evidencePlatform   `json:"platform"`
+	Providers        []providerEvidence `json:"providers"`
+	EvidenceArtifact string             `json:"-"`
 }
 
 type evidencePlatform struct {
@@ -26,6 +27,8 @@ type providerEvidence struct {
 	IntegrationCommand string          `json:"integration_command"`
 	FailureSummary     string          `json:"failure_summary,omitempty"`
 	Repair             *repairEvidence `json:"repair,omitempty"`
+	EvidenceArtifact   string          `json:"-"`
+	ExpiresAt          string          `json:"-"`
 }
 
 type repairEvidence struct {

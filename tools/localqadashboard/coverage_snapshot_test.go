@@ -9,7 +9,10 @@ import (
 
 func TestWriteCoverageSnapshot(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "coverage.json")
-	rows := []coverageRow{{ID: "provider.cursor", Title: "Cursor", Status: "skipped"}}
+	rows := []coverageRow{{
+		ID: "provider.cursor", Title: "Cursor", Status: "skipped",
+		Evidence: "provider.json", ExpiresAt: "2999-01-01T00:00:00Z",
+	}}
 	summary := coverageSummary{Total: 1, Skipped: 1}
 	if err := writeCoverageSnapshot(path, rows, summary); err != nil {
 		t.Fatal(err)
@@ -27,5 +30,8 @@ func TestWriteCoverageSnapshot(t *testing.T) {
 	}
 	if got.Rows[0].Repair != nil {
 		t.Fatalf("snapshot=%+v", got)
+	}
+	if got.Rows[0].Evidence != "provider.json" || got.Rows[0].ExpiresAt == "" {
+		t.Fatalf("snapshot provenance missing: %+v", got.Rows[0])
 	}
 }

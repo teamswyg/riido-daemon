@@ -16,7 +16,7 @@ func loadProviderEvidence(path string) (providerEvidenceFile, error) {
 	if err := json.Unmarshal(data, &out); err != nil {
 		return providerEvidenceFile{}, fmt.Errorf("parse provider evidence: %w", err)
 	}
-	return out, nil
+	return withProviderSource(out, path), nil
 }
 
 func loadCoverageManifest(path string) (coverageManifest, error) {
@@ -46,7 +46,7 @@ func loadExternalEvidence(path string) (externalEvidenceFile, error) {
 	if err := json.Unmarshal(data, &out); err != nil {
 		return externalEvidenceFile{}, fmt.Errorf("parse external evidence: %w", err)
 	}
-	return out, nil
+	return withExternalSource(out, path), nil
 }
 
 func writeText(path, text string) error {
