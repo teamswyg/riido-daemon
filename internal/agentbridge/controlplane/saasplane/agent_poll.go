@@ -10,6 +10,8 @@ import (
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
 
+var errStaleAgentBindingPoll = errors.New("saasplane: stale agent binding poll")
+
 func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string, wait time.Duration) (assignmentcontract.PollResponse, error) {
 	var out assignmentcontract.PollResponse
 	err := p.postJSON(ctx, "/v1/agents/"+url.PathEscape(agentID)+"/poll", assignmentcontract.PollRequest{
@@ -20,6 +22,7 @@ func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string, wait t
 	}, &out)
 	if isStaleAgentBindingPollError(err) {
 		p.invalidateAgentBindingsCache(ctx)
+		return out, errStaleAgentBindingPoll
 	}
 	return out, err
 }
