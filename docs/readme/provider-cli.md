@@ -14,3 +14,5 @@ Claude Code, Codex, OpenClaw, and Cursor Agent are not included in Riido package
 | Cursor Agent | `cursor-agent` | `RIIDO_CURSOR_PATH` |
 
 Real CLI roundtrip integration tests are opt-in. When `AGENTBRIDGE_INTEGRATION=1` is absent or provider CLI is unavailable, integration tests must skip. Deterministic parser, translator, and golden tests run in public CI.
+
+Cursor Agent needs either an interactive `cursor-agent login` session or a headless `CURSOR_API_KEY` env var before the real integration gate can pass. Local QA records this as `provider_auth_required` instead of hiding it as a generic failure.
