@@ -23,7 +23,12 @@ func (r *sessionRunner) applyEventsWithContext(ctx context.Context, events []age
 func (r *sessionRunner) applyEvent(ev agentbridge.Event) bool {
 	expanded := []agentbridge.Event{ev}
 	if ev.Kind == agentbridge.EventTextDelta {
-		expanded = append(expanded, r.telemetry.Feed(ev.Text)...)
+		visible, telemetryEvents := r.telemetry.FilterTextDelta(ev.Text)
+		expanded = telemetryEvents
+		if visible != "" {
+			ev.Text = visible
+			expanded = append([]agentbridge.Event{ev}, expanded...)
+		}
 	}
 	return slices.ContainsFunc(expanded, r.applyExpandedEvent)
 }

@@ -24,6 +24,22 @@ func TestTelemetryParserHandlesSplitTags(t *testing.T) {
 	}
 }
 
+func TestTelemetryParserFiltersSplitTelemetryFromVisibleText(t *testing.T) {
+	parser := NewTelemetryParser()
+	visible, events := parser.FilterTextDelta("생각 중...\n<ri")
+	if visible != "생각 중...\n" || len(events) != 0 {
+		t.Fatalf("first chunk visible=%q events=%+v", visible, events)
+	}
+	visible, events = parser.FilterTextDelta(`ido_log>{"code":1001,"args":{}}<e`)
+	if visible != "" || len(events) != 0 {
+		t.Fatalf("middle chunk visible=%q events=%+v", visible, events)
+	}
+	visible, events = parser.FilterTextDelta("nd>계속합니다")
+	if visible != "계속합니다" || len(events) != 1 || events[0].Kind != EventProgress {
+		t.Fatalf("final chunk visible=%q events=%+v", visible, events)
+	}
+}
+
 func TestTelemetryParserExtractsMultipleMessages(t *testing.T) {
 	parser := NewTelemetryParser()
 	events := parser.Feed(`<riido_log>go.mod<end><riido_log>go test<end>`)
