@@ -23,7 +23,7 @@ Evidence artifact: `provider-real-cli-observation`.
 - Available executables run provider `TestIntegration` with `AGENTBRIDGE_INTEGRATION=1`.
 - Available-provider integration failure fails the workflow after writing evidence.
 - Cursor records auth preflight booleans for interactive login and `CURSOR_API_KEY` presence without serializing the secret value.
-- OpenClaw model speed is configured through OpenClaw itself; the integration test tries the verified faster `ollama/llama3.2:latest` first, then falls back to `ollama/qwen3:8b` and `ollama/qwen2.5-coder:1.5b`, records candidates in evidence, and can be pinned with `RIIDO_OPENCLAW_INTEGRATION_MODEL` before QA.
+- OpenClaw model speed is configured through OpenClaw itself; the integration test tries the fastest observed side-effect-capable local model `ollama/llama3.2:latest`, then falls back to `ollama/qwen3:8b`, records candidates in evidence, and can be pinned with `RIIDO_OPENCLAW_INTEGRATION_MODEL` before QA. Smaller text-only models such as `ollama/qwen2.5-coder:1.5b` are not used for this gate unless they can write the expected artifact.
 - OpenClaw text completion does not prove daemon-selected cwd filesystem side effects; the integration artifact gate records that distinction explicitly.
 - Local daily evidence is fresh for 24h and records `expires_at` for dashboard gating.
 
