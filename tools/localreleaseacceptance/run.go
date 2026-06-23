@@ -24,14 +24,19 @@ func run(ctx context.Context, opts options) error {
 	scenario, version := verifyInstaller(ctx, root, fixture)
 	result.Artifacts.VersionOutput = version
 	result.Scenarios = append(result.Scenarios, scenario)
-	result.Status = scenario.Status
+	releaseScenario, release := verifyGitHubLatest(ctx, opts.ReleaseAPIURL)
+	result.Artifacts.LatestReleaseTag = release.TagName
+	result.Artifacts.ExpectedAsset = expectedReleaseAsset()
+	result.Artifacts.ReleaseAssets = release.AssetNames()
+	result.Scenarios = append(result.Scenarios, releaseScenario)
+	result.Status = aggregateStatus(result.Scenarios)
 	if opts.EvidenceOut != "" {
 		if err := writeJSON(outputPath(root, opts.EvidenceOut), result); err != nil {
 			return err
 		}
 	}
-	if scenario.Status != statusPassed {
-		return fmt.Errorf("release acceptance failed: %s", scenario.FailureSummary)
+	if result.Status != statusPassed {
+		return fmt.Errorf("release acceptance failed")
 	}
 	return nil
 }

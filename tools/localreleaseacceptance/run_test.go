@@ -10,8 +10,10 @@ import (
 
 func TestRunWritesFreshInstallEvidence(t *testing.T) {
 	repo := fixtureRepo(t)
+	api := releaseAPIServer(t, releaseBody(expectedReleaseAsset(), "SHA256SUMS"))
 	out := filepath.Join(t.TempDir(), "release.json")
-	err := run(t.Context(), options{Repo: repo, EvidenceOut: out, ValidFor: time.Hour})
+	opts := options{Repo: repo, EvidenceOut: out, ValidFor: time.Hour, ReleaseAPIURL: api}
+	err := run(t.Context(), opts)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -22,8 +24,14 @@ func TestRunWritesFreshInstallEvidence(t *testing.T) {
 	if evidence.Status != statusPassed || evidence.Scenarios[0].ID != "release.fresh.install" {
 		t.Fatalf("unexpected evidence: %+v", evidence)
 	}
+	if evidence.Scenarios[1].ID != "release.github.latest_assets" {
+		t.Fatalf("latest release scenario missing: %+v", evidence.Scenarios)
+	}
 	if evidence.Artifacts.VersionOutput != "riido version v-local-qa" {
 		t.Fatalf("version output=%q", evidence.Artifacts.VersionOutput)
+	}
+	if evidence.Artifacts.LatestReleaseTag != "v-test" {
+		t.Fatalf("latest release tag=%q", evidence.Artifacts.LatestReleaseTag)
 	}
 }
 
