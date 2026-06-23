@@ -12,7 +12,7 @@ Verified evidence items: `29`.
 | `public-repo-worktree-materialization` | `verified` | `./internal/agentbridge/supervisor` |
 | `private-repo-fail-closed` | `verified` | `./internal/agentbridge/supervisor` |
 | `async-workspace-preparation` | `verified` | `./internal/agentbridge/supervisor` |
-| `restart-recovery-refuses-fresh-start` | `verified` | `./internal/agentbridge/controlplane/saasplane` |
+| `restart-recovery-skips-unresumable-active` | `verified` | `./internal/agentbridge/controlplane/saasplane` |
 | `restart-recovery-provider-session-resume` | `verified` | `./internal/agentbridge/controlplane/saasplane` |
 | `cancellation-watcher-release` | `verified` | `./internal/agentbridge/supervisor` |
 | `launch-path-freeze` | `verified` | `./internal/agentbridge/runtimeactor` |

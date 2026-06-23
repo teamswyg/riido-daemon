@@ -5,7 +5,7 @@ var requiredRisks = []string{
 	"public-repo-worktree-materialization",
 	"private-repo-fail-closed",
 	"async-workspace-preparation",
-	"restart-recovery-refuses-fresh-start",
+	"restart-recovery-skips-unresumable-active",
 	"restart-recovery-provider-session-resume",
 	"cancellation-watcher-release",
 	"stale-pid-kill-refusal",
