@@ -46,6 +46,7 @@ type config struct {
 	productTaskFixture   *bool
 	productPrepareDaemon *bool
 	continueOnFailure    *bool
+	strictCoverage       *bool
 }
 
 type runEvidence struct {
@@ -56,6 +57,7 @@ type runEvidence struct {
 	Status         string         `json:"status"`
 	CoverageStatus string         `json:"coverage_status"`
 	ProviderStatus string         `json:"provider_status,omitempty"`
+	StrictCoverage bool           `json:"strict_coverage,omitempty"`
 	Artifacts      runArtifacts   `json:"artifacts"`
 	OpenRepairs    []runRepair    `json:"open_repairs,omitempty"`
 	Steps          []stepEvidence `json:"steps"`

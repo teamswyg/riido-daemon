@@ -48,6 +48,7 @@ func newEvidence(cfg config, observed time.Time) runEvidence {
 		ExpiresAt:      expires.Format(time.RFC3339),
 		Status:         statusPassed,
 		CoverageStatus: statusPassed,
+		StrictCoverage: boolValue(cfg.strictCoverage),
 		Artifacts: runArtifacts{
 			ProviderEvidence: *cfg.providerEvidence,
 			ProductEvidence:  *cfg.productEvidence,

@@ -65,6 +65,13 @@ RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
 go run ./tools/localqarunner -run-product
 ```
 
+For deployment-time local verification, add `-strict-coverage`. Daily LaunchAgent runs should usually omit it so partial evidence still publishes, but a release gate should fail when any provider/product/Figma/release row is not fully passed:
+
+```bash
+RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
+go run ./tools/localqarunner -run-product -strict-coverage
+```
+
 Task multi-assignment, SSE replay, and thread-message probes need a development task plus a SaaS-connected daemon runtime binding. If `RIIDO_E2E_TASK_ID` is absent, the probe creates a temporary development task through `development.api.riido.io`, runs the real AI Agent API flow against it, and records a cleanup scenario after deleting the task. Agent ids are optional because the probe tries assignable candidates, prefers the same `runtime_kind` pair, and records `ai_agent_runtime_binding_required` repair evidence when SaaS has agents but no live daemon/runtime binding:
 
 ```bash
