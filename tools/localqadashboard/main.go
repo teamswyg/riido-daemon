@@ -15,9 +15,11 @@ func main() {
 	infraEvidence := flag.String("infra-evidence", ".riido-local/evidence/local-qa-dashboard-infra-evidence.json", "optional private infra dashboard evidence JSON")
 	coverage := flag.String("coverage-manifest", "docs/30-architecture/local-acceptance-coverage.riido.json", "coverage manifest JSON")
 	output := flag.String("out", ".riido-local/dashboard/index.html", "dashboard HTML output")
+	coverageOut := flag.String("coverage-out", "", "optional machine-readable coverage snapshot JSON")
 	flag.Parse()
 
-	if err := run(*input, *external, *releaseEvidence, *runEvidence, *scheduleEvidence, *infraEvidence, *coverage, *output); err != nil {
+	if err := run(*input, *external, *releaseEvidence, *runEvidence, *scheduleEvidence, *infraEvidence,
+		*coverage, *output, *coverageOut); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

@@ -9,6 +9,9 @@ func runS3Phase(root string, cfg config, evidence runEvidence) (string, error) {
 		return statusFailed, err
 	}
 	runFinalDashboardStep(root, cfg, &evidence)
+	if err := applyCoverageEvidence(root, cfg, &evidence); err != nil {
+		return statusFailed, err
+	}
 	if _, err := finishRun(root, cfg, evidence); err != nil {
 		return statusFailed, err
 	}

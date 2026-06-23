@@ -13,6 +13,7 @@ func main() {
 	releaseEvidence := ".riido-local/evidence/local-release-acceptance.json"
 	productLab := ".riido-local/contract-lab/index.html"
 	productScreenshots := ".riido-local/screenshots/ai-agent-product-acceptance"
+	coverageEvidence := ".riido-local/evidence/local-qa-coverage.json"
 	scheduleEvidence := ".riido-local/evidence/local-qa-schedule.json"
 	infraEvidence := ".riido-local/evidence/local-qa-dashboard-infra-evidence.json"
 	flag.StringVar(&runEvidence, "run-evidence", runEvidence, "local QA run evidence JSON")
@@ -22,6 +23,7 @@ func main() {
 		providerEvidence:     flag.String("provider-evidence", ".riido-local/evidence/provider-real-cli-observation.json", "provider evidence JSON"),
 		productEvidence:      flag.String("product-evidence", productEvidence, "product acceptance evidence JSON"),
 		releaseEvidence:      flag.String("release-evidence", releaseEvidence, "release install evidence JSON"),
+		coverageEvidence:     flag.String("coverage-evidence", coverageEvidence, "local QA coverage snapshot JSON"),
 		productLab:           flag.String("product-lab", productLab, "frontend contract lab HTML output"),
 		scheduleEvidence:     flag.String("schedule-evidence", scheduleEvidence, "local QA schedule evidence JSON"),
 		infraEvidence:        flag.String("infra-evidence", infraEvidence, "private infra dashboard evidence JSON"),

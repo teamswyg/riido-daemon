@@ -19,7 +19,9 @@ func finalDashboardUploads(cfg config, stamp, prefix string) []uploadSpec {
 	return []uploadSpec{
 		upload("dashboard-html-final", *cfg.dashboardHTML, prefix+"/latest/index.html"),
 		upload("run-evidence-final", *cfg.runEvidence, prefix+"/latest/local-qa-run.json"),
+		upload("coverage-evidence-final", *cfg.coverageEvidence, prefix+"/latest/local-qa-coverage.json"),
 		upload("dashboard-html-final-"+stamp, *cfg.dashboardHTML, prefix+"/"+stamp+"/index.html"),
 		upload("run-evidence-final-"+stamp, *cfg.runEvidence, prefix+"/"+stamp+"/local-qa-run.json"),
+		upload("coverage-evidence-final-"+stamp, *cfg.coverageEvidence, prefix+"/"+stamp+"/local-qa-coverage.json"),
 	}
 }

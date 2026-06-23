@@ -15,6 +15,12 @@ func uploads(cfg config, stamp string) []uploadSpec {
 			upload("release-evidence-"+stamp, *cfg.releaseEvidence, prefix+"/"+stamp+"/local-release-acceptance.json"),
 		)
 	}
+	if *cfg.coverageEvidence != "" && fileExists(*cfg.coverageEvidence) {
+		specs = append(specs,
+			upload("coverage-evidence", *cfg.coverageEvidence, prefix+"/latest/local-qa-coverage.json"),
+			upload("coverage-evidence-"+stamp, *cfg.coverageEvidence, prefix+"/"+stamp+"/local-qa-coverage.json"),
+		)
+	}
 	if *cfg.productLab != "" && fileExists(*cfg.productLab) {
 		specs = append(specs,
 			upload("product-lab", *cfg.productLab, prefix+"/latest/contract-lab/index.html"),

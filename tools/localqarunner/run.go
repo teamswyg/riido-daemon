@@ -33,6 +33,9 @@ func run(cfg config) (string, error) {
 		return statusFailed, err
 	}
 	runDashboardStep(root, cfg, &evidence)
+	if err := applyCoverageEvidence(root, cfg, &evidence); err != nil {
+		return statusFailed, err
+	}
 	if *cfg.s3Prefix != "" {
 		return runS3Phase(root, cfg, evidence)
 	}
@@ -53,6 +56,7 @@ func newEvidence(cfg config, observed time.Time) runEvidence {
 			ProviderEvidence: *cfg.providerEvidence,
 			ProductEvidence:  *cfg.productEvidence,
 			ReleaseEvidence:  *cfg.releaseEvidence,
+			CoverageEvidence: *cfg.coverageEvidence,
 			ProductLab:       *cfg.productLab,
 			ScheduleEvidence: *cfg.scheduleEvidence,
 			InfraEvidence:    *cfg.infraEvidence,

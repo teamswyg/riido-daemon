@@ -17,20 +17,20 @@ type coverageScenario struct {
 }
 
 type coverageRow struct {
-	ID         string
-	Title      string
-	Tier       string
-	Surface    string
-	Status     string
-	Repair     repairEvidence
-	Detail     string
-	Screenshot string
+	ID         string         `json:"id"`
+	Title      string         `json:"title"`
+	Tier       string         `json:"tier"`
+	Surface    string         `json:"surface"`
+	Status     string         `json:"status"`
+	Repair     repairEvidence `json:"-"`
+	Detail     string         `json:"detail,omitempty"`
+	Screenshot string         `json:"screenshot,omitempty"`
 }
 
 type coverageSummary struct {
-	Total       int
-	Passed      int
-	Skipped     int
-	NotVerified int
-	Failed      int
+	Total       int `json:"total"`
+	Passed      int `json:"passed"`
+	Skipped     int `json:"skipped"`
+	NotVerified int `json:"not_verified"`
+	Failed      int `json:"failed"`
 }

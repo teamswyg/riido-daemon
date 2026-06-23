@@ -18,6 +18,7 @@ func runDashboardStepID(root string, cfg config, evidence *runEvidence, id strin
 		"-release-evidence", *cfg.releaseEvidence,
 		"-coverage-manifest", *cfg.coverageManifest,
 		"-out", *cfg.dashboardHTML,
+		"-coverage-out", *cfg.coverageEvidence,
 	}
 	if *cfg.productEvidence != "" {
 		args = append(args, "-product-evidence", *cfg.productEvidence)
