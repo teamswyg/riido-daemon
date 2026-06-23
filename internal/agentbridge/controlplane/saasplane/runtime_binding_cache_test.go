@@ -63,8 +63,8 @@ func TestPlaneInvalidatesDynamicAgentBindingsAfterPollBadRequest(t *testing.T) {
 	fake.failNext("/v1/agents/agent-codex/poll", 1, http.StatusBadRequest)
 	plane := newRuntimeBindingPlane(t, fake, nil)
 
-	if _, err := plane.ClaimTask(context.Background(), "daemon-1:codex"); err == nil {
-		t.Fatal("first ClaimTask should surface poll bad request")
+	if _, err := plane.ClaimTask(context.Background(), "daemon-1:codex"); err != nil {
+		t.Fatalf("first ClaimTask should treat stale binding as empty claim: %v", err)
 	}
 	if _, err := plane.ClaimTask(context.Background(), "daemon-1:codex"); err != nil {
 		t.Fatalf("second ClaimTask after cache invalidation: %v", err)
