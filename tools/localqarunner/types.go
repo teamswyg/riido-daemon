@@ -13,6 +13,7 @@ type config struct {
 	providerEvidence     *string
 	productEvidence      *string
 	releaseEvidence      *string
+	coverageEvidence     *string
 	productLab           *string
 	scheduleEvidence     *string
 	infraEvidence        *string
@@ -58,6 +59,7 @@ type runEvidence struct {
 	CoverageStatus string            `json:"coverage_status"`
 	ProviderStatus string            `json:"provider_status,omitempty"`
 	StrictCoverage bool              `json:"strict_coverage,omitempty"`
+	Coverage       *runCoverage      `json:"coverage,omitempty"`
 	DeploymentGate runDeploymentGate `json:"deployment_gate"`
 	Artifacts      runArtifacts      `json:"artifacts"`
 	OpenRepairs    []runRepair       `json:"open_repairs,omitempty"`

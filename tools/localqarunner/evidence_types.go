@@ -4,6 +4,7 @@ type runArtifacts struct {
 	ProviderEvidence string `json:"provider_evidence"`
 	ProductEvidence  string `json:"product_evidence,omitempty"`
 	ReleaseEvidence  string `json:"release_evidence,omitempty"`
+	CoverageEvidence string `json:"coverage_evidence,omitempty"`
 	ProductLab       string `json:"product_lab,omitempty"`
 	ScheduleEvidence string `json:"schedule_evidence,omitempty"`
 	InfraEvidence    string `json:"infra_evidence,omitempty"`

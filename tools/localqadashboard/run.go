@@ -1,6 +1,8 @@
 package main
 
-func run(inputPath, externalPath, releasePath, runPath, schedulePath, infraPath, manifestPath, outputPath string) error {
+func run(inputPath, externalPath, releasePath, runPath, schedulePath, infraPath string,
+	manifestPath, outputPath, coveragePath string,
+) error {
 	evidence, err := loadProviderEvidence(inputPath)
 	if err != nil {
 		return err
@@ -19,6 +21,9 @@ func run(inputPath, externalPath, releasePath, runPath, schedulePath, infraPath,
 		return err
 	}
 	rows, summary := buildCoverage(manifest, evidence, external)
+	if err := writeCoverageSnapshot(coveragePath, rows, summary); err != nil {
+		return err
+	}
 	rendered, err := renderDashboard(dashboardView{
 		Evidence:        evidence,
 		Run:             runEvidence,

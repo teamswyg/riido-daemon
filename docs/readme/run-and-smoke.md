@@ -99,4 +99,4 @@ go run ./tools/localqaschedule -repo "$(pwd)" -hour 9 -minute 0 -install
 launchctl print gui/$(id -u)/io.riido.local-qa
 ```
 
-Local artifacts are written under `.riido-local/evidence/` and `.riido-local/dashboard/`. The dashboard shows what passed, failed, skipped, remains not verified, when the evidence expires, and the macOS LaunchAgent label/time/log paths/command preview that prove the daily local E2E schedule is installed without token text.
+Local artifacts are written under `.riido-local/evidence/` and `.riido-local/dashboard/`. `local-qa-run.json` embeds the machine-readable coverage snapshot from `.riido-local/evidence/local-qa-coverage.json`, and the dashboard shows what passed, failed, skipped, remains not verified, when the evidence expires, and the macOS LaunchAgent label/time/log paths/command preview that prove the daily local E2E schedule is installed without token text.
