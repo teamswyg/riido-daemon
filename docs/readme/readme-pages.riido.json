@@ -28,6 +28,7 @@
     {"name": "codex-override", "file": "internal/provider/codex/detect.go", "contains": "const EnvOverride = \"RIIDO_CODEX_PATH\""},
     {"name": "openclaw-override", "file": "internal/provider/openclaw/detect_config.go", "contains": "const EnvOverride = \"RIIDO_OPENCLAW_PATH\""},
     {"name": "cursor-override", "file": "internal/provider/cursor/constants.go", "contains": "EnvOverride       = \"RIIDO_CURSOR_PATH\""},
+    {"name": "cursor-headless-auth-env", "file": "internal/provider/cursor/constants.go", "contains": "APIKeyEnv         = \"CURSOR_API_KEY\""},
     {"name": "integration-smoke-gate", "file": "scripts/integration-smoke.sh", "contains": "AGENTBRIDGE_INTEGRATION=1 go test \"./internal/provider/$provider\" -race -run TestIntegration -v"},
     {"name": "local-qa-coverage-status", "file": "tools/localqarunner/types.go", "contains": "CoverageStatus string"},
     {"name": "local-qa-deployment-gate", "file": "tools/localqarunner/types.go", "contains": "DeploymentGate"},

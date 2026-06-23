@@ -72,7 +72,7 @@ RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
 go run ./tools/localqarunner -run-product -strict-coverage
 ```
 
-Task multi-assignment, SSE replay, and thread-message probes need a development task plus a SaaS-connected daemon runtime binding. If `RIIDO_E2E_TASK_ID` is absent, the probe creates a temporary development task through `development.api.riido.io`, runs the real AI Agent API flow against it, and records a cleanup scenario after deleting the task. Agent ids are optional because the probe tries assignable candidates, prefers the same `runtime_kind` pair, and records `ai_agent_runtime_binding_required` repair evidence when SaaS has agents but no live daemon/runtime binding:
+Task multi-assignment, SSE replay, and thread-message probes need a development task plus a SaaS-connected daemon runtime binding. If `RIIDO_E2E_TASK_ID` is absent, the probe first tries to create a temporary development task through `development.api.riido.io`, runs the real AI Agent API flow against it, and records a cleanup scenario after deleting the task. When the token can read tasks but cannot create task fixtures, the probe falls back to a readable existing task, records `contract.task.fixture.fallback_existing`, marks `contract.task.fixture.create` as skipped with the 403 evidence preserved, and still verifies assignment/SSE/thread-message behavior. Agent ids are optional because the probe tries assignable candidates, prefers the same `runtime_kind` pair, and records `ai_agent_runtime_binding_required` repair evidence when SaaS has agents but no live daemon/runtime binding:
 
 ```bash
 RIIDO_E2E_COMMENT_BODY='local QA follow-up' \
