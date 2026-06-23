@@ -4,7 +4,7 @@
 
 [Back to README](../../README.md)
 
-Local acceptance is a developer-Mac evidence gate, not CI. It proves the latest daemon can run real provider checks, sandboxed update checks, development AI Agent contract probes, Figma golden references, dashboard rendering, and private S3 publication from one local command.
+Local acceptance is a developer-Mac evidence gate, not CI. It proves the latest daemon can run real provider checks, sandboxed update checks, development AI Agent contract probes, Figma golden references, dashboard rendering, and S3 evidence publication from one local command.
 
 ```bash
 RIIDO_LOCAL_QA_S3_PREFIX=s3://<private-local-qa-evidence-bucket>/daily \
@@ -26,7 +26,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | `.riido-local/evidence/local-qa-coverage.json` | Machine-readable coverage rows and summary embedded into `local-qa-run.json`; each row carries the source evidence artifact and expiry when known. |
 | `.riido-local/evidence/provider-real-cli-observation.json` | Claude, Codex, OpenClaw, and Cursor real CLI availability/integration evidence. |
 | `.riido-local/evidence/ai-agent-product-acceptance.json` | Development API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios. |
-| `.riido-local/evidence/local-qa-dashboard-infra-evidence.json` | Optional private infra readback proving the S3-hosted dashboard bucket is Terraform-managed, private, encrypted, lifecycle-managed, and serving the latest index object. |
+| `.riido-local/evidence/local-qa-dashboard-infra-evidence.json` | Optional private infra readback proving the S3-hosted dashboard bucket is Terraform-managed, encrypted, lifecycle-managed, serving the latest index object, and either private or CIDR-limited for object reads. |
 | `.riido-local/contract-lab/index.html` | React frontend handoff generated from real product evidence. It renders API cards plus visual evidence images for Figma golden scenarios. |
 | `.riido-local/dashboard/index.html` | Human-readable local dashboard rendered from evidence JSON. |
 | `s3://riido-ai-server-production-local-qa-evidence/daily/latest/` | Private latest dashboard/evidence handoff, plus timestamped immutable copies. |
