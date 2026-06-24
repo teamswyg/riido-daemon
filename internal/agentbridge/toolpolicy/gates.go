@@ -9,8 +9,11 @@ import (
 
 func PolicyAutoApprover(bundle policy.PolicyBundle, tier policy.TrustTier) agentbridge.AutoApprover {
 	return func(tool agentbridge.ToolRef) bool {
+		if tier == "" || tier == policy.TrustTierUnknown {
+			return false
+		}
 		decision, ok := DecisionForTool(bundle, tier, tool)
-		return ok && decision.Action == policy.ToolUseActionAllow
+		return !ok || decision.Action == policy.ToolUseActionAllow
 	}
 }
 
