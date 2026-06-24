@@ -60,6 +60,7 @@ jobs:
           grep -q "local.qa.dsl_system_audit" out/ai-agent-product-acceptance.json
           grep -q "execution_counts" out/ai-agent-product-acceptance.json
           grep -q "inference_required_count" out/ai-agent-product-acceptance.json
+          grep -q "closed_loop_candidates" out/ai-agent-product-acceptance.json
           grep -q "local.qa.evidence_gap_candidates" out/ai-agent-product-acceptance.json
           grep -q "domain.fixture_journey" out/ai-agent-product-acceptance.json
           go run ./tools/localreleaseacceptance \
