@@ -45,6 +45,7 @@
     {"id": "contract.ui.feature_dsl", "title": "Feature UI DSL captures manual QA interaction intent and golden tolerance", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
     {"id": "contract.ui.i18n_dsl", "title": "QA i18n DSL generates Korean-first contract lab UI labels", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
     {"id": "contract.ui.browser_meaning_qa", "title": "Contract Lab search can resolve generated QA meanings without human inference", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
+    {"id": "local.qa.figma_refresh_gate", "title": "Figma manifest and golden freshness are system-checked before human review", "tier": "daily", "surface": "figma", "evidence": "external"},
     {"id": "domain.fixture_journey", "title": "Domain Fixture Journey records staging-only local verification scope", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
     {"id": "domain.fixture.account", "title": "Domain journey records account fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
     {"id": "domain.fixture.workspace", "title": "Domain journey records workspace fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
