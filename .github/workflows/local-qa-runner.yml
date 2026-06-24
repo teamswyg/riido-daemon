@@ -11,10 +11,13 @@ on:
       - "docs/30-architecture/domain-fixture-journey.dsl.json"
       - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
+      - "docs/30-architecture/local-qa-candidate-decision.riido.json"
+      - "docs/30-architecture/local-qa-candidate-decision.md"
       - "docs/readme/run-and-smoke.md"
       - "docs/readme/run-and-smoke.riido.json"
       - "tools/localqadashboard/**"
       - "tools/localproductacceptance/**"
+      - "tools/localqacandidatedecision/**"
       - "tools/qadslsync/**"
       - "tools/localqarunner/**"
       - "tools/localqaschedule/**"
@@ -79,6 +82,11 @@ jobs:
             -dashboard out/index.html \
             -evidence-out out/local-qa-run.json
           grep -q "closed_loop_candidates" out/local-qa-run.json
+          go run ./tools/localqacandidatedecision \
+            -candidate-in out/local-qa-run.json \
+            -check-doc \
+            -evidence-out out/local-qa-candidate-decision.json
+          grep -q "decision_artifacts" out/local-qa-candidate-decision.json
           go run ./tools/localqaschedule \
             -repo "$(pwd)" \
             -s3-prefix s3://example-local-qa-evidence/daily \

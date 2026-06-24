@@ -54,6 +54,25 @@
       }
     },
     {
+      "id": "local-qa-candidate-decision",
+      "owner": "tools/localqacandidatedecision",
+      "kind": "closed-loop",
+      "observes": ["local QA closed_loop_candidates", "required_next_artifacts", "decision records"],
+      "verifies": ["out/local-qa-run.json candidates have decisions", "decision next_artifact is required by each candidate", "orphan decision records fail"],
+      "evidence": ["local-qa-candidate-decision", "decision_artifacts", "candidate_count"],
+      "expires_after": "24h",
+      "fails_when": ["candidate decision missing", "decision references missing candidate", "next_artifact is not required", "candidate input omitted"],
+      "evidence_graph": {
+        "observation": "Local QA can produce closed-loop candidates while priority and ownership remain implicit.",
+        "hypothesis": "A candidate decision verifier can force every current local QA candidate to bind owner, priority, disposition, next loop, and next artifact.",
+        "change": "localqacandidatedecision consumes local-qa-run evidence inside the local-qa-runner workflow.",
+        "verifier": "TestCandidateDecisionCoversLocalQACandidate",
+        "evidence": "local-qa-candidate-decision",
+        "decision": "Local QA candidate decisions are executable evidence, not a passive dashboard list.",
+        "next_loop": "promote triage_required decisions into claim-bound verifiers."
+      }
+    },
+    {
       "id": "qa-system-inference-surfacing",
       "owner": "tools/localproductacceptance",
       "kind": "systematization-audit",
@@ -152,6 +171,56 @@
             "Closed-loop Candidates",
             "promote-x",
             "claim_binding"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "local_qa_candidate_decisions_must_match_candidates",
+      "text": "Local QA closed-loop candidate decision verification must consume the current local QA run evidence, cover every candidate exactly once, reject orphan decisions, and choose only next_artifact values declared by each candidate's required_next_artifacts.",
+      "files": [
+        "tools/localqacandidatedecision/candidate.go",
+        "tools/localqacandidatedecision/candidate_more.go",
+        "tools/localqacandidatedecision/decision.go",
+        "tools/localqacandidatedecision/run.go",
+        "tools/localqacandidatedecision/workflow.go",
+        "tools/localqacandidatedecision/candidate_test.go",
+        "tools/localqacandidatedecision/decision_test.go",
+        "tools/localqacandidatedecision/run_test.go",
+        ".github/workflows/local-qa-runner.yml"
+      ],
+      "docs": [
+        "docs/30-architecture/local-qa-candidate-decision.riido.json",
+        "docs/30-architecture/local-qa-candidate-decision.md",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/readme/local-acceptance.riido.json",
+        "docs/readme/local-acceptance.md"
+      ],
+      "evidence": ["local-qa-candidate-decision", "decision_artifacts", "required_next_artifacts"],
+      "verifiers": [
+        {
+          "name": "candidate-decision-cover-test",
+          "file": "tools/localqacandidatedecision/candidate_test.go",
+          "contains": [
+            "TestCandidateDecisionCoversLocalQACandidate",
+            "TestCandidateDecisionRejectsMissingDecision"
+          ]
+        },
+        {
+          "name": "candidate-decision-artifact-test",
+          "file": "tools/localqacandidatedecision/decision_test.go",
+          "contains": [
+            "TestCandidateDecisionRejectsOrphanDecision",
+            "TestCandidateDecisionRejectsUnknownNextArtifact",
+            "TestCandidateDecisionRequiresReviewBy"
+          ]
+        },
+        {
+          "name": "candidate-decision-input-test",
+          "file": "tools/localqacandidatedecision/run_test.go",
+          "contains": [
+            "TestRunRequiresCandidateInputForCheckDoc",
+            "candidate input"
           ]
         }
       ]
