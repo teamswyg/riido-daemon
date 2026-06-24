@@ -65,7 +65,7 @@
     {"id": "local.qa.s3_publish", "title": "Local QA evidence publishes latest and timestamped dashboard artifacts to S3", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
     {"id": "local.qa.loop.freshness", "title": "Contract lab records daily evidence freshness and Figma intent traversal", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
     {"id": "local.qa.dsl_system_audit", "title": "QA DSL audit verifies generated artifacts, search aliases, pre-commit, and CI drift checks", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
-    {"id": "local.qa.evidence_gap_candidates", "title": "QA loop records evidence gaps and next evidence candidates", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
+    {"id": "local.qa.evidence_gap_candidates", "title": "QA loop records evidence gaps, closed-loop candidates, and next evidence candidates", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
     {"id": "local.qa.daily_schedule", "title": "macOS LaunchAgent schedules local QA once per day without token env vars", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
     {"id": "local.qa.daily_trigger", "title": "Daily Evidence Sweep names the once-per-day closed QA loop", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
     {"id": "infra.local_qa_dashboard", "title": "Infra verifies S3 dashboard bucket security and latest object", "tier": "release", "surface": "infra-evidence", "evidence": "external"},

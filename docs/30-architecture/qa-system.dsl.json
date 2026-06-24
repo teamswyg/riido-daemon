@@ -14,7 +14,7 @@
     {"id": "precommit-generate", "file": ".pre-commit-config.yaml", "contains": ["qa-dsl-generate", "go generate ./tools/localproductacceptance", "git add tools/localproductacceptance/*.generated.json"]},
     {"id": "ci-generated-drift", "file": ".github/workflows/local-qa-runner.yml", "contains": ["Generate QA DSL artifacts", "git diff --exit-code -- tools/localproductacceptance/*.generated.json"]},
     {"id": "ci-local-no-token", "file": ".github/workflows/local-qa-runner.yml", "contains": ["-storage-state /tmp/no-riido-storage-state.json", "-workspace-id \"\"", "-api-token \"\""]},
-    {"id": "ci-evidence-grep", "file": ".github/workflows/local-qa-runner.yml", "contains": ["contract.ui.i18n_dsl", "translation_coverage", "coverage_ratio", "local.qa.dsl_system_audit", "execution_counts", "inference_required_count", "domain.fixture_journey"]},
+    {"id": "ci-evidence-grep", "file": ".github/workflows/local-qa-runner.yml", "contains": ["contract.ui.i18n_dsl", "translation_coverage", "coverage_ratio", "local.qa.dsl_system_audit", "execution_counts", "inference_required_count", "closed_loop_candidates", "domain.fixture_journey"]},
     {"id": "test-generated-fresh", "file": "tools/localproductacceptance/qa_system_test.go", "contains": ["TestQASystemDSLGeneratedFileFresh", "TestQASystemScenarioAuditsChangeDetection", "TestQASystemExecutionInventoryCounts", "inference_required_ids"]}
   ],
   "execution_inventory": [
@@ -24,6 +24,7 @@
     {"id": "dashboard-coverage", "mode": "system", "owner": "localqadashboard", "action": "render dashboard HTML and coverage JSON"},
     {"id": "daily-schedule-evidence", "mode": "system", "owner": "localqaschedule", "action": "write daily-evidence-sweep schedule evidence"},
     {"id": "s3-publish", "mode": "system", "owner": "localqarunner", "action": "publish latest and timestamped evidence when S3 prefix is configured"},
+    {"id": "closed-loop-candidate-intake", "mode": "system", "owner": "localproductacceptance", "action": "turn skipped, partial, failed, and inferred QA observations into closed_loop_candidates"},
     {"id": "browser-meaning-qa", "mode": "inferred", "owner": "human/codex", "action": "open Contract Lab, search aliases, and capture UI proof"},
     {"id": "figma-refresh", "mode": "inferred", "owner": "codex", "action": "refresh Figma intent and visual evidence when source expires"},
     {"id": "staging-fixture-handoff", "mode": "inferred", "owner": "human/codex", "action": "create or import account-workspace-team-project-milestone-task-agent-thread fixture cache"}
