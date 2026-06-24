@@ -14,7 +14,7 @@
 - Kind: `harness-to-closed-loop-intake`
 - Expires after: `24h`
 - Observes: `skipped scenarios`, `partial scenarios`, `failed scenarios`, `inferred execution ids`
-- Verifies: `closed_loop_candidates are emitted`, `candidate count is visible in JSON evidence`
+- Verifies: `closed_loop_candidates are emitted`, `candidate count is visible in JSON evidence`, `each candidate carries an evidence_graph`
 - Fails when: `closed_loop_candidates missing`, `inferred execution hidden`, `evidence gap silently passes`
 
 ### qa-system-inference-surfacing
@@ -41,10 +41,10 @@
 
 Harness observations that are skipped, partial, failed, or inferred must become machine-readable closed-loop candidates instead of hidden follow-up work.
 
-- Files: `tools/localproductacceptance/evidence_gap.go`, `tools/localproductacceptance/evidence_gap_candidates.go`, `tools/localproductacceptance/evidence_gap_inferred.go`
+- Files: `tools/localproductacceptance/evidence_gap.go`, `tools/localproductacceptance/evidence_gap_candidates.go`, `tools/localproductacceptance/evidence_gap_candidate_graph.go`, `tools/localproductacceptance/evidence_gap_inferred.go`
 - Docs: `docs/30-architecture/local-acceptance-coverage.riido.json`, `docs/readme/local-acceptance.md`
-- Evidence: `local.qa.evidence_gap_candidates`, `closed_loop_candidates`
-- Verifiers: `gap-candidates-test`
+- Evidence: `local.qa.evidence_gap_candidates`, `closed_loop_candidates`, `evidence_graph`
+- Verifiers: `gap-candidates-test`, `gap-candidate-graph-test`
 
 ### qa_system_inference_must_not_pass_as_green
 

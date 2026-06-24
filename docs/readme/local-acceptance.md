@@ -25,7 +25,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | `.riido-local/evidence/local-qa-run.json` | Top-level execution result, deployment gate status, coverage completeness, provider aggregate status, open repair queue, upload steps, and artifact paths. |
 | `.riido-local/evidence/local-qa-coverage.json` | Machine-readable coverage rows and summary embedded into `local-qa-run.json`; each row carries the source evidence artifact and expiry when known. |
 | `.riido-local/evidence/provider-real-cli-observation.json` | Claude, Codex, OpenClaw, and Cursor real CLI availability/integration evidence. |
-| `.riido-local/evidence/ai-agent-product-acceptance.json` | Staging API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios plus `closed_loop_candidates` derived from partial, skipped, failed, and inferred observations. |
+| `.riido-local/evidence/ai-agent-product-acceptance.json` | Staging API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios plus `closed_loop_candidates` with `evidence_graph` chains derived from partial, skipped, failed, and inferred observations. |
 | `.riido-local/evidence/local-qa-dashboard-infra-evidence.json` | Optional private infra readback proving the S3-hosted dashboard bucket is Terraform-managed, encrypted, lifecycle-managed, serving the latest index object, and either private or CIDR-limited for object reads. |
 | `.riido-local/contract-lab/index.html` | React frontend handoff generated from real product evidence. It renders API cards plus visual evidence images for Figma golden scenarios. |
 | `.riido-local/dashboard/index.html` | Human-readable local dashboard rendered from evidence JSON. |
@@ -44,7 +44,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | `provider_status` | Provider aggregate from real CLI evidence. Cursor auth can make this `partial` while the harness still exits successfully. |
 | `provider_summary` | Compact provider rows embedded from real CLI evidence: id, availability, version, integration status, safe observed metadata, and repair data. |
 | `open_repairs` | Machine-readable repair queue. Example: `cursor/provider_auth_required/human/manual`. |
-| `scenarios[].observed.closed_loop_candidates` | Machine-readable closed-loop candidate queue. Local product acceptance emits this when a harness observation still needs a verifier, repair classifier, visual capture, or system-owned execution path. |
+| `scenarios[].observed.closed_loop_candidates` | Machine-readable closed-loop candidate queue. Each candidate includes `evidence_graph` fields for observation, hypothesis, change, verifier, evidence, decision, and next_loop so harness failures can be promoted without relying on prose. |
 
 ## Daily Schedule
 

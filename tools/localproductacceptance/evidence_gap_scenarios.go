@@ -43,21 +43,15 @@ func repairedScenarioCandidate(item scenario) evidenceGapCandidate {
 	if next == "" {
 		next = "Execute the scenario repair and rerun local QA."
 	}
-	return evidenceGapCandidate{
-		ID:             "repair-" + item.ID,
-		SourceScenario: item.ID,
-		Class:          item.Repair.Class,
-		Reason:         item.Repair.Summary,
-		NextEvidence:   next,
-	}
+	return closedLoopCandidate("repair-"+item.ID, item.ID, item.Repair.Class, item.Repair.Summary, next)
 }
 
 func scenarioGap(item scenario, class, reason string) evidenceGapCandidate {
-	return evidenceGapCandidate{
-		ID:             "close-" + item.ID,
-		SourceScenario: item.ID,
-		Class:          class,
-		Reason:         reason,
-		NextEvidence:   "Promote the observed failure into a focused verifier or repair classifier.",
-	}
+	return closedLoopCandidate(
+		"close-"+item.ID,
+		item.ID,
+		class,
+		reason,
+		"Promote the observed failure into a focused verifier or repair classifier.",
+	)
 }
