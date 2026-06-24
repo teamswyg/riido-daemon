@@ -1,12 +1,13 @@
 package main
 
 type localRunLoopCandidate struct {
-	ID             string                     `json:"id"`
-	SourceScenario string                     `json:"source_scenario"`
-	Class          string                     `json:"class"`
-	Reason         string                     `json:"reason"`
-	NextEvidence   string                     `json:"next_evidence"`
-	Graph          localRunLoopCandidateGraph `json:"evidence_graph"`
+	ID                    string                     `json:"id"`
+	SourceScenario        string                     `json:"source_scenario"`
+	Class                 string                     `json:"class"`
+	Reason                string                     `json:"reason"`
+	NextEvidence          string                     `json:"next_evidence"`
+	RequiredNextArtifacts []string                   `json:"required_next_artifacts"`
+	Graph                 localRunLoopCandidateGraph `json:"evidence_graph"`
 }
 
 type localRunLoopCandidateGraph struct {

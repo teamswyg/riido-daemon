@@ -20,10 +20,10 @@
       "owner": "tools/localproductacceptance",
       "kind": "harness-to-closed-loop-intake",
       "observes": ["skipped scenarios", "partial scenarios", "failed scenarios", "inferred execution ids"],
-      "verifies": ["closed_loop_candidates are emitted", "candidate count is visible in JSON evidence", "each candidate carries an evidence_graph", "local QA run evidence rolls candidates up"],
+      "verifies": ["closed_loop_candidates are emitted", "candidate count is visible in JSON evidence", "each candidate carries an evidence_graph", "each candidate declares required_next_artifacts", "local QA run evidence rolls candidates up"],
       "evidence": [".riido-local/evidence/ai-agent-product-acceptance.json", "local-qa-runner artifact"],
       "expires_after": "24h",
-      "fails_when": ["closed_loop_candidates missing", "inferred execution hidden", "evidence gap silently passes"],
+      "fails_when": ["closed_loop_candidates missing", "required_next_artifacts missing", "inferred execution hidden", "evidence gap silently passes"],
       "evidence_graph": {
         "observation": "local QA scenarios can be skipped or inferred without creating follow-up work.",
         "hypothesis": "Every skipped, partial, failed, or inferred observation should become a closed_loop_candidate.",
@@ -95,23 +95,27 @@
   "business_claims": [
     {
       "id": "closed_loop_candidates_must_surface_harness_gaps",
-      "text": "Harness observations that are skipped, partial, failed, or inferred must become machine-readable closed-loop candidates instead of hidden follow-up work.",
+      "text": "Harness observations that are skipped, partial, failed, or inferred must become machine-readable closed-loop candidates with required adoption artifacts instead of hidden follow-up work.",
       "files": [
+        "tools/localproductacceptance/evidence_gap_types.go",
         "tools/localproductacceptance/evidence_gap.go",
         "tools/localproductacceptance/evidence_gap_candidates.go",
         "tools/localproductacceptance/evidence_gap_candidate_graph.go",
         "tools/localproductacceptance/evidence_gap_inferred.go",
+        "tools/localqarunner/loop_candidate_types.go",
         "tools/localqarunner/product_evidence.go",
         "tools/localqarunner/types.go",
+        "tools/localqadashboard/run_loop_candidate.go",
         "tools/localqadashboard/run_evidence.go",
         "tools/localqadashboard/render.go",
         ".github/workflows/local-qa-runner.yml"
       ],
       "docs": [
         "docs/30-architecture/local-acceptance-coverage.riido.json",
+        "docs/readme/local-acceptance.riido.json",
         "docs/readme/local-acceptance.md"
       ],
-      "evidence": ["local.qa.evidence_gap_candidates", "closed_loop_candidates", "evidence_graph"],
+      "evidence": ["local.qa.evidence_gap_candidates", "closed_loop_candidates", "evidence_graph", "required_next_artifacts"],
       "verifiers": [
         {
           "name": "gap-candidates-test",
@@ -126,7 +130,9 @@
           "file": "tools/localproductacceptance/evidence_gap_graph_test.go",
           "contains": [
             "TestEvidenceGapCandidatesCarryEvidenceGraph",
-            "evidence_graph"
+            "evidence_graph",
+            "required_next_artifacts",
+            "claim_binding"
           ]
         },
         {
@@ -134,7 +140,9 @@
           "file": "tools/localqarunner/product_evidence_test.go",
           "contains": [
             "TestApplyProductEvidenceRollsUpClosedLoopCandidates",
-            "closed_loop_candidates"
+            "TestApplyProductEvidenceRejectsCandidateWithoutAdoptionArtifacts",
+            "closed_loop_candidates",
+            "RequiredNextArtifacts"
           ]
         },
         {
@@ -142,7 +150,8 @@
           "file": "tools/localqadashboard/render_loop_candidate_test.go",
           "contains": [
             "Closed-loop Candidates",
-            "promote-x"
+            "promote-x",
+            "claim_binding"
           ]
         }
       ]

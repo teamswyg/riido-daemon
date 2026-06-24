@@ -14,8 +14,8 @@
 - Kind: `harness-to-closed-loop-intake`
 - Expires after: `24h`
 - Observes: `skipped scenarios`, `partial scenarios`, `failed scenarios`, `inferred execution ids`
-- Verifies: `closed_loop_candidates are emitted`, `candidate count is visible in JSON evidence`, `each candidate carries an evidence_graph`, `local QA run evidence rolls candidates up`
-- Fails when: `closed_loop_candidates missing`, `inferred execution hidden`, `evidence gap silently passes`
+- Verifies: `closed_loop_candidates are emitted`, `candidate count is visible in JSON evidence`, `each candidate carries an evidence_graph`, `each candidate declares required_next_artifacts`, `local QA run evidence rolls candidates up`
+- Fails when: `closed_loop_candidates missing`, `required_next_artifacts missing`, `inferred execution hidden`, `evidence gap silently passes`
 
 ### local-qa-evidence-expiry-gate
 
@@ -48,11 +48,11 @@
 
 ### closed_loop_candidates_must_surface_harness_gaps
 
-Harness observations that are skipped, partial, failed, or inferred must become machine-readable closed-loop candidates instead of hidden follow-up work.
+Harness observations that are skipped, partial, failed, or inferred must become machine-readable closed-loop candidates with required adoption artifacts instead of hidden follow-up work.
 
-- Files: `tools/localproductacceptance/evidence_gap.go`, `tools/localproductacceptance/evidence_gap_candidates.go`, `tools/localproductacceptance/evidence_gap_candidate_graph.go`, `tools/localproductacceptance/evidence_gap_inferred.go`, `tools/localqarunner/product_evidence.go`, `tools/localqarunner/types.go`, `tools/localqadashboard/run_evidence.go`, `tools/localqadashboard/render.go`, `.github/workflows/local-qa-runner.yml`
-- Docs: `docs/30-architecture/local-acceptance-coverage.riido.json`, `docs/readme/local-acceptance.md`
-- Evidence: `local.qa.evidence_gap_candidates`, `closed_loop_candidates`, `evidence_graph`
+- Files: `tools/localproductacceptance/evidence_gap_types.go`, `tools/localproductacceptance/evidence_gap.go`, `tools/localproductacceptance/evidence_gap_candidates.go`, `tools/localproductacceptance/evidence_gap_candidate_graph.go`, `tools/localproductacceptance/evidence_gap_inferred.go`, `tools/localqarunner/loop_candidate_types.go`, `tools/localqarunner/product_evidence.go`, `tools/localqarunner/types.go`, `tools/localqadashboard/run_loop_candidate.go`, `tools/localqadashboard/run_evidence.go`, `tools/localqadashboard/render.go`, `.github/workflows/local-qa-runner.yml`
+- Docs: `docs/30-architecture/local-acceptance-coverage.riido.json`, `docs/readme/local-acceptance.riido.json`, `docs/readme/local-acceptance.md`
+- Evidence: `local.qa.evidence_gap_candidates`, `closed_loop_candidates`, `evidence_graph`, `required_next_artifacts`
 - Verifiers: `gap-candidates-test`, `gap-candidate-graph-test`, `local-qa-runner-candidate-rollup-test`, `local-qa-dashboard-candidate-test`
 
 ### expired_local_qa_evidence_must_block_deployment
