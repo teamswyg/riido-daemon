@@ -56,6 +56,7 @@ jobs:
           grep -q "contract.ui.feature_dsl" out/ai-agent-product-acceptance.json
           grep -q "contract.ui.i18n_dsl" out/ai-agent-product-acceptance.json
           grep -q "contract.ui.browser_meaning_qa" out/ai-agent-product-acceptance.json
+          grep -q "local.qa.figma_refresh_gate" out/ai-agent-product-acceptance.json
           grep -q "translation_coverage" out/ai-agent-product-acceptance.json
           grep -q "coverage_ratio" out/ai-agent-product-acceptance.json
           grep -q "local.qa.dsl_system_audit" out/ai-agent-product-acceptance.json

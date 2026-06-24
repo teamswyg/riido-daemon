@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestWriteContractLabRendersVisualEvidence(t *testing.T) {
@@ -37,6 +38,12 @@ func TestWriteContractLabRendersVisualEvidence(t *testing.T) {
 			featureUIScenario(),
 			qaI18NScenario(),
 			browserMeaningScenario(),
+			figmaRefreshScenario(
+				mustParseTime(t, "2026-06-24T14:00:00Z"),
+				24*time.Hour,
+				"../../docs/30-architecture/figma-ai-agent-daemon-boundary/entries.riido.json",
+				"../../docs/30-architecture/figma-ai-agent-daemon-boundary/golden/golden.riido.json",
+			),
 			{
 				ID:     "domain.fixture_journey",
 				Status: statusPassed,
@@ -89,6 +96,7 @@ func TestWriteContractLabRendersVisualEvidence(t *testing.T) {
 		"contract.ui.feature_dsl",
 		"contract.ui.i18n_dsl",
 		"contract.ui.browser_meaning_qa",
+		"local.qa.figma_refresh_gate",
 		"domain.fixture_journey",
 		"local.qa.evidence_gap_candidates",
 		"manual-evidence-file",
@@ -99,4 +107,13 @@ func TestWriteContractLabRendersVisualEvidence(t *testing.T) {
 			t.Fatalf("contract lab missing %q", want)
 		}
 	}
+}
+
+func mustParseTime(t *testing.T, value string) time.Time {
+	t.Helper()
+	parsed, err := time.Parse(time.RFC3339, value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return parsed
 }

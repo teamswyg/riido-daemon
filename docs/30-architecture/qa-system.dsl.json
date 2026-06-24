@@ -14,9 +14,10 @@
     {"id": "precommit-generate", "file": ".pre-commit-config.yaml", "contains": ["qa-dsl-generate", "go generate ./tools/localproductacceptance", "git add tools/localproductacceptance/*.generated.json"]},
     {"id": "ci-generated-drift", "file": ".github/workflows/local-qa-runner.yml", "contains": ["Generate QA DSL artifacts", "git diff --exit-code -- tools/localproductacceptance/*.generated.json"]},
     {"id": "ci-local-no-token", "file": ".github/workflows/local-qa-runner.yml", "contains": ["-storage-state /tmp/no-riido-storage-state.json", "-workspace-id \"\"", "-api-token \"\""]},
-    {"id": "ci-evidence-grep", "file": ".github/workflows/local-qa-runner.yml", "contains": ["contract.ui.i18n_dsl", "contract.ui.browser_meaning_qa", "translation_coverage", "coverage_ratio", "local.qa.dsl_system_audit", "execution_counts", "inference_required_count", "closed_loop_candidates", "domain.fixture_journey"]},
+    {"id": "ci-evidence-grep", "file": ".github/workflows/local-qa-runner.yml", "contains": ["contract.ui.i18n_dsl", "contract.ui.browser_meaning_qa", "local.qa.figma_refresh_gate", "translation_coverage", "coverage_ratio", "local.qa.dsl_system_audit", "execution_counts", "inference_required_count", "closed_loop_candidates", "domain.fixture_journey"]},
     {"id": "test-generated-fresh", "file": "tools/localproductacceptance/qa_system_test.go", "contains": ["TestQASystemDSLGeneratedFileFresh", "TestQASystemScenarioAuditsChangeDetection", "TestQASystemExecutionInventoryCounts", "inference_required_ids"]},
-    {"id": "browser-meaning-verifier", "file": "tools/localproductacceptance/browser_meaning_test.go", "contains": ["TestBrowserMeaningScenarioProvesSearchSurface", "browser-meaning-qa"]}
+    {"id": "browser-meaning-verifier", "file": "tools/localproductacceptance/browser_meaning_test.go", "contains": ["TestBrowserMeaningScenarioProvesSearchSurface", "browser-meaning-qa"]},
+    {"id": "figma-refresh-verifier", "file": "tools/localproductacceptance/figma_refresh_test.go", "contains": ["TestFigmaRefreshScenarioDetectsStaleGolden", "figma-refresh"]}
   ],
   "execution_inventory": [
     {"id": "dsl-generate", "mode": "system", "owner": "pre-commit/ci", "action": "go generate ./tools/localproductacceptance"},
@@ -27,7 +28,7 @@
     {"id": "s3-publish", "mode": "system", "owner": "localqarunner", "action": "publish latest and timestamped evidence when S3 prefix is configured"},
     {"id": "closed-loop-candidate-intake", "mode": "system", "owner": "localproductacceptance", "action": "turn skipped, partial, failed, and inferred QA observations into closed_loop_candidates"},
     {"id": "browser-meaning-qa", "mode": "system", "owner": "localproductacceptance", "action": "verify Contract Lab search surface and generated QA aliases without a human browser session"},
-    {"id": "figma-refresh", "mode": "inferred", "owner": "codex", "action": "refresh Figma intent and visual evidence when source expires"},
+    {"id": "figma-refresh", "mode": "system", "owner": "localproductacceptance", "action": "verify Figma intent/golden freshness and emit repair evidence when the source expires"},
     {"id": "staging-fixture-handoff", "mode": "inferred", "owner": "human/codex", "action": "create or import account-workspace-team-project-milestone-task-agent-thread fixture cache"}
   ],
   "optimization_questions": [
