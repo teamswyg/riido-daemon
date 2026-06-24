@@ -1,12 +1,13 @@
 package main
 
 type evidenceGapCandidate struct {
-	ID             string                    `json:"id"`
-	SourceScenario string                    `json:"source_scenario"`
-	Class          string                    `json:"class"`
-	Reason         string                    `json:"reason"`
-	NextEvidence   string                    `json:"next_evidence"`
-	Graph          evidenceGapCandidateGraph `json:"evidence_graph"`
+	ID                    string                    `json:"id"`
+	SourceScenario        string                    `json:"source_scenario"`
+	Class                 string                    `json:"class"`
+	Reason                string                    `json:"reason"`
+	NextEvidence          string                    `json:"next_evidence"`
+	RequiredNextArtifacts []string                  `json:"required_next_artifacts"`
+	Graph                 evidenceGapCandidateGraph `json:"evidence_graph"`
 }
 
 type evidenceGapCandidateGraph struct {

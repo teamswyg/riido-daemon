@@ -2,14 +2,26 @@ package main
 
 func closedLoopCandidate(id, source, class, reason, next string) evidenceGapCandidate {
 	candidate := evidenceGapCandidate{
-		ID:             id,
-		SourceScenario: source,
-		Class:          class,
-		Reason:         reason,
-		NextEvidence:   next,
+		ID:                    id,
+		SourceScenario:        source,
+		Class:                 class,
+		Reason:                reason,
+		NextEvidence:          next,
+		RequiredNextArtifacts: closedLoopCandidateArtifacts(),
 	}
 	candidate.Graph = candidateEvidenceGraph(candidate)
 	return candidate
+}
+
+func closedLoopCandidateArtifacts() []string {
+	return []string{
+		"claim_binding",
+		"verifier",
+		"ci_gate",
+		"redacted_evidence",
+		"decision_record",
+		"evidence_graph_edge",
+	}
 }
 
 func candidateEvidenceGraph(candidate evidenceGapCandidate) evidenceGapCandidateGraph {

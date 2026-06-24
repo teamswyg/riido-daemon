@@ -12,12 +12,17 @@ func TestEvidenceGapCandidatesCarryEvidenceGraph(t *testing.T) {
 		if evidenceGraphIncomplete(candidate.Graph) {
 			t.Fatalf("candidate evidence graph incomplete: %+v", candidate)
 		}
+		if len(candidate.RequiredNextArtifacts) == 0 {
+			t.Fatalf("candidate adoption artifacts missing: %+v", candidate)
+		}
 		body, err := json.Marshal(candidate)
 		if err != nil {
 			t.Fatal(err)
 		}
-		if !strings.Contains(string(body), "evidence_graph") {
-			t.Fatalf("candidate JSON missing evidence_graph: %s", string(body))
+		for _, want := range []string{"evidence_graph", "required_next_artifacts", "claim_binding"} {
+			if !strings.Contains(string(body), want) {
+				t.Fatalf("candidate JSON missing %q: %s", want, string(body))
+			}
 		}
 	}
 }

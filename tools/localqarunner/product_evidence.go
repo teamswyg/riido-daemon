@@ -31,7 +31,21 @@ func applyProductEvidence(root string, cfg config, evidence *runEvidence) error 
 	if err := json.Unmarshal(data, &file); err != nil {
 		return fmt.Errorf("parse product evidence: %w", err)
 	}
+	if err := validateProductClosedLoops(file.Scenarios); err != nil {
+		return err
+	}
 	appendClosedLoops(evidence, file.Scenarios)
+	return nil
+}
+
+func validateProductClosedLoops(scenarios []productRunScenario) error {
+	for _, scenario := range scenarios {
+		for _, candidate := range scenario.Observed.ClosedLoops {
+			if len(candidate.RequiredNextArtifacts) == 0 {
+				return fmt.Errorf("closed-loop candidate %s missing required_next_artifacts", candidate.ID)
+			}
+		}
+	}
 	return nil
 }
 
