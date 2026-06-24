@@ -68,18 +68,18 @@ func TestQASystemExecutionInventoryCounts(t *testing.T) {
 	if !ok {
 		t.Fatalf("execution counts missing: %+v", got.Observed["execution_counts"])
 	}
-	if counts["system_automated_count"] != 7 || counts["inference_required_count"] != 3 || counts["total"] != 10 {
+	if counts["system_automated_count"] != 8 || counts["inference_required_count"] != 2 || counts["total"] != 10 {
 		t.Fatalf("unexpected execution counts: %+v", counts)
 	}
 	ids, ok := counts["inference_required_ids"].([]string)
-	if !ok || len(ids) != 3 || ids[0] != "browser-meaning-qa" {
+	if !ok || len(ids) != 2 || ids[0] != "figma-refresh" {
 		t.Fatalf("inference ids missing: %+v", counts["inference_required_ids"])
 	}
 	inference, ok := got.Observed["inference_removed"].(map[string]any)
 	if !ok || inference["all_execution_automated"] != false {
 		t.Fatalf("execution automation state missing: %+v", got.Observed["inference_removed"])
 	}
-	if inference["system_automated_count"] != 7 || inference["inference_required_count"] != 3 {
+	if inference["system_automated_count"] != 8 || inference["inference_required_count"] != 2 {
 		t.Fatalf("execution counts not surfaced in inference audit: %+v", inference)
 	}
 }

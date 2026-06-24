@@ -36,6 +36,7 @@ func TestWriteContractLabRendersVisualEvidence(t *testing.T) {
 			},
 			featureUIScenario(),
 			qaI18NScenario(),
+			browserMeaningScenario(),
 			{
 				ID:     "domain.fixture_journey",
 				Status: statusPassed,
@@ -87,6 +88,7 @@ func TestWriteContractLabRendersVisualEvidence(t *testing.T) {
 		"domain-fixture-journey-cache.json",
 		"contract.ui.feature_dsl",
 		"contract.ui.i18n_dsl",
+		"contract.ui.browser_meaning_qa",
 		"domain.fixture_journey",
 		"local.qa.evidence_gap_candidates",
 		"manual-evidence-file",

@@ -52,6 +52,7 @@ func buildScenarios(clientRoot string, cfg config) []scenario {
 	out = append(out, qaLoopScenario(*cfg.validFor, *cfg.figmaManifest, *cfg.labOut, *cfg.manualOut))
 	out = append(out, featureUIScenario())
 	out = append(out, qaI18NScenario())
+	out = append(out, browserMeaningScenario())
 	out = append(out, qaSystemScenario())
 	out = append(out, evidenceGapScenario(out, cfg))
 	out = append(out, contractUIScenario(*cfg.labOut, *cfg.manualOut))
