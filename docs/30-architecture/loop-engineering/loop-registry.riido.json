@@ -1,0 +1,36 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "loop-registry",
+  "owner": "tools/loopregistry and loop-registry workflow",
+  "observation": {
+    "summary": "Harness and QA evidence could surface gaps, but the relationship between loops, business claims, code files, docs, verifier tokens, and evidence artifacts was still inferred.",
+    "artifacts": ["docs/30-architecture/loop-registry.riido.json"]
+  },
+  "hypothesis": {
+    "summary": "A Loop Registry SSOT can force business claims and semantically bound files to move with executable evidence instead of relying on agents to reread prose.",
+    "artifacts": ["tools/loopregistry"]
+  },
+  "execution": {
+    "summary": "Validate registry loops, evidence graph closure, business claim file bindings, verifier source tokens, CI wiring, pre-commit wiring, generated docs, and optional changed-file co-change input.",
+    "artifacts": ["tools/loopregistry", ".github/workflows/loop-registry.yml", ".pre-commit-config.yaml"]
+  },
+  "evaluation": {
+    "summary": "The verifier fails on missing loop fields, missing code/doc/test/evidence anchors, workflow/pre-commit drift, generated doc drift, or runtime-only changes to claim-bound files.",
+    "artifacts": ["tools/loopregistry/run_test.go", "docs/30-architecture/loop-registry.md"]
+  },
+  "retrospective": {
+    "summary": "The registry does not replace harnesses; it decides which harness discoveries are closed loops and which semantic files must co-change."
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/loopregistry -check-doc -evidence-out /tmp/loop-registry.json",
+      "proves": "loop registry claims are bound to files, docs, tests, CI, and pre-commit"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/loop-registry.yml",
+      "proves": "public CI uploads loop registry evidence artifacts"
+    }
+  ]
+}
