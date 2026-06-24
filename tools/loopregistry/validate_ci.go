@@ -10,6 +10,7 @@ func validateCIBindings(root string, reg registry) []string {
 	problems = append(problems, fileContains(root, reg.Workflow, reg.Command, "workflow")...)
 	problems = append(problems, fileContains(root, ".pre-commit-config.yaml", reg.PrecommitHook, "pre-commit")...)
 	problems = append(problems, fileContains(root, ".pre-commit-config.yaml", reg.Command, "pre-commit")...)
+	problems = append(problems, validateWorkflowPathCoverage(root, reg)...)
 	return problems
 }
 

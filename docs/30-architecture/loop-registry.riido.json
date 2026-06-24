@@ -52,6 +52,25 @@
         "decision": "remaining inferred ids are surfaced as candidates.",
         "next_loop": "replace inferred entries with system-owned commands."
       }
+    },
+    {
+      "id": "intent-clarification-needs-input",
+      "owner": "internal/agentbridge/controlplane/saasplane",
+      "kind": "closed-loop",
+      "observes": ["provider completed output", "clarification question markers", "AgentEventRequest metadata"],
+      "verifies": ["assignment_result_status=needs_input is emitted", "assignment is not reported completed", "events endpoint shape is preserved"],
+      "evidence": ["loop-engineering-evidence", "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment"],
+      "expires_after": "24h",
+      "fails_when": ["clarification output completes assignment", "needs_input metadata missing", "endpoint shape changes"],
+      "evidence_graph": {
+        "observation": "Intent-oriented work can make a provider ask a clarification question and exit successfully.",
+        "hypothesis": "The daemon can treat the clarification as waiting-for-user metadata while preserving the existing SaaS event contract.",
+        "change": "saasplane maps canonical clarification result text to assignment_state_updated/running with assignment_result_status=needs_input.",
+        "verifier": "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment",
+        "evidence": "intent-clarification-result loop evidence",
+        "decision": "clarification-only outputs remain conversational rather than terminal completion.",
+        "next_loop": "exercise the same conversation through live SaaS v3 thread history."
+      }
     }
   ],
   "business_claims": [
@@ -120,6 +139,37 @@
           "contains": [
             "clientReadOnlyScenario",
             "must never be merged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "intent_clarification_must_wait_for_user",
+      "text": "When a provider exits successfully after asking what work to do first, the daemon must report needs_input instead of completing the assignment.",
+      "files": [
+        "internal/agentbridge/controlplane/saasplane/task_completion.go",
+        "internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go",
+        "internal/agentbridge/controlplane/saasplane/needs_input_markers.go"
+      ],
+      "docs": [
+        "docs/30-architecture/loop-engineering/intent-clarification-result.riido.json",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "assignment_result_status=needs_input",
+        "intent-clarification-result",
+        "loop-engineering-evidence"
+      ],
+      "verifiers": [
+        {
+          "name": "needs-input-completion-test",
+          "file": "internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go",
+          "contains": [
+            "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment",
+            "AssignmentResultStatus",
+            "needs_input",
+            "EventAssignmentStateUpdated"
           ]
         }
       ]
