@@ -47,7 +47,9 @@ func buildScenarios(clientRoot string, cfg config, observed time.Time) []scenari
 	out := []scenario{clientReadOnlyScenario(clientRoot)}
 	contract := contractAPIScenarios(cfg)
 	out = append(out, contract...)
-	out = append(out, domainJourneyScenarios(cfg, contract)...)
+	domainRows := domainJourneyScenarios(cfg, contract)
+	out = append(out, domainRows...)
+	out = append(out, stagingFixtureHandoffScenario(cfg, domainRows))
 	out = append(out, figmaIntentScenarios(*cfg.figmaManifest, *cfg.figmaGolden, *cfg.screenshots)...)
 	out = append(out, figmaRefreshScenario(observed, *cfg.validFor, *cfg.figmaManifest, *cfg.figmaGolden))
 	out = append(out, qaLoopScenario(*cfg.validFor, *cfg.figmaManifest, *cfg.labOut, *cfg.manualOut))

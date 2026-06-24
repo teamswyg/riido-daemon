@@ -44,12 +44,12 @@ func TestEvidenceGapScenarioPromotesInferredExecutionLoops(t *testing.T) {
 		ID:     "local.qa.dsl_system_audit",
 		Status: statusPartial,
 		Observed: map[string]any{"execution_counts": map[string]any{
-			"inference_required_ids": []any{"staging-fixture-handoff"},
+			"inference_required_ids": []any{"legacy-human-loop"},
 		}},
 	}}, config{manualOut: &manualOut, screenshots: &screenshots})
 
 	closed := got.Observed["closed_loop_candidates"].([]evidenceGapCandidate)
-	if !hasEvidenceGapCandidate(closed, "close-inferred-staging-fixture-handoff") {
+	if !hasEvidenceGapCandidate(closed, "close-inferred-legacy-human-loop") {
 		t.Fatalf("inferred candidate missing: %+v", closed)
 	}
 }
