@@ -5,8 +5,8 @@
 - workflow count: `104`
 - evidence covered: `104`
 - workflow statuses: `covered=104`
-- evidence tools covered: `71/71`
-- evidence tools bound to artifacts: `71/71`
+- evidence tools covered: `72/72`
+- evidence tools bound to artifacts: `72/72`
 - accepted gaps: `0`
 - non-strict artifact uploads: `0`
 - missing evidence uploads: `0`
@@ -56,7 +56,7 @@
 | `.github/workflows/go-ci.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/integration-matrix-docs.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/local-daemon-contract-evidence.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
-| `.github/workflows/local-qa-runner.yml` | `covered` | `5` | `5/5` | `true` | `1/1` | - |
+| `.github/workflows/local-qa-runner.yml` | `covered` | `6` | `6/6` | `true` | `1/1` | - |
 | `.github/workflows/locking-docs.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/loop-engineering-evidence.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/loop-registry.yml` | `covered` | `2` | `2/2` | `true` | `1/1` | - |

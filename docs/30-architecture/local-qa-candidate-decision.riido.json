@@ -1,0 +1,46 @@
+{
+  "schema_version": "riido-daemon-local-qa-candidate-decision.v1",
+  "id": "daemon-local-qa-candidate-decision",
+  "title": "Daemon Local QA Candidate Decision",
+  "generated_doc": "docs/30-architecture/local-qa-candidate-decision.md",
+  "workflow": ".github/workflows/local-qa-runner.yml",
+  "evidence_artifact": "local-qa-candidate-decision",
+  "evidence_tool": "tools/localqacandidatedecision",
+  "decisions": [
+    {"candidate_id": "manual-evidence-file", "disposition": "triage_required", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Manual QA browser-local state still needs exported redacted evidence before it can close."},
+    {"candidate_id": "browser-interaction-runner", "disposition": "triage_required", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "verifier", "review_by": "2026-12-31", "reason": "Declared browser interactions need a system-owned verifier instead of Codex or human inference."},
+    {"candidate_id": "runtime-detail-golden", "disposition": "triage_required", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Runtime detail visual intent needs a captured golden evidence artifact."},
+    {"candidate_id": "repair-contract.api.bootstrap", "disposition": "deferred", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "No-token CI proves the repair path; live staging bootstrap evidence belongs to the private fixture loop."},
+    {"candidate_id": "repair-contract.api.devices", "disposition": "deferred", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "No-token CI proves device repair classification until staging fixture evidence is supplied."},
+    {"candidate_id": "repair-contract.api.profile_thumbnail.intent", "disposition": "deferred", "priority": "P3", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Profile thumbnail live intent evidence remains outside daemon runtime ownership."},
+    {"candidate_id": "repair-contract.task.assignable_agents", "disposition": "deferred", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Assignable-agent live probe needs redacted staging fixture evidence."},
+    {"candidate_id": "repair-contract.task.multi_assignment", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Multi-assignment live probe needs redacted staging fixture evidence."},
+    {"candidate_id": "repair-contract.task.thread_subscription", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Thread subscription live probe needs redacted staging fixture evidence."},
+    {"candidate_id": "repair-contract.task.sse_replay", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "SSE replay live probe needs redacted staging fixture evidence."},
+    {"candidate_id": "repair-contract.task.thread_message", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Thread message live probe needs redacted staging fixture evidence."},
+    {"candidate_id": "repair-domain.fixture.account", "disposition": "deferred", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain account fixture evidence is private and must be supplied through the staging fixture handoff."},
+    {"candidate_id": "repair-domain.fixture.workspace", "disposition": "deferred", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain workspace fixture evidence is private and must be supplied through the staging fixture handoff."},
+    {"candidate_id": "repair-domain.fixture.team", "disposition": "deferred", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain team fixture evidence is private and must be supplied through the staging fixture handoff."},
+    {"candidate_id": "repair-domain.fixture.project", "disposition": "deferred", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain project fixture evidence is private and must be supplied through the staging fixture handoff."},
+    {"candidate_id": "repair-domain.fixture.milestone", "disposition": "deferred", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain milestone fixture evidence is private and must be supplied through the staging fixture handoff."},
+    {"candidate_id": "repair-domain.fixture.task", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain task fixture evidence is private and must be supplied through the staging fixture handoff."},
+    {"candidate_id": "repair-domain.fixture.agent", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain agent fixture evidence is private and must be supplied through the staging fixture handoff."},
+    {"candidate_id": "repair-domain.fixture.thread", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain thread fixture evidence is private and must be supplied through the staging fixture handoff."},
+    {"candidate_id": "repair-local.qa.staging_fixture_handoff", "disposition": "triage_required", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Staging fixture handoff must produce redacted account/workspace/team/task/agent/thread evidence."},
+    {"candidate_id": "repair-local.qa.figma_refresh_gate", "disposition": "triage_required", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Figma refresh gate needs fresh redacted golden/source evidence before the candidate can close."}
+  ],
+  "assertions": [
+    "every local QA closed-loop candidate must have exactly one decision record",
+    "decision records without a matching candidate are stale loop residue and must fail verification",
+    "decision records must name owner, priority, disposition, next loop, next artifact, and reason",
+    "triage-required and deferred decisions must name review_by",
+    "decision next_artifact must be one of the candidate required_next_artifacts"
+  ],
+  "loop": {
+    "observation": "Local QA run evidence can expose closed-loop candidates while prioritization still lives in human memory.",
+    "hypothesis": "A daemon-owned candidate decision sidecar can force every current candidate to bind owner, priority, disposition, next loop, and next artifact.",
+    "execute": "Verify the generated decision reader, then consume out/local-qa-run.json from the same local-qa-runner workflow and publish decision evidence.",
+    "evaluate": "The verifier fails on missing candidate input, missing candidate decisions, orphan decisions, incomplete decision metadata, or next_artifact values outside the candidate's required_next_artifacts.",
+    "retrospective": "Harnesses still explore broadly, but their findings cannot remain passive reports after local QA produces a candidate list."
+  }
+}

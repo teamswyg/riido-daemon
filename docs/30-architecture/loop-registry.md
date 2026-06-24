@@ -26,6 +26,15 @@
 - Verifies: `expired coverage rows block deployment`, `strict release gate fails on blocked deployment gate`, `fresh coverage rows remain deployable`
 - Fails when: `expired evidence is treated as green`, `deployment gate omits coverage_evidence_expired`, `strict coverage ignores a blocked deployment gate`
 
+### local-qa-candidate-decision
+
+- Owner: `tools/localqacandidatedecision`
+- Kind: `closed-loop`
+- Expires after: `24h`
+- Observes: `local QA closed_loop_candidates`, `required_next_artifacts`, `decision records`
+- Verifies: `out/local-qa-run.json candidates have decisions`, `decision next_artifact is required by each candidate`, `orphan decision records fail`
+- Fails when: `candidate decision missing`, `decision references missing candidate`, `next_artifact is not required`, `candidate input omitted`
+
 ### qa-system-inference-surfacing
 
 - Owner: `tools/localproductacceptance`
@@ -54,6 +63,15 @@ Harness observations that are skipped, partial, failed, or inferred must become 
 - Docs: `docs/30-architecture/local-acceptance-coverage.riido.json`, `docs/readme/local-acceptance.riido.json`, `docs/readme/local-acceptance.md`
 - Evidence: `local.qa.evidence_gap_candidates`, `closed_loop_candidates`, `evidence_graph`, `required_next_artifacts`
 - Verifiers: `gap-candidates-test`, `gap-candidate-graph-test`, `local-qa-runner-candidate-rollup-test`, `local-qa-dashboard-candidate-test`
+
+### local_qa_candidate_decisions_must_match_candidates
+
+Local QA closed-loop candidate decision verification must consume the current local QA run evidence, cover every candidate exactly once, reject orphan decisions, and choose only next_artifact values declared by each candidate's required_next_artifacts.
+
+- Files: `tools/localqacandidatedecision/candidate.go`, `tools/localqacandidatedecision/candidate_more.go`, `tools/localqacandidatedecision/decision.go`, `tools/localqacandidatedecision/run.go`, `tools/localqacandidatedecision/workflow.go`, `tools/localqacandidatedecision/candidate_test.go`, `tools/localqacandidatedecision/decision_test.go`, `tools/localqacandidatedecision/run_test.go`, `.github/workflows/local-qa-runner.yml`
+- Docs: `docs/30-architecture/local-qa-candidate-decision.riido.json`, `docs/30-architecture/local-qa-candidate-decision.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/readme/local-acceptance.riido.json`, `docs/readme/local-acceptance.md`
+- Evidence: `local-qa-candidate-decision`, `decision_artifacts`, `required_next_artifacts`
+- Verifiers: `candidate-decision-cover-test`, `candidate-decision-artifact-test`, `candidate-decision-input-test`
 
 ### expired_local_qa_evidence_must_block_deployment
 
