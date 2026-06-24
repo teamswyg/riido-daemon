@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/loop-registry.yml"
+      - ".github/workflows/local-qa-runner.yml"
       - ".pre-commit-config.yaml"
       - "docs/30-architecture/loop-registry.riido.json"
       - "docs/30-architecture/loop-registry.md"
@@ -12,6 +13,8 @@ on:
       - "docs/30-architecture/loop-engineering/**"
       - "tools/loopregistry/**"
       - "tools/localproductacceptance/**"
+      - "tools/localqarunner/**"
+      - "tools/localqadashboard/**"
       - "internal/agentbridge/controlplane/saasplane/**"
       - "docs/30-architecture/qa-system.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
@@ -22,6 +25,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/loop-registry.yml"
+      - ".github/workflows/local-qa-runner.yml"
       - ".pre-commit-config.yaml"
       - "docs/30-architecture/loop-registry.riido.json"
       - "docs/30-architecture/loop-registry.md"
@@ -30,6 +34,8 @@ on:
       - "docs/30-architecture/loop-engineering/**"
       - "tools/loopregistry/**"
       - "tools/localproductacceptance/**"
+      - "tools/localqarunner/**"
+      - "tools/localqadashboard/**"
       - "internal/agentbridge/controlplane/saasplane/**"
       - "docs/30-architecture/qa-system.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"

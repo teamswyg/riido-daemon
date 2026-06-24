@@ -22,7 +22,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 
 | Artifact | Meaning |
 | --- | --- |
-| `.riido-local/evidence/local-qa-run.json` | Top-level execution result, deployment gate status, coverage completeness, provider aggregate status, open repair queue, upload steps, and artifact paths. |
+| `.riido-local/evidence/local-qa-run.json` | Top-level execution result, deployment gate status, coverage completeness, provider aggregate status, open repair queue, closed-loop candidate queue, upload steps, and artifact paths. |
 | `.riido-local/evidence/local-qa-coverage.json` | Machine-readable coverage rows and summary embedded into `local-qa-run.json`; each row carries the source evidence artifact and expiry when known. |
 | `.riido-local/evidence/provider-real-cli-observation.json` | Claude, Codex, OpenClaw, and Cursor real CLI availability/integration evidence. |
 | `.riido-local/evidence/ai-agent-product-acceptance.json` | Staging API probes for profile/device/bootstrap/task assignment/SSE/thread message/Figma golden scenarios plus `closed_loop_candidates` with `evidence_graph` chains derived from partial, skipped, failed, and inferred observations. |
@@ -44,6 +44,7 @@ go run ./tools/localqarunner -run-product -strict-coverage
 | `provider_status` | Provider aggregate from real CLI evidence. Cursor auth can make this `partial` while the harness still exits successfully. |
 | `provider_summary` | Compact provider rows embedded from real CLI evidence: id, availability, version, integration status, safe observed metadata, and repair data. |
 | `open_repairs` | Machine-readable repair queue. Example: `cursor/provider_auth_required/human/manual`. |
+| `closed_loop_candidates` | Top-level candidate queue copied from product evidence so the run artifact and dashboard expose the next loop without drilling into scenario JSON. |
 | `scenarios[].observed.closed_loop_candidates` | Machine-readable closed-loop candidate queue. Each candidate includes `evidence_graph` fields for observation, hypothesis, change, verifier, evidence, decision, and next_loop so harness failures can be promoted without relying on prose. |
 
 ## Daily Schedule
