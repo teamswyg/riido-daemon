@@ -14,6 +14,7 @@ func verifyWorkflow(root string, m manifest) error {
 	for _, needle := range []string{
 		"go run ./tools/localqacandidatedecision",
 		"-candidate-in out/local-qa-run.json",
+		"-github-annotations",
 		m.EvidenceArtifact,
 	} {
 		if !strings.Contains(string(body), needle) {

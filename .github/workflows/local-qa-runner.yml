@@ -85,6 +85,7 @@ jobs:
           go run ./tools/localqacandidatedecision \
             -candidate-in out/local-qa-run.json \
             -check-doc \
+            -github-annotations \
             -evidence-out out/local-qa-candidate-decision.json
           grep -q "decision_artifacts" out/local-qa-candidate-decision.json
           go run ./tools/localqaschedule \

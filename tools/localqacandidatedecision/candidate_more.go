@@ -1,6 +1,6 @@
 package main
 
-import "fmt"
+import "slices"
 
 func decisionsByID(decisions []decisionRecord) map[string]decisionRecord {
 	out := map[string]decisionRecord{}
@@ -10,15 +10,29 @@ func decisionsByID(decisions []decisionRecord) map[string]decisionRecord {
 	return out
 }
 
-func verifyNoOrphanDecisions(decisions []decisionRecord, candidates []closedLoopCandidate) error {
+func orphanDecisionProblems(decisions []decisionRecord, candidates []closedLoopCandidate) []candidateProblem {
 	candidateByID := map[string]bool{}
 	for _, item := range candidates {
 		candidateByID[item.ID] = true
 	}
+	var problems []candidateProblem
 	for _, decision := range decisions {
 		if !candidateByID[decision.CandidateID] {
-			return fmt.Errorf("decision %s has no matching candidate", decision.CandidateID)
+			problems = append(problems, orphanDecisionProblem(decision))
 		}
 	}
-	return nil
+	return problems
+}
+
+func invalidArtifactProblem(candidate closedLoopCandidate, decision decisionRecord) (candidateProblem, bool) {
+	if slices.Contains(candidate.RequiredNextArtifacts, decision.NextArtifact) {
+		return candidateProblem{}, false
+	}
+	return candidateProblem{
+		CandidateID:           candidate.ID,
+		Reason:                "decision next_artifact is not required by candidate",
+		RequiredNextArtifacts: candidate.RequiredNextArtifacts,
+		DecisionNextArtifact:  decision.NextArtifact,
+		RecommendedAction:     "Choose one next_artifact from required_next_artifacts.",
+	}, true
 }
