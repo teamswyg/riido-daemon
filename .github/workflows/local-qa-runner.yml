@@ -71,12 +71,14 @@ jobs:
           go run ./tools/localqarunner \
             -run-product=false \
             -run-integration=false \
+            -product-evidence out/ai-agent-product-acceptance.json \
             -provider-evidence out/provider-real-cli-observation.json \
             -release-evidence out/local-release-acceptance.json \
             -coverage-evidence out/local-qa-coverage.json \
             -schedule-evidence out/local-qa-schedule.json \
             -dashboard out/index.html \
             -evidence-out out/local-qa-run.json
+          grep -q "closed_loop_candidates" out/local-qa-run.json
           go run ./tools/localqaschedule \
             -repo "$(pwd)" \
             -s3-prefix s3://example-local-qa-evidence/daily \

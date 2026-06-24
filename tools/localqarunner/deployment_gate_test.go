@@ -12,12 +12,13 @@ func TestBuildDeploymentGateBlocksPartialCoverage(t *testing.T) {
 			Mode:    "manual",
 			Summary: "login required",
 		}},
+		ClosedLoops: []runLoopCandidate{{ID: "close-x"}},
 	}
 	got := buildDeploymentGate(evidence)
 	if got.Status != deploymentGateBlocked {
 		t.Fatalf("status=%q", got.Status)
 	}
-	if got.ObservedCoverageStatus != statusPartial || len(got.Blockers) != 2 {
+	if got.ObservedCoverageStatus != statusPartial || len(got.Blockers) != 3 {
 		t.Fatalf("gate=%+v", got)
 	}
 }

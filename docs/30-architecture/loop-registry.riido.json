@@ -20,7 +20,7 @@
       "owner": "tools/localproductacceptance",
       "kind": "harness-to-closed-loop-intake",
       "observes": ["skipped scenarios", "partial scenarios", "failed scenarios", "inferred execution ids"],
-      "verifies": ["closed_loop_candidates are emitted", "candidate count is visible in JSON evidence", "each candidate carries an evidence_graph"],
+      "verifies": ["closed_loop_candidates are emitted", "candidate count is visible in JSON evidence", "each candidate carries an evidence_graph", "local QA run evidence rolls candidates up"],
       "evidence": [".riido-local/evidence/ai-agent-product-acceptance.json", "local-qa-runner artifact"],
       "expires_after": "24h",
       "fails_when": ["closed_loop_candidates missing", "inferred execution hidden", "evidence gap silently passes"],
@@ -81,7 +81,12 @@
         "tools/localproductacceptance/evidence_gap.go",
         "tools/localproductacceptance/evidence_gap_candidates.go",
         "tools/localproductacceptance/evidence_gap_candidate_graph.go",
-        "tools/localproductacceptance/evidence_gap_inferred.go"
+        "tools/localproductacceptance/evidence_gap_inferred.go",
+        "tools/localqarunner/product_evidence.go",
+        "tools/localqarunner/types.go",
+        "tools/localqadashboard/run_evidence.go",
+        "tools/localqadashboard/render.go",
+        ".github/workflows/local-qa-runner.yml"
       ],
       "docs": [
         "docs/30-architecture/local-acceptance-coverage.riido.json",
@@ -103,6 +108,22 @@
           "contains": [
             "TestEvidenceGapCandidatesCarryEvidenceGraph",
             "evidence_graph"
+          ]
+        },
+        {
+          "name": "local-qa-runner-candidate-rollup-test",
+          "file": "tools/localqarunner/product_evidence_test.go",
+          "contains": [
+            "TestApplyProductEvidenceRollsUpClosedLoopCandidates",
+            "closed_loop_candidates"
+          ]
+        },
+        {
+          "name": "local-qa-dashboard-candidate-test",
+          "file": "tools/localqadashboard/render_loop_candidate_test.go",
+          "contains": [
+            "Closed-loop Candidates",
+            "promote-x"
           ]
         }
       ]
