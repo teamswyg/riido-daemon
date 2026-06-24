@@ -44,12 +44,12 @@ func TestEvidenceGapScenarioPromotesInferredExecutionLoops(t *testing.T) {
 		ID:     "local.qa.dsl_system_audit",
 		Status: statusPartial,
 		Observed: map[string]any{"execution_counts": map[string]any{
-			"inference_required_ids": []any{"browser-meaning-qa"},
+			"inference_required_ids": []any{"figma-refresh"},
 		}},
 	}}, config{manualOut: &manualOut, screenshots: &screenshots})
 
 	closed := got.Observed["closed_loop_candidates"].([]evidenceGapCandidate)
-	if !hasEvidenceGapCandidate(closed, "close-inferred-browser-meaning-qa") {
+	if !hasEvidenceGapCandidate(closed, "close-inferred-figma-refresh") {
 		t.Fatalf("inferred candidate missing: %+v", closed)
 	}
 }
