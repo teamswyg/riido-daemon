@@ -36,5 +36,5 @@ func staticEvidenceGapCandidates(
 }
 
 func staticGap(id, reason, next string) evidenceGapCandidate {
-	return evidenceGapCandidate{ID: id, Class: "known_gap", Reason: reason, NextEvidence: next}
+	return closedLoopCandidate(id, "", "known_gap", reason, next)
 }

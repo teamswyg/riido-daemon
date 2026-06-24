@@ -20,7 +20,7 @@
       "owner": "tools/localproductacceptance",
       "kind": "harness-to-closed-loop-intake",
       "observes": ["skipped scenarios", "partial scenarios", "failed scenarios", "inferred execution ids"],
-      "verifies": ["closed_loop_candidates are emitted", "candidate count is visible in JSON evidence"],
+      "verifies": ["closed_loop_candidates are emitted", "candidate count is visible in JSON evidence", "each candidate carries an evidence_graph"],
       "evidence": [".riido-local/evidence/ai-agent-product-acceptance.json", "local-qa-runner artifact"],
       "expires_after": "24h",
       "fails_when": ["closed_loop_candidates missing", "inferred execution hidden", "evidence gap silently passes"],
@@ -80,13 +80,14 @@
       "files": [
         "tools/localproductacceptance/evidence_gap.go",
         "tools/localproductacceptance/evidence_gap_candidates.go",
+        "tools/localproductacceptance/evidence_gap_candidate_graph.go",
         "tools/localproductacceptance/evidence_gap_inferred.go"
       ],
       "docs": [
         "docs/30-architecture/local-acceptance-coverage.riido.json",
         "docs/readme/local-acceptance.md"
       ],
-      "evidence": ["local.qa.evidence_gap_candidates", "closed_loop_candidates"],
+      "evidence": ["local.qa.evidence_gap_candidates", "closed_loop_candidates", "evidence_graph"],
       "verifiers": [
         {
           "name": "gap-candidates-test",
@@ -94,6 +95,14 @@
           "contains": [
             "TestEvidenceGapScenarioPromotesInferredExecutionLoops",
             "closed_loop_candidates"
+          ]
+        },
+        {
+          "name": "gap-candidate-graph-test",
+          "file": "tools/localproductacceptance/evidence_gap_graph_test.go",
+          "contains": [
+            "TestEvidenceGapCandidatesCarryEvidenceGraph",
+            "evidence_graph"
           ]
         }
       ]

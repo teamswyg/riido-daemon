@@ -7,13 +7,13 @@ func inferredExecutionCandidates(item scenario) []evidenceGapCandidate {
 	ids := inferredExecutionIDs(item.Observed)
 	out := make([]evidenceGapCandidate, 0, len(ids))
 	for _, id := range ids {
-		out = append(out, evidenceGapCandidate{
-			ID:             "close-inferred-" + id,
-			SourceScenario: item.ID,
-			Class:          "inferred_execution_loop",
-			Reason:         "QA execution inventory still requires human or Codex inference.",
-			NextEvidence:   "Replace execution_inventory entry " + id + " with a system-owned command/verifier evidence path.",
-		})
+		out = append(out, closedLoopCandidate(
+			"close-inferred-"+id,
+			item.ID,
+			"inferred_execution_loop",
+			"QA execution inventory still requires human or Codex inference.",
+			"Replace execution_inventory entry "+id+" with a system-owned command/verifier evidence path.",
+		))
 	}
 	return out
 }
