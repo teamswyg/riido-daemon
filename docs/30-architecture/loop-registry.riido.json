@@ -35,6 +35,25 @@
       }
     },
     {
+      "id": "local-qa-evidence-expiry-gate",
+      "owner": "tools/localqarunner",
+      "kind": "closed-loop",
+      "observes": ["coverage rows", "expires_at", "deployment gate"],
+      "verifies": ["expired coverage rows block deployment", "strict release gate fails on blocked deployment gate", "fresh coverage rows remain deployable"],
+      "evidence": [".riido-local/evidence/local-qa-run.json", ".riido-local/evidence/local-qa-coverage.json"],
+      "expires_after": "24h",
+      "fails_when": ["expired evidence is treated as green", "deployment gate omits coverage_evidence_expired", "strict coverage ignores a blocked deployment gate"],
+      "evidence_graph": {
+        "observation": "coverage evidence can remain passed after its source rows have expired.",
+        "hypothesis": "The release gate should block expired local QA rows even when the previous coverage summary was passed.",
+        "change": "deployment gate counts expired coverage rows and emits coverage_evidence_expired.",
+        "verifier": "TestBuildDeploymentGateBlocksExpiredCoverageRows",
+        "evidence": "deployment_gate.blockers[].code=coverage_evidence_expired",
+        "decision": "expired evidence requires a new QA run before deployment.",
+        "next_loop": "connect launchd schedule evidence to automatic rerun confirmation."
+      }
+    },
+    {
       "id": "qa-system-inference-surfacing",
       "owner": "tools/localproductacceptance",
       "kind": "systematization-audit",
@@ -124,6 +143,46 @@
           "contains": [
             "Closed-loop Candidates",
             "promote-x"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "expired_local_qa_evidence_must_block_deployment",
+      "text": "Expired local QA coverage evidence must block the deployment gate even when the previous coverage summary was passed.",
+      "files": [
+        "tools/localqarunner/deployment_gate.go",
+        "tools/localqarunner/coverage_expiry.go",
+        "tools/localqarunner/coverage_expiry_test.go",
+        "tools/localqarunner/coverage_evidence.go",
+        "tools/localqarunner/strict_coverage.go",
+        "tools/localqarunner/strict_coverage_test.go"
+      ],
+      "docs": [
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md",
+        "docs/30-architecture/local-qa-daily-trigger.dsl.json"
+      ],
+      "evidence": [
+        "coverage_evidence_expired",
+        "deployment_gate",
+        "expires_at"
+      ],
+      "verifiers": [
+        {
+          "name": "expired-coverage-gate-test",
+          "file": "tools/localqarunner/coverage_expiry_test.go",
+          "contains": [
+            "TestBuildDeploymentGateBlocksExpiredCoverageRows",
+            "coverage_evidence_expired"
+          ]
+        },
+        {
+          "name": "strict-gate-block-test",
+          "file": "tools/localqarunner/strict_coverage_test.go",
+          "contains": [
+            "TestApplyStrictCoverageFailsBlockedGate",
+            "deploymentGateBlocked"
           ]
         }
       ]

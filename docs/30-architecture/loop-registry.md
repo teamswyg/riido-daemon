@@ -17,6 +17,15 @@
 - Verifies: `closed_loop_candidates are emitted`, `candidate count is visible in JSON evidence`, `each candidate carries an evidence_graph`, `local QA run evidence rolls candidates up`
 - Fails when: `closed_loop_candidates missing`, `inferred execution hidden`, `evidence gap silently passes`
 
+### local-qa-evidence-expiry-gate
+
+- Owner: `tools/localqarunner`
+- Kind: `closed-loop`
+- Expires after: `24h`
+- Observes: `coverage rows`, `expires_at`, `deployment gate`
+- Verifies: `expired coverage rows block deployment`, `strict release gate fails on blocked deployment gate`, `fresh coverage rows remain deployable`
+- Fails when: `expired evidence is treated as green`, `deployment gate omits coverage_evidence_expired`, `strict coverage ignores a blocked deployment gate`
+
 ### qa-system-inference-surfacing
 
 - Owner: `tools/localproductacceptance`
@@ -45,6 +54,15 @@ Harness observations that are skipped, partial, failed, or inferred must become 
 - Docs: `docs/30-architecture/local-acceptance-coverage.riido.json`, `docs/readme/local-acceptance.md`
 - Evidence: `local.qa.evidence_gap_candidates`, `closed_loop_candidates`, `evidence_graph`
 - Verifiers: `gap-candidates-test`, `gap-candidate-graph-test`, `local-qa-runner-candidate-rollup-test`, `local-qa-dashboard-candidate-test`
+
+### expired_local_qa_evidence_must_block_deployment
+
+Expired local QA coverage evidence must block the deployment gate even when the previous coverage summary was passed.
+
+- Files: `tools/localqarunner/deployment_gate.go`, `tools/localqarunner/coverage_expiry.go`, `tools/localqarunner/coverage_expiry_test.go`, `tools/localqarunner/coverage_evidence.go`, `tools/localqarunner/strict_coverage.go`, `tools/localqarunner/strict_coverage_test.go`
+- Docs: `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`, `docs/30-architecture/local-qa-daily-trigger.dsl.json`
+- Evidence: `coverage_evidence_expired`, `deployment_gate`, `expires_at`
+- Verifiers: `expired-coverage-gate-test`, `strict-gate-block-test`
 
 ### qa_system_inference_must_not_pass_as_green
 

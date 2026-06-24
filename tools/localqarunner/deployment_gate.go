@@ -22,6 +22,7 @@ func buildDeploymentGate(evidence runEvidence) runDeploymentGate {
 	gate.Blockers = appendCoverageBlocker(gate.Blockers, evidence.CoverageStatus)
 	gate.Blockers = appendRepairBlocker(gate.Blockers, len(evidence.OpenRepairs))
 	gate.Blockers = appendClosedLoopBlocker(gate.Blockers, len(evidence.ClosedLoops))
+	gate.Blockers = appendExpiredCoverageBlocker(gate.Blockers, expiredCoverageRows(evidence.Coverage))
 	if len(gate.Blockers) > 0 {
 		gate.Status = deploymentGateBlocked
 	}
