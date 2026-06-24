@@ -47,8 +47,8 @@ func assertBridgeAdapterStart(t *testing.T, name string, cmd agentbridge.StartCo
 
 func assertClaudeBridgeStart(t *testing.T, args string) {
 	t.Helper()
-	if !strings.Contains(args, "--permission-mode default") {
-		t.Fatalf("claude daemon adapter must use approval mode, got %q", args)
+	if !strings.Contains(args, "--permission-mode acceptEdits") {
+		t.Fatalf("claude daemon adapter must use headless edit mode, got %q", args)
 	}
 	if strings.Contains(args, "bypassPermissions") {
 		t.Fatalf("claude daemon adapter must not default to bypassPermissions: %q", args)

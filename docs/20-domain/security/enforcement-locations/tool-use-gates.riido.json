@@ -8,7 +8,7 @@
   "evidence_artifact": "tool-use-gate-evidence",
   "purpose": "Proves the executable tool-use security gate subset, links to [`security-redaction.md`](../security-redaction.md), and separates implemented branches from reserved policy vocabulary.",
   "implemented_actions": [
-    {"name": "allow", "summary": "explicit policy bundle allow proceeds without provider block", "source_checks": ["action-allow", "policy-bundle-allows-tool-use", "auto-approver-action-allow"]},
+    {"name": "allow", "summary": "explicit policy bundle allow or unclassified provider-native approval proceeds without provider block", "source_checks": ["action-allow", "policy-bundle-allows-tool-use", "auto-approver-action-allow", "auto-approver-unclassified"]},
     {"name": "require-approval", "summary": "classified risk without bundle allow may continue only through a human approval branch", "source_checks": ["action-require-approval", "policy-human-approval-branch"]},
     {"name": "interrupt-and-block", "summary": "unknown tier/surface or unavailable approval path blocks provider tool use", "source_checks": ["action-interrupt-and-block", "policy-block-no-approval", "start-gate-blocks", "session-block-cancels-provider"]}
   ],
@@ -20,6 +20,7 @@
     {"name": "policy owns stable risk surfaces", "summary": "network egress, protected path write, secret exposure, and destructive command are typed ToolUseSurface values.", "source_checks": ["surface-network", "surface-protected-path", "surface-secret", "surface-destructive"]},
     {"name": "policy decision is pure", "summary": "EvaluateToolUse returns C7 decisions without provider execution.", "source_checks": ["evaluate-tool-use", "evaluate-with-bundle"]},
     {"name": "toolpolicy maps provider-neutral tools to surfaces", "summary": "ClassifyToolUseSurface derives risk surfaces from kind, name, and redacted args.", "source_checks": ["classify-tool-use", "classify-secret", "classify-network", "classify-protected", "classify-shell"]},
+    {"name": "unclassified native approvals are not local human prompts", "summary": "Known trust tiers auto-approve provider-native approval requests that do not map to a risk surface, so safe edit/run flows do not depend on local approval dialogs.", "source_checks": ["auto-approver-unclassified", "auto-approver-known-tier"]},
     {"name": "redacted args become secret exposure signals", "summary": "toolargs redacts sensitive keys/patterns and toolpolicy treats redaction markers as secret exposure.", "source_checks": ["toolargs-redacted-value", "toolargs-sensitive-key", "toolargs-secret-pattern", "toolpolicy-redacted-signal"]},
     {"name": "supervisor stores redacted provider tool payloads", "summary": "provider tool events preserve bounded ToolRef.Args without rehydrating raw secrets.", "source_checks": ["supervisor-tool-payload-clone", "supervisor-tool-start-ir", "supervisor-approval-ir"]},
     {"name": "headless tool approval is fail-closed", "summary": "approval/start gates block classified risk when policy lacks an allow path.", "source_checks": ["approval-gate-blocks", "session-approval-blocks"]}
@@ -42,6 +43,8 @@
     {"name": "policy-human-approval-branch", "file": "internal/policy/tool_policy.go", "contains": "ToolUseActionRequireApproval"},
     {"name": "policy-block-no-approval", "file": "internal/policy/tool_policy.go", "contains": "TOOL_USE_NOT_IN_POLICY_BUNDLE"},
     {"name": "auto-approver-action-allow", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "decision.Action == policy.ToolUseActionAllow"},
+    {"name": "auto-approver-unclassified", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "return !ok || decision.Action == policy.ToolUseActionAllow"},
+    {"name": "auto-approver-known-tier", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "tier == policy.TrustTierUnknown"},
     {"name": "start-gate-blocks", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "PolicyToolStartGate"},
     {"name": "approval-gate-blocks", "file": "internal/agentbridge/toolpolicy/gates.go", "contains": "PolicyToolApprovalGate"},
     {"name": "classify-tool-use", "file": "internal/agentbridge/toolpolicy/classify.go", "contains": "func ClassifyToolUseSurface"},

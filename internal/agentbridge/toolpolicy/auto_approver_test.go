@@ -7,7 +7,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/policy"
 )
 
-func TestPolicyAutoApproverOnlyApprovesExplicitAllowedSurface(t *testing.T) {
+func TestPolicyAutoApproverApprovesAllowedAndUnclassifiedTools(t *testing.T) {
 	bundle := testPolicyBundle(policy.AllowedSurfaceSet{
 		ToolUse: []policy.ToolUseSurface{policy.ToolUseDestructiveCommand},
 	})
@@ -19,8 +19,11 @@ func TestPolicyAutoApproverOnlyApprovesExplicitAllowedSurface(t *testing.T) {
 	if approver(agentbridge.ToolRef{Kind: "patch_apply"}) {
 		t.Fatal("patch_apply must stay on human approval path without protected-path-write allow")
 	}
-	if approver(agentbridge.ToolRef{Kind: "read"}) {
-		t.Fatal("unclassified tool must stay on human approval path")
+	if !approver(agentbridge.ToolRef{Kind: "read"}) {
+		t.Fatal("unclassified tool should auto-approve on a known trust tier")
+	}
+	if !approver(agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "go run main.go"}}) {
+		t.Fatal("unclassified safe shell command should auto-approve on a known trust tier")
 	}
 }
 
@@ -32,5 +35,8 @@ func TestPolicyAutoApproverDoesNotApproveUnknownTier(t *testing.T) {
 
 	if approver(agentbridge.ToolRef{Kind: "shell"}) {
 		t.Fatal("Unknown trust tier must not auto-approve tool use")
+	}
+	if approver(agentbridge.ToolRef{Kind: "read"}) {
+		t.Fatal("Unknown trust tier must not auto-approve unclassified tool use")
 	}
 }

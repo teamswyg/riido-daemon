@@ -14,7 +14,7 @@ Proves the executable tool-use security gate subset, links to [`security-redacti
 
 | Action | Summary | Evidence |
 | --- | --- | --- |
-| allow | explicit policy bundle allow proceeds without provider block | `action-allow`, `policy-bundle-allows-tool-use`, `auto-approver-action-allow` |
+| allow | explicit policy bundle allow or unclassified provider-native approval proceeds without provider block | `action-allow`, `policy-bundle-allows-tool-use`, `auto-approver-action-allow`, `auto-approver-unclassified` |
 | require-approval | classified risk without bundle allow may continue only through a human approval branch | `action-require-approval`, `policy-human-approval-branch` |
 | interrupt-and-block | unknown tier/surface or unavailable approval path blocks provider tool use | `action-interrupt-and-block`, `policy-block-no-approval`, `start-gate-blocks`, `session-block-cancels-provider` |
 
@@ -32,6 +32,7 @@ Proves the executable tool-use security gate subset, links to [`security-redacti
 | policy owns stable risk surfaces | network egress, protected path write, secret exposure, and destructive command are typed ToolUseSurface values. | `surface-network`, `surface-protected-path`, `surface-secret`, `surface-destructive` |
 | policy decision is pure | EvaluateToolUse returns C7 decisions without provider execution. | `evaluate-tool-use`, `evaluate-with-bundle` |
 | toolpolicy maps provider-neutral tools to surfaces | ClassifyToolUseSurface derives risk surfaces from kind, name, and redacted args. | `classify-tool-use`, `classify-secret`, `classify-network`, `classify-protected`, `classify-shell` |
+| unclassified native approvals are not local human prompts | Known trust tiers auto-approve provider-native approval requests that do not map to a risk surface, so safe edit/run flows do not depend on local approval dialogs. | `auto-approver-unclassified`, `auto-approver-known-tier` |
 | redacted args become secret exposure signals | toolargs redacts sensitive keys/patterns and toolpolicy treats redaction markers as secret exposure. | `toolargs-redacted-value`, `toolargs-sensitive-key`, `toolargs-secret-pattern`, `toolpolicy-redacted-signal` |
 | supervisor stores redacted provider tool payloads | provider tool events preserve bounded ToolRef.Args without rehydrating raw secrets. | `supervisor-tool-payload-clone`, `supervisor-tool-start-ir`, `supervisor-approval-ir` |
 | headless tool approval is fail-closed | approval/start gates block classified risk when policy lacks an allow path. | `approval-gate-blocks`, `session-approval-blocks` |
