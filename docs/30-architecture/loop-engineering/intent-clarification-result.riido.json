@@ -1,0 +1,32 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "intent-clarification-result",
+  "owner": "saasplane assignment reporter",
+  "observation": {
+    "summary": "Intent-oriented tasks can make the provider ask a clarification question and exit successfully, which would look completed unless the daemon reports the conversational wait state.",
+    "artifacts": ["internal/agentbridge/controlplane/saasplane/task_completion.go"]
+  },
+  "hypothesis": {
+    "summary": "The daemon can preserve the existing SaaS events endpoint shape and carry the wait-for-user semantic through assignment_result_status=needs_input metadata.",
+    "artifacts": ["internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go"]
+  },
+  "execution": {
+    "summary": "Detect canonical clarification result text on completed provider output and report assignment_state_updated/running with needs_input metadata.",
+    "artifacts": ["internal/agentbridge/controlplane/saasplane/needs_input_markers.go", "internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go"]
+  },
+  "evaluation": {
+    "summary": "The regression test proves the event stays on the existing AgentEventRequest surface while control-plane can project it as waiting_for_user.",
+    "artifacts": ["internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go"]
+  },
+  "retrospective": {
+    "summary": "Clarification becomes a runtime semantic instead of a completed answer, without adding or changing client-facing endpoints.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go test ./internal/agentbridge/controlplane/saasplane -run TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment -count=1",
+      "proves": "completed clarification output is reported as assignment_result_status=needs_input without endpoint shape changes"
+    }
+  ]
+}
