@@ -1,0 +1,63 @@
+name: loop-registry
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/loop-registry.yml"
+      - ".pre-commit-config.yaml"
+      - "docs/30-architecture/loop-registry.riido.json"
+      - "docs/30-architecture/loop-registry.md"
+      - "docs/30-architecture/loop-engineering.riido.json"
+      - "docs/30-architecture/loop-engineering/loop-registry.riido.json"
+      - "tools/loopregistry/**"
+      - "tools/localproductacceptance/**"
+      - "docs/30-architecture/qa-system.dsl.json"
+      - "docs/30-architecture/local-acceptance-coverage.riido.json"
+      - "docs/readme/local-acceptance.md"
+      - "go.mod"
+      - "go.sum"
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/loop-registry.yml"
+      - ".pre-commit-config.yaml"
+      - "docs/30-architecture/loop-registry.riido.json"
+      - "docs/30-architecture/loop-registry.md"
+      - "docs/30-architecture/loop-engineering.riido.json"
+      - "docs/30-architecture/loop-engineering/loop-registry.riido.json"
+      - "tools/loopregistry/**"
+      - "tools/localproductacceptance/**"
+      - "docs/30-architecture/qa-system.dsl.json"
+      - "docs/30-architecture/local-acceptance-coverage.riido.json"
+      - "docs/readme/local-acceptance.md"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  loop-registry:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify loop registry
+        run: |
+          mkdir -p out
+          go test ./tools/loopregistry -count=1
+          go run ./tools/loopregistry -check-doc -evidence-out out/loop-registry.json
+      - name: Verify changed file claim bindings
+        if: github.event_name == 'pull_request'
+        run: |
+          mkdir -p out
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > out/changed-files.txt
+          go run ./tools/loopregistry -check-doc -changed-files out/changed-files.txt -evidence-out out/loop-registry-changed.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: loop-registry
+          path: out/*
+          if-no-files-found: error

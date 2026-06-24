@@ -6,6 +6,11 @@ repos:
         entry: bash -c 'go generate ./tools/localproductacceptance && git add tools/localproductacceptance/*.generated.json'
         language: system
         pass_filenames: false
+      - id: loop-registry
+        name: loop-registry
+        entry: bash -c 'path="$(git rev-parse --git-path riido-loop-registry-changed)" && git diff --cached --name-only > "$path" && go run ./tools/loopregistry -check-doc -changed-files "$path"'
+        language: system
+        pass_filenames: false
       - id: provider-model-live-evidence
         name: provider-model-live-evidence
         entry: bash -c 'go run ./tools/providermodelcatalog -out cmd/riido/provider_model_catalog.generated.json && git add cmd/riido/provider_model_catalog.generated.json && RIIDO_PROVIDER_MODEL_LIVE=1 go test ./cmd/riido -run TestProviderRuntimeModelsLiveEvidence -count=1'

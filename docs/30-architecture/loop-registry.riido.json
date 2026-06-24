@@ -1,0 +1,152 @@
+{
+  "schema_version": "riido-loop-registry.v1",
+  "id": "daemon-loop-registry",
+  "title": "Daemon Loop Registry",
+  "generated_doc": "docs/30-architecture/loop-registry.md",
+  "workflow": ".github/workflows/loop-registry.yml",
+  "evidence_artifact": "loop-registry",
+  "precommit_hook": "loop-registry",
+  "command": "go run ./tools/loopregistry -check-doc",
+  "loop": {
+    "observation": "QA, workflow, and executable-knowledge evidence existed, but the relationship between loops, business claims, code paths, tests, docs, and evidence was still inferred by humans.",
+    "hypothesis": "A Loop Registry manifest can make loop ownership and business-claim bindings executable so an agent does not need to read prose before changing semantically bound files.",
+    "execute": "Verify loop entries, evidence-graph closure, claim file anchors, verifier source tokens, CI wiring, pre-commit wiring, generated-doc freshness, and optional changed-file co-change constraints.",
+    "evaluate": "The verifier fails when a loop omits observe/verify/evidence/freshness/fail conditions, when a claim has no code/doc/test/evidence binding, or when a claim-bound runtime file changes without bound proof changing too.",
+    "retrospective": "Harnesses can keep discovering failures while the registry decides which discoveries have become closed loops and which files must move together."
+  },
+  "loops": [
+    {
+      "id": "local-qa-gap-to-candidate",
+      "owner": "tools/localproductacceptance",
+      "kind": "harness-to-closed-loop-intake",
+      "observes": ["skipped scenarios", "partial scenarios", "failed scenarios", "inferred execution ids"],
+      "verifies": ["closed_loop_candidates are emitted", "candidate count is visible in JSON evidence"],
+      "evidence": [".riido-local/evidence/ai-agent-product-acceptance.json", "local-qa-runner artifact"],
+      "expires_after": "24h",
+      "fails_when": ["closed_loop_candidates missing", "inferred execution hidden", "evidence gap silently passes"],
+      "evidence_graph": {
+        "observation": "local QA scenarios can be skipped or inferred without creating follow-up work.",
+        "hypothesis": "Every skipped, partial, failed, or inferred observation should become a closed_loop_candidate.",
+        "change": "evidence_gap_candidates derives candidates from local QA scenario outcomes.",
+        "verifier": "TestEvidenceGapScenarioPromotesInferredExecutionLoops",
+        "evidence": "local.qa.evidence_gap_candidates",
+        "decision": "partial status is expected while candidates remain.",
+        "next_loop": "promote one candidate into a system-owned verifier."
+      }
+    },
+    {
+      "id": "qa-system-inference-surfacing",
+      "owner": "tools/localproductacceptance",
+      "kind": "systematization-audit",
+      "observes": ["qa-system DSL", "execution_inventory", "generated QA mirrors"],
+      "verifies": ["inference_required_count", "inference_required_ids", "generated drift checks"],
+      "evidence": [".riido-local/evidence/ai-agent-product-acceptance.json"],
+      "expires_after": "24h",
+      "fails_when": ["inferred execution is counted as green", "generated artifacts drift", "pre-commit generation is absent"],
+      "evidence_graph": {
+        "observation": "some QA actions still require human or Codex inference.",
+        "hypothesis": "Counting inferred execution explicitly prevents false green QA evidence.",
+        "change": "qaSystemScenario marks inferred execution as partial evidence.",
+        "verifier": "TestQASystemExecutionInventoryCounts",
+        "evidence": "local.qa.dsl_system_audit",
+        "decision": "remaining inferred ids are surfaced as candidates.",
+        "next_loop": "replace inferred entries with system-owned commands."
+      }
+    }
+  ],
+  "business_claims": [
+    {
+      "id": "closed_loop_candidates_must_surface_harness_gaps",
+      "text": "Harness observations that are skipped, partial, failed, or inferred must become machine-readable closed-loop candidates instead of hidden follow-up work.",
+      "files": [
+        "tools/localproductacceptance/evidence_gap.go",
+        "tools/localproductacceptance/evidence_gap_candidates.go",
+        "tools/localproductacceptance/evidence_gap_inferred.go"
+      ],
+      "docs": [
+        "docs/30-architecture/local-acceptance-coverage.riido.json",
+        "docs/readme/local-acceptance.md"
+      ],
+      "evidence": ["local.qa.evidence_gap_candidates", "closed_loop_candidates"],
+      "verifiers": [
+        {
+          "name": "gap-candidates-test",
+          "file": "tools/localproductacceptance/evidence_gap_test.go",
+          "contains": [
+            "TestEvidenceGapScenarioPromotesInferredExecutionLoops",
+            "closed_loop_candidates"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qa_system_inference_must_not_pass_as_green",
+      "text": "QA system evidence must report inferred execution separately and mark the audit partial until every loop has a system-owned verifier.",
+      "files": [
+        "tools/localproductacceptance/qa_system.go",
+        "docs/30-architecture/qa-system.dsl.json"
+      ],
+      "docs": [
+        "docs/30-architecture/qa-system.dsl.json",
+        "docs/readme/local-acceptance.md"
+      ],
+      "evidence": ["local.qa.dsl_system_audit", "inference_required_count"],
+      "verifiers": [
+        {
+          "name": "qa-system-inference-count-test",
+          "file": "tools/localproductacceptance/qa_system_test.go",
+          "contains": [
+            "TestQASystemExecutionInventoryCounts",
+            "inference_required_ids"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "client_harness_must_remain_readonly",
+      "text": "Daemon-owned QA harness work must never be committed or merged into teamswyg/riido-client; client worktrees are observed only.",
+      "files": [
+        "tools/localproductacceptance/git.go",
+        "docs/30-architecture/local-acceptance-coverage.riido.json"
+      ],
+      "docs": [
+        "docs/30-architecture/local-acceptance-coverage.riido.json"
+      ],
+      "evidence": ["product.client.readonly"],
+      "verifiers": [
+        {
+          "name": "client-readonly-test",
+          "file": "tools/localproductacceptance/git_test.go",
+          "contains": [
+            "clientReadOnlyScenario",
+            "must never be merged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loop_registry_must_bind_claims_to_code_docs_tests",
+      "text": "Loop Registry entries must bind business claims to code paths, docs, verifier tokens, evidence names, workflow execution, and pre-commit execution.",
+      "files": [
+        "tools/loopregistry/validate.go",
+        "tools/loopregistry/validate_claim.go",
+        "tools/loopregistry/changed.go"
+      ],
+      "docs": [
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": ["loop-registry"],
+      "verifiers": [
+        {
+          "name": "loop-registry-tests",
+          "file": "tools/loopregistry/run_test.go",
+          "contains": [
+            "TestRegistryValidatesClaimBindings",
+            "TestRegistryRejectsRuntimeOnlyClaimChange"
+          ]
+        }
+      ]
+    }
+  ]
+}
