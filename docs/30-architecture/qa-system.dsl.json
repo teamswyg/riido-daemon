@@ -15,7 +15,7 @@
     {"id": "ci-generated-drift", "file": ".github/workflows/local-qa-runner.yml", "contains": ["Generate QA DSL artifacts", "git diff --exit-code -- tools/localproductacceptance/*.generated.json"]},
     {"id": "ci-local-no-token", "file": ".github/workflows/local-qa-runner.yml", "contains": ["-storage-state /tmp/no-riido-storage-state.json", "-workspace-id \"\"", "-api-token \"\""]},
     {"id": "ci-evidence-grep", "file": ".github/workflows/local-qa-runner.yml", "contains": ["contract.ui.i18n_dsl", "translation_coverage", "coverage_ratio", "local.qa.dsl_system_audit", "execution_counts", "inference_required_count", "domain.fixture_journey"]},
-    {"id": "test-generated-fresh", "file": "tools/localproductacceptance/qa_system_test.go", "contains": ["TestQASystemDSLGeneratedFileFresh", "TestQASystemScenarioAuditsChangeDetection", "TestQASystemExecutionInventoryCounts"]}
+    {"id": "test-generated-fresh", "file": "tools/localproductacceptance/qa_system_test.go", "contains": ["TestQASystemDSLGeneratedFileFresh", "TestQASystemScenarioAuditsChangeDetection", "TestQASystemExecutionInventoryCounts", "inference_required_ids"]}
   ],
   "execution_inventory": [
     {"id": "dsl-generate", "mode": "system", "owner": "pre-commit/ci", "action": "go generate ./tools/localproductacceptance"},

@@ -34,7 +34,7 @@ func TestQASystemDesignArtifactsStaySmall(t *testing.T) {
 
 func TestQASystemScenarioAuditsChangeDetection(t *testing.T) {
 	got := qaSystemScenario()
-	if got.ID != "local.qa.dsl_system_audit" || got.Status != statusPassed {
+	if got.ID != "local.qa.dsl_system_audit" || got.Status != statusPartial {
 		t.Fatalf("QA system audit failed: %+v", got)
 	}
 	if got.Observed["search_entries"] != 5 {
@@ -70,6 +70,10 @@ func TestQASystemExecutionInventoryCounts(t *testing.T) {
 	}
 	if counts["system_automated_count"] != 6 || counts["inference_required_count"] != 3 || counts["total"] != 9 {
 		t.Fatalf("unexpected execution counts: %+v", counts)
+	}
+	ids, ok := counts["inference_required_ids"].([]string)
+	if !ok || len(ids) != 3 || ids[0] != "browser-meaning-qa" {
+		t.Fatalf("inference ids missing: %+v", counts["inference_required_ids"])
 	}
 	inference, ok := got.Observed["inference_removed"].(map[string]any)
 	if !ok || inference["all_execution_automated"] != false {
