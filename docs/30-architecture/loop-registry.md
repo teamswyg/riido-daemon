@@ -26,6 +26,15 @@
 - Verifies: `inference_required_count`, `inference_required_ids`, `generated drift checks`
 - Fails when: `inferred execution is counted as green`, `generated artifacts drift`, `pre-commit generation is absent`
 
+### intent-clarification-needs-input
+
+- Owner: `internal/agentbridge/controlplane/saasplane`
+- Kind: `closed-loop`
+- Expires after: `24h`
+- Observes: `provider completed output`, `clarification question markers`, `AgentEventRequest metadata`
+- Verifies: `assignment_result_status=needs_input is emitted`, `assignment is not reported completed`, `events endpoint shape is preserved`
+- Fails when: `clarification output completes assignment`, `needs_input metadata missing`, `endpoint shape changes`
+
 ## Business Claims
 
 ### closed_loop_candidates_must_surface_harness_gaps
@@ -54,6 +63,15 @@ Daemon-owned QA harness work must never be committed or merged into teamswyg/rii
 - Docs: `docs/30-architecture/local-acceptance-coverage.riido.json`
 - Evidence: `product.client.readonly`
 - Verifiers: `client-readonly-test`
+
+### intent_clarification_must_wait_for_user
+
+When a provider exits successfully after asking what work to do first, the daemon must report needs_input instead of completing the assignment.
+
+- Files: `internal/agentbridge/controlplane/saasplane/task_completion.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`
+- Docs: `docs/30-architecture/loop-engineering/intent-clarification-result.riido.json`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `assignment_result_status=needs_input`, `intent-clarification-result`, `loop-engineering-evidence`
+- Verifiers: `needs-input-completion-test`
 
 ### loop_registry_must_bind_claims_to_code_docs_tests
 
