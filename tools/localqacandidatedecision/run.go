@@ -19,6 +19,9 @@ func run(opt options) error {
 	if opt.CandidateIn != "" {
 		candidateResult, err := verifyCandidateDecisions(root, m, opt.CandidateIn)
 		if err != nil {
+			if opt.GitHubAnnotations {
+				emitCandidateAnnotations(err)
+			}
 			return err
 		}
 		result.CandidateCount = candidateResult.CandidateCount

@@ -1,10 +1,5 @@
 package main
 
-import (
-	"fmt"
-	"slices"
-)
-
 func verifyCandidateDecisions(root string, m manifest, path string) (verifyResult, error) {
 	candidate, err := loadCandidate(repoPath(root, path))
 	if err != nil {
@@ -12,28 +7,25 @@ func verifyCandidateDecisions(root string, m manifest, path string) (verifyResul
 	}
 	decisionByID := decisionsByID(m.Decisions)
 	result := verifyResult{CandidateCount: len(candidate.ClosedLoops)}
+	var problems []candidateProblem
 	for _, item := range candidate.ClosedLoops {
 		decision, ok := decisionByID[item.ID]
 		if !ok {
-			return result, fmt.Errorf("candidate %s has no decision record", item.ID)
+			problems = append(problems, missingDecisionProblem(item))
+			continue
 		}
-		if err := verifyDecisionNextArtifact(item, decision); err != nil {
-			return result, err
+		if problem, ok := invalidArtifactProblem(item, decision); ok {
+			problems = append(problems, problem)
+			continue
 		}
 		result.DecisionIDs = append(result.DecisionIDs, item.ID)
 		result.DecisionArtifacts = append(result.DecisionArtifacts, decisionArtifactEvidence{
 			CandidateID: item.ID, NextArtifact: decision.NextArtifact,
 		})
 	}
-	if err := verifyNoOrphanDecisions(m.Decisions, candidate.ClosedLoops); err != nil {
-		return result, err
+	problems = append(problems, orphanDecisionProblems(m.Decisions, candidate.ClosedLoops)...)
+	if len(problems) > 0 {
+		return result, candidateDecisionError{Problems: problems}
 	}
 	return result, nil
-}
-
-func verifyDecisionNextArtifact(candidate closedLoopCandidate, decision decisionRecord) error {
-	if !slices.Contains(candidate.RequiredNextArtifacts, decision.NextArtifact) {
-		return fmt.Errorf("candidate %s next_artifact %s is not required", candidate.ID, decision.NextArtifact)
-	}
-	return nil
 }

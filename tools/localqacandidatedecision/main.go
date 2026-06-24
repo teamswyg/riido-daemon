@@ -15,6 +15,7 @@ func main() {
 	fs.StringVar(&opt.EvidenceOut, "evidence-out", "", "evidence output")
 	fs.BoolVar(&opt.WriteDoc, "write-doc", false, "write generated doc")
 	fs.BoolVar(&opt.CheckDoc, "check-doc", false, "check generated doc")
+	fs.BoolVar(&opt.GitHubAnnotations, "github-annotations", false, "emit GitHub Actions annotations")
 	if err := fs.Parse(os.Args[1:]); err != nil {
 		os.Exit(2)
 	}

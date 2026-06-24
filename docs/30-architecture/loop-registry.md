@@ -66,12 +66,12 @@ Harness observations that are skipped, partial, failed, or inferred must become 
 
 ### local_qa_candidate_decisions_must_match_candidates
 
-Local QA closed-loop candidate decision verification must consume the current local QA run evidence, cover every candidate exactly once, reject orphan decisions, and choose only next_artifact values declared by each candidate's required_next_artifacts.
+Local QA closed-loop candidate decision verification must consume the current local QA run evidence, cover every candidate exactly once, reject orphan decisions, choose only next_artifact values declared by each candidate's required_next_artifacts, and emit actionable PR annotations for candidate decision failures.
 
-- Files: `tools/localqacandidatedecision/candidate.go`, `tools/localqacandidatedecision/candidate_more.go`, `tools/localqacandidatedecision/decision.go`, `tools/localqacandidatedecision/run.go`, `tools/localqacandidatedecision/workflow.go`, `tools/localqacandidatedecision/candidate_test.go`, `tools/localqacandidatedecision/decision_test.go`, `tools/localqacandidatedecision/run_test.go`, `.github/workflows/local-qa-runner.yml`
+- Files: `tools/localqacandidatedecision/annotation.go`, `tools/localqacandidatedecision/annotation_escape.go`, `tools/localqacandidatedecision/candidate.go`, `tools/localqacandidatedecision/candidate_more.go`, `tools/localqacandidatedecision/candidate_problem.go`, `tools/localqacandidatedecision/candidate_problem_more.go`, `tools/localqacandidatedecision/decision.go`, `tools/localqacandidatedecision/main.go`, `tools/localqacandidatedecision/options.go`, `tools/localqacandidatedecision/run.go`, `tools/localqacandidatedecision/workflow.go`, `tools/localqacandidatedecision/annotation_test.go`, `tools/localqacandidatedecision/candidate_test.go`, `tools/localqacandidatedecision/decision_test.go`, `tools/localqacandidatedecision/run_test.go`, `.github/workflows/local-qa-runner.yml`
 - Docs: `docs/30-architecture/local-qa-candidate-decision.riido.json`, `docs/30-architecture/local-qa-candidate-decision.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/readme/local-acceptance.riido.json`, `docs/readme/local-acceptance.md`
 - Evidence: `local-qa-candidate-decision`, `decision_artifacts`, `required_next_artifacts`
-- Verifiers: `candidate-decision-cover-test`, `candidate-decision-artifact-test`, `candidate-decision-input-test`
+- Verifiers: `candidate-decision-annotation-test`, `candidate-decision-cover-test`, `candidate-decision-artifact-test`, `candidate-decision-input-test`
 
 ### expired_local_qa_evidence_must_block_deployment
 
