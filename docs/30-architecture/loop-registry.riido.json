@@ -343,11 +343,19 @@
     },
     {
       "id": "loop_registry_must_bind_claims_to_code_docs_tests",
-      "text": "Loop Registry entries must bind business claims to code paths, docs, verifier tokens, evidence names, workflow execution, and pre-commit execution.",
+      "text": "Loop Registry entries must bind business claims to code paths, docs, verifier tokens, evidence names, workflow execution, pre-commit execution, and actionable PR annotations for claim-bound changed-file failures.",
       "files": [
+        "tools/loopregistry/annotation.go",
+        "tools/loopregistry/changed_file.go",
+        "tools/loopregistry/changed_problem.go",
+        "tools/loopregistry/changed_validate.go",
+        "tools/loopregistry/report_types.go",
+        "tools/loopregistry/run.go",
+        "tools/loopregistry/slice.go",
         "tools/loopregistry/validate.go",
         "tools/loopregistry/validate_claim.go",
-        "tools/loopregistry/changed.go"
+        "tools/loopregistry/changed.go",
+        ".github/workflows/loop-registry.yml"
       ],
       "docs": [
         "docs/30-architecture/loop-registry.riido.json",
@@ -361,6 +369,22 @@
           "contains": [
             "TestRegistryValidatesClaimBindings",
             "TestRegistryRejectsRuntimeOnlyClaimChange"
+          ]
+        },
+        {
+          "name": "loop-registry-changed-evidence-test",
+          "file": "tools/loopregistry/changed_test.go",
+          "contains": [
+            "TestChangedFileEvidenceIncludesProblemDetails",
+            "RequiredEvidence"
+          ]
+        },
+        {
+          "name": "loop-registry-annotation-test",
+          "file": "tools/loopregistry/annotation_test.go",
+          "contains": [
+            "TestGitHubAnnotationExplainsClaimEvidence",
+            "Update one bound evidence file"
           ]
         }
       ]

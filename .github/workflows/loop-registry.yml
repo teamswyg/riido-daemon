@@ -74,7 +74,7 @@ jobs:
         run: |
           mkdir -p out
           git diff --name-only origin/${{ github.base_ref }}...HEAD > out/changed-files.txt
-          go run ./tools/loopregistry -check-doc -changed-files out/changed-files.txt -evidence-out out/loop-registry-changed.json
+          go run ./tools/loopregistry -check-doc -github-annotations -changed-files out/changed-files.txt -evidence-out out/loop-registry-changed.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:

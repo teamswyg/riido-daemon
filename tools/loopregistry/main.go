@@ -13,6 +13,7 @@ func main() {
 	flag.StringVar(&opts.ChangedFiles, "changed-files", "", "optional newline-delimited changed file list")
 	flag.BoolVar(&opts.WriteDoc, "write-doc", false, "write generated markdown")
 	flag.BoolVar(&opts.CheckDoc, "check-doc", false, "check generated markdown")
+	flag.BoolVar(&opts.GitHubAnnotations, "github-annotations", false, "emit GitHub Actions annotations")
 	flag.Parse()
 	if err := run(opts); err != nil {
 		fmt.Fprintln(os.Stderr, "loopregistry:", err)
