@@ -93,7 +93,7 @@ func qaSystemScenario() scenario {
 	status := statusPassed
 	if !generatedOK || !changeOK || !executionOK {
 		status = statusFailed
-	} else if len(sourceOnly) > 0 {
+	} else if len(sourceOnly) > 0 || executionCounts["inference_required_count"] != 0 {
 		status = statusPartial
 	}
 	return scenario{ID: "local.qa.dsl_system_audit", Status: status, Observed: observed}
@@ -192,8 +192,19 @@ func qaSystemExecutionCounts(entries []qaSystemExecution) (map[string]any, bool)
 		"by_mode":                  byMode,
 		"system_automated_count":   byMode["system"],
 		"inference_required_count": byMode["inferred"],
+		"inference_required_ids":   qaSystemExecutionIDs(entries, "inferred"),
 		"unknown_modes":            unknown,
 	}, len(entries) > 0 && len(unknown) == 0
+}
+
+func qaSystemExecutionIDs(entries []qaSystemExecution, mode string) []string {
+	ids := []string{}
+	for _, entry := range entries {
+		if entry.Mode == mode {
+			ids = append(ids, entry.ID)
+		}
+	}
+	return ids
 }
 
 func sameCanonicalJSON(left, right string) (bool, error) {
