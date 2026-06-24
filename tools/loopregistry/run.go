@@ -17,6 +17,9 @@ func run(opts options) error {
 		summary := changedCheck(root, reg, opts.ChangedFiles)
 		changed = &summary
 		problems = append(problems, summary.Problems...)
+		if opts.GitHubAnnotations {
+			emitGitHubAnnotations(summary)
+		}
 	}
 	doc := renderDoc(reg)
 	if opts.WriteDoc {

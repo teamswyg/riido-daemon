@@ -33,8 +33,16 @@ type claimSummary struct {
 }
 
 type changedSummary struct {
-	InputCount        int      `json:"input_count"`
-	MatchedClaimCount int      `json:"matched_claim_count"`
-	MatchedClaims     []string `json:"matched_claims"`
-	Problems          []string `json:"problems"`
+	InputCount        int              `json:"input_count"`
+	MatchedClaimCount int              `json:"matched_claim_count"`
+	MatchedClaims     []string         `json:"matched_claims"`
+	Problems          []string         `json:"problems"`
+	ProblemDetails    []changedProblem `json:"problem_details,omitempty"`
+}
+
+type changedProblem struct {
+	ClaimID          string   `json:"claim_id"`
+	Reason           string   `json:"reason"`
+	ChangedFiles     []string `json:"changed_files"`
+	RequiredEvidence []string `json:"required_evidence"`
 }

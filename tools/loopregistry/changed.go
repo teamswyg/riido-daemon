@@ -1,11 +1,5 @@
 package main
 
-import (
-	"os"
-	"slices"
-	"strings"
-)
-
 func changedCheck(root string, reg registry, path string) changedSummary {
 	changed, err := readChangedFiles(root, path)
 	if err != nil {
@@ -17,34 +11,13 @@ func changedCheck(root string, reg registry, path string) changedSummary {
 			continue
 		}
 		out.MatchedClaims = append(out.MatchedClaims, claim.ID)
-		out.Problems = append(out.Problems, validateClaimChange(claim, changed)...)
+		for _, detail := range validateClaimChange(claim, changed) {
+			out.Problems = append(out.Problems, detail.summary())
+			out.ProblemDetails = append(out.ProblemDetails, detail)
+		}
 	}
 	out.MatchedClaimCount = len(out.MatchedClaims)
 	return out
-}
-
-func readChangedFiles(root, rel string) ([]string, error) {
-	body, err := os.ReadFile(repoPath(root, rel))
-	if err != nil {
-		return nil, err
-	}
-	var out []string
-	for line := range strings.SplitSeq(string(body), "\n") {
-		if trimmed := slash(line); trimmed != "" {
-			out = append(out, trimmed)
-		}
-	}
-	return out, nil
-}
-
-func validateClaimChange(claim businessClaim, changed []string) []string {
-	if !intersects(changed, claim.Files) {
-		return nil
-	}
-	if intersects(changed, append(claimDocs(claim), registryFiles()...)) {
-		return nil
-	}
-	return []string{claim.ID + " changed runtime files without bound doc/verifier/registry evidence"}
 }
 
 func claimDocs(claim businessClaim) []string {
@@ -57,13 +30,4 @@ func claimDocs(claim businessClaim) []string {
 
 func registryFiles() []string {
 	return []string{defaultManifest, "docs/30-architecture/loop-registry.md"}
-}
-
-func intersects(left, right []string) bool {
-	for _, item := range left {
-		if slices.Contains(right, item) {
-			return true
-		}
-	}
-	return false
 }

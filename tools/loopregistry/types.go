@@ -1,11 +1,12 @@
 package main
 
 type options struct {
-	Manifest     string
-	EvidenceOut  string
-	ChangedFiles string
-	WriteDoc     bool
-	CheckDoc     bool
+	Manifest          string
+	EvidenceOut       string
+	ChangedFiles      string
+	WriteDoc          bool
+	CheckDoc          bool
+	GitHubAnnotations bool
 }
 
 type registry struct {
