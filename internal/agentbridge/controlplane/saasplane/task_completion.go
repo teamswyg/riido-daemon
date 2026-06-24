@@ -12,11 +12,11 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 	if err != nil || !ok {
 		return err
 	}
-	state, eventType := terminalStateAndEvent(res.Status)
 	message, err := p.terminalMessage(ctx, executionID, res)
 	if err != nil {
 		return err
 	}
+	state, eventType := taskCompletionStateAndEvent(res, message)
 	_, err = p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{
 		AssignmentID:      assignment.ID,
 		TaskID:            assignment.TaskID,
@@ -24,12 +24,19 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 		State:             state,
 		EventType:         eventType,
 		Message:           message,
-		Metadata:          terminalResultMetadata(res),
+		Metadata:          terminalResultMetadata(res, message),
 	})
 	if err != nil {
 		return err
 	}
 	return p.clearCompletedAssignment(ctx, executionID)
+}
+
+func taskCompletionStateAndEvent(res agentbridge.Result, message string) (assignmentcontract.AssignmentState, string) {
+	if terminalResultNeedsUserInput(res, message) {
+		return assignmentcontract.AssignmentRunning, assignmentcontract.EventAssignmentStateUpdated
+	}
+	return terminalStateAndEvent(res.Status)
 }
 
 func (p *Plane) terminalMessage(ctx context.Context, executionID string, res agentbridge.Result) (string, error) {
