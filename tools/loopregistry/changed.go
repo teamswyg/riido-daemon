@@ -1,6 +1,11 @@
 package main
 
-func changedCheck(root string, reg registry, path string) changedSummary {
+func changedCheck(
+	root string,
+	reg registry,
+	path string,
+	previousManifest string,
+) changedSummary {
 	changed, err := readChangedFiles(root, path)
 	if err != nil {
 		return changedSummary{Problems: []string{err.Error()}}
@@ -16,6 +21,12 @@ func changedCheck(root string, reg registry, path string) changedSummary {
 			out.ProblemDetails = append(out.ProblemDetails, detail)
 		}
 	}
+	for _, detail := range changedClaimProblems(root, previousManifest, reg, changed) {
+		out.MatchedClaims = append(out.MatchedClaims, detail.ClaimID)
+		out.Problems = append(out.Problems, detail.summary())
+		out.ProblemDetails = append(out.ProblemDetails, detail)
+	}
+	out.MatchedClaims = uniqueStrings(out.MatchedClaims)
 	out.MatchedClaimCount = len(out.MatchedClaims)
 	return out
 }

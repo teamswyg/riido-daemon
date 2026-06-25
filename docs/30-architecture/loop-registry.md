@@ -111,9 +111,9 @@ When task context does not contain a concrete action, the daemon must instruct p
 
 ### loop_registry_must_bind_claims_to_code_docs_tests
 
-Loop Registry entries must bind business claims to code paths, docs, verifier tokens, evidence names, workflow execution, pre-commit execution, and actionable PR annotations for claim-bound changed-file failures.
+Loop Registry entries must bind business claims to code paths, docs, verifier tokens, evidence names, workflow execution, pre-commit execution, actionable PR annotations for claim-bound changed-file failures, and bidirectional claim semantic co-change checks.
 
-- Files: `tools/loopregistry/annotation.go`, `tools/loopregistry/changed_file.go`, `tools/loopregistry/changed_problem.go`, `tools/loopregistry/changed_validate.go`, `tools/loopregistry/report_types.go`, `tools/loopregistry/run.go`, `tools/loopregistry/slice.go`, `tools/loopregistry/validate.go`, `tools/loopregistry/validate_claim.go`, `tools/loopregistry/changed.go`, `.github/workflows/loop-registry.yml`
+- Files: `tools/loopregistry/annotation.go`, `tools/loopregistry/claim_semantic_change.go`, `tools/loopregistry/claim_semantic_check.go`, `tools/loopregistry/claim_semantic_digest.go`, `tools/loopregistry/claim_semantic_files.go`, `tools/loopregistry/changed_file.go`, `tools/loopregistry/changed_problem.go`, `tools/loopregistry/changed_validate.go`, `tools/loopregistry/report_types.go`, `tools/loopregistry/run.go`, `tools/loopregistry/slice.go`, `tools/loopregistry/validate.go`, `tools/loopregistry/validate_claim.go`, `tools/loopregistry/changed.go`, `.github/workflows/loop-registry.yml`, `.pre-commit-config.yaml`
 - Docs: `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `loop-registry`
 - Verifiers: `loop-registry-tests`, `loop-registry-changed-evidence-test`, `loop-registry-annotation-test`

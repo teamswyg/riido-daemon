@@ -9,6 +9,7 @@ import (
 func main() {
 	var opts options
 	flag.StringVar(&opts.Manifest, "manifest", defaultManifest, "loop registry manifest")
+	flag.StringVar(&opts.PreviousManifest, "previous-manifest", "", "previous loop registry manifest")
 	flag.StringVar(&opts.EvidenceOut, "evidence-out", "", "optional evidence JSON output path")
 	flag.StringVar(&opts.ChangedFiles, "changed-files", "", "optional newline-delimited changed file list")
 	flag.BoolVar(&opts.WriteDoc, "write-doc", false, "write generated markdown")

@@ -1,7 +1,7 @@
 package main
 
 func (p changedProblem) summary() string {
-	return p.ClaimID + " changed runtime files without bound doc/verifier/registry evidence"
+	return p.ClaimID + ": " + p.Reason
 }
 
 func firstChangedFile(p changedProblem) string {
