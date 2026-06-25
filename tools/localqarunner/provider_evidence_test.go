@@ -40,4 +40,7 @@ func TestApplyProviderEvidenceMarksCoveragePartial(t *testing.T) {
 	if len(summary.Observed) == 0 {
 		t.Fatal("observed provider evidence missing")
 	}
+	if len(evidence.ClosedLoops) != 0 {
+		t.Fatalf("manual repair became closed-loop candidate: %+v", evidence.ClosedLoops)
+	}
 }
