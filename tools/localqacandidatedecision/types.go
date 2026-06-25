@@ -14,14 +14,15 @@ type manifest struct {
 }
 
 type decisionRecord struct {
-	CandidateID  string `json:"candidate_id"`
-	Disposition  string `json:"disposition"`
-	Priority     string `json:"priority"`
-	Owner        string `json:"owner"`
-	NextLoop     string `json:"next_loop"`
-	NextArtifact string `json:"next_artifact"`
-	ReviewBy     string `json:"review_by,omitempty"`
-	Reason       string `json:"reason"`
+	CandidateID    string `json:"candidate_id"`
+	CandidateScope string `json:"candidate_scope,omitempty"`
+	Disposition    string `json:"disposition"`
+	Priority       string `json:"priority"`
+	Owner          string `json:"owner"`
+	NextLoop       string `json:"next_loop"`
+	NextArtifact   string `json:"next_artifact"`
+	ReviewBy       string `json:"review_by,omitempty"`
+	Reason         string `json:"reason"`
 }
 
 type evidenceLoop struct {

@@ -16,7 +16,7 @@ func runtimeInstructionCases() []runtimeInstructionCase {
 			wantInstruction: TelemetryPlacementSystemPrompt,
 			wantTelemetry:   TelemetryPlacementSystemPrompt,
 			wantPromptHas:   []string{"do it"},
-			wantSystemHas:   []string{"Riido agent instruction:", "act as a PM", "<riido_log>"},
+			wantSystemHas:   []string{"Riido agent instruction:", "act as a PM", "Riido assignment interaction contract:", "<riido_log>"},
 			wantPromptExact: true,
 		},
 		{
@@ -24,20 +24,20 @@ func runtimeInstructionCases() []runtimeInstructionCase {
 			wantInstruction: TelemetryPlacementSystemPromptInline,
 			wantTelemetry:   TelemetryPlacementSystemPromptInline,
 			wantPromptHas:   []string{"do it"},
-			wantSystemHas:   []string{"Riido agent instruction:", "act as a PM", "<riido_log>"},
+			wantSystemHas:   []string{"Riido agent instruction:", "act as a PM", "Riido assignment interaction contract:", "<riido_log>"},
 			wantPromptExact: true,
 		},
 		{
 			provider:        "codex",
 			wantInstruction: TelemetryPlacementPrompt,
 			wantTelemetry:   TelemetryPlacementPrompt,
-			wantPromptHas:   []string{"Riido agent instruction:", "act as a PM", "<riido_log>", "User task:", "do it"},
+			wantPromptHas:   []string{"Riido agent instruction:", "act as a PM", "Riido assignment interaction contract:", "<riido_log>", "User task:", "do it"},
 		},
 		{
 			provider:        "cursor",
 			wantInstruction: TelemetryPlacementPrompt,
 			wantTelemetry:   TelemetryPlacementPrompt,
-			wantPromptHas:   []string{"Riido agent instruction:", "act as a PM", "<riido_log>", "User task:", "do it"},
+			wantPromptHas:   []string{"Riido agent instruction:", "act as a PM", "Riido assignment interaction contract:", "<riido_log>", "User task:", "do it"},
 		},
 	}
 }

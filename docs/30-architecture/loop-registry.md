@@ -49,8 +49,8 @@
 - Owner: `internal/agentbridge/controlplane/saasplane`
 - Kind: `closed-loop`
 - Expires after: `24h`
-- Observes: `provider completed output`, `clarification question markers`, `AgentEventRequest metadata`
-- Verifies: `assignment_result_status=needs_input is emitted`, `assignment is not reported completed`, `events endpoint shape is preserved`
+- Observes: `assignment prompt/context`, `provider completed output`, `clarification question markers`, `AgentEventRequest metadata`
+- Verifies: `interaction contract reaches provider instruction surface`, `assignment_result_status=needs_input is emitted`, `assignment is not reported completed`, `events endpoint shape is preserved`
 - Fails when: `clarification output completes assignment`, `needs_input metadata missing`, `endpoint shape changes`
 
 ## Business Claims
@@ -102,12 +102,12 @@ Daemon-owned QA harness work must never be committed or merged into teamswyg/rii
 
 ### intent_clarification_must_wait_for_user
 
-When a provider exits successfully after asking what work to do first, the daemon must report needs_input instead of completing the assignment.
+When task context does not contain a concrete action, the daemon must instruct providers to ask what work to do first; when a provider exits successfully after that question, the daemon must report needs_input instead of completing the assignment.
 
-- Files: `internal/agentbridge/controlplane/saasplane/task_completion.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
+- Files: `internal/agentbridge/assignment_interaction_contract.go`, `internal/agentbridge/telemetry_apply.go`, `internal/agentbridge/telemetry_runtime_instruction_apply_test.go`, `internal/agentbridge/controlplane/saasplane/saasplane_system_prompt_test.go`, `internal/agentbridge/controlplane/saasplane/task_completion.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
 - Docs: `docs/30-architecture/loop-engineering/intent-clarification-result.riido.json`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
-- Evidence: `assignment_result_status=needs_input`, `assignment_failure_category=provider_limit`, `intent-clarification-result`, `loop-engineering-evidence`
-- Verifiers: `needs-input-completion-test`, `provider-limit-category-test`
+- Evidence: `assignment_result_status=needs_input`, `assignment_failure_category=provider_limit`, `assignment interaction contract`, `intent-clarification-result`, `loop-engineering-evidence`
+- Verifiers: `interaction-contract-placement-test`, `needs-input-completion-test`, `provider-limit-category-test`
 
 ### loop_registry_must_bind_claims_to_code_docs_tests
 

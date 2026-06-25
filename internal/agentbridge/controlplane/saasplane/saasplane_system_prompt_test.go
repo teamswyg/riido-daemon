@@ -26,7 +26,8 @@ func TestTaskRequestPlacesTelemetryForSystemPromptProviders(t *testing.T) {
 		t.Fatalf("claude prompt should remain user task only: %q", req.Prompt)
 	}
 	if !strings.Contains(req.SystemPrompt, "<riido_log>") ||
-		!strings.Contains(req.SystemPrompt, "act as a backend reviewer") {
+		!strings.Contains(req.SystemPrompt, "act as a backend reviewer") ||
+		!strings.Contains(req.SystemPrompt, "어떤 작업부터 진행할까요?") {
 		t.Fatalf("claude system prompt missing runtime instructions: %q", req.SystemPrompt)
 	}
 	if got := req.Metadata[agentbridge.MetadataTelemetryContract]; got != agentbridge.TelemetryPlacementSystemPrompt {

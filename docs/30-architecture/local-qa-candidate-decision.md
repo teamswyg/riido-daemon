@@ -5,41 +5,42 @@
 Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-decision.riido.json).
 
 - evidence artifact: `local-qa-candidate-decision`
-- decision records: `21`
+- decision records: `22`
 
 ## Assertions
 
 - every local QA closed-loop candidate must have exactly one decision record
-- decision records without a matching candidate are stale loop residue and must fail verification
+- decision records without a matching candidate are stale loop residue and must fail verification unless candidate_scope is local_observed
 - decision records must name owner, priority, disposition, next loop, next artifact, and reason
 - triage-required and deferred decisions must name review_by
 - decision next_artifact must be one of the candidate required_next_artifacts
 
 ## Decisions
 
-| Candidate | Disposition | Priority | Owner | Review By | Next Artifact |
-| --- | --- | --- | --- | --- | --- |
-| `manual-evidence-file` | `triage_required` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `browser-interaction-runner` | `triage_required` | `P1` | `qa-loop` | `2026-12-31` | `verifier` |
-| `runtime-detail-golden` | `triage_required` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-contract.api.bootstrap` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-contract.api.devices` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-contract.api.profile_thumbnail.intent` | `deferred` | `P3` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-contract.task.assignable_agents` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-contract.task.multi_assignment` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-contract.task.thread_subscription` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-contract.task.sse_replay` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-contract.task.thread_message` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-domain.fixture.account` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-domain.fixture.workspace` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-domain.fixture.team` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-domain.fixture.project` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-domain.fixture.milestone` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-domain.fixture.task` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-domain.fixture.agent` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-domain.fixture.thread` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-local.qa.staging_fixture_handoff` | `triage_required` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
-| `repair-local.qa.figma_refresh_gate` | `triage_required` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| Candidate | Scope | Disposition | Priority | Owner | Review By | Next Artifact |
+| --- | --- | --- | --- | --- | --- | --- |
+| `manual-evidence-file` | `` | `triage_required` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `browser-interaction-runner` | `` | `triage_required` | `P1` | `qa-loop` | `2026-12-31` | `verifier` |
+| `runtime-detail-golden` | `` | `triage_required` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-contract.api.bootstrap` | `` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-contract.api.devices` | `` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-contract.api.profile_thumbnail.intent` | `` | `deferred` | `P3` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-contract.task.assignable_agents` | `` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-contract.task.multi_assignment` | `` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-contract.task.thread_subscription` | `` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-contract.task.sse_replay` | `` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-contract.task.thread_message` | `` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-domain.fixture.account` | `` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-domain.fixture.workspace` | `` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-domain.fixture.team` | `` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-domain.fixture.project` | `` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-domain.fixture.milestone` | `` | `deferred` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-domain.fixture.task` | `` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-domain.fixture.agent` | `` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-domain.fixture.thread` | `` | `deferred` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-local.qa.staging_fixture_handoff` | `` | `triage_required` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-local.qa.figma_refresh_gate` | `` | `triage_required` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
+| `repair-local.daemon.desktop_shutdown_lifecycle` | `local_observed` | `triage_required` | `P1` | `desktop/daemon` | `2026-12-31` | `claim_binding` |
 
 ## Loop
 

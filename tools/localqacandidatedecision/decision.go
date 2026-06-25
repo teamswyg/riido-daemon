@@ -9,6 +9,7 @@ import (
 var (
 	allowedDispositions = []string{"adopted", "triage_required", "deferred", "rejected"}
 	allowedPriorities   = []string{"P0", "P1", "P2", "P3"}
+	allowedScopes       = []string{"", "current", "local_observed"}
 )
 
 func verifyDecision(decision decisionRecord) error {
@@ -27,6 +28,9 @@ func verifyDecision(decision decisionRecord) error {
 	if !slices.Contains(allowedPriorities, decision.Priority) {
 		return fmt.Errorf("candidate %s has unknown priority %s", decision.CandidateID, decision.Priority)
 	}
+	if !slices.Contains(allowedScopes, decision.CandidateScope) {
+		return fmt.Errorf("candidate %s has unknown candidate_scope %s", decision.CandidateID, decision.CandidateScope)
+	}
 	if decisionNeedsReviewBy(decision) && decision.ReviewBy == "" {
 		return fmt.Errorf("candidate %s needs review_by", decision.CandidateID)
 	}
@@ -35,4 +39,8 @@ func verifyDecision(decision decisionRecord) error {
 
 func decisionNeedsReviewBy(decision decisionRecord) bool {
 	return decision.Disposition == "triage_required" || decision.Disposition == "deferred"
+}
+
+func decisionAllowsMissingCandidate(decision decisionRecord) bool {
+	return decision.CandidateScope == "local_observed"
 }
