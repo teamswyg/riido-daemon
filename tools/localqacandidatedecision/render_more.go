@@ -8,12 +8,12 @@ import (
 func renderDecisionTable(b *strings.Builder, decisions []decisionRecord) {
 	fmt.Fprintln(b, "## Decisions")
 	fmt.Fprintln(b)
-	fmt.Fprintln(b, "| Candidate | Disposition | Priority | Owner | Review By | Next Artifact |")
-	fmt.Fprintln(b, "| --- | --- | --- | --- | --- | --- |")
+	fmt.Fprintln(b, "| Candidate | Scope | Disposition | Priority | Owner | Review By | Next Artifact |")
+	fmt.Fprintln(b, "| --- | --- | --- | --- | --- | --- | --- |")
 	for _, decision := range decisions {
-		fmt.Fprintf(b, "| `%s` | `%s` | `%s` | `%s` | `%s` | `%s` |\n",
-			decision.CandidateID, decision.Disposition, decision.Priority,
-			decision.Owner, decision.ReviewBy, decision.NextArtifact)
+		fmt.Fprintf(b, "| `%s` | `%s` | `%s` | `%s` | `%s` | `%s` | `%s` |\n",
+			decision.CandidateID, decision.CandidateScope, decision.Disposition,
+			decision.Priority, decision.Owner, decision.ReviewBy, decision.NextArtifact)
 	}
 	fmt.Fprintln(b)
 }

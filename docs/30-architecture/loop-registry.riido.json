@@ -95,16 +95,16 @@
       "id": "intent-clarification-needs-input",
       "owner": "internal/agentbridge/controlplane/saasplane",
       "kind": "closed-loop",
-      "observes": ["provider completed output", "clarification question markers", "AgentEventRequest metadata"],
-      "verifies": ["assignment_result_status=needs_input is emitted", "assignment is not reported completed", "events endpoint shape is preserved"],
-      "evidence": ["loop-engineering-evidence", "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment"],
+      "observes": ["assignment prompt/context", "provider completed output", "clarification question markers", "AgentEventRequest metadata"],
+      "verifies": ["interaction contract reaches provider instruction surface", "assignment_result_status=needs_input is emitted", "assignment is not reported completed", "events endpoint shape is preserved"],
+      "evidence": ["loop-engineering-evidence", "TestApplyRuntimeInstructionContractPlacesByProvider", "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment"],
       "expires_after": "24h",
       "fails_when": ["clarification output completes assignment", "needs_input metadata missing", "endpoint shape changes"],
       "evidence_graph": {
         "observation": "Intent-oriented work can make a provider ask a clarification question and exit successfully.",
-        "hypothesis": "The daemon can treat the clarification as waiting-for-user metadata while preserving the existing SaaS event contract.",
-        "change": "saasplane maps canonical clarification result text to assignment_state_updated/running with assignment_result_status=needs_input.",
-        "verifier": "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment",
+        "hypothesis": "The daemon can first instruct providers to ask for intent on non-command context, then treat the clarification as waiting-for-user metadata while preserving the existing SaaS event contract.",
+        "change": "agentbridge injects the assignment interaction contract and saasplane maps canonical clarification result text to assignment_state_updated/running with assignment_result_status=needs_input.",
+        "verifier": "TestApplyRuntimeInstructionContractPlacesByProvider and TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment",
         "evidence": "intent-clarification-result loop evidence",
         "decision": "clarification-only outputs remain conversational rather than terminal completion.",
         "next_loop": "exercise the same conversation through live SaaS v3 thread history."
@@ -295,7 +295,7 @@
       "verifiers": [
         {
           "name": "qa-system-inference-count-test",
-          "file": "tools/localproductacceptance/qa_system_test.go",
+          "file": "tools/localproductacceptance/qa_system_execution_test.go",
           "contains": [
             "TestQASystemExecutionInventoryCounts",
             "inference_required_ids"
@@ -327,8 +327,12 @@
     },
     {
       "id": "intent_clarification_must_wait_for_user",
-      "text": "When a provider exits successfully after asking what work to do first, the daemon must report needs_input instead of completing the assignment.",
+      "text": "When task context does not contain a concrete action, the daemon must instruct providers to ask what work to do first; when a provider exits successfully after that question, the daemon must report needs_input instead of completing the assignment.",
       "files": [
+        "internal/agentbridge/assignment_interaction_contract.go",
+        "internal/agentbridge/telemetry_apply.go",
+        "internal/agentbridge/telemetry_runtime_instruction_apply_test.go",
+        "internal/agentbridge/controlplane/saasplane/saasplane_system_prompt_test.go",
         "internal/agentbridge/controlplane/saasplane/task_completion.go",
         "internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go",
         "internal/agentbridge/controlplane/saasplane/needs_input_markers.go",
@@ -343,10 +347,20 @@
       "evidence": [
         "assignment_result_status=needs_input",
         "assignment_failure_category=provider_limit",
+        "assignment interaction contract",
         "intent-clarification-result",
         "loop-engineering-evidence"
       ],
       "verifiers": [
+        {
+          "name": "interaction-contract-placement-test",
+          "file": "internal/agentbridge/telemetry_runtime_instruction_apply_test.go",
+          "contains": [
+            "TestApplyRuntimeInstructionContractPlacesByProvider",
+            "Riido assignment interaction contract:",
+            "어떤 작업부터 진행할까요?"
+          ]
+        },
         {
           "name": "needs-input-completion-test",
           "file": "internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go",

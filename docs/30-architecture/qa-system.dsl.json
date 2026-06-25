@@ -15,10 +15,12 @@
     {"id": "ci-generated-drift", "file": ".github/workflows/local-qa-runner.yml", "contains": ["Generate QA DSL artifacts", "git diff --exit-code -- tools/localproductacceptance/*.generated.json"]},
     {"id": "ci-local-no-token", "file": ".github/workflows/local-qa-runner.yml", "contains": ["-storage-state /tmp/no-riido-storage-state.json", "-workspace-id \"\"", "-api-token \"\""]},
     {"id": "ci-evidence-grep", "file": ".github/workflows/local-qa-runner.yml", "contains": ["contract.ui.i18n_dsl", "contract.ui.browser_meaning_qa", "local.qa.figma_refresh_gate", "local.qa.staging_fixture_handoff", "translation_coverage", "coverage_ratio", "local.qa.dsl_system_audit", "execution_counts", "inference_required_count", "closed_loop_candidates", "domain.fixture_journey"]},
-    {"id": "test-generated-fresh", "file": "tools/localproductacceptance/qa_system_test.go", "contains": ["TestQASystemDSLGeneratedFileFresh", "TestQASystemScenarioAuditsChangeDetection", "TestQASystemExecutionInventoryCounts", "inference_required_ids"]},
+    {"id": "test-generated-fresh", "file": "tools/localproductacceptance/qa_system_test.go", "contains": ["TestQASystemDSLGeneratedFileFresh", "TestQASystemScenarioAuditsChangeDetection"]},
+    {"id": "test-execution-inventory", "file": "tools/localproductacceptance/qa_system_execution_test.go", "contains": ["TestQASystemExecutionInventoryCounts", "inference_required_ids"]},
     {"id": "browser-meaning-verifier", "file": "tools/localproductacceptance/browser_meaning_test.go", "contains": ["TestBrowserMeaningScenarioProvesSearchSurface", "browser-meaning-qa"]},
     {"id": "figma-refresh-verifier", "file": "tools/localproductacceptance/figma_refresh_test.go", "contains": ["TestFigmaRefreshScenarioDetectsStaleGolden", "figma-refresh"]},
-    {"id": "staging-fixture-verifier", "file": "tools/localproductacceptance/staging_fixture_handoff_test.go", "contains": ["TestStagingFixtureHandoffScenarioRequiresInputs", "staging-fixture-handoff"]}
+    {"id": "staging-fixture-verifier", "file": "tools/localproductacceptance/staging_fixture_handoff_test.go", "contains": ["TestStagingFixtureHandoffScenarioRequiresInputs", "staging-fixture-handoff"]},
+    {"id": "desktop-daemon-lifecycle-verifier", "file": "tools/localproductacceptance/desktop_daemon_lifecycle_test.go", "contains": ["TestDesktopDaemonLifecyclePromotesAppQuitWithoutSocket", "local.daemon.desktop_shutdown_lifecycle"]}
   ],
   "execution_inventory": [
     {"id": "dsl-generate", "mode": "system", "owner": "pre-commit/ci", "action": "go generate ./tools/localproductacceptance"},
@@ -30,7 +32,8 @@
     {"id": "closed-loop-candidate-intake", "mode": "system", "owner": "localproductacceptance", "action": "turn skipped, partial, failed, and inferred QA observations into closed_loop_candidates"},
     {"id": "browser-meaning-qa", "mode": "system", "owner": "localproductacceptance", "action": "verify Contract Lab search surface and generated QA aliases without a human browser session"},
     {"id": "figma-refresh", "mode": "system", "owner": "localproductacceptance", "action": "verify Figma intent/golden freshness and emit repair evidence when the source expires"},
-    {"id": "staging-fixture-handoff", "mode": "system", "owner": "localproductacceptance", "action": "verify staging fixture cache/input completeness and emit repair evidence when token, workspace, or entity ids are missing"}
+    {"id": "staging-fixture-handoff", "mode": "system", "owner": "localproductacceptance", "action": "verify staging fixture cache/input completeness and emit repair evidence when token, workspace, or entity ids are missing"},
+    {"id": "desktop-daemon-lifecycle", "mode": "system", "owner": "localproductacceptance", "action": "inspect desktop daemon stop evidence and emit a closed-loop candidate when app-quit leaves no AI Agent socket"}
   ],
   "optimization_questions": [
     {"id": "copy-density", "finding": "qa-i18n.dsl.json is compact enough for the 75-line rule but dense; split by namespace only if the line budget is relaxed."},

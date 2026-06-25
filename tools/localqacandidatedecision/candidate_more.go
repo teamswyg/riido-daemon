@@ -17,6 +17,9 @@ func orphanDecisionProblems(decisions []decisionRecord, candidates []closedLoopC
 	}
 	var problems []candidateProblem
 	for _, decision := range decisions {
+		if decisionAllowsMissingCandidate(decision) {
+			continue
+		}
 		if !candidateByID[decision.CandidateID] {
 			problems = append(problems, orphanDecisionProblem(decision))
 		}

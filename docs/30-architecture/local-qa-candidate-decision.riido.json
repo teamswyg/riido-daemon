@@ -27,11 +27,12 @@
     {"candidate_id": "repair-domain.fixture.agent", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain agent fixture evidence is private and must be supplied through the staging fixture handoff."},
     {"candidate_id": "repair-domain.fixture.thread", "disposition": "deferred", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Domain thread fixture evidence is private and must be supplied through the staging fixture handoff."},
     {"candidate_id": "repair-local.qa.staging_fixture_handoff", "disposition": "triage_required", "priority": "P1", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Staging fixture handoff must produce redacted account/workspace/team/task/agent/thread evidence."},
-    {"candidate_id": "repair-local.qa.figma_refresh_gate", "disposition": "triage_required", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Figma refresh gate needs fresh redacted golden/source evidence before the candidate can close."}
+    {"candidate_id": "repair-local.qa.figma_refresh_gate", "disposition": "triage_required", "priority": "P2", "owner": "qa-loop", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "redacted_evidence", "review_by": "2026-12-31", "reason": "Figma refresh gate needs fresh redacted golden/source evidence before the candidate can close."},
+    {"candidate_id": "repair-local.daemon.desktop_shutdown_lifecycle", "candidate_scope": "local_observed", "disposition": "triage_required", "priority": "P1", "owner": "desktop/daemon", "next_loop": "local-qa-gap-to-candidate", "next_artifact": "claim_binding", "review_by": "2026-12-31", "reason": "Desktop app-quit can stop the AI Agent daemon on a local Mac; when local stop evidence observes that state, the product needs an explicit lifecycle claim and verifier for whether SaaS runtimes should survive app teardown."}
   ],
   "assertions": [
     "every local QA closed-loop candidate must have exactly one decision record",
-    "decision records without a matching candidate are stale loop residue and must fail verification",
+    "decision records without a matching candidate are stale loop residue and must fail verification unless candidate_scope is local_observed",
     "decision records must name owner, priority, disposition, next loop, next artifact, and reason",
     "triage-required and deferred decisions must name review_by",
     "decision next_artifact must be one of the candidate required_next_artifacts"

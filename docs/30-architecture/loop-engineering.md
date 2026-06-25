@@ -4,7 +4,7 @@
 
 - loop count: `83`
 - registered loop files: `83`
-- evidence items: `174`
+- evidence items: `175`
 - open gaps: `0`
 - phase coverage: `observe=83/83`, `hypothesis=83/83`, `execute=83/83`, `evaluate=83/83`, `retrospective=83/83`
 
@@ -1392,16 +1392,17 @@
 
 - Owner: `saasplane assignment reporter`
 - Observe: Intent-oriented tasks can make the provider ask a clarification question and exit successfully, and research-heavy follow-up work can fail on provider token, quota, rate-limit, or cloud-credit exhaustion.
-  - Artifacts: `internal/agentbridge/controlplane/saasplane/task_completion.go`
-- Hypothesis: The daemon can preserve the existing SaaS events endpoint shape and carry wait-for-user semantics through assignment_result_status=needs_input metadata while carrying provider exhaustion through assignment_failure_category=provider_limit metadata.
-  - Artifacts: `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go`
-- Execute: Detect canonical clarification result text on completed provider output and detect provider exhaustion markers on failed or blocked provider output.
-  - Artifacts: `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`, `internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
-- Evaluate: Regression tests prove both needs_input and provider_limit stay on the existing AgentEventRequest metadata surface while control-plane can project waiting-for-user and localized credit-limit messages.
-  - Artifacts: `internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
+  - Artifacts: `internal/agentbridge/assignment_interaction_contract.go`, `internal/agentbridge/controlplane/saasplane/task_completion.go`
+- Hypothesis: The daemon can guide providers to ask for intent when task context is non-command text, then preserve the existing SaaS events endpoint shape by carrying wait-for-user semantics through assignment_result_status=needs_input metadata and provider exhaustion through assignment_failure_category=provider_limit metadata.
+  - Artifacts: `internal/agentbridge/assignment_interaction_contract.go`, `internal/agentbridge/telemetry_apply.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go`
+- Execute: Inject the interaction contract into provider runtime instructions, detect canonical clarification result text on completed provider output, and detect provider exhaustion markers on failed or blocked provider output.
+  - Artifacts: `internal/agentbridge/telemetry_runtime_instruction_apply_test.go`, `internal/agentbridge/controlplane/saasplane/saasplane_system_prompt_test.go`, `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`, `internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
+- Evaluate: Regression tests prove the interaction contract is placed on provider instruction surfaces while both needs_input and provider_limit stay on the existing AgentEventRequest metadata surface.
+  - Artifacts: `internal/agentbridge/telemetry_runtime_instruction_apply_test.go`, `internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
 - Retrospective: Clarification and provider exhaustion become runtime semantics instead of raw provider text, without adding or changing client-facing endpoints.
   - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
+  - `command`: go test ./internal/agentbridge -run TestApplyRuntimeInstructionContractPlacesByProvider -count=1; proves provider runtime instructions include the assignment interaction contract without client-facing endpoint changes
   - `command`: go test ./internal/agentbridge/controlplane/saasplane -run TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment -count=1; proves completed clarification output is reported as assignment_result_status=needs_input without endpoint shape changes
   - `command`: go test ./internal/agentbridge/controlplane/saasplane -run TestPlaneCompleteTaskClassifiesProviderLimitFailure -count=1; proves provider token, quota, rate-limit, and cloud-credit exhaustion is reported as assignment_failure_category=provider_limit without endpoint shape changes
 

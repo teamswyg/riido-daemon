@@ -13,6 +13,19 @@ func TestCandidateDecisionRejectsOrphanDecision(t *testing.T) {
 	}
 }
 
+func TestCandidateDecisionAllowsLocalObservedDecisionWhenAbsent(t *testing.T) {
+	dir := t.TempDir()
+	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
+		`{"id":"close-x","required_next_artifacts":["claim_binding"]}]}`)
+	m := testManifest()
+	decision := testDecision("local-only")
+	decision.CandidateScope = "local_observed"
+	m.Decisions = append(m.Decisions, decision)
+	if _, err := verifyCandidateDecisions(".", m, path); err != nil {
+		t.Fatalf("verify local observed decision: %v", err)
+	}
+}
+
 func TestCandidateDecisionRejectsUnknownNextArtifact(t *testing.T) {
 	dir := t.TempDir()
 	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
