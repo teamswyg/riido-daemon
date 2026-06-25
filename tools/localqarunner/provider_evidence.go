@@ -19,6 +19,7 @@ func applyProviderEvidence(root string, cfg config, evidence *runEvidence) error
 	evidence.ProviderSummary = providerSummaries(file.Providers)
 	evidence.CoverageStatus = mergeCoverageStatus(evidence.CoverageStatus, file.Status)
 	appendProviderRepairs(evidence, file.Providers)
+	appendProviderRepairCandidates(evidence, file.Providers)
 	return nil
 }
 

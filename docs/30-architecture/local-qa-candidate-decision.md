@@ -5,7 +5,7 @@
 Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-decision.riido.json).
 
 - evidence artifact: `local-qa-candidate-decision`
-- decision records: `22`
+- decision records: `23`
 
 ## Assertions
 
@@ -41,6 +41,7 @@ Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-d
 | `repair-local.qa.staging_fixture_handoff` | `` | `triage_required` | `P1` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
 | `repair-local.qa.figma_refresh_gate` | `` | `triage_required` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
 | `repair-local.daemon.desktop_shutdown_lifecycle` | `local_observed` | `triage_required` | `P1` | `desktop/daemon` | `2026-12-31` | `claim_binding` |
+| `repair-provider.openclaw.local_backend_unavailable` | `local_observed` | `triage_required` | `P1` | `provider-runtime/local-operator` | `2026-12-31` | `redacted_evidence` |
 
 ## Loop
 

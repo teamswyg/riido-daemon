@@ -123,6 +123,9 @@
         "tools/localproductacceptance/evidence_gap_inferred.go",
         "tools/localqarunner/loop_candidate_types.go",
         "tools/localqarunner/product_evidence.go",
+        "tools/localqarunner/provider_evidence.go",
+        "tools/localqarunner/provider_repair_candidate.go",
+        "tools/localqarunner/provider_repair_candidate_graph.go",
         "tools/localqarunner/types.go",
         "tools/localqadashboard/run_loop_candidate.go",
         "tools/localqadashboard/run_evidence.go",
@@ -162,6 +165,16 @@
             "TestApplyProductEvidenceRejectsCandidateWithoutAdoptionArtifacts",
             "closed_loop_candidates",
             "RequiredNextArtifacts"
+          ]
+        },
+        {
+          "name": "local-qa-runner-provider-repair-candidate-test",
+          "file": "tools/localqarunner/provider_repair_candidate_test.go",
+          "contains": [
+            "TestApplyProviderEvidencePromotesCandidateAutoRepair",
+            "candidate_auto",
+            "repair-provider.openclaw.local_backend_unavailable",
+            "local.qa.provider_repair_candidates"
           ]
         },
         {
