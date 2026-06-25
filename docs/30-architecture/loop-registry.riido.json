@@ -331,7 +331,9 @@
       "files": [
         "internal/agentbridge/controlplane/saasplane/task_completion.go",
         "internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go",
-        "internal/agentbridge/controlplane/saasplane/needs_input_markers.go"
+        "internal/agentbridge/controlplane/saasplane/needs_input_markers.go",
+        "internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go",
+        "internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go"
       ],
       "docs": [
         "docs/30-architecture/loop-engineering/intent-clarification-result.riido.json",
@@ -340,6 +342,7 @@
       ],
       "evidence": [
         "assignment_result_status=needs_input",
+        "assignment_failure_category=provider_limit",
         "intent-clarification-result",
         "loop-engineering-evidence"
       ],
@@ -352,6 +355,15 @@
             "AssignmentResultStatus",
             "needs_input",
             "EventAssignmentStateUpdated"
+          ]
+        },
+        {
+          "name": "provider-limit-category-test",
+          "file": "internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go",
+          "contains": [
+            "TestPlaneCompleteTaskClassifiesProviderLimitFailure",
+            "AssignmentFailureCategory",
+            "provider_limit"
           ]
         }
       ]

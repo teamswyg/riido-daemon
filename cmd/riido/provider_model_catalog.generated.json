@@ -407,16 +407,8 @@
         "label": "Opus 4.6 1M Thinking"
       },
       {
-        "model_id": "claude-4.6-opus-high-thinking-fast",
-        "label": "Opus 4.6 1M Thinking Fast"
-      },
-      {
         "model_id": "claude-4.6-opus-max-thinking",
         "label": "Opus 4.6 1M Max Thinking"
-      },
-      {
-        "model_id": "claude-4.6-opus-max-thinking-fast",
-        "label": "Opus 4.6 1M Max Thinking Fast"
       },
       {
         "model_id": "claude-4.5-opus-high",
@@ -557,6 +549,14 @@
       {
         "model_id": "kimi-k2.5",
         "label": "Kimi K2.5"
+      },
+      {
+        "model_id": "glm-5.2-high",
+        "label": "GLM 5.2"
+      },
+      {
+        "model_id": "glm-5.2-max",
+        "label": "GLM 5.2 Max"
       },
       {
         "model_id": "claude-fable-5-low",

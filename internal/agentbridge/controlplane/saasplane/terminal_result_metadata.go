@@ -18,13 +18,16 @@ func terminalResultMetadata(res agentbridge.Result, message string) map[string]s
 	metadata := map[string]string{
 		metadatakeys.AssignmentResultStatus.String(): string(status),
 	}
-	if category := terminalFailureCategory(status); category != "" {
+	if category := terminalFailureCategory(status, firstNonEmpty(message, res.Error)); category != "" {
 		metadata[metadatakeys.AssignmentFailureCategory.String()] = category
 	}
 	return metadata
 }
 
-func terminalFailureCategory(status agentbridge.ResultStatus) string {
+func terminalFailureCategory(status agentbridge.ResultStatus, message string) string {
+	if terminalFailureIsProviderLimit(status, message) {
+		return "provider_limit"
+	}
 	switch status {
 	case agentbridge.ResultBlocked:
 		return "provider_blocked"

@@ -4,7 +4,7 @@
 
 - loop count: `83`
 - registered loop files: `83`
-- evidence items: `173`
+- evidence items: `174`
 - open gaps: `0`
 - phase coverage: `observe=83/83`, `hypothesis=83/83`, `execute=83/83`, `evaluate=83/83`, `retrospective=83/83`
 
@@ -1391,18 +1391,19 @@
 ### intent-clarification-result
 
 - Owner: `saasplane assignment reporter`
-- Observe: Intent-oriented tasks can make the provider ask a clarification question and exit successfully, which would look completed unless the daemon reports the conversational wait state.
+- Observe: Intent-oriented tasks can make the provider ask a clarification question and exit successfully, and research-heavy follow-up work can fail on provider token, quota, rate-limit, or cloud-credit exhaustion.
   - Artifacts: `internal/agentbridge/controlplane/saasplane/task_completion.go`
-- Hypothesis: The daemon can preserve the existing SaaS events endpoint shape and carry the wait-for-user semantic through assignment_result_status=needs_input metadata.
-  - Artifacts: `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`
-- Execute: Detect canonical clarification result text on completed provider output and report assignment_state_updated/running with needs_input metadata.
-  - Artifacts: `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`, `internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go`
-- Evaluate: The regression test proves the event stays on the existing AgentEventRequest surface while control-plane can project it as waiting_for_user.
-  - Artifacts: `internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go`
-- Retrospective: Clarification becomes a runtime semantic instead of a completed answer, without adding or changing client-facing endpoints.
+- Hypothesis: The daemon can preserve the existing SaaS events endpoint shape and carry wait-for-user semantics through assignment_result_status=needs_input metadata while carrying provider exhaustion through assignment_failure_category=provider_limit metadata.
+  - Artifacts: `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go`
+- Execute: Detect canonical clarification result text on completed provider output and detect provider exhaustion markers on failed or blocked provider output.
+  - Artifacts: `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`, `internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
+- Evaluate: Regression tests prove both needs_input and provider_limit stay on the existing AgentEventRequest metadata surface while control-plane can project waiting-for-user and localized credit-limit messages.
+  - Artifacts: `internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
+- Retrospective: Clarification and provider exhaustion become runtime semantics instead of raw provider text, without adding or changing client-facing endpoints.
   - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
   - `command`: go test ./internal/agentbridge/controlplane/saasplane -run TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment -count=1; proves completed clarification output is reported as assignment_result_status=needs_input without endpoint shape changes
+  - `command`: go test ./internal/agentbridge/controlplane/saasplane -run TestPlaneCompleteTaskClassifiesProviderLimitFailure -count=1; proves provider token, quota, rate-limit, and cloud-credit exhaustion is reported as assignment_failure_category=provider_limit without endpoint shape changes
 
 ### loop-registry
 

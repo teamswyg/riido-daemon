@@ -22,6 +22,7 @@ Prove the daemon-side SaaS assignment source/reporter contract without claiming 
 | stale binding recovery | `implemented` | A stale dynamic binding poll rejection invalidates the binding cache and does not abort other live candidates in the same claim wave. | `stale-binding-sentinel`, `stale-binding-cache-test`, `stale-binding-live-candidate-test` |
 | heartbeat stale cancellation | `implemented` | Daemon forwards active assignment ids and cancels local watchers when heartbeat response omits a requested assignment. | `heartbeat-default`, `heartbeat-post`, `stale-heartbeat-cancel-test` |
 | events endpoint owns progress and lifecycle reports | `implemented` | Progress, lifecycle, running, session pin, terminal result, and coalesced text body reports are posted to /events. | `event-post-path`, `event-retry-test`, `assignment-running-test`, `partial-body-test` |
+| provider limit failure category | `implemented` | Provider token, quota, rate-limit, and cloud-credit exhaustion failures are reported with provider_limit metadata for control-plane/client normalization. | `provider-limit-category-test`, `provider-limit-category-helper` |
 | auth forwarding | `implemented` | Device credentials and bearer token, when configured, are attached to SaaS HTTP requests. | `device-secret-auth`, `bearer-auth-test` |
 | dynamic runtime bindings | `implemented` | Dynamic /v1/daemon/agent-bindings are cached and used to map runtime/provider scope to agent ids. | `agent-bindings-path`, `binding-cache-ttl`, `dynamic-binding-claim-test` |
 
