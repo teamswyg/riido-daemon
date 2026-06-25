@@ -14,7 +14,7 @@ func run(opts options) error {
 	problems := validateRegistry(root, reg)
 	var changed *changedSummary
 	if opts.ChangedFiles != "" {
-		summary := changedCheck(root, reg, opts.ChangedFiles)
+		summary := changedCheck(root, reg, opts.ChangedFiles, opts.PreviousManifest)
 		changed = &summary
 		problems = append(problems, summary.Problems...)
 		if opts.GitHubAnnotations {

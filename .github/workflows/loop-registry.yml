@@ -76,7 +76,8 @@ jobs:
         run: |
           mkdir -p out
           git diff --name-only origin/${{ github.base_ref }}...HEAD > out/changed-files.txt
-          go run ./tools/loopregistry -check-doc -github-annotations -changed-files out/changed-files.txt -evidence-out out/loop-registry-changed.json
+          git show origin/${{ github.base_ref }}:docs/30-architecture/loop-registry.riido.json > out/previous-loop-registry.riido.json
+          go run ./tools/loopregistry -check-doc -github-annotations -changed-files out/changed-files.txt -previous-manifest out/previous-loop-registry.riido.json -evidence-out out/loop-registry-changed.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:

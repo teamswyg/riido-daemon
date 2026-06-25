@@ -8,7 +8,7 @@ repos:
         pass_filenames: false
       - id: loop-registry
         name: loop-registry
-        entry: bash -c 'path="$(git rev-parse --git-path riido-loop-registry-changed)" && git diff --cached --name-only > "$path" && go run ./tools/loopregistry -check-doc -changed-files "$path"'
+        entry: bash -c 'set -e; path="$(git rev-parse --git-path riido-loop-registry-changed)"; prev="$(git rev-parse --git-path riido-loop-registry-previous)"; git diff --cached --name-only > "$path"; if ! git show HEAD:docs/30-architecture/loop-registry.riido.json > "$prev" 2>/dev/null; then cp docs/30-architecture/loop-registry.riido.json "$prev"; fi; go run ./tools/loopregistry -check-doc -changed-files "$path" -previous-manifest "$prev"'
         language: system
         pass_filenames: false
       - id: provider-model-live-evidence

@@ -8,13 +8,7 @@ import (
 
 func TestRegistryValidatesClaimBindings(t *testing.T) {
 	root := t.TempDir()
-	writeFixture(t, root, "go.mod", "module fixture\n")
-	writeFixture(t, root, ".pre-commit-config.yaml", "loop-registry\n"+defaultCommand())
-	writeFixture(t, root, ".github/workflows/loop-registry.yml", fixtureWorkflow())
-	writeFixture(t, root, "code.go", "package fixture\n")
-	writeFixture(t, root, "doc.md", "doc")
-	writeFixture(t, root, "code_test.go", "TestClaimBinding")
-	writeFixture(t, root, defaultManifest, fixtureManifest())
+	writeLoopRegistryFixture(t, root)
 	chdir(t, root)
 
 	if err := run(options{Manifest: defaultManifest, CheckDoc: false}); err != nil {
@@ -24,14 +18,8 @@ func TestRegistryValidatesClaimBindings(t *testing.T) {
 
 func TestRegistryRejectsRuntimeOnlyClaimChange(t *testing.T) {
 	root := t.TempDir()
-	writeFixture(t, root, "go.mod", "module fixture\n")
-	writeFixture(t, root, ".pre-commit-config.yaml", "loop-registry\n"+defaultCommand())
-	writeFixture(t, root, ".github/workflows/loop-registry.yml", fixtureWorkflow())
-	writeFixture(t, root, "code.go", "package fixture\n")
-	writeFixture(t, root, "doc.md", "doc")
-	writeFixture(t, root, "code_test.go", "TestClaimBinding")
+	writeLoopRegistryFixture(t, root)
 	writeFixture(t, root, "changed.txt", "code.go\n")
-	writeFixture(t, root, defaultManifest, fixtureManifest())
 	chdir(t, root)
 
 	err := run(options{Manifest: defaultManifest, ChangedFiles: "changed.txt"})

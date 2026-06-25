@@ -2,6 +2,7 @@ package main
 
 type options struct {
 	Manifest          string
+	PreviousManifest  string
 	EvidenceOut       string
 	ChangedFiles      string
 	WriteDoc          bool
