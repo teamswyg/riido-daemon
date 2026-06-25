@@ -17,6 +17,7 @@
     {"name": "stale binding recovery", "status": "implemented", "summary": "A stale dynamic binding poll rejection invalidates the binding cache and does not abort other live candidates in the same claim wave.", "source_checks": ["stale-binding-sentinel", "stale-binding-cache-test", "stale-binding-live-candidate-test"]},
     {"name": "heartbeat stale cancellation", "status": "implemented", "summary": "Daemon forwards active assignment ids and cancels local watchers when heartbeat response omits a requested assignment.", "source_checks": ["heartbeat-default", "heartbeat-post", "stale-heartbeat-cancel-test"]},
     {"name": "events endpoint owns progress and lifecycle reports", "status": "implemented", "summary": "Progress, lifecycle, running, session pin, terminal result, and coalesced text body reports are posted to /events.", "source_checks": ["event-post-path", "event-retry-test", "assignment-running-test", "partial-body-test"]},
+    {"name": "provider limit failure category", "status": "implemented", "summary": "Provider token, quota, rate-limit, and cloud-credit exhaustion failures are reported with provider_limit metadata for control-plane/client normalization.", "source_checks": ["provider-limit-category-test", "provider-limit-category-helper"]},
     {"name": "auth forwarding", "status": "implemented", "summary": "Device credentials and bearer token, when configured, are attached to SaaS HTTP requests.", "source_checks": ["device-secret-auth", "bearer-auth-test"]},
     {"name": "dynamic runtime bindings", "status": "implemented", "summary": "Dynamic /v1/daemon/agent-bindings are cached and used to map runtime/provider scope to agent ids.", "source_checks": ["agent-bindings-path", "binding-cache-ttl", "dynamic-binding-claim-test"]}
   ],
@@ -54,6 +55,8 @@
     {"name": "event-retry-test", "file": "internal/agentbridge/controlplane/saasplane/http_client_event_retry_test.go", "contains": "TestPlaneRetriesTransientEventPostWithIdempotencyKey"},
     {"name": "assignment-running-test", "file": "internal/agentbridge/controlplane/saasplane/saasplane_claim_report_events_test.go", "contains": "EventAssignmentRunning"},
     {"name": "partial-body-test", "file": "internal/agentbridge/controlplane/saasplane/textdelta_partial_body_test.go", "contains": "TestReportEventCoalescesTextDeltaIntoEvolvingBody"},
+    {"name": "provider-limit-category-test", "file": "internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go", "contains": "TestPlaneCompleteTaskClassifiesProviderLimitFailure"},
+    {"name": "provider-limit-category-helper", "file": "internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go", "contains": "terminalFailureIsProviderLimit"},
     {"name": "device-secret-auth", "file": "internal/agentbridge/controlplane/saasplane/http_auth.go", "contains": "X-Riido-Device-Secret"},
     {"name": "bearer-auth-test", "file": "internal/agentbridge/controlplane/saasplane/heartbeat_bearer_token_test.go", "contains": "TestPlaneSendsBearerToken"},
     {"name": "agent-bindings-path", "file": "internal/agentbridge/controlplane/saasplane/agent_bindings_cache.go", "contains": "\"/v1/daemon/agent-bindings\""},

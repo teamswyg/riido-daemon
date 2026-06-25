@@ -104,10 +104,10 @@ Daemon-owned QA harness work must never be committed or merged into teamswyg/rii
 
 When a provider exits successfully after asking what work to do first, the daemon must report needs_input instead of completing the assignment.
 
-- Files: `internal/agentbridge/controlplane/saasplane/task_completion.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`
+- Files: `internal/agentbridge/controlplane/saasplane/task_completion.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
 - Docs: `docs/30-architecture/loop-engineering/intent-clarification-result.riido.json`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
-- Evidence: `assignment_result_status=needs_input`, `intent-clarification-result`, `loop-engineering-evidence`
-- Verifiers: `needs-input-completion-test`
+- Evidence: `assignment_result_status=needs_input`, `assignment_failure_category=provider_limit`, `intent-clarification-result`, `loop-engineering-evidence`
+- Verifiers: `needs-input-completion-test`, `provider-limit-category-test`
 
 ### loop_registry_must_bind_claims_to_code_docs_tests
 
