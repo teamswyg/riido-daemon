@@ -14,7 +14,14 @@ func renderRoot(m manifest) string {
 			fmt.Fprintf(b, "- [%s](%s)\n", doc.Title, pathFromRoot(doc.Path))
 		}
 		b.WriteString("\n## Executable Sources\n\n")
-		writeBullets(b, []string{m.ReleaseWorkflow, m.BuildScript, m.PublishScript, m.InstallScript})
+		writeBullets(b, []string{
+			m.ReleaseWorkflow,
+			m.CDNPublishWorkflow,
+			m.BuildScript,
+			m.PublishScript,
+			m.CDNPublishScript,
+			m.InstallScript,
+		})
 		b.WriteString("## Assertions\n\n")
 		writeBullets(b, m.Assertions)
 	})

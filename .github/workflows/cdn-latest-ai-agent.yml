@@ -1,0 +1,74 @@
+name: cdn-latest-ai-agent
+on:
+  workflow_run:
+    workflows: ["release-artifacts"]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to mirror. Empty means latest GitHub Release."
+        required: false
+        type: string
+      dry_run:
+        description: "Verify and print S3 copies without mutating CDN."
+        required: false
+        default: false
+        type: boolean
+permissions:
+  contents: read
+concurrency:
+  group: cdn-latest-ai-agent
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+       startsWith(github.event.workflow_run.head_branch, 'v'))
+    runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ap-northeast-2
+      GH_TOKEN: ${{ github.token }}
+      RIIDO_CDN_BUCKET: ${{ secrets.RIIDO_CDN_BUCKET }}
+      RIIDO_CDN_PREFIX: releases/latest/ai-agent
+      RIIDO_CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.RIIDO_CLOUDFRONT_DISTRIBUTION_ID }}
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - name: Resolve release tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${{ inputs.tag }}"
+          if [ -z "$tag" ] && [ "${{ github.event_name }}" = "workflow_run" ]; then
+            tag="${{ github.event.workflow_run.head_branch }}"
+          fi
+          if [ -z "$tag" ]; then
+            tag="$(gh release list --limit 1 --json tagName --jq '.[0].tagName')"
+          fi
+          echo "RIIDO_RELEASE_TAG=$tag" >> "$GITHUB_ENV"
+          echo "RIIDO_CDN_BUCKET=${RIIDO_CDN_BUCKET:-riido-production}" >> "$GITHUB_ENV"
+          echo "RIIDO_CLOUDFRONT_DISTRIBUTION_ID=${RIIDO_CLOUDFRONT_DISTRIBUTION_ID:-EWFLNFS69DNTL}" >> "$GITHUB_ENV"
+      - name: Download release assets
+        run: |
+          mkdir -p dist
+          gh release download "$RIIDO_RELEASE_TAG" \
+            --dir dist \
+            --pattern "riido-daemon_darwin_*.tar.gz" \
+            --pattern "SHA256SUMS"
+      - name: Verify CDN mirror payload
+        run: scripts/publish-cdn-latest.sh verify
+      - name: Publish CDN latest mirror
+        env:
+          RIIDO_CDN_DRY_RUN: ${{ inputs.dry_run || 'false' }}
+        run: |
+          mkdir -p out
+          scripts/publish-cdn-latest.sh sync \
+            -evidence-out out/cdn-latest-ai-agent.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: cdn-latest-ai-agent
+          path: out/cdn-latest-ai-agent.json
+          if-no-files-found: error
