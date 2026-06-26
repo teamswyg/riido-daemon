@@ -29,6 +29,26 @@ func TestClassifyRepairOpenClawBackend(t *testing.T) {
 	}
 }
 
+func TestClassifyRepairClaudeToolApprovalMissing(t *testing.T) {
+	got := classifyRepair("claude", "failed", "go run command execution permission limited; approval count 0", true)
+	if got.Class != "provider_tool_approval_missing" || got.Mode != "candidate_auto" || got.Owner != "engineer" {
+		t.Fatalf("repair=%+v", got)
+	}
+	if !strings.Contains(got.SuggestedCommand, "/tool-approvals") {
+		t.Fatalf("repair must point to approval evidence: %+v", got)
+	}
+}
+
+func TestClassifyRepairClaudeConversationalApprovalGap(t *testing.T) {
+	got := classifyRepair("claude", "failed", "go run 명령어 실행 권한이 제한되어 있습니다. 대화창에서 승인해 주세요.", true)
+	if got.Class != "provider_tool_approval_missing" || got.Mode != "candidate_auto" {
+		t.Fatalf("repair=%+v", got)
+	}
+	if !strings.Contains(got.SuggestedCommand, "chat approval") {
+		t.Fatalf("repair must require chat approval binding evidence: %+v", got)
+	}
+}
+
 func TestClassifyRepairOpenClawCooldown(t *testing.T) {
 	got := classifyRepair("openclaw", "failed", "Provider ollama is in cooldown; All models failed", true)
 	if got.Class != "local_backend_unavailable" || got.Owner != "local_operator" {

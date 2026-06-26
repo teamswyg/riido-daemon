@@ -57,12 +57,12 @@
 
 ### closed_loop_candidates_must_surface_harness_gaps
 
-Harness observations that are skipped, partial, failed, or inferred must become machine-readable closed-loop candidates with required adoption artifacts instead of hidden follow-up work.
+Harness observations that are skipped, partial, failed, inferred, or classified as candidate_auto provider repairs must become machine-readable closed-loop candidates with required adoption artifacts instead of hidden follow-up work.
 
-- Files: `tools/localproductacceptance/evidence_gap_types.go`, `tools/localproductacceptance/evidence_gap.go`, `tools/localproductacceptance/evidence_gap_candidates.go`, `tools/localproductacceptance/evidence_gap_candidate_graph.go`, `tools/localproductacceptance/evidence_gap_inferred.go`, `tools/localqarunner/loop_candidate_types.go`, `tools/localqarunner/product_evidence.go`, `tools/localqarunner/provider_evidence.go`, `tools/localqarunner/provider_repair_candidate.go`, `tools/localqarunner/provider_repair_candidate_graph.go`, `tools/localqarunner/types.go`, `tools/localqadashboard/run_loop_candidate.go`, `tools/localqadashboard/run_evidence.go`, `tools/localqadashboard/render.go`, `.github/workflows/local-qa-runner.yml`
+- Files: `tools/localproductacceptance/evidence_gap_types.go`, `tools/localproductacceptance/evidence_gap.go`, `tools/localproductacceptance/evidence_gap_candidates.go`, `tools/localproductacceptance/evidence_gap_candidate_graph.go`, `tools/localproductacceptance/evidence_gap_inferred.go`, `tools/localqarunner/loop_candidate_types.go`, `tools/localqarunner/product_evidence.go`, `tools/localqarunner/provider_evidence.go`, `tools/localqarunner/provider_repair_candidate.go`, `tools/localqarunner/provider_repair_candidate_graph.go`, `tools/localqarunner/types.go`, `tools/providerintegrationevidence/repair.go`, `tools/localqadashboard/run_loop_candidate.go`, `tools/localqadashboard/run_evidence.go`, `tools/localqadashboard/render.go`, `.github/workflows/local-qa-runner.yml`
 - Docs: `docs/30-architecture/local-acceptance-coverage.riido.json`, `docs/readme/local-acceptance.riido.json`, `docs/readme/local-acceptance.md`
-- Evidence: `local.qa.evidence_gap_candidates`, `closed_loop_candidates`, `evidence_graph`, `required_next_artifacts`
-- Verifiers: `gap-candidates-test`, `gap-candidate-graph-test`, `local-qa-runner-candidate-rollup-test`, `local-qa-runner-provider-repair-candidate-test`, `local-qa-dashboard-candidate-test`
+- Evidence: `local.qa.evidence_gap_candidates`, `provider.real_cli_observation`, `closed_loop_candidates`, `evidence_graph`, `required_next_artifacts`
+- Verifiers: `gap-candidates-test`, `gap-candidate-graph-test`, `local-qa-runner-candidate-rollup-test`, `local-qa-runner-provider-repair-candidate-test`, `provider-repair-claude-approval-classifier-test`, `local-qa-dashboard-candidate-test`
 
 ### local_qa_candidate_decisions_must_match_candidates
 
