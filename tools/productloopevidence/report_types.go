@@ -54,16 +54,22 @@ type routeCoverageRow struct {
 }
 
 type productAcceptance struct {
-	ScenarioCount         int              `json:"scenario_count"`
-	OutcomeSignalCount    int              `json:"outcome_signal_count"`
-	LinkedSignalCount     int              `json:"linked_signal_count"`
-	MissingSignalIDs      []string         `json:"missing_signal_ids"`
-	MeasurementCandidates []outcomeMeasure `json:"measurement_candidates"`
-	Status                string           `json:"status"`
+	ScenarioCount                   int              `json:"scenario_count"`
+	OutcomeSignalCount              int              `json:"outcome_signal_count"`
+	LinkedSignalCount               int              `json:"linked_signal_count"`
+	OutcomeEvidenceLinkedCount      int              `json:"outcome_evidence_linked_count"`
+	MissingSignalIDs                []string         `json:"missing_signal_ids"`
+	MissingOutcomeEvidenceSignalIDs []string         `json:"missing_outcome_evidence_signal_ids"`
+	LocalQARunEvidenceState         string           `json:"local_qa_run_evidence_state"`
+	CoverageStatus                  string           `json:"coverage_status,omitempty"`
+	DeploymentGateStatus            string           `json:"deployment_gate_status,omitempty"`
+	MeasurementCandidates           []outcomeMeasure `json:"measurement_candidates"`
+	Status                          string           `json:"status"`
 }
 
 type outcomeMeasure struct {
-	ID          string   `json:"id"`
-	ScenarioIDs []string `json:"scenario_ids"`
-	Linked      bool     `json:"linked"`
+	ID                    string   `json:"id"`
+	ScenarioIDs           []string `json:"scenario_ids"`
+	Linked                bool     `json:"linked"`
+	OutcomeEvidenceLinked bool     `json:"outcome_evidence_linked"`
 }

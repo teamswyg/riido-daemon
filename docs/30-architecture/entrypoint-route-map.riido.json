@@ -17,6 +17,7 @@
       "description": "Branch gates, core CI, CLI smoke, release packaging, and runtime upgrade publication entrypoints.",
       "includes": [
         ".github/workflows/branch-gate-evidence.yml",
+        ".github/workflows/cdn-latest-ai-agent.yml",
         ".github/workflows/ci.yml",
         ".github/workflows/cli.yml",
         ".github/workflows/cli-surface-evidence.yml",

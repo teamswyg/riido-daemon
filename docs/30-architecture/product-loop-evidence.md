@@ -31,6 +31,8 @@
 
 ## Product Outcome Signals
 
+Outcome evidence is linked from the latest local QA run coverage rows; `passed` and `observed` rows count as executed outcomes.
+
 | Signal | Scenario bindings |
 | --- | --- |
 | `assignment_completion` | `contract.task.multi_assignment` |

@@ -31,6 +31,7 @@ func collectCandidates(
 			Graph: productSignalGraph(id),
 		})
 	}
+	out = append(out, collectProductOutcomeEvidenceCandidates(product)...)
 	if schedule.Status == statusPartial {
 		out = append(out, scheduleCandidate(schedule))
 	}

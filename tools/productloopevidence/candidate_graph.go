@@ -24,6 +24,18 @@ func productSignalGraph(id string) candidateGraph {
 	}
 }
 
+func productOutcomeEvidenceGraph(id string) candidateGraph {
+	return candidateGraph{
+		Observation: "product outcome signal is bound to scenarios but the latest run evidence did not observe the outcome",
+		Hypothesis:  "a product loop is not closed until local QA run rows prove the scenario actually executed",
+		Change:      "productloopevidence reads local QA run coverage rows for outcome signal linkage",
+		Verifier:    "TestBuildProductAcceptanceRequiresRunOutcomeEvidence",
+		Evidence:    "product-loop-evidence.product_acceptance." + id + ".outcome_evidence_linked",
+		Decision:    "missing outcome run evidence remains product acceptance debt",
+		NextLoop:    "local-product-acceptance",
+	}
+}
+
 func candidateAgingGraph() candidateGraph {
 	return candidateGraph{
 		Observation: "partial candidates can linger without promotion or escalation",

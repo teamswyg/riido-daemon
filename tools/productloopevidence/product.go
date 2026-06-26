@@ -1,26 +1,36 @@
 package main
 
-func buildProductAcceptance(m manifest, local localAcceptanceSource) productAcceptance {
+func buildProductAcceptance(m manifest, local localAcceptanceSource, run productRunOutcomeSource) productAcceptance {
 	scenarios := scenarioSet(local.Scenarios)
 	out := productAcceptance{
-		ScenarioCount:      len(local.Scenarios),
-		OutcomeSignalCount: len(m.OutcomeSignals),
-		Status:             statusPassed,
+		ScenarioCount:           len(local.Scenarios),
+		OutcomeSignalCount:      len(m.OutcomeSignals),
+		LocalQARunEvidenceState: run.State,
+		CoverageStatus:          run.CoverageStatus,
+		DeploymentGateStatus:    run.DeploymentGateStatus,
+		Status:                  statusPassed,
 	}
 	for _, signal := range m.OutcomeSignals {
 		linked := allPresent(signal.ScenarioIDs, scenarios)
+		outcomeLinked := outcomeEvidenceLinked(signal.ScenarioIDs, run)
 		out.MeasurementCandidates = append(out.MeasurementCandidates, outcomeMeasure{
-			ID:          signal.ID,
-			ScenarioIDs: signal.ScenarioIDs,
-			Linked:      linked,
+			ID:                    signal.ID,
+			ScenarioIDs:           signal.ScenarioIDs,
+			Linked:                linked,
+			OutcomeEvidenceLinked: outcomeLinked,
 		})
 		if linked {
 			out.LinkedSignalCount++
 		} else {
 			out.MissingSignalIDs = append(out.MissingSignalIDs, signal.ID)
 		}
+		if outcomeLinked {
+			out.OutcomeEvidenceLinkedCount++
+		} else {
+			out.MissingOutcomeEvidenceSignalIDs = append(out.MissingOutcomeEvidenceSignalIDs, signal.ID)
+		}
 	}
-	if len(out.MissingSignalIDs) > 0 {
+	if len(out.MissingSignalIDs) > 0 || len(out.MissingOutcomeEvidenceSignalIDs) > 0 {
 		out.Status = statusPartial
 	}
 	return out
