@@ -18,7 +18,7 @@ The launcher passes `RIIDO_DEVICE_ID`, `RIIDO_DEVICE_SECRET`, `RIIDO_SAAS_URL` w
 
 GitHub Releases remain immutable. `https://cdn.riido.io/releases/latest/ai-agent/` is a mutable development/test mirror only.
 
-The mirror is published by `.github/workflows/cdn-latest-ai-agent.yml` using `scripts/publish-cdn-latest.sh` after release artifact CI succeeds.
+The mirror is published by `.github/workflows/cdn-latest-ai-agent.yml` using `scripts/publish-cdn-latest.sh` when a GitHub Release is published, with manual resync available through workflow dispatch.
 
 Mirror paths:
 
