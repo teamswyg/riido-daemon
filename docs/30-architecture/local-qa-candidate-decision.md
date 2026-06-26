@@ -5,7 +5,7 @@
 Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-decision.riido.json).
 
 - evidence artifact: `local-qa-candidate-decision`
-- decision records: `28`
+- decision records: `29`
 
 ## Assertions
 
@@ -48,6 +48,7 @@ Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-d
 | `product-outcome-evidence-time_to_first_event` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
 | `product-outcome-evidence-user_visible_failure` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
 | `partial-reduction-open-candidate-debt` | `product_loop` | `triage_required` | `P1` | `loop-registry` | `2026-12-31` | `candidate decision evidence` |
+| `partial-reduction-candidate-aging` | `product_loop` | `triage_required` | `P1` | `loop-registry` | `2026-12-31` | `stale partial escalation evidence` |
 
 ## Loop
 

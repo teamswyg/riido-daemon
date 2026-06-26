@@ -43,6 +43,24 @@ func TestCollectCandidatesShowsOpenCandidateDebt(t *testing.T) {
 	}
 }
 
+func TestCollectCandidatesEscalatesStalePartialAge(t *testing.T) {
+	partial := partialReduction{
+		CandidateCount:            2,
+		StaleCandidateCount:       1,
+		LocalQARunEvidenceFresh:   true,
+		LocalQARunEvidenceState:   localQARunFresh,
+		LocalQARunEvidencePresent: true,
+	}
+	got := collectCandidates(metaComplexity{}, productAcceptance{}, qaScheduleEvidence{}, partial)
+	if len(got) != 1 || got[0].ID != "partial-reduction-candidate-aging" {
+		t.Fatalf("candidates = %+v", got)
+	}
+	want := "stale partial escalation evidence"
+	if got[0].RequiredNextArtifacts[2] != want {
+		t.Fatalf("next artifacts = %+v", got[0].RequiredNextArtifacts)
+	}
+}
+
 func TestCollectProductOutcomeCandidatesNamesMissingScenarioRows(t *testing.T) {
 	product := productAcceptance{
 		MissingOutcomeEvidenceSignalIDs: []string{"time_to_first_event"},
