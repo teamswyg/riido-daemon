@@ -1,0 +1,45 @@
+{
+  "schema_version": "riido-product-loop-evidence.v1",
+  "id": "daemon-product-loop-evidence",
+  "title": "Product Loop Evidence",
+  "generated_doc": "docs/30-architecture/product-loop-evidence.md",
+  "workflow": ".github/workflows/product-loop-evidence.yml",
+  "evidence_artifact": "product-loop-evidence",
+  "loop_registry": "docs/30-architecture/loop-registry.riido.json",
+  "local_acceptance_manifest": "docs/30-architecture/local-acceptance-coverage.riido.json",
+  "qa_system_manifest": "docs/30-architecture/qa-system.dsl.json",
+  "local_qa_run_evidence": ".riido-local/evidence/local-qa-run.json",
+  "thresholds": {
+    "max_entrypoints_before_partial": 128,
+    "stale_partial_after_days": 7
+  },
+  "outcome_signals": [
+    {
+      "id": "assignment_completion",
+      "description": "A real task assignment reaches a user-visible terminal outcome.",
+      "scenario_ids": ["contract.task.multi_assignment"]
+    },
+    {
+      "id": "provider_recovery",
+      "description": "Provider repair or recovery evidence is visible when a provider cannot proceed.",
+      "scenario_ids": ["provider.claude", "provider.codex", "provider.cursor", "provider.openclaw"]
+    },
+    {
+      "id": "time_to_first_event",
+      "description": "The first real-time event is observable after assignment.",
+      "scenario_ids": ["contract.task.thread_subscription", "contract.task.sse_replay"]
+    },
+    {
+      "id": "user_visible_failure",
+      "description": "A user-facing failure path is captured as product evidence instead of raw provider text.",
+      "scenario_ids": ["contract.task.thread_message", "local.qa.evidence_gap_candidates"]
+    }
+  ],
+  "loop": {
+    "observation": "Local QA, loop registry, and provider evidence exist, but product-success closure still required a human to connect meta complexity, product outcomes, and partial candidate debt.",
+    "hypothesis": "A product-loop evidence sidecar can turn those three concerns into measurable evidence and closed-loop candidates without changing runtime contracts.",
+    "execute": "Scan tool/workflow/verifier/generated-doc counts, claim mapping coverage, local acceptance scenario bindings, inferred execution ids, candidate loops, promotion count, and local QA run presence.",
+    "evaluate": "The report is passed only when meta complexity stays under budget, every outcome signal is bound to scenarios, and partial candidate debt has promotion and freshness evidence.",
+    "retrospective": "Harnesses keep finding failures while this sidecar shows which evidence must be promoted into stricter closed loops before humans can leave the loop."
+  }
+}
