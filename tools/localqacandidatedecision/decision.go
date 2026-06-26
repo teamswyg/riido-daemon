@@ -9,7 +9,7 @@ import (
 var (
 	allowedDispositions = []string{"adopted", "triage_required", "deferred", "rejected"}
 	allowedPriorities   = []string{"P0", "P1", "P2", "P3"}
-	allowedScopes       = []string{"", "current", "local_observed"}
+	allowedScopes       = []string{"", "current", "local_observed", "product_loop"}
 )
 
 func verifyDecision(decision decisionRecord) error {
@@ -42,5 +42,12 @@ func decisionNeedsReviewBy(decision decisionRecord) bool {
 }
 
 func decisionAllowsMissingCandidate(decision decisionRecord) bool {
-	return decision.CandidateScope == "local_observed"
+	return decision.CandidateScope == "local_observed" || decision.CandidateScope == "product_loop"
+}
+
+func decisionMatchesCandidateScope(decision decisionRecord, scope string) bool {
+	if decision.CandidateScope == "local_observed" {
+		return true
+	}
+	return decision.CandidateScope == scope
 }

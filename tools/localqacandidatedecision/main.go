@@ -12,6 +12,7 @@ func main() {
 	fs.StringVar(&opt.Repo, "repo", ".", "repository root")
 	fs.StringVar(&opt.Manifest, "manifest", defaultManifest, "decision manifest")
 	fs.StringVar(&opt.CandidateIn, "candidate-in", "", "local QA run evidence")
+	fs.StringVar(&opt.CandidateScope, "candidate-scope", "", "candidate source scope")
 	fs.StringVar(&opt.EvidenceOut, "evidence-out", "", "evidence output")
 	fs.BoolVar(&opt.WriteDoc, "write-doc", false, "write generated doc")
 	fs.BoolVar(&opt.CheckDoc, "check-doc", false, "check generated doc")

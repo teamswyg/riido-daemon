@@ -13,6 +13,7 @@ type closedLoopCandidate struct {
 }
 
 type verifyResult struct {
+	CandidateScope    string                     `json:"candidate_scope,omitempty"`
 	CandidateCount    int                        `json:"candidate_count"`
 	DecisionCount     int                        `json:"decision_count"`
 	DecisionIDs       []string                   `json:"decision_ids,omitempty"`

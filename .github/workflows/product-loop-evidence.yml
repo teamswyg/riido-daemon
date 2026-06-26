@@ -6,15 +6,9 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/product-loop-evidence.yml"
-      - "docs/30-architecture/entrypoint-route-map.riido.json"
-      - "docs/30-architecture/entrypoint-route-map.md"
-      - "docs/30-architecture/product-loop-evidence.riido.json"
-      - "docs/30-architecture/product-loop-evidence.md"
-      - "docs/30-architecture/loop-registry.riido.json"
-      - "docs/30-architecture/local-acceptance-coverage.riido.json"
-      - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
-      - "docs/30-architecture/qa-system.dsl.json"
+      - "docs/30-architecture/**"
       - "tools/productloopevidence/**"
+      - "tools/localqacandidatedecision/**"
       - "tools/localqarunner/**"
       - "tools/localqadashboard/**"
       - "tools/providerintegrationevidence/**"
@@ -23,15 +17,9 @@ on:
   pull_request:
     paths:
       - ".github/workflows/product-loop-evidence.yml"
-      - "docs/30-architecture/entrypoint-route-map.riido.json"
-      - "docs/30-architecture/entrypoint-route-map.md"
-      - "docs/30-architecture/product-loop-evidence.riido.json"
-      - "docs/30-architecture/product-loop-evidence.md"
-      - "docs/30-architecture/loop-registry.riido.json"
-      - "docs/30-architecture/local-acceptance-coverage.riido.json"
-      - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
-      - "docs/30-architecture/qa-system.dsl.json"
+      - "docs/30-architecture/**"
       - "tools/productloopevidence/**"
+      - "tools/localqacandidatedecision/**"
       - "tools/localqarunner/**"
       - "tools/localqadashboard/**"
       - "tools/providerintegrationevidence/**"
@@ -65,12 +53,14 @@ jobs:
           test -s .riido-local/evidence/local-qa-run.json
           go run ./tools/productloopevidence -check-doc -evidence-out out/product-loop-evidence.json
           grep -q '"local_qa_run_evidence_state": "fresh"' out/product-loop-evidence.json
+          go run ./tools/localqacandidatedecision -candidate-in out/product-loop-evidence.json -candidate-scope product_loop -check-doc -evidence-out out/product-loop-candidate-decision.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: product-loop-evidence
           path: |
             out/product-loop-evidence.json
+            out/product-loop-candidate-decision.json
             .riido-local/evidence/local-qa-run.json
             .riido-local/evidence/local-qa-coverage.json
             .riido-local/dashboard/index.html
