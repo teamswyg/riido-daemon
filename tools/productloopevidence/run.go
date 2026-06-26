@@ -11,19 +11,26 @@ func run(opts options) error {
 	if err != nil {
 		return err
 	}
-	doc := renderDoc(m)
+	routes, err := loadEntrypointRouteMap(root, m)
+	if err != nil {
+		return err
+	}
+	doc := renderDoc(m, routes)
+	routeDoc := renderRouteDoc(routes, m.EntrypointRouteMap)
 	if opts.WriteDoc {
 		if err := writeText(repoPath(root, m.GeneratedDoc), doc); err != nil {
 			return err
 		}
+		if err := writeText(repoPath(root, routes.GeneratedDoc), routeDoc); err != nil {
+			return err
+		}
 	}
 	if opts.CheckDoc {
-		current, err := os.ReadFile(repoPath(root, m.GeneratedDoc))
-		if err != nil {
-			return fmt.Errorf("read generated doc: %w", err)
+		if err := checkGeneratedDoc(root, m.GeneratedDoc, doc); err != nil {
+			return err
 		}
-		if string(current) != doc {
-			return fmt.Errorf("generated doc drift: run go run ./tools/productloopevidence -write-doc")
+		if err := checkGeneratedDoc(root, routes.GeneratedDoc, routeDoc); err != nil {
+			return err
 		}
 	}
 	report, err := buildReport(root, m)
@@ -37,6 +44,17 @@ func run(opts options) error {
 	}
 	if report.Status == statusFailed || opts.Strict && report.Status != statusPassed {
 		return fmt.Errorf("product loop evidence status=%s problems=%v", report.Status, report.Problems)
+	}
+	return nil
+}
+
+func checkGeneratedDoc(root, path, want string) error {
+	current, err := os.ReadFile(repoPath(root, path))
+	if err != nil {
+		return fmt.Errorf("read generated doc %s: %w", path, err)
+	}
+	if string(current) != want {
+		return fmt.Errorf("generated doc drift: run go run ./tools/productloopevidence -write-doc")
 	}
 	return nil
 }

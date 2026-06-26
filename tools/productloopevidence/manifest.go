@@ -20,8 +20,11 @@ func validateManifest(m manifest) error {
 	if m.Workflow == "" || m.EvidenceArtifact == "" {
 		return fmt.Errorf("workflow and evidence_artifact are required")
 	}
-	if m.LoopRegistry == "" || m.LocalAcceptanceManifest == "" || m.QASystemManifest == "" {
-		return fmt.Errorf("loop_registry, local_acceptance_manifest, and qa_system_manifest are required")
+	if m.LoopRegistry == "" || m.EntrypointRouteMap == "" {
+		return fmt.Errorf("loop_registry and entrypoint_route_map are required")
+	}
+	if m.LocalAcceptanceManifest == "" || m.QASystemManifest == "" {
+		return fmt.Errorf("local_acceptance_manifest and qa_system_manifest are required")
 	}
 	if m.Thresholds.MaxEntrypointsBeforePartial <= 0 || m.Thresholds.StalePartialAfterDays <= 0 {
 		return fmt.Errorf("positive thresholds are required")

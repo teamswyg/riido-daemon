@@ -134,12 +134,14 @@
       "observes": [
         "tool entrypoints",
         "workflow entrypoints",
+        "entrypoint route coverage",
         "claim mapping coverage",
         "product outcome scenario bindings",
         "partial candidate debt"
       ],
       "verifies": [
         "meta complexity emits counts",
+        "entrypoint route coverage reaches every visible entrypoint",
         "product acceptance signals are bound to local QA scenarios",
         "partial candidates expose required next artifacts",
         "generated product loop reader stays fresh"
@@ -516,12 +518,18 @@
         "tools/productloopevidence/report.go",
         "tools/productloopevidence/report_test.go",
         "tools/productloopevidence/report_types.go",
+        "tools/productloopevidence/route_coverage.go",
+        "tools/productloopevidence/route_map.go",
+        "tools/productloopevidence/route_render.go",
+        "tools/productloopevidence/route_types.go",
         "tools/productloopevidence/run.go",
         "tools/productloopevidence/source_types.go",
         "tools/productloopevidence/types.go",
         ".github/workflows/product-loop-evidence.yml"
       ],
       "docs": [
+        "docs/30-architecture/entrypoint-route-map.riido.json",
+        "docs/30-architecture/entrypoint-route-map.md",
         "docs/30-architecture/product-loop-evidence.riido.json",
         "docs/30-architecture/product-loop-evidence.md",
         "docs/30-architecture/loop-registry.riido.json",
@@ -530,6 +538,7 @@
       "evidence": [
         "product-loop-evidence",
         "meta_complexity",
+        "route_coverage",
         "product_acceptance",
         "partial_reduction",
         "closed_loop_candidates"
@@ -549,6 +558,15 @@
           "file": "tools/productloopevidence/report_test.go",
           "contains": [
             "TestBuildMappingCoverageRequiresVerifierClaims",
+            "CoverageRatio"
+          ]
+        },
+        {
+          "name": "product-loop-route-coverage-test",
+          "file": "tools/productloopevidence/report_test.go",
+          "contains": [
+            "TestBuildMetaComplexityTreatsRoutedEntrypointsAsManaged",
+            "RouteCoverage",
             "CoverageRatio"
           ]
         },

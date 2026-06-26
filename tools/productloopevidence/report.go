@@ -5,7 +5,11 @@ func buildReport(root string, m manifest) (report, error) {
 	if err != nil {
 		return report{}, err
 	}
-	meta := buildMetaComplexity(root, m, reg)
+	routes, err := loadEntrypointRouteMap(root, m)
+	if err != nil {
+		return report{}, err
+	}
+	meta := buildMetaComplexity(root, m, reg, routes)
 	product := buildProductAcceptance(m, local)
 	partial := buildPartialReduction(root, m, reg, qa)
 	candidates := collectCandidates(meta, product, partial)

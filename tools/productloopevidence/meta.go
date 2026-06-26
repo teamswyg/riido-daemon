@@ -1,12 +1,13 @@
 package main
 
-func buildMetaComplexity(root string, m manifest, reg registrySource) metaComplexity {
+func buildMetaComplexity(root string, m manifest, reg registrySource, routes entrypointRouteMap) metaComplexity {
 	toolEntrypoints := countFiles(root, "tools/*/main.go")
 	workflows := countFiles(root, ".github/workflows/*.yml")
 	verifiers := countFiles(root, "**/*_test.go")
 	generatedDocs := countGeneratedDocs(root)
 	entrypoints := toolEntrypoints + workflows
 	coverage := buildMappingCoverage(reg)
+	routeCoverage := buildRouteCoverage(root, routes)
 	out := metaComplexity{
 		ToolEntrypointCount: toolEntrypoints,
 		WorkflowCount:       workflows,
@@ -15,16 +16,23 @@ func buildMetaComplexity(root string, m manifest, reg registrySource) metaComple
 		EntrypointCount:     entrypoints,
 		EntrypointThreshold: m.Thresholds.MaxEntrypointsBeforePartial,
 		MappingCoverage:     coverage,
+		RouteCoverage:       routeCoverage,
 		Status:              statusPassed,
 	}
-	if entrypoints > m.Thresholds.MaxEntrypointsBeforePartial {
+	if entrypoints > m.Thresholds.MaxEntrypointsBeforePartial && routeCoverage.CoverageRatio < 1 {
 		out.Status = statusPartial
-		out.PartialReason = "entrypoint_count exceeds max_entrypoints_before_partial"
+		out.PartialReason = "entrypoint_count exceeds threshold and route coverage is incomplete"
 	}
 	if coverage.ClaimCount == 0 || coverage.CoverageRatio < 1 {
 		out.Status = statusPartial
 		if out.PartialReason == "" {
 			out.PartialReason = "claim mapping coverage is incomplete"
+		}
+	}
+	if routeCoverage.RouteCount == 0 || routeCoverage.CoverageRatio < 1 {
+		out.Status = statusPartial
+		if out.PartialReason == "" {
+			out.PartialReason = "entrypoint route coverage is incomplete"
 		}
 	}
 	return out
