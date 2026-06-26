@@ -40,3 +40,7 @@ func writeCandidate(t *testing.T, dir, body string) string {
 	}
 	return path
 }
+
+func testEvidenceGraphJSON() string {
+	return `"evidence_graph":{"observation":"observed gap","hypothesis":"closed loop can prevent recurrence","change":"bind claim","verifier":"candidate-decision","evidence":"candidate.json","decision":"triage","next_loop":"local-qa-gap-to-candidate"}`
+}

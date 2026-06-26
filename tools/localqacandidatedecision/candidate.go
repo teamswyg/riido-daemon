@@ -10,6 +10,10 @@ func verifyCandidateDecisions(root string, m manifest, path, scope string) (veri
 	result := verifyResult{CandidateScope: scope, CandidateCount: len(candidate.ClosedLoops)}
 	var problems []candidateProblem
 	for _, item := range candidate.ClosedLoops {
+		if !item.Graph.complete() {
+			problems = append(problems, missingEvidenceGraphProblem(item))
+			continue
+		}
 		decision, ok := decisionByID[item.ID]
 		if !ok {
 			problems = append(problems, missingDecisionProblem(item))

@@ -85,7 +85,7 @@ Closed-loop candidate decision verification must consume current local QA run ev
 
 - Files: `tools/localqacandidatedecision/annotation.go`, `tools/localqacandidatedecision/annotation_escape.go`, `tools/localqacandidatedecision/candidate.go`, `tools/localqacandidatedecision/candidate_more.go`, `tools/localqacandidatedecision/candidate_problem.go`, `tools/localqacandidatedecision/candidate_problem_more.go`, `tools/localqacandidatedecision/decision.go`, `tools/localqacandidatedecision/main.go`, `tools/localqacandidatedecision/options.go`, `tools/localqacandidatedecision/run.go`, `tools/localqacandidatedecision/workflow.go`, `tools/localqacandidatedecision/annotation_test.go`, `tools/localqacandidatedecision/candidate_test.go`, `tools/localqacandidatedecision/decision_test.go`, `tools/localqacandidatedecision/run_test.go`, `.github/workflows/local-qa-runner.yml`, `.github/workflows/product-loop-evidence.yml`
 - Docs: `docs/30-architecture/local-qa-candidate-decision.riido.json`, `docs/30-architecture/local-qa-candidate-decision.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/product-loop-evidence.riido.json`, `docs/30-architecture/product-loop-evidence.md`, `docs/readme/local-acceptance.riido.json`, `docs/readme/local-acceptance.md`
-- Evidence: `local-qa-candidate-decision`, `decision_artifacts`, `required_next_artifacts`, `product-loop-candidate-decision`
+- Evidence: `local-qa-candidate-decision`, `decision_artifacts`, `required_next_artifacts`, `evidence_graph`, `product-loop-candidate-decision`
 - Verifiers: `candidate-decision-annotation-test`, `candidate-decision-cover-test`, `candidate-decision-artifact-test`, `candidate-decision-input-test`
 
 ### expired_local_qa_evidence_must_block_deployment

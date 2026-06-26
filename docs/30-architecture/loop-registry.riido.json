@@ -301,8 +301,10 @@
           "contains": [
             "TestApplyProductEvidenceRollsUpClosedLoopCandidates",
             "TestApplyProductEvidenceRejectsCandidateWithoutAdoptionArtifacts",
+            "TestApplyProductEvidenceRejectsCandidateWithoutEvidenceGraph",
             "closed_loop_candidates",
-            "RequiredNextArtifacts"
+            "RequiredNextArtifacts",
+            "evidence_graph"
           ]
         },
         {
@@ -375,6 +377,7 @@
         "local-qa-candidate-decision",
         "decision_artifacts",
         "required_next_artifacts",
+        "evidence_graph",
         "product-loop-candidate-decision"
       ],
       "verifiers": [
@@ -392,6 +395,7 @@
           "contains": [
             "TestCandidateDecisionCoversLocalQACandidate",
             "TestCandidateDecisionRejectsMissingDecision",
+            "TestCandidateDecisionRejectsMissingEvidenceGraph",
             "TestCandidateDecisionScopeCoversProductLoopCandidate"
           ]
         },
