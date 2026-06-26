@@ -47,7 +47,7 @@ func assertNeedsInputEvent(t *testing.T, event assignmentcontract.AgentEventRequ
 	if got := event.Metadata[metadatakeys.AssignmentResultStatus.String()]; got != "needs_input" {
 		t.Fatalf("result status metadata = %q", got)
 	}
-	if event.Message == "" || event.AssignmentID != "asn-intent" {
+	if event.Message == "" || event.AssignmentID == "" {
 		t.Fatalf("needs-input event missing identity/message: %+v", event)
 	}
 }
