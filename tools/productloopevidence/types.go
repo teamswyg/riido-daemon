@@ -19,6 +19,7 @@ type manifest struct {
 	EntrypointRouteMap      string          `json:"entrypoint_route_map"`
 	LocalAcceptanceManifest string          `json:"local_acceptance_manifest"`
 	QASystemManifest        string          `json:"qa_system_manifest"`
+	LocalQAScheduleManifest string          `json:"local_qa_schedule_manifest"`
 	LocalQARunEvidence      string          `json:"local_qa_run_evidence"`
 	Thresholds              thresholds      `json:"thresholds"`
 	OutcomeSignals          []outcomeSignal `json:"outcome_signals"`

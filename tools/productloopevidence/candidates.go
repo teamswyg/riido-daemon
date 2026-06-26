@@ -1,6 +1,11 @@
 package main
 
-func collectCandidates(meta metaComplexity, product productAcceptance, partial partialReduction) []closedLoopCandiate {
+func collectCandidates(
+	meta metaComplexity,
+	product productAcceptance,
+	schedule qaScheduleEvidence,
+	partial partialReduction,
+) []closedLoopCandiate {
 	var out []closedLoopCandiate
 	if meta.Status == statusPartial {
 		out = append(out, closedLoopCandiate{
@@ -11,6 +16,7 @@ func collectCandidates(meta metaComplexity, product productAcceptance, partial p
 				"claim-bound entrypoint index",
 				"new contributor route map",
 			},
+			Graph: metaCandidateGraph(),
 		})
 	}
 	for _, id := range product.MissingSignalIDs {
@@ -22,7 +28,11 @@ func collectCandidates(meta metaComplexity, product productAcceptance, partial p
 				"local acceptance scenario",
 				"product outcome evidence field",
 			},
+			Graph: productSignalGraph(id),
 		})
+	}
+	if schedule.Status == statusPartial {
+		out = append(out, scheduleCandidate(schedule))
 	}
 	if partial.CandidateAgeUnknownCount > 0 || partial.StaleCandidateCount > 0 {
 		out = append(out, closedLoopCandiate{
@@ -34,6 +44,7 @@ func collectCandidates(meta metaComplexity, product productAcceptance, partial p
 				"candidate promotion verifier",
 				"stale partial escalation evidence",
 			},
+			Graph: candidateAgingGraph(),
 		})
 	}
 	if partial.CandidateCount > 0 && !partial.LocalQARunEvidencePresent {
@@ -45,6 +56,7 @@ func collectCandidates(meta metaComplexity, product productAcceptance, partial p
 				"latest local QA run evidence",
 				"candidate decision evidence",
 			},
+			Graph: localQARunGraph(),
 		})
 	}
 	return out

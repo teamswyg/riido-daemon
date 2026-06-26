@@ -9,6 +9,7 @@
   "entrypoint_route_map": "docs/30-architecture/entrypoint-route-map.riido.json",
   "local_acceptance_manifest": "docs/30-architecture/local-acceptance-coverage.riido.json",
   "qa_system_manifest": "docs/30-architecture/qa-system.dsl.json",
+  "local_qa_schedule_manifest": "docs/30-architecture/local-qa-daily-trigger.dsl.json",
   "local_qa_run_evidence": ".riido-local/evidence/local-qa-run.json",
   "thresholds": {
     "max_entrypoints_before_partial": 128,

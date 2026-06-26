@@ -40,3 +40,13 @@ type qaExecution struct {
 	ID   string `json:"id"`
 	Mode string `json:"mode"`
 }
+
+type qaScheduleSource struct {
+	ID              string   `json:"id"`
+	Cadence         string   `json:"cadence"`
+	Entrypoint      string   `json:"entrypoint"`
+	FreshnessWindow string   `json:"freshness_window"`
+	Evidence        []string `json:"evidence"`
+	ClosedLoop      []string `json:"closed_loop"`
+	RejectIf        []string `json:"reject_if"`
+}

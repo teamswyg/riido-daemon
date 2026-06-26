@@ -20,6 +20,15 @@
 - Generated doc: `docs/30-architecture/entrypoint-route-map.md`
 - Route count: `6`
 
+## Local QA Schedule Closure
+
+- SSOT: `docs/30-architecture/local-qa-daily-trigger.dsl.json`
+- ID: `daily-evidence-sweep`
+- Cadence: `daily`
+- Freshness window: `24h`
+- Entrypoint: `go run ./tools/localqarunner`
+- Evidence outputs: `5`
+
 ## Product Outcome Signals
 
 | Signal | Scenario bindings |
