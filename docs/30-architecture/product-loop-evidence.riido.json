@@ -27,6 +27,11 @@
       "scenario_ids": ["provider.claude", "provider.codex", "provider.cursor", "provider.openclaw"]
     },
     {
+      "id": "provider_approval_round_trip",
+      "description": "A permission-gated Claude command produces a structured approval request, receives a web decision, resumes, and reaches a user-visible execution outcome.",
+      "scenario_ids": ["provider.claude.web_approval_round_trip"]
+    },
+    {
       "id": "time_to_first_event",
       "description": "The first real-time event is observable after assignment.",
       "scenario_ids": ["contract.task.thread_subscription", "contract.task.sse_replay"]

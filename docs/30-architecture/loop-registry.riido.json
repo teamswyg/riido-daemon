@@ -921,15 +921,20 @@
         "internal/agentbridge/controlplane/saasplane/tool_approval.go"
       ],
       "docs": [
+        "docs/30-architecture/local-acceptance-coverage.riido.json",
+        "docs/30-architecture/local-qa-candidate-decision.riido.json",
+        "docs/30-architecture/product-loop-evidence.riido.json",
         "docs/30-architecture/loop-registry.riido.json",
         "docs/30-architecture/loop-registry.md"
       ],
       "evidence": [
         "staging.v3.thread_history.asn-000121-123.no_tool_approval_create",
+        "staging.v3.thread_history.uNYpHxDOzMp3vMy_urWsu.codex_success_claude_permission_gate_failure",
         "claude_control_request_to_tool_approval",
         "claude_mcp_helper_delegates_to_daemon_socket",
         "claude_mcp_helper_has_no_saas_credentials",
         "daemon_tool_approval_authorizes_assignment_before_saas_resolution",
+        "product_loop.provider_approval_round_trip",
         "provider_input_control_response",
         "web_tool_approval_round_trip"
       ],
@@ -995,6 +1000,15 @@
             "TestDaemonToolApprovalRequestUsesInProcessResolver",
             "TestDaemonToolApprovalRequestRejectsInactiveAssignmentBeforeResolver",
             "resolver was called for inactive assignment"
+          ]
+        },
+        {
+          "name": "product-loop-approval-round-trip-signal-test",
+          "file": "tools/productloopevidence/product_outcome_test.go",
+          "contains": [
+            "TestProductLoopManifestRequiresClaudeApprovalRoundTrip",
+            "provider_approval_round_trip",
+            "provider.claude.web_approval_round_trip"
           ]
         }
       ]

@@ -37,6 +37,7 @@ Outcome evidence is linked from the latest local QA run coverage rows; `passed` 
 | --- | --- |
 | `assignment_completion` | `contract.task.multi_assignment` |
 | `provider_recovery` | `provider.claude`, `provider.codex`, `provider.cursor`, `provider.openclaw` |
+| `provider_approval_round_trip` | `provider.claude.web_approval_round_trip` |
 | `time_to_first_event` | `contract.task.thread_subscription`, `contract.task.sse_replay` |
 | `user_visible_failure` | `contract.task.thread_message`, `local.qa.evidence_gap_candidates` |
 
