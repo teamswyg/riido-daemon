@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 	"time"
 )
@@ -31,6 +33,23 @@ func TestBuildMappingCoverageRequiresVerifierClaims(t *testing.T) {
 	}
 	if got.CoverageRatio != 0.5 {
 		t.Fatalf("ratio = %v", got.CoverageRatio)
+	}
+}
+
+func TestBuildMetaComplexityTreatsRoutedEntrypointsAsManaged(t *testing.T) {
+	root := t.TempDir()
+	writeFixture(t, root, "tools/a/main.go")
+	writeFixture(t, root, "tools/b/main.go")
+	m := manifest{Thresholds: thresholds{MaxEntrypointsBeforePartial: 1}}
+	reg := registrySource{BusinessClaims: []registryClaim{
+		{ID: "covered", Files: []string{"a.go"}, Verifiers: []sourceCheck{{Name: "test", File: "a_test.go"}}},
+	}}
+	routes := entrypointRouteMap{Routes: []entrypointRoute{{
+		ID: "tools", Owner: "platform", Includes: []string{"tools/*/main.go"},
+	}}}
+	got := buildMetaComplexity(root, m, reg, routes)
+	if got.Status != statusPassed || got.RouteCoverage.CoverageRatio != 1 {
+		t.Fatalf("meta complexity = %+v", got)
 	}
 }
 
@@ -68,5 +87,16 @@ func TestBuildPartialReductionComputesCandidateAge(t *testing.T) {
 	}
 	if len(got.CandidateAges) != 2 || got.CandidateAges[0].AgeDays != 2 || !got.CandidateAges[1].Stale {
 		t.Fatalf("candidate ages = %+v", got.CandidateAges)
+	}
+}
+
+func writeFixture(t *testing.T, root, rel string) {
+	t.Helper()
+	path := filepath.Join(root, rel)
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("package main\n"), 0o644); err != nil {
+		t.Fatal(err)
 	}
 }

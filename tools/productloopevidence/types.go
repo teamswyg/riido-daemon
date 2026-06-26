@@ -16,6 +16,7 @@ type manifest struct {
 	Workflow                string          `json:"workflow"`
 	EvidenceArtifact        string          `json:"evidence_artifact"`
 	LoopRegistry            string          `json:"loop_registry"`
+	EntrypointRouteMap      string          `json:"entrypoint_route_map"`
 	LocalAcceptanceManifest string          `json:"local_acceptance_manifest"`
 	QASystemManifest        string          `json:"qa_system_manifest"`
 	LocalQARunEvidence      string          `json:"local_qa_run_evidence"`

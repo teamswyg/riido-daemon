@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -43,6 +44,21 @@ func countGeneratedDocs(root string) int {
 		return nil
 	})
 	return count
+}
+
+func listEntrypoints(root string) []string {
+	var out []string
+	for _, pattern := range []string{"tools/*/main.go", ".github/workflows/*.yml"} {
+		matches, _ := filepath.Glob(filepath.Join(root, pattern))
+		for _, match := range matches {
+			rel, err := filepath.Rel(root, match)
+			if err == nil {
+				out = append(out, filepath.ToSlash(rel))
+			}
+		}
+	}
+	sort.Strings(out)
+	return out
 }
 
 func ratio(value, total int) float64 {

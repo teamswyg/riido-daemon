@@ -44,8 +44,8 @@
 - Candidate created at: `2026-06-26`
 - Promotion target: `entrypoint route map and candidate-aging gate`
 - Expires after: `24h`
-- Observes: `tool entrypoints`, `workflow entrypoints`, `claim mapping coverage`, `product outcome scenario bindings`, `partial candidate debt`
-- Verifies: `meta complexity emits counts`, `product acceptance signals are bound to local QA scenarios`, `partial candidates expose required next artifacts`, `generated product loop reader stays fresh`
+- Observes: `tool entrypoints`, `workflow entrypoints`, `entrypoint route coverage`, `claim mapping coverage`, `product outcome scenario bindings`, `partial candidate debt`
+- Verifies: `meta complexity emits counts`, `entrypoint route coverage reaches every visible entrypoint`, `product acceptance signals are bound to local QA scenarios`, `partial candidates expose required next artifacts`, `generated product loop reader stays fresh`
 - Fails when: `product loop manifest drifts`, `outcome signal loses scenario binding`, `partial candidate lacks required_next_artifacts`, `claim-bound product loop files change without evidence`
 
 ### qa-system-inference-surfacing
@@ -119,10 +119,10 @@ Daemon-owned QA harness work must never be committed or merged into teamswyg/rii
 
 Product success loops must measure meta-complexity, product acceptance linkage, and partial-reduction debt as executable evidence so harness failures can become closed-loop candidates without changing endpoint or runtime contracts.
 
-- Files: `tools/productloopevidence/candidates.go`, `tools/productloopevidence/constants.go`, `tools/productloopevidence/files.go`, `tools/productloopevidence/io.go`, `tools/productloopevidence/main.go`, `tools/productloopevidence/manifest.go`, `tools/productloopevidence/meta.go`, `tools/productloopevidence/partial.go`, `tools/productloopevidence/partial_types.go`, `tools/productloopevidence/path.go`, `tools/productloopevidence/product.go`, `tools/productloopevidence/render.go`, `tools/productloopevidence/report.go`, `tools/productloopevidence/report_test.go`, `tools/productloopevidence/report_types.go`, `tools/productloopevidence/run.go`, `tools/productloopevidence/source_types.go`, `tools/productloopevidence/types.go`, `.github/workflows/product-loop-evidence.yml`
-- Docs: `docs/30-architecture/product-loop-evidence.riido.json`, `docs/30-architecture/product-loop-evidence.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
-- Evidence: `product-loop-evidence`, `meta_complexity`, `product_acceptance`, `partial_reduction`, `closed_loop_candidates`
-- Verifiers: `product-loop-acceptance-test`, `product-loop-mapping-test`, `product-loop-candidate-test`
+- Files: `tools/productloopevidence/candidates.go`, `tools/productloopevidence/constants.go`, `tools/productloopevidence/files.go`, `tools/productloopevidence/io.go`, `tools/productloopevidence/main.go`, `tools/productloopevidence/manifest.go`, `tools/productloopevidence/meta.go`, `tools/productloopevidence/partial.go`, `tools/productloopevidence/partial_types.go`, `tools/productloopevidence/path.go`, `tools/productloopevidence/product.go`, `tools/productloopevidence/render.go`, `tools/productloopevidence/report.go`, `tools/productloopevidence/report_test.go`, `tools/productloopevidence/report_types.go`, `tools/productloopevidence/route_coverage.go`, `tools/productloopevidence/route_map.go`, `tools/productloopevidence/route_render.go`, `tools/productloopevidence/route_types.go`, `tools/productloopevidence/run.go`, `tools/productloopevidence/source_types.go`, `tools/productloopevidence/types.go`, `.github/workflows/product-loop-evidence.yml`
+- Docs: `docs/30-architecture/entrypoint-route-map.riido.json`, `docs/30-architecture/entrypoint-route-map.md`, `docs/30-architecture/product-loop-evidence.riido.json`, `docs/30-architecture/product-loop-evidence.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `product-loop-evidence`, `meta_complexity`, `route_coverage`, `product_acceptance`, `partial_reduction`, `closed_loop_candidates`
+- Verifiers: `product-loop-acceptance-test`, `product-loop-mapping-test`, `product-loop-route-coverage-test`, `product-loop-candidate-test`
 
 ### intent_clarification_must_wait_for_user
 

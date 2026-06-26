@@ -10,9 +10,15 @@
 
 - Observation: Local QA, loop registry, and provider evidence exist, but product-success closure still required a human to connect meta complexity, product outcomes, and partial candidate debt.
 - Hypothesis: A product-loop evidence sidecar can turn those three concerns into measurable evidence and closed-loop candidates without changing runtime contracts.
-- Execute: Scan tool/workflow/verifier/generated-doc counts, claim mapping coverage, local acceptance scenario bindings, inferred execution ids, candidate loops, promotion count, and local QA run presence.
-- Evaluate: The report is passed only when meta complexity stays under budget, every outcome signal is bound to scenarios, and partial candidate debt has promotion and freshness evidence.
+- Execute: Scan tool/workflow/verifier/generated-doc counts, entrypoint route coverage, claim mapping coverage, local acceptance scenario bindings, inferred execution ids, candidate loops, promotion count, and local QA run presence.
+- Evaluate: The report is passed only when meta complexity is routed, every outcome signal is bound to scenarios, and partial candidate debt has promotion and freshness evidence.
 - Retrospective: Harnesses keep finding failures while this sidecar shows which evidence must be promoted into stricter closed loops before humans can leave the loop.
+
+## Entrypoint Route Map
+
+- SSOT: `docs/30-architecture/entrypoint-route-map.riido.json`
+- Generated doc: `docs/30-architecture/entrypoint-route-map.md`
+- Route count: `6`
 
 ## Product Outcome Signals
 

@@ -23,6 +23,7 @@ type metaComplexity struct {
 	EntrypointCount     int             `json:"entrypoint_count"`
 	EntrypointThreshold int             `json:"entrypoint_threshold"`
 	MappingCoverage     mappingCoverage `json:"mapping_coverage"`
+	RouteCoverage       routeCoverage   `json:"route_coverage"`
 	Status              string          `json:"status"`
 	PartialReason       string          `json:"partial_reason,omitempty"`
 }
@@ -33,6 +34,22 @@ type mappingCoverage struct {
 	BoundFileCount         int     `json:"bound_file_count"`
 	DeclaredVerifierCount  int     `json:"declared_verifier_count"`
 	CoverageRatio          float64 `json:"coverage_ratio"`
+}
+
+type routeCoverage struct {
+	RouteCount               int                `json:"route_count"`
+	EntrypointCount          int                `json:"entrypoint_count"`
+	CoveredEntrypointCount   int                `json:"covered_entrypoint_count"`
+	UncoveredEntrypointCount int                `json:"uncovered_entrypoint_count"`
+	CoverageRatio            float64            `json:"coverage_ratio"`
+	UncoveredEntrypoints     []string           `json:"uncovered_entrypoints,omitempty"`
+	Routes                   []routeCoverageRow `json:"routes"`
+}
+
+type routeCoverageRow struct {
+	ID              string `json:"id"`
+	Owner           string `json:"owner"`
+	EntrypointCount int    `json:"entrypoint_count"`
 }
 
 type productAcceptance struct {

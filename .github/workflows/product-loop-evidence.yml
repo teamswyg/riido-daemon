@@ -6,6 +6,8 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/product-loop-evidence.yml"
+      - "docs/30-architecture/entrypoint-route-map.riido.json"
+      - "docs/30-architecture/entrypoint-route-map.md"
       - "docs/30-architecture/product-loop-evidence.riido.json"
       - "docs/30-architecture/product-loop-evidence.md"
       - "docs/30-architecture/loop-registry.riido.json"
@@ -17,6 +19,8 @@ on:
   pull_request:
     paths:
       - ".github/workflows/product-loop-evidence.yml"
+      - "docs/30-architecture/entrypoint-route-map.riido.json"
+      - "docs/30-architecture/entrypoint-route-map.md"
       - "docs/30-architecture/product-loop-evidence.riido.json"
       - "docs/30-architecture/product-loop-evidence.md"
       - "docs/30-architecture/loop-registry.riido.json"

@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 306 |
+| Generated reader docs | 307 |
 | Direct SSOT docs | 0 |
 | Registered manual docs | 0 |
-| Scanned docs | 306 |
+| Scanned docs | 307 |
 
 ## Generated Reader Origins
 
@@ -48,6 +48,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/docmap -write` | 2 | `docs/README.md`<br>`docs/readme/document-map.md` |
 | `go run ./tools/draftfields -write-doc` | 2 | `docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md`<br>`docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md` |
 | `go run ./tools/knowledgecoverage -write-doc` | 2 | `docs/30-architecture/executable-knowledge.md`<br>`docs/executable-knowledge.md` |
+| `go run ./tools/productloopevidence -write-doc` | 2 | `docs/30-architecture/entrypoint-route-map.md`<br>`docs/30-architecture/product-loop-evidence.md` |
 | `go run ./tools/saasassignment -write-doc` | 2 | `docs/20-domain/runtime-scheduling/saas-assignment-source.md`<br>`docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md` |
 | `go run ./tools/approvaltimeout -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md` |
 | `go run ./tools/assignmentfsm -write-doc` | 1 | `docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md` |
@@ -64,7 +65,6 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/policybundleevidence -write-doc` | 1 | `docs/20-domain/security/invariants/policy-bundle-loader.md` |
 | `go run ./tools/privacymetadata -write-doc` | 1 | `docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md` |
 | `go run ./tools/processlifecycle -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md` |
-| `go run ./tools/productloopevidence -write-doc` | 1 | `docs/30-architecture/product-loop-evidence.md` |
 | `go run ./tools/providerdraftmapping -write-doc` | 1 | `docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md` |
 | `go run ./tools/providerintegrationevidence -write-doc` | 1 | `docs/30-architecture/provider-real-cli-observation.md` |
 | `go run ./tools/repoverification -write-doc` | 1 | `docs/readme/verification.md` |
@@ -96,14 +96,14 @@ _None missing._
 
 | Group | Count | Sample paths |
 | --- | ---: | --- |
-| `docs` | 356 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `docs` | 357 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
 | `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
 | `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `363`
-- Direct manifest loops: `26`
+- Complete manifest loops: `364`
+- Direct manifest loops: `27`
 - Delegated manifest loops: `337`
 - Missing manifest loops: `0`
 - Missing loop budget: `0`
