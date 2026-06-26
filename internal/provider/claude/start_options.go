@@ -14,4 +14,6 @@ type StartOptions struct {
 	UnsafeBypassAllowed bool
 	// MCPConfigPath enables strict MCP config with the exact config file path.
 	MCPConfigPath string
+	// PermissionPromptToolName routes Claude permission prompts to an MCP tool.
+	PermissionPromptToolName string
 }

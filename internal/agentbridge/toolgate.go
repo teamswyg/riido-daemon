@@ -16,6 +16,10 @@ type ToolApprovalResolver interface {
 	ResolveToolApproval(ctx context.Context, executionID string, tool ToolRef) (ToolApprovalResolution, error)
 }
 
+type ToolApprovalAuthorizer interface {
+	AuthorizeToolApproval(ctx context.Context, executionID string) (bool, error)
+}
+
 type ToolApprovalResolution struct {
 	Approved bool
 	Reason   string

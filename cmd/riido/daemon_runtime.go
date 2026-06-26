@@ -27,6 +27,11 @@ func daemonToolApprovalResolver(reporter controlplane.TaskReporterPort) agentbri
 	return resolver
 }
 
+func daemonToolApprovalAuthorizer(reporter controlplane.TaskReporterPort) agentbridge.ToolApprovalAuthorizer {
+	authorizer, _ := reporter.(agentbridge.ToolApprovalAuthorizer)
+	return authorizer
+}
+
 func stopRuntimeActors(ctx lifecycle.Context, runtimes []*runtimeactor.Actor, log logging.Logger) {
 	for _, rt := range runtimes {
 		if err := rt.StopLifecycle(ctx); err != nil {

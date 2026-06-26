@@ -6,14 +6,19 @@ import (
 	"io"
 	"net"
 
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
 // daemonRequest is the JSON envelope read off the socket.
 type daemonRequest struct {
-	Method        daemonMethod `json:"method"`
-	ShutdownLevel string       `json:"shutdown_level,omitempty"`
-	Force         bool         `json:"force,omitempty"`
+	Method        daemonMethod        `json:"method"`
+	ShutdownLevel string              `json:"shutdown_level,omitempty"`
+	Force         bool                `json:"force,omitempty"`
+	AssignmentID  string              `json:"assignment_id,omitempty"`
+	TaskID        string              `json:"task_id,omitempty"`
+	RuntimeID     string              `json:"runtime_id,omitempty"`
+	Tool          agentbridge.ToolRef `json:"tool"`
 }
 
 func readDaemonRequest(conn net.Conn) (daemonRequest, bool, error) {

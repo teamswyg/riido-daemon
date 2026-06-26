@@ -10,9 +10,14 @@ func buildStartArgs(req agentbridge.StartRequest, opts StartOptions) ([]string, 
 	args := protocolArgs(opts.PermissionMode)
 	tempFiles := []string{}
 	args, tempFiles = appendMCPArgs(args, tempFiles, opts.MCPConfigPath)
+	args = appendPermissionPromptTool(args, opts.PermissionPromptToolName)
 	args = appendRequestArgs(args, req)
 	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, BlockedArgs())
 	return append(args, kept...), dropped, tempFiles
+}
+
+func appendPermissionPromptTool(args []string, name string) []string {
+	return appendStringArg(args, "--permission-prompt-tool", name)
 }
 
 func protocolArgs(mode PermissionMode) []string {
