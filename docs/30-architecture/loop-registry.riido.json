@@ -508,6 +508,7 @@
         "tools/productloopevidence/candidate_graph.go",
         "tools/productloopevidence/constants.go",
         "tools/productloopevidence/fixture_test.go",
+        "tools/productloopevidence/format.go",
         "tools/productloopevidence/files.go",
         "tools/productloopevidence/io.go",
         "tools/productloopevidence/main.go",
@@ -515,6 +516,7 @@
         "tools/productloopevidence/meta.go",
         "tools/productloopevidence/partial.go",
         "tools/productloopevidence/partial_age.go",
+        "tools/productloopevidence/partial_candidate.go",
         "tools/productloopevidence/partial_local_qa.go",
         "tools/productloopevidence/partial_registry.go",
         "tools/productloopevidence/partial_test.go",
@@ -554,6 +556,8 @@
         "meta_complexity",
         "route_coverage",
         "qa_schedule",
+        "local_qa_run_evidence_state",
+        "local_qa_run_evidence_fresh",
         "product_acceptance",
         "partial_reduction",
         "closed_loop_candidates"
@@ -594,12 +598,30 @@
           ]
         },
         {
+          "name": "product-loop-open-candidate-debt-test",
+          "file": "tools/productloopevidence/candidates_test.go",
+          "contains": [
+            "TestCollectCandidatesShowsOpenCandidateDebt",
+            "partial-reduction-open-candidate-debt",
+            "local-qa-candidate-decision"
+          ]
+        },
+        {
           "name": "product-loop-qa-schedule-test",
           "file": "tools/productloopevidence/schedule_test.go",
           "contains": [
             "TestBuildQAScheduleRequiresRunAndDashboardEvidence",
             "local-qa-schedule.json",
             "localqarunner"
+          ]
+        },
+        {
+          "name": "product-loop-local-qa-freshness-test",
+          "file": "tools/productloopevidence/partial_test.go",
+          "contains": [
+            "TestBuildPartialReductionRequiresFreshLocalQARunEvidence",
+            "localQARunExpired",
+            "localQARunFresh"
           ]
         }
       ],
@@ -608,6 +630,8 @@
           "name": "product-loop-workflow",
           "file": ".github/workflows/product-loop-evidence.yml",
           "contains": [
+            "go run ./tools/localqarunner",
+            "local_qa_run_evidence_state",
             "go run ./tools/productloopevidence -check-doc",
             "product-loop-evidence.json"
           ]
