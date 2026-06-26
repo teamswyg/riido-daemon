@@ -23,8 +23,8 @@ func validateManifest(m manifest) error {
 	if m.LoopRegistry == "" || m.EntrypointRouteMap == "" {
 		return fmt.Errorf("loop_registry and entrypoint_route_map are required")
 	}
-	if m.LocalAcceptanceManifest == "" || m.QASystemManifest == "" {
-		return fmt.Errorf("local_acceptance_manifest and qa_system_manifest are required")
+	if m.LocalAcceptanceManifest == "" || m.QASystemManifest == "" || m.LocalQAScheduleManifest == "" {
+		return fmt.Errorf("local_acceptance_manifest, qa_system_manifest, and local_qa_schedule_manifest are required")
 	}
 	if m.Thresholds.MaxEntrypointsBeforePartial <= 0 || m.Thresholds.StalePartialAfterDays <= 0 {
 		return fmt.Errorf("positive thresholds are required")

@@ -504,13 +504,20 @@
       "text": "Product success loops must measure meta-complexity, product acceptance linkage, and partial-reduction debt as executable evidence so harness failures can become closed-loop candidates without changing endpoint or runtime contracts.",
       "files": [
         "tools/productloopevidence/candidates.go",
+        "tools/productloopevidence/candidates_test.go",
+        "tools/productloopevidence/candidate_graph.go",
         "tools/productloopevidence/constants.go",
+        "tools/productloopevidence/fixture_test.go",
         "tools/productloopevidence/files.go",
         "tools/productloopevidence/io.go",
         "tools/productloopevidence/main.go",
         "tools/productloopevidence/manifest.go",
         "tools/productloopevidence/meta.go",
         "tools/productloopevidence/partial.go",
+        "tools/productloopevidence/partial_age.go",
+        "tools/productloopevidence/partial_local_qa.go",
+        "tools/productloopevidence/partial_registry.go",
+        "tools/productloopevidence/partial_test.go",
         "tools/productloopevidence/partial_types.go",
         "tools/productloopevidence/path.go",
         "tools/productloopevidence/product.go",
@@ -523,6 +530,12 @@
         "tools/productloopevidence/route_render.go",
         "tools/productloopevidence/route_types.go",
         "tools/productloopevidence/run.go",
+        "tools/productloopevidence/schedule.go",
+        "tools/productloopevidence/schedule_candidate.go",
+        "tools/productloopevidence/schedule_render.go",
+        "tools/productloopevidence/schedule_source.go",
+        "tools/productloopevidence/schedule_test.go",
+        "tools/productloopevidence/schedule_types.go",
         "tools/productloopevidence/source_types.go",
         "tools/productloopevidence/types.go",
         ".github/workflows/product-loop-evidence.yml"
@@ -532,6 +545,7 @@
         "docs/30-architecture/entrypoint-route-map.md",
         "docs/30-architecture/product-loop-evidence.riido.json",
         "docs/30-architecture/product-loop-evidence.md",
+        "docs/30-architecture/local-qa-daily-trigger.dsl.json",
         "docs/30-architecture/loop-registry.riido.json",
         "docs/30-architecture/loop-registry.md"
       ],
@@ -539,6 +553,7 @@
         "product-loop-evidence",
         "meta_complexity",
         "route_coverage",
+        "qa_schedule",
         "product_acceptance",
         "partial_reduction",
         "closed_loop_candidates"
@@ -572,10 +587,19 @@
         },
         {
           "name": "product-loop-candidate-test",
-          "file": "tools/productloopevidence/report_test.go",
+          "file": "tools/productloopevidence/candidates_test.go",
           "contains": [
             "TestCollectCandidatesPromotesPartialEvidence",
             "RequiredNextArtifacts"
+          ]
+        },
+        {
+          "name": "product-loop-qa-schedule-test",
+          "file": "tools/productloopevidence/schedule_test.go",
+          "contains": [
+            "TestBuildQAScheduleRequiresRunAndDashboardEvidence",
+            "local-qa-schedule.json",
+            "localqarunner"
           ]
         }
       ],

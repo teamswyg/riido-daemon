@@ -9,6 +9,7 @@ type report struct {
 	EvidenceArtifact  string               `json:"evidence_artifact"`
 	MetaComplexity    metaComplexity       `json:"meta_complexity"`
 	ProductAcceptance productAcceptance    `json:"product_acceptance"`
+	QASchedule        qaScheduleEvidence   `json:"qa_schedule"`
 	PartialReduction  partialReduction     `json:"partial_reduction"`
 	Candidates        []closedLoopCandiate `json:"closed_loop_candidates"`
 	ProblemCount      int                  `json:"problem_count"`

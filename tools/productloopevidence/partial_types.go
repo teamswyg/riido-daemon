@@ -22,8 +22,19 @@ type candidateAge struct {
 }
 
 type closedLoopCandiate struct {
-	ID                    string   `json:"id"`
-	Class                 string   `json:"class"`
-	Reason                string   `json:"reason"`
-	RequiredNextArtifacts []string `json:"required_next_artifacts"`
+	ID                    string         `json:"id"`
+	Class                 string         `json:"class"`
+	Reason                string         `json:"reason"`
+	RequiredNextArtifacts []string       `json:"required_next_artifacts"`
+	Graph                 candidateGraph `json:"evidence_graph"`
+}
+
+type candidateGraph struct {
+	Observation string `json:"observation"`
+	Hypothesis  string `json:"hypothesis"`
+	Change      string `json:"change"`
+	Verifier    string `json:"verifier"`
+	Evidence    string `json:"evidence"`
+	Decision    string `json:"decision"`
+	NextLoop    string `json:"next_loop"`
 }

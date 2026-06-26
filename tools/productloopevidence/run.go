@@ -15,7 +15,11 @@ func run(opts options) error {
 	if err != nil {
 		return err
 	}
-	doc := renderDoc(m, routes)
+	schedule, err := loadQASchedule(root, m)
+	if err != nil {
+		return err
+	}
+	doc := renderDoc(m, routes, schedule)
 	routeDoc := renderRouteDoc(routes, m.EntrypointRouteMap)
 	if opts.WriteDoc {
 		if err := writeText(repoPath(root, m.GeneratedDoc), doc); err != nil {
