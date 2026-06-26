@@ -557,46 +557,6 @@
       {
         "model_id": "glm-5.2-max",
         "label": "GLM 5.2 Max"
-      },
-      {
-        "model_id": "claude-fable-5-low",
-        "label": "Fable 5 1M Low (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-medium",
-        "label": "Fable 5 1M Medium (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-high",
-        "label": "Fable 5 1M (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-xhigh",
-        "label": "Fable 5 1M Extra High (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-max",
-        "label": "Fable 5 1M Max (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-thinking-low",
-        "label": "Fable 5 1M Low Thinking (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-thinking-medium",
-        "label": "Fable 5 1M Medium Thinking (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-thinking-high",
-        "label": "Fable 5 1M Thinking (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-thinking-xhigh",
-        "label": "Fable 5 1M Extra High Thinking (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-thinking-max",
-        "label": "Fable 5 1M Max Thinking (NO ZDR)"
       }
     ],
     "openclaw": [

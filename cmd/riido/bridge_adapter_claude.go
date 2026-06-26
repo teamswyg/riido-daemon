@@ -19,7 +19,7 @@ func (bridgeClaudeAdapter) Detect(
 }
 
 func (bridgeClaudeAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
-	return claude.BuildStart(req, claude.StartOptions{PermissionMode: claude.PermissionModeAcceptEdits})
+	return claude.BuildStart(req, claude.StartOptions{PermissionMode: claude.PermissionModeApproval})
 }
 
 func (bridgeClaudeAdapter) NewParser() agentbridge.Parser { return claude.NewParser() }

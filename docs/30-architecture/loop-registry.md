@@ -117,3 +117,12 @@ Loop Registry entries must bind business claims to code paths, docs, verifier to
 - Docs: `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `loop-registry`
 - Verifiers: `loop-registry-tests`, `loop-registry-changed-evidence-test`, `loop-registry-annotation-test`
+
+### claude_daemon_must_use_web_approval_mode
+
+Claude daemon runs must start in provider approval mode, not acceptEdits or bypassPermissions, so provider permission requests can be represented as SaaS/web tool approvals instead of leaking local desktop approval dialogs into AI thread text.
+
+- Files: `cmd/riido/bridge_adapter_claude.go`, `cmd/riido/bridge_adapter_start_test.go`, `internal/provider/claude/translate_control.go`, `internal/provider/claude/provider_input.go`, `internal/agentbridge/session/session_tool_approval_resolver.go`, `internal/agentbridge/controlplane/saasplane/tool_approval.go`
+- Docs: `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `staging.v3.thread_history.asn-000121-123.no_tool_approval_create`, `claude_control_request_to_tool_approval`, `provider_input_control_response`, `web_tool_approval_round_trip`
+- Verifiers: `claude-daemon-start-mode-test`, `claude-control-request-test`, `session-web-approval-resolver-test`, `safe-shell-auto-approval-test`
