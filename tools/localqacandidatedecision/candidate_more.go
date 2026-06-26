@@ -27,6 +27,16 @@ func orphanDecisionProblems(decisions []decisionRecord, candidates []closedLoopC
 	return problems
 }
 
+func scopedDecisions(decisions []decisionRecord, scope string) []decisionRecord {
+	var out []decisionRecord
+	for _, decision := range decisions {
+		if decisionMatchesCandidateScope(decision, scope) {
+			out = append(out, decision)
+		}
+	}
+	return out
+}
+
 func invalidArtifactProblem(candidate closedLoopCandidate, decision decisionRecord) (candidateProblem, bool) {
 	if slices.Contains(candidate.RequiredNextArtifacts, decision.NextArtifact) {
 		return candidateProblem{}, false

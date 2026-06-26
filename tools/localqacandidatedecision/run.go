@@ -17,13 +17,14 @@ func run(opt options) error {
 		return err
 	}
 	if opt.CandidateIn != "" {
-		candidateResult, err := verifyCandidateDecisions(root, m, opt.CandidateIn)
+		candidateResult, err := verifyCandidateDecisions(root, m, opt.CandidateIn, opt.CandidateScope)
 		if err != nil {
 			if opt.GitHubAnnotations {
 				emitCandidateAnnotations(err)
 			}
 			return err
 		}
+		result.CandidateScope = candidateResult.CandidateScope
 		result.CandidateCount = candidateResult.CandidateCount
 		result.DecisionIDs = candidateResult.DecisionIDs
 		result.DecisionArtifacts = candidateResult.DecisionArtifacts

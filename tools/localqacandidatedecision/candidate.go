@@ -1,12 +1,13 @@
 package main
 
-func verifyCandidateDecisions(root string, m manifest, path string) (verifyResult, error) {
+func verifyCandidateDecisions(root string, m manifest, path, scope string) (verifyResult, error) {
 	candidate, err := loadCandidate(repoPath(root, path))
 	if err != nil {
 		return verifyResult{}, err
 	}
-	decisionByID := decisionsByID(m.Decisions)
-	result := verifyResult{CandidateCount: len(candidate.ClosedLoops)}
+	decisions := scopedDecisions(m.Decisions, scope)
+	decisionByID := decisionsByID(decisions)
+	result := verifyResult{CandidateScope: scope, CandidateCount: len(candidate.ClosedLoops)}
 	var problems []candidateProblem
 	for _, item := range candidate.ClosedLoops {
 		decision, ok := decisionByID[item.ID]
@@ -23,7 +24,7 @@ func verifyCandidateDecisions(root string, m manifest, path string) (verifyResul
 			CandidateID: item.ID, NextArtifact: decision.NextArtifact,
 		})
 	}
-	problems = append(problems, orphanDecisionProblems(m.Decisions, candidate.ClosedLoops)...)
+	problems = append(problems, orphanDecisionProblems(decisions, candidate.ClosedLoops)...)
 	if len(problems) > 0 {
 		return result, candidateDecisionError{Problems: problems}
 	}
