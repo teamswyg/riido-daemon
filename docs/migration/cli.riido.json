@@ -21,7 +21,7 @@
     {"name": "cli-surface-generated-ssot", "file": "docs/30-architecture/cli-surface.riido.json", "contains": "Keeps the public cmd/riido command surface generated from a manifest"},
     {"name": "retired-private-boundary", "file": "docs/20-domain/context-map.riido.json", "contains": "riido_daemon_private / riido-daemon-private is a retired historical source"},
     {"name": "local-cli-only", "file": "docs/30-architecture/module-decomposition.riido.json", "contains": "cmd/riido opens local IPC only and must not add a public HTTP listener"},
-    {"name": "command-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandVersion mainCommand = \"version\""},
+    {"name": "command-vocabulary", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandVersion             mainCommand = \"version\""},
     {"name": "bridge-providers-smoke", "file": "docs/readme/verification.riido.json", "contains": "\"bridge-providers\""},
     {"name": "store-review-provider-policy", "file": "docs/20-domain/distribution-host-integration.riido.json", "contains": "provider-cli-bundling-forbidden"}
   ],

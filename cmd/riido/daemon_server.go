@@ -28,8 +28,10 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	if err != nil {
 		return err
 	}
+	toolApprovalResolver := daemonToolApprovalResolver(taskReporter)
+	toolApprovalAuthorizer := daemonToolApprovalAuthorizer(taskReporter)
 
-	rtActors, err := startDaemonRuntimeActors(ctx, settings, taskReporter, log)
+	rtActors, err := startDaemonRuntimeActors(ctx, settings, taskReporter, flags.socket, log)
 	if err != nil {
 		return err
 	}
@@ -50,7 +52,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	stopCleanup := startWorkdirCleanupLoop(ctx, workdirAdapter, settings, log)
 	defer stopCleanup()
 
-	level, err := serveDaemonSocket(ctx, flags, settings, startedAt, rtActors, shutdownLevel, log)
+	level, err := serveDaemonSocket(ctx, flags, settings, startedAt, rtActors, toolApprovalResolver, toolApprovalAuthorizer, shutdownLevel, log)
 	if err != nil {
 		return err
 	}

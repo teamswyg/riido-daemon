@@ -12,3 +12,12 @@ func builtinAgentAdapters() []agentbridge.Adapter {
 		bridgeCursorAdapter{},
 	}
 }
+
+func builtinDaemonAgentAdapters(socketPath string) []agentbridge.Adapter {
+	return []agentbridge.Adapter{
+		bridgeClaudeAdapter{approvalSocket: socketPath},
+		bridgeCodexAdapter{},
+		bridgeOpenClawAdapter{},
+		bridgeCursorAdapter{},
+	}
+}

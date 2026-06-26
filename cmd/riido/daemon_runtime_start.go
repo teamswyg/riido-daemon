@@ -7,8 +7,8 @@ import (
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
-func startDaemonRuntimeActors(ctx lifecycle.Context, settings daemonSettings, reporter controlplane.TaskReporterPort, log logging.Logger) ([]*runtimeactor.Actor, error) {
-	rtActors, err := newDaemonRuntimeActors(settings, builtinAgentAdapters(), daemonToolApprovalResolver(reporter))
+func startDaemonRuntimeActors(ctx lifecycle.Context, settings daemonSettings, reporter controlplane.TaskReporterPort, socketPath string, log logging.Logger) ([]*runtimeactor.Actor, error) {
+	rtActors, err := newDaemonRuntimeActors(settings, builtinDaemonAgentAdapters(socketPath), daemonToolApprovalResolver(reporter))
 	if err != nil {
 		return nil, err
 	}

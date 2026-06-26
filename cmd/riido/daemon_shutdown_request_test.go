@@ -17,7 +17,7 @@ func TestDaemonShutdownRequestCarriesForcedLevel(t *testing.T) {
 	done := make(chan struct{})
 	go func() {
 		defer close(done)
-		handleDaemonConn(server, startFlags{}, daemonSettings{}, time.Now(), nil, shutdownCh, logging.NewWriterLogger(io.Discard))
+		handleDaemonConn(server, startFlags{}, daemonSettings{}, time.Now(), nil, nil, nil, shutdownCh, logging.NewWriterLogger(io.Discard))
 	}()
 	t.Cleanup(func() { _ = client.Close() })
 	_ = client.SetDeadline(time.Now().Add(time.Second))

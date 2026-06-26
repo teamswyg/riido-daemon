@@ -35,6 +35,8 @@ func run(args []string) error {
 		return runAPI(args[1:])
 	case mainCommandBridge:
 		return runBridge(args[1:])
+	case mainCommandClaudePermissionMCP:
+		return runClaudePermissionMCP(args[1:])
 	case mainCommandDaemon:
 		return runDaemon(args[1:])
 	case mainCommandVersion:
