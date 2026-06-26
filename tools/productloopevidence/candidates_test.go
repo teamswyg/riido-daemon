@@ -23,3 +23,22 @@ func TestCollectCandidatesPromotesPartialEvidence(t *testing.T) {
 		}
 	}
 }
+
+func TestCollectCandidatesShowsOpenCandidateDebt(t *testing.T) {
+	partial := partialReduction{
+		CandidateCount:            2,
+		LocalQARunEvidenceFresh:   true,
+		LocalQARunEvidenceState:   localQARunFresh,
+		ClosedLoopCandidateIDs:    []string{"a", "b"},
+		CandidateAgeUnknownCount:  0,
+		StaleCandidateCount:       0,
+		LocalQARunEvidencePresent: true,
+	}
+	got := collectCandidates(metaComplexity{}, productAcceptance{}, qaScheduleEvidence{}, partial)
+	if len(got) != 1 || got[0].ID != "partial-reduction-open-candidate-debt" {
+		t.Fatalf("candidates = %+v", got)
+	}
+	if got[0].Graph.NextLoop != "local-qa-candidate-decision" {
+		t.Fatalf("candidate graph = %+v", got[0].Graph)
+	}
+}

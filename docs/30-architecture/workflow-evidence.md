@@ -77,7 +77,7 @@
 | `.github/workflows/policy-bundle-loader-evidence.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/privacy-metadata-evidence.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/process-lifecycle.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
-| `.github/workflows/product-loop-evidence.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
+| `.github/workflows/product-loop-evidence.yml` | `covered` | `2` | `2/2` | `true` | `1/1` | - |
 | `.github/workflows/provider-adapter-acl-docs.yml` | `covered` | `4` | `4/4` | `true` | `1/1` | - |
 | `.github/workflows/provider-claude.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/provider-codex.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |

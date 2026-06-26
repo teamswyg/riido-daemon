@@ -15,6 +15,9 @@ on:
       - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
       - "docs/30-architecture/qa-system.dsl.json"
       - "tools/productloopevidence/**"
+      - "tools/localqarunner/**"
+      - "tools/localqadashboard/**"
+      - "tools/providerintegrationevidence/**"
       - "go.mod"
       - "go.sum"
   pull_request:
@@ -29,6 +32,9 @@ on:
       - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
       - "docs/30-architecture/qa-system.dsl.json"
       - "tools/productloopevidence/**"
+      - "tools/localqarunner/**"
+      - "tools/localqadashboard/**"
+      - "tools/providerintegrationevidence/**"
       - "go.mod"
       - "go.sum"
 
@@ -43,12 +49,29 @@ jobs:
           cache: false
       - name: Verify product loop evidence
         run: |
-          mkdir -p out
+          mkdir -p out .riido-local/evidence .riido-local/dashboard
           go test ./tools/productloopevidence -count=1
+          go run ./tools/localqarunner \
+            -run-integration=false \
+            -run-release=false \
+            -run-product=false \
+            -provider-evidence .riido-local/evidence/provider-real-cli-observation.json \
+            -product-evidence .riido-local/evidence/ai-agent-product-acceptance.json \
+            -release-evidence .riido-local/evidence/local-release-acceptance.json \
+            -coverage-evidence .riido-local/evidence/local-qa-coverage.json \
+            -schedule-evidence .riido-local/evidence/local-qa-schedule.json \
+            -dashboard .riido-local/dashboard/index.html \
+            -evidence-out .riido-local/evidence/local-qa-run.json
+          test -s .riido-local/evidence/local-qa-run.json
           go run ./tools/productloopevidence -check-doc -evidence-out out/product-loop-evidence.json
+          grep -q '"local_qa_run_evidence_state": "fresh"' out/product-loop-evidence.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: product-loop-evidence
-          path: out/product-loop-evidence.json
+          path: |
+            out/product-loop-evidence.json
+            .riido-local/evidence/local-qa-run.json
+            .riido-local/evidence/local-qa-coverage.json
+            .riido-local/dashboard/index.html
           if-no-files-found: error

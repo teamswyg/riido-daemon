@@ -10,6 +10,7 @@ func buildPartialReductionAt(root string, m manifest, reg registrySource, qa qaS
 	candidateIDs := candidateLoopIDs(reg.Loops)
 	inferred := inferenceRequiredIDs(qa.ExecutionInventory)
 	localEvidence := localQARunPresent(root, m.LocalQARunEvidence)
+	localState, localExpires := localQARunFreshness(root, m.LocalQARunEvidence, now)
 	ages, unknown, stale := candidateAges(reg.Loops, m.Thresholds.StalePartialAfterDays, now)
 	out := partialReduction{
 		InferenceRequiredIDs:      inferred,
@@ -21,9 +22,12 @@ func buildPartialReductionAt(root string, m manifest, reg registrySource, qa qaS
 		StaleCandidateCount:       stale,
 		StalePartialAfterDays:     m.Thresholds.StalePartialAfterDays,
 		LocalQARunEvidencePresent: localEvidence,
+		LocalQARunEvidenceFresh:   localState == localQARunFresh,
+		LocalQARunEvidenceState:   localState,
+		LocalQARunEvidenceExpires: localExpires,
 		Status:                    statusPassed,
 	}
-	if len(inferred) > 0 || len(candidateIDs) > 0 || !localEvidence {
+	if len(inferred) > 0 || len(candidateIDs) > 0 || localState != localQARunFresh {
 		out.Status = statusPartial
 	}
 	return out

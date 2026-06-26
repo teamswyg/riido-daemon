@@ -10,6 +10,9 @@ type partialReduction struct {
 	StaleCandidateCount       int            `json:"stale_candidate_count"`
 	StalePartialAfterDays     int            `json:"stale_partial_after_days"`
 	LocalQARunEvidencePresent bool           `json:"local_qa_run_evidence_present"`
+	LocalQARunEvidenceFresh   bool           `json:"local_qa_run_evidence_fresh"`
+	LocalQARunEvidenceState   string         `json:"local_qa_run_evidence_state"`
+	LocalQARunEvidenceExpires string         `json:"local_qa_run_evidence_expires_at,omitempty"`
 	Status                    string         `json:"status"`
 }
 

@@ -47,11 +47,14 @@ func collectCandidates(
 			Graph: candidateAgingGraph(),
 		})
 	}
-	if partial.CandidateCount > 0 && !partial.LocalQARunEvidencePresent {
+	if partial.CandidateCount > 0 && partial.CandidateAgeUnknownCount == 0 && partial.StaleCandidateCount == 0 {
+		out = append(out, openCandidateDebt(partial))
+	}
+	if partial.CandidateCount > 0 && !partial.LocalQARunEvidenceFresh {
 		out = append(out, closedLoopCandiate{
 			ID:     "partial-reduction-local-qa-run-evidence",
 			Class:  "partial-reduction",
-			Reason: "local QA run evidence is absent, so candidate promotion cannot be tied to a concrete run",
+			Reason: "local QA run evidence is " + partial.LocalQARunEvidenceState + ", so candidate promotion cannot be tied to a fresh concrete run",
 			RequiredNextArtifacts: []string{
 				"latest local QA run evidence",
 				"candidate decision evidence",
