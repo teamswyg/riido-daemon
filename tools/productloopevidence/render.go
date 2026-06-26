@@ -38,6 +38,7 @@ func renderLoop(b *strings.Builder, loop evidenceLoop) {
 
 func renderSignals(b *strings.Builder, signals []outcomeSignal) {
 	b.WriteString("## Product Outcome Signals\n\n")
+	b.WriteString("Outcome evidence is linked from the latest local QA run coverage rows; `passed` and `observed` rows count as executed outcomes.\n\n")
 	b.WriteString("| Signal | Scenario bindings |\n| --- | --- |\n")
 	for _, signal := range signals {
 		fmt.Fprintf(b, "| `%s` | `%s` |\n", signal.ID, strings.Join(signal.ScenarioIDs, "`, `"))

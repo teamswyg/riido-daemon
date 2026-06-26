@@ -10,7 +10,8 @@ func buildReport(root string, m manifest) (report, error) {
 		return report{}, err
 	}
 	meta := buildMetaComplexity(root, m, reg, routes)
-	product := buildProductAcceptance(m, local)
+	productRun := loadProductRunOutcome(root, m.LocalQARunEvidence)
+	product := buildProductAcceptance(m, local, productRun)
 	qaSchedule := buildQASchedule(m, schedule)
 	partial := buildPartialReduction(root, m, reg, qa)
 	candidates := collectCandidates(meta, product, qaSchedule, partial)

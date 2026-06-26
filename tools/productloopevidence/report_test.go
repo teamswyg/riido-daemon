@@ -8,7 +8,11 @@ func TestBuildProductAcceptanceFindsMissingSignals(t *testing.T) {
 		{ID: "missing", ScenarioIDs: []string{"not.present"}},
 	}}
 	local := localAcceptanceSource{Scenarios: []coverageScenario{{ID: "contract.task.multi_assignment"}}}
-	got := buildProductAcceptance(m, local)
+	run := productRunOutcomeSource{
+		State:          localQARunFresh,
+		ScenarioStatus: map[string]string{"contract.task.multi_assignment": statusPassed},
+	}
+	got := buildProductAcceptance(m, local, run)
 	if got.Status != statusPartial || got.LinkedSignalCount != 1 {
 		t.Fatalf("acceptance = %+v", got)
 	}
