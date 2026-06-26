@@ -44,9 +44,22 @@ func validateProductClosedLoops(scenarios []productRunScenario) error {
 			if len(candidate.RequiredNextArtifacts) == 0 {
 				return fmt.Errorf("closed-loop candidate %s missing required_next_artifacts", candidate.ID)
 			}
+			if !candidate.Graph.complete() {
+				return fmt.Errorf("closed-loop candidate %s missing evidence_graph edge", candidate.ID)
+			}
 		}
 	}
 	return nil
+}
+
+func (g runLoopCandidateGraph) complete() bool {
+	return g.Observation != "" &&
+		g.Hypothesis != "" &&
+		g.Change != "" &&
+		g.Verifier != "" &&
+		g.Evidence != "" &&
+		g.Decision != "" &&
+		g.NextLoop != ""
 }
 
 func appendClosedLoops(evidence *runEvidence, scenarios []productRunScenario) {

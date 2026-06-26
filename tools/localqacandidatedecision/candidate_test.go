@@ -5,7 +5,8 @@ import "testing"
 func TestCandidateDecisionCoversLocalQACandidate(t *testing.T) {
 	dir := t.TempDir()
 	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
-		`{"id":"close-x","required_next_artifacts":["claim_binding","verifier"]}]}`)
+		`{"id":"close-x","required_next_artifacts":["claim_binding","verifier"],`+
+		testEvidenceGraphJSON()+`}]}`)
 	result, err := verifyCandidateDecisions(".", testManifest(), path, "")
 	if err != nil {
 		t.Fatalf("verify candidate decisions: %v", err)
@@ -18,16 +19,27 @@ func TestCandidateDecisionCoversLocalQACandidate(t *testing.T) {
 func TestCandidateDecisionRejectsMissingDecision(t *testing.T) {
 	dir := t.TempDir()
 	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
-		`{"id":"missing","required_next_artifacts":["claim_binding"]}]}`)
+		`{"id":"missing","required_next_artifacts":["claim_binding"],`+
+		testEvidenceGraphJSON()+`}]}`)
 	if _, err := verifyCandidateDecisions(".", testManifest(), path, ""); err == nil {
 		t.Fatal("expected missing decision to fail")
+	}
+}
+
+func TestCandidateDecisionRejectsMissingEvidenceGraph(t *testing.T) {
+	dir := t.TempDir()
+	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
+		`{"id":"close-x","required_next_artifacts":["claim_binding"]}]}`)
+	if _, err := verifyCandidateDecisions(".", testManifest(), path, ""); err == nil {
+		t.Fatal("expected missing evidence graph to fail")
 	}
 }
 
 func TestCandidateDecisionScopeCoversProductLoopCandidate(t *testing.T) {
 	dir := t.TempDir()
 	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
-		`{"id":"product-x","required_next_artifacts":["scenario coverage row with passed or observed status"]}]}`)
+		`{"id":"product-x","required_next_artifacts":["scenario coverage row with passed or observed status"],`+
+		testEvidenceGraphJSON()+`}]}`)
 	m := testManifest()
 	m.Decisions = append(m.Decisions, decisionRecord{
 		CandidateID: "product-x", CandidateScope: "product_loop",

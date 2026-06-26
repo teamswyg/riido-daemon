@@ -49,3 +49,19 @@ func TestApplyProductEvidenceRejectsCandidateWithoutAdoptionArtifacts(t *testing
 		t.Fatal("expected missing required_next_artifacts to fail")
 	}
 }
+
+func TestApplyProductEvidenceRejectsCandidateWithoutEvidenceGraph(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "product.json")
+	body := `{"scenarios":[{"observed":{"closed_loop_candidates":[` +
+		`{"id":"close-x","class":"failed_probe","reason":"x","next_evidence":"y",` +
+		`"required_next_artifacts":["claim_binding","verifier"]}]}}]}`
+	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	cfg := config{productEvidence: &path}
+	err := applyProductEvidence(".", cfg, &runEvidence{})
+	if err == nil {
+		t.Fatal("expected missing evidence_graph to fail")
+	}
+}

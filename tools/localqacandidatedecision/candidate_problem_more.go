@@ -17,3 +17,11 @@ func orphanDecisionProblem(decision decisionRecord) candidateProblem {
 		RecommendedAction:    "Remove the orphan decision or provide matching candidate evidence.",
 	}
 }
+
+func missingEvidenceGraphProblem(candidate closedLoopCandidate) candidateProblem {
+	return candidateProblem{
+		CandidateID:       candidate.ID,
+		Reason:            "candidate is missing a complete evidence_graph",
+		RecommendedAction: "Provide observation, hypothesis, change, verifier, evidence, decision, and next_loop.",
+	}
+}

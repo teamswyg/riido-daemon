@@ -49,3 +49,13 @@ func invalidArtifactProblem(candidate closedLoopCandidate, decision decisionReco
 		RecommendedAction:     "Choose one next_artifact from required_next_artifacts.",
 	}, true
 }
+
+func (g closedLoopEvidenceGraph) complete() bool {
+	return g.Observation != "" &&
+		g.Hypothesis != "" &&
+		g.Change != "" &&
+		g.Verifier != "" &&
+		g.Evidence != "" &&
+		g.Decision != "" &&
+		g.NextLoop != ""
+}
