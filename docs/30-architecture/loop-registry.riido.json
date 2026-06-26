@@ -114,7 +114,7 @@
   "business_claims": [
     {
       "id": "closed_loop_candidates_must_surface_harness_gaps",
-      "text": "Harness observations that are skipped, partial, failed, or inferred must become machine-readable closed-loop candidates with required adoption artifacts instead of hidden follow-up work.",
+      "text": "Harness observations that are skipped, partial, failed, inferred, or classified as candidate_auto provider repairs must become machine-readable closed-loop candidates with required adoption artifacts instead of hidden follow-up work.",
       "files": [
         "tools/localproductacceptance/evidence_gap_types.go",
         "tools/localproductacceptance/evidence_gap.go",
@@ -127,6 +127,7 @@
         "tools/localqarunner/provider_repair_candidate.go",
         "tools/localqarunner/provider_repair_candidate_graph.go",
         "tools/localqarunner/types.go",
+        "tools/providerintegrationevidence/repair.go",
         "tools/localqadashboard/run_loop_candidate.go",
         "tools/localqadashboard/run_evidence.go",
         "tools/localqadashboard/render.go",
@@ -137,7 +138,7 @@
         "docs/readme/local-acceptance.riido.json",
         "docs/readme/local-acceptance.md"
       ],
-      "evidence": ["local.qa.evidence_gap_candidates", "closed_loop_candidates", "evidence_graph", "required_next_artifacts"],
+      "evidence": ["local.qa.evidence_gap_candidates", "provider.real_cli_observation", "closed_loop_candidates", "evidence_graph", "required_next_artifacts"],
       "verifiers": [
         {
           "name": "gap-candidates-test",
@@ -172,9 +173,23 @@
           "file": "tools/localqarunner/provider_repair_candidate_test.go",
           "contains": [
             "TestApplyProviderEvidencePromotesCandidateAutoRepair",
+            "TestApplyProviderEvidencePromotesClaudeApprovalCandidate",
             "candidate_auto",
+            "repair-provider.claude.provider_tool_approval_missing",
             "repair-provider.openclaw.local_backend_unavailable",
             "local.qa.provider_repair_candidates"
+          ]
+        },
+        {
+          "name": "provider-repair-claude-approval-classifier-test",
+          "file": "tools/providerintegrationevidence/repair_test.go",
+          "contains": [
+            "TestClassifyRepairClaudeToolApprovalMissing",
+            "TestClassifyRepairClaudeConversationalApprovalGap",
+            "provider_tool_approval_missing",
+            "candidate_auto",
+            "/tool-approvals",
+            "chat approval"
           ]
         },
         {

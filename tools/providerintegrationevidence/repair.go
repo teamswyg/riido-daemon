@@ -18,6 +18,8 @@ func classifyRepair(providerID, status, summary string, available bool) repair {
 	switch {
 	case strings.Contains(text, "not logged in") || strings.Contains(text, "account missing"):
 		return authRepair(providerID)
+	case providerToolApprovalMissing(providerID, text):
+		return providerToolApprovalMissingRepair()
 	case strings.Contains(text, "hard timeout") || strings.Contains(text, "timeout"):
 		return providerTimeoutRepair()
 	case strings.Contains(text, "config invalid") || strings.Contains(text, "invalid config"):
@@ -36,6 +38,29 @@ func classifyRepair(providerID, status, summary string, available bool) repair {
 			Mode:    "manual",
 			Summary: "Inspect failure_summary and add a more specific repair classifier.",
 		}
+	}
+}
+
+func providerToolApprovalMissing(providerID, text string) bool {
+	if providerID != "claude" {
+		return false
+	}
+	return strings.Contains(text, "execution permission") ||
+		strings.Contains(text, "command execution permission") ||
+		strings.Contains(text, "approval count 0") ||
+		strings.Contains(text, "tool approval") ||
+		strings.Contains(text, "permission limited") ||
+		strings.Contains(text, "실행 권한") ||
+		strings.Contains(text, "승인")
+}
+
+func providerToolApprovalMissingRepair() repair {
+	return repair{
+		Class:            "provider_tool_approval_missing",
+		Owner:            "engineer",
+		Mode:             "candidate_auto",
+		Summary:          "Claude command permission evidence or conversational approval text did not produce a Riido tool approval request.",
+		SuggestedCommand: "capture redacted Claude permission/conversation/control_request evidence, verify /tool-approvals is non-empty, and bind chat approval to the tool approval decision flow",
 	}
 }
 
