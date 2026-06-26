@@ -155,10 +155,10 @@ Loop Registry entries must bind business claims to code paths, docs, verifier to
 
 The mutable CDN latest AI Agent daemon mirror must be updated by release-artifacts and cdn-latest-ai-agent CI/CD evidence, never by an untracked manual S3 copy, and the mirrored archive VERSION must match the release tag.
 
-- Files: `.github/workflows/release-artifacts.yml`, `.github/workflows/cdn-latest-ai-agent.yml`, `scripts/build-release-package.sh`, `scripts/publish-release-artifacts.sh`, `scripts/publish-cdn-latest.sh`, `scripts/install-riido-daemon.sh`, `tools/releaseartifacts/run.go`, `tools/releaseartifacts/source.go`, `tools/releaseartifacts/validate.go`, `tools/releaseartifacts/evidence.go`, `tools/releaseartifacts/render_desktop.go`, `tools/releaseartifacts/run_test.go`
+- Files: `.github/workflows/release-artifacts.yml`, `.github/workflows/cdn-latest-ai-agent.yml`, `scripts/build-release-package.sh`, `scripts/publish-release-artifacts.sh`, `scripts/publish-cdn-latest.sh`, `scripts/publish_cdn_latest_test.go`, `scripts/install-riido-daemon.sh`, `tools/releaseartifacts/run.go`, `tools/releaseartifacts/source.go`, `tools/releaseartifacts/validate.go`, `tools/releaseartifacts/evidence.go`, `tools/releaseartifacts/render_desktop.go`, `tools/releaseartifacts/run_test.go`
 - Docs: `docs/30-architecture/release-artifacts.riido.json`, `docs/30-architecture/release-artifacts.md`, `docs/30-architecture/release-artifacts/desktop-msix-cdn.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `release-artifacts-evidence`, `release-artifact-docs`, `cdn-latest-ai-agent`, `riido-cdn-latest-ai-agent.v1`
-- Verifiers: `release-artifacts-tool-tests`, `release-artifacts-source-checks`
+- Verifiers: `release-artifacts-tool-tests`, `cdn-publish-script-tests`, `release-artifacts-source-checks`
 
 ### claude_daemon_must_use_web_approval_mode
 

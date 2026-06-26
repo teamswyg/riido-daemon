@@ -847,6 +847,7 @@
         "scripts/build-release-package.sh",
         "scripts/publish-release-artifacts.sh",
         "scripts/publish-cdn-latest.sh",
+        "scripts/publish_cdn_latest_test.go",
         "scripts/install-riido-daemon.sh",
         "tools/releaseartifacts/run.go",
         "tools/releaseartifacts/source.go",
@@ -875,6 +876,14 @@
           "contains": [
             "TestRunAgainstRepositoryEvidence",
             "TestGeneratedDocsCoverReleaseSurface"
+          ]
+        },
+        {
+          "name": "cdn-publish-script-tests",
+          "file": "scripts/publish_cdn_latest_test.go",
+          "contains": [
+            "TestPublishCDNLatestRejectsReleaseTagVersionMismatch",
+            "TestPublishCDNLatestDryRunSyncWritesEvidenceWithoutInvalidation"
           ]
         },
         {

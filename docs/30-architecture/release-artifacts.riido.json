@@ -65,6 +65,8 @@
     {"name": "cdn-publish-version-check", "file": "scripts/publish-cdn-latest.sh", "contains": "RIIDO_RELEASE_TAG"},
     {"name": "cdn-publish-cloudfront-invalidation", "file": "scripts/publish-cdn-latest.sh", "contains": "cloudfront create-invalidation"},
     {"name": "cdn-publish-no-cache", "file": "scripts/publish-cdn-latest.sh", "contains": "--cache-control no-cache"},
+    {"name": "cdn-publish-version-mismatch-test", "file": "scripts/publish_cdn_latest_test.go", "contains": "TestPublishCDNLatestRejectsReleaseTagVersionMismatch"},
+    {"name": "cdn-publish-dry-run-evidence-test", "file": "scripts/publish_cdn_latest_test.go", "contains": "TestPublishCDNLatestDryRunSyncWritesEvidenceWithoutInvalidation"},
     {"name": "install-prerelease-latest", "file": "scripts/install-riido-daemon.sh", "contains": "releases?per_page=1"},
     {"name": "install-checksum-verification", "file": "scripts/install-riido-daemon.sh", "contains": "checksum mismatch"},
     {"name": "install-dir-override", "file": "scripts/install-riido-daemon.sh", "contains": "RIIDO_DAEMON_INSTALL_DIR"},
