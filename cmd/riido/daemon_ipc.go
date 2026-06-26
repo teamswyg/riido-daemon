@@ -47,7 +47,9 @@ func dispatchDaemonRequest(conn net.Conn, req daemonRequest, flags startFlags, s
 		log.Printf("shutdown request received level=%s", level)
 	case daemonMethodToolApproval:
 		_ = conn.SetDeadline(time.Time{})
-		writeToolApprovalResolution(conn, req, resolver, authorizer, log)
+		ctx, cancel := daemonConnClosedContext(conn)
+		defer cancel()
+		writeToolApprovalResolution(ctx, conn, req, resolver, authorizer, log)
 	default:
 		if err := writeUnknownDaemonMethod(conn, req.Method); err != nil {
 			log.Printf("write unknown-method response: %v", err)
