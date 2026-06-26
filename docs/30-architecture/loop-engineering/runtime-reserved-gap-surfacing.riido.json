@@ -3,39 +3,39 @@
   "id": "runtime-reserved-gap-surfacing",
   "owner": "daemon-runtime-upgrade-flow",
   "observation": {
-    "summary": "Runtime upgrade flow evidence reports three reserved rules, but the root loop-engineering open gap registry still rendered as none.",
+    "summary": "Runtime upgrade flow evidence reports reserved rules, while self-improvement evidence requires the root loop open gap registry to stay closed.",
     "artifacts": [
       "docs/30-architecture/runtime-upgrade-flow.riido.json",
       "tools/runtimeupgrade/evidence.go"
     ]
   },
   "hypothesis": {
-    "summary": "Promoting reserved runtime rules into root open gaps makes evidence debt observable without claiming implementation.",
+    "summary": "Keeping reserved runtime rules inside the runtime-upgrade evidence makes evidence debt observable without letting unresolved gaps count as closed self-improvement work.",
     "artifacts": [
       "docs/30-architecture/loop-engineering.riido.json"
     ]
   },
   "execution": {
-    "summary": "Add three runtime upgrade open gaps and regenerate the loop-engineering reader from the SSOT manifest.",
+    "summary": "Keep reserved runtime debt in runtime-upgrade evidence and register focused loop entries for concrete follow-up candidates.",
     "artifacts": [
       "docs/30-architecture/loop-engineering.md"
     ]
   },
   "evaluation": {
-    "summary": "loopevidence must report open_gap_count=3 while runtimeupgrade continues to report reserved_rules=3.",
+    "summary": "loopevidence must report open_gap_count=0 while runtimeupgrade continues to report reserved rules separately.",
     "artifacts": [
       "tools/loopevidence",
       "tools/runtimeupgrade"
     ]
   },
   "retrospective": {
-    "summary": "Reserved rules stay valid executable knowledge, but now surface as explicit next-artifact debt in the root loop view."
+    "summary": "Reserved rules stay valid executable knowledge, and concrete next-artifact debt is represented by focused loop entries rather than root open gaps."
   },
   "evidence": [
     {
       "kind": "command",
       "ref": "go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json",
-      "proves": "root loop evidence exposes runtime reserved gaps"
+      "proves": "root loop evidence stays closed while runtime reserved debt is tracked in focused loop entries"
     },
     {
       "kind": "command",
