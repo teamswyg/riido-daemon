@@ -963,6 +963,7 @@
           "file": "internal/agentbridge/session/session_tool_approval_resolver_test.go",
           "contains": [
             "TestSessionResolverApprovalWritesProviderInput",
+            "TestSessionResolverDeniedApprovalBlocksProviderCompletion",
             "ToolApprovalResolver",
             "assertApprovalProviderInput"
           ]

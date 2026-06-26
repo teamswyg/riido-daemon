@@ -58,4 +58,14 @@ func (r *sessionRunner) executeResolvedToolApproval(tool agentbridge.ToolRef, re
 	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, []agentbridge.Command{cmd}, r.cfg.ProcessKillTimeout) {
 		r.emit(cmdEvent)
 	}
+	if !resolution.Approved {
+		r.blockToolUse("tool approval rejected by resolver", toolApprovalRejectionReason(resolution))
+	}
+}
+
+func toolApprovalRejectionReason(resolution agentbridge.ToolApprovalResolution) string {
+	if resolution.Reason != "" {
+		return resolution.Reason
+	}
+	return "tool approval denied"
 }
