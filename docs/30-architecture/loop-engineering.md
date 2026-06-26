@@ -5,7 +5,7 @@
 - loop count: `83`
 - registered loop files: `83`
 - evidence items: `175`
-- open gaps: `0`
+- open gaps: `1`
 - phase coverage: `observe=83/83`, `hypothesis=83/83`, `execute=83/83`, `evaluate=83/83`, `retrospective=83/83`
 
 ## Loop Vocabulary
@@ -1424,4 +1424,8 @@
 
 ## Open Gaps
 
-_None._
+### desktop-daemon-update-active-assignment-deferral
+
+- Owner: `riido-desktop daemon launcher`
+- Current handling: Live staging evidence showed asn-000138 stopped at the same instant Desktop auto-updated the daemon to v0.0.56. The daemon status envelope exposes running_tasks, but the desktop launcher has no verified deferral gate here.
+- Required next artifact: riido-desktop daemonLauncher verifier/test that daemon update checks status.running_tasks and defers binary replacement/restart while any assignment is active; local QA evidence must link an update attempt to an unchanged active assignment.
