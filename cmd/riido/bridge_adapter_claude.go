@@ -9,6 +9,7 @@ import (
 
 type bridgeClaudeAdapter struct {
 	approvalSocket string
+	betaFullAccess bool
 }
 
 func (bridgeClaudeAdapter) Name() string { return claude.Name }

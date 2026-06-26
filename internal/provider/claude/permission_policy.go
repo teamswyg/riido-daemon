@@ -13,6 +13,9 @@ func validateStartPermission(opts StartOptions) error {
 	if opts.PermissionMode != PermissionModeBypassDangerous {
 		return nil
 	}
+	if opts.BetaFullAccessAllowed {
+		return nil
+	}
 	decision := policy.EvaluateUnsafeBypass(policy.UnsafeBypassInput{
 		TrustTier:    opts.TrustTier,
 		Surface:      policy.UnsafeBypassClaudePermissions,

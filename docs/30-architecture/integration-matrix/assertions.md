@@ -6,7 +6,7 @@
 
 | Provider | Integration assertion |
 | --- | --- |
-| Claude Code | ResultCompleted; expected file artifact inside daemon-selected workdir |
+| Claude Code | ResultCompleted; explicit daemon-owned beta Claude --permission-mode bypassPermissions launch shape; caller permission-mode override is dropped with DroppedArgs evidence; expected file artifact inside daemon-selected workdir |
 | Codex | ResultCompleted; explicit daemon-owned codex --sandbox danger-full-access app-server --listen stdio:// launch shape; caller sandbox/config/unsafe-bypass args are dropped with DroppedArgs evidence; expected file artifact inside daemon-selected workdir |
 | OpenClaw | ResultCompleted with non-empty provider output; deterministic provider-safe session id; executable path that passed OpenClaw Detect; SaaS completed thread alone does not prove filesystem side effect; Optional artifact integration gate may pass only when local OpenClaw workspace configuration honors the daemon process cwd; Runtime capability still reports supports_worktree=false; required_surfaces=[worktree] -> MISSING_REQUIRED_SURFACE:worktree |
 | Cursor Agent | ResultCompleted; expected file artifact inside daemon-selected workdir; launch profile includes --trust without --yolo |

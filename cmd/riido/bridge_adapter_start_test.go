@@ -28,6 +28,21 @@ func TestRegisteredAdaptersBuildStartForDaemonRuntime(t *testing.T) {
 	}
 }
 
+func TestDaemonRegisteredClaudeUsesBetaFullAccess(t *testing.T) {
+	cmd, err := builtinDaemonAgentAdapters("/tmp/agentd.sock")[0].BuildStart(agentbridge.StartRequest{
+		TaskID: "task-claude",
+		Prompt: "do the thing",
+		Cwd:    "/tmp/work",
+	})
+	if err != nil {
+		t.Fatalf("daemon claude BuildStart: %v", err)
+	}
+	args := strings.Join(cmd.Args, " ")
+	if !strings.Contains(args, "--permission-mode bypassPermissions") {
+		t.Fatalf("daemon claude must use beta full-access mode, got %q", args)
+	}
+}
+
 func assertBridgeAdapterStart(t *testing.T, name string, cmd agentbridge.StartCommand) {
 	t.Helper()
 	args := strings.Join(cmd.Args, " ")

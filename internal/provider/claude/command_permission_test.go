@@ -40,3 +40,16 @@ func TestBuildStartBypassRequiresPolicyAllow(t *testing.T) {
 		t.Fatalf("bypassPermissions mode missing from args: %v", cmd.Args)
 	}
 }
+
+func TestBuildStartAllowsExplicitBetaFullAccessHarness(t *testing.T) {
+	cmd, err := BuildStart(agentbridge.StartRequest{}, StartOptions{
+		PermissionMode:        PermissionModeBypassDangerous,
+		BetaFullAccessAllowed: true,
+	})
+	if err != nil {
+		t.Fatalf("beta full-access harness should pass: %v", err)
+	}
+	if !strings.Contains(strings.Join(cmd.Args, " "), "--permission-mode bypassPermissions") {
+		t.Fatalf("bypassPermissions mode missing from args: %v", cmd.Args)
+	}
+}

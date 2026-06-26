@@ -8,13 +8,14 @@ Executable SSOT: [`full-access-runtime-harness.riido.json`](full-access-runtime-
 
 Evidence artifact: `full-access-harness-evidence`.
 
-Proves Codex full-access execution is a daemon-owned runtime envelope with caller overrides blocked, not a provider default or SaaS payload choice.
+Proves provider full-access execution is a daemon-owned runtime envelope with caller overrides blocked, not a provider default or SaaS payload choice.
 
 ## Implemented Facts
 
 | Fact | Summary | Evidence |
 | --- | --- | --- |
 | Codex launch shape is daemon-owned | BuildStart emits codex --sandbox danger-full-access app-server --listen stdio:// from adapter code. | `codex-full-access-constant`, `codex-buildstart`, `codex-sandbox-arg`, `codex-app-server-arg`, `codex-listen-arg` |
+| Claude beta full-access launch shape is daemon-owned | The daemon runtime adapter emits Claude bypassPermissions only through an explicit beta harness flag and does not attach the web approval MCP prompt. | `claude-beta-adapter-field`, `claude-daemon-beta-adapter`, `claude-beta-start-option`, `claude-beta-adapter-test`, `claude-beta-provider-test` |
 | protocol-critical shape is tested | Codex tests assert full-access sandbox, app-server, stdio listener, cwd propagation, stdin pipe, and single sandbox selection. | `codex-protocol-test` |
 | caller sandbox override is dropped | Caller --sandbox and -s variants are reported in DroppedArgs while daemon-generated danger-full-access remains the only sandbox pair. | `codex-sandbox-override-test`, `codex-daemon-sandbox-only-test` |
 | unsafe approval bypass is dropped | Codex --yolo and --dangerously-bypass-approvals-and-sandbox variants are blocked from CustomArgs. | `codex-unsafe-custom-test`, `codex-unsafe-equals-test`, `codex-unsafe-arg-catalog` |
@@ -31,6 +32,7 @@ Proves Codex full-access execution is a daemon-owned runtime envelope with calle
 ## Assertions
 
 - Codex danger-full-access is a daemon-owned harness envelope
+- Claude bypassPermissions is a temporary beta daemon-owned harness envelope, not caller input
 - caller CustomArgs cannot change sandbox, config, unsafe bypass, or transport shape
 - full-access must not be attributed to provider defaults, SaaS payloads, or hidden fallback
 - task permission profile generation remains absent from the Codex command builder
