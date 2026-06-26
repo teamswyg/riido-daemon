@@ -18,8 +18,10 @@ type manifest struct {
 	EvidenceArtifact      string        `json:"evidence_artifact"`
 	Purpose               string        `json:"purpose"`
 	ReleaseWorkflow       string        `json:"release_workflow"`
+	CDNPublishWorkflow    string        `json:"cdn_publish_workflow,omitempty"`
 	BuildScript           string        `json:"build_script"`
 	PublishScript         string        `json:"publish_script"`
+	CDNPublishScript      string        `json:"cdn_publish_script,omitempty"`
 	InstallScript         string        `json:"install_script"`
 	Targets               []target      `json:"targets"`
 	ArchiveContents       []string      `json:"archive_contents"`

@@ -13,6 +13,9 @@ func validateManifest(m manifest) []problem {
 	if m.ReleaseWorkflow == "" || m.BuildScript == "" || m.PublishScript == "" || m.InstallScript == "" {
 		problems = append(problems, problem{Message: "release workflow and scripts are required"})
 	}
+	if m.CDNPublishWorkflow == "" || m.CDNPublishScript == "" {
+		problems = append(problems, problem{Message: "CDN publish workflow and script are required"})
+	}
 	return append(problems, validateCollections(m)...)
 }
 
