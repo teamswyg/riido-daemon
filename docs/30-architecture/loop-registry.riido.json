@@ -19,11 +19,30 @@
       "id": "local-qa-gap-to-candidate",
       "owner": "tools/localproductacceptance",
       "kind": "harness-to-closed-loop-intake",
-      "observes": ["skipped scenarios", "partial scenarios", "failed scenarios", "inferred execution ids"],
-      "verifies": ["closed_loop_candidates are emitted", "candidate count is visible in JSON evidence", "each candidate carries an evidence_graph", "each candidate declares required_next_artifacts", "local QA run evidence rolls candidates up"],
-      "evidence": [".riido-local/evidence/ai-agent-product-acceptance.json", "local-qa-runner artifact"],
+      "observes": [
+        "skipped scenarios",
+        "partial scenarios",
+        "failed scenarios",
+        "inferred execution ids"
+      ],
+      "verifies": [
+        "closed_loop_candidates are emitted",
+        "candidate count is visible in JSON evidence",
+        "each candidate carries an evidence_graph",
+        "each candidate declares required_next_artifacts",
+        "local QA run evidence rolls candidates up"
+      ],
+      "evidence": [
+        ".riido-local/evidence/ai-agent-product-acceptance.json",
+        "local-qa-runner artifact"
+      ],
       "expires_after": "24h",
-      "fails_when": ["closed_loop_candidates missing", "required_next_artifacts missing", "inferred execution hidden", "evidence gap silently passes"],
+      "fails_when": [
+        "closed_loop_candidates missing",
+        "required_next_artifacts missing",
+        "inferred execution hidden",
+        "evidence gap silently passes"
+      ],
       "evidence_graph": {
         "observation": "local QA scenarios can be skipped or inferred without creating follow-up work.",
         "hypothesis": "Every skipped, partial, failed, or inferred observation should become a closed_loop_candidate.",
@@ -38,11 +57,26 @@
       "id": "local-qa-evidence-expiry-gate",
       "owner": "tools/localqarunner",
       "kind": "closed-loop",
-      "observes": ["coverage rows", "expires_at", "deployment gate"],
-      "verifies": ["expired coverage rows block deployment", "strict release gate fails on blocked deployment gate", "fresh coverage rows remain deployable"],
-      "evidence": [".riido-local/evidence/local-qa-run.json", ".riido-local/evidence/local-qa-coverage.json"],
+      "observes": [
+        "coverage rows",
+        "expires_at",
+        "deployment gate"
+      ],
+      "verifies": [
+        "expired coverage rows block deployment",
+        "strict release gate fails on blocked deployment gate",
+        "fresh coverage rows remain deployable"
+      ],
+      "evidence": [
+        ".riido-local/evidence/local-qa-run.json",
+        ".riido-local/evidence/local-qa-coverage.json"
+      ],
       "expires_after": "24h",
-      "fails_when": ["expired evidence is treated as green", "deployment gate omits coverage_evidence_expired", "strict coverage ignores a blocked deployment gate"],
+      "fails_when": [
+        "expired evidence is treated as green",
+        "deployment gate omits coverage_evidence_expired",
+        "strict coverage ignores a blocked deployment gate"
+      ],
       "evidence_graph": {
         "observation": "coverage evidence can remain passed after its source rows have expired.",
         "hypothesis": "The release gate should block expired local QA rows even when the previous coverage summary was passed.",
@@ -57,11 +91,28 @@
       "id": "local-qa-candidate-decision",
       "owner": "tools/localqacandidatedecision",
       "kind": "closed-loop",
-      "observes": ["local QA closed_loop_candidates", "required_next_artifacts", "decision records"],
-      "verifies": ["out/local-qa-run.json candidates have decisions", "decision next_artifact is required by each candidate", "orphan decision records fail"],
-      "evidence": ["local-qa-candidate-decision", "decision_artifacts", "candidate_count"],
+      "observes": [
+        "local QA closed_loop_candidates",
+        "required_next_artifacts",
+        "decision records"
+      ],
+      "verifies": [
+        "out/local-qa-run.json candidates have decisions",
+        "decision next_artifact is required by each candidate",
+        "orphan decision records fail"
+      ],
+      "evidence": [
+        "local-qa-candidate-decision",
+        "decision_artifacts",
+        "candidate_count"
+      ],
       "expires_after": "24h",
-      "fails_when": ["candidate decision missing", "decision references missing candidate", "next_artifact is not required", "candidate input omitted"],
+      "fails_when": [
+        "candidate decision missing",
+        "decision references missing candidate",
+        "next_artifact is not required",
+        "candidate input omitted"
+      ],
       "evidence_graph": {
         "observation": "Local QA can produce closed-loop candidates while priority and ownership remain implicit.",
         "hypothesis": "A candidate decision verifier can force every current local QA candidate to bind owner, priority, disposition, next loop, and next artifact.",
@@ -76,11 +127,25 @@
       "id": "qa-system-inference-surfacing",
       "owner": "tools/localproductacceptance",
       "kind": "systematization-audit",
-      "observes": ["qa-system DSL", "execution_inventory", "generated QA mirrors"],
-      "verifies": ["inference_required_count", "inference_required_ids", "generated drift checks"],
-      "evidence": [".riido-local/evidence/ai-agent-product-acceptance.json"],
+      "observes": [
+        "qa-system DSL",
+        "execution_inventory",
+        "generated QA mirrors"
+      ],
+      "verifies": [
+        "inference_required_count",
+        "inference_required_ids",
+        "generated drift checks"
+      ],
+      "evidence": [
+        ".riido-local/evidence/ai-agent-product-acceptance.json"
+      ],
       "expires_after": "24h",
-      "fails_when": ["inferred execution is counted as green", "generated artifacts drift", "pre-commit generation is absent"],
+      "fails_when": [
+        "inferred execution is counted as green",
+        "generated artifacts drift",
+        "pre-commit generation is absent"
+      ],
       "evidence_graph": {
         "observation": "some QA actions still require human or Codex inference.",
         "hypothesis": "Counting inferred execution explicitly prevents false green QA evidence.",
@@ -95,11 +160,29 @@
       "id": "intent-clarification-needs-input",
       "owner": "internal/agentbridge/controlplane/saasplane",
       "kind": "closed-loop",
-      "observes": ["assignment prompt/context", "provider completed output", "clarification question markers", "AgentEventRequest metadata"],
-      "verifies": ["interaction contract reaches provider instruction surface", "assignment_result_status=needs_input is emitted", "assignment is not reported completed", "events endpoint shape is preserved"],
-      "evidence": ["loop-engineering-evidence", "TestApplyRuntimeInstructionContractPlacesByProvider", "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment"],
+      "observes": [
+        "assignment prompt/context",
+        "provider completed output",
+        "clarification question markers",
+        "AgentEventRequest metadata"
+      ],
+      "verifies": [
+        "interaction contract reaches provider instruction surface",
+        "assignment_result_status=needs_input is emitted",
+        "assignment is not reported completed",
+        "events endpoint shape is preserved"
+      ],
+      "evidence": [
+        "loop-engineering-evidence",
+        "TestApplyRuntimeInstructionContractPlacesByProvider",
+        "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment"
+      ],
       "expires_after": "24h",
-      "fails_when": ["clarification output completes assignment", "needs_input metadata missing", "endpoint shape changes"],
+      "fails_when": [
+        "clarification output completes assignment",
+        "needs_input metadata missing",
+        "endpoint shape changes"
+      ],
       "evidence_graph": {
         "observation": "Intent-oriented work can make a provider ask a clarification question and exit successfully.",
         "hypothesis": "The daemon can first instruct providers to ask for intent on non-command context, then treat the clarification as waiting-for-user metadata while preserving the existing SaaS event contract.",
@@ -138,7 +221,13 @@
         "docs/readme/local-acceptance.riido.json",
         "docs/readme/local-acceptance.md"
       ],
-      "evidence": ["local.qa.evidence_gap_candidates", "provider.real_cli_observation", "closed_loop_candidates", "evidence_graph", "required_next_artifacts"],
+      "evidence": [
+        "local.qa.evidence_gap_candidates",
+        "provider.real_cli_observation",
+        "closed_loop_candidates",
+        "evidence_graph",
+        "required_next_artifacts"
+      ],
       "verifiers": [
         {
           "name": "gap-candidates-test",
@@ -231,7 +320,11 @@
         "docs/readme/local-acceptance.riido.json",
         "docs/readme/local-acceptance.md"
       ],
-      "evidence": ["local-qa-candidate-decision", "decision_artifacts", "required_next_artifacts"],
+      "evidence": [
+        "local-qa-candidate-decision",
+        "decision_artifacts",
+        "required_next_artifacts"
+      ],
       "verifiers": [
         {
           "name": "candidate-decision-annotation-test",
@@ -319,7 +412,10 @@
         "docs/30-architecture/qa-system.dsl.json",
         "docs/readme/local-acceptance.md"
       ],
-      "evidence": ["local.qa.dsl_system_audit", "inference_required_count"],
+      "evidence": [
+        "local.qa.dsl_system_audit",
+        "inference_required_count"
+      ],
       "verifiers": [
         {
           "name": "qa-system-inference-count-test",
@@ -341,7 +437,9 @@
       "docs": [
         "docs/30-architecture/local-acceptance-coverage.riido.json"
       ],
-      "evidence": ["product.client.readonly"],
+      "evidence": [
+        "product.client.readonly"
+      ],
       "verifiers": [
         {
           "name": "client-readonly-test",
@@ -435,7 +533,9 @@
         "docs/30-architecture/loop-registry.riido.json",
         "docs/30-architecture/loop-registry.md"
       ],
-      "evidence": ["loop-registry"],
+      "evidence": [
+        "loop-registry"
+      ],
       "verifiers": [
         {
           "name": "loop-registry-tests",
@@ -461,6 +561,66 @@
           "contains": [
             "TestGitHubAnnotationExplainsClaimEvidence",
             "Update one bound evidence file"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "claude_daemon_must_use_web_approval_mode",
+      "text": "Claude daemon runs must start in provider approval mode, not acceptEdits or bypassPermissions, so provider permission requests can be represented as SaaS/web tool approvals instead of leaking local desktop approval dialogs into AI thread text.",
+      "files": [
+        "cmd/riido/bridge_adapter_claude.go",
+        "cmd/riido/bridge_adapter_start_test.go",
+        "internal/provider/claude/translate_control.go",
+        "internal/provider/claude/provider_input.go",
+        "internal/agentbridge/session/session_tool_approval_resolver.go",
+        "internal/agentbridge/controlplane/saasplane/tool_approval.go"
+      ],
+      "docs": [
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "staging.v3.thread_history.asn-000121-123.no_tool_approval_create",
+        "claude_control_request_to_tool_approval",
+        "provider_input_control_response",
+        "web_tool_approval_round_trip"
+      ],
+      "verifiers": [
+        {
+          "name": "claude-daemon-start-mode-test",
+          "file": "cmd/riido/bridge_adapter_start_test.go",
+          "contains": [
+            "TestRegisteredAdaptersBuildStartForDaemonRuntime",
+            "--permission-mode default",
+            "acceptEdits",
+            "bypassPermissions"
+          ]
+        },
+        {
+          "name": "claude-control-request-test",
+          "file": "internal/provider/claude/translate_control_request_test.go",
+          "contains": [
+            "TestTranslateControlRequestProducesApprovalNeeded",
+            "EventToolApprovalNeeded",
+            "permission_request"
+          ]
+        },
+        {
+          "name": "session-web-approval-resolver-test",
+          "file": "internal/agentbridge/session/session_tool_approval_resolver_test.go",
+          "contains": [
+            "TestSessionResolverApprovalWritesProviderInput",
+            "ToolApprovalResolver",
+            "assertApprovalProviderInput"
+          ]
+        },
+        {
+          "name": "safe-shell-auto-approval-test",
+          "file": "internal/agentbridge/toolpolicy/auto_approver_test.go",
+          "contains": [
+            "go run main.go",
+            "TestPolicyAutoApproverApprovesAllowedAndUnclassifiedTools"
           ]
         }
       ]
