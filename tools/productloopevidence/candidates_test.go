@@ -42,3 +42,24 @@ func TestCollectCandidatesShowsOpenCandidateDebt(t *testing.T) {
 		t.Fatalf("candidate graph = %+v", got[0].Graph)
 	}
 }
+
+func TestCollectProductOutcomeCandidatesNamesMissingScenarioRows(t *testing.T) {
+	product := productAcceptance{
+		MissingOutcomeEvidenceSignalIDs: []string{"time_to_first_event"},
+		MeasurementCandidates: []outcomeMeasure{{
+			ID: "time_to_first_event",
+			MissingOutcomeEvidenceScenarioIDs: []string{
+				"contract.task.thread_subscription",
+				"contract.task.sse_replay",
+			},
+		}},
+	}
+	got := collectProductOutcomeEvidenceCandidates(product)
+	if len(got) != 1 {
+		t.Fatalf("candidates = %+v", got)
+	}
+	want := "missing scenario ids: contract.task.thread_subscription, contract.task.sse_replay"
+	if got[0].RequiredNextArtifacts[2] != want {
+		t.Fatalf("next artifacts = %+v", got[0].RequiredNextArtifacts)
+	}
+}

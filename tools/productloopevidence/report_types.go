@@ -66,10 +66,3 @@ type productAcceptance struct {
 	MeasurementCandidates           []outcomeMeasure `json:"measurement_candidates"`
 	Status                          string           `json:"status"`
 }
-
-type outcomeMeasure struct {
-	ID                    string   `json:"id"`
-	ScenarioIDs           []string `json:"scenario_ids"`
-	Linked                bool     `json:"linked"`
-	OutcomeEvidenceLinked bool     `json:"outcome_evidence_linked"`
-}

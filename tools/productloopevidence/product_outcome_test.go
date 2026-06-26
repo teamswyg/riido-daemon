@@ -28,3 +28,32 @@ func TestBuildProductAcceptanceRequiresRunOutcomeEvidence(t *testing.T) {
 		t.Fatalf("missing outcome evidence = %+v", got.MissingOutcomeEvidenceSignalIDs)
 	}
 }
+
+func TestBuildProductAcceptanceShowsMissingOutcomeScenarioRows(t *testing.T) {
+	m := manifest{OutcomeSignals: []outcomeSignal{{
+		ID: "time_to_first_event",
+		ScenarioIDs: []string{
+			"contract.task.thread_subscription",
+			"contract.task.sse_replay",
+		},
+	}}}
+	local := localAcceptanceSource{Scenarios: []coverageScenario{
+		{ID: "contract.task.thread_subscription"},
+		{ID: "contract.task.sse_replay"},
+	}}
+	run := productRunOutcomeSource{
+		State: localQARunFresh,
+		ScenarioStatus: map[string]string{
+			"contract.task.thread_subscription": "observed",
+			"contract.task.sse_replay":          "not_verified",
+		},
+	}
+	got := buildProductAcceptance(m, local, run)
+	measure := got.MeasurementCandidates[0]
+	if measure.OutcomeEvidenceLinked || len(measure.MissingOutcomeEvidenceScenarioIDs) != 1 {
+		t.Fatalf("measure = %+v", measure)
+	}
+	if measure.MissingOutcomeEvidenceScenarioIDs[0] != "contract.task.sse_replay" {
+		t.Fatalf("missing scenario rows = %+v", measure.MissingOutcomeEvidenceScenarioIDs)
+	}
+}
