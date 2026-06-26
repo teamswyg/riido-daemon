@@ -38,6 +38,7 @@
   "scenarios": [
     {"id": "provider.codex", "title": "Codex provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "codex"},
     {"id": "provider.claude", "title": "Claude provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "claude"},
+    {"id": "provider.claude.web_approval_round_trip", "title": "Claude permission-gated command resumes through web approval and executes", "tier": "release", "surface": "provider-approval", "evidence": "external"},
     {"id": "provider.cursor", "title": "Cursor provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "cursor"},
     {"id": "provider.openclaw", "title": "OpenClaw provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "openclaw"},
     {"id": "product.client.readonly", "title": "riido-client remains untouched by local QA harness work", "tier": "daily", "surface": "repo-boundary", "evidence": "external"},

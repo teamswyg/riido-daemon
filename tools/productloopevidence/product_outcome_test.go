@@ -29,6 +29,28 @@ func TestBuildProductAcceptanceRequiresRunOutcomeEvidence(t *testing.T) {
 	}
 }
 
+func TestProductLoopManifestRequiresClaudeApprovalRoundTrip(t *testing.T) {
+	root := repoRoot()
+	m, err := loadManifest(repoPath(root, defaultManifest))
+	if err != nil {
+		t.Fatal(err)
+	}
+	var found bool
+	for _, signal := range m.OutcomeSignals {
+		if signal.ID != "provider_approval_round_trip" {
+			continue
+		}
+		found = true
+		if len(signal.ScenarioIDs) != 1 ||
+			signal.ScenarioIDs[0] != "provider.claude.web_approval_round_trip" {
+			t.Fatalf("approval signal scenarios = %+v", signal.ScenarioIDs)
+		}
+	}
+	if !found {
+		t.Fatal("provider_approval_round_trip signal missing")
+	}
+}
+
 func TestBuildProductAcceptanceShowsMissingOutcomeScenarioRows(t *testing.T) {
 	m := manifest{OutcomeSignals: []outcomeSignal{{
 		ID: "time_to_first_event",
