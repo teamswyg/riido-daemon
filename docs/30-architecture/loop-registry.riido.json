@@ -124,6 +124,46 @@
       }
     },
     {
+      "id": "product-loop-evidence",
+      "owner": "tools/productloopevidence",
+      "kind": "systematization-audit",
+      "observes": [
+        "tool entrypoints",
+        "workflow entrypoints",
+        "claim mapping coverage",
+        "product outcome scenario bindings",
+        "partial candidate debt"
+      ],
+      "verifies": [
+        "meta complexity emits counts",
+        "product acceptance signals are bound to local QA scenarios",
+        "partial candidates expose required next artifacts",
+        "generated product loop reader stays fresh"
+      ],
+      "evidence": [
+        "product-loop-evidence",
+        "meta_complexity",
+        "product_acceptance",
+        "partial_reduction"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "product loop manifest drifts",
+        "outcome signal loses scenario binding",
+        "partial candidate lacks required_next_artifacts",
+        "claim-bound product loop files change without evidence"
+      ],
+      "evidence_graph": {
+        "observation": "Product QA, loop registry, and provider evidence were visible but not summarized as product-success closure.",
+        "hypothesis": "A thin product-loop evidence sidecar can keep meta complexity, product outcome linkage, and partial candidate debt measurable.",
+        "change": "productloopevidence reads existing executable manifests and emits one machine-readable product-loop report.",
+        "verifier": "TestCollectCandidatesPromotesPartialEvidence",
+        "evidence": "product-loop-evidence",
+        "decision": "partial status is accepted as evidence debt while required next artifacts are explicit.",
+        "next_loop": "promote candidate age and entrypoint routing into stricter gates."
+      }
+    },
+    {
       "id": "qa-system-inference-surfacing",
       "owner": "tools/localproductacceptance",
       "kind": "systematization-audit",
@@ -447,6 +487,81 @@
           "contains": [
             "clientReadOnlyScenario",
             "must never be merged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "product_loop_evidence_must_measure_success_closure",
+      "text": "Product success loops must measure meta-complexity, product acceptance linkage, and partial-reduction debt as executable evidence so harness failures can become closed-loop candidates without changing endpoint or runtime contracts.",
+      "files": [
+        "tools/productloopevidence/candidates.go",
+        "tools/productloopevidence/constants.go",
+        "tools/productloopevidence/files.go",
+        "tools/productloopevidence/io.go",
+        "tools/productloopevidence/main.go",
+        "tools/productloopevidence/manifest.go",
+        "tools/productloopevidence/meta.go",
+        "tools/productloopevidence/partial.go",
+        "tools/productloopevidence/partial_types.go",
+        "tools/productloopevidence/path.go",
+        "tools/productloopevidence/product.go",
+        "tools/productloopevidence/render.go",
+        "tools/productloopevidence/report.go",
+        "tools/productloopevidence/report_test.go",
+        "tools/productloopevidence/report_types.go",
+        "tools/productloopevidence/run.go",
+        "tools/productloopevidence/source_types.go",
+        "tools/productloopevidence/types.go",
+        ".github/workflows/product-loop-evidence.yml"
+      ],
+      "docs": [
+        "docs/30-architecture/product-loop-evidence.riido.json",
+        "docs/30-architecture/product-loop-evidence.md",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "product-loop-evidence",
+        "meta_complexity",
+        "product_acceptance",
+        "partial_reduction",
+        "closed_loop_candidates"
+      ],
+      "verifiers": [
+        {
+          "name": "product-loop-acceptance-test",
+          "file": "tools/productloopevidence/report_test.go",
+          "contains": [
+            "TestBuildProductAcceptanceFindsMissingSignals",
+            "assignment_completion",
+            "MissingSignalIDs"
+          ]
+        },
+        {
+          "name": "product-loop-mapping-test",
+          "file": "tools/productloopevidence/report_test.go",
+          "contains": [
+            "TestBuildMappingCoverageRequiresVerifierClaims",
+            "CoverageRatio"
+          ]
+        },
+        {
+          "name": "product-loop-candidate-test",
+          "file": "tools/productloopevidence/report_test.go",
+          "contains": [
+            "TestCollectCandidatesPromotesPartialEvidence",
+            "RequiredNextArtifacts"
+          ]
+        }
+      ],
+      "contracts": [
+        {
+          "name": "product-loop-workflow",
+          "file": ".github/workflows/product-loop-evidence.yml",
+          "contains": [
+            "go run ./tools/productloopevidence -check-doc",
+            "product-loop-evidence.json"
           ]
         }
       ]
