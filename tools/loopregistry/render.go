@@ -23,6 +23,10 @@ func renderLoopSummary(b *strings.Builder, reg registry) {
 		fmt.Fprintf(b, "### %s\n\n", item.ID)
 		fmt.Fprintf(b, "- Owner: `%s`\n", item.Owner)
 		fmt.Fprintf(b, "- Kind: `%s`\n", item.Kind)
+		if item.CandidateCreatedAt != "" {
+			fmt.Fprintf(b, "- Candidate created at: `%s`\n", item.CandidateCreatedAt)
+			fmt.Fprintf(b, "- Promotion target: `%s`\n", item.PromotionTarget)
+		}
 		fmt.Fprintf(b, "- Expires after: `%s`\n", item.ExpiresAfter)
 		fmt.Fprintf(b, "- Observes: `%s`\n", strings.Join(item.Observes, "`, `"))
 		fmt.Fprintf(b, "- Verifies: `%s`\n", strings.Join(item.Verifies, "`, `"))

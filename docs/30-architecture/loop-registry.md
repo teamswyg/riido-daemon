@@ -12,6 +12,8 @@
 
 - Owner: `tools/localproductacceptance`
 - Kind: `harness-to-closed-loop-intake`
+- Candidate created at: `2026-06-24`
+- Promotion target: `closed-loop candidate decision verifier`
 - Expires after: `24h`
 - Observes: `skipped scenarios`, `partial scenarios`, `failed scenarios`, `inferred execution ids`
 - Verifies: `closed_loop_candidates are emitted`, `candidate count is visible in JSON evidence`, `each candidate carries an evidence_graph`, `each candidate declares required_next_artifacts`, `local QA run evidence rolls candidates up`
@@ -39,6 +41,8 @@
 
 - Owner: `tools/productloopevidence`
 - Kind: `systematization-audit`
+- Candidate created at: `2026-06-26`
+- Promotion target: `entrypoint route map and candidate-aging gate`
 - Expires after: `24h`
 - Observes: `tool entrypoints`, `workflow entrypoints`, `claim mapping coverage`, `product outcome scenario bindings`, `partial candidate debt`
 - Verifies: `meta complexity emits counts`, `product acceptance signals are bound to local QA scenarios`, `partial candidates expose required next artifacts`, `generated product loop reader stays fresh`
@@ -48,6 +52,8 @@
 
 - Owner: `tools/localproductacceptance`
 - Kind: `systematization-audit`
+- Candidate created at: `2026-06-24`
+- Promotion target: `system-owned QA execution inventory`
 - Expires after: `24h`
 - Observes: `qa-system DSL`, `execution_inventory`, `generated QA mirrors`
 - Verifies: `inference_required_count`, `inference_required_ids`, `generated drift checks`

@@ -19,6 +19,8 @@
       "id": "local-qa-gap-to-candidate",
       "owner": "tools/localproductacceptance",
       "kind": "harness-to-closed-loop-intake",
+      "candidate_created_at": "2026-06-24",
+      "promotion_target": "closed-loop candidate decision verifier",
       "observes": [
         "skipped scenarios",
         "partial scenarios",
@@ -127,6 +129,8 @@
       "id": "product-loop-evidence",
       "owner": "tools/productloopevidence",
       "kind": "systematization-audit",
+      "candidate_created_at": "2026-06-26",
+      "promotion_target": "entrypoint route map and candidate-aging gate",
       "observes": [
         "tool entrypoints",
         "workflow entrypoints",
@@ -167,6 +171,8 @@
       "id": "qa-system-inference-surfacing",
       "owner": "tools/localproductacceptance",
       "kind": "systematization-audit",
+      "candidate_created_at": "2026-06-24",
+      "promotion_target": "system-owned QA execution inventory",
       "observes": [
         "qa-system DSL",
         "execution_inventory",

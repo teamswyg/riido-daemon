@@ -33,15 +33,17 @@ type evidenceLoop struct {
 }
 
 type loopEntry struct {
-	ID           string        `json:"id"`
-	Owner        string        `json:"owner"`
-	Kind         string        `json:"kind"`
-	Observes     []string      `json:"observes"`
-	Verifies     []string      `json:"verifies"`
-	Evidence     []string      `json:"evidence"`
-	ExpiresAfter string        `json:"expires_after"`
-	FailsWhen    []string      `json:"fails_when"`
-	Graph        evidenceGraph `json:"evidence_graph"`
+	ID                 string        `json:"id"`
+	Owner              string        `json:"owner"`
+	Kind               string        `json:"kind"`
+	CandidateCreatedAt string        `json:"candidate_created_at,omitempty"`
+	PromotionTarget    string        `json:"promotion_target,omitempty"`
+	Observes           []string      `json:"observes"`
+	Verifies           []string      `json:"verifies"`
+	Evidence           []string      `json:"evidence"`
+	ExpiresAfter       string        `json:"expires_after"`
+	FailsWhen          []string      `json:"fails_when"`
+	Graph              evidenceGraph `json:"evidence_graph"`
 }
 
 type evidenceGraph struct {

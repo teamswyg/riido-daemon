@@ -23,7 +23,21 @@ func validateLoopEntry(item loopEntry) []string {
 	if _, err := time.ParseDuration(item.ExpiresAfter); err != nil {
 		problems = append(problems, item.ID+" expires_after must be a Go duration")
 	}
+	problems = append(problems, validateCandidateMetadata(item)...)
 	return append(problems, validateGraph(item.ID, item.Graph)...)
+}
+
+func validateCandidateMetadata(item loopEntry) []string {
+	if item.Kind == "closed-loop" {
+		return nil
+	}
+	if item.CandidateCreatedAt == "" || item.PromotionTarget == "" {
+		return []string{item.ID + " non-closed loop requires candidate_created_at and promotion_target"}
+	}
+	if _, err := time.Parse("2006-01-02", item.CandidateCreatedAt); err != nil {
+		return []string{item.ID + " candidate_created_at must be YYYY-MM-DD"}
+	}
+	return nil
 }
 
 func validateLoop(loop evidenceLoop, owner string) []string {

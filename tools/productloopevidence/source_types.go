@@ -6,8 +6,10 @@ type registrySource struct {
 }
 
 type registryLoop struct {
-	ID   string `json:"id"`
-	Kind string `json:"kind"`
+	ID                 string `json:"id"`
+	Kind               string `json:"kind"`
+	CandidateCreatedAt string `json:"candidate_created_at"`
+	PromotionTarget    string `json:"promotion_target"`
 }
 
 type registryClaim struct {
