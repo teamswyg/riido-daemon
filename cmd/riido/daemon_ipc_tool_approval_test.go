@@ -65,6 +65,39 @@ func TestDaemonToolApprovalRequestUsesInProcessResolver(t *testing.T) {
 	}
 }
 
+func TestDaemonToolApprovalRequestCancelsResolverWhenClientDisconnects(t *testing.T) {
+	server, client := net.Pipe()
+	ctxCancelled := make(chan struct{}, 1)
+	authorizer := daemonApprovalAuthorizerFunc(func(_ context.Context, executionID string) (bool, error) {
+		return executionID == "asn-1", nil
+	})
+	resolver := daemonApprovalResolverFunc(func(ctx context.Context, executionID string, _ agentbridge.ToolRef) (agentbridge.ToolApprovalResolution, error) {
+		if executionID != "asn-1" {
+			t.Fatalf("executionID = %q", executionID)
+		}
+		<-ctx.Done()
+		ctxCancelled <- struct{}{}
+		return agentbridge.ToolApprovalResolution{}, ctx.Err()
+	})
+	go handleDaemonConn(server, startFlags{}, daemonSettings{}, time.Now(), nil, resolver, authorizer, nil, logging.NewWriterLogger(io.Discard))
+
+	req := daemonRequest{
+		Method:       daemonMethodToolApproval,
+		AssignmentID: "asn-1",
+		Tool:         agentbridge.ToolRef{ID: "toolu-1", Name: "Write", Kind: "Write"},
+	}
+	if err := json.NewEncoder(client).Encode(req); err != nil {
+		t.Fatalf("encode request: %v", err)
+	}
+	_ = client.Close()
+
+	select {
+	case <-ctxCancelled:
+	case <-time.After(time.Second):
+		t.Fatal("resolver context was not cancelled after client disconnect")
+	}
+}
+
 func TestDaemonToolApprovalRequestRejectsInactiveAssignmentBeforeResolver(t *testing.T) {
 	server, client := net.Pipe()
 	defer client.Close()

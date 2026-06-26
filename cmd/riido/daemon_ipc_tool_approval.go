@@ -4,12 +4,14 @@ import (
 	"context"
 	"net"
 	"strings"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/logging"
 )
 
 func writeToolApprovalResolution(
+	ctx context.Context,
 	conn net.Conn,
 	req daemonRequest,
 	resolver agentbridge.ToolApprovalResolver,
@@ -29,7 +31,7 @@ func writeToolApprovalResolution(
 		writeToolApprovalError(conn, "assignment_id is required")
 		return
 	}
-	ok, err := authorizer.AuthorizeToolApproval(context.Background(), assignmentID)
+	ok, err := authorizer.AuthorizeToolApproval(ctx, assignmentID)
 	if err != nil {
 		log.Printf("tool approval authorizer error assignment=%s: %v", assignmentID, err)
 		writeToolApprovalError(conn, err.Error())
@@ -44,12 +46,15 @@ func writeToolApprovalResolution(
 	if tool.Kind == "" {
 		tool.Kind = tool.Name
 	}
-	resolution, err := resolver.ResolveToolApproval(context.Background(), assignmentID, tool)
+	started := time.Now()
+	log.Printf("tool approval wait started assignment=%s tool=%s", assignmentID, tool.Kind)
+	resolution, err := resolver.ResolveToolApproval(ctx, assignmentID, tool)
 	if err != nil {
 		log.Printf("tool approval resolver error assignment=%s tool=%s: %v", assignmentID, tool.Kind, err)
 		writeToolApprovalError(conn, err.Error())
 		return
 	}
+	log.Printf("tool approval wait resolved assignment=%s tool=%s approved=%t duration_ms=%d", assignmentID, tool.Kind, resolution.Approved, time.Since(started).Milliseconds())
 	_ = writeDaemonJSON(conn, map[string]any{
 		"schema_version": DaemonStatusSchemaVersion,
 		"approved":       resolution.Approved,
