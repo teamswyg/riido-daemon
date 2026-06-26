@@ -12,7 +12,7 @@ func renderDesktopMSIX(m manifest) string {
 		fmt.Fprintf(b, "The launcher passes %s when starting the daemon.\n\n", codeList(m.DesktopMSIX.RequiredEnv))
 		b.WriteString("## CDN latest mirror\n\n")
 		fmt.Fprintf(b, "GitHub Releases remain immutable. `%s` is a mutable development/test mirror only.\n\n", m.DesktopMSIX.CDNLatestBaseURL)
-		fmt.Fprintf(b, "The mirror is published by `%s` using `%s` after release artifact CI succeeds.\n\n", m.CDNPublishWorkflow, m.CDNPublishScript)
+		fmt.Fprintf(b, "The mirror is published by `%s` using `%s` when a GitHub Release is published, with manual resync available through workflow dispatch.\n\n", m.CDNPublishWorkflow, m.CDNPublishScript)
 		b.WriteString("Mirror paths:\n\n")
 		writeBullets(b, m.DesktopMSIX.CDNLatestPaths)
 		b.WriteString("The archive `VERSION` file must identify the release tag that was mirrored.\n")

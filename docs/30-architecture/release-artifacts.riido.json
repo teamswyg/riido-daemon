@@ -55,6 +55,8 @@
     {"name": "workflow-tag-release", "file": ".github/workflows/release-artifacts.yml", "contains": "startsWith(github.ref, 'refs/tags/v')"},
     {"name": "workflow-release-script-checkout", "file": ".github/workflows/release-artifacts.yml", "contains": "Checkout release scripts"},
     {"name": "cdn-workflow-release-source", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "workflows: [\"release-artifacts\"]"},
+    {"name": "cdn-workflow-release-published-trigger", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "types: [published]"},
+    {"name": "cdn-workflow-release-tag-source", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "github.event.release.tag_name"},
     {"name": "cdn-workflow-manual-resync", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "workflow_dispatch"},
     {"name": "cdn-workflow-publish-script", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "scripts/publish-cdn-latest.sh sync"},
     {"name": "build-package-trimpath", "file": "scripts/build-release-package.sh", "contains": "-trimpath -ldflags"},
