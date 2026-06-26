@@ -28,6 +28,7 @@ Invariant: An active provider run must not silently move to a different runtime 
 | reject stale runtime report identity | `implemented` |  | TaskDB start rejects expired leases, mismatched fencing tokens, and mismatched capability fingerprints. | `lease-start-reject`, `lease-active-require` |
 | cancel active run on runtime-pinned drift | `implemented` |  | Status refresh compares active task runtime pins against refreshed capability fingerprints and terminates drifted sessions as blocked. | `active-runtime-drift-cancel` |
 | replace installed daemon binary after verified download | `implemented` |  | Installer verifies the selected release asset and checksum before removing the existing daemon binary and installing the replacement. | `installer-delete-old-binary`, `installer-delete-before-install-test` |
+| defer desktop daemon replacement while assignments are active | `reserved` |  | Live staging evidence showed asn-000138 stopped at the same instant Desktop auto-updated the daemon to v0.0.56; desktop must query daemon status and defer replacement/restart while running_tasks > 0. | requires: riido-desktop daemonLauncher verifier proving daemon update is deferred when daemon status reports running_tasks > 0, plus local QA evidence linking an update attempt to an unchanged active assignment. |
 
 ## Policy
 
