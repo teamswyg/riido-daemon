@@ -456,6 +456,82 @@
       ]
     },
     {
+      "id": "daily_local_qa_schedule_must_refresh_expiring_evidence",
+      "text": "Daily local QA scheduling must be an executable LaunchAgent loop that runs the local QA runner, writes schedule evidence without token text, points at coverage evidence, and lets the dashboard prove either a successful completed run or an active run before expired evidence can be trusted again.",
+      "files": [
+        "tools/localqaschedule/evidence.go",
+        "tools/localqaschedule/evidence_types.go",
+        "tools/localqaschedule/trigger.go",
+        "tools/localqaschedule/shell.go",
+        "tools/localqaschedule/plist.go",
+        "tools/localqaschedule/plist_more.go",
+        "tools/localqaschedule/run.go",
+        "tools/localqaschedule/launchd_inspect.go",
+        "tools/localqarunner/schedule_step.go",
+        "tools/localqadashboard/schedule_evidence.go"
+      ],
+      "docs": [
+        "docs/30-architecture/local-qa-daily-trigger.dsl.json",
+        "docs/readme/local-acceptance.riido.json",
+        "docs/readme/local-acceptance.md",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "local-qa-schedule",
+        "local.qa.daily_schedule",
+        "local.qa.daily_trigger",
+        "daily-evidence-sweep",
+        "coverage_evidence"
+      ],
+      "verifiers": [
+        {
+          "name": "schedule-evidence-writes-coverage-and-redacts-token",
+          "file": "tools/localqaschedule/evidence_test.go",
+          "contains": [
+            "TestWriteScheduleEvidenceIncludesCoveragePath",
+            "TestSafeCommandPreviewRedactsTokenText",
+            "dailyEvidenceSweepID"
+          ]
+        },
+        {
+          "name": "schedule-plist-runs-local-qa-daily",
+          "file": "tools/localqaschedule/plist_test.go",
+          "contains": [
+            "TestRenderPlistIncludesDailySchedule",
+            "go run ./tools/localqarunner",
+            "<key>Hour</key><integer>9</integer>"
+          ]
+        },
+        {
+          "name": "dashboard-requires-live-schedule-evidence",
+          "file": "tools/localqadashboard/schedule_evidence_test.go",
+          "contains": [
+            "TestScheduleEvidenceScenariosRequiresLaunchdLiveState",
+            "TestScheduleEvidenceScenariosRequiresSuccessfulLaunchdRun",
+            "TestScheduleEvidenceScenariosIncludesInstallDetail"
+          ]
+        },
+        {
+          "name": "dashboard-accepts-active-launchd-run",
+          "file": "tools/localqadashboard/schedule_evidence_run_test.go",
+          "contains": [
+            "TestScheduleEvidenceScenariosAcceptsActiveLaunchdRun",
+            "TestScheduleEvidenceScenariosRequiresCoverageEvidencePath"
+          ]
+        },
+        {
+          "name": "runner-refreshes-schedule-inspect-args",
+          "file": "tools/localqarunner/schedule_step_test.go",
+          "contains": [
+            "TestAppendScheduleProductArgsIncludesTaskFlags",
+            "-product-task-id",
+            "-product-comment-body"
+          ]
+        }
+      ]
+    },
+    {
       "id": "qa_system_inference_must_not_pass_as_green",
       "text": "QA system evidence must report inferred execution separately and mark the audit partial until every loop has a system-owned verifier.",
       "files": [
