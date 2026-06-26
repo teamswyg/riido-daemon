@@ -26,10 +26,12 @@ func loopSummaries(items []loopEntry) []loopSummary {
 	out := make([]loopSummary, 0, len(items))
 	for _, item := range items {
 		out = append(out, loopSummary{
-			ID:           item.ID,
-			Kind:         item.Kind,
-			ExpiresAfter: item.ExpiresAfter,
-			Evidence:     item.Evidence,
+			ID:                 item.ID,
+			Kind:               item.Kind,
+			CandidateCreatedAt: item.CandidateCreatedAt,
+			PromotionTarget:    item.PromotionTarget,
+			ExpiresAfter:       item.ExpiresAfter,
+			Evidence:           item.Evidence,
 		})
 	}
 	return out

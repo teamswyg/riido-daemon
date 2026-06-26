@@ -24,7 +24,7 @@ func collectCandidates(meta metaComplexity, product productAcceptance, partial p
 			},
 		})
 	}
-	if partial.Status == statusPartial {
+	if partial.CandidateAgeUnknownCount > 0 || partial.StaleCandidateCount > 0 {
 		out = append(out, closedLoopCandiate{
 			ID:     "partial-reduction-candidate-aging",
 			Class:  "partial-reduction",
@@ -33,6 +33,17 @@ func collectCandidates(meta metaComplexity, product productAcceptance, partial p
 				"candidate created_at field",
 				"candidate promotion verifier",
 				"stale partial escalation evidence",
+			},
+		})
+	}
+	if partial.CandidateCount > 0 && !partial.LocalQARunEvidencePresent {
+		out = append(out, closedLoopCandiate{
+			ID:     "partial-reduction-local-qa-run-evidence",
+			Class:  "partial-reduction",
+			Reason: "local QA run evidence is absent, so candidate promotion cannot be tied to a concrete run",
+			RequiredNextArtifacts: []string{
+				"latest local QA run evidence",
+				"candidate decision evidence",
 			},
 		})
 	}

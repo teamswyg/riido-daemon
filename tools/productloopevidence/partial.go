@@ -1,17 +1,27 @@
 package main
 
-import "os"
+import (
+	"os"
+	"time"
+)
 
 func buildPartialReduction(root string, m manifest, reg registrySource, qa qaSystemSource) partialReduction {
+	return buildPartialReductionAt(root, m, reg, qa, time.Now().UTC())
+}
+
+func buildPartialReductionAt(root string, m manifest, reg registrySource, qa qaSystemSource, now time.Time) partialReduction {
 	candidateIDs := candidateLoopIDs(reg.Loops)
 	inferred := inferenceRequiredIDs(qa.ExecutionInventory)
 	localEvidence := localQARunPresent(root, m.LocalQARunEvidence)
+	ages, unknown, stale := candidateAges(reg.Loops, m.Thresholds.StalePartialAfterDays, now)
 	out := partialReduction{
 		InferenceRequiredIDs:      inferred,
 		ClosedLoopCandidateIDs:    candidateIDs,
+		CandidateAges:             ages,
 		CandidateCount:            len(candidateIDs),
 		PromotedCount:             promotedCount(reg.Loops),
-		CandidateAgeUnknownCount:  len(candidateIDs),
+		CandidateAgeUnknownCount:  unknown,
+		StaleCandidateCount:       stale,
 		StalePartialAfterDays:     m.Thresholds.StalePartialAfterDays,
 		LocalQARunEvidencePresent: localEvidence,
 		Status:                    statusPassed,
@@ -20,6 +30,35 @@ func buildPartialReduction(root string, m manifest, reg registrySource, qa qaSys
 		out.Status = statusPartial
 	}
 	return out
+}
+
+func candidateAges(items []registryLoop, staleAfterDays int, now time.Time) ([]candidateAge, int, int) {
+	var out []candidateAge
+	unknown := 0
+	staleCount := 0
+	for _, item := range items {
+		if item.Kind == "closed-loop" {
+			continue
+		}
+		created, err := time.Parse("2006-01-02", item.CandidateCreatedAt)
+		if err != nil {
+			unknown++
+			continue
+		}
+		ageDays := int(now.Sub(created).Hours() / 24)
+		stale := ageDays >= staleAfterDays
+		if stale {
+			staleCount++
+		}
+		out = append(out, candidateAge{
+			ID:              item.ID,
+			CreatedAt:       item.CandidateCreatedAt,
+			AgeDays:         ageDays,
+			PromotionTarget: item.PromotionTarget,
+			Stale:           stale,
+		})
+	}
+	return out, unknown, staleCount
 }
 
 func inferenceRequiredIDs(items []qaExecution) []string {

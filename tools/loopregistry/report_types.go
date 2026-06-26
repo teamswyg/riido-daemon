@@ -17,10 +17,12 @@ type report struct {
 }
 
 type loopSummary struct {
-	ID           string   `json:"id"`
-	Kind         string   `json:"kind"`
-	ExpiresAfter string   `json:"expires_after"`
-	Evidence     []string `json:"evidence"`
+	ID                 string   `json:"id"`
+	Kind               string   `json:"kind"`
+	CandidateCreatedAt string   `json:"candidate_created_at,omitempty"`
+	PromotionTarget    string   `json:"promotion_target,omitempty"`
+	ExpiresAfter       string   `json:"expires_after"`
+	Evidence           []string `json:"evidence"`
 }
 
 type claimSummary struct {
