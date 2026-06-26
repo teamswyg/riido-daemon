@@ -11,20 +11,14 @@ func buildProductAcceptance(m manifest, local localAcceptanceSource, run product
 		Status:                  statusPassed,
 	}
 	for _, signal := range m.OutcomeSignals {
-		linked := allPresent(signal.ScenarioIDs, scenarios)
-		outcomeLinked := outcomeEvidenceLinked(signal.ScenarioIDs, run)
-		out.MeasurementCandidates = append(out.MeasurementCandidates, outcomeMeasure{
-			ID:                    signal.ID,
-			ScenarioIDs:           signal.ScenarioIDs,
-			Linked:                linked,
-			OutcomeEvidenceLinked: outcomeLinked,
-		})
-		if linked {
+		measure := buildOutcomeMeasure(signal, scenarios, run)
+		out.MeasurementCandidates = append(out.MeasurementCandidates, measure)
+		if measure.Linked {
 			out.LinkedSignalCount++
 		} else {
 			out.MissingSignalIDs = append(out.MissingSignalIDs, signal.ID)
 		}
-		if outcomeLinked {
+		if measure.OutcomeEvidenceLinked {
 			out.OutcomeEvidenceLinkedCount++
 		} else {
 			out.MissingOutcomeEvidenceSignalIDs = append(out.MissingOutcomeEvidenceSignalIDs, signal.ID)
@@ -42,16 +36,4 @@ func scenarioSet(items []coverageScenario) map[string]bool {
 		out[item.ID] = true
 	}
 	return out
-}
-
-func allPresent(ids []string, set map[string]bool) bool {
-	if len(ids) == 0 {
-		return false
-	}
-	for _, id := range ids {
-		if !set[id] {
-			return false
-		}
-	}
-	return true
 }

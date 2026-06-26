@@ -49,18 +49,6 @@ func loadProductRunOutcome(root, rel string) productRunOutcomeSource {
 	return out
 }
 
-func outcomeEvidenceLinked(ids []string, run productRunOutcomeSource) bool {
-	if run.State != localQARunFresh || len(ids) == 0 {
-		return false
-	}
-	for _, id := range ids {
-		if !acceptedOutcomeStatus(run.ScenarioStatus[id]) {
-			return false
-		}
-	}
-	return true
-}
-
 func acceptedOutcomeStatus(status string) bool {
 	return status == statusPassed || status == "observed"
 }
