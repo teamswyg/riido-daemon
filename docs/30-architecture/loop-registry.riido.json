@@ -610,6 +610,8 @@
         "tools/productloopevidence/main.go",
         "tools/productloopevidence/manifest.go",
         "tools/productloopevidence/meta.go",
+        "tools/productloopevidence/ops_readiness_test.go",
+        "tools/productloopevidence/ops_scenarios_test.go",
         "tools/productloopevidence/partial.go",
         "tools/productloopevidence/partial_age.go",
         "tools/productloopevidence/partial_candidate.go",
@@ -636,11 +638,13 @@
         "tools/productloopevidence/schedule_types.go",
         "tools/productloopevidence/source_types.go",
         "tools/productloopevidence/types.go",
+        ".github/workflows/local-qa-runner.yml",
         ".github/workflows/product-loop-evidence.yml"
       ],
       "docs": [
         "docs/30-architecture/entrypoint-route-map.riido.json",
         "docs/30-architecture/entrypoint-route-map.md",
+        "docs/30-architecture/local-acceptance-coverage.riido.json",
         "docs/30-architecture/product-loop-evidence.riido.json",
         "docs/30-architecture/product-loop-evidence.md",
         "docs/30-architecture/local-qa-daily-trigger.dsl.json",
@@ -656,7 +660,11 @@
         "local_qa_run_evidence_fresh",
         "product_acceptance",
         "partial_reduction",
-        "closed_loop_candidates"
+        "closed_loop_candidates",
+        "client_surface_anomaly_monitoring",
+        "stress_capacity",
+        "scale_chaos",
+        "release_readiness"
       ],
       "verifiers": [
         {
@@ -719,15 +727,43 @@
             "localQARunExpired",
             "localQARunFresh"
           ]
+        },
+        {
+          "name": "product-loop-operational-readiness-test",
+          "file": "tools/productloopevidence/ops_readiness_test.go",
+          "contains": [
+            "TestProductLoopManifestDeclaresOperationalReadinessSignals",
+            "TestLocalAcceptanceManifestNamesOperationalReadinessScenarios",
+            "operationalScenarioIDs"
+          ]
+        },
+        {
+          "name": "product-loop-claim-binding-test",
+          "file": "tools/loopregistry/product_loop_claim_test.go",
+          "contains": [
+            "TestProductLoopClaimBindsOperationalReadinessEvidence",
+            "local-qa-runner-operational-coverage"
+          ]
         }
       ],
       "contracts": [
+        {
+          "name": "local-qa-runner-operational-coverage",
+          "file": ".github/workflows/local-qa-runner.yml",
+          "contains": [
+            "ops.monitoring.client_surface_anomaly",
+            "ops.stress.concurrent_users",
+            "ops.chaos.recovery_packet_surge"
+          ]
+        },
         {
           "name": "product-loop-workflow",
           "file": ".github/workflows/product-loop-evidence.yml",
           "contains": [
             "go run ./tools/localqarunner",
             "local_qa_run_evidence_state",
+            "client_surface_anomaly_monitoring",
+            "stress_capacity",
             "go run ./tools/productloopevidence -check-doc",
             "product-loop-evidence.json"
           ]
@@ -804,6 +840,7 @@
         "tools/loopregistry/changed_problem.go",
         "tools/loopregistry/changed_validate.go",
         "tools/loopregistry/report_types.go",
+        "tools/loopregistry/product_loop_claim_test.go",
         "tools/loopregistry/run.go",
         "tools/loopregistry/slice.go",
         "tools/loopregistry/validate.go",
@@ -844,6 +881,14 @@
           "contains": [
             "TestGitHubAnnotationExplainsClaimEvidence",
             "Update one bound evidence file"
+          ]
+        },
+        {
+          "name": "loop-registry-product-loop-claim-test",
+          "file": "tools/loopregistry/product_loop_claim_test.go",
+          "contains": [
+            "TestProductLoopClaimBindsOperationalReadinessEvidence",
+            "claim missing operational readiness verifier"
           ]
         }
       ]
