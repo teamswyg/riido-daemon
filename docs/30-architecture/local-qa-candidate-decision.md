@@ -15,6 +15,7 @@ Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-d
 - triage-required and deferred decisions must name review_by
 - decision next_artifact must be one of the candidate required_next_artifacts
 - product_loop candidates are verified from product-loop-evidence output instead of local QA run output
+- product_loop decisions without a current candidate are allowed only for generated product-outcome-evidence-* ids or known partial-reduction candidate ids
 
 ## Decisions
 
