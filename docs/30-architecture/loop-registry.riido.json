@@ -472,6 +472,7 @@
         "tools/localqaschedule/run.go",
         "tools/localqaschedule/launchd_inspect.go",
         "tools/localqarunner/schedule_step.go",
+        "tools/localqarunner/schedule_step_args.go",
         "tools/localqadashboard/schedule_evidence.go"
       ],
       "docs": [
@@ -531,6 +532,15 @@
             "TestAppendScheduleProductArgsIncludesTaskFlags",
             "-product-task-id",
             "-product-comment-body"
+          ]
+        },
+        {
+          "name": "runner-creates-no-live-schedule-evidence",
+          "file": "tools/localqarunner/schedule_step_args_test.go",
+          "contains": [
+            "TestScheduleStepArgsCreatesRepoLocalScheduleEvidence",
+            "TestScheduleStepArgsInspectsExistingScheduleEvidence",
+            "schedule-evidence"
           ]
         }
       ]
