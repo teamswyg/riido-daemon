@@ -40,6 +40,57 @@
       "id": "user_visible_failure",
       "description": "A user-facing failure path is captured as product evidence instead of raw provider text.",
       "scenario_ids": ["contract.task.thread_message", "local.qa.evidence_gap_candidates"]
+    },
+    {
+      "id": "client_surface_anomaly_monitoring",
+      "description": "Operational monitoring can separate daemon, desktop, and frontend traffic anomalies with OTel/X-Ray evidence.",
+      "scenario_ids": ["ops.monitoring.client_surface_anomaly"]
+    },
+    {
+      "id": "release_usability_regression",
+      "description": "Real-screen and desktop checks catch copy, agent-name, and task-body-only behavior drift before beta handoff.",
+      "scenario_ids": [
+        "ops.ui.copy_regression",
+        "ops.usability.agent_name_change",
+        "desktop.ui.hello_to_say_world_body_only"
+      ]
+    },
+    {
+      "id": "network_resilience",
+      "description": "Daemon waits, backs off, and recovers during internet loss, full outage, and control-plane recovery surge.",
+      "scenario_ids": [
+        "ops.resilience.internet_disconnect_wait",
+        "ops.chaos.full_outage_daemon_backoff",
+        "ops.chaos.recovery_packet_surge"
+      ]
+    },
+    {
+      "id": "stress_capacity",
+      "description": "Stress evidence records concurrent users, one-PC agent capacity, and cold-start packet burst limits.",
+      "scenario_ids": [
+        "ops.stress.concurrent_users",
+        "ops.stress.single_pc_agent_capacity",
+        "ops.stress.boot_packet_burst"
+      ]
+    },
+    {
+      "id": "scale_chaos",
+      "description": "Chaos evidence records restart recovery, scale-out behavior, and scale-out readiness duration.",
+      "scenario_ids": [
+        "ops.chaos.control_plane_restart_recovery",
+        "ops.chaos.scale_out_rebalance",
+        "ops.chaos.scale_out_duration"
+      ]
+    },
+    {
+      "id": "release_readiness",
+      "description": "Release evidence proves backend and daemon readiness, fresh install, latest assets, and temporary scenario gates.",
+      "scenario_ids": [
+        "release.backend_daemon_ready",
+        "release.fresh.install",
+        "release.github.latest_assets",
+        "ops.scenario.exception_equals_weekend_open"
+      ]
     }
   ],
   "loop": {

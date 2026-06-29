@@ -106,6 +106,9 @@ jobs:
           grep -q "contract.ui.i18n_dsl" out/local-qa-coverage.json
           grep -q "local.qa.dsl_system_audit" out/local-qa-coverage.json
           grep -q "domain.fixture.thread" out/local-qa-coverage.json
+          grep -q "ops.monitoring.client_surface_anomaly" out/local-qa-coverage.json
+          grep -q "ops.stress.concurrent_users" out/local-qa-coverage.json
+          grep -q "ops.chaos.recovery_packet_surge" out/local-qa-coverage.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:

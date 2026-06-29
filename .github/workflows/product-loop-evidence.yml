@@ -53,6 +53,10 @@ jobs:
           test -s .riido-local/evidence/local-qa-run.json
           go run ./tools/productloopevidence -check-doc -evidence-out out/product-loop-evidence.json
           grep -q '"local_qa_run_evidence_state": "fresh"' out/product-loop-evidence.json
+          grep -q "client_surface_anomaly_monitoring" out/product-loop-evidence.json
+          grep -q "stress_capacity" out/product-loop-evidence.json
+          grep -q "scale_chaos" out/product-loop-evidence.json
+          grep -q "release_readiness" out/product-loop-evidence.json
           go run ./tools/localqacandidatedecision -candidate-in out/product-loop-evidence.json -candidate-scope product_loop -check-doc -evidence-out out/product-loop-candidate-decision.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
