@@ -3,12 +3,14 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"os"
 	"os/exec"
 )
 
 func loadPackages(repo string) (map[string]packageInfo, []checkResult) {
 	cmd := exec.Command("go", "list", "-json", "./...")
 	cmd.Dir = repo
+	cmd.Env = append(os.Environ(), "GOFLAGS=-buildvcs=false")
 	out, err := cmd.Output()
 	if err != nil {
 		return nil, []checkResult{{Name: "go-list", Pass: false, Detail: err.Error()}}

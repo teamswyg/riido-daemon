@@ -10,7 +10,8 @@ type localRunEvidence struct {
 	ProviderStatus string                  `json:"provider_status,omitempty"`
 	DeploymentGate localRunDeploymentGate  `json:"deployment_gate"`
 	OpenRepairs    []repairEvidence        `json:"open_repairs,omitempty"`
-	ClosedLoops    []localRunLoopCandidate `json:"closed_loop_candidates,omitempty"`
+	ClosedLoops    []localRunLoopCandidate `json:"product_closed_loop_candidates,omitempty"`
+	Candidates     []closedLoopCandidate   `json:"closed_loop_candidates,omitempty"`
 	Steps          []localRunStep          `json:"steps"`
 }
 

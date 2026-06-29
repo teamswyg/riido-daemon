@@ -1,0 +1,37 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "local-qa-daily-trigger",
+  "owner": "tools/localqaschedule, localqarunner, and local QA dashboard",
+  "observation": {
+    "summary": "Local QA evidence had daily scheduling and expires_at wording, but the dashboard and semantic binding could not prove that expired evidence is refreshed instead of merely displayed as stale.",
+    "artifacts": ["docs/30-architecture/local-qa-daily-trigger.dsl.json"]
+  },
+  "hypothesis": {
+    "summary": "A schedule evidence field for expired-evidence refresh, plus dashboard coverage and semantic binding peers, can make the daily QA loop fail when freshness ownership drifts.",
+    "artifacts": ["tools/localqaschedule/evidence_test.go", "tools/localqadashboard/schedule_evidence_freshness_test.go"]
+  },
+  "execution": {
+    "summary": "Emit refreshes_expired_evidence in schedule evidence, read freshness fields in the dashboard, and expose local.qa.daily_freshness as a coverage scenario.",
+    "artifacts": ["tools/localqaschedule/trigger.go", "tools/localqadashboard/schedule_evidence.go", "docs/30-architecture/local-acceptance-coverage.riido.json"]
+  },
+  "evaluation": {
+    "summary": "Unit tests and local-qa-runner CI verify the generated schedule evidence, freshness failure mode, coverage row, and workflow grep evidence.",
+    "artifacts": ["tools/localqadashboard/schedule_evidence_freshness_test.go", ".github/workflows/local-qa-runner.yml"]
+  },
+  "retrospective": {
+    "summary": "Expired evidence now has an owner loop: daily schedule evidence must prove it refreshes stale rows, and semantic binding blocks one-sided changes to that claim.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go test ./tools/localqaschedule ./tools/localqadashboard -count=1",
+      "proves": "schedule evidence and dashboard freshness coverage are tested together"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/local-qa-runner.yml",
+      "proves": "public CI preserves refreshes_expired_evidence and local.qa.daily_freshness artifacts"
+    }
+  ]
+}

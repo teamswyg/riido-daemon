@@ -8,12 +8,12 @@ import (
 
 func TestScheduleEvidenceScenariosAcceptsActiveLaunchdRun(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "schedule.json")
-	body := `{"status":"passed","installed":true,"s3_prefix_configured":true,"coverage_evidence":"coverage.json","trigger":{"id":"daily-evidence-sweep"},"launchd":{"checked":true,"loaded":true,"state":"running","calendar_trigger":true,"runs":1,"last_exit_code":"(never exited)"}}`
+	body := `{"status":"passed","installed":true,"s3_prefix_configured":true,"coverage_evidence":"coverage.json","trigger":{"id":"daily-evidence-sweep","freshness_window":"24h","closed_loop":"expose stale rows after expires_at","refreshes_expired_evidence":true,"evidence":["coverage.json"]},"launchd":{"checked":true,"loaded":true,"state":"running","calendar_trigger":true,"runs":1,"last_exit_code":"(never exited)"}}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	got := scheduleEvidenceScenarios(path)
-	if len(got) != 2 || got[0].Status != statusPassed {
+	if len(got) != 3 || got[0].Status != statusPassed || got[2].Status != statusPassed {
 		t.Fatalf("scenarios=%+v", got)
 	}
 }
@@ -25,7 +25,7 @@ func TestScheduleEvidenceScenariosRequiresCoverageEvidencePath(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := scheduleEvidenceScenarios(path)
-	if len(got) != 2 || got[0].Status != statusFailed {
+	if len(got) != 3 || got[0].Status != statusFailed {
 		t.Fatalf("scenarios=%+v", got)
 	}
 }

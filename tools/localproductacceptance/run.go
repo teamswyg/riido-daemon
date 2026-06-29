@@ -58,6 +58,7 @@ func buildScenarios(clientRoot string, cfg config, observed time.Time) []scenari
 	out = append(out, browserMeaningScenario())
 	out = append(out, desktopDaemonLifecycleScenario())
 	out = append(out, qaSystemScenario())
+	out = append(out, closedLoopMaturityScenario())
 	out = append(out, evidenceGapScenario(out, cfg))
 	out = append(out, contractUIScenario(*cfg.labOut, *cfg.manualOut))
 	return out

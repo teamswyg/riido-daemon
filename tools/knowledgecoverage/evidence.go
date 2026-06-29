@@ -46,6 +46,7 @@ func buildEvidence(root string, m manifest, docs []docClass, problems []string) 
 		ManifestMissingLoopGroups:  loops.MissingGroups,
 		ManifestMissingLoopSamples: loops.MissingSamples,
 		ManifestLoopBudget:         m.ManifestLoopBudget,
+		LoopRegistry:               summarizeLoopRegistry(m.LoopRegistry),
 		ProblemCount:               len(problems),
 		ProblemSummaries:           problems,
 		EvidenceArtifact:           m.EvidenceArtifact,

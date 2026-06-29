@@ -13,6 +13,7 @@ func run(cfg config) (string, error) {
 	}
 	start := time.Now().UTC()
 	evidence := newEvidence(cfg, start)
+	evidence.PreviousCandidates = loadPreviousCandidates(runEvidenceAbs(root, cfg))
 	providerStatus := runProviderStep(root, cfg, &evidence)
 	if providerStatus == statusFailed && !*cfg.continueOnFailure {
 		return finishRun(root, cfg, evidence)
@@ -43,31 +44,12 @@ func run(cfg config) (string, error) {
 	if *cfg.s3Prefix != "" {
 		return runS3Phase(root, cfg, evidence)
 	}
-	return finishRun(root, cfg, evidence)
-}
-
-func newEvidence(cfg config, observed time.Time) runEvidence {
-	expires := observed.Add(*cfg.validFor)
-	return runEvidence{
-		SchemaVersion:  "riido-local-qa-run-result.v1",
-		ID:             "local-qa-run",
-		ObservedAt:     observed.Format(time.RFC3339),
-		ExpiresAt:      expires.Format(time.RFC3339),
-		Status:         statusPassed,
-		CoverageStatus: statusPassed,
-		StrictCoverage: boolValue(cfg.strictCoverage),
-		Artifacts: runArtifacts{
-			ProviderEvidence: *cfg.providerEvidence,
-			ProductEvidence:  *cfg.productEvidence,
-			ReleaseEvidence:  *cfg.releaseEvidence,
-			CoverageEvidence: *cfg.coverageEvidence,
-			ManualEvidence:   *cfg.manualEvidence,
-			DomainCache:      *cfg.domainCache,
-			ProductLab:       *cfg.productLab,
-			ScheduleEvidence: *cfg.scheduleEvidence,
-			InfraEvidence:    *cfg.infraEvidence,
-			DashboardHTML:    *cfg.dashboardHTML,
-			S3Prefix:         *cfg.s3Prefix,
-		},
+	if _, err := finishRun(root, cfg, evidence); err != nil {
+		return statusFailed, err
 	}
+	runFinalDashboardStep(root, cfg, &evidence)
+	if err := applyCoverageEvidence(root, cfg, &evidence); err != nil {
+		return statusFailed, err
+	}
+	return finishRun(root, cfg, evidence)
 }

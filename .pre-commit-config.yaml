@@ -3,7 +3,12 @@ repos:
     hooks:
       - id: qa-dsl-generate
         name: qa-dsl-generate
-        entry: bash -c 'go generate ./tools/localproductacceptance && git add tools/localproductacceptance/*.generated.json'
+        entry: bash -c 'go generate ./tools/localproductacceptance && git --git-dir=.git --work-tree=. add tools/localproductacceptance/*.generated.json'
+        language: system
+        pass_filenames: false
+      - id: semantic-change-binding
+        name: semantic-change-binding
+        entry: go run ./tools/semanticchangebinding
         language: system
         pass_filenames: false
       - id: loop-registry
@@ -13,7 +18,7 @@ repos:
         pass_filenames: false
       - id: provider-model-live-evidence
         name: provider-model-live-evidence
-        entry: bash -c 'go run ./tools/providermodelcatalog -out cmd/riido/provider_model_catalog.generated.json && git add cmd/riido/provider_model_catalog.generated.json && RIIDO_PROVIDER_MODEL_LIVE=1 go test ./cmd/riido -run TestProviderRuntimeModelsLiveEvidence -count=1'
+        entry: bash -c 'go run ./tools/providermodelcatalog -out cmd/riido/provider_model_catalog.generated.json && git --git-dir=.git --work-tree=. add cmd/riido/provider_model_catalog.generated.json && RIIDO_PROVIDER_MODEL_LIVE=1 go test ./cmd/riido -run TestProviderRuntimeModelsLiveEvidence -count=1'
         language: system
         pass_filenames: false
   - repo: https://github.com/tekwizely/pre-commit-golang

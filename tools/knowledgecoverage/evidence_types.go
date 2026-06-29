@@ -25,6 +25,7 @@ type evidence struct {
 	ManifestMissingLoopGroups  []manifestGroupCount            `json:"manifest_missing_loop_groups"`
 	ManifestMissingLoopSamples []manifestGroupSample           `json:"manifest_missing_loop_samples"`
 	ManifestLoopBudget         manifestLoopBudget              `json:"manifest_loop_budget"`
+	LoopRegistry               loopRegistrySummary             `json:"loop_registry"`
 	ProblemCount               int                             `json:"problem_count"`
 	ProblemSummaries           []string                        `json:"problem_summaries"`
 	EvidenceArtifact           string                          `json:"evidence_artifact"`

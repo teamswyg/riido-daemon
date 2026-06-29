@@ -1,0 +1,45 @@
+{
+  "schema_version": "riido-semantic-change-bindings.v1",
+  "id": "semantic-change-bindings",
+  "title": "Semantic Change Bindings",
+  "loop_source": "docs/30-architecture/loop-engineering/semantic-change-binding.riido.json",
+  "bindings": [
+    {
+      "id": "closed-loop-maturity",
+      "claim": "Closed-loop maturity evidence keeps its DSL, local QA runner, generated evidence, workflow, tests, and loop-engineering graph aligned.",
+      "triggers": ["docs/30-architecture/closed-loop-maturity.dsl.json", "tools/localproductacceptance/closed_loop_maturity.go", "tools/localproductacceptance/closed_loop_maturity_counts.go", "tools/localproductacceptance/closed_loop_maturity_product.go", "tools/localproductacceptance/closed_loop_maturity_types.go", "tools/localproductacceptance/closed_loop_maturity_walk.go"],
+      "required_with_triggers": ["tools/localproductacceptance/closed_loop_maturity_test.go", "tools/localproductacceptance/closed_loop_maturity.generated.json", ".github/workflows/local-qa-runner.yml", "docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json"],
+      "generated_docs": ["docs/30-architecture/loop-engineering.md", "docs/executable-knowledge.md", "docs/30-architecture/executable-knowledge.md"],
+      "verifiers": ["go test ./tools/localproductacceptance", "go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json"],
+      "evidence_ids": ["local.qa.closed_loop_maturity", "loop-engineering.closed-loop-maturity"]
+    },
+    {
+      "id": "taskdb-lease-fencing-claim",
+      "claim": "Task DB runtime lease reports must carry and verify lease id, fencing token, and capability fingerprint before report-side state changes are accepted.",
+      "claim_class": "business",
+      "triggers": ["docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json", "internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go", "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go", "internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go", "internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go"],
+      "required_with_triggers": ["docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json", "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md", "internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go", "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go", "internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go", "internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go", ".github/workflows/local-daemon-contract-evidence.yml"],
+      "generated_docs": ["docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md"],
+      "verifiers": ["go test ./internal/agentbridge/controlplane/taskdbplane", "go run ./tools/localdaemoncontract -check-doc -evidence-out /tmp/local-daemon-contract-evidence.json"],
+      "evidence_ids": ["local-daemon-contract-evidence", "taskdb.lease-fencing"]
+    },
+    {
+      "id": "local-qa-candidate-evidence-graph",
+      "claim": "Local QA closed-loop candidates must keep their evidence graph generator, dashboard read model, tests, workflow checks, and loop-engineering claim aligned.",
+      "triggers": ["docs/30-architecture/local-qa-closed-loop-promotions.dsl.json", "tools/localqarunner/closed_loop_candidate_graph.go", "tools/localqarunner/closed_loop_candidate_types.go", "tools/localqarunner/closed_loop_promotion_apply.go", "tools/localqarunner/closed_loop_promotion_load.go", "tools/localqarunner/closed_loop_promotion_types.go", "tools/localqadashboard/run_candidate.go", "docs/30-architecture/loop-engineering/local-qa-closed-loop-candidates.riido.json"],
+      "required_with_triggers": ["docs/30-architecture/local-qa-closed-loop-promotions.dsl.json", "tools/localqarunner/closed_loop_candidate_graph.go", "tools/localqarunner/closed_loop_candidate_types.go", "tools/localqarunner/closed_loop_candidate_test.go", "tools/localqarunner/closed_loop_candidate_promotion_test.go", "tools/localqarunner/closed_loop_promotion_apply.go", "tools/localqarunner/closed_loop_promotion_load.go", "tools/localqarunner/closed_loop_promotion_test.go", "tools/localqarunner/closed_loop_promotion_types.go", "tools/localqadashboard/run_candidate.go", "tools/localqadashboard/run_evidence_test.go", "tools/localqadashboard/render_candidate_fixture_test.go", "tools/localqadashboard/render_expectation_test.go", "tools/localqadashboard/render_run_fixture_test.go", ".github/workflows/local-qa-runner.yml", "docs/30-architecture/loop-engineering/local-qa-closed-loop-candidates.riido.json"],
+      "generated_docs": ["docs/30-architecture/loop-engineering.md"],
+      "verifiers": ["go test ./tools/localqarunner ./tools/localqadashboard", "go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json"],
+      "evidence_ids": ["local-qa-runner.closed_loop_candidates.evidence_graph", "loop-engineering.local-qa-closed-loop-candidates"]
+    },
+    {
+      "id": "local-qa-daily-trigger-freshness",
+      "claim": "Local QA daily trigger changes must keep expired-evidence refresh semantics aligned across the trigger DSL, schedule evidence writer, dashboard coverage, tests, workflow checks, and loop-engineering claim.",
+      "triggers": ["docs/30-architecture/local-qa-daily-trigger.dsl.json", "tools/localqaschedule/trigger.go", "tools/localqaschedule/evidence_types.go", "tools/localqadashboard/schedule_evidence.go", "tools/localqadashboard/schedule_evidence_checks.go", "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json"],
+      "required_with_triggers": ["docs/30-architecture/local-qa-daily-trigger.dsl.json", "tools/localqaschedule/evidence_types.go", "tools/localqaschedule/evidence_test.go", "tools/localqaschedule/trigger.go", "tools/localqadashboard/schedule_evidence.go", "tools/localqadashboard/schedule_evidence_checks.go", "tools/localqadashboard/schedule_evidence_types.go", "tools/localqadashboard/schedule_evidence_freshness_test.go", "docs/30-architecture/local-acceptance-coverage.riido.json", "docs/30-architecture/executable-knowledge.riido.json", "docs/30-architecture/executable-knowledge.md", ".github/workflows/local-qa-runner.yml", "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json"],
+      "generated_docs": ["docs/30-architecture/loop-engineering.md", "docs/30-architecture/executable-knowledge.md", "tools/localproductacceptance/local_qa_daily_trigger.generated.json", "tools/localproductacceptance/local_acceptance_coverage.generated.json"],
+      "verifiers": ["go test ./tools/localqaschedule ./tools/localqadashboard", "go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json"],
+      "evidence_ids": ["local.qa.daily_freshness", "loop-engineering.local-qa-daily-trigger"]
+    }
+  ]
+}

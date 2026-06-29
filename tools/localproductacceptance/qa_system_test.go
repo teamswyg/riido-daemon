@@ -37,7 +37,7 @@ func TestQASystemScenarioAuditsChangeDetection(t *testing.T) {
 	if got.ID != "local.qa.dsl_system_audit" || got.Status != statusPassed {
 		t.Fatalf("QA system audit failed: %+v", got)
 	}
-	if got.Observed["search_entries"] != 5 {
+	if got.Observed["search_entries"] != 6 {
 		t.Fatalf("unexpected QA system audit evidence: %+v", got.Observed)
 	}
 	inference, ok := got.Observed["inference_removed"].(map[string]any)
@@ -48,11 +48,11 @@ func TestQASystemScenarioAuditsChangeDetection(t *testing.T) {
 		t.Fatalf("remaining source-only DSL count = %+v", inference)
 	}
 	checks, ok := got.Observed["change_detection"].([]map[string]any)
-	if !ok || len(checks) < 5 {
+	if !ok || len(checks) < 6 {
 		t.Fatalf("change detection evidence missing: %+v", got.Observed["change_detection"])
 	}
 	generated, ok := got.Observed["generated_checks"].([]map[string]any)
-	if !ok || len(generated) != 5 {
+	if !ok || len(generated) != 6 {
 		t.Fatalf("generated freshness evidence missing: %+v", got.Observed["generated_checks"])
 	}
 	for _, check := range generated {

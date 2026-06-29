@@ -10,14 +10,15 @@ const (
 
 func dailyTriggerEvidence(cfg config) triggerEvidence {
 	return triggerEvidence{
-		ID:              dailyEvidenceSweepID,
-		Name:            dailyEvidenceSweepName,
-		CommonName:      dailyEvidenceSweepCommonName,
-		Cadence:         "daily",
-		TimeLocal:       fmt.Sprintf("%02d:%02d", *cfg.hour, *cfg.minute),
-		EntryPoint:      "go run ./tools/localqarunner",
-		FreshnessWindow: "24h by default; localqarunner -valid-for can override it",
-		ClosedLoop:      "run probes, write evidence, render the dashboard, publish latest/timestamped artifacts, and expose stale rows after expires_at",
+		ID:                       dailyEvidenceSweepID,
+		Name:                     dailyEvidenceSweepName,
+		CommonName:               dailyEvidenceSweepCommonName,
+		Cadence:                  "daily",
+		TimeLocal:                fmt.Sprintf("%02d:%02d", *cfg.hour, *cfg.minute),
+		EntryPoint:               "go run ./tools/localqarunner",
+		FreshnessWindow:          "24h by default; localqarunner -valid-for can override it",
+		ClosedLoop:               "run probes, write evidence, render the dashboard, publish latest/timestamped artifacts, and expose stale rows after expires_at",
+		RefreshesExpiredEvidence: true,
 		Evidence: []string{
 			*cfg.productEvidence,
 			*cfg.coverageEvidence,

@@ -104,7 +104,7 @@ Daily local QA scheduling must be an executable LaunchAgent loop that runs the l
 - Files: `tools/localqaschedule/evidence.go`, `tools/localqaschedule/evidence_types.go`, `tools/localqaschedule/trigger.go`, `tools/localqaschedule/shell.go`, `tools/localqaschedule/plist.go`, `tools/localqaschedule/plist_more.go`, `tools/localqaschedule/run.go`, `tools/localqaschedule/launchd_inspect.go`, `tools/localqarunner/schedule_step.go`, `tools/localqarunner/schedule_step_args.go`, `tools/localqadashboard/schedule_evidence.go`
 - Docs: `docs/30-architecture/local-qa-daily-trigger.dsl.json`, `docs/readme/local-acceptance.riido.json`, `docs/readme/local-acceptance.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `local-qa-schedule`, `local.qa.daily_schedule`, `local.qa.daily_trigger`, `daily-evidence-sweep`, `coverage_evidence`
-- Verifiers: `schedule-evidence-writes-coverage-and-redacts-token`, `schedule-plist-runs-local-qa-daily`, `dashboard-requires-live-schedule-evidence`, `dashboard-accepts-active-launchd-run`, `runner-refreshes-schedule-inspect-args`, `runner-creates-no-live-schedule-evidence`
+- Verifiers: `schedule-evidence-writes-coverage-and-redacts-token`, `schedule-plist-runs-local-qa-daily`, `dashboard-requires-live-schedule-evidence`, `dashboard-accepts-active-launchd-run`, `runner-refreshes-schedule-inspect-args`, `runner-creates-no-live-schedule-evidence`, `dashboard-includes-schedule-install-detail`
 
 ### qa_system_inference_must_not_pass_as_green
 

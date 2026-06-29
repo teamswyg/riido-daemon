@@ -6,10 +6,20 @@ type candidateEvidence struct {
 
 type closedLoopCandidate struct {
 	ID                    string                  `json:"id"`
+	Source                string                  `json:"source,omitempty"`
+	Trigger               string                  `json:"trigger,omitempty"`
+	Status                string                  `json:"status,omitempty"`
 	Class                 string                  `json:"class"`
 	Reason                string                  `json:"reason"`
+	Summary               string                  `json:"summary,omitempty"`
+	Evidence              string                  `json:"evidence,omitempty"`
+	NextAction            string                  `json:"next_action,omitempty"`
 	NextEvidence          string                  `json:"next_evidence"`
 	RequiredNextArtifacts []string                `json:"required_next_artifacts"`
+	Promoted              bool                    `json:"promoted,omitempty"`
+	Stale                 bool                    `json:"stale,omitempty"`
+	AgeHours              int                     `json:"age_hours,omitempty"`
+	StaleAt               string                  `json:"stale_at,omitempty"`
 	Graph                 closedLoopEvidenceGraph `json:"evidence_graph"`
 }
 

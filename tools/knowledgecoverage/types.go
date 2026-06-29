@@ -1,18 +1,19 @@
 package main
 
 type manifest struct {
-	SchemaVersion      string             `json:"schema_version"`
-	ID                 string             `json:"id"`
-	Title              string             `json:"title"`
-	GeneratedDoc       string             `json:"generated_doc"`
-	Workflow           string             `json:"workflow"`
-	EvidenceArtifact   string             `json:"evidence_artifact"`
-	ScanRoots          []string           `json:"scan_roots"`
-	ScanFiles          []string           `json:"scan_files"`
-	ManualGroups       []manualGroup      `json:"manual_groups"`
-	ManifestLoopBudget manifestLoopBudget `json:"manifest_loop_budget"`
-	Assertions         []string           `json:"assertions"`
-	Loop               evidenceLoop       `json:"loop"`
+	SchemaVersion      string              `json:"schema_version"`
+	ID                 string              `json:"id"`
+	Title              string              `json:"title"`
+	GeneratedDoc       string              `json:"generated_doc"`
+	Workflow           string              `json:"workflow"`
+	EvidenceArtifact   string              `json:"evidence_artifact"`
+	ScanRoots          []string            `json:"scan_roots"`
+	ScanFiles          []string            `json:"scan_files"`
+	ManualGroups       []manualGroup       `json:"manual_groups"`
+	ManifestLoopBudget manifestLoopBudget  `json:"manifest_loop_budget"`
+	LoopRegistry       []loopRegistryEntry `json:"loop_registry"`
+	Assertions         []string            `json:"assertions"`
+	Loop               evidenceLoop        `json:"loop"`
 }
 
 type manualGroup struct {
@@ -54,22 +55,4 @@ type manualSample struct {
 	Group  string `json:"group"`
 	Path   string `json:"path"`
 	Reason string `json:"reason"`
-}
-
-type generatedOrigin struct {
-	Generator string   `json:"generator"`
-	Count     int      `json:"count"`
-	Samples   []string `json:"samples"`
-}
-
-type generatedOriginWorkflowCoverage struct {
-	CoveredCount int                           `json:"covered_count"`
-	MissingCount int                           `json:"missing_count"`
-	Missing      []generatedOriginWorkflowMiss `json:"missing"`
-}
-
-type generatedOriginWorkflowMiss struct {
-	Generator string `json:"generator"`
-	Tool      string `json:"tool"`
-	Count     int    `json:"count"`
 }

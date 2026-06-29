@@ -21,6 +21,7 @@ func renderDoc(root string, m manifest, docs []docClass, problems []string) stri
 	renderGeneratedWorkflowCoverage(&b, e.GeneratedWorkflowCoverage)
 	renderManifestInventory(&b, e.ManifestInventory)
 	renderManifestLoopInventory(&b, e)
+	renderLoopRegistry(&b, m.LoopRegistry)
 	b.WriteString("## Registered Manual Surfaces\n\n")
 	byGroup := e.ManualByGroup
 	if len(m.ManualGroups) == 0 {

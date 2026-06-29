@@ -26,6 +26,50 @@ func TestCandidateDecisionRejectsMissingDecision(t *testing.T) {
 	}
 }
 
+func TestCandidateDecisionAllowsFreshGeneratedCandidate(t *testing.T) {
+	dir := t.TempDir()
+	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
+		`{"id":"coverage.fresh","status":"candidate",`+
+		testEvidenceGraphJSON()+`}]}`)
+	m := testManifest()
+	m.Decisions = nil
+	result, err := verifyCandidateDecisions(".", m, path, "")
+	if err != nil {
+		t.Fatalf("verify generated candidate: %v", err)
+	}
+	if result.AllowedMissingCount != 1 || result.MatchedDecisionCount != 0 {
+		t.Fatalf("result = %+v", result)
+	}
+}
+
+func TestCandidateDecisionRejectsStaleGeneratedCandidate(t *testing.T) {
+	dir := t.TempDir()
+	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
+		`{"id":"coverage.stale","status":"stale","stale":true,`+
+		testEvidenceGraphJSON()+`}]}`)
+	m := testManifest()
+	m.Decisions = nil
+	if _, err := verifyCandidateDecisions(".", m, path, ""); err == nil {
+		t.Fatal("expected stale generated candidate to require a decision")
+	}
+}
+
+func TestCandidateDecisionAcceptsEmbeddedPromotionDecision(t *testing.T) {
+	dir := t.TempDir()
+	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+
+		`{"id":"coverage.promoted","status":"promoted","promoted":true,`+
+		testEvidenceGraphJSON()+`}]}`)
+	m := testManifest()
+	m.Decisions = nil
+	result, err := verifyCandidateDecisions(".", m, path, "")
+	if err != nil {
+		t.Fatalf("verify embedded promotion: %v", err)
+	}
+	if result.MatchedDecisionCount != 1 || result.DecisionArtifacts[0].CandidateID != "coverage.promoted" {
+		t.Fatalf("result = %+v", result)
+	}
+}
+
 func TestCandidateDecisionRejectsMissingEvidenceGraph(t *testing.T) {
 	dir := t.TempDir()
 	path := writeCandidate(t, dir, `{"closed_loop_candidates":[`+

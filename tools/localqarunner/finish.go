@@ -10,9 +10,11 @@ func appendStep(evidence *runEvidence, step stepEvidence) {
 }
 
 func finishRun(root string, cfg config, evidence runEvidence) (string, error) {
+	path := runEvidenceAbs(root, cfg)
+	promotions := loadClosedLoopPromotions(outputPath(root, *cfg.promotionManifest))
+	evidence = applyClosedLoopCandidates(evidence, evidence.PreviousCandidates, promotions)
 	evidence = applyDeploymentGate(evidence)
 	evidence = applyStrictCoverage(evidence)
-	path := runEvidenceAbs(root, cfg)
 	if err := writeJSON(path, evidence); err != nil {
 		return statusFailed, fmt.Errorf("write run evidence: %w", err)
 	}

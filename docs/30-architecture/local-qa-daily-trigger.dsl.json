@@ -8,6 +8,7 @@
   "default_time": "09:00",
   "entrypoint": "go run ./tools/localqarunner",
   "freshness_window": "24h",
+  "refreshes_expired_evidence": true,
   "evidence": [
     ".riido-local/evidence/ai-agent-product-acceptance.json",
     ".riido-local/evidence/local-qa-coverage.json",

@@ -13,6 +13,8 @@ on:
       - "internal/agentbridge/supervisor/**"
       - "internal/agentbridge/controlplane/taskdbplane/**"
       - "tools/localdaemoncontract/**"
+      - "tools/semanticchangebinding/**"
+      - "docs/30-architecture/semantic-change-bindings.riido.json"
       - "go.mod"
       - "go.sum"
 
@@ -28,6 +30,16 @@ jobs:
       - name: Verify local daemon contract evidence
         run: |
           mkdir -p out
+          go test ./tools/semanticchangebinding -count=1
+          if go run ./tools/semanticchangebinding \
+            -changed-files internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go \
+            -evidence-out out/taskdb-lease-fencing-negative.json; then
+            echo "negative business claim binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json,docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md,internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go,internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go,internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go,internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go,.github/workflows/local-daemon-contract-evidence.yml \
+            -evidence-out out/taskdb-lease-fencing-binding.json
           go test ./tools/localdaemoncontract -count=1
           go run ./tools/localdaemoncontract \
             -check-doc \
@@ -36,5 +48,5 @@ jobs:
         if: always()
         with:
           name: local-daemon-contract-evidence
-          path: out/local-daemon-contract-evidence.json
+          path: out/*
           if-no-files-found: error

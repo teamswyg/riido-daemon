@@ -527,11 +527,10 @@
         },
         {
           "name": "dashboard-requires-live-schedule-evidence",
-          "file": "tools/localqadashboard/schedule_evidence_test.go",
+          "file": "tools/localqadashboard/schedule_evidence_failure_test.go",
           "contains": [
             "TestScheduleEvidenceScenariosRequiresLaunchdLiveState",
-            "TestScheduleEvidenceScenariosRequiresSuccessfulLaunchdRun",
-            "TestScheduleEvidenceScenariosIncludesInstallDetail"
+            "TestScheduleEvidenceScenariosRequiresSuccessfulLaunchdRun"
           ]
         },
         {
@@ -558,6 +557,13 @@
             "TestScheduleStepArgsCreatesRepoLocalScheduleEvidence",
             "TestScheduleStepArgsInspectsExistingScheduleEvidence",
             "schedule-evidence"
+          ]
+        },
+        {
+          "name": "dashboard-includes-schedule-install-detail",
+          "file": "tools/localqadashboard/schedule_evidence_test.go",
+          "contains": [
+            "TestScheduleEvidenceScenariosIncludesInstallDetail"
           ]
         }
       ]

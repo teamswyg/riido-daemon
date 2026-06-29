@@ -8,8 +8,10 @@ on:
       - "docs/30-architecture/figma-ai-agent-daemon-boundary/feature-ui.dsl.json"
       - "docs/30-architecture/qa-i18n.dsl.json"
       - "docs/30-architecture/qa-system.dsl.json"
+      - "docs/30-architecture/closed-loop-maturity.dsl.json"
       - "docs/30-architecture/domain-fixture-journey.dsl.json"
       - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
+      - "docs/30-architecture/local-qa-closed-loop-promotions.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
       - "docs/30-architecture/local-qa-candidate-decision.riido.json"
       - "docs/30-architecture/local-qa-candidate-decision.md"
@@ -69,6 +71,10 @@ jobs:
           grep -q "closed_loop_candidates" out/ai-agent-product-acceptance.json
           grep -q "local.qa.evidence_gap_candidates" out/ai-agent-product-acceptance.json
           grep -q "domain.fixture_journey" out/ai-agent-product-acceptance.json
+          grep -q "local.qa.closed_loop_maturity" out/ai-agent-product-acceptance.json
+          grep -q "meta_complexity" out/ai-agent-product-acceptance.json
+          grep -q "product_acceptance" out/ai-agent-product-acceptance.json
+          grep -q "partial_reduction" out/ai-agent-product-acceptance.json
           go run ./tools/localreleaseacceptance \
             -evidence-out out/local-release-acceptance.json
           go run ./tools/localqarunner \
@@ -82,6 +88,13 @@ jobs:
             -dashboard out/index.html \
             -evidence-out out/local-qa-run.json
           grep -q "closed_loop_candidates" out/local-qa-run.json
+          grep -q "closed_loop_candidate_summary" out/local-qa-run.json
+          grep -q "first_observed_at" out/local-qa-run.json
+          grep -q "stale_after_hours" out/local-qa-run.json
+          grep -q "evidence_graph" out/local-qa-run.json
+          grep -q "next_loop" out/local-qa-run.json
+          grep -q "promoted_to_closed_loop" out/local-qa-run.json
+          grep -q "coverage.local-qa-daily-freshness" out/local-qa-run.json
           go run ./tools/localqacandidatedecision \
             -candidate-in out/local-qa-run.json \
             -check-doc \
@@ -93,6 +106,7 @@ jobs:
             -s3-prefix s3://example-local-qa-evidence/daily \
             -evidence-out out/local-qa-schedule.json
           grep -q "daily-evidence-sweep" out/local-qa-schedule.json
+          grep -q "refreshes_expired_evidence" out/local-qa-schedule.json
           go run ./tools/localqadashboard \
             -provider-evidence out/provider-real-cli-observation.json \
             -product-evidence out/ai-agent-product-acceptance.json \
@@ -103,9 +117,14 @@ jobs:
             -out out/index.html \
             -coverage-out out/local-qa-coverage.json
           grep -q "local.qa.daily_trigger" out/local-qa-coverage.json
+          grep -q "local.qa.daily_freshness" out/local-qa-coverage.json
           grep -q "contract.ui.i18n_dsl" out/local-qa-coverage.json
           grep -q "local.qa.dsl_system_audit" out/local-qa-coverage.json
+          grep -q "local.qa.closed_loop_maturity" out/local-qa-coverage.json
           grep -q "domain.fixture.thread" out/local-qa-coverage.json
+          grep -q "Closed-Loop Candidates" out/index.html
+          grep -q "closed-loop." out/index.html
+          grep -q "stale " out/index.html
           grep -q "ops.monitoring.client_surface_anomaly" out/local-qa-coverage.json
           grep -q "ops.stress.concurrent_users" out/local-qa-coverage.json
           grep -q "ops.chaos.recovery_packet_surge" out/local-qa-coverage.json

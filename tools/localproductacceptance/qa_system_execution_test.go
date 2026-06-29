@@ -8,7 +8,7 @@ func TestQASystemExecutionInventoryCounts(t *testing.T) {
 	if !ok {
 		t.Fatalf("execution counts missing: %+v", got.Observed["execution_counts"])
 	}
-	if counts["system_automated_count"] != 11 || counts["inference_required_count"] != 0 || counts["total"] != 11 {
+	if counts["system_automated_count"] != 12 || counts["inference_required_count"] != 0 || counts["total"] != 12 {
 		t.Fatalf("unexpected execution counts: %+v", counts)
 	}
 	ids, ok := counts["inference_required_ids"].([]string)
@@ -19,7 +19,7 @@ func TestQASystemExecutionInventoryCounts(t *testing.T) {
 	if !ok || inference["all_execution_automated"] != true {
 		t.Fatalf("execution automation state missing: %+v", got.Observed["inference_removed"])
 	}
-	if inference["system_automated_count"] != 11 || inference["inference_required_count"] != 0 {
+	if inference["system_automated_count"] != 12 || inference["inference_required_count"] != 0 {
 		t.Fatalf("execution counts not surfaced in inference audit: %+v", inference)
 	}
 }

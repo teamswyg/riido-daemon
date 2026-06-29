@@ -51,15 +51,15 @@ _None missing._
 
 | Group | Count | Sample paths |
 | --- | ---: | --- |
-| `docs` | 358 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `docs` | 363 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
 | `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
 | `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `365`
+- Complete manifest loops: `370`
 - Direct manifest loops: `27`
-- Delegated manifest loops: `338`
+- Delegated manifest loops: `343`
 - Missing manifest loops: `0`
 - Missing loop budget: `0`
 
@@ -67,6 +67,12 @@ _None missing._
 | --- | ---: | ---: | --- |
 | None | 0 | 0 | - |
 
+
+## Loop Registry
+
+| Loop | Expires | Observes | Verifies | Evidence | Fails when |
+| --- | --- | --- | --- | --- | --- |
+| `local-qa-daily-evidence-sweep` | `24h` | local-qa-schedule.json trigger<br>local-qa-coverage.json local.qa.daily_freshness row<br>dashboard stale rows after expires_at | refreshes_expired_evidence<br>daily-evidence-sweep trigger identity<br>semantic peer binding for freshness changes | .riido-local/evidence/local-qa-schedule.json<br>.riido-local/evidence/local-qa-coverage.json<br>executable-knowledge-coverage/local-qa-schedule-binding.json | evidence_missing<br>expires_at_missing<br>freshness_row_missing<br>semantic_drift |
 ## Registered Manual Surfaces
 
 _None._

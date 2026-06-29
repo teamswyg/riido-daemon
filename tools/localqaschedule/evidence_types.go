@@ -23,15 +23,16 @@ type scheduleEvidence struct {
 }
 
 type triggerEvidence struct {
-	ID              string   `json:"id"`
-	Name            string   `json:"name"`
-	CommonName      string   `json:"common_name"`
-	Cadence         string   `json:"cadence"`
-	TimeLocal       string   `json:"time_local"`
-	EntryPoint      string   `json:"entrypoint"`
-	FreshnessWindow string   `json:"freshness_window"`
-	ClosedLoop      string   `json:"closed_loop"`
-	Evidence        []string `json:"evidence"`
+	ID                       string   `json:"id"`
+	Name                     string   `json:"name"`
+	CommonName               string   `json:"common_name"`
+	Cadence                  string   `json:"cadence"`
+	TimeLocal                string   `json:"time_local"`
+	EntryPoint               string   `json:"entrypoint"`
+	FreshnessWindow          string   `json:"freshness_window"`
+	ClosedLoop               string   `json:"closed_loop"`
+	RefreshesExpiredEvidence bool     `json:"refreshes_expired_evidence"`
+	Evidence                 []string `json:"evidence"`
 }
 
 type launchdEvidence struct {

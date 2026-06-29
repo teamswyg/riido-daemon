@@ -10,21 +10,81 @@
     "retrospective": "Provider QA remains a daily input while uncovered product acceptance scenarios become explicit queue items instead of hidden confidence debt."
   },
   "evidence_artifacts": [
-    {"kind": "command", "ref": "go run ./tools/localqarunner", "proves": "provider evidence, sandboxed daemon install/update evidence, dashboard rendering, run evidence, and optional S3 publication execute as one local acceptance gate"},
-    {"kind": "command", "ref": "go run ./tools/localqarunner -coverage-evidence .riido-local/evidence/local-qa-coverage.json", "proves": "dashboard coverage rows and summary are persisted as machine-readable run evidence, not only rendered as HTML"},
-    {"kind": "command", "ref": "RIIDO_E2E_TASK_ID=<real_task_id> go run ./tools/localproductacceptance -run-task-mutations -storage-state .riido-local/private/riido-client-storage-state.json -evidence-out .riido-local/evidence/ai-agent-product-acceptance.json -lab-out .riido-local/contract-lab/index.html", "proves": "daemon-owned contract lab calls the real staging AI Agent API directly, recovers token/workspace from storage-state, verifies task multi-assignment/SSE/comment flow when two assignments can be created or when a readable existing task fallback is available, classifies missing daemon/runtime binding as repair evidence, traverses the Figma daemon-boundary intent manifest, records the daily QA freshness loop, and generates a React handoff page without modifying riido-client"},
-    {"kind": "command", "ref": "RIIDO_LOCAL_QA_S3_PREFIX=s3://<local-qa-evidence-bucket>/daily go run ./tools/localqaschedule -repo $(pwd) -run-product -install", "proves": "macOS launchd can schedule the local acceptance gate once per day and publish daemon-owned API contract evidence to the configured S3 evidence bucket"},
-    {"kind": "command", "ref": "go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json", "proves": "provider real CLI status, freshness, and repair classification are machine-readable"},
-    {"kind": "command", "ref": "go run ./tools/localreleaseacceptance -evidence-out .riido-local/evidence/local-release-acceptance.json", "proves": "the public install script can replace an existing daemon binary in a sandbox, report the installed version without touching the user install, and verify the latest GitHub Release has the current platform archive plus SHA256SUMS"},
-    {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -release-evidence .riido-local/evidence/local-release-acceptance.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "local acceptance coverage and repair status are rendered into a reviewable dashboard"},
-    {"kind": "command", "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -product-evidence .riido-local/evidence/ai-agent-product-acceptance.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html", "proves": "contract API evidence updates frontend handoff coverage rows without mocks"},
-    {"kind": "visual", "ref": "docs/30-architecture/figma-ai-agent-daemon-boundary/feature-ui.dsl.json", "proves": "atomic feature UI DSL declares the manual QA capture, interaction intent, generated handoff file, and golden pixel tolerance without changing infra hooks"},
-    {"kind": "i18n", "ref": "docs/30-architecture/qa-i18n.dsl.json", "proves": "QA contract lab labels are generated from a structured Korean-default i18n DSL instead of template-local string edits"},
-    {"kind": "audit", "ref": "docs/30-architecture/qa-system.dsl.json", "proves": "QA DSL search terms, generated artifacts, pre-commit hooks, CI drift checks, and optimization candidates are machine-readable"},
-    {"kind": "trigger", "ref": "docs/30-architecture/local-qa-daily-trigger.dsl.json", "proves": "Daily Evidence Sweep names the once-per-day local QA trigger and defines when the loop is meaningful instead of a bare cron"},
-    {"kind": "domain", "ref": "docs/30-architecture/domain-fixture-journey.dsl.json", "proves": "Domain Fixture Journey names the staging-only entity fixture path for account, workspace, team, project, milestone, task, agent, and thread evidence"},
-    {"kind": "manual", "ref": ".riido-local/evidence/manual-qa-evidence.json", "proves": "human testers can record scenario-level manual QA status and notes in the React contract lab; localqarunner uploads the JSON to latest/manual-qa-evidence.json and the timestamped S3 run folder when the file is present"},
-    {"kind": "command", "ref": "go run ./tools/localqadashboard -infra-evidence .riido-local/evidence/local-qa-dashboard-infra-evidence.json", "proves": "private or CIDR-limited infra evidence for the S3-hosted local QA dashboard is visible in the central local QA dashboard without committing raw Terraform state or AWS CLI payloads"}
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localqarunner",
+      "proves": "provider evidence, sandboxed daemon install/update evidence, dashboard rendering, run evidence, and optional S3 publication execute as one local acceptance gate"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localqarunner -coverage-evidence .riido-local/evidence/local-qa-coverage.json",
+      "proves": "dashboard coverage rows and summary are persisted as machine-readable run evidence, not only rendered as HTML"
+    },
+    {
+      "kind": "command",
+      "ref": "RIIDO_E2E_TASK_ID=<real_task_id> go run ./tools/localproductacceptance -run-task-mutations -storage-state .riido-local/private/riido-client-storage-state.json -evidence-out .riido-local/evidence/ai-agent-product-acceptance.json -lab-out .riido-local/contract-lab/index.html",
+      "proves": "daemon-owned contract lab calls the real staging AI Agent API directly, recovers token/workspace from storage-state, verifies task multi-assignment/SSE/comment flow when two assignments can be created or when a readable existing task fallback is available, classifies missing daemon/runtime binding as repair evidence, traverses the Figma daemon-boundary intent manifest, records the daily QA freshness loop, and generates a React handoff page without modifying riido-client"
+    },
+    {
+      "kind": "command",
+      "ref": "RIIDO_LOCAL_QA_S3_PREFIX=s3://<local-qa-evidence-bucket>/daily go run ./tools/localqaschedule -repo $(pwd) -run-product -install",
+      "proves": "macOS launchd can schedule the local acceptance gate once per day and publish daemon-owned API contract evidence to the configured S3 evidence bucket"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 24h -evidence-out .riido-local/evidence/provider-real-cli-observation.json",
+      "proves": "provider real CLI status, freshness, and repair classification are machine-readable"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localreleaseacceptance -evidence-out .riido-local/evidence/local-release-acceptance.json",
+      "proves": "the public install script can replace an existing daemon binary in a sandbox, report the installed version without touching the user install, and verify the latest GitHub Release has the current platform archive plus SHA256SUMS"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -release-evidence .riido-local/evidence/local-release-acceptance.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html",
+      "proves": "local acceptance coverage and repair status are rendered into a reviewable dashboard"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localqadashboard -provider-evidence .riido-local/evidence/provider-real-cli-observation.json -product-evidence .riido-local/evidence/ai-agent-product-acceptance.json -coverage-manifest docs/30-architecture/local-acceptance-coverage.riido.json -out .riido-local/dashboard/index.html",
+      "proves": "contract API evidence updates frontend handoff coverage rows without mocks"
+    },
+    {
+      "kind": "visual",
+      "ref": "docs/30-architecture/figma-ai-agent-daemon-boundary/feature-ui.dsl.json",
+      "proves": "atomic feature UI DSL declares the manual QA capture, interaction intent, generated handoff file, and golden pixel tolerance without changing infra hooks"
+    },
+    {
+      "kind": "i18n",
+      "ref": "docs/30-architecture/qa-i18n.dsl.json",
+      "proves": "QA contract lab labels are generated from a structured Korean-default i18n DSL instead of template-local string edits"
+    },
+    {
+      "kind": "audit",
+      "ref": "docs/30-architecture/qa-system.dsl.json",
+      "proves": "QA DSL search terms, generated artifacts, pre-commit hooks, CI drift checks, and optimization candidates are machine-readable"
+    },
+    {
+      "kind": "trigger",
+      "ref": "docs/30-architecture/local-qa-daily-trigger.dsl.json",
+      "proves": "Daily Evidence Sweep names the once-per-day local QA trigger and defines when the loop is meaningful instead of a bare cron"
+    },
+    {
+      "kind": "domain",
+      "ref": "docs/30-architecture/domain-fixture-journey.dsl.json",
+      "proves": "Domain Fixture Journey names the staging-only entity fixture path for account, workspace, team, project, milestone, task, agent, and thread evidence"
+    },
+    {
+      "kind": "manual",
+      "ref": ".riido-local/evidence/manual-qa-evidence.json",
+      "proves": "human testers can record scenario-level manual QA status and notes in the React contract lab; localqarunner uploads the JSON to latest/manual-qa-evidence.json and the timestamped S3 run folder when the file is present"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/localqadashboard -infra-evidence .riido-local/evidence/local-qa-dashboard-infra-evidence.json",
+      "proves": "private or CIDR-limited infra evidence for the S3-hosted local QA dashboard is visible in the central local QA dashboard without committing raw Terraform state or AWS CLI payloads"
+    }
   ],
   "boundary_rules": [
     {
@@ -36,63 +96,429 @@
     }
   ],
   "scenarios": [
-    {"id": "provider.codex", "title": "Codex provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "codex"},
-    {"id": "provider.claude", "title": "Claude provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "claude"},
-    {"id": "provider.claude.web_approval_round_trip", "title": "Claude permission-gated command resumes through web approval and executes", "tier": "release", "surface": "provider-approval", "evidence": "external"},
-    {"id": "provider.cursor", "title": "Cursor provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "cursor"},
-    {"id": "provider.openclaw", "title": "OpenClaw provider real CLI execution", "tier": "daily", "surface": "provider", "evidence": "provider", "provider_id": "openclaw"},
-    {"id": "product.client.readonly", "title": "riido-client remains untouched by local QA harness work", "tier": "daily", "surface": "repo-boundary", "evidence": "external"},
-    {"id": "contract.ui.lab", "title": "React contract lab renders frontend API handoff from evidence", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
-    {"id": "contract.ui.feature_dsl", "title": "Feature UI DSL captures manual QA interaction intent and golden tolerance", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
-    {"id": "contract.ui.i18n_dsl", "title": "QA i18n DSL generates Korean-first contract lab UI labels", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
-    {"id": "contract.ui.browser_meaning_qa", "title": "Contract Lab search can resolve generated QA meanings without human inference", "tier": "daily", "surface": "frontend-contract", "evidence": "external"},
-    {"id": "local.qa.figma_refresh_gate", "title": "Figma manifest and golden freshness are system-checked before human review", "tier": "daily", "surface": "figma", "evidence": "external"},
-    {"id": "local.qa.staging_fixture_handoff", "title": "Staging fixture cache and token/workspace inputs are system-checked", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture_journey", "title": "Domain Fixture Journey records staging-only local verification scope", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture.account", "title": "Domain journey records account fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture.workspace", "title": "Domain journey records workspace fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture.team", "title": "Domain journey records team fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture.project", "title": "Domain journey records project fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture.milestone", "title": "Domain journey records milestone fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture.task", "title": "Domain journey records task fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture.agent", "title": "Domain journey records agent fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "domain.fixture.thread", "title": "Domain journey records thread fixture evidence", "tier": "daily", "surface": "domain-fixture", "evidence": "external"},
-    {"id": "contract.api.bootstrap", "title": "Staging bootstrap endpoint returns workspace agent/device read model", "tier": "daily", "surface": "control-plane-contract", "evidence": "external"},
-    {"id": "contract.api.devices", "title": "Staging devices endpoint exposes runtimes and provider_version", "tier": "daily", "surface": "control-plane-contract", "evidence": "external"},
-    {"id": "contract.api.profile_thumbnail.intent", "title": "Profile thumbnail upload intent returns S3 POST handoff fields", "tier": "daily", "surface": "control-plane-contract", "evidence": "external"},
-    {"id": "contract.task.discovery", "title": "Task assignment candidate discovery reads assigned-agent-profiles", "tier": "daily", "surface": "task-contract", "evidence": "external"},
-    {"id": "contract.task.assignable_agents", "title": "Task participant dropdown can read assignable agents", "tier": "weekly", "surface": "task-contract", "evidence": "external"},
-    {"id": "contract.task.multi_assignment", "title": "Task can assign multiple provider agents without collision", "tier": "weekly", "surface": "task-contract", "evidence": "external"},
-    {"id": "contract.task.thread_subscription", "title": "Task thread SSE subscription exposes active thread filters", "tier": "weekly", "surface": "task-contract", "evidence": "external"},
-    {"id": "contract.task.sse_replay", "title": "Task SSE replay includes each assigned thread identifier", "tier": "weekly", "surface": "task-contract", "evidence": "external"},
-    {"id": "contract.task.thread_message", "title": "Task thread message endpoint sends follow-up comments by thread_id", "tier": "weekly", "surface": "task-contract", "evidence": "external"},
-    {"id": "local.qa.s3_publish", "title": "Local QA evidence publishes latest and timestamped dashboard artifacts to S3", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
-    {"id": "local.qa.loop.freshness", "title": "Contract lab records daily evidence freshness and Figma intent traversal", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
-    {"id": "local.qa.dsl_system_audit", "title": "QA DSL audit verifies generated artifacts, search aliases, pre-commit, and CI drift checks", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
-    {"id": "local.qa.evidence_gap_candidates", "title": "QA loop records evidence gaps, closed-loop candidates, and next evidence candidates", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
-    {"id": "local.qa.daily_schedule", "title": "macOS LaunchAgent schedules local QA once per day without token env vars", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
-    {"id": "local.qa.daily_trigger", "title": "Daily Evidence Sweep names the once-per-day closed QA loop", "tier": "daily", "surface": "local-evidence", "evidence": "external"},
-    {"id": "ops.monitoring.client_surface_anomaly", "title": "OTel/X-Ray evidence distinguishes daemon, desktop, and frontend traffic anomalies", "tier": "release", "surface": "observability", "evidence": "external"},
-    {"id": "ops.ui.copy_regression", "title": "Real-screen QA captures user-visible Korean copy regressions before release", "tier": "daily", "surface": "usability", "evidence": "external"},
-    {"id": "ops.usability.agent_name_change", "title": "Task thread UI preserves or updates renamed agent display according to snapshot policy", "tier": "weekly", "surface": "usability", "evidence": "external"},
-    {"id": "ops.resilience.internet_disconnect_wait", "title": "Daemon waits and recovers cleanly when local internet connectivity drops", "tier": "release", "surface": "resilience", "evidence": "external"},
-    {"id": "ops.stress.concurrent_users", "title": "Staging stress evidence records concurrent user capacity and latency", "tier": "release", "surface": "stress", "evidence": "external"},
-    {"id": "ops.stress.single_pc_agent_capacity", "title": "Local stress evidence records maximum usable agents on one PC", "tier": "release", "surface": "stress", "evidence": "external"},
-    {"id": "ops.stress.boot_packet_burst", "title": "Server cold-start packet burst is measured without daemon retry collapse", "tier": "release", "surface": "stress", "evidence": "external"},
-    {"id": "ops.chaos.control_plane_restart_recovery", "title": "Chaos evidence records daemon recovery after control-plane restart", "tier": "release", "surface": "chaos", "evidence": "external"},
-    {"id": "ops.chaos.scale_out_rebalance", "title": "Chaos evidence records behavior while server capacity is added", "tier": "release", "surface": "chaos", "evidence": "external"},
-    {"id": "ops.chaos.scale_out_duration", "title": "Chaos evidence records elapsed time for server scale-out readiness", "tier": "release", "surface": "chaos", "evidence": "external"},
-    {"id": "ops.chaos.full_outage_daemon_backoff", "title": "Daemon backs off during full server outage instead of packet flooding", "tier": "release", "surface": "chaos", "evidence": "external"},
-    {"id": "ops.chaos.recovery_packet_surge", "title": "Server recovery evidence checks daemon packet surge does not re-fail control-plane", "tier": "release", "surface": "chaos", "evidence": "external"},
-    {"id": "ops.scenario.exception_equals_weekend_open", "title": "Weekend-only scenario gate records exception-message and equals-match behavior", "tier": "release", "surface": "scenario", "evidence": "external"},
-    {"id": "desktop.ui.hello_to_say_world_body_only", "title": "Desktop UI verifies hello world to say world when only task body changes", "tier": "release", "surface": "desktop-ui", "evidence": "external"},
-    {"id": "infra.local_qa_dashboard", "title": "Infra verifies S3 dashboard bucket security and latest object", "tier": "release", "surface": "infra-evidence", "evidence": "external"},
-    {"id": "release.fresh.install", "title": "Fresh macOS install verifies daemon update script", "tier": "release", "surface": "release", "evidence": "external"},
-    {"id": "release.github.latest_assets", "title": "Latest GitHub Release exposes current platform archive and SHA256SUMS", "tier": "release", "surface": "release", "evidence": "external"},
-    {"id": "release.backend_daemon_ready", "title": "Backend and daemon release readiness evidence is complete before beta handoff", "tier": "release", "surface": "release", "evidence": "external"},
-    {"id": "figma.intent.catalog", "title": "Figma AI Agent screen intent manifest is loaded into local contract lab", "tier": "daily", "surface": "figma", "evidence": "external"},
-    {"id": "figma.onboarding", "title": "Onboarding Figma screenshot reference is verified and linked", "tier": "weekly", "surface": "figma", "evidence": "external"},
-    {"id": "figma.runtime.settings", "title": "Runtime settings Figma screenshot reference is verified and linked", "tier": "weekly", "surface": "figma", "evidence": "external"},
-    {"id": "figma.runtime.detail", "title": "Runtime detail Figma intent is mapped to daemon lifecycle and client presentation boundaries", "tier": "daily", "surface": "figma", "evidence": "external"}
+    {
+      "id": "provider.codex",
+      "title": "Codex provider real CLI execution",
+      "tier": "daily",
+      "surface": "provider",
+      "evidence": "provider",
+      "provider_id": "codex"
+    },
+    {
+      "id": "provider.claude",
+      "title": "Claude provider real CLI execution",
+      "tier": "daily",
+      "surface": "provider",
+      "evidence": "provider",
+      "provider_id": "claude"
+    },
+    {
+      "id": "provider.claude.web_approval_round_trip",
+      "title": "Claude permission-gated command resumes through web approval and executes",
+      "tier": "release",
+      "surface": "provider-approval",
+      "evidence": "external"
+    },
+    {
+      "id": "provider.cursor",
+      "title": "Cursor provider real CLI execution",
+      "tier": "daily",
+      "surface": "provider",
+      "evidence": "provider",
+      "provider_id": "cursor"
+    },
+    {
+      "id": "provider.openclaw",
+      "title": "OpenClaw provider real CLI execution",
+      "tier": "daily",
+      "surface": "provider",
+      "evidence": "provider",
+      "provider_id": "openclaw"
+    },
+    {
+      "id": "product.client.readonly",
+      "title": "riido-client remains untouched by local QA harness work",
+      "tier": "daily",
+      "surface": "repo-boundary",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.ui.lab",
+      "title": "React contract lab renders frontend API handoff from evidence",
+      "tier": "daily",
+      "surface": "frontend-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.ui.feature_dsl",
+      "title": "Feature UI DSL captures manual QA interaction intent and golden tolerance",
+      "tier": "daily",
+      "surface": "frontend-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.ui.i18n_dsl",
+      "title": "QA i18n DSL generates Korean-first contract lab UI labels",
+      "tier": "daily",
+      "surface": "frontend-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.ui.browser_meaning_qa",
+      "title": "Contract Lab search can resolve generated QA meanings without human inference",
+      "tier": "daily",
+      "surface": "frontend-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.figma_refresh_gate",
+      "title": "Figma manifest and golden freshness are system-checked before human review",
+      "tier": "daily",
+      "surface": "figma",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.staging_fixture_handoff",
+      "title": "Staging fixture cache and token/workspace inputs are system-checked",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture_journey",
+      "title": "Domain Fixture Journey records staging-only local verification scope",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture.account",
+      "title": "Domain journey records account fixture evidence",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture.workspace",
+      "title": "Domain journey records workspace fixture evidence",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture.team",
+      "title": "Domain journey records team fixture evidence",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture.project",
+      "title": "Domain journey records project fixture evidence",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture.milestone",
+      "title": "Domain journey records milestone fixture evidence",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture.task",
+      "title": "Domain journey records task fixture evidence",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture.agent",
+      "title": "Domain journey records agent fixture evidence",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "domain.fixture.thread",
+      "title": "Domain journey records thread fixture evidence",
+      "tier": "daily",
+      "surface": "domain-fixture",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.api.bootstrap",
+      "title": "Staging bootstrap endpoint returns workspace agent/device read model",
+      "tier": "daily",
+      "surface": "control-plane-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.api.devices",
+      "title": "Staging devices endpoint exposes runtimes and provider_version",
+      "tier": "daily",
+      "surface": "control-plane-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.api.profile_thumbnail.intent",
+      "title": "Profile thumbnail upload intent returns S3 POST handoff fields",
+      "tier": "daily",
+      "surface": "control-plane-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.task.discovery",
+      "title": "Task assignment candidate discovery reads assigned-agent-profiles",
+      "tier": "daily",
+      "surface": "task-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.task.assignable_agents",
+      "title": "Task participant dropdown can read assignable agents",
+      "tier": "weekly",
+      "surface": "task-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.task.multi_assignment",
+      "title": "Task can assign multiple provider agents without collision",
+      "tier": "weekly",
+      "surface": "task-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.task.thread_subscription",
+      "title": "Task thread SSE subscription exposes active thread filters",
+      "tier": "weekly",
+      "surface": "task-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.task.sse_replay",
+      "title": "Task SSE replay includes each assigned thread identifier",
+      "tier": "weekly",
+      "surface": "task-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "contract.task.thread_message",
+      "title": "Task thread message endpoint sends follow-up comments by thread_id",
+      "tier": "weekly",
+      "surface": "task-contract",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.s3_publish",
+      "title": "Local QA evidence publishes latest and timestamped dashboard artifacts to S3",
+      "tier": "daily",
+      "surface": "local-evidence",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.loop.freshness",
+      "title": "Contract lab records daily evidence freshness and Figma intent traversal",
+      "tier": "daily",
+      "surface": "local-evidence",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.dsl_system_audit",
+      "title": "QA DSL audit verifies generated artifacts, search aliases, pre-commit, and CI drift checks",
+      "tier": "daily",
+      "surface": "local-evidence",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.evidence_gap_candidates",
+      "title": "QA loop records evidence gaps, closed-loop candidates, and next evidence candidates",
+      "tier": "daily",
+      "surface": "local-evidence",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.daily_schedule",
+      "title": "macOS LaunchAgent schedules local QA once per day without token env vars",
+      "tier": "daily",
+      "surface": "local-evidence",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.daily_trigger",
+      "title": "Daily Evidence Sweep names the once-per-day closed QA loop",
+      "tier": "daily",
+      "surface": "local-evidence",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.monitoring.client_surface_anomaly",
+      "title": "OTel/X-Ray evidence distinguishes daemon, desktop, and frontend traffic anomalies",
+      "tier": "release",
+      "surface": "observability",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.ui.copy_regression",
+      "title": "Real-screen QA captures user-visible Korean copy regressions before release",
+      "tier": "daily",
+      "surface": "usability",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.usability.agent_name_change",
+      "title": "Task thread UI preserves or updates renamed agent display according to snapshot policy",
+      "tier": "weekly",
+      "surface": "usability",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.resilience.internet_disconnect_wait",
+      "title": "Daemon waits and recovers cleanly when local internet connectivity drops",
+      "tier": "release",
+      "surface": "resilience",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.stress.concurrent_users",
+      "title": "Staging stress evidence records concurrent user capacity and latency",
+      "tier": "release",
+      "surface": "stress",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.stress.single_pc_agent_capacity",
+      "title": "Local stress evidence records maximum usable agents on one PC",
+      "tier": "release",
+      "surface": "stress",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.stress.boot_packet_burst",
+      "title": "Server cold-start packet burst is measured without daemon retry collapse",
+      "tier": "release",
+      "surface": "stress",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.chaos.control_plane_restart_recovery",
+      "title": "Chaos evidence records daemon recovery after control-plane restart",
+      "tier": "release",
+      "surface": "chaos",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.chaos.scale_out_rebalance",
+      "title": "Chaos evidence records behavior while server capacity is added",
+      "tier": "release",
+      "surface": "chaos",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.chaos.scale_out_duration",
+      "title": "Chaos evidence records elapsed time for server scale-out readiness",
+      "tier": "release",
+      "surface": "chaos",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.chaos.full_outage_daemon_backoff",
+      "title": "Daemon backs off during full server outage instead of packet flooding",
+      "tier": "release",
+      "surface": "chaos",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.chaos.recovery_packet_surge",
+      "title": "Server recovery evidence checks daemon packet surge does not re-fail control-plane",
+      "tier": "release",
+      "surface": "chaos",
+      "evidence": "external"
+    },
+    {
+      "id": "ops.scenario.exception_equals_weekend_open",
+      "title": "Weekend-only scenario gate records exception-message and equals-match behavior",
+      "tier": "release",
+      "surface": "scenario",
+      "evidence": "external"
+    },
+    {
+      "id": "desktop.ui.hello_to_say_world_body_only",
+      "title": "Desktop UI verifies hello world to say world when only task body changes",
+      "tier": "release",
+      "surface": "desktop-ui",
+      "evidence": "external"
+    },
+    {
+      "id": "infra.local_qa_dashboard",
+      "title": "Infra verifies S3 dashboard bucket security and latest object",
+      "tier": "release",
+      "surface": "infra-evidence",
+      "evidence": "external"
+    },
+    {
+      "id": "release.fresh.install",
+      "title": "Fresh macOS install verifies daemon update script",
+      "tier": "release",
+      "surface": "release",
+      "evidence": "external"
+    },
+    {
+      "id": "release.github.latest_assets",
+      "title": "Latest GitHub Release exposes current platform archive and SHA256SUMS",
+      "tier": "release",
+      "surface": "release",
+      "evidence": "external"
+    },
+    {
+      "id": "release.backend_daemon_ready",
+      "title": "Backend and daemon release readiness evidence is complete before beta handoff",
+      "tier": "release",
+      "surface": "release",
+      "evidence": "external"
+    },
+    {
+      "id": "figma.intent.catalog",
+      "title": "Figma AI Agent screen intent manifest is loaded into local contract lab",
+      "tier": "daily",
+      "surface": "figma",
+      "evidence": "external"
+    },
+    {
+      "id": "figma.onboarding",
+      "title": "Onboarding Figma screenshot reference is verified and linked",
+      "tier": "weekly",
+      "surface": "figma",
+      "evidence": "external"
+    },
+    {
+      "id": "figma.runtime.settings",
+      "title": "Runtime settings Figma screenshot reference is verified and linked",
+      "tier": "weekly",
+      "surface": "figma",
+      "evidence": "external"
+    },
+    {
+      "id": "figma.runtime.detail",
+      "title": "Runtime detail Figma intent is mapped to daemon lifecycle and client presentation boundaries",
+      "tier": "daily",
+      "surface": "figma",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.daily_freshness",
+      "title": "Daily Evidence Sweep refreshes expired evidence instead of leaving stale rows unowned",
+      "tier": "daily",
+      "surface": "local-evidence",
+      "evidence": "external"
+    },
+    {
+      "id": "local.qa.closed_loop_maturity",
+      "title": "Closed-loop maturity records meta complexity, product outcome linkage, and partial reduction evidence",
+      "tier": "daily",
+      "surface": "local-evidence",
+      "evidence": "external"
+    }
   ]
 }
