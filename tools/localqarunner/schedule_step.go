@@ -1,25 +1,10 @@
 package main
 
+var runLocalQAScheduleStep = runStep
+
 func runScheduleInspectStep(root string, cfg config, evidence *runEvidence) {
-	if !fileExists(*cfg.scheduleEvidence) {
-		return
-	}
-	args := []string{
-		"run", *cfg.scheduleTool,
-		"-repo", root,
-		"-inspect",
-		"-evidence-out", *cfg.scheduleEvidence,
-		"-s3-prefix", *cfg.s3Prefix,
-		"-client-root", *cfg.clientRoot,
-		"-product-base-url", *cfg.productBaseURL,
-		"-product-agent-host", *cfg.productAgentHost,
-		"-product-riido-api-host", *cfg.productRiidoHost,
-		"-product-storage-state", *cfg.productStorage,
-		"-product-evidence", *cfg.productEvidence,
-		"-coverage-evidence", *cfg.coverageEvidence,
-	}
-	args = appendScheduleProductArgs(args, cfg)
-	appendStep(evidence, runStep(root, "schedule-inspect", "go", args...))
+	args, id := scheduleStepArgs(root, cfg)
+	appendStep(evidence, runLocalQAScheduleStep(root, id, "go", args...))
 }
 
 func appendScheduleProductArgs(args []string, cfg config) []string {
