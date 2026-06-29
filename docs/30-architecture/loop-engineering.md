@@ -4,7 +4,7 @@
 
 - loop count: `83`
 - registered loop files: `83`
-- evidence items: `175`
+- evidence items: `176`
 - open gaps: `0`
 - phase coverage: `observe=83/83`, `hypothesis=83/83`, `execute=83/83`, `evaluate=83/83`, `retrospective=83/83`
 
@@ -1392,20 +1392,21 @@
 ### semantic-change-binding
 
 - Owner: `tools/semanticchangebinding and semantic-change-binding workflow`
-- Observe: Closed-loop maturity work introduced meaning-bound DSL, runner, generated evidence, workflow, tests, and loop registry files, but no gate forced future changes to keep those semantic peers aligned.
+- Observe: Closed-loop maturity and task DB lease-fencing claims span DSL, generated readers, implementation, tests, workflows, and loop registry entries, but no common gate forced future changes to keep those semantic peers aligned.
   - Artifacts: `docs/30-architecture/semantic-change-bindings.riido.json`
-- Hypothesis: A compact semantic binding manifest can make trigger files name the required evidence peers that must change with them, so an agent cannot silently update only one side of a claim.
-  - Artifacts: `tools/semanticchangebinding/run_test.go`
+- Hypothesis: A compact semantic binding manifest can make trigger files name the required evidence peers that must change with them, so an agent cannot silently update only one side of a claim or code/test/doc triad.
+  - Artifacts: `tools/semanticchangebinding/run_test.go`, `tools/semanticchangebinding/business_claim_test.go`
 - Execute: Read changed files from staged git diff or explicit CI inputs, evaluate each semantic binding, and emit evidence JSON with missing peer paths.
   - Artifacts: `tools/semanticchangebinding`, `.pre-commit-config.yaml`
 - Evaluate: The verifier rejects a closed-loop maturity trigger change unless its test, generated evidence, local QA workflow, and loop-engineering entry are changed together.
   - Artifacts: `.github/workflows/semantic-change-binding.yml`
-- Retrospective: The first binding closes the gap between harness maturity claims and the generated/evidence surfaces that prove them; future claims can be added without changing API/runtime contracts.
+- Retrospective: The first bindings close the gap between harness maturity claims and the generated/evidence surfaces that prove them, and between a runtime lease-fencing business claim and the code/test/doc/workflow peers that preserve it.
   - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
   - `command`: go run ./tools/semanticchangebinding -changed-files docs/30-architecture/closed-loop-maturity.dsl.json -evidence-out /tmp/semantic-change-binding-negative.json; proves closed-loop maturity trigger changes fail when required semantic peers are absent
   - `workflow`: .github/workflows/semantic-change-binding.yml; proves dedicated public CI preserves positive and negative semantic binding evidence
   - `workflow`: .github/workflows/executable-knowledge-coverage.yml; proves PR executable-knowledge CI runs semantic binding evidence alongside manifest-loop debt checks
+  - `workflow`: .github/workflows/local-daemon-contract-evidence.yml; proves local daemon contract CI preserves the task DB lease-fencing claim binding
 
 ### self-improvement-evidence
 

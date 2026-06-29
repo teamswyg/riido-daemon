@@ -34,6 +34,37 @@
         "local.qa.closed_loop_maturity",
         "loop-engineering.closed-loop-maturity"
       ]
+    },
+    {
+      "id": "taskdb-lease-fencing-claim",
+      "claim": "Task DB runtime lease reports must carry and verify lease id, fencing token, and capability fingerprint before report-side state changes are accepted.",
+      "triggers": [
+        "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json",
+        "internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go",
+        "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go",
+        "internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go",
+        "internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go"
+      ],
+      "required_with_triggers": [
+        "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json",
+        "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md",
+        "internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go",
+        "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go",
+        "internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go",
+        "internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go",
+        ".github/workflows/local-daemon-contract-evidence.yml"
+      ],
+      "generated_docs": [
+        "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md"
+      ],
+      "verifiers": [
+        "go test ./internal/agentbridge/controlplane/taskdbplane",
+        "go run ./tools/localdaemoncontract -check-doc -evidence-out /tmp/local-daemon-contract-evidence.json"
+      ],
+      "evidence_ids": [
+        "local-daemon-contract-evidence",
+        "taskdb.lease-fencing"
+      ]
     }
   ]
 }
