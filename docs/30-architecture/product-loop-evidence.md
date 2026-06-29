@@ -40,6 +40,12 @@ Outcome evidence is linked from the latest local QA run coverage rows; `passed` 
 | `provider_approval_round_trip` | `provider.claude.web_approval_round_trip` |
 | `time_to_first_event` | `contract.task.thread_subscription`, `contract.task.sse_replay` |
 | `user_visible_failure` | `contract.task.thread_message`, `local.qa.evidence_gap_candidates` |
+| `client_surface_anomaly_monitoring` | `ops.monitoring.client_surface_anomaly` |
+| `release_usability_regression` | `ops.ui.copy_regression`, `ops.usability.agent_name_change`, `desktop.ui.hello_to_say_world_body_only` |
+| `network_resilience` | `ops.resilience.internet_disconnect_wait`, `ops.chaos.full_outage_daemon_backoff`, `ops.chaos.recovery_packet_surge` |
+| `stress_capacity` | `ops.stress.concurrent_users`, `ops.stress.single_pc_agent_capacity`, `ops.stress.boot_packet_burst` |
+| `scale_chaos` | `ops.chaos.control_plane_restart_recovery`, `ops.chaos.scale_out_rebalance`, `ops.chaos.scale_out_duration` |
+| `release_readiness` | `release.backend_daemon_ready`, `release.fresh.install`, `release.github.latest_assets`, `ops.scenario.exception_equals_weekend_open` |
 
 ## Partial Thresholds
 

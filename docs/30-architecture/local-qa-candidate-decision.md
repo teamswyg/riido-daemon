@@ -5,7 +5,7 @@
 Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-decision.riido.json).
 
 - evidence artifact: `local-qa-candidate-decision`
-- decision records: `31`
+- decision records: `37`
 
 ## Assertions
 
@@ -48,6 +48,12 @@ Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-d
 | `product-outcome-evidence-provider_approval_round_trip` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
 | `product-outcome-evidence-time_to_first_event` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
 | `product-outcome-evidence-user_visible_failure` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
+| `product-outcome-evidence-client_surface_anomaly_monitoring` | `product_loop` | `triage_required` | `P1` | `ops-observability` | `2026-12-31` | `scenario coverage row with passed or observed status` |
+| `product-outcome-evidence-release_usability_regression` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
+| `product-outcome-evidence-network_resilience` | `product_loop` | `triage_required` | `P1` | `daemon-runtime` | `2026-12-31` | `scenario coverage row with passed or observed status` |
+| `product-outcome-evidence-stress_capacity` | `product_loop` | `triage_required` | `P1` | `performance-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
+| `product-outcome-evidence-scale_chaos` | `product_loop` | `triage_required` | `P1` | `ops-chaos-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
+| `product-outcome-evidence-release_readiness` | `product_loop` | `triage_required` | `P1` | `release-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
 | `partial-reduction-open-candidate-debt` | `product_loop` | `triage_required` | `P1` | `loop-registry` | `2026-12-31` | `candidate decision evidence` |
 | `partial-reduction-candidate-aging` | `product_loop` | `triage_required` | `P1` | `loop-registry` | `2026-12-31` | `stale partial escalation evidence` |
 | `partial-reduction-local-qa-run-evidence` | `product_loop` | `triage_required` | `P1` | `loop-registry` | `2026-12-31` | `latest local QA run evidence` |
