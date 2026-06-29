@@ -28,6 +28,13 @@ func fixturePaths() []string {
 		"internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go",
 		"internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go",
 		".github/workflows/local-daemon-contract-evidence.yml",
+		"tools/localqarunner/closed_loop_candidate_graph.go",
+		"tools/localqarunner/closed_loop_candidate_types.go",
+		"tools/localqarunner/closed_loop_candidate_test.go",
+		"tools/localqadashboard/run_candidate.go",
+		"tools/localqadashboard/run_evidence_test.go",
+		"tools/localqadashboard/render_expectation_test.go",
+		"docs/30-architecture/loop-engineering/local-qa-closed-loop-candidates.riido.json",
 	}
 }
 

@@ -13,6 +13,10 @@ on:
       - "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md"
       - ".github/workflows/local-daemon-contract-evidence.yml"
       - "tools/semanticchangebinding/**"
+      - "tools/localqarunner/closed_loop_candidate*"
+      - "tools/localqadashboard/run_candidate.go"
+      - "tools/localqadashboard/run_evidence_test.go"
+      - "tools/localqadashboard/render_expectation_test.go"
       - "tools/localproductacceptance/closed_loop_maturity*"
       - "tools/localproductacceptance/generate.go"
       - "tools/localproductacceptance/run.go"
@@ -52,6 +56,15 @@ jobs:
           go run ./tools/semanticchangebinding \
             -changed-files docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json,docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md,internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go,internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go,internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go,internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go,.github/workflows/local-daemon-contract-evidence.yml \
             -evidence-out out/taskdb-lease-fencing-binding.json
+          if go run ./tools/semanticchangebinding \
+            -changed-files tools/localqarunner/closed_loop_candidate_graph.go \
+            -evidence-out out/local-qa-graph-negative.json; then
+            echo "negative local QA graph binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files tools/localqarunner/closed_loop_candidate_graph.go,tools/localqarunner/closed_loop_candidate_types.go,tools/localqarunner/closed_loop_candidate_test.go,tools/localqadashboard/run_candidate.go,tools/localqadashboard/run_evidence_test.go,tools/localqadashboard/render_expectation_test.go,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/local-qa-closed-loop-candidates.riido.json \
+            -evidence-out out/local-qa-graph-binding.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
