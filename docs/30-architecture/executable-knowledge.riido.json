@@ -13,6 +13,34 @@
       "docs": 0
     }
   },
+  "loop_registry": [
+    {
+      "id": "local-qa-daily-evidence-sweep",
+      "loop_source": "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json",
+      "observes": [
+        "local-qa-schedule.json trigger",
+        "local-qa-coverage.json local.qa.daily_freshness row",
+        "dashboard stale rows after expires_at"
+      ],
+      "verifies": [
+        "refreshes_expired_evidence",
+        "daily-evidence-sweep trigger identity",
+        "semantic peer binding for freshness changes"
+      ],
+      "evidence": [
+        ".riido-local/evidence/local-qa-schedule.json",
+        ".riido-local/evidence/local-qa-coverage.json",
+        "executable-knowledge-coverage/local-qa-schedule-binding.json"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "evidence_missing",
+        "expires_at_missing",
+        "freshness_row_missing",
+        "semantic_drift"
+      ]
+    }
+  ],
   "assertions": [
     "30-architecture markdown must be generated, backed by a direct .riido.json, or registered as a manual surface with a next executable artifact",
     "manual surface registration is debt inventory, not a replacement for executable SSOT",

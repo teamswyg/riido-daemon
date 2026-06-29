@@ -14,6 +14,15 @@ func fixtureManifest() manifest {
 		Workflow:         "docs/30-architecture/executable-knowledge.md",
 		EvidenceArtifact: "fixture",
 		ScanRoots:        []string{"docs/30-architecture"},
+		LoopRegistry: []loopRegistryEntry{{
+			ID:           "fixture-loop",
+			LoopSource:   "docs/30-architecture/executable-knowledge.md",
+			Observes:     []string{"fixture observation"},
+			Verifies:     []string{"fixture verifier"},
+			Evidence:     []string{"fixture evidence"},
+			ExpiresAfter: "24h",
+			FailsWhen:    []string{"fixture failure"},
+		}},
 		ManualGroups: []manualGroup{{
 			ID:           "known",
 			Owner:        "test",

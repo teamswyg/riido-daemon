@@ -10,6 +10,8 @@ on:
       - "docs/30-architecture/closed-loop-maturity.dsl.json"
       - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
+      - "docs/30-architecture/executable-knowledge.riido.json"
+      - "docs/30-architecture/executable-knowledge.md"
       - "docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json"
       - "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json"
       - "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json"
@@ -77,7 +79,7 @@ jobs:
             exit 1
           fi
           go run ./tools/semanticchangebinding \
-            -changed-files docs/30-architecture/local-qa-daily-trigger.dsl.json,tools/localqaschedule/evidence_types.go,tools/localqaschedule/evidence_test.go,tools/localqaschedule/trigger.go,tools/localqadashboard/schedule_evidence.go,tools/localqadashboard/schedule_evidence_checks.go,tools/localqadashboard/schedule_evidence_types.go,tools/localqadashboard/schedule_evidence_freshness_test.go,docs/30-architecture/local-acceptance-coverage.riido.json,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json \
+            -changed-files docs/30-architecture/local-qa-daily-trigger.dsl.json,tools/localqaschedule/evidence_types.go,tools/localqaschedule/evidence_test.go,tools/localqaschedule/trigger.go,tools/localqadashboard/schedule_evidence.go,tools/localqadashboard/schedule_evidence_checks.go,tools/localqadashboard/schedule_evidence_types.go,tools/localqadashboard/schedule_evidence_freshness_test.go,docs/30-architecture/local-acceptance-coverage.riido.json,docs/30-architecture/executable-knowledge.riido.json,docs/30-architecture/executable-knowledge.md,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json \
             -evidence-out out/local-qa-schedule-binding.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()

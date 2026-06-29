@@ -41,6 +41,8 @@ func localQAScheduleClaimPeerFiles() []string {
 		"tools/localqadashboard/schedule_evidence_types.go",
 		"tools/localqadashboard/schedule_evidence_freshness_test.go",
 		"docs/30-architecture/local-acceptance-coverage.riido.json",
+		"docs/30-architecture/executable-knowledge.riido.json",
+		"docs/30-architecture/executable-knowledge.md",
 		".github/workflows/local-qa-runner.yml",
 		"docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json",
 	}

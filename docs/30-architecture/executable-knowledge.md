@@ -64,6 +64,12 @@ _None missing._
 | --- | ---: | ---: | --- |
 | None | 0 | 0 | - |
 
+
+## Loop Registry
+
+| Loop | Expires | Observes | Verifies | Evidence | Fails when |
+| --- | --- | --- | --- | --- | --- |
+| `local-qa-daily-evidence-sweep` | `24h` | local-qa-schedule.json trigger<br>local-qa-coverage.json local.qa.daily_freshness row<br>dashboard stale rows after expires_at | refreshes_expired_evidence<br>daily-evidence-sweep trigger identity<br>semantic peer binding for freshness changes | .riido-local/evidence/local-qa-schedule.json<br>.riido-local/evidence/local-qa-coverage.json<br>executable-knowledge-coverage/local-qa-schedule-binding.json | evidence_missing<br>expires_at_missing<br>freshness_row_missing<br>semantic_drift |
 ## Registered Manual Surfaces
 
 _None._
