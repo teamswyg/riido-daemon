@@ -3,7 +3,6 @@ package saasplane
 import (
 	"bytes"
 	"context"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -53,7 +52,12 @@ func (p *Plane) doJSON(ctx context.Context, method, path string, body []byte, ou
 
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
 		_ = resp.Body.Close()
-		lastErr = fmt.Errorf("saasplane: %s returned %s: %s", path, resp.Status, strings.TrimSpace(string(b)))
+		lastErr = httpStatusError{
+			Path:       path,
+			Status:     resp.Status,
+			StatusCode: resp.StatusCode,
+			Body:       strings.TrimSpace(string(b)),
+		}
 		if attempt < attempts && retryableHTTPStatus(resp.StatusCode) {
 			if waitErr := waitJSONRetry(ctx, attempt); waitErr != nil {
 				return waitErr

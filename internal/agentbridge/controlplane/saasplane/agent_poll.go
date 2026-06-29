@@ -2,11 +2,15 @@ package saasplane
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"net/url"
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
+
+var errStaleAgentBindingPoll = errors.New("saasplane: stale agent binding poll")
 
 func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string, wait time.Duration) (assignmentcontract.PollResponse, error) {
 	var out assignmentcontract.PollResponse
@@ -16,7 +20,16 @@ func (p *Plane) pollAgent(ctx context.Context, agentID, runtimeID string, wait t
 		RuntimeID: runtimeID,
 		WaitMs:    pollWaitMilliseconds(wait),
 	}, &out)
+	if isStaleAgentBindingPollError(err) {
+		p.invalidateAgentBindingsCache(ctx)
+		return out, errStaleAgentBindingPoll
+	}
 	return out, err
+}
+
+func isStaleAgentBindingPollError(err error) bool {
+	var statusErr httpStatusError
+	return errors.As(err, &statusErr) && statusErr.StatusCode == http.StatusBadRequest
 }
 
 func pollWaitMilliseconds(wait time.Duration) int {

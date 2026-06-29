@@ -5,12 +5,13 @@ import (
 	"net"
 	"time"
 
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/logging"
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
-func acceptDaemonConnections(ln net.Listener, flags startFlags, settings daemonSettings, startedAt time.Time, runtimes []*runtimeactor.Actor, shutdownCh chan<- lifecycle.ShutdownLevel, done <-chan lifecycle.ShutdownLevel, shutdownLevel lifecycle.ShutdownLevel, log logging.Logger) (lifecycle.ShutdownLevel, error) {
+func acceptDaemonConnections(ln net.Listener, flags startFlags, settings daemonSettings, startedAt time.Time, runtimes []*runtimeactor.Actor, resolver agentbridge.ToolApprovalResolver, authorizer agentbridge.ToolApprovalAuthorizer, shutdownCh chan<- lifecycle.ShutdownLevel, done <-chan lifecycle.ShutdownLevel, shutdownLevel lifecycle.ShutdownLevel, log logging.Logger) (lifecycle.ShutdownLevel, error) {
 	for {
 		conn, err := ln.Accept()
 		if err != nil {
@@ -24,7 +25,7 @@ func acceptDaemonConnections(ln net.Listener, flags startFlags, settings daemonS
 			log.Printf("accept error: %v", err)
 			continue
 		}
-		go handleDaemonConn(conn, flags, settings, startedAt, runtimes, shutdownCh, log)
+		go handleDaemonConn(conn, flags, settings, startedAt, runtimes, resolver, authorizer, shutdownCh, log)
 	}
 }
 

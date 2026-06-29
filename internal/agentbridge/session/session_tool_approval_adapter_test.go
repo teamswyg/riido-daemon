@@ -8,6 +8,11 @@ import (
 
 func approvalAdapter(t *testing.T, toolKind string) *recordingAdapter {
 	t.Helper()
+	return approvalCommandAdapter(t, toolKind, agentbridge.CommandApproveTool)
+}
+
+func approvalCommandAdapter(t *testing.T, toolKind string, wantCommand agentbridge.CommandKind) *recordingAdapter {
+	t.Helper()
 	return &recordingAdapter{
 		name:   "fake",
 		parser: &recordingParser{},
@@ -27,7 +32,10 @@ func approvalAdapter(t *testing.T, toolKind string) *recordingAdapter {
 			}
 		},
 		inputFn: func(cmd agentbridge.Command) ([]byte, error) {
-			assertApproveToolCommand(t, cmd)
+			assertToolApprovalCommand(t, cmd, wantCommand)
+			if wantCommand == agentbridge.CommandRejectTool {
+				return []byte("reject:req-1\n"), nil
+			}
 			return []byte("approve:req-1\n"), nil
 		},
 	}

@@ -3,6 +3,7 @@ package supervisor
 import (
 	"context"
 
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
@@ -15,7 +16,7 @@ func (a *Actor) claimAvailable(
 	defer release()
 
 	claimed := false
-	for _, rt := range runtimes {
+	for idx, rt := range runtimes {
 		if claimCtx.Err() != nil {
 			return claimed
 		}
@@ -23,7 +24,8 @@ func (a *Actor) claimAvailable(
 		if err != nil {
 			continue
 		}
-		if a.claimOne(ctx, claimCtx, rt, status, inFlight) {
+		runtimeClaimCtx := controlplane.ContextWithClaimLongPoll(claimCtx, idx == len(runtimes)-1)
+		if a.claimOne(ctx, runtimeClaimCtx, rt, status, inFlight) {
 			claimed = true
 		}
 	}

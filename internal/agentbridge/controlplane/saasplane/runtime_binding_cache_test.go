@@ -2,6 +2,7 @@ package saasplane
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
@@ -53,5 +54,22 @@ func TestPlaneCachesEmptyDynamicAgentBindingsAcrossClaimWave(t *testing.T) {
 	}
 	if got := fake.requestCount("/v1/daemon/agent-bindings"); got != 1 {
 		t.Fatalf("empty agent-bindings request count = %d, want 1", got)
+	}
+}
+
+func TestPlaneInvalidatesDynamicAgentBindingsAfterPollBadRequest(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.bindings = []assignmentcontract.AgentRuntimeBinding{codexRuntimeBinding("agent-codex")}
+	fake.failNext("/v1/agents/agent-codex/poll", 1, http.StatusBadRequest)
+	plane := newRuntimeBindingPlane(t, fake, nil)
+
+	if _, err := plane.ClaimTask(context.Background(), "daemon-1:codex"); err != nil {
+		t.Fatalf("first ClaimTask should treat stale binding as empty claim: %v", err)
+	}
+	if _, err := plane.ClaimTask(context.Background(), "daemon-1:codex"); err != nil {
+		t.Fatalf("second ClaimTask after cache invalidation: %v", err)
+	}
+	if got := fake.requestCount("/v1/daemon/agent-bindings"); got != 2 {
+		t.Fatalf("agent-bindings request count after poll bad request = %d, want 2", got)
 	}
 }

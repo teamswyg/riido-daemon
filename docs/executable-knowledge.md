@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 303 |
+| Generated reader docs | 307 |
 | Direct SSOT docs | 0 |
 | Registered manual docs | 0 |
-| Scanned docs | 303 |
+| Scanned docs | 307 |
 
 ## Generated Reader Origins
 
@@ -48,6 +48,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/docmap -write` | 2 | `docs/README.md`<br>`docs/readme/document-map.md` |
 | `go run ./tools/draftfields -write-doc` | 2 | `docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md`<br>`docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md` |
 | `go run ./tools/knowledgecoverage -write-doc` | 2 | `docs/30-architecture/executable-knowledge.md`<br>`docs/executable-knowledge.md` |
+| `go run ./tools/productloopevidence -write-doc` | 2 | `docs/30-architecture/entrypoint-route-map.md`<br>`docs/30-architecture/product-loop-evidence.md` |
 | `go run ./tools/saasassignment -write-doc` | 2 | `docs/20-domain/runtime-scheduling/saas-assignment-source.md`<br>`docs/migration/daemon/riidoapi-local-api/4689-saasplane-assignment-polling.md` |
 | `go run ./tools/approvaltimeout -write-doc` | 1 | `docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md` |
 | `go run ./tools/assignmentfsm -write-doc` | 1 | `docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md` |
@@ -57,7 +58,9 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/executablesearchpath -write-doc` | 1 | `docs/30-architecture/config-reference/executable-search-path.md` |
 | `go run ./tools/fullaccessharness -write-doc` | 1 | `docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md` |
 | `go run ./tools/localdaemoncontract -write-doc` | 1 | `docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md` |
+| `go run ./tools/localqacandidatedecision -write-doc` | 1 | `docs/30-architecture/local-qa-candidate-decision.md` |
 | `go run ./tools/loopevidence -write` | 1 | `docs/30-architecture/loop-engineering.md` |
+| `go run ./tools/loopregistry -write-doc` | 1 | `docs/30-architecture/loop-registry.md` |
 | `go run ./tools/nativeconfigmcp -write-doc` | 1 | `docs/20-domain/security/enforcement-locations/native-config-and-mcp.md` |
 | `go run ./tools/policybundleevidence -write-doc` | 1 | `docs/20-domain/security/invariants/policy-bundle-loader.md` |
 | `go run ./tools/privacymetadata -write-doc` | 1 | `docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md` |
@@ -84,7 +87,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 ## Generated Origin Workflow Coverage
 
-- Covered generated origins: `64`
+- Covered generated origins: `67`
 - Missing workflow origins: `0`
 
 _None missing._
@@ -93,15 +96,15 @@ _None missing._
 
 | Group | Count | Sample paths |
 | --- | ---: | --- |
-| `docs` | 352 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `docs` | 363 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
 | `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
 | `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `359`
-- Direct manifest loops: `23`
-- Delegated manifest loops: `336`
+- Complete manifest loops: `370`
+- Direct manifest loops: `27`
+- Delegated manifest loops: `343`
 - Missing manifest loops: `0`
 - Missing loop budget: `0`
 
@@ -109,6 +112,10 @@ _None missing._
 | --- | ---: | ---: | --- |
 | None | 0 | 0 | - |
 
+
+## Loop Registry
+
+_None._
 ## Registered Manual Surfaces
 
 _None._

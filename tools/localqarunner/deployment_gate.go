@@ -21,6 +21,8 @@ func buildDeploymentGate(evidence runEvidence) runDeploymentGate {
 	gate.Blockers = appendRunStatusBlocker(gate.Blockers, evidence.Status)
 	gate.Blockers = appendCoverageBlocker(gate.Blockers, evidence.CoverageStatus)
 	gate.Blockers = appendRepairBlocker(gate.Blockers, len(evidence.OpenRepairs))
+	gate.Blockers = appendClosedLoopBlocker(gate.Blockers, len(evidence.ClosedLoops))
+	gate.Blockers = appendExpiredCoverageBlocker(gate.Blockers, expiredCoverageRows(evidence.Coverage))
 	if len(gate.Blockers) > 0 {
 		gate.Status = deploymentGateBlocked
 	}
@@ -56,6 +58,17 @@ func appendRepairBlocker(blockers []runDeploymentGateBlocker, count int) []runDe
 	return append(blockers, runDeploymentGateBlocker{
 		Code:    "open_repairs_present",
 		Summary: "manual or automatic repairs are still open",
+		Count:   count,
+	})
+}
+
+func appendClosedLoopBlocker(blockers []runDeploymentGateBlocker, count int) []runDeploymentGateBlocker {
+	if count == 0 {
+		return blockers
+	}
+	return append(blockers, runDeploymentGateBlocker{
+		Code:    "closed_loop_candidates_present",
+		Summary: "harness findings still need closed-loop promotion",
 		Count:   count,
 	})
 }

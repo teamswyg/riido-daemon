@@ -17,7 +17,7 @@ func TestDaemonIPCReportsMalformedRequest(t *testing.T) {
 	go func() {
 		defer close(done)
 		log := logging.NewWriterLogger(io.Discard)
-		handleDaemonConn(server, startFlags{}, daemonSettings{}, time.Now(), nil, nil, log)
+		handleDaemonConn(server, startFlags{}, daemonSettings{}, time.Now(), nil, nil, nil, nil, log)
 	}()
 	t.Cleanup(func() { _ = client.Close() })
 	_ = client.SetDeadline(time.Now().Add(time.Second))

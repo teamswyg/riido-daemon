@@ -7,7 +7,10 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/provider/claude"
 )
 
-type bridgeClaudeAdapter struct{}
+type bridgeClaudeAdapter struct {
+	approvalSocket string
+	betaFullAccess bool
+}
 
 func (bridgeClaudeAdapter) Name() string { return claude.Name }
 
@@ -18,8 +21,12 @@ func (bridgeClaudeAdapter) Detect(
 	return claude.Detect(ctx, env)
 }
 
-func (bridgeClaudeAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
-	return claude.BuildStart(req, claude.StartOptions{PermissionMode: claude.PermissionModeApproval})
+func (a bridgeClaudeAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
+	opts, err := a.startOptions(req)
+	if err != nil {
+		return agentbridge.StartCommand{}, err
+	}
+	return claude.BuildStart(req, opts)
 }
 
 func (bridgeClaudeAdapter) NewParser() agentbridge.Parser { return claude.NewParser() }

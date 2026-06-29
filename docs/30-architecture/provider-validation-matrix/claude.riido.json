@@ -11,6 +11,8 @@
   "worktree_support": "supported",
   "pass_evidence": [
     "ResultCompleted",
+    "explicit daemon-owned beta Claude --permission-mode bypassPermissions launch shape",
+    "caller permission-mode override is dropped with DroppedArgs evidence",
     "expected file artifact inside daemon-selected workdir"
   ],
   "skip_before_run": [
@@ -19,9 +21,12 @@
     "Detect Available=false"
   ],
   "latest_evidence": [
-    "A-51-AI-Agent-Provider-Claude-Code-worktree-side-effect-검증"
+    "A-51-AI-Agent-Provider-Claude-Code-worktree-side-effect-검증",
+    "RIID-5270-Claude-beta-full-access-harness"
   ],
   "must_not_claim": [
+    "Claude bypassPermissions came from caller CustomArgs or SaaS payload",
+    "Claude beta full-access is permanent production policy",
     "Skipped integration gate proves filesystem side effect"
   ]
 }

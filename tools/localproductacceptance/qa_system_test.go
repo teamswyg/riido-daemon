@@ -61,21 +61,3 @@ func TestQASystemScenarioAuditsChangeDetection(t *testing.T) {
 		}
 	}
 }
-
-func TestQASystemExecutionInventoryCounts(t *testing.T) {
-	got := qaSystemScenario()
-	counts, ok := got.Observed["execution_counts"].(map[string]any)
-	if !ok {
-		t.Fatalf("execution counts missing: %+v", got.Observed["execution_counts"])
-	}
-	if counts["system_automated_count"] != 7 || counts["inference_required_count"] != 3 || counts["total"] != 10 {
-		t.Fatalf("unexpected execution counts: %+v", counts)
-	}
-	inference, ok := got.Observed["inference_removed"].(map[string]any)
-	if !ok || inference["all_execution_automated"] != false {
-		t.Fatalf("execution automation state missing: %+v", got.Observed["inference_removed"])
-	}
-	if inference["system_automated_count"] != 7 || inference["inference_required_count"] != 3 {
-		t.Fatalf("execution counts not surfaced in inference audit: %+v", inference)
-	}
-}

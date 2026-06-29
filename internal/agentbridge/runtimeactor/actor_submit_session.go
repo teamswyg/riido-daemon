@@ -27,6 +27,7 @@ func (a *Actor) startSubmitSession(
 		ToolApprovalGate:     a.cfg.ToolApprovalGate,
 		ToolApprovalResolver: a.cfg.ToolApprovalResolver,
 		ProtocolDriver:       driver,
+		TempFiles:            spawn.TempFiles,
 	})
 	if err != nil {
 		return nil, submitSessionStartError(err)

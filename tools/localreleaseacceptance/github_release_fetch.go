@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 )
 
 func fetchLatestRelease(ctx context.Context, url string) (githubRelease, error) {
@@ -13,6 +14,7 @@ func fetchLatestRelease(ctx context.Context, url string) (githubRelease, error) 
 		return githubRelease{}, fmt.Errorf("build release request: %w", err)
 	}
 	req.Header.Set("Accept", "application/vnd.github+json")
+	applyGitHubReleaseAuth(req)
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return githubRelease{}, fmt.Errorf("fetch release: %w", err)
@@ -29,4 +31,17 @@ func fetchLatestRelease(ctx context.Context, url string) (githubRelease, error) 
 		return githubRelease{}, fmt.Errorf("latest release missing")
 	}
 	return releases[0], nil
+}
+
+func applyGitHubReleaseAuth(req *http.Request) {
+	if req.URL.Host != "api.github.com" {
+		return
+	}
+	token := os.Getenv("GITHUB_TOKEN")
+	if token == "" {
+		token = os.Getenv("GH_TOKEN")
+	}
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
 }

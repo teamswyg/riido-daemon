@@ -68,6 +68,7 @@ type runEvidence struct {
 	DeploymentGate     runDeploymentGate     `json:"deployment_gate"`
 	Artifacts          runArtifacts          `json:"artifacts"`
 	OpenRepairs        []runRepair           `json:"open_repairs,omitempty"`
+	ClosedLoops        []runLoopCandidate    `json:"product_closed_loop_candidates,omitempty"`
 	CandidateSummary   closedLoopSummary     `json:"closed_loop_candidate_summary"`
 	Candidates         []closedLoopCandidate `json:"closed_loop_candidates"`
 	Steps              []stepEvidence        `json:"steps"`

@@ -18,8 +18,10 @@ Define how riido-daemon public release assets are built, published, installed, a
 ## Executable Sources
 
 - .github/workflows/release-artifacts.yml
+- .github/workflows/cdn-latest-ai-agent.yml
 - scripts/build-release-package.sh
 - scripts/publish-release-artifacts.sh
+- scripts/publish-cdn-latest.sh
 - scripts/install-riido-daemon.sh
 
 ## Assertions
@@ -27,5 +29,6 @@ Define how riido-daemon public release assets are built, published, installed, a
 - Release assets are generated from v* tags and dry-run built on pull requests.
 - Provider CLIs and secrets are never bundled in riido-daemon release archives.
 - GitHub Releases are the immutable daemon binary source; CDN latest is only a mutable mirror.
+- CDN latest mirror is updated by CI/CD after release-artifacts succeeds, not by manual S3 copy.
 - Installer behavior must stay derivable from the install script and release target manifest.
 - The executable must expose the same release tag through `riido version` and `riido --version`.

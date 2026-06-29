@@ -1,0 +1,1096 @@
+{
+  "schema_version": "riido-loop-registry.v1",
+  "id": "daemon-loop-registry",
+  "title": "Daemon Loop Registry",
+  "generated_doc": "docs/30-architecture/loop-registry.md",
+  "workflow": ".github/workflows/loop-registry.yml",
+  "evidence_artifact": "loop-registry",
+  "precommit_hook": "loop-registry",
+  "command": "go run ./tools/loopregistry -check-doc",
+  "loop": {
+    "observation": "QA, workflow, and executable-knowledge evidence existed, but the relationship between loops, business claims, code paths, tests, docs, and evidence was still inferred by humans.",
+    "hypothesis": "A Loop Registry manifest can make loop ownership and business-claim bindings executable so an agent does not need to read prose before changing semantically bound files.",
+    "execute": "Verify loop entries, evidence-graph closure, claim file anchors, verifier source tokens, CI wiring, pre-commit wiring, generated-doc freshness, and optional changed-file co-change constraints.",
+    "evaluate": "The verifier fails when a loop omits observe/verify/evidence/freshness/fail conditions, when a claim has no code/doc/test/evidence binding, or when a claim-bound runtime file changes without bound proof changing too.",
+    "retrospective": "Harnesses can keep discovering failures while the registry decides which discoveries have become closed loops and which files must move together."
+  },
+  "loops": [
+    {
+      "id": "local-qa-gap-to-candidate",
+      "owner": "tools/localproductacceptance",
+      "kind": "harness-to-closed-loop-intake",
+      "candidate_created_at": "2026-06-24",
+      "promotion_target": "closed-loop candidate decision verifier",
+      "observes": [
+        "skipped scenarios",
+        "partial scenarios",
+        "failed scenarios",
+        "inferred execution ids"
+      ],
+      "verifies": [
+        "closed_loop_candidates are emitted",
+        "candidate count is visible in JSON evidence",
+        "each candidate carries an evidence_graph",
+        "each candidate declares required_next_artifacts",
+        "local QA run evidence rolls candidates up"
+      ],
+      "evidence": [
+        ".riido-local/evidence/ai-agent-product-acceptance.json",
+        "local-qa-runner artifact"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "closed_loop_candidates missing",
+        "required_next_artifacts missing",
+        "inferred execution hidden",
+        "evidence gap silently passes"
+      ],
+      "evidence_graph": {
+        "observation": "local QA scenarios can be skipped or inferred without creating follow-up work.",
+        "hypothesis": "Every skipped, partial, failed, or inferred observation should become a closed_loop_candidate.",
+        "change": "evidence_gap_candidates derives candidates from local QA scenario outcomes.",
+        "verifier": "TestEvidenceGapScenarioPromotesInferredExecutionLoops",
+        "evidence": "local.qa.evidence_gap_candidates",
+        "decision": "partial status is expected while candidates remain.",
+        "next_loop": "promote one candidate into a system-owned verifier."
+      }
+    },
+    {
+      "id": "local-qa-evidence-expiry-gate",
+      "owner": "tools/localqarunner",
+      "kind": "closed-loop",
+      "observes": [
+        "coverage rows",
+        "expires_at",
+        "deployment gate"
+      ],
+      "verifies": [
+        "expired coverage rows block deployment",
+        "strict release gate fails on blocked deployment gate",
+        "fresh coverage rows remain deployable"
+      ],
+      "evidence": [
+        ".riido-local/evidence/local-qa-run.json",
+        ".riido-local/evidence/local-qa-coverage.json"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "expired evidence is treated as green",
+        "deployment gate omits coverage_evidence_expired",
+        "strict coverage ignores a blocked deployment gate"
+      ],
+      "evidence_graph": {
+        "observation": "coverage evidence can remain passed after its source rows have expired.",
+        "hypothesis": "The release gate should block expired local QA rows even when the previous coverage summary was passed.",
+        "change": "deployment gate counts expired coverage rows and emits coverage_evidence_expired.",
+        "verifier": "TestBuildDeploymentGateBlocksExpiredCoverageRows",
+        "evidence": "deployment_gate.blockers[].code=coverage_evidence_expired",
+        "decision": "expired evidence requires a new QA run before deployment.",
+        "next_loop": "connect launchd schedule evidence to automatic rerun confirmation."
+      }
+    },
+    {
+      "id": "local-qa-candidate-decision",
+      "owner": "tools/localqacandidatedecision",
+      "kind": "closed-loop",
+      "observes": [
+        "local QA closed_loop_candidates",
+        "required_next_artifacts",
+        "decision records"
+      ],
+      "verifies": [
+        "out/local-qa-run.json candidates have decisions",
+        "decision next_artifact is required by each candidate",
+        "orphan decision records fail"
+      ],
+      "evidence": [
+        "local-qa-candidate-decision",
+        "decision_artifacts",
+        "candidate_count"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "candidate decision missing",
+        "decision references missing candidate",
+        "next_artifact is not required",
+        "candidate input omitted"
+      ],
+      "evidence_graph": {
+        "observation": "Local QA can produce closed-loop candidates while priority and ownership remain implicit.",
+        "hypothesis": "A candidate decision verifier can force every current local QA candidate to bind owner, priority, disposition, next loop, and next artifact.",
+        "change": "localqacandidatedecision consumes local-qa-run evidence inside the local-qa-runner workflow.",
+        "verifier": "TestCandidateDecisionCoversLocalQACandidate",
+        "evidence": "local-qa-candidate-decision",
+        "decision": "Local QA candidate decisions are executable evidence, not a passive dashboard list.",
+        "next_loop": "promote triage_required decisions into claim-bound verifiers."
+      }
+    },
+    {
+      "id": "product-loop-evidence",
+      "owner": "tools/productloopevidence",
+      "kind": "systematization-audit",
+      "candidate_created_at": "2026-06-26",
+      "promotion_target": "entrypoint route map and candidate-aging gate",
+      "observes": [
+        "tool entrypoints",
+        "workflow entrypoints",
+        "entrypoint route coverage",
+        "claim mapping coverage",
+        "product outcome scenario bindings",
+        "partial candidate debt"
+      ],
+      "verifies": [
+        "meta complexity emits counts",
+        "entrypoint route coverage reaches every visible entrypoint",
+        "product acceptance signals are bound to local QA scenarios",
+        "partial candidates expose required next artifacts",
+        "generated product loop reader stays fresh"
+      ],
+      "evidence": [
+        "product-loop-evidence",
+        "meta_complexity",
+        "product_acceptance",
+        "partial_reduction"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "product loop manifest drifts",
+        "outcome signal loses scenario binding",
+        "partial candidate lacks required_next_artifacts",
+        "claim-bound product loop files change without evidence"
+      ],
+      "evidence_graph": {
+        "observation": "Product QA, loop registry, and provider evidence were visible but not summarized as product-success closure.",
+        "hypothesis": "A thin product-loop evidence sidecar can keep meta complexity, product outcome linkage, and partial candidate debt measurable.",
+        "change": "productloopevidence reads existing executable manifests and emits one machine-readable product-loop report.",
+        "verifier": "TestCollectCandidatesPromotesPartialEvidence",
+        "evidence": "product-loop-evidence",
+        "decision": "partial status is accepted as evidence debt while required next artifacts are explicit.",
+        "next_loop": "promote candidate age and entrypoint routing into stricter gates."
+      }
+    },
+    {
+      "id": "qa-system-inference-surfacing",
+      "owner": "tools/localproductacceptance",
+      "kind": "systematization-audit",
+      "candidate_created_at": "2026-06-24",
+      "promotion_target": "system-owned QA execution inventory",
+      "observes": [
+        "qa-system DSL",
+        "execution_inventory",
+        "generated QA mirrors"
+      ],
+      "verifies": [
+        "inference_required_count",
+        "inference_required_ids",
+        "generated drift checks"
+      ],
+      "evidence": [
+        ".riido-local/evidence/ai-agent-product-acceptance.json"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "inferred execution is counted as green",
+        "generated artifacts drift",
+        "pre-commit generation is absent"
+      ],
+      "evidence_graph": {
+        "observation": "some QA actions still require human or Codex inference.",
+        "hypothesis": "Counting inferred execution explicitly prevents false green QA evidence.",
+        "change": "qaSystemScenario marks inferred execution as partial evidence.",
+        "verifier": "TestQASystemExecutionInventoryCounts",
+        "evidence": "local.qa.dsl_system_audit",
+        "decision": "remaining inferred ids are surfaced as candidates.",
+        "next_loop": "replace inferred entries with system-owned commands."
+      }
+    },
+    {
+      "id": "intent-clarification-needs-input",
+      "owner": "internal/agentbridge/controlplane/saasplane",
+      "kind": "closed-loop",
+      "observes": [
+        "assignment prompt/context",
+        "provider completed output",
+        "clarification question markers",
+        "AgentEventRequest metadata"
+      ],
+      "verifies": [
+        "interaction contract reaches provider instruction surface",
+        "assignment_result_status=needs_input is emitted",
+        "assignment is not reported completed",
+        "events endpoint shape is preserved"
+      ],
+      "evidence": [
+        "loop-engineering-evidence",
+        "TestApplyRuntimeInstructionContractPlacesByProvider",
+        "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "clarification output completes assignment",
+        "needs_input metadata missing",
+        "endpoint shape changes"
+      ],
+      "evidence_graph": {
+        "observation": "Intent-oriented work can make a provider ask a clarification question and exit successfully.",
+        "hypothesis": "The daemon can first instruct providers to ask for intent on non-command context, then treat the clarification as waiting-for-user metadata while preserving the existing SaaS event contract.",
+        "change": "agentbridge injects the assignment interaction contract and saasplane maps canonical clarification result text to assignment_state_updated/running with assignment_result_status=needs_input.",
+        "verifier": "TestApplyRuntimeInstructionContractPlacesByProvider and TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment",
+        "evidence": "intent-clarification-result loop evidence",
+        "decision": "clarification-only outputs remain conversational rather than terminal completion.",
+        "next_loop": "exercise the same conversation through live SaaS v3 thread history."
+      }
+    }
+  ],
+  "business_claims": [
+    {
+      "id": "closed_loop_candidates_must_surface_harness_gaps",
+      "text": "Harness observations that are skipped, partial, failed, inferred, or classified as candidate_auto provider repairs must become machine-readable closed-loop candidates with required adoption artifacts instead of hidden follow-up work.",
+      "files": [
+        "tools/localproductacceptance/evidence_gap_types.go",
+        "tools/localproductacceptance/evidence_gap.go",
+        "tools/localproductacceptance/evidence_gap_candidates.go",
+        "tools/localproductacceptance/evidence_gap_candidate_graph.go",
+        "tools/localproductacceptance/evidence_gap_inferred.go",
+        "tools/localqarunner/loop_candidate_types.go",
+        "tools/localqarunner/product_evidence.go",
+        "tools/localqarunner/provider_evidence.go",
+        "tools/localqarunner/provider_repair_candidate.go",
+        "tools/localqarunner/provider_repair_candidate_graph.go",
+        "tools/localqarunner/types.go",
+        "tools/providerintegrationevidence/repair.go",
+        "tools/localqadashboard/run_loop_candidate.go",
+        "tools/localqadashboard/run_evidence.go",
+        "tools/localqadashboard/render.go",
+        ".github/workflows/local-qa-runner.yml"
+      ],
+      "docs": [
+        "docs/30-architecture/local-acceptance-coverage.riido.json",
+        "docs/readme/local-acceptance.riido.json",
+        "docs/readme/local-acceptance.md"
+      ],
+      "evidence": [
+        "local.qa.evidence_gap_candidates",
+        "provider.real_cli_observation",
+        "closed_loop_candidates",
+        "evidence_graph",
+        "required_next_artifacts"
+      ],
+      "verifiers": [
+        {
+          "name": "gap-candidates-test",
+          "file": "tools/localproductacceptance/evidence_gap_test.go",
+          "contains": [
+            "TestEvidenceGapScenarioPromotesInferredExecutionLoops",
+            "closed_loop_candidates"
+          ]
+        },
+        {
+          "name": "gap-candidate-graph-test",
+          "file": "tools/localproductacceptance/evidence_gap_graph_test.go",
+          "contains": [
+            "TestEvidenceGapCandidatesCarryEvidenceGraph",
+            "evidence_graph",
+            "required_next_artifacts",
+            "claim_binding"
+          ]
+        },
+        {
+          "name": "local-qa-runner-candidate-rollup-test",
+          "file": "tools/localqarunner/product_evidence_test.go",
+          "contains": [
+            "TestApplyProductEvidenceRollsUpClosedLoopCandidates",
+            "TestApplyProductEvidenceRejectsCandidateWithoutAdoptionArtifacts",
+            "TestApplyProductEvidenceRejectsCandidateWithoutEvidenceGraph",
+            "closed_loop_candidates",
+            "RequiredNextArtifacts",
+            "evidence_graph"
+          ]
+        },
+        {
+          "name": "local-qa-runner-provider-repair-candidate-test",
+          "file": "tools/localqarunner/provider_repair_candidate_test.go",
+          "contains": [
+            "TestApplyProviderEvidencePromotesCandidateAutoRepair",
+            "TestApplyProviderEvidencePromotesClaudeApprovalCandidate",
+            "candidate_auto",
+            "repair-provider.claude.provider_tool_approval_missing",
+            "repair-provider.openclaw.local_backend_unavailable",
+            "local.qa.provider_repair_candidates"
+          ]
+        },
+        {
+          "name": "provider-repair-claude-approval-classifier-test",
+          "file": "tools/providerintegrationevidence/repair_test.go",
+          "contains": [
+            "TestClassifyRepairClaudeToolApprovalMissing",
+            "TestClassifyRepairClaudeConversationalApprovalGap",
+            "provider_tool_approval_missing",
+            "candidate_auto",
+            "/tool-approvals",
+            "chat approval"
+          ]
+        },
+        {
+          "name": "local-qa-dashboard-candidate-test",
+          "file": "tools/localqadashboard/render_loop_candidate_test.go",
+          "contains": [
+            "Closed-loop Candidates",
+            "promote-x",
+            "claim_binding"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "local_qa_candidate_decisions_must_match_candidates",
+      "text": "Closed-loop candidate decision verification must consume current local QA run evidence and product-loop evidence, cover every present scoped candidate exactly once, allow dynamic product-loop decision classes to be absent, choose only next_artifact values declared by each candidate's required_next_artifacts, and emit actionable PR annotations for candidate decision failures.",
+      "files": [
+        "tools/localqacandidatedecision/annotation.go",
+        "tools/localqacandidatedecision/annotation_escape.go",
+        "tools/localqacandidatedecision/candidate.go",
+        "tools/localqacandidatedecision/candidate_more.go",
+        "tools/localqacandidatedecision/candidate_problem.go",
+        "tools/localqacandidatedecision/candidate_problem_more.go",
+        "tools/localqacandidatedecision/decision.go",
+        "tools/localqacandidatedecision/decision_counts.go",
+        "tools/localqacandidatedecision/main.go",
+        "tools/localqacandidatedecision/options.go",
+        "tools/localqacandidatedecision/render.go",
+        "tools/localqacandidatedecision/run.go",
+        "tools/localqacandidatedecision/types_candidate.go",
+        "tools/localqacandidatedecision/verify.go",
+        "tools/localqacandidatedecision/workflow.go",
+        "tools/localqacandidatedecision/annotation_test.go",
+        "tools/localqacandidatedecision/candidate_test.go",
+        "tools/localqacandidatedecision/decision_test.go",
+        "tools/localqacandidatedecision/product_loop_decision_test.go",
+        "tools/localqacandidatedecision/run_test.go",
+        ".github/workflows/local-qa-runner.yml",
+        ".github/workflows/product-loop-evidence.yml"
+      ],
+      "docs": [
+        "docs/30-architecture/local-qa-candidate-decision.riido.json",
+        "docs/30-architecture/local-qa-candidate-decision.md",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/product-loop-evidence.riido.json",
+        "docs/30-architecture/product-loop-evidence.md",
+        "docs/readme/local-acceptance.riido.json",
+        "docs/readme/local-acceptance.md"
+      ],
+      "evidence": [
+        "local-qa-candidate-decision",
+        "decision_artifacts",
+        "matched_decision_count",
+        "scope_decision_count",
+        "allowed_missing_decision_count",
+        "required_next_artifacts",
+        "evidence_graph",
+        "product-loop-candidate-decision"
+      ],
+      "verifiers": [
+        {
+          "name": "candidate-decision-annotation-test",
+          "file": "tools/localqacandidatedecision/annotation_test.go",
+          "contains": [
+            "TestCandidateAnnotationExplainsRequiredArtifacts",
+            "required_next_artifacts"
+          ]
+        },
+        {
+          "name": "candidate-decision-cover-test",
+          "file": "tools/localqacandidatedecision/candidate_test.go",
+          "contains": [
+            "TestCandidateDecisionCoversLocalQACandidate",
+            "TestCandidateDecisionRejectsMissingDecision",
+            "TestCandidateDecisionRejectsMissingEvidenceGraph",
+            "TestCandidateDecisionScopeCoversProductLoopCandidate"
+          ]
+        },
+        {
+          "name": "candidate-decision-artifact-test",
+          "file": "tools/localqacandidatedecision/decision_test.go",
+          "contains": [
+            "TestCandidateDecisionRejectsOrphanDecision",
+            "TestCandidateDecisionRejectsUnknownNextArtifact",
+            "TestCandidateDecisionRequiresReviewBy"
+          ]
+        },
+        {
+          "name": "candidate-decision-product-loop-test",
+          "file": "tools/localqacandidatedecision/product_loop_decision_test.go",
+          "contains": [
+            "TestCandidateDecisionAllowsProductLoopDecisionWhenAbsent",
+            "TestCandidateDecisionAllowsPartialReductionProductLoopDecisionWhenAbsent",
+            "AllowedMissingCount",
+            "TestCandidateDecisionRejectsUnknownProductLoopDecisionWhenAbsent"
+          ]
+        },
+        {
+          "name": "candidate-decision-input-test",
+          "file": "tools/localqacandidatedecision/run_test.go",
+          "contains": [
+            "TestRunRequiresCandidateInputForCheckDoc",
+            "candidate input"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "expired_local_qa_evidence_must_block_deployment",
+      "text": "Expired local QA coverage evidence must block the deployment gate even when the previous coverage summary was passed.",
+      "files": [
+        "tools/localqarunner/deployment_gate.go",
+        "tools/localqarunner/coverage_expiry.go",
+        "tools/localqarunner/coverage_expiry_test.go",
+        "tools/localqarunner/coverage_evidence.go",
+        "tools/localqarunner/strict_coverage.go",
+        "tools/localqarunner/strict_coverage_test.go"
+      ],
+      "docs": [
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md",
+        "docs/30-architecture/local-qa-daily-trigger.dsl.json"
+      ],
+      "evidence": [
+        "coverage_evidence_expired",
+        "deployment_gate",
+        "expires_at"
+      ],
+      "verifiers": [
+        {
+          "name": "expired-coverage-gate-test",
+          "file": "tools/localqarunner/coverage_expiry_test.go",
+          "contains": [
+            "TestBuildDeploymentGateBlocksExpiredCoverageRows",
+            "coverage_evidence_expired"
+          ]
+        },
+        {
+          "name": "strict-gate-block-test",
+          "file": "tools/localqarunner/strict_coverage_test.go",
+          "contains": [
+            "TestApplyStrictCoverageFailsBlockedGate",
+            "deploymentGateBlocked"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "daily_local_qa_schedule_must_refresh_expiring_evidence",
+      "text": "Daily local QA scheduling must be an executable LaunchAgent loop that runs the local QA runner, writes schedule evidence without token text, points at coverage evidence, and lets the dashboard prove either a successful completed run or an active run before expired evidence can be trusted again.",
+      "files": [
+        "tools/localqaschedule/evidence.go",
+        "tools/localqaschedule/evidence_types.go",
+        "tools/localqaschedule/trigger.go",
+        "tools/localqaschedule/shell.go",
+        "tools/localqaschedule/plist.go",
+        "tools/localqaschedule/plist_more.go",
+        "tools/localqaschedule/run.go",
+        "tools/localqaschedule/launchd_inspect.go",
+        "tools/localqarunner/schedule_step.go",
+        "tools/localqarunner/schedule_step_args.go",
+        "tools/localqadashboard/schedule_evidence.go"
+      ],
+      "docs": [
+        "docs/30-architecture/local-qa-daily-trigger.dsl.json",
+        "docs/readme/local-acceptance.riido.json",
+        "docs/readme/local-acceptance.md",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "local-qa-schedule",
+        "local.qa.daily_schedule",
+        "local.qa.daily_trigger",
+        "daily-evidence-sweep",
+        "coverage_evidence"
+      ],
+      "verifiers": [
+        {
+          "name": "schedule-evidence-writes-coverage-and-redacts-token",
+          "file": "tools/localqaschedule/evidence_test.go",
+          "contains": [
+            "TestWriteScheduleEvidenceIncludesCoveragePath",
+            "TestSafeCommandPreviewRedactsTokenText",
+            "dailyEvidenceSweepID"
+          ]
+        },
+        {
+          "name": "schedule-plist-runs-local-qa-daily",
+          "file": "tools/localqaschedule/plist_test.go",
+          "contains": [
+            "TestRenderPlistIncludesDailySchedule",
+            "go run ./tools/localqarunner",
+            "<key>Hour</key><integer>9</integer>"
+          ]
+        },
+        {
+          "name": "dashboard-requires-live-schedule-evidence",
+          "file": "tools/localqadashboard/schedule_evidence_failure_test.go",
+          "contains": [
+            "TestScheduleEvidenceScenariosRequiresLaunchdLiveState",
+            "TestScheduleEvidenceScenariosRequiresSuccessfulLaunchdRun"
+          ]
+        },
+        {
+          "name": "dashboard-accepts-active-launchd-run",
+          "file": "tools/localqadashboard/schedule_evidence_run_test.go",
+          "contains": [
+            "TestScheduleEvidenceScenariosAcceptsActiveLaunchdRun",
+            "TestScheduleEvidenceScenariosRequiresCoverageEvidencePath"
+          ]
+        },
+        {
+          "name": "runner-refreshes-schedule-inspect-args",
+          "file": "tools/localqarunner/schedule_step_test.go",
+          "contains": [
+            "TestAppendScheduleProductArgsIncludesTaskFlags",
+            "-product-task-id",
+            "-product-comment-body"
+          ]
+        },
+        {
+          "name": "runner-creates-no-live-schedule-evidence",
+          "file": "tools/localqarunner/schedule_step_args_test.go",
+          "contains": [
+            "TestScheduleStepArgsCreatesRepoLocalScheduleEvidence",
+            "TestScheduleStepArgsInspectsExistingScheduleEvidence",
+            "schedule-evidence"
+          ]
+        },
+        {
+          "name": "dashboard-includes-schedule-install-detail",
+          "file": "tools/localqadashboard/schedule_evidence_test.go",
+          "contains": [
+            "TestScheduleEvidenceScenariosIncludesInstallDetail"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "qa_system_inference_must_not_pass_as_green",
+      "text": "QA system evidence must report inferred execution separately and mark the audit partial until every loop has a system-owned verifier.",
+      "files": [
+        "tools/localproductacceptance/qa_system.go",
+        "docs/30-architecture/qa-system.dsl.json"
+      ],
+      "docs": [
+        "docs/30-architecture/qa-system.dsl.json",
+        "docs/readme/local-acceptance.md"
+      ],
+      "evidence": [
+        "local.qa.dsl_system_audit",
+        "inference_required_count"
+      ],
+      "verifiers": [
+        {
+          "name": "qa-system-inference-count-test",
+          "file": "tools/localproductacceptance/qa_system_execution_test.go",
+          "contains": [
+            "TestQASystemExecutionInventoryCounts",
+            "inference_required_ids"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "client_harness_must_remain_readonly",
+      "text": "Daemon-owned QA harness work must never be committed or merged into teamswyg/riido-client; client worktrees are observed only.",
+      "files": [
+        "tools/localproductacceptance/git.go",
+        "docs/30-architecture/local-acceptance-coverage.riido.json"
+      ],
+      "docs": [
+        "docs/30-architecture/local-acceptance-coverage.riido.json"
+      ],
+      "evidence": [
+        "product.client.readonly"
+      ],
+      "verifiers": [
+        {
+          "name": "client-readonly-test",
+          "file": "tools/localproductacceptance/git_test.go",
+          "contains": [
+            "clientReadOnlyScenario",
+            "must never be merged"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "product_loop_evidence_must_measure_success_closure",
+      "text": "Product success loops must measure meta-complexity, product acceptance linkage, and partial-reduction debt as executable evidence so harness failures can become closed-loop candidates without changing endpoint or runtime contracts.",
+      "files": [
+        "tools/productloopevidence/candidates.go",
+        "tools/productloopevidence/candidates_test.go",
+        "tools/productloopevidence/candidate_graph.go",
+        "tools/productloopevidence/constants.go",
+        "tools/productloopevidence/fixture_test.go",
+        "tools/productloopevidence/format.go",
+        "tools/productloopevidence/files.go",
+        "tools/productloopevidence/io.go",
+        "tools/productloopevidence/main.go",
+        "tools/productloopevidence/manifest.go",
+        "tools/productloopevidence/meta.go",
+        "tools/productloopevidence/ops_readiness_test.go",
+        "tools/productloopevidence/ops_scenarios_test.go",
+        "tools/productloopevidence/partial.go",
+        "tools/productloopevidence/partial_age.go",
+        "tools/productloopevidence/partial_candidate.go",
+        "tools/productloopevidence/partial_local_qa.go",
+        "tools/productloopevidence/partial_registry.go",
+        "tools/productloopevidence/partial_test.go",
+        "tools/productloopevidence/partial_types.go",
+        "tools/productloopevidence/path.go",
+        "tools/productloopevidence/product.go",
+        "tools/productloopevidence/render.go",
+        "tools/productloopevidence/report.go",
+        "tools/productloopevidence/report_test.go",
+        "tools/productloopevidence/report_types.go",
+        "tools/productloopevidence/route_coverage.go",
+        "tools/productloopevidence/route_map.go",
+        "tools/productloopevidence/route_render.go",
+        "tools/productloopevidence/route_types.go",
+        "tools/productloopevidence/run.go",
+        "tools/productloopevidence/schedule.go",
+        "tools/productloopevidence/schedule_candidate.go",
+        "tools/productloopevidence/schedule_render.go",
+        "tools/productloopevidence/schedule_source.go",
+        "tools/productloopevidence/schedule_test.go",
+        "tools/productloopevidence/schedule_types.go",
+        "tools/productloopevidence/source_types.go",
+        "tools/productloopevidence/types.go",
+        ".github/workflows/local-qa-runner.yml",
+        ".github/workflows/product-loop-evidence.yml"
+      ],
+      "docs": [
+        "docs/30-architecture/entrypoint-route-map.riido.json",
+        "docs/30-architecture/entrypoint-route-map.md",
+        "docs/30-architecture/local-acceptance-coverage.riido.json",
+        "docs/30-architecture/product-loop-evidence.riido.json",
+        "docs/30-architecture/product-loop-evidence.md",
+        "docs/30-architecture/local-qa-daily-trigger.dsl.json",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "product-loop-evidence",
+        "meta_complexity",
+        "route_coverage",
+        "qa_schedule",
+        "local_qa_run_evidence_state",
+        "local_qa_run_evidence_fresh",
+        "product_acceptance",
+        "partial_reduction",
+        "closed_loop_candidates",
+        "client_surface_anomaly_monitoring",
+        "stress_capacity",
+        "scale_chaos",
+        "release_readiness"
+      ],
+      "verifiers": [
+        {
+          "name": "product-loop-acceptance-test",
+          "file": "tools/productloopevidence/report_test.go",
+          "contains": [
+            "TestBuildProductAcceptanceFindsMissingSignals",
+            "assignment_completion",
+            "MissingSignalIDs"
+          ]
+        },
+        {
+          "name": "product-loop-mapping-test",
+          "file": "tools/productloopevidence/report_test.go",
+          "contains": [
+            "TestBuildMappingCoverageRequiresVerifierClaims",
+            "CoverageRatio"
+          ]
+        },
+        {
+          "name": "product-loop-route-coverage-test",
+          "file": "tools/productloopevidence/report_test.go",
+          "contains": [
+            "TestBuildMetaComplexityTreatsRoutedEntrypointsAsManaged",
+            "RouteCoverage",
+            "CoverageRatio"
+          ]
+        },
+        {
+          "name": "product-loop-candidate-test",
+          "file": "tools/productloopevidence/candidates_test.go",
+          "contains": [
+            "TestCollectCandidatesPromotesPartialEvidence",
+            "RequiredNextArtifacts"
+          ]
+        },
+        {
+          "name": "product-loop-open-candidate-debt-test",
+          "file": "tools/productloopevidence/candidates_test.go",
+          "contains": [
+            "TestCollectCandidatesShowsOpenCandidateDebt",
+            "partial-reduction-open-candidate-debt",
+            "local-qa-candidate-decision"
+          ]
+        },
+        {
+          "name": "product-loop-qa-schedule-test",
+          "file": "tools/productloopevidence/schedule_test.go",
+          "contains": [
+            "TestBuildQAScheduleRequiresRunAndDashboardEvidence",
+            "local-qa-schedule.json",
+            "localqarunner"
+          ]
+        },
+        {
+          "name": "product-loop-local-qa-freshness-test",
+          "file": "tools/productloopevidence/partial_test.go",
+          "contains": [
+            "TestBuildPartialReductionRequiresFreshLocalQARunEvidence",
+            "localQARunExpired",
+            "localQARunFresh"
+          ]
+        },
+        {
+          "name": "product-loop-operational-readiness-test",
+          "file": "tools/productloopevidence/ops_readiness_test.go",
+          "contains": [
+            "TestProductLoopManifestDeclaresOperationalReadinessSignals",
+            "TestLocalAcceptanceManifestNamesOperationalReadinessScenarios",
+            "operationalScenarioIDs"
+          ]
+        },
+        {
+          "name": "product-loop-claim-binding-test",
+          "file": "tools/loopregistry/product_loop_claim_test.go",
+          "contains": [
+            "TestProductLoopClaimBindsOperationalReadinessEvidence",
+            "local-qa-runner-operational-coverage"
+          ]
+        }
+      ],
+      "contracts": [
+        {
+          "name": "local-qa-runner-operational-coverage",
+          "file": ".github/workflows/local-qa-runner.yml",
+          "contains": [
+            "ops.monitoring.client_surface_anomaly",
+            "ops.stress.concurrent_users",
+            "ops.chaos.recovery_packet_surge"
+          ]
+        },
+        {
+          "name": "product-loop-workflow",
+          "file": ".github/workflows/product-loop-evidence.yml",
+          "contains": [
+            "go run ./tools/localqarunner",
+            "local_qa_run_evidence_state",
+            "client_surface_anomaly_monitoring",
+            "stress_capacity",
+            "go run ./tools/productloopevidence -check-doc",
+            "product-loop-evidence.json"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "intent_clarification_must_wait_for_user",
+      "text": "When task context does not contain a concrete action, the daemon must instruct providers to ask what work to do first; when a provider exits successfully after that question, the daemon must report needs_input instead of completing the assignment.",
+      "files": [
+        "internal/agentbridge/assignment_interaction_contract.go",
+        "internal/agentbridge/telemetry_apply.go",
+        "internal/agentbridge/telemetry_runtime_instruction_apply_test.go",
+        "internal/agentbridge/controlplane/saasplane/saasplane_system_prompt_test.go",
+        "internal/agentbridge/controlplane/saasplane/task_completion.go",
+        "internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go",
+        "internal/agentbridge/controlplane/saasplane/needs_input_markers.go",
+        "internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go",
+        "internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go"
+      ],
+      "docs": [
+        "docs/30-architecture/loop-engineering/intent-clarification-result.riido.json",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "assignment_result_status=needs_input",
+        "assignment_failure_category=provider_limit",
+        "assignment interaction contract",
+        "intent-clarification-result",
+        "loop-engineering-evidence"
+      ],
+      "verifiers": [
+        {
+          "name": "interaction-contract-placement-test",
+          "file": "internal/agentbridge/telemetry_runtime_instruction_apply_test.go",
+          "contains": [
+            "TestApplyRuntimeInstructionContractPlacesByProvider",
+            "Riido assignment interaction contract:",
+            "어떤 작업부터 진행할까요?"
+          ]
+        },
+        {
+          "name": "needs-input-completion-test",
+          "file": "internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go",
+          "contains": [
+            "TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment",
+            "AssignmentResultStatus",
+            "needs_input",
+            "EventAssignmentStateUpdated"
+          ]
+        },
+        {
+          "name": "provider-limit-category-test",
+          "file": "internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go",
+          "contains": [
+            "TestPlaneCompleteTaskClassifiesProviderLimitFailure",
+            "AssignmentFailureCategory",
+            "provider_limit"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "loop_registry_must_bind_claims_to_code_docs_tests",
+      "text": "Loop Registry entries must bind business claims to code paths, docs, verifier tokens, evidence names, workflow execution, pre-commit execution, actionable PR annotations for claim-bound changed-file failures, and bidirectional claim semantic co-change checks.",
+      "files": [
+        "tools/loopregistry/annotation.go",
+        "tools/loopregistry/claim_semantic_change.go",
+        "tools/loopregistry/claim_semantic_check.go",
+        "tools/loopregistry/claim_semantic_digest.go",
+        "tools/loopregistry/claim_semantic_files.go",
+        "tools/loopregistry/changed_file.go",
+        "tools/loopregistry/changed_problem.go",
+        "tools/loopregistry/changed_validate.go",
+        "tools/loopregistry/report_types.go",
+        "tools/loopregistry/product_loop_claim_test.go",
+        "tools/loopregistry/run.go",
+        "tools/loopregistry/slice.go",
+        "tools/loopregistry/validate.go",
+        "tools/loopregistry/validate_claim.go",
+        "tools/loopregistry/changed.go",
+        ".github/workflows/loop-registry.yml",
+        ".pre-commit-config.yaml"
+      ],
+      "docs": [
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "loop-registry"
+      ],
+      "verifiers": [
+        {
+          "name": "loop-registry-tests",
+          "file": "tools/loopregistry/run_test.go",
+          "contains": [
+            "TestRegistryValidatesClaimBindings",
+            "TestRegistryRejectsRuntimeOnlyClaimChange"
+          ]
+        },
+        {
+          "name": "loop-registry-changed-evidence-test",
+          "file": "tools/loopregistry/changed_test.go",
+          "contains": [
+            "TestChangedFileEvidenceIncludesProblemDetails",
+            "TestChangedClaimTextRequiresBoundEvidenceChange",
+            "TestChangedClaimTextPassesWithVerifierEvidenceChange",
+            "RequiredEvidence"
+          ]
+        },
+        {
+          "name": "loop-registry-annotation-test",
+          "file": "tools/loopregistry/annotation_test.go",
+          "contains": [
+            "TestGitHubAnnotationExplainsClaimEvidence",
+            "Update one bound evidence file"
+          ]
+        },
+        {
+          "name": "loop-registry-product-loop-claim-test",
+          "file": "tools/loopregistry/product_loop_claim_test.go",
+          "contains": [
+            "TestProductLoopClaimBindsOperationalReadinessEvidence",
+            "claim missing operational readiness verifier"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cdn_latest_daemon_release_must_be_ci_owned",
+      "text": "The mutable CDN latest AI Agent daemon mirror must be updated by release-artifacts and cdn-latest-ai-agent CI/CD evidence, never by an untracked manual S3 copy, and the mirrored archive VERSION must match the release tag.",
+      "files": [
+        ".github/workflows/release-artifacts.yml",
+        ".github/workflows/cdn-latest-ai-agent.yml",
+        "scripts/build-release-package.sh",
+        "scripts/publish-release-artifacts.sh",
+        "scripts/publish-cdn-latest.sh",
+        "scripts/publish_cdn_latest_test.go",
+        "scripts/install-riido-daemon.sh",
+        "tools/releaseartifacts/run.go",
+        "tools/releaseartifacts/source.go",
+        "tools/releaseartifacts/validate.go",
+        "tools/releaseartifacts/evidence.go",
+        "tools/releaseartifacts/render_desktop.go",
+        "tools/releaseartifacts/run_test.go"
+      ],
+      "docs": [
+        "docs/30-architecture/release-artifacts.riido.json",
+        "docs/30-architecture/release-artifacts.md",
+        "docs/30-architecture/release-artifacts/desktop-msix-cdn.md",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "release-artifacts-evidence",
+        "release-artifact-docs",
+        "cdn-latest-ai-agent",
+        "riido-cdn-latest-ai-agent.v1"
+      ],
+      "verifiers": [
+        {
+          "name": "release-artifacts-tool-tests",
+          "file": "tools/releaseartifacts/run_test.go",
+          "contains": [
+            "TestRunAgainstRepositoryEvidence",
+            "TestGeneratedDocsCoverReleaseSurface"
+          ]
+        },
+        {
+          "name": "cdn-publish-script-tests",
+          "file": "scripts/publish_cdn_latest_test.go",
+          "contains": [
+            "TestPublishCDNLatestRejectsReleaseTagVersionMismatch",
+            "TestPublishCDNLatestDryRunSyncWritesEvidenceWithoutInvalidation"
+          ]
+        },
+        {
+          "name": "release-artifacts-source-checks",
+          "file": "docs/30-architecture/release-artifacts.riido.json",
+          "contains": [
+            "cdn-workflow-release-source",
+            "cdn-workflow-publish-script",
+            "cdn-publish-version-check",
+            "cdn-publish-cloudfront-invalidation",
+            "CDN latest mirror is updated by CI/CD after release-artifacts succeeds, not by manual S3 copy."
+          ]
+        }
+      ]
+    },
+    {
+      "id": "claude_daemon_must_use_web_approval_mode",
+      "text": "Claude daemon runs must start in provider approval mode, not acceptEdits or bypassPermissions, so provider permission requests can be represented as SaaS/web tool approvals instead of leaking local desktop approval dialogs into AI thread text.",
+      "files": [
+        "cmd/riido/bridge_adapter_claude.go",
+        "cmd/riido/bridge_adapter_claude_mcp.go",
+        "cmd/riido/claude_permission_mcp_command.go",
+        "cmd/riido/claude_permission_mcp_decision.go",
+        "cmd/riido/claude_permission_mcp_server.go",
+        "cmd/riido/claude_permission_mcp_types.go",
+        "cmd/riido/daemon_ipc_tool_approval.go",
+        "cmd/riido/bridge_adapter_start_test.go",
+        "cmd/riido/bridge_adapter_claude_mcp_test.go",
+        "cmd/riido/claude_permission_mcp_server_test.go",
+        "cmd/riido/daemon_ipc_tool_approval_test.go",
+        "internal/provider/claude/translate_control.go",
+        "internal/provider/claude/provider_input.go",
+        "internal/agentbridge/session/session_tool_approval_resolver.go",
+        "internal/agentbridge/controlplane/saasplane/tool_approval_authorizer.go",
+        "internal/agentbridge/controlplane/saasplane/tool_approval.go"
+      ],
+      "docs": [
+        "docs/30-architecture/local-acceptance-coverage.riido.json",
+        "docs/30-architecture/local-qa-candidate-decision.riido.json",
+        "docs/30-architecture/product-loop-evidence.riido.json",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "staging.v3.thread_history.asn-000121-123.no_tool_approval_create",
+        "staging.v3.thread_history.uNYpHxDOzMp3vMy_urWsu.codex_success_claude_permission_gate_failure",
+        "claude_control_request_to_tool_approval",
+        "claude_mcp_helper_delegates_to_daemon_socket",
+        "claude_mcp_helper_has_no_saas_credentials",
+        "daemon_tool_approval_authorizes_assignment_before_saas_resolution",
+        "product_loop.provider_approval_round_trip",
+        "provider_input_control_response",
+        "web_tool_approval_round_trip"
+      ],
+      "verifiers": [
+        {
+          "name": "claude-daemon-start-mode-test",
+          "file": "cmd/riido/bridge_adapter_start_test.go",
+          "contains": [
+            "TestRegisteredAdaptersBuildStartForDaemonRuntime",
+            "--permission-mode default",
+            "acceptEdits",
+            "bypassPermissions"
+          ]
+        },
+        {
+          "name": "claude-control-request-test",
+          "file": "internal/provider/claude/translate_control_request_test.go",
+          "contains": [
+            "TestTranslateControlRequestProducesApprovalNeeded",
+            "EventToolApprovalNeeded",
+            "permission_request"
+          ]
+        },
+        {
+          "name": "session-web-approval-resolver-test",
+          "file": "internal/agentbridge/session/session_tool_approval_resolver_test.go",
+          "contains": [
+            "TestSessionResolverApprovalWritesProviderInput",
+            "TestSessionResolverDeniedApprovalBlocksProviderCompletion",
+            "ToolApprovalResolver",
+            "assertApprovalProviderInput"
+          ]
+        },
+        {
+          "name": "safe-shell-auto-approval-test",
+          "file": "internal/agentbridge/toolpolicy/auto_approver_test.go",
+          "contains": [
+            "go run main.go",
+            "TestPolicyAutoApproverApprovesAllowedAndUnclassifiedTools"
+          ]
+        },
+        {
+          "name": "claude-mcp-helper-secret-boundary-test",
+          "file": "cmd/riido/bridge_adapter_claude_mcp_test.go",
+          "contains": [
+            "TestDaemonClaudeAdapterAddsPermissionPromptMCPWithoutSecrets",
+            "RIIDO_DEVICE_SECRET",
+            "--permission-prompt-tool"
+          ]
+        },
+        {
+          "name": "claude-mcp-helper-socket-delegation-test",
+          "file": "cmd/riido/claude_permission_mcp_server_test.go",
+          "contains": [
+            "TestClaudePermissionMCPDelegatesToDaemonSocket",
+            "tool args must be redacted before daemon IPC",
+            "TestClaudePermissionMCPSupportsLargeToolInput"
+          ]
+        },
+        {
+          "name": "daemon-tool-approval-authorizer-test",
+          "file": "cmd/riido/daemon_ipc_tool_approval_test.go",
+          "contains": [
+            "TestDaemonToolApprovalRequestUsesInProcessResolver",
+            "TestDaemonToolApprovalRequestRejectsInactiveAssignmentBeforeResolver",
+            "resolver was called for inactive assignment"
+          ]
+        },
+        {
+          "name": "product-loop-approval-round-trip-signal-test",
+          "file": "tools/productloopevidence/product_outcome_test.go",
+          "contains": [
+            "TestProductLoopManifestRequiresClaudeApprovalRoundTrip",
+            "provider_approval_round_trip",
+            "provider.claude.web_approval_round_trip"
+          ]
+        }
+      ]
+    }
+  ]
+}

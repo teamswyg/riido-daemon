@@ -24,11 +24,11 @@ func TestClassifyToolUseSurfaceMapsProviderNeutralLabels(t *testing.T) {
 func TestClassifyToolUseSurfaceUsesArgsToAvoidBroadShellClassification(t *testing.T) {
 	tool := agentbridge.ToolRef{Kind: "shell", Args: map[string]string{"command": "go test ./..."}}
 	if got, ok := ClassifyToolUseSurface(tool); ok {
-		t.Fatalf("safe shell command must stay unclassified for human path: %q", got)
+		t.Fatalf("safe shell command must stay unclassified: %q", got)
 	}
 }
 
-func TestClassifyToolUseSurfaceLeavesUnknownToolsForHumanApproval(t *testing.T) {
+func TestClassifyToolUseSurfaceLeavesReadOnlyToolsUnclassified(t *testing.T) {
 	if got, ok := ClassifyToolUseSurface(agentbridge.ToolRef{Kind: "read", Name: "Read"}); ok {
 		t.Fatalf("read-only tool must not auto-classify as a risk surface: %q", got)
 	}

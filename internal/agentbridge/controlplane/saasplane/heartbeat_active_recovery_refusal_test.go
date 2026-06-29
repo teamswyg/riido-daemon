@@ -2,14 +2,12 @@ package saasplane
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
-	"github.com/teamswyg/riido-contracts/metadatakeys"
 )
 
-func TestPlaneFailsActiveAssignmentWithoutSessionAfterLocalStateLoss(t *testing.T) {
+func TestPlaneSkipsActiveAssignmentWithoutSessionAfterLocalStateLoss(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	active := assignmentcontract.Assignment{
 		ID:              "asn-active",
@@ -32,16 +30,7 @@ func TestPlaneFailsActiveAssignmentWithoutSessionAfterLocalStateLoss(t *testing.
 	if req != nil {
 		t.Fatalf("active assignment without session must not be fresh-started: %+v", req)
 	}
-	if len(fake.events) != 1 {
-		t.Fatalf("events = %+v, want one recovery failure event", fake.events)
-	}
-	event := fake.events[0]
-	if event.EventType != assignmentcontract.EventAssignmentFailed ||
-		event.State != assignmentcontract.AssignmentFailed ||
-		event.Metadata[metadatakeys.AssignmentRecovery.String()] != assignmentcontract.RecoveryFreshStartRefused.String() {
-		t.Fatalf("recovery failure event = %+v", event)
-	}
-	if !strings.Contains(event.Message, "refusing fresh start") {
-		t.Fatalf("recovery failure message = %q", event.Message)
+	if len(fake.events) != 0 {
+		t.Fatalf("events = %+v, want no terminal event from a stateless poller", fake.events)
 	}
 }

@@ -1,0 +1,71 @@
+name: product-loop-evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/product-loop-evidence.yml"
+      - "docs/30-architecture/**"
+      - "tools/productloopevidence/**"
+      - "tools/localqacandidatedecision/**"
+      - "tools/localqarunner/**"
+      - "tools/localqadashboard/**"
+      - "tools/providerintegrationevidence/**"
+      - "go.mod"
+      - "go.sum"
+  pull_request:
+    paths:
+      - ".github/workflows/product-loop-evidence.yml"
+      - "docs/30-architecture/**"
+      - "tools/productloopevidence/**"
+      - "tools/localqacandidatedecision/**"
+      - "tools/localqarunner/**"
+      - "tools/localqadashboard/**"
+      - "tools/providerintegrationevidence/**"
+      - "go.mod"
+      - "go.sum"
+
+jobs:
+  product-loop-evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify product loop evidence
+        run: |
+          mkdir -p out .riido-local/evidence .riido-local/dashboard
+          go test ./tools/productloopevidence -count=1
+          go run ./tools/localqarunner \
+            -run-integration=false \
+            -run-release=false \
+            -run-product=false \
+            -provider-evidence .riido-local/evidence/provider-real-cli-observation.json \
+            -product-evidence .riido-local/evidence/ai-agent-product-acceptance.json \
+            -release-evidence .riido-local/evidence/local-release-acceptance.json \
+            -coverage-evidence .riido-local/evidence/local-qa-coverage.json \
+            -schedule-evidence .riido-local/evidence/local-qa-schedule.json \
+            -dashboard .riido-local/dashboard/index.html \
+            -evidence-out .riido-local/evidence/local-qa-run.json
+          test -s .riido-local/evidence/local-qa-run.json
+          go run ./tools/productloopevidence -check-doc -evidence-out out/product-loop-evidence.json
+          grep -q '"local_qa_run_evidence_state": "fresh"' out/product-loop-evidence.json
+          grep -q "client_surface_anomaly_monitoring" out/product-loop-evidence.json
+          grep -q "stress_capacity" out/product-loop-evidence.json
+          grep -q "scale_chaos" out/product-loop-evidence.json
+          grep -q "release_readiness" out/product-loop-evidence.json
+          go run ./tools/localqacandidatedecision -candidate-in out/product-loop-evidence.json -candidate-scope product_loop -check-doc -evidence-out out/product-loop-candidate-decision.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: product-loop-evidence
+          path: |
+            out/product-loop-evidence.json
+            out/product-loop-candidate-decision.json
+            .riido-local/evidence/local-qa-run.json
+            .riido-local/evidence/local-qa-coverage.json
+            .riido-local/dashboard/index.html
+          if-no-files-found: error

@@ -13,10 +13,13 @@ on:
       - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
       - "docs/30-architecture/local-qa-closed-loop-promotions.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
+      - "docs/30-architecture/local-qa-candidate-decision.riido.json"
+      - "docs/30-architecture/local-qa-candidate-decision.md"
       - "docs/readme/run-and-smoke.md"
       - "docs/readme/run-and-smoke.riido.json"
       - "tools/localqadashboard/**"
       - "tools/localproductacceptance/**"
+      - "tools/localqacandidatedecision/**"
       - "tools/qadslsync/**"
       - "tools/localqarunner/**"
       - "tools/localqaschedule/**"
@@ -57,11 +60,15 @@ jobs:
           test -s out/contract-lab/index.html
           grep -q "contract.ui.feature_dsl" out/ai-agent-product-acceptance.json
           grep -q "contract.ui.i18n_dsl" out/ai-agent-product-acceptance.json
+          grep -q "contract.ui.browser_meaning_qa" out/ai-agent-product-acceptance.json
+          grep -q "local.qa.figma_refresh_gate" out/ai-agent-product-acceptance.json
+          grep -q "local.qa.staging_fixture_handoff" out/ai-agent-product-acceptance.json
           grep -q "translation_coverage" out/ai-agent-product-acceptance.json
           grep -q "coverage_ratio" out/ai-agent-product-acceptance.json
           grep -q "local.qa.dsl_system_audit" out/ai-agent-product-acceptance.json
           grep -q "execution_counts" out/ai-agent-product-acceptance.json
           grep -q "inference_required_count" out/ai-agent-product-acceptance.json
+          grep -q "closed_loop_candidates" out/ai-agent-product-acceptance.json
           grep -q "local.qa.evidence_gap_candidates" out/ai-agent-product-acceptance.json
           grep -q "domain.fixture_journey" out/ai-agent-product-acceptance.json
           grep -q "local.qa.closed_loop_maturity" out/ai-agent-product-acceptance.json
@@ -73,6 +80,7 @@ jobs:
           go run ./tools/localqarunner \
             -run-product=false \
             -run-integration=false \
+            -product-evidence out/ai-agent-product-acceptance.json \
             -provider-evidence out/provider-real-cli-observation.json \
             -release-evidence out/local-release-acceptance.json \
             -coverage-evidence out/local-qa-coverage.json \
@@ -87,6 +95,12 @@ jobs:
           grep -q "next_loop" out/local-qa-run.json
           grep -q "promoted_to_closed_loop" out/local-qa-run.json
           grep -q "coverage.local-qa-daily-freshness" out/local-qa-run.json
+          go run ./tools/localqacandidatedecision \
+            -candidate-in out/local-qa-run.json \
+            -check-doc \
+            -github-annotations \
+            -evidence-out out/local-qa-candidate-decision.json
+          grep -q "decision_artifacts" out/local-qa-candidate-decision.json
           go run ./tools/localqaschedule \
             -repo "$(pwd)" \
             -s3-prefix s3://example-local-qa-evidence/daily \
@@ -111,6 +125,9 @@ jobs:
           grep -q "Closed-Loop Candidates" out/index.html
           grep -q "closed-loop." out/index.html
           grep -q "stale " out/index.html
+          grep -q "ops.monitoring.client_surface_anomaly" out/local-qa-coverage.json
+          grep -q "ops.stress.concurrent_users" out/local-qa-coverage.json
+          grep -q "ops.chaos.recovery_packet_surge" out/local-qa-coverage.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:

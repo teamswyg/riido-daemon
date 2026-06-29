@@ -6,9 +6,10 @@
   "generated_doc": "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md",
   "workflow": ".github/workflows/full-access-harness-evidence.yml",
   "evidence_artifact": "full-access-harness-evidence",
-  "purpose": "Proves Codex full-access execution is a daemon-owned runtime envelope with caller overrides blocked, not a provider default or SaaS payload choice.",
+  "purpose": "Proves provider full-access execution is a daemon-owned runtime envelope with caller overrides blocked, not a provider default or SaaS payload choice.",
   "facts": [
     {"name": "Codex launch shape is daemon-owned", "summary": "BuildStart emits codex --sandbox danger-full-access app-server --listen stdio:// from adapter code.", "source_checks": ["codex-full-access-constant", "codex-buildstart", "codex-sandbox-arg", "codex-app-server-arg", "codex-listen-arg"]},
+    {"name": "Claude beta full-access launch shape is daemon-owned", "summary": "The daemon runtime adapter emits Claude bypassPermissions only through an explicit beta harness flag and does not attach the web approval MCP prompt.", "source_checks": ["claude-beta-adapter-field", "claude-daemon-beta-adapter", "claude-beta-start-option", "claude-beta-adapter-test", "claude-beta-provider-test"]},
     {"name": "protocol-critical shape is tested", "summary": "Codex tests assert full-access sandbox, app-server, stdio listener, cwd propagation, stdin pipe, and single sandbox selection.", "source_checks": ["codex-protocol-test"]},
     {"name": "caller sandbox override is dropped", "summary": "Caller --sandbox and -s variants are reported in DroppedArgs while daemon-generated danger-full-access remains the only sandbox pair.", "source_checks": ["codex-sandbox-override-test", "codex-daemon-sandbox-only-test"]},
     {"name": "unsafe approval bypass is dropped", "summary": "Codex --yolo and --dangerously-bypass-approvals-and-sandbox variants are blocked from CustomArgs.", "source_checks": ["codex-unsafe-custom-test", "codex-unsafe-equals-test", "codex-unsafe-arg-catalog"]},
@@ -21,6 +22,11 @@
   ],
   "source_checks": [
     {"name": "codex-full-access-constant", "file": "internal/provider/codex/command.go", "contains": "FullAccessSandboxMode = \"danger-full-access\""},
+    {"name": "claude-beta-adapter-field", "file": "cmd/riido/bridge_adapter_claude.go", "contains": "betaFullAccess bool"},
+    {"name": "claude-daemon-beta-adapter", "file": "cmd/riido/bridge_adapters.go", "contains": "bridgeClaudeAdapter{approvalSocket: socketPath, betaFullAccess: true}"},
+    {"name": "claude-beta-start-option", "file": "cmd/riido/bridge_adapter_claude_mcp.go", "contains": "opts.BetaFullAccessAllowed = true"},
+    {"name": "claude-beta-adapter-test", "file": "cmd/riido/bridge_adapter_claude_beta_test.go", "contains": "TestDaemonClaudeAdapterUsesBetaFullAccessWithoutMCP"},
+    {"name": "claude-beta-provider-test", "file": "internal/provider/claude/command_permission_test.go", "contains": "TestBuildStartAllowsExplicitBetaFullAccessHarness"},
     {"name": "codex-buildstart", "file": "internal/provider/codex/command.go", "contains": "func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.StartCommand, error)"},
     {"name": "codex-sandbox-arg", "file": "internal/provider/codex/command.go", "contains": "\"--sandbox\", FullAccessSandboxMode"},
     {"name": "codex-app-server-arg", "file": "internal/provider/codex/command.go", "contains": "\"app-server\""},
@@ -39,6 +45,7 @@
   ],
   "assertions": [
     "Codex danger-full-access is a daemon-owned harness envelope",
+    "Claude bypassPermissions is a temporary beta daemon-owned harness envelope, not caller input",
     "caller CustomArgs cannot change sandbox, config, unsafe bypass, or transport shape",
     "full-access must not be attributed to provider defaults, SaaS payloads, or hidden fallback",
     "task permission profile generation remains absent from the Codex command builder"

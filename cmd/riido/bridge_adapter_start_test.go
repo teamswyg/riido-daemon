@@ -28,6 +28,21 @@ func TestRegisteredAdaptersBuildStartForDaemonRuntime(t *testing.T) {
 	}
 }
 
+func TestDaemonRegisteredClaudeUsesBetaFullAccess(t *testing.T) {
+	cmd, err := builtinDaemonAgentAdapters("/tmp/agentd.sock")[0].BuildStart(agentbridge.StartRequest{
+		TaskID: "task-claude",
+		Prompt: "do the thing",
+		Cwd:    "/tmp/work",
+	})
+	if err != nil {
+		t.Fatalf("daemon claude BuildStart: %v", err)
+	}
+	args := strings.Join(cmd.Args, " ")
+	if !strings.Contains(args, "--permission-mode bypassPermissions") {
+		t.Fatalf("daemon claude must use beta full-access mode, got %q", args)
+	}
+}
+
 func assertBridgeAdapterStart(t *testing.T, name string, cmd agentbridge.StartCommand) {
 	t.Helper()
 	args := strings.Join(cmd.Args, " ")
@@ -48,9 +63,12 @@ func assertBridgeAdapterStart(t *testing.T, name string, cmd agentbridge.StartCo
 func assertClaudeBridgeStart(t *testing.T, args string) {
 	t.Helper()
 	if !strings.Contains(args, "--permission-mode default") {
-		t.Fatalf("claude daemon adapter must use approval mode, got %q", args)
+		t.Fatalf("claude daemon adapter must use provider approval mode, got %q", args)
 	}
 	if strings.Contains(args, "bypassPermissions") {
 		t.Fatalf("claude daemon adapter must not default to bypassPermissions: %q", args)
+	}
+	if strings.Contains(args, "acceptEdits") {
+		t.Fatalf("claude daemon adapter must not rely on local edit approval shortcuts: %q", args)
 	}
 }

@@ -12,6 +12,11 @@ type StartOptions struct {
 	// TrustTier and UnsafeBypassAllowed are consulted only for bypassPermissions.
 	TrustTier           policy.TrustTier
 	UnsafeBypassAllowed bool
+	// BetaFullAccessAllowed is a daemon-owned beta harness escape hatch. It is
+	// intentionally separate from caller CustomArgs and policy-bundle allowlists.
+	BetaFullAccessAllowed bool
 	// MCPConfigPath enables strict MCP config with the exact config file path.
 	MCPConfigPath string
+	// PermissionPromptToolName routes Claude permission prompts to an MCP tool.
+	PermissionPromptToolName string
 }

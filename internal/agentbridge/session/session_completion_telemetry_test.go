@@ -1,6 +1,7 @@
 package session
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -19,7 +20,9 @@ func TestSessionExtractsRiidoTelemetryAboveAdapters(t *testing.T) {
 	if res.Status != agentbridge.ResultCompleted {
 		t.Fatalf("result: %+v", res)
 	}
-	assertProgressSeen(t, drainEvents(t, started.sess, time.Second), "프로젝트 go.mod 작성중")
+	events := drainEvents(t, started.sess, time.Second)
+	assertProgressSeen(t, events, "프로젝트 go.mod 작성중")
+	assertNoTelemetryTextDeltaSeen(t, events)
 }
 
 func telemetryCompletionAdapter() *recordingAdapter {
@@ -34,5 +37,17 @@ func telemetryCompletionAdapter() *recordingAdapter {
 				{Kind: agentbridge.EventTextDelta, Text: string(raw.Bytes)},
 			}, nil, nil
 		},
+	}
+}
+
+func assertNoTelemetryTextDeltaSeen(t *testing.T, events []agentbridge.Event) {
+	t.Helper()
+	for _, ev := range events {
+		if ev.Kind != agentbridge.EventTextDelta {
+			continue
+		}
+		if strings.Contains(ev.Text, "<ri") || strings.Contains(ev.Text, "riido_log") {
+			t.Fatalf("telemetry leaked as text delta: %+v", ev)
+		}
 	}
 }
