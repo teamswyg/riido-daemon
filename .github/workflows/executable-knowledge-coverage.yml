@@ -46,6 +46,15 @@ jobs:
           go run ./tools/semanticchangebinding \
             -changed-files docs/30-architecture/closed-loop-maturity.dsl.json,tools/localproductacceptance/closed_loop_maturity_test.go,tools/localproductacceptance/closed_loop_maturity.generated.json,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json \
             -evidence-out out/semantic-change-binding.json
+          if go run ./tools/semanticchangebinding \
+            -changed-files tools/localqarunner/closed_loop_candidate_graph.go \
+            -evidence-out out/local-qa-graph-negative.json; then
+            echo "negative local QA graph binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files tools/localqarunner/closed_loop_candidate_graph.go,tools/localqarunner/closed_loop_candidate_types.go,tools/localqarunner/closed_loop_candidate_test.go,tools/localqadashboard/run_candidate.go,tools/localqadashboard/run_evidence_test.go,tools/localqadashboard/render_expectation_test.go,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/local-qa-closed-loop-candidates.riido.json \
+            -evidence-out out/local-qa-graph-binding.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
