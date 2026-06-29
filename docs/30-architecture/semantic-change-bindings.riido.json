@@ -30,6 +30,15 @@
       "generated_docs": ["docs/30-architecture/loop-engineering.md"],
       "verifiers": ["go test ./tools/localqarunner ./tools/localqadashboard", "go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json"],
       "evidence_ids": ["local-qa-runner.closed_loop_candidates.evidence_graph", "loop-engineering.local-qa-closed-loop-candidates"]
+    },
+    {
+      "id": "local-qa-daily-trigger-freshness",
+      "claim": "Local QA daily trigger changes must keep expired-evidence refresh semantics aligned across the trigger DSL, schedule evidence writer, dashboard coverage, tests, workflow checks, and loop-engineering claim.",
+      "triggers": ["docs/30-architecture/local-qa-daily-trigger.dsl.json", "tools/localqaschedule/trigger.go", "tools/localqaschedule/evidence_types.go", "tools/localqadashboard/schedule_evidence.go", "tools/localqadashboard/schedule_evidence_checks.go", "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json"],
+      "required_with_triggers": ["docs/30-architecture/local-qa-daily-trigger.dsl.json", "tools/localqaschedule/evidence_types.go", "tools/localqaschedule/evidence_test.go", "tools/localqaschedule/trigger.go", "tools/localqadashboard/schedule_evidence.go", "tools/localqadashboard/schedule_evidence_checks.go", "tools/localqadashboard/schedule_evidence_types.go", "tools/localqadashboard/schedule_evidence_freshness_test.go", "docs/30-architecture/local-acceptance-coverage.riido.json", ".github/workflows/local-qa-runner.yml", "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json"],
+      "generated_docs": ["docs/30-architecture/loop-engineering.md", "tools/localproductacceptance/local_qa_daily_trigger.generated.json", "tools/localproductacceptance/local_acceptance_coverage.generated.json"],
+      "verifiers": ["go test ./tools/localqaschedule ./tools/localqadashboard", "go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json"],
+      "evidence_ids": ["local.qa.daily_freshness", "loop-engineering.local-qa-daily-trigger"]
     }
   ]
 }

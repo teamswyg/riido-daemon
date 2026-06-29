@@ -18,3 +18,13 @@ func triggerEvidenceDetail(e scheduleEvidence) string {
 		!scheduleEvidenceFailed(e),
 	)
 }
+
+func freshnessEvidenceDetail(e scheduleEvidence) string {
+	return fmt.Sprintf(
+		"freshness_window=%s refreshes_expired_evidence=%t evidence_refs=%d closed_loop=%s",
+		e.Trigger.FreshnessWindow,
+		e.Trigger.RefreshesExpiredEvidence,
+		len(e.Trigger.Evidence),
+		e.Trigger.ClosedLoop,
+	)
+}

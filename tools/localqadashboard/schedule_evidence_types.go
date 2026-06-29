@@ -1,8 +1,6 @@
 package main
 
 type scheduleEvidence struct {
-	SchemaVersion       string          `json:"schema_version"`
-	ID                  string          `json:"id"`
 	Status              string          `json:"status"`
 	Label               string          `json:"label"`
 	Installed           bool            `json:"installed"`
@@ -12,11 +10,9 @@ type scheduleEvidence struct {
 	Hour                int             `json:"hour"`
 	Minute              int             `json:"minute"`
 	RunAtLoad           bool            `json:"run_at_load"`
+	CommandHasTokenText bool            `json:"command_has_token_text"`
 	S3PrefixConfigured  bool            `json:"s3_prefix_configured"`
 	CoverageEvidence    string          `json:"coverage_evidence"`
-	TaskMutations       bool            `json:"task_mutations"`
-	TaskIDConfigured    bool            `json:"task_id_configured"`
-	CommandHasTokenText bool            `json:"command_has_token_text"`
 	CommandPreview      string          `json:"command_preview"`
 	Trigger             triggerEvidence `json:"trigger"`
 	Launchd             launchdEvidence `json:"launchd"`
@@ -38,7 +34,6 @@ type triggerEvidence struct {
 type launchdEvidence struct {
 	Checked         bool   `json:"checked"`
 	Loaded          bool   `json:"loaded"`
-	Domain          string `json:"domain,omitempty"`
 	State           string `json:"state"`
 	Runs            int    `json:"runs"`
 	LastExitCode    string `json:"last_exit_code"`

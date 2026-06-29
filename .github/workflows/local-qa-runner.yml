@@ -89,6 +89,7 @@ jobs:
             -s3-prefix s3://example-local-qa-evidence/daily \
             -evidence-out out/local-qa-schedule.json
           grep -q "daily-evidence-sweep" out/local-qa-schedule.json
+          grep -q "refreshes_expired_evidence" out/local-qa-schedule.json
           go run ./tools/localqadashboard \
             -provider-evidence out/provider-real-cli-observation.json \
             -product-evidence out/ai-agent-product-acceptance.json \
@@ -99,6 +100,7 @@ jobs:
             -out out/index.html \
             -coverage-out out/local-qa-coverage.json
           grep -q "local.qa.daily_trigger" out/local-qa-coverage.json
+          grep -q "local.qa.daily_freshness" out/local-qa-coverage.json
           grep -q "contract.ui.i18n_dsl" out/local-qa-coverage.json
           grep -q "local.qa.dsl_system_audit" out/local-qa-coverage.json
           grep -q "local.qa.closed_loop_maturity" out/local-qa-coverage.json

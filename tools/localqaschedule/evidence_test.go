@@ -58,4 +58,7 @@ func TestWriteScheduleEvidenceIncludesCoveragePath(t *testing.T) {
 	if len(got.Trigger.Evidence) == 0 {
 		t.Fatal("trigger evidence refs missing")
 	}
+	if !got.Trigger.RefreshesExpiredEvidence {
+		t.Fatal("expired evidence refresh claim missing")
+	}
 }
