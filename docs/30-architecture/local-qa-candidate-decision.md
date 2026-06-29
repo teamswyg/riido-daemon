@@ -5,7 +5,7 @@
 Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-decision.riido.json).
 
 - evidence artifact: `local-qa-candidate-decision`
-- decision records: `37`
+- decision records: `38`
 
 ## Assertions
 
@@ -45,6 +45,7 @@ Executable SSOT: [`local-qa-candidate-decision.riido.json`](local-qa-candidate-d
 | `repair-local.qa.figma_refresh_gate` | `local_observed` | `triage_required` | `P2` | `qa-loop` | `2026-12-31` | `redacted_evidence` |
 | `repair-local.daemon.desktop_shutdown_lifecycle` | `local_observed` | `triage_required` | `P1` | `desktop/daemon` | `2026-12-31` | `claim_binding` |
 | `repair-provider.openclaw.local_backend_unavailable` | `local_observed` | `triage_required` | `P1` | `provider-runtime/local-operator` | `2026-12-31` | `redacted_evidence` |
+| `meta-complexity-entrypoint-budget` | `product_loop` | `triage_required` | `P1` | `loop-registry` | `2026-12-31` | `claim-bound entrypoint index` |
 | `product-outcome-evidence-assignment_completion` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
 | `product-outcome-evidence-provider_recovery` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
 | `product-outcome-evidence-provider_approval_round_trip` | `product_loop` | `triage_required` | `P1` | `product-qa-loop` | `2026-12-31` | `scenario coverage row with passed or observed status` |
