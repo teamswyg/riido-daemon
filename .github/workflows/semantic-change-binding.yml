@@ -1,0 +1,44 @@
+name: semantic-change-binding
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/semantic-change-binding.yml"
+      - ".pre-commit-config.yaml"
+      - "docs/30-architecture/semantic-change-bindings.riido.json"
+      - "docs/30-architecture/closed-loop-maturity.dsl.json"
+      - "docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json"
+      - "tools/semanticchangebinding/**"
+      - "tools/localproductacceptance/closed_loop_maturity*"
+      - "tools/localproductacceptance/generate.go"
+      - "tools/localproductacceptance/run.go"
+
+jobs:
+  semantic-change-binding:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify semantic change binding
+        run: |
+          mkdir -p out
+          go test ./tools/semanticchangebinding -count=1
+          if go run ./tools/semanticchangebinding \
+            -changed-files docs/30-architecture/closed-loop-maturity.dsl.json \
+            -evidence-out out/semantic-change-binding-negative.json; then
+            echo "negative semantic binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files docs/30-architecture/closed-loop-maturity.dsl.json,tools/localproductacceptance/closed_loop_maturity_test.go,tools/localproductacceptance/closed_loop_maturity.generated.json,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json \
+            -evidence-out out/semantic-change-binding.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: semantic-change-binding
+          path: out/*
+          if-no-files-found: error

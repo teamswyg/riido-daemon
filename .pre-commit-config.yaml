@@ -6,6 +6,11 @@ repos:
         entry: bash -c 'go generate ./tools/localproductacceptance && git add tools/localproductacceptance/*.generated.json'
         language: system
         pass_filenames: false
+      - id: semantic-change-binding
+        name: semantic-change-binding
+        entry: go run ./tools/semanticchangebinding
+        language: system
+        pass_filenames: false
   - repo: https://github.com/tekwizely/pre-commit-golang
     rev: v1.0.0-rc.4
     hooks:
