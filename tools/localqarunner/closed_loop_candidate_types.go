@@ -16,5 +16,10 @@ type closedLoopCandidate struct {
 	Evidence        string `json:"evidence,omitempty"`
 	NextAction      string `json:"next_action"`
 	Promoted        bool   `json:"promoted"`
+	Stale           bool   `json:"stale"`
+	FirstObservedAt string `json:"first_observed_at"`
+	LastObservedAt  string `json:"last_observed_at"`
+	AgeHours        int    `json:"age_hours"`
+	StaleAt         string `json:"stale_at"`
 	StaleAfterHours int    `json:"stale_after_hours"`
 }

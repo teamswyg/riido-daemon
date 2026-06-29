@@ -2,13 +2,13 @@ package main
 
 const candidateStaleAfterHours = 72
 
-func applyClosedLoopCandidates(evidence runEvidence) runEvidence {
+func applyClosedLoopCandidates(evidence runEvidence,
+	previous []closedLoopCandidate,
+) runEvidence {
 	candidates := closedLoopCandidates(evidence)
+	candidates = annotateCandidateAge(evidence.ObservedAt, candidates, previous)
 	evidence.Candidates = candidates
-	evidence.CandidateSummary = closedLoopSummary{
-		Total:           len(candidates),
-		StaleAfterHours: candidateStaleAfterHours,
-	}
+	evidence.CandidateSummary = closedLoopSummaryFor(candidates)
 	return evidence
 }
 

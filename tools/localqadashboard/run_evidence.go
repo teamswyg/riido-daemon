@@ -20,13 +20,17 @@ type localRunStep struct {
 }
 
 type closedLoopCandidate struct {
-	ID         string `json:"id"`
-	Source     string `json:"source"`
-	Trigger    string `json:"trigger"`
-	Status     string `json:"status"`
-	Summary    string `json:"summary"`
-	Evidence   string `json:"evidence,omitempty"`
-	NextAction string `json:"next_action"`
+	ID              string `json:"id"`
+	Source          string `json:"source"`
+	Trigger         string `json:"trigger"`
+	Status          string `json:"status"`
+	Summary         string `json:"summary"`
+	Evidence        string `json:"evidence,omitempty"`
+	NextAction      string `json:"next_action"`
+	Stale           bool   `json:"stale,omitempty"`
+	FirstObservedAt string `json:"first_observed_at,omitempty"`
+	AgeHours        int    `json:"age_hours,omitempty"`
+	StaleAt         string `json:"stale_at,omitempty"`
 }
 
 func runEvidenceScenarios(path string) []externalScenario {

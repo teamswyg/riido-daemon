@@ -34,6 +34,8 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 				Status:     "candidate",
 				Summary:    "missing product outcome",
 				NextAction: "promote to verifier",
+				AgeHours:   12,
+				StaleAt:    "2026-06-25T00:00:00Z",
 			}},
 		},
 		CoverageRows: []coverageRow{{
@@ -64,6 +66,8 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 		"cursor-agent login",
 		"Closed-Loop Candidates",
 		"coverage.product",
+		"12h",
+		"stale 2026-06-25T00:00:00Z",
 		"promote to verifier",
 		"figma.onboarding",
 		"figma.json",

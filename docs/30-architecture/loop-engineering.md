@@ -1394,16 +1394,16 @@
 - Owner: `tools/localqarunner and local QA dashboard`
 - Observe: Local QA harnesses could fail or report repairs while the run evidence only exposed status and open repairs, leaving promotion into closed loops as human memory.
   - Artifacts: `tools/localqarunner/types.go`, `tools/localqadashboard/render.go`
-- Hypothesis: Converting failed steps, open repairs, and coverage gaps into closed-loop candidates makes harness discoveries visible before they become stale partial evidence.
+- Hypothesis: Converting failed steps, open repairs, and coverage gaps into closed-loop candidates with stable first-seen timestamps makes harness discoveries visible before and after they become stale partial evidence.
   - Artifacts: `tools/localqarunner/closed_loop_candidate_test.go`
-- Execute: Emit closed_loop_candidates and a candidate summary in local-qa-run evidence, then render candidates in the dashboard.
-  - Artifacts: `tools/localqarunner/closed_loop_candidate.go`, `tools/localqadashboard/run_evidence.go`
-- Evaluate: Unit tests verify candidate generation and dashboard parsing; CI greps for closed-loop candidate fields in local QA artifacts.
+- Execute: Emit closed_loop_candidates, preserve prior first_observed_at from the previous run evidence ledger, and render age/stale status in the dashboard.
+  - Artifacts: `tools/localqarunner/closed_loop_candidate.go`, `tools/localqarunner/closed_loop_candidate_ledger.go`, `tools/localqadashboard/run_evidence.go`
+- Evaluate: Unit tests verify candidate generation, stale detection, and dashboard parsing; CI greps for candidate and stale fields in local QA artifacts.
   - Artifacts: `.github/workflows/local-qa-runner.yml`, `tools/localqadashboard/run_evidence_test.go`
 - Retrospective: Harnesses still explore freely, but their failures now leave a deterministic promotion queue instead of becoming untracked partial evidence.
   - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
-  - `command`: go test ./tools/localqarunner ./tools/localqadashboard -count=1; proves candidate generation and dashboard visibility are covered by tests
+  - `command`: go test ./tools/localqarunner ./tools/localqadashboard -count=1; proves candidate generation, stale age calculation, and dashboard visibility are covered by tests
   - `workflow`: .github/workflows/local-qa-runner.yml; proves public CI preserves closed-loop candidate fields in run evidence and dashboard HTML
 
 ### semantic-change-binding

@@ -10,10 +10,10 @@ func appendStep(evidence *runEvidence, step stepEvidence) {
 }
 
 func finishRun(root string, cfg config, evidence runEvidence) (string, error) {
-	evidence = applyClosedLoopCandidates(evidence)
+	path := runEvidenceAbs(root, cfg)
+	evidence = applyClosedLoopCandidates(evidence, evidence.PreviousCandidates)
 	evidence = applyDeploymentGate(evidence)
 	evidence = applyStrictCoverage(evidence)
-	path := runEvidenceAbs(root, cfg)
 	if err := writeJSON(path, evidence); err != nil {
 		return statusFailed, fmt.Errorf("write run evidence: %w", err)
 	}

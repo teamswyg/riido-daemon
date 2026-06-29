@@ -35,12 +35,15 @@ func TestLoadLocalRunEvidenceReadsOpenRepairs(t *testing.T) {
 
 func TestLoadLocalRunEvidenceReadsClosedLoopCandidates(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "run.json")
-	body := `{"observed_at":"2026-06-22T01:00:00Z","expires_at":"2026-06-23T01:00:00Z","status":"partial","coverage_status":"partial","closed_loop_candidates":[{"id":"coverage.product","source":"coverage","trigger":"coverage_not_passed","status":"candidate","summary":"missing","next_action":"promote"}]}`
+	body := `{"observed_at":"2026-06-22T01:00:00Z","expires_at":"2026-06-23T01:00:00Z","status":"partial","coverage_status":"partial","closed_loop_candidates":[{"id":"coverage.product","source":"coverage","trigger":"coverage_not_passed","status":"stale","summary":"missing","next_action":"promote","age_hours":96,"stale_at":"2026-06-25T01:00:00Z"}]}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	got, ok := loadLocalRunEvidence(path)
 	if !ok || len(got.Candidates) != 1 || got.Candidates[0].ID != "coverage.product" {
 		t.Fatalf("run=%+v ok=%v", got, ok)
+	}
+	if got.Candidates[0].AgeHours != 96 || got.Candidates[0].StaleAt == "" {
+		t.Fatalf("candidate=%+v", got.Candidates[0])
 	}
 }

@@ -13,6 +13,7 @@ func run(cfg config) (string, error) {
 	}
 	start := time.Now().UTC()
 	evidence := newEvidence(cfg, start)
+	evidence.PreviousCandidates = loadPreviousCandidates(runEvidenceAbs(root, cfg))
 	providerStatus := runProviderStep(root, cfg, &evidence)
 	if providerStatus == statusFailed && !*cfg.continueOnFailure {
 		return finishRun(root, cfg, evidence)
