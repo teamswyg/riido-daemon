@@ -78,6 +78,8 @@ jobs:
             -schedule-evidence out/local-qa-schedule.json \
             -dashboard out/index.html \
             -evidence-out out/local-qa-run.json
+          grep -q "closed_loop_candidates" out/local-qa-run.json
+          grep -q "closed_loop_candidate_summary" out/local-qa-run.json
           go run ./tools/localqaschedule \
             -repo "$(pwd)" \
             -s3-prefix s3://example-local-qa-evidence/daily \
@@ -97,6 +99,7 @@ jobs:
           grep -q "local.qa.dsl_system_audit" out/local-qa-coverage.json
           grep -q "local.qa.closed_loop_maturity" out/local-qa-coverage.json
           grep -q "domain.fixture.thread" out/local-qa-coverage.json
+          grep -q "Closed-Loop Candidates" out/index.html
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:

@@ -10,12 +10,23 @@ type localRunEvidence struct {
 	ProviderStatus string                 `json:"provider_status,omitempty"`
 	DeploymentGate localRunDeploymentGate `json:"deployment_gate"`
 	OpenRepairs    []repairEvidence       `json:"open_repairs,omitempty"`
+	Candidates     []closedLoopCandidate  `json:"closed_loop_candidates,omitempty"`
 	Steps          []localRunStep         `json:"steps"`
 }
 
 type localRunStep struct {
 	ID     string `json:"id"`
 	Status string `json:"status"`
+}
+
+type closedLoopCandidate struct {
+	ID         string `json:"id"`
+	Source     string `json:"source"`
+	Trigger    string `json:"trigger"`
+	Status     string `json:"status"`
+	Summary    string `json:"summary"`
+	Evidence   string `json:"evidence,omitempty"`
+	NextAction string `json:"next_action"`
 }
 
 func runEvidenceScenarios(path string) []externalScenario {

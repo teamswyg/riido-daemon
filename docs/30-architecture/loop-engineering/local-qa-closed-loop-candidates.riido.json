@@ -1,0 +1,37 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "local-qa-closed-loop-candidates",
+  "owner": "tools/localqarunner and local QA dashboard",
+  "observation": {
+    "summary": "Local QA harnesses could fail or report repairs while the run evidence only exposed status and open repairs, leaving promotion into closed loops as human memory.",
+    "artifacts": ["tools/localqarunner/types.go", "tools/localqadashboard/render.go"]
+  },
+  "hypothesis": {
+    "summary": "Converting failed steps, open repairs, and coverage gaps into closed-loop candidates makes harness discoveries visible before they become stale partial evidence.",
+    "artifacts": ["tools/localqarunner/closed_loop_candidate_test.go"]
+  },
+  "execution": {
+    "summary": "Emit closed_loop_candidates and a candidate summary in local-qa-run evidence, then render candidates in the dashboard.",
+    "artifacts": ["tools/localqarunner/closed_loop_candidate.go", "tools/localqadashboard/run_evidence.go"]
+  },
+  "evaluation": {
+    "summary": "Unit tests verify candidate generation and dashboard parsing; CI greps for closed-loop candidate fields in local QA artifacts.",
+    "artifacts": [".github/workflows/local-qa-runner.yml", "tools/localqadashboard/run_evidence_test.go"]
+  },
+  "retrospective": {
+    "summary": "Harnesses still explore freely, but their failures now leave a deterministic promotion queue instead of becoming untracked partial evidence.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go test ./tools/localqarunner ./tools/localqadashboard -count=1",
+      "proves": "candidate generation and dashboard visibility are covered by tests"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/local-qa-runner.yml",
+      "proves": "public CI preserves closed-loop candidate fields in run evidence and dashboard HTML"
+    }
+  ]
+}
