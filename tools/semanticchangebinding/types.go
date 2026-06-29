@@ -4,6 +4,7 @@ type Manifest struct {
 	SchemaVersion string    `json:"schema_version"`
 	ID            string    `json:"id"`
 	Title         string    `json:"title"`
+	LoopSource    string    `json:"loop_source"`
 	Bindings      []Binding `json:"bindings"`
 }
 
@@ -47,6 +48,7 @@ type Evidence struct {
 	ManifestID     string               `json:"manifest_id"`
 	ChangedFiles   []string             `json:"changed_files"`
 	BusinessClaims businessClaimSummary `json:"business_claims"`
+	EvidenceGraph  []evidenceGraphEntry `json:"evidence_graph"`
 	Results        []bindingResult      `json:"results"`
 	ProblemCount   int                  `json:"problem_count"`
 	Problems       []string             `json:"problems,omitempty"`
