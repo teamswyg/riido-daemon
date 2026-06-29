@@ -353,13 +353,18 @@
         "tools/localqacandidatedecision/candidate_problem.go",
         "tools/localqacandidatedecision/candidate_problem_more.go",
         "tools/localqacandidatedecision/decision.go",
+        "tools/localqacandidatedecision/decision_counts.go",
         "tools/localqacandidatedecision/main.go",
         "tools/localqacandidatedecision/options.go",
+        "tools/localqacandidatedecision/render.go",
         "tools/localqacandidatedecision/run.go",
+        "tools/localqacandidatedecision/types_candidate.go",
+        "tools/localqacandidatedecision/verify.go",
         "tools/localqacandidatedecision/workflow.go",
         "tools/localqacandidatedecision/annotation_test.go",
         "tools/localqacandidatedecision/candidate_test.go",
         "tools/localqacandidatedecision/decision_test.go",
+        "tools/localqacandidatedecision/product_loop_decision_test.go",
         "tools/localqacandidatedecision/run_test.go",
         ".github/workflows/local-qa-runner.yml",
         ".github/workflows/product-loop-evidence.yml"
@@ -376,6 +381,9 @@
       "evidence": [
         "local-qa-candidate-decision",
         "decision_artifacts",
+        "matched_decision_count",
+        "scope_decision_count",
+        "allowed_missing_decision_count",
         "required_next_artifacts",
         "evidence_graph",
         "product-loop-candidate-decision"
@@ -404,9 +412,18 @@
           "file": "tools/localqacandidatedecision/decision_test.go",
           "contains": [
             "TestCandidateDecisionRejectsOrphanDecision",
-            "TestCandidateDecisionAllowsProductLoopDecisionWhenAbsent",
             "TestCandidateDecisionRejectsUnknownNextArtifact",
             "TestCandidateDecisionRequiresReviewBy"
+          ]
+        },
+        {
+          "name": "candidate-decision-product-loop-test",
+          "file": "tools/localqacandidatedecision/product_loop_decision_test.go",
+          "contains": [
+            "TestCandidateDecisionAllowsProductLoopDecisionWhenAbsent",
+            "TestCandidateDecisionAllowsPartialReductionProductLoopDecisionWhenAbsent",
+            "AllowedMissingCount",
+            "TestCandidateDecisionRejectsUnknownProductLoopDecisionWhenAbsent"
           ]
         },
         {

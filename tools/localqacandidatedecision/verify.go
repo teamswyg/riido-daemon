@@ -18,7 +18,10 @@ func verifyAll(root string, m manifest) (verifyResult, error) {
 	if err := verifyDecisions(m); err != nil {
 		return verifyResult{}, err
 	}
-	return verifyResult{DecisionCount: len(m.Decisions)}, nil
+	return verifyResult{
+		DecisionCount:         len(m.Decisions),
+		ManifestDecisionCount: len(m.Decisions),
+	}, nil
 }
 
 func verifyIdentity(m manifest) error {

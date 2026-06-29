@@ -54,4 +54,7 @@ func TestCandidateDecisionScopeCoversProductLoopCandidate(t *testing.T) {
 	if result.CandidateScope != "product_loop" || len(result.DecisionArtifacts) != 1 {
 		t.Fatalf("result = %+v", result)
 	}
+	if result.ScopeDecisionCount != 1 || result.MatchedDecisionCount != 1 {
+		t.Fatalf("result = %+v", result)
+	}
 }

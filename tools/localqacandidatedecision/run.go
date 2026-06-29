@@ -26,6 +26,9 @@ func run(opt options) error {
 		}
 		result.CandidateScope = candidateResult.CandidateScope
 		result.CandidateCount = candidateResult.CandidateCount
+		result.ScopeDecisionCount = candidateResult.ScopeDecisionCount
+		result.MatchedDecisionCount = candidateResult.MatchedDecisionCount
+		result.AllowedMissingCount = candidateResult.AllowedMissingCount
 		result.DecisionIDs = candidateResult.DecisionIDs
 		result.DecisionArtifacts = candidateResult.DecisionArtifacts
 	}
