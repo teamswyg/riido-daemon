@@ -9,6 +9,7 @@
   "retrospective": {"summary": "The first binding closes the gap between harness maturity claims and the generated/evidence surfaces that prove them; future claims can be added without changing API/runtime contracts.", "artifacts": ["docs/30-architecture/loop-engineering.md"]},
   "evidence": [
     {"kind": "command", "ref": "go run ./tools/semanticchangebinding -changed-files docs/30-architecture/closed-loop-maturity.dsl.json -evidence-out /tmp/semantic-change-binding-negative.json", "proves": "closed-loop maturity trigger changes fail when required semantic peers are absent"},
-    {"kind": "workflow", "ref": ".github/workflows/semantic-change-binding.yml", "proves": "public CI preserves positive and negative semantic binding evidence"}
+    {"kind": "workflow", "ref": ".github/workflows/semantic-change-binding.yml", "proves": "dedicated public CI preserves positive and negative semantic binding evidence"},
+    {"kind": "workflow", "ref": ".github/workflows/executable-knowledge-coverage.yml", "proves": "PR executable-knowledge CI runs semantic binding evidence alongside manifest-loop debt checks"}
   ]
 }

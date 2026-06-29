@@ -4,7 +4,7 @@
 
 - loop count: `83`
 - registered loop files: `83`
-- evidence items: `174`
+- evidence items: `175`
 - open gaps: `0`
 - phase coverage: `observe=83/83`, `hypothesis=83/83`, `execute=83/83`, `evaluate=83/83`, `retrospective=83/83`
 
@@ -1404,7 +1404,8 @@
   - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
   - `command`: go run ./tools/semanticchangebinding -changed-files docs/30-architecture/closed-loop-maturity.dsl.json -evidence-out /tmp/semantic-change-binding-negative.json; proves closed-loop maturity trigger changes fail when required semantic peers are absent
-  - `workflow`: .github/workflows/semantic-change-binding.yml; proves public CI preserves positive and negative semantic binding evidence
+  - `workflow`: .github/workflows/semantic-change-binding.yml; proves dedicated public CI preserves positive and negative semantic binding evidence
+  - `workflow`: .github/workflows/executable-knowledge-coverage.yml; proves PR executable-knowledge CI runs semantic binding evidence alongside manifest-loop debt checks
 
 ### self-improvement-evidence
 

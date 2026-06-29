@@ -8,6 +8,7 @@ on:
       - ".github/workflows/executable-knowledge-coverage.yml"
       - "docs/30-architecture/**"
       - "tools/knowledgecoverage/**"
+      - "tools/semanticchangebinding/**"
       - "go.mod"
       - "go.sum"
   pull_request:
@@ -15,6 +16,7 @@ on:
       - ".github/workflows/executable-knowledge-coverage.yml"
       - "docs/30-architecture/**"
       - "tools/knowledgecoverage/**"
+      - "tools/semanticchangebinding/**"
       - "go.mod"
       - "go.sum"
 
@@ -31,12 +33,22 @@ jobs:
         run: |
           mkdir -p out
           go test ./tools/knowledgecoverage -count=1
+          go test ./tools/semanticchangebinding -count=1
           go run ./tools/knowledgecoverage \
             -check-doc \
             -evidence-out out/executable-knowledge-coverage.json
+          if go run ./tools/semanticchangebinding \
+            -changed-files docs/30-architecture/closed-loop-maturity.dsl.json \
+            -evidence-out out/semantic-change-binding-negative.json; then
+            echo "negative semantic binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files docs/30-architecture/closed-loop-maturity.dsl.json,tools/localproductacceptance/closed_loop_maturity_test.go,tools/localproductacceptance/closed_loop_maturity.generated.json,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json \
+            -evidence-out out/semantic-change-binding.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()
         with:
           name: executable-knowledge-coverage
-          path: out/executable-knowledge-coverage.json
+          path: out/*
           if-no-files-found: error

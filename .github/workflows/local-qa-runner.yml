@@ -9,16 +9,13 @@ on:
       - "docs/30-architecture/qa-i18n.dsl.json"
       - "docs/30-architecture/qa-system.dsl.json"
       - "docs/30-architecture/closed-loop-maturity.dsl.json"
-      - "docs/30-architecture/semantic-change-bindings.riido.json"
       - "docs/30-architecture/domain-fixture-journey.dsl.json"
       - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
-      - "docs/30-architecture/loop-engineering/semantic-change-binding.riido.json"
       - "docs/readme/run-and-smoke.md"
       - "docs/readme/run-and-smoke.riido.json"
       - "tools/localqadashboard/**"
       - "tools/localproductacceptance/**"
-      - "tools/semanticchangebinding/**"
       - "tools/qadslsync/**"
       - "tools/localqarunner/**"
       - "tools/localqaschedule/**"
@@ -45,16 +42,6 @@ jobs:
       - name: Verify local QA runner wiring
         run: |
           mkdir -p out
-          go test ./tools/semanticchangebinding -count=1
-          if go run ./tools/semanticchangebinding \
-            -changed-files docs/30-architecture/closed-loop-maturity.dsl.json \
-            -evidence-out out/semantic-change-binding-negative.json; then
-            echo "negative semantic binding check unexpectedly passed" >&2
-            exit 1
-          fi
-          go run ./tools/semanticchangebinding \
-            -changed-files docs/30-architecture/closed-loop-maturity.dsl.json,tools/localproductacceptance/closed_loop_maturity_test.go,tools/localproductacceptance/closed_loop_maturity.generated.json,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json \
-            -evidence-out out/semantic-change-binding.json
           mkdir -p tmp-client
           git -C tmp-client init
           go run ./tools/localproductacceptance \
