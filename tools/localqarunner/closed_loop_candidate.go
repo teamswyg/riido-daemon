@@ -4,9 +4,11 @@ const candidateStaleAfterHours = 72
 
 func applyClosedLoopCandidates(evidence runEvidence,
 	previous []closedLoopCandidate,
+	promotions []closedLoopPromotion,
 ) runEvidence {
 	candidates := closedLoopCandidates(evidence)
 	candidates = annotateCandidateAge(evidence.ObservedAt, candidates, previous)
+	candidates = applyCandidatePromotions(candidates, promotions)
 	evidence.Candidates = candidates
 	evidence.CandidateSummary = closedLoopSummaryFor(candidates)
 	return evidence

@@ -8,10 +8,13 @@ func closedLoopSummaryFor(candidates []closedLoopCandidate) closedLoopSummary {
 	for _, candidate := range candidates {
 		if candidate.Promoted {
 			summary.Promoted++
+			continue
 		}
 		if candidate.Stale {
 			summary.Stale++
+			continue
 		}
+		summary.Pending++
 	}
 	return summary
 }

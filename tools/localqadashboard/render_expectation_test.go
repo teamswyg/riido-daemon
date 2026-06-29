@@ -17,6 +17,8 @@ func dashboardRenderExpectations() []string {
 		"stale 2026-06-25T00:00:00Z",
 		"candidate_for_promotion",
 		"closed-loop.coverage-product",
+		"coverage.local-qa-daily-freshness",
+		"promoted_to_closed_loop",
 		"promote to verifier",
 		"figma.onboarding",
 		"figma.json",

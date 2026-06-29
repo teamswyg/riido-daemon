@@ -21,6 +21,9 @@ func candidateVerifier(candidate closedLoopCandidate) string {
 }
 
 func candidateDecision(candidate closedLoopCandidate) string {
+	if candidate.Promoted {
+		return "promoted_to_closed_loop"
+	}
 	if candidate.Stale {
 		return "escalate_stale_partial"
 	}

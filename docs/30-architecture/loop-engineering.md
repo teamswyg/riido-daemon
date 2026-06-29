@@ -1394,13 +1394,13 @@
 - Owner: `tools/localqarunner and local QA dashboard`
 - Observe: Local QA harnesses could fail or report repairs while the run evidence only exposed status and open repairs, leaving promotion into closed loops as human memory.
   - Artifacts: `tools/localqarunner/types.go`, `tools/localqadashboard/render.go`
-- Hypothesis: Converting failed steps, open repairs, and coverage gaps into closed-loop candidates with stable first-seen timestamps and an evidence graph makes harness discoveries visible before and after they become stale partial evidence.
-  - Artifacts: `tools/localqarunner/closed_loop_candidate_test.go`
-- Execute: Emit closed_loop_candidates, preserve prior first_observed_at from the previous run evidence ledger, attach Observation -> Hypothesis -> Change -> Verifier -> Evidence -> Decision -> Next Loop graph fields, and render age/stale/decision status in the dashboard.
-  - Artifacts: `tools/localqarunner/closed_loop_candidate.go`, `tools/localqarunner/closed_loop_candidate_graph.go`, `tools/localqarunner/closed_loop_candidate_ledger.go`, `tools/localqadashboard/run_evidence.go`
-- Evaluate: Unit tests verify candidate generation, stale detection, graph preservation, and dashboard parsing; CI greps for candidate, stale, and evidence_graph fields in local QA artifacts.
-  - Artifacts: `.github/workflows/local-qa-runner.yml`, `tools/localqadashboard/run_evidence_test.go`
-- Retrospective: Harnesses still explore freely, but their failures now leave a deterministic promotion queue instead of becoming untracked partial evidence.
+- Hypothesis: Converting failed steps, open repairs, and coverage gaps into closed-loop candidates with stable first-seen timestamps, promotion registry checks, and an evidence graph makes harness discoveries visible before and after they become stale partial evidence.
+  - Artifacts: `tools/localqarunner/closed_loop_candidate_test.go`, `docs/30-architecture/local-qa-closed-loop-promotions.dsl.json`
+- Execute: Emit closed_loop_candidates, preserve prior first_observed_at from the previous run evidence ledger, mark registry-backed promotions, attach Observation -> Hypothesis -> Change -> Verifier -> Evidence -> Decision -> Next Loop graph fields, and render age/stale/promoted/decision status in the dashboard.
+  - Artifacts: `tools/localqarunner/closed_loop_candidate.go`, `tools/localqarunner/closed_loop_candidate_graph.go`, `tools/localqarunner/closed_loop_promotion_apply.go`, `tools/localqarunner/closed_loop_candidate_ledger.go`, `tools/localqadashboard/run_evidence.go`
+- Evaluate: Unit tests verify candidate generation, stale detection, promotion detection, graph preservation, and dashboard parsing; CI greps for candidate, stale, promoted, and evidence_graph fields in local QA artifacts.
+  - Artifacts: `.github/workflows/local-qa-runner.yml`, `tools/localqarunner/closed_loop_candidate_promotion_test.go`, `tools/localqadashboard/run_evidence_test.go`
+- Retrospective: Harnesses still explore freely, but their failures now leave a deterministic promotion queue; once a candidate is closed, the registry marks it promoted instead of leaving it as untracked partial evidence.
   - Artifacts: `docs/30-architecture/loop-engineering.md`
 - Evidence:
   - `command`: go test ./tools/localqarunner ./tools/localqadashboard -count=1; proves candidate generation, stale age calculation, and dashboard visibility are covered by tests

@@ -2,7 +2,6 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"os"
 	"time"
 )
@@ -16,6 +15,7 @@ func main() {
 	manualEvidence := ".riido-local/evidence/manual-qa-evidence.json"
 	domainCache := ".riido-local/evidence/domain-fixture-journey-cache.json"
 	coverageEvidence := ".riido-local/evidence/local-qa-coverage.json"
+	promotionManifest := "docs/30-architecture/local-qa-closed-loop-promotions.dsl.json"
 	scheduleEvidence := ".riido-local/evidence/local-qa-schedule.json"
 	infraEvidence := ".riido-local/evidence/local-qa-dashboard-infra-evidence.json"
 	flag.StringVar(&runEvidence, "run-evidence", runEvidence, "local QA run evidence JSON")
@@ -26,6 +26,7 @@ func main() {
 		productEvidence:      flag.String("product-evidence", productEvidence, "product acceptance evidence JSON"),
 		releaseEvidence:      flag.String("release-evidence", releaseEvidence, "release install evidence JSON"),
 		coverageEvidence:     flag.String("coverage-evidence", coverageEvidence, "local QA coverage snapshot JSON"),
+		promotionManifest:    flag.String("promotion-manifest", promotionManifest, "closed-loop promotion registry JSON"),
 		manualEvidence:       flag.String("manual-evidence", manualEvidence, "manual human QA evidence JSON exported by the contract lab"),
 		domainCache:          flag.String("domain-cache", getenvDefault("RIIDO_DOMAIN_FIXTURE_CACHE", domainCache), "domain fixture journey cache JSON"),
 		productLab:           flag.String("product-lab", productLab, "frontend contract lab HTML output"),
@@ -67,13 +68,5 @@ func main() {
 	flag.Parse()
 
 	status, err := run(cfg)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
-	if status == statusPassed {
-		fmt.Println("local-qa-runner: verified")
-		return
-	}
-	fmt.Println("local-qa-runner:", status)
-	os.Exit(1)
+	exitWithRunStatus(status, err)
 }

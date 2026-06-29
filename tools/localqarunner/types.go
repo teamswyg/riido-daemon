@@ -14,6 +14,7 @@ type config struct {
 	productEvidence      *string
 	releaseEvidence      *string
 	coverageEvidence     *string
+	promotionManifest    *string
 	manualEvidence       *string
 	domainCache          *string
 	productLab           *string

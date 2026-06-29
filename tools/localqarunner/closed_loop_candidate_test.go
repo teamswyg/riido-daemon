@@ -28,9 +28,12 @@ func TestApplyClosedLoopCandidatesPromotesHarnessFindings(t *testing.T) {
 	}
 
 	evidence.ObservedAt = "2026-06-29T00:00:00Z"
-	got := applyClosedLoopCandidates(evidence, nil)
+	got := applyClosedLoopCandidates(evidence, nil, nil)
 	if got.CandidateSummary.Total != 3 || len(got.Candidates) != 3 {
 		t.Fatalf("candidates=%+v summary=%+v", got.Candidates, got.CandidateSummary)
+	}
+	if got.CandidateSummary.Pending != 3 {
+		t.Fatalf("summary=%+v", got.CandidateSummary)
 	}
 	assertCandidate(t, got.Candidates, "harness-step.provider-integration")
 	assertCandidate(t, got.Candidates, "open-repair.claude-provider-auth-required")
@@ -53,7 +56,7 @@ func TestApplyClosedLoopCandidatesMarksStaleFromPriorEvidence(t *testing.T) {
 		FirstObservedAt: "2026-06-25T00:00:00Z",
 	}}
 
-	got := applyClosedLoopCandidates(evidence, previous)
+	got := applyClosedLoopCandidates(evidence, previous, nil)
 	if got.CandidateSummary.Stale != 1 {
 		t.Fatalf("summary=%+v candidates=%+v", got.CandidateSummary, got.Candidates)
 	}

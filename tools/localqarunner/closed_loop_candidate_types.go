@@ -2,6 +2,7 @@ package main
 
 type closedLoopSummary struct {
 	Total           int `json:"total"`
+	Pending         int `json:"pending"`
 	Promoted        int `json:"promoted"`
 	Stale           int `json:"stale"`
 	StaleAfterHours int `json:"stale_after_hours"`
