@@ -1394,11 +1394,11 @@
 - Owner: `tools/localqarunner and local QA dashboard`
 - Observe: Local QA harnesses could fail or report repairs while the run evidence only exposed status and open repairs, leaving promotion into closed loops as human memory.
   - Artifacts: `tools/localqarunner/types.go`, `tools/localqadashboard/render.go`
-- Hypothesis: Converting failed steps, open repairs, and coverage gaps into closed-loop candidates with stable first-seen timestamps makes harness discoveries visible before and after they become stale partial evidence.
+- Hypothesis: Converting failed steps, open repairs, and coverage gaps into closed-loop candidates with stable first-seen timestamps and an evidence graph makes harness discoveries visible before and after they become stale partial evidence.
   - Artifacts: `tools/localqarunner/closed_loop_candidate_test.go`
-- Execute: Emit closed_loop_candidates, preserve prior first_observed_at from the previous run evidence ledger, and render age/stale status in the dashboard.
-  - Artifacts: `tools/localqarunner/closed_loop_candidate.go`, `tools/localqarunner/closed_loop_candidate_ledger.go`, `tools/localqadashboard/run_evidence.go`
-- Evaluate: Unit tests verify candidate generation, stale detection, and dashboard parsing; CI greps for candidate and stale fields in local QA artifacts.
+- Execute: Emit closed_loop_candidates, preserve prior first_observed_at from the previous run evidence ledger, attach Observation -> Hypothesis -> Change -> Verifier -> Evidence -> Decision -> Next Loop graph fields, and render age/stale/decision status in the dashboard.
+  - Artifacts: `tools/localqarunner/closed_loop_candidate.go`, `tools/localqarunner/closed_loop_candidate_graph.go`, `tools/localqarunner/closed_loop_candidate_ledger.go`, `tools/localqadashboard/run_evidence.go`
+- Evaluate: Unit tests verify candidate generation, stale detection, graph preservation, and dashboard parsing; CI greps for candidate, stale, and evidence_graph fields in local QA artifacts.
   - Artifacts: `.github/workflows/local-qa-runner.yml`, `tools/localqadashboard/run_evidence_test.go`
 - Retrospective: Harnesses still explore freely, but their failures now leave a deterministic promotion queue instead of becoming untracked partial evidence.
   - Artifacts: `docs/30-architecture/loop-engineering.md`

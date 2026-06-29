@@ -35,6 +35,9 @@ func TestApplyClosedLoopCandidatesPromotesHarnessFindings(t *testing.T) {
 	assertCandidate(t, got.Candidates, "harness-step.provider-integration")
 	assertCandidate(t, got.Candidates, "open-repair.claude-provider-auth-required")
 	assertCandidate(t, got.Candidates, "coverage.product-claude-approval")
+	if got.Candidates[0].Graph.NextLoop == "" || got.Candidates[0].Graph.Decision == "" {
+		t.Fatalf("graph missing: %+v", got.Candidates[0])
+	}
 }
 
 func TestApplyClosedLoopCandidatesMarksStaleFromPriorEvidence(t *testing.T) {
@@ -58,15 +61,7 @@ func TestApplyClosedLoopCandidatesMarksStaleFromPriorEvidence(t *testing.T) {
 	if !row.Stale || row.Status != "stale" || row.AgeHours != 96 {
 		t.Fatalf("candidate=%+v", row)
 	}
-}
-
-func assertCandidate(t *testing.T, rows []closedLoopCandidate, id string) {
-	t.Helper()
-	for _, row := range rows {
-		if row.ID == id && row.Status == "candidate" && row.StaleAfterHours > 0 &&
-			row.FirstObservedAt != "" {
-			return
-		}
+	if row.Graph.Decision != "escalate_stale_partial" {
+		t.Fatalf("graph=%+v", row.Graph)
 	}
-	t.Fatalf("candidate %q missing from %+v", id, rows)
 }

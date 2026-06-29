@@ -30,5 +30,6 @@ func appendCandidate(out []closedLoopCandidate, seen map[string]bool,
 	seen[candidate.ID] = true
 	candidate.Status = "candidate"
 	candidate.StaleAfterHours = candidateStaleAfterHours
+	candidate.Graph = candidateEvidenceGraphFor(candidate)
 	return append(out, candidate)
 }

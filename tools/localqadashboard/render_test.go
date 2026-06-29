@@ -34,8 +34,12 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 				Status:     "candidate",
 				Summary:    "missing product outcome",
 				NextAction: "promote to verifier",
-				AgeHours:   12,
-				StaleAt:    "2026-06-25T00:00:00Z",
+				Graph: candidateEvidenceGraph{
+					Decision: "candidate_for_promotion",
+					NextLoop: "closed-loop.coverage-product",
+				},
+				AgeHours: 12,
+				StaleAt:  "2026-06-25T00:00:00Z",
 			}},
 		},
 		CoverageRows: []coverageRow{{
@@ -54,27 +58,7 @@ func TestRenderDashboardIncludesFreshnessAndProviderStatus(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{
-		"Coverage Status",
-		"freshness-status",
-		`data-expires="2999-06-23T01:00:00Z"`,
-		">fresh</div>",
-		"Deployment Gate",
-		"blocked",
-		"-strict-coverage",
-		"provider_auth_required",
-		"cursor-agent login",
-		"Closed-Loop Candidates",
-		"coverage.product",
-		"12h",
-		"stale 2026-06-25T00:00:00Z",
-		"promote to verifier",
-		"figma.onboarding",
-		"figma.json",
-		"expires 2999-06-23T01:00:00Z",
-		`<img class="shot"`,
-		"passed",
-	} {
+	for _, want := range dashboardRenderExpectations() {
 		if !strings.Contains(html, want) {
 			t.Fatalf("rendered dashboard missing %q", want)
 		}

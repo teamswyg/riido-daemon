@@ -17,6 +17,7 @@ func annotateCandidateAge(observed string, candidates []closedLoopCandidate,
 		if candidates[i].Stale {
 			candidates[i].Status = "stale"
 		}
+		candidates[i].Graph = candidateEvidenceGraphFor(candidates[i])
 	}
 	return candidates
 }

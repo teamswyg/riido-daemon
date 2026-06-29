@@ -35,7 +35,7 @@ func TestLoadLocalRunEvidenceReadsOpenRepairs(t *testing.T) {
 
 func TestLoadLocalRunEvidenceReadsClosedLoopCandidates(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "run.json")
-	body := `{"observed_at":"2026-06-22T01:00:00Z","expires_at":"2026-06-23T01:00:00Z","status":"partial","coverage_status":"partial","closed_loop_candidates":[{"id":"coverage.product","source":"coverage","trigger":"coverage_not_passed","status":"stale","summary":"missing","next_action":"promote","age_hours":96,"stale_at":"2026-06-25T01:00:00Z"}]}`
+	body := `{"observed_at":"2026-06-22T01:00:00Z","expires_at":"2026-06-23T01:00:00Z","status":"partial","coverage_status":"partial","closed_loop_candidates":[{"id":"coverage.product","source":"coverage","trigger":"coverage_not_passed","status":"stale","summary":"missing","next_action":"promote","age_hours":96,"stale_at":"2026-06-25T01:00:00Z","evidence_graph":{"decision":"escalate_stale_partial","next_loop":"closed-loop.coverage-product"}}]}`
 	if err := os.WriteFile(path, []byte(body), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -45,5 +45,9 @@ func TestLoadLocalRunEvidenceReadsClosedLoopCandidates(t *testing.T) {
 	}
 	if got.Candidates[0].AgeHours != 96 || got.Candidates[0].StaleAt == "" {
 		t.Fatalf("candidate=%+v", got.Candidates[0])
+	}
+	if got.Candidates[0].Graph.Decision != "escalate_stale_partial" ||
+		got.Candidates[0].Graph.NextLoop != "closed-loop.coverage-product" {
+		t.Fatalf("graph=%+v", got.Candidates[0].Graph)
 	}
 }
