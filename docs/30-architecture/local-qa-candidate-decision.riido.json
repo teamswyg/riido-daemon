@@ -51,7 +51,8 @@
     "decision records must name owner, priority, disposition, next loop, next artifact, and reason",
     "triage-required and deferred decisions must name review_by",
     "decision next_artifact must be one of the candidate required_next_artifacts",
-    "product_loop candidates are verified from product-loop-evidence output instead of local QA run output"
+    "product_loop candidates are verified from product-loop-evidence output instead of local QA run output",
+    "product_loop decisions without a current candidate are allowed only for generated product-outcome-evidence-* ids or known partial-reduction candidate ids"
   ],
   "loop": {
     "observation": "Local QA run evidence can expose closed-loop candidates while prioritization still lives in human memory.",

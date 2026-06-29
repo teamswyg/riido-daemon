@@ -42,7 +42,13 @@ func decisionNeedsReviewBy(decision decisionRecord) bool {
 }
 
 func decisionAllowsMissingCandidate(decision decisionRecord) bool {
-	return decision.CandidateScope == "local_observed" || decision.CandidateScope == "product_loop"
+	if decision.CandidateScope == "local_observed" {
+		return true
+	}
+	if decision.CandidateScope == "product_loop" {
+		return generatedProductLoopCandidateID(decision.CandidateID)
+	}
+	return false
 }
 
 func decisionMatchesCandidateScope(decision decisionRecord, scope string) bool {
