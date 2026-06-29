@@ -74,6 +74,7 @@
     {"id": "figma.intent.catalog", "title": "Figma AI Agent screen intent manifest is loaded into local contract lab", "tier": "daily", "surface": "figma", "evidence": "external"},
     {"id": "figma.onboarding", "title": "Onboarding Figma screenshot reference is verified and linked", "tier": "weekly", "surface": "figma", "evidence": "external"},
     {"id": "figma.runtime.settings", "title": "Runtime settings Figma screenshot reference is verified and linked", "tier": "weekly", "surface": "figma", "evidence": "external"},
-    {"id": "figma.runtime.detail", "title": "Runtime detail Figma intent is mapped to daemon lifecycle and client presentation boundaries", "tier": "daily", "surface": "figma", "evidence": "external"}
+    {"id": "figma.runtime.detail", "title": "Runtime detail Figma intent is mapped to daemon lifecycle and client presentation boundaries", "tier": "daily", "surface": "figma", "evidence": "external"},
+    {"id": "local.qa.closed_loop_maturity", "title": "Closed-loop maturity records meta complexity, product outcome linkage, and partial reduction evidence", "tier": "daily", "surface": "local-evidence", "evidence": "external"}
   ]
 }

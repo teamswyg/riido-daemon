@@ -8,6 +8,7 @@ on:
       - "docs/30-architecture/figma-ai-agent-daemon-boundary/feature-ui.dsl.json"
       - "docs/30-architecture/qa-i18n.dsl.json"
       - "docs/30-architecture/qa-system.dsl.json"
+      - "docs/30-architecture/closed-loop-maturity.dsl.json"
       - "docs/30-architecture/domain-fixture-journey.dsl.json"
       - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
       - "docs/30-architecture/local-acceptance-coverage.riido.json"
@@ -62,6 +63,10 @@ jobs:
           grep -q "inference_required_count" out/ai-agent-product-acceptance.json
           grep -q "local.qa.evidence_gap_candidates" out/ai-agent-product-acceptance.json
           grep -q "domain.fixture_journey" out/ai-agent-product-acceptance.json
+          grep -q "local.qa.closed_loop_maturity" out/ai-agent-product-acceptance.json
+          grep -q "meta_complexity" out/ai-agent-product-acceptance.json
+          grep -q "product_acceptance" out/ai-agent-product-acceptance.json
+          grep -q "partial_reduction" out/ai-agent-product-acceptance.json
           go run ./tools/localreleaseacceptance \
             -evidence-out out/local-release-acceptance.json
           go run ./tools/localqarunner \
@@ -90,6 +95,7 @@ jobs:
           grep -q "local.qa.daily_trigger" out/local-qa-coverage.json
           grep -q "contract.ui.i18n_dsl" out/local-qa-coverage.json
           grep -q "local.qa.dsl_system_audit" out/local-qa-coverage.json
+          grep -q "local.qa.closed_loop_maturity" out/local-qa-coverage.json
           grep -q "domain.fixture.thread" out/local-qa-coverage.json
       - uses: actions/upload-artifact@v7.0.1
         if: always()

@@ -1,0 +1,24 @@
+{
+  "schema_version": "riido-closed-loop-maturity-dsl.v1",
+  "id": "closed-loop-maturity",
+  "generated": "tools/localproductacceptance/closed_loop_maturity.generated.json",
+  "stale_after_days": 7,
+  "metrics": [
+    {"id": "meta.tools", "class": "meta-complexity", "mode": "system", "evidence": "tool_dir_count"},
+    {"id": "meta.workflows", "class": "meta-complexity", "mode": "system", "evidence": "workflow_count"},
+    {"id": "meta.verifiers", "class": "meta-complexity", "mode": "system", "evidence": "verifier_count"},
+    {"id": "meta.generated", "class": "meta-complexity", "mode": "system", "evidence": "generated_artifact_count"},
+    {"id": "product.assignment_completion", "class": "product-acceptance", "mode": "system", "evidence": "contract.task.multi_assignment"},
+    {"id": "product.provider_recovery", "class": "product-acceptance", "mode": "system", "evidence": "provider.claude"},
+    {"id": "product.time_to_first_event", "class": "product-acceptance", "mode": "inferred", "evidence": "contract.task.sse_replay"},
+    {"id": "product.user_visible_failure", "class": "product-acceptance", "mode": "inferred", "evidence": "local.qa.evidence_gap_candidates"},
+    {"id": "partial.inference_required_ids", "class": "partial-reduction", "mode": "system", "evidence": "inference_required_ids"},
+    {"id": "partial.closed_loop_candidates", "class": "partial-reduction", "mode": "system", "evidence": "closed_loop_candidate_count"},
+    {"id": "partial.candidate_age", "class": "partial-reduction", "mode": "inferred", "evidence": "candidate_age_days"},
+    {"id": "partial.promoted_count", "class": "partial-reduction", "mode": "inferred", "evidence": "promoted_count"}
+  ],
+  "partial_when": [
+    "product metric is inferred instead of tied to observed daemon run outcome",
+    "closed-loop candidate age or promoted count is not backed by a runner/verifier"
+  ]
+}
