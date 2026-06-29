@@ -25,6 +25,7 @@ func validateBinding(repo string, binding Binding) []problem {
 	if len(binding.Verifiers) == 0 {
 		problems = append(problems, problem{Message: binding.ID + " has no verifiers"})
 	}
+	problems = append(problems, validateBusinessClaim(binding)...)
 	return problems
 }
 

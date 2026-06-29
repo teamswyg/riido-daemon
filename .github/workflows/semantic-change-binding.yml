@@ -63,6 +63,8 @@ jobs:
           go run ./tools/semanticchangebinding \
             -changed-files docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json,docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md,internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go,internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go,internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go,internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go,.github/workflows/local-daemon-contract-evidence.yml \
             -evidence-out out/taskdb-lease-fencing-binding.json
+          grep -q "business_claims" out/taskdb-lease-fencing-binding.json
+          grep -q "taskdb-lease-fencing-claim" out/taskdb-lease-fencing-binding.json
           if go run ./tools/semanticchangebinding \
             -changed-files tools/localqarunner/closed_loop_candidate_graph.go \
             -evidence-out out/local-qa-graph-negative.json; then

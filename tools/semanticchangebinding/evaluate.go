@@ -5,7 +5,7 @@ func evaluate(manifest Manifest, changed []string) ([]bindingResult, []problem) 
 	var results []bindingResult
 	var problems []problem
 	for _, binding := range manifest.Bindings {
-		result := bindingResult{ID: binding.ID, Claim: binding.Claim}
+		result := bindingResult{ID: binding.ID, Claim: binding.Claim, ClaimClass: binding.ClaimClass}
 		for _, trigger := range binding.Triggers {
 			if changedSet[trigger] {
 				result.Triggered = true
