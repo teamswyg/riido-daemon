@@ -24,11 +24,15 @@ type closedLoopEvidenceGraph struct {
 }
 
 type verifyResult struct {
-	CandidateScope    string                     `json:"candidate_scope,omitempty"`
-	CandidateCount    int                        `json:"candidate_count"`
-	DecisionCount     int                        `json:"decision_count"`
-	DecisionIDs       []string                   `json:"decision_ids,omitempty"`
-	DecisionArtifacts []decisionArtifactEvidence `json:"decision_artifacts,omitempty"`
+	CandidateScope        string                     `json:"candidate_scope,omitempty"`
+	CandidateCount        int                        `json:"candidate_count"`
+	DecisionCount         int                        `json:"decision_count"`
+	ManifestDecisionCount int                        `json:"manifest_decision_count,omitempty"`
+	ScopeDecisionCount    int                        `json:"scope_decision_count,omitempty"`
+	MatchedDecisionCount  int                        `json:"matched_decision_count,omitempty"`
+	AllowedMissingCount   int                        `json:"allowed_missing_decision_count,omitempty"`
+	DecisionIDs           []string                   `json:"decision_ids,omitempty"`
+	DecisionArtifacts     []decisionArtifactEvidence `json:"decision_artifacts,omitempty"`
 }
 
 type decisionArtifactEvidence struct {

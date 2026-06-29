@@ -7,7 +7,12 @@ func verifyCandidateDecisions(root string, m manifest, path, scope string) (veri
 	}
 	decisions := scopedDecisions(m.Decisions, scope)
 	decisionByID := decisionsByID(decisions)
-	result := verifyResult{CandidateScope: scope, CandidateCount: len(candidate.ClosedLoops)}
+	result := verifyResult{
+		CandidateScope:      scope,
+		CandidateCount:      len(candidate.ClosedLoops),
+		ScopeDecisionCount:  len(decisions),
+		AllowedMissingCount: countAllowedMissingDecisions(decisions, candidate.ClosedLoops),
+	}
 	var problems []candidateProblem
 	for _, item := range candidate.ClosedLoops {
 		if !item.Graph.complete() {
@@ -28,6 +33,7 @@ func verifyCandidateDecisions(root string, m manifest, path, scope string) (veri
 			CandidateID: item.ID, NextArtifact: decision.NextArtifact,
 		})
 	}
+	result.MatchedDecisionCount = len(result.DecisionIDs)
 	problems = append(problems, orphanDecisionProblems(decisions, candidate.ClosedLoops)...)
 	if len(problems) > 0 {
 		return result, candidateDecisionError{Problems: problems}
