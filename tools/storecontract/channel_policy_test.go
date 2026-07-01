@@ -52,6 +52,11 @@ func TestRunRejectsMSIXStorePolicyDrift(t *testing.T) {
 			mutate: setChannelUpdateMechanism("msix-store", "self-managed"),
 			error:  `channel "msix-store" update_mechanism must be store-managed`,
 		},
+		{
+			name:   "policy gate not closed",
+			mutate: setChannelStatus("msix-store", "requires-policy-gate"),
+			error:  `channel "msix-store" status must be store-review-ready`,
+		},
 	}
 	expectContractMutationFailures(t, cases)
 }

@@ -13,6 +13,7 @@ func TestPolicyTableIsGeneratedFromPolicyFunction(t *testing.T) {
 	}
 	doc := renderPolicyTableDoc(loaded, rows)
 	for _, want := range []string{
+		"Channel status | preferred-first | requires-redesign | preferred-first | store-review-ready",
 		"Provider CLI bundling | forbidden | forbidden | forbidden | forbidden",
 		"Provider CLI user-selected path | allowed | requires os-grant + store-review | allowed | allowed",
 		"Background helper | requires explicit-consent | requires explicit-consent + store-review",

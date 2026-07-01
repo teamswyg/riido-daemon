@@ -2,7 +2,7 @@
   "id": "msix-store",
   "loop_source": "packaging/store/riido_daemon_store_distribution.riido.json",
   "platform": "windows",
-  "status": "requires-policy-gate",
+  "status": "store-review-ready",
   "runtime_role": "msix-packaged-full-trust-helper-tray",
   "background_rule": "explicit-consent-and-store-review",
   "local_ipc_transport": "windows-named-pipe",
@@ -19,6 +19,7 @@
     "review-demo-mode",
     "privacy-policy",
     "demo-review-account",
+    "modified-apache-notice-legal-review-before-public-store",
     "privacy-metadata-allowlist",
     "provider-non-bundling-review-note"
   ],

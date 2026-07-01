@@ -26,6 +26,7 @@ Required store-review surfaces:
 - app-sandbox-entitlement-review-notes
 - demo-review-account
 - helper-purpose-review-note
+- modified-apache-notice-legal-review-before-public-store
 - partner-center-review-notes
 - privacy-metadata-allowlist
 - privacy-policy

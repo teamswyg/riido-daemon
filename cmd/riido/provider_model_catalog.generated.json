@@ -291,6 +291,46 @@
         "label": "GPT-5.5 Extra High Fast"
       },
       {
+        "model_id": "claude-sonnet-5-low",
+        "label": "Sonnet 5 1M Low"
+      },
+      {
+        "model_id": "claude-sonnet-5-medium",
+        "label": "Sonnet 5 1M Medium"
+      },
+      {
+        "model_id": "claude-sonnet-5-high",
+        "label": "Sonnet 5 1M"
+      },
+      {
+        "model_id": "claude-sonnet-5-xhigh",
+        "label": "Sonnet 5 1M Extra High"
+      },
+      {
+        "model_id": "claude-sonnet-5-max",
+        "label": "Sonnet 5 1M Max"
+      },
+      {
+        "model_id": "claude-sonnet-5-thinking-low",
+        "label": "Sonnet 5 1M Low Thinking"
+      },
+      {
+        "model_id": "claude-sonnet-5-thinking-medium",
+        "label": "Sonnet 5 1M Medium Thinking"
+      },
+      {
+        "model_id": "claude-sonnet-5-thinking-high",
+        "label": "Sonnet 5 1M Thinking"
+      },
+      {
+        "model_id": "claude-sonnet-5-thinking-xhigh",
+        "label": "Sonnet 5 1M Extra High Thinking"
+      },
+      {
+        "model_id": "claude-sonnet-5-thinking-max",
+        "label": "Sonnet 5 1M Max Thinking"
+      },
+      {
         "model_id": "claude-4.6-sonnet-medium",
         "label": "Sonnet 4.6 1M"
       },

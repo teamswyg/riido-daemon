@@ -10,6 +10,7 @@ func validateChannelFields(item channel) []string {
 	problems = appendRequiredString(problems, item.ID, "channel id is required")
 	problems = appendRequiredField(problems, item.ID, "platform", item.Platform)
 	problems = appendRequiredField(problems, item.ID, "status", item.Status)
+	problems = append(problems, validateChannelStatus(item)...)
 	problems = appendRequiredField(problems, item.ID, "runtime_role", item.RuntimeRole)
 	problems = appendRequiredField(problems, item.ID, "background_rule", item.BackgroundRule)
 	problems = appendRequiredField(problems, item.ID, "local_ipc_transport", item.LocalIPCTransport)

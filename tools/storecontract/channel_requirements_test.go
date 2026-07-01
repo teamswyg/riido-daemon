@@ -23,6 +23,14 @@ func TestRunRejectsStoreChannelWithoutReviewSubmissionSurface(t *testing.T) {
 			error:  `channel "mac-app-store" must require privacy-metadata-allowlist`,
 		},
 		{
+			name: "mac app store requires modified apache notice legal review",
+			mutate: removeChannelRequiredSurface(
+				"mac-app-store",
+				"modified-apache-notice-legal-review-before-public-store",
+			),
+			error: `channel "mac-app-store" must require modified-apache-notice-legal-review-before-public-store`,
+		},
+		{
 			name:   "mac app store requires provider non bundling review note",
 			mutate: removeChannelRequiredSurface("mac-app-store", "provider-non-bundling-review-note"),
 			error:  `channel "mac-app-store" must require provider-non-bundling-review-note`,
@@ -36,6 +44,14 @@ func TestRunRejectsStoreChannelWithoutReviewSubmissionSurface(t *testing.T) {
 			name:   "microsoft store requires privacy metadata allowlist",
 			mutate: removeChannelRequiredSurface("msix-store", "privacy-metadata-allowlist"),
 			error:  `channel "msix-store" must require privacy-metadata-allowlist`,
+		},
+		{
+			name: "microsoft store requires modified apache notice legal review",
+			mutate: removeChannelRequiredSurface(
+				"msix-store",
+				"modified-apache-notice-legal-review-before-public-store",
+			),
+			error: `channel "msix-store" must require modified-apache-notice-legal-review-before-public-store`,
 		},
 		{
 			name:   "microsoft store requires provider non bundling review note",

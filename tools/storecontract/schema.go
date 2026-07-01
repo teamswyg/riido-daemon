@@ -7,6 +7,7 @@ const (
 
 var storeReviewSubmissionRequiredSurfaces = []string{
 	"demo-review-account",
+	"modified-apache-notice-legal-review-before-public-store",
 	"privacy-metadata-allowlist",
 	"provider-non-bundling-review-note",
 }
