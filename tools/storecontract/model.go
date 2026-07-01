@@ -28,13 +28,14 @@ type channel struct {
 }
 
 type checkResult struct {
-	SchemaVersion      string           `json:"schema_version"`
-	ContractPath       string           `json:"contract_path"`
-	Product            string           `json:"product"`
-	Status             string           `json:"status"`
-	Channels           []string         `json:"channels"`
-	StoreArtifactRoots []string         `json:"store_artifact_roots"`
-	PolicyTablePath    string           `json:"policy_table_path,omitempty"`
-	PolicyTableRows    []policyTableRow `json:"policy_table_rows,omitempty"`
-	Errors             []string         `json:"errors,omitempty"`
+	SchemaVersion      string            `json:"schema_version"`
+	ContractPath       string            `json:"contract_path"`
+	Product            string            `json:"product"`
+	Status             string            `json:"status"`
+	Channels           []string          `json:"channels"`
+	ChannelStatuses    map[string]string `json:"channel_statuses,omitempty"`
+	StoreArtifactRoots []string          `json:"store_artifact_roots"`
+	PolicyTablePath    string            `json:"policy_table_path,omitempty"`
+	PolicyTableRows    []policyTableRow  `json:"policy_table_rows,omitempty"`
+	Errors             []string          `json:"errors,omitempty"`
 }

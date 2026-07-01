@@ -31,7 +31,7 @@ Forbidden surfaces:
 
 ## `msix-store`
 
-- Status: `requires-policy-gate`
+- Status: `store-review-ready`
 - Runtime role: `msix-packaged-full-trust-helper-tray`
 - Background rule: `explicit-consent-and-store-review`
 - IPC/data root: `windows-named-pipe` / `windows-package-local-data`
@@ -49,6 +49,7 @@ Required surfaces:
 - review-demo-mode
 - privacy-policy
 - demo-review-account
+- modified-apache-notice-legal-review-before-public-store
 - privacy-metadata-allowlist
 - provider-non-bundling-review-note
 

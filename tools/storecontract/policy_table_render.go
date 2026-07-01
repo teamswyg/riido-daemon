@@ -34,12 +34,21 @@ func renderPolicyMatrix(b *strings.Builder, loaded contract, rows []policyTableR
 		fmt.Fprint(b, " --- |")
 	}
 	fmt.Fprintln(b)
+	renderChannelStatusRow(b, loaded)
 	for _, row := range rows {
 		fmt.Fprintf(b, "| %s |", row.Surface)
 		for _, cell := range row.Cells {
 			fmt.Fprintf(b, " %s |", cell.Decision)
 		}
 		fmt.Fprintln(b)
+	}
+	fmt.Fprintln(b)
+}
+
+func renderChannelStatusRow(b *strings.Builder, loaded contract) {
+	fmt.Fprint(b, "| Channel status |")
+	for _, item := range loaded.Channels {
+		fmt.Fprintf(b, " %s |", item.Status)
 	}
 	fmt.Fprintln(b)
 }

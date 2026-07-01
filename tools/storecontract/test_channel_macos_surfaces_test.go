@@ -12,6 +12,7 @@ func macAppStoreRequiredSurfaceFixture() []string {
 		"privacy-policy",
 		"review-demo-mode",
 		"demo-review-account",
+		"modified-apache-notice-legal-review-before-public-store",
 		"privacy-metadata-allowlist",
 		"provider-non-bundling-review-note",
 	}

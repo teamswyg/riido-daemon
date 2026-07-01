@@ -12,6 +12,7 @@ Executable SSOT:
 
 | Surface | `developer-id` | `mac-app-store` | `msix-sideload` | `msix-store` |
 | --- | --- | --- | --- | --- |
+| Channel status | preferred-first | requires-redesign | preferred-first | store-review-ready |
 | Provider CLI bundling | forbidden | forbidden | forbidden | forbidden |
 | Provider CLI user-selected path | allowed | requires os-grant + store-review | allowed | allowed |
 | Silent provider auto-install | forbidden | forbidden | forbidden | forbidden |

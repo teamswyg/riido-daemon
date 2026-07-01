@@ -32,7 +32,7 @@ func msixStoreChannel() channel {
 	return channel{
 		ID:                "msix-store",
 		Platform:          "windows",
-		Status:            "requires-policy-gate",
+		Status:            "store-review-ready",
 		RuntimeRole:       "msix-packaged-full-trust-helper-tray",
 		BackgroundRule:    "explicit-consent-and-store-review",
 		LocalIPCTransport: "windows-named-pipe",

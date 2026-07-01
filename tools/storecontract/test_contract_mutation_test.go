@@ -24,6 +24,10 @@ func setChannelUpdateMechanism(id, mechanism string) func(*contract) {
 	return mutateChannel(id, func(item *channel) { item.UpdateMechanism = mechanism })
 }
 
+func setChannelStatus(id, status string) func(*contract) {
+	return mutateChannel(id, func(item *channel) { item.Status = status })
+}
+
 func mutateChannel(id string, mutate func(*channel)) func(*contract) {
 	return func(value *contract) {
 		for i := range value.Channels {

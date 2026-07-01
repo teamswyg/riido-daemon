@@ -9,7 +9,7 @@
 | `developer-id` | macos | preferred-first | local-helper-broker | unix-socket | self-managed |
 | `mac-app-store` | macos | requires-redesign | sandboxed-login-item-helper | unix-socket | app-store-managed |
 | `msix-sideload` | windows | preferred-first | msix-packaged-helper-broker | windows-named-pipe | self-managed |
-| `msix-store` | windows | requires-policy-gate | msix-packaged-full-trust-helper-tray | windows-named-pipe | store-managed |
+| `msix-store` | windows | store-review-ready | msix-packaged-full-trust-helper-tray | windows-named-pipe | store-managed |
 | `dev-local` | local | existing | local helper | local IPC | source/runtime managed |
 
 Release assets are owned by [`release-artifacts.md`](../../release-artifacts.md).
