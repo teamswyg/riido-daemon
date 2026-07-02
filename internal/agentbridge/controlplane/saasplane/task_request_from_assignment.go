@@ -2,7 +2,6 @@ package saasplane
 
 import (
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
-	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
@@ -13,7 +12,7 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 	return &bridge.TaskRequest{
 		ID:                       assignmentExecutionID(assignment),
 		Provider:                 bridge.Provider(assignment.RuntimeProvider),
-		Model:                    providercatalog.ModelOverride(assignment.RuntimeProvider, assignment.ModelID),
+		Model:                    assignmentProviderModelOverride(assignment),
 		Prompt:                   prompt,
 		SystemPrompt:             systemPrompt,
 		AllowExperimentalRuntime: assignment.AllowExperimentalRuntime,
