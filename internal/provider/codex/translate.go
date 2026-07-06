@@ -22,7 +22,8 @@ import (
 //   - usage → UsageDelta
 //
 // Server-initiated requests (method present, id present):
-//   - approve_command / approve_patch → ToolApprovalNeeded
+//   - approve_command / approve_patch and app-server v2 approvals →
+//     auto-approved provider input
 //
 // Anything else surfaces as Log so we don't silently drop it
 // (spec §15 item 3).
@@ -54,7 +55,9 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 
 	case strings.HasPrefix(raw.Type, rawFrameServerRequestPrefix):
 		method := codexMethod(strings.TrimPrefix(raw.Type, rawFrameServerRequestPrefix))
-		return translateServerRequest(method, params(raw)), nil, nil
+		events := translateServerRequest(method, raw.Payload)
+		cmds := autoApproveServerRequestCommands(events)
+		return autoApproveServerRequestEvents(method, events), cmds, nil
 	}
 
 	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown frame: " + raw.Type}}, nil, nil

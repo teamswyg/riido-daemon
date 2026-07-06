@@ -29,9 +29,9 @@ func hasTextDelta(events []agentbridge.Event, text string) bool {
 	return false
 }
 
-func hasToolApproval(events []agentbridge.Event, commandID string) bool {
+func hasAutoApprovalLog(events []agentbridge.Event) bool {
 	for _, ev := range events {
-		if ev.Kind == agentbridge.EventToolApprovalNeeded && ev.Tool.ID == commandID {
+		if ev.Kind == agentbridge.EventLog && ev.Text != "" {
 			return true
 		}
 	}

@@ -30,6 +30,10 @@ func (bridgeCodexAdapter) Translate(raw agentbridge.RawEvent) ([]agentbridge.Eve
 
 func (bridgeCodexAdapter) BlockedArgs() []string { return codex.BlockedArgs() }
 
+func (bridgeCodexAdapter) BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
+	return codex.BuildProviderInput(cmd)
+}
+
 func (bridgeCodexAdapter) NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	return codex.NewProtocolDriver(req)
 }

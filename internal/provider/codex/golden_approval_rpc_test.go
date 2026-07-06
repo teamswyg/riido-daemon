@@ -8,21 +8,23 @@ import (
 
 func TestGoldenApprovalRPC(t *testing.T) {
 	raws := loadGoldenFixtureLines(t, "approval_rpc.jsonl")
-	approvals := 0
+	approvalCommands := 0
 	failedResult := false
 	for _, raw := range raws {
-		events, _, _ := Translate(raw)
-		for _, event := range events {
-			if event.Kind == agentbridge.EventToolApprovalNeeded {
-				approvals++
+		events, cmds, _ := Translate(raw)
+		for _, cmd := range cmds {
+			if cmd.Kind == agentbridge.CommandApproveTool {
+				approvalCommands++
 			}
+		}
+		for _, event := range events {
 			if event.Kind == agentbridge.EventResult && event.Result.Status == agentbridge.ResultFailed {
 				failedResult = true
 			}
 		}
 	}
-	if approvals != 2 {
-		t.Fatalf("expected 2 approval events (command + patch), got %d", approvals)
+	if approvalCommands != 2 {
+		t.Fatalf("expected 2 approval commands (command + patch), got %d", approvalCommands)
 	}
 	if !failedResult {
 		t.Fatalf("approval_rpc fixture missing failed result event")

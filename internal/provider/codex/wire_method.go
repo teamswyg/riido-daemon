@@ -51,4 +51,7 @@ const (
 
 	codexMethodApproveCommand codexMethod = "approve_command"
 	codexMethodApprovePatch   codexMethod = "approve_patch"
+
+	codexMethodCommandExecutionRequestApproval codexMethod = "item/commandExecution/requestApproval"
+	codexMethodFileChangeRequestApproval       codexMethod = "item/fileChange/requestApproval"
 )

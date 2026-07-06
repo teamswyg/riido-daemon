@@ -29,3 +29,12 @@ func tx(t *testing.T, raw agentbridge.RawEvent) []agentbridge.Event {
 	}
 	return events
 }
+
+func txFull(t *testing.T, raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command) {
+	t.Helper()
+	events, cmds, err := Translate(raw)
+	if err != nil {
+		t.Fatalf("Translate: %v", err)
+	}
+	return events, cmds
+}
