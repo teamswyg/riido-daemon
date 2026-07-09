@@ -30,6 +30,9 @@ func readManifest(path string) (manifest, error) {
 	if err := dec.Decode(&m); err != nil {
 		return m, fmt.Errorf("decode manifest: %w", err)
 	}
+	if err := requireJSONEOF(dec); err != nil {
+		return m, fmt.Errorf("decode manifest: %w", err)
+	}
 	return m, nil
 }
 
