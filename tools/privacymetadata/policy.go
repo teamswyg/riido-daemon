@@ -1,20 +1,21 @@
 package main
 
-import (
-	"encoding/json"
-	"os"
+import "github.com/teamswyg/riido-daemon/internal/hostintegration"
 
-	"github.com/teamswyg/riido-daemon/internal/hostintegration"
-)
+type privacyPolicyFile struct {
+	SchemaVersion string                                         `json:"schema_version"`
+	Loop          map[string]string                              `json:"loop,omitempty"`
+	Surfaces      []hostintegration.PrivacyMetadataSurfacePolicy `json:"surfaces"`
+}
 
 func loadPolicy(repo, rel string) (PolicySnapshot, error) {
-	body, err := os.ReadFile(repoPath(repo, rel))
-	if err != nil {
+	var file privacyPolicyFile
+	if err := readJSON(repoPath(repo, rel), &file); err != nil {
 		return PolicySnapshot{}, err
 	}
-	var policy hostintegration.PrivacyMetadataAllowlist
-	if err := json.Unmarshal(body, &policy); err != nil {
-		return PolicySnapshot{}, err
+	policy := hostintegration.PrivacyMetadataAllowlist{
+		SchemaVersion: file.SchemaVersion,
+		Surfaces:      file.Surfaces,
 	}
 	if err := policy.Validate(); err != nil {
 		return PolicySnapshot{}, err
