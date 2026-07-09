@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -20,7 +21,12 @@ func readJSON(path string, value any) error {
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal(data, value)
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(value); err != nil {
+		return err
+	}
+	return requireEOF(dec)
 }
 
 func loadFragments(repo, base string, m *manifest) error {
