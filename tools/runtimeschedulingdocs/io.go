@@ -34,7 +34,11 @@ func readJSON(path string, target any) error {
 }
 
 func requireEOF(dec *json.Decoder) error {
-	if err := dec.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+	var extra any
+	if err := dec.Decode(&extra); !errors.Is(err, io.EOF) {
+		if err == nil {
+			return errors.New("trailing JSON value")
+		}
 		return err
 	}
 	return nil
