@@ -3,7 +3,7 @@ package toolpolicy
 import "strings"
 
 func commandTouchesProtectedPath(command string) bool {
-	normalized := strings.ToLower(command)
+	normalized := normalizeCommandPathText(command)
 	if !commandMentionsProtectedPath(normalized) {
 		return false
 	}
@@ -29,4 +29,13 @@ func protectedCommandPathTokens() []string {
 		".git", ".vscode", ".idea", ".husky", ".claude", ".env", ".aws",
 		".ssh", ".gnupg", ".docker/config.json", ".config/gh/hosts.yml",
 	}
+}
+
+func normalizeCommandPathText(command string) string {
+	normalized := strings.ToLower(command)
+	normalized = strings.ReplaceAll(normalized, "\\", "/")
+	for strings.Contains(normalized, "//") {
+		normalized = strings.ReplaceAll(normalized, "//", "/")
+	}
+	return normalized
 }
