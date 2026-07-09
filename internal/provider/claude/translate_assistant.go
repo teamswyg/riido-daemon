@@ -10,7 +10,10 @@ func translateAssistantMessage(raw agentbridge.RawEvent) []agentbridge.Event {
 	for _, obj := range claudeMessageContent(raw) {
 		switch wireContentType(stringField(obj, "type")) {
 		case wireContentText:
-			out = append(out, agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: stringField(obj, "text")})
+			out = append(out, agentbridge.Event{
+				Kind: agentbridge.EventTextDelta,
+				Text: normalizeClaudeErrorMessage(stringField(obj, "text")),
+			})
 		case wireContentThinking:
 			out = append(out, agentbridge.Event{Kind: agentbridge.EventThinkingDelta, Text: stringField(obj, "thinking")})
 		case wireContentToolUse:
