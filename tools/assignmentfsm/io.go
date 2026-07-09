@@ -3,6 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
+	"io"
 	"os"
 )
 
@@ -12,7 +14,16 @@ func loadManifest(repo, rel string) (Manifest, error) {
 	if err != nil {
 		return manifest, err
 	}
-	if err := json.Unmarshal(body, &manifest); err != nil {
+	dec := json.NewDecoder(bytes.NewReader(body))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&manifest); err != nil {
+		return manifest, err
+	}
+	var extra any
+	if err := dec.Decode(&extra); !errors.Is(err, io.EOF) {
+		if err == nil {
+			return manifest, errors.New("trailing JSON value")
+		}
 		return manifest, err
 	}
 	return manifest, nil
