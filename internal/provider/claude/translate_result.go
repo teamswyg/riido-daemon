@@ -18,6 +18,7 @@ func claudeResult(raw agentbridge.RawEvent) agentbridge.Result {
 	if isError && errText == "" {
 		errText = output
 	}
+	errText = normalizeClaudeErrorMessage(errText)
 	return agentbridge.Result{
 		Status: claudeResultStatus(wireResultSubtype(stringField(raw.Payload, "subtype")), isError),
 		Output: output,

@@ -27,7 +27,7 @@ func translateLog(raw agentbridge.RawEvent) []agentbridge.Event {
 func translateError(raw agentbridge.RawEvent) []agentbridge.Event {
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventError,
-		Err:  stringField(raw.Payload, "message"),
+		Err:  normalizeClaudeErrorMessage(stringField(raw.Payload, "message")),
 	}}
 }
 
