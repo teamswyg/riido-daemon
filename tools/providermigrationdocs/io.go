@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -12,10 +15,30 @@ func loadManifest(repo, rel string) (manifest, error) {
 	if err != nil {
 		return m, err
 	}
-	if err := json.Unmarshal(data, &m); err != nil {
+	if err := readJSON(data, &m); err != nil {
 		return m, err
 	}
 	return m, nil
+}
+
+func readJSON(data []byte, target any) error {
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(target); err != nil {
+		return err
+	}
+	return requireEOF(dec)
+}
+
+func requireEOF(dec *json.Decoder) error {
+	var extra any
+	if err := dec.Decode(&extra); !errors.Is(err, io.EOF) {
+		if err == nil {
+			return errors.New("trailing JSON value")
+		}
+		return err
+	}
+	return nil
 }
 
 func writeText(path, body string) error {
