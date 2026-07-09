@@ -38,10 +38,13 @@ func readJSON(path string, target any) error {
 }
 
 func requireEOF(dec *json.Decoder) error {
-	if err := dec.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+	if err := dec.Decode(&struct{}{}); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
 		return err
 	}
-	return nil
+	return errors.New("unexpected trailing JSON")
 }
 
 func writeText(path, body string) error {

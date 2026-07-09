@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -18,7 +20,13 @@ func readJSON(path string, value any) error {
 	if err := dec.Decode(value); err != nil {
 		return fmt.Errorf("decode %s: %w", path, err)
 	}
-	return nil
+	if err := dec.Decode(&struct{}{}); err != nil {
+		if errors.Is(err, io.EOF) {
+			return nil
+		}
+		return fmt.Errorf("decode %s: %w", path, err)
+	}
+	return fmt.Errorf("decode %s: unexpected trailing JSON", path)
 }
 
 func writeText(path, body string) error {

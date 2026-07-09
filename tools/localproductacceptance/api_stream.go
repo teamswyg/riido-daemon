@@ -14,8 +14,8 @@ func apiStreamReplay(client apiClient, path string) (string, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), streamProbeTimeout)
 	defer cancel()
 	data, status, err := client.callStream(ctx, http.MethodGet, path)
-	if err != nil && len(data) == 0 {
-		return "", status, err
+	if err != nil {
+		return string(data), status, err
 	}
 	return string(data), status, nil
 }
