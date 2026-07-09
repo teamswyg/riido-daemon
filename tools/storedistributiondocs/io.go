@@ -3,7 +3,9 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -17,6 +19,20 @@ func readJSON(path string, value any) error {
 	dec.DisallowUnknownFields()
 	if err := dec.Decode(value); err != nil {
 		return fmt.Errorf("decode %s: %w", path, err)
+	}
+	if err := requireEOF(dec); err != nil {
+		return fmt.Errorf("decode %s: %w", path, err)
+	}
+	return nil
+}
+
+func requireEOF(dec *json.Decoder) error {
+	var extra any
+	if err := dec.Decode(&extra); !errors.Is(err, io.EOF) {
+		if err == nil {
+			return errors.New("trailing JSON value")
+		}
+		return err
 	}
 	return nil
 }
