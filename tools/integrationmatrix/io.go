@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
+	"io"
 	"os"
 	"path/filepath"
 )
@@ -12,7 +15,23 @@ func loadJSON[T any](path string) (T, error) {
 	if err != nil {
 		return value, err
 	}
-	return value, json.Unmarshal(data, &value)
+	dec := json.NewDecoder(bytes.NewReader(data))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&value); err != nil {
+		return value, err
+	}
+	return value, requireEOF(dec)
+}
+
+func requireEOF(dec *json.Decoder) error {
+	var extra any
+	if err := dec.Decode(&extra); !errors.Is(err, io.EOF) {
+		if err == nil {
+			return errors.New("trailing JSON value")
+		}
+		return err
+	}
+	return nil
 }
 
 func writeJSON(path string, value any) error {

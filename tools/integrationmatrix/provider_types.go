@@ -2,6 +2,7 @@ package main
 
 type providerValidation struct {
 	SchemaVersion   string             `json:"schema_version"`
+	LoopSource      string             `json:"loop_source,omitempty"`
 	ID              string             `json:"id"`
 	RiidoTask       string             `json:"riido_task"`
 	HumanDoc        string             `json:"human_doc"`
