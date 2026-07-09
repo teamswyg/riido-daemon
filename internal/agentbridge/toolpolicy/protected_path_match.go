@@ -22,6 +22,9 @@ func normalizePath(path string) string {
 	path = strings.ToLower(strings.TrimSpace(path))
 	path = strings.Trim(path, `"'`)
 	path = strings.ReplaceAll(path, "\\", "/")
+	for strings.Contains(path, "//") {
+		path = strings.ReplaceAll(path, "//", "/")
+	}
 	for strings.HasPrefix(path, "./") {
 		path = strings.TrimPrefix(path, "./")
 	}
