@@ -2,8 +2,7 @@ package claude
 
 import (
 	"context"
-	"os"
-	"path/filepath"
+	"os/exec"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -24,16 +23,14 @@ func TestDetectMissingBinary(t *testing.T) {
 	}
 }
 
-func TestDetectFakeBinaryReportsVersion(t *testing.T) {
-	dir := t.TempDir()
-	fake := filepath.Join(dir, "claude")
-	script := "#!/bin/sh\necho '1.5.7 (anthropic-claude-code)'\nexit 0\n"
-	if err := os.WriteFile(fake, []byte(script), 0o755); err != nil {
+func TestDetectOverrideReportsVersion(t *testing.T) {
+	echo, err := exec.LookPath("echo")
+	if err != nil {
 		t.Fatal(err)
 	}
 
 	res, err := Detect(context.Background(), agentbridge.DetectEnv{
-		EnvOverride: map[string]string{EnvOverride: fake},
+		EnvOverride: map[string]string{EnvOverride: echo},
 	})
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -41,7 +38,7 @@ func TestDetectFakeBinaryReportsVersion(t *testing.T) {
 	if !res.Available {
 		t.Fatalf("Available: %+v", res)
 	}
-	if res.Executable != fake {
+	if res.Executable != echo {
 		t.Fatalf("Executable: %q", res.Executable)
 	}
 	if res.Version == "" {
