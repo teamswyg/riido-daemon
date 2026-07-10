@@ -3,11 +3,11 @@
   "id": "executable-search-path-evidence",
   "owner": "C4 provider runtime",
   "observation": {
-    "summary": "Executable discovery and child process PATH behavior were described as prose while proof lived across detectutil and runtime spawn tests.",
+    "summary": "Executable discovery and child process PATH behavior were described as prose while proof lived across detectutil and runtime spawn tests; after Codex moved under ChatGPT.app, launchd daemons retained a stale Codex.app or system-only PATH and projected Codex as unavailable and compatibility blocked.",
     "artifacts": ["docs/30-architecture/config-reference/executable-search-path.md"]
   },
   "hypothesis": {
-    "summary": "A manifest can generate the reader doc and prove search order, override fail-closed behavior, and launch PATH propagation from executable behavior plus source checks.",
+    "summary": "A manifest can generate the reader doc and prove search order, override fail-closed behavior, macOS ChatGPT/Codex app resource fallback, and launch PATH propagation from executable behavior plus source checks.",
     "artifacts": ["docs/30-architecture/config-reference/executable-search-path.riido.json"]
   },
   "execution": {
@@ -15,7 +15,7 @@
     "artifacts": ["tools/executablesearchpath", ".github/workflows/executable-search-path-evidence.yml"]
   },
   "evaluation": {
-    "summary": "The verifier rejects generated doc drift, source drift, PATH order drift, override fallback regressions, and child process PATH propagation regressions.",
+    "summary": "The verifier rejects generated doc drift, source drift, PATH order drift, missing ChatGPT-bundled Codex discovery, override fallback regressions, and child process PATH propagation regressions.",
     "artifacts": ["tools/executablesearchpath/run_test.go"]
   },
   "retrospective": {

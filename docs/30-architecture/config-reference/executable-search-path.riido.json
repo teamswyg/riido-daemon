@@ -10,7 +10,7 @@
   "search_order": [
     {"order": 1, "name": "process PATH", "summary": "explicit operator PATH wins before augmented directories", "source_checks": ["process-path-first", "lookpath-first"], "behavior": "path_order"},
     {"order": 2, "name": "login-shell PATH", "summary": "user login-shell PATH is read once per process and skipped safely when unavailable", "source_checks": ["login-shell-read", "login-shell-cache", "login-shell-timeout"]},
-    {"order": 3, "name": "well-known install dirs", "summary": "Homebrew, local user bins, language toolchain bins, provider bins, and Node version manager bins are appended", "source_checks": ["well-known-homebrew", "well-known-user", "well-known-provider", "node-version-manager"]}
+    {"order": 3, "name": "well-known install dirs", "summary": "Homebrew, local user bins, language toolchain bins, provider bins, Node version manager bins, and macOS ChatGPT/Codex app resources are appended", "source_checks": ["well-known-homebrew", "well-known-user", "well-known-provider", "node-version-manager", "macos-app-resources", "chatgpt-bundled-codex-test"]}
   ],
   "rules": [
     {"name": "override pins executable", "summary": "RIIDO_<PROVIDER>_PATH resolves only that file", "source_checks": ["override-only"], "behavior": "override_only"},
@@ -29,6 +29,8 @@
     {"name": "well-known-user", "file": "internal/agentbridge/detectutil/well_known_dirs.go", "contains": "filepath.Join(home, \".local\", \"bin\")"},
     {"name": "well-known-provider", "file": "internal/agentbridge/detectutil/well_known_dirs.go", "contains": "filepath.Join(home, \".claude\", \"bin\")"},
     {"name": "node-version-manager", "file": "internal/agentbridge/detectutil/node_version_manager_dirs.go", "contains": "filepath.Join(home, \".nvm\", \"versions\", \"node\", \"*\", \"bin\")"},
+    {"name": "macos-app-resources", "file": "internal/agentbridge/detectutil/macos_app_resource_dirs.go", "contains": "ChatGPT.app/Contents/Resources"},
+    {"name": "chatgpt-bundled-codex-test", "file": "internal/agentbridge/detectutil/macos_app_resource_dirs_test.go", "contains": "TestResolveExecutableFindsChatGPTBundledCodex"},
     {"name": "override-only", "file": "internal/agentbridge/detectutil/resolve.go", "contains": "return overrideExecutableCandidate(override)"},
     {"name": "override-fail-closed", "file": "internal/agentbridge/detectutil/resolve_override_test.go", "contains": "TestResolveExecutableCandidatesMissingOverrideFailsClosed"},
     {"name": "env-map-launch-path", "file": "internal/agentbridge/detectutil/env_map.go", "contains": "out[pathEnvKey()] = path"},
@@ -41,6 +43,7 @@
   "assertions": [
     "explicit provider executable overrides are pins and fail closed",
     "minimal daemon PATH is widened for unset overrides",
+    "macOS daemon discovery accepts ChatGPT-bundled Codex after standalone CLI candidates",
     "provider child processes receive a launch PATH when no explicit spawn PATH exists",
     "reader documentation is generated from this manifest"
   ]

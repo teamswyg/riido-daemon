@@ -39,12 +39,24 @@
       {
         "model_id": "gpt-5.5",
         "label": "GPT-5.5"
+      },
+      {
+        "model_id": "gpt-5.6-luna",
+        "label": "GPT-5.6-Luna"
+      },
+      {
+        "model_id": "gpt-5.6-sol",
+        "label": "GPT-5.6-Sol"
+      },
+      {
+        "model_id": "gpt-5.6-terra",
+        "label": "GPT-5.6-Terra"
       }
     ],
     "cursor": [
       {
         "model_id": "cursor-auto",
-        "label": "Auto"
+        "label": "Auto (current, default)"
       },
       {
         "model_id": "gpt-5.3-codex-low",
@@ -147,6 +159,14 @@
         "label": "Codex 5.1 Max Extra High Fast"
       },
       {
+        "model_id": "grok-4.5-xhigh",
+        "label": "Cursor Grok 4.5"
+      },
+      {
+        "model_id": "grok-4.5-fast-xhigh",
+        "label": "Cursor Grok 4.5 Fast"
+      },
+      {
         "model_id": "composer-2.5",
         "label": "Composer 2.5"
       },
@@ -159,12 +179,36 @@
         "label": "Opus 4.8 1M Thinking Fast"
       },
       {
+        "model_id": "gpt-5.6-sol-high",
+        "label": "GPT-5.6 Sol 1M High"
+      },
+      {
+        "model_id": "gpt-5.6-sol-high-fast",
+        "label": "GPT-5.6 Sol High Fast"
+      },
+      {
+        "model_id": "gpt-5.6-sol-xhigh",
+        "label": "GPT-5.6 Sol 1M Extra High"
+      },
+      {
+        "model_id": "gpt-5.6-sol-xhigh-fast",
+        "label": "GPT-5.6 Sol Extra High Fast"
+      },
+      {
         "model_id": "gpt-5.5-high",
         "label": "GPT-5.5 1M High"
       },
       {
         "model_id": "gpt-5.5-high-fast",
         "label": "GPT-5.5 High Fast"
+      },
+      {
+        "model_id": "claude-fable-5-thinking-high",
+        "label": "Fable 5 1M Thinking (NO ZDR)"
+      },
+      {
+        "model_id": "claude-fable-5-thinking-xhigh",
+        "label": "Fable 5 1M Extra High Thinking (NO ZDR)"
       },
       {
         "model_id": "claude-opus-4-7-thinking-high",
@@ -183,16 +227,24 @@
         "label": "GPT-5.4 High Fast"
       },
       {
-        "model_id": "claude-fable-5-thinking-high",
-        "label": "Fable 5 1M Thinking (NO ZDR)"
+        "model_id": "grok-4.5-medium",
+        "label": "Cursor Grok 4.5 Low"
       },
       {
-        "model_id": "claude-fable-5-thinking-xhigh",
-        "label": "Fable 5 1M Extra High Thinking (NO ZDR)"
+        "model_id": "grok-4.5-fast-medium",
+        "label": "Cursor Grok 4.5 Low Fast"
+      },
+      {
+        "model_id": "grok-4.5-high",
+        "label": "Cursor Grok 4.5 Medium"
+      },
+      {
+        "model_id": "grok-4.5-fast-high",
+        "label": "Cursor Grok 4.5 Medium Fast"
       },
       {
         "model_id": "composer-2.5-fast",
-        "label": "Composer 2.5 Fast (default)"
+        "label": "Composer 2.5 Fast"
       },
       {
         "model_id": "claude-opus-4-8-low",
@@ -267,6 +319,38 @@
         "label": "Opus 4.8 1M Max Thinking Fast"
       },
       {
+        "model_id": "gpt-5.6-sol-none",
+        "label": "GPT-5.6 Sol 1M None"
+      },
+      {
+        "model_id": "gpt-5.6-sol-none-fast",
+        "label": "GPT-5.6 Sol None Fast"
+      },
+      {
+        "model_id": "gpt-5.6-sol-low",
+        "label": "GPT-5.6 Sol 1M Low"
+      },
+      {
+        "model_id": "gpt-5.6-sol-low-fast",
+        "label": "GPT-5.6 Sol Low Fast"
+      },
+      {
+        "model_id": "gpt-5.6-sol-medium",
+        "label": "GPT-5.6 Sol 1M"
+      },
+      {
+        "model_id": "gpt-5.6-sol-medium-fast",
+        "label": "GPT-5.6 Sol Fast"
+      },
+      {
+        "model_id": "gpt-5.6-sol-max",
+        "label": "GPT-5.6 Sol 1M Max"
+      },
+      {
+        "model_id": "gpt-5.6-sol-max-fast",
+        "label": "GPT-5.6 Sol Max Fast"
+      },
+      {
         "model_id": "gpt-5.5-none",
         "label": "GPT-5.5 1M None"
       },
@@ -297,6 +381,38 @@
       {
         "model_id": "gpt-5.5-extra-high-fast",
         "label": "GPT-5.5 Extra High Fast"
+      },
+      {
+        "model_id": "claude-fable-5-low",
+        "label": "Fable 5 1M Low (NO ZDR)"
+      },
+      {
+        "model_id": "claude-fable-5-medium",
+        "label": "Fable 5 1M Medium (NO ZDR)"
+      },
+      {
+        "model_id": "claude-fable-5-high",
+        "label": "Fable 5 1M (NO ZDR)"
+      },
+      {
+        "model_id": "claude-fable-5-xhigh",
+        "label": "Fable 5 1M Extra High (NO ZDR)"
+      },
+      {
+        "model_id": "claude-fable-5-max",
+        "label": "Fable 5 1M Max (NO ZDR)"
+      },
+      {
+        "model_id": "claude-fable-5-thinking-low",
+        "label": "Fable 5 1M Low Thinking (NO ZDR)"
+      },
+      {
+        "model_id": "claude-fable-5-thinking-medium",
+        "label": "Fable 5 1M Medium Thinking (NO ZDR)"
+      },
+      {
+        "model_id": "claude-fable-5-thinking-max",
+        "label": "Fable 5 1M Max Thinking (NO ZDR)"
       },
       {
         "model_id": "claude-sonnet-5-low",
@@ -337,6 +453,54 @@
       {
         "model_id": "claude-sonnet-5-thinking-max",
         "label": "Sonnet 5 1M Max Thinking"
+      },
+      {
+        "model_id": "gpt-5.6-terra-none",
+        "label": "GPT-5.6 Terra 1M None"
+      },
+      {
+        "model_id": "gpt-5.6-terra-none-fast",
+        "label": "GPT-5.6 Terra None Fast"
+      },
+      {
+        "model_id": "gpt-5.6-terra-low",
+        "label": "GPT-5.6 Terra 1M Low"
+      },
+      {
+        "model_id": "gpt-5.6-terra-low-fast",
+        "label": "GPT-5.6 Terra Low Fast"
+      },
+      {
+        "model_id": "gpt-5.6-terra-medium",
+        "label": "GPT-5.6 Terra 1M"
+      },
+      {
+        "model_id": "gpt-5.6-terra-medium-fast",
+        "label": "GPT-5.6 Terra Fast"
+      },
+      {
+        "model_id": "gpt-5.6-terra-high",
+        "label": "GPT-5.6 Terra 1M High"
+      },
+      {
+        "model_id": "gpt-5.6-terra-high-fast",
+        "label": "GPT-5.6 Terra High Fast"
+      },
+      {
+        "model_id": "gpt-5.6-terra-xhigh",
+        "label": "GPT-5.6 Terra 1M Extra High"
+      },
+      {
+        "model_id": "gpt-5.6-terra-xhigh-fast",
+        "label": "GPT-5.6 Terra Extra High Fast"
+      },
+      {
+        "model_id": "gpt-5.6-terra-max",
+        "label": "GPT-5.6 Terra 1M Max"
+      },
+      {
+        "model_id": "gpt-5.6-terra-max-fast",
+        "label": "GPT-5.6 Terra Max Fast"
       },
       {
         "model_id": "claude-4.6-sonnet-medium",
@@ -419,10 +583,6 @@
         "label": "Opus 4.7 1M Max Thinking Fast"
       },
       {
-        "model_id": "grok-build-0.1",
-        "label": "Grok Build 0.1 1M"
-      },
-      {
         "model_id": "gpt-5.4-low",
         "label": "GPT-5.4 1M Low"
       },
@@ -495,6 +655,54 @@
         "label": "GPT-5.2 Extra High Fast"
       },
       {
+        "model_id": "gpt-5.6-luna-none",
+        "label": "GPT-5.6 Luna 1M None"
+      },
+      {
+        "model_id": "gpt-5.6-luna-none-fast",
+        "label": "GPT-5.6 Luna None Fast"
+      },
+      {
+        "model_id": "gpt-5.6-luna-low",
+        "label": "GPT-5.6 Luna 1M Low"
+      },
+      {
+        "model_id": "gpt-5.6-luna-low-fast",
+        "label": "GPT-5.6 Luna Low Fast"
+      },
+      {
+        "model_id": "gpt-5.6-luna-medium",
+        "label": "GPT-5.6 Luna 1M"
+      },
+      {
+        "model_id": "gpt-5.6-luna-medium-fast",
+        "label": "GPT-5.6 Luna Fast"
+      },
+      {
+        "model_id": "gpt-5.6-luna-high",
+        "label": "GPT-5.6 Luna 1M High"
+      },
+      {
+        "model_id": "gpt-5.6-luna-high-fast",
+        "label": "GPT-5.6 Luna High Fast"
+      },
+      {
+        "model_id": "gpt-5.6-luna-xhigh",
+        "label": "GPT-5.6 Luna 1M Extra High"
+      },
+      {
+        "model_id": "gpt-5.6-luna-xhigh-fast",
+        "label": "GPT-5.6 Luna Extra High Fast"
+      },
+      {
+        "model_id": "gpt-5.6-luna-max",
+        "label": "GPT-5.6 Luna 1M Max"
+      },
+      {
+        "model_id": "gpt-5.6-luna-max-fast",
+        "label": "GPT-5.6 Luna Max Fast"
+      },
+      {
         "model_id": "gemini-3.1-pro",
         "label": "Gemini 3.1 Pro"
       },
@@ -537,10 +745,6 @@
       {
         "model_id": "gpt-5.4-nano-xhigh",
         "label": "GPT-5.4 Nano Extra High"
-      },
-      {
-        "model_id": "grok-4.3",
-        "label": "Grok 4.3 1M"
       },
       {
         "model_id": "claude-4.5-sonnet",
@@ -599,48 +803,12 @@
         "label": "Kimi K2.7 Code"
       },
       {
-        "model_id": "kimi-k2.5",
-        "label": "Kimi K2.5"
-      },
-      {
         "model_id": "glm-5.2-high",
         "label": "GLM 5.2"
       },
       {
         "model_id": "glm-5.2-max",
         "label": "GLM 5.2 Max"
-      },
-      {
-        "model_id": "claude-fable-5-low",
-        "label": "Fable 5 1M Low (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-medium",
-        "label": "Fable 5 1M Medium (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-high",
-        "label": "Fable 5 1M (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-xhigh",
-        "label": "Fable 5 1M Extra High (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-max",
-        "label": "Fable 5 1M Max (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-thinking-low",
-        "label": "Fable 5 1M Low Thinking (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-thinking-medium",
-        "label": "Fable 5 1M Medium Thinking (NO ZDR)"
-      },
-      {
-        "model_id": "claude-fable-5-thinking-max",
-        "label": "Fable 5 1M Max Thinking (NO ZDR)"
       }
     ],
     "openclaw": [
