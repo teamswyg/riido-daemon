@@ -16,7 +16,7 @@ Proves provider executable discovery and child process PATH propagation without 
 | --- | --- | --- | --- |
 | 1 | process PATH | explicit operator PATH wins before augmented directories | `process-path-first`, `lookpath-first` |
 | 2 | login-shell PATH | user login-shell PATH is read once per process and skipped safely when unavailable | `login-shell-read`, `login-shell-cache`, `login-shell-timeout` |
-| 3 | well-known install dirs | Homebrew, local user bins, language toolchain bins, provider bins, and Node version manager bins are appended | `well-known-homebrew`, `well-known-user`, `well-known-provider`, `node-version-manager` |
+| 3 | well-known install dirs | Homebrew, local user bins, language toolchain bins, provider bins, Node version manager bins, and macOS ChatGPT/Codex app resources are appended | `well-known-homebrew`, `well-known-user`, `well-known-provider`, `node-version-manager`, `macos-app-resources`, `chatgpt-bundled-codex-test` |
 
 ## Rules
 
@@ -32,5 +32,6 @@ Proves provider executable discovery and child process PATH propagation without 
 
 - explicit provider executable overrides are pins and fail closed
 - minimal daemon PATH is widened for unset overrides
+- macOS daemon discovery accepts ChatGPT-bundled Codex after standalone CLI candidates
 - provider child processes receive a launch PATH when no explicit spawn PATH exists
 - reader documentation is generated from this manifest

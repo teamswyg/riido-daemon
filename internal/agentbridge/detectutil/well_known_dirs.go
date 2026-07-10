@@ -11,11 +11,18 @@ func wellKnownInstallDirs() []string {
 		return windowsWellKnownDirs()
 	}
 	dirs := unixWellKnownDirs()
+	if runtime.GOOS == "darwin" {
+		dirs = append(dirs, macOSAppResourceDirs("")...)
+	}
 	home, err := userHomeDir()
 	if err != nil || strings.TrimSpace(home) == "" {
 		return dirs
 	}
-	return append(dirs, userInstallDirs(home)...)
+	dirs = append(dirs, userInstallDirs(home)...)
+	if runtime.GOOS == "darwin" {
+		dirs = append(dirs, macOSAppResourceDirs(home)...)
+	}
+	return dirs
 }
 
 func unixWellKnownDirs() []string {
