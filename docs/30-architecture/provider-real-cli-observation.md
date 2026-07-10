@@ -17,6 +17,21 @@ Evidence artifact: `provider-real-cli-observation`.
 | OpenClaw | `openclaw` | `RIIDO_OPENCLAW_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/openclaw -race -count=1 -run TestIntegration -v` |
 | Cursor Agent | `cursor-agent` | `RIIDO_CURSOR_PATH` | `AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -race -count=1 -run TestIntegration -v` |
 
+## Paid QA Plan
+
+- Paid execution: `local_private_mac`; public runner: `contract_only`.
+- Cadence: `weekly` in `Asia/Seoul`, 4 runs per month.
+- Cash cap: `$20/provider/month`; fleet cap: `$80/month`.
+- Estimated tokens: `5000 input + 1000 output/provider/run`, `24000/provider/month`, `96000/fleet/month`.
+- Budget status: `within_budget`; usage accounting: `estimate_before_run_and_observe_provider_usage_when_available`.
+
+| Scenario | Execution | Paid | Input | Output | Timeout |
+| --- | --- | --- | ---: | ---: | ---: |
+| `provider-detect` | `detect` | false | 0 | 0 | 30s |
+| `filesystem-side-effect` | `integration_test` | true | 5000 | 1000 | 300s |
+
+Failures flow through `tools/localqarunner` then `tools/localqacandidatedecision`; merges require `pull_request_ci`.
+
 ## Semantics
 
 - Missing executables are recorded as observed `skipped`, not PASS.

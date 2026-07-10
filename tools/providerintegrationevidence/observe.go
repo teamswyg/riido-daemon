@@ -19,6 +19,7 @@ func observeProviders(root string, m manifest, runIntegration bool, validFor tim
 			OS:   runtime.GOOS,
 			Arch: runtime.GOARCH,
 		},
+		QAPlan: buildQAPlan(m),
 	}
 	var failed []string
 	for _, provider := range m.Providers {

@@ -18,15 +18,7 @@ func TestEvidenceOutputRecordsSkippedProviders(t *testing.T) {
 	manifestPath := filepath.Join(dir, "manifest.json")
 	docPath := filepath.Join(dir, "doc.md")
 	evidencePath := filepath.Join(dir, "evidence.json")
-	data := `{
-	  "schema_version":"riido-provider-real-cli-observation.v1",
-	  "id":"test",
-	  "title":"Test",
-	  "generated_doc":"doc.md",
-	  "workflow":"workflow.yml",
-	  "evidence_artifact":"artifact",
-	  "providers":[{"id":"missing","display_name":"Missing","default_executable":"definitely-missing-riido-provider","override_env":"RIIDO_MISSING_PATH","go_package":".","test_regex":"TestIntegration"}]
-	}`
+	data := fixtureManifest()
 	mustWrite(t, manifestPath, data)
 	mustWrite(t, filepath.Join(dir, "workflow.yml"), "name: test\n")
 	mustWrite(t, docPath, renderMarkdown(mustLoad(t, manifestPath)))

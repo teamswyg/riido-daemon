@@ -1,23 +1,28 @@
 package main
 
 type manifest struct {
-	SchemaVersion    string     `json:"schema_version"`
-	LoopSource       string     `json:"loop_source,omitempty"`
-	ID               string     `json:"id"`
-	Title            string     `json:"title"`
-	GeneratedDoc     string     `json:"generated_doc"`
-	Workflow         string     `json:"workflow"`
-	EvidenceArtifact string     `json:"evidence_artifact"`
-	Providers        []provider `json:"providers"`
+	SchemaVersion    string           `json:"schema_version"`
+	LoopSource       string           `json:"loop_source,omitempty"`
+	ID               string           `json:"id"`
+	Title            string           `json:"title"`
+	GeneratedDoc     string           `json:"generated_doc"`
+	Workflow         string           `json:"workflow"`
+	EvidenceArtifact string           `json:"evidence_artifact"`
+	ExecutionPolicy  executionPolicy  `json:"execution_policy"`
+	BudgetPolicy     budgetPolicy     `json:"budget_policy"`
+	Scenarios        []qaScenario     `json:"scenarios"`
+	FailurePromotion failurePromotion `json:"failure_promotion"`
+	Providers        []provider       `json:"providers"`
 }
 
 type provider struct {
-	ID                string `json:"id"`
-	DisplayName       string `json:"display_name"`
-	DefaultExecutable string `json:"default_executable"`
-	OverrideEnv       string `json:"override_env"`
-	GoPackage         string `json:"go_package"`
-	TestRegex         string `json:"test_regex"`
+	ID                string   `json:"id"`
+	DisplayName       string   `json:"display_name"`
+	DefaultExecutable string   `json:"default_executable"`
+	OverrideEnv       string   `json:"override_env"`
+	GoPackage         string   `json:"go_package"`
+	TestRegex         string   `json:"test_regex"`
+	ScenarioIDs       []string `json:"scenario_ids"`
 }
 
 type evidenceFile struct {
@@ -29,6 +34,7 @@ type evidenceFile struct {
 	Status          string             `json:"status"`
 	RunIntegration  bool               `json:"run_integration"`
 	Platform        evidencePlatform   `json:"platform"`
+	QAPlan          qaPlanEvidence     `json:"qa_plan"`
 	Providers       []providerEvidence `json:"providers"`
 }
 
