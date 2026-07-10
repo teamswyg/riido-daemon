@@ -2,17 +2,26 @@ package main
 
 import (
 	"context"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 type daemonTestAdapter struct {
-	name string
+	name  string
+	delay time.Duration
 }
 
 func (a daemonTestAdapter) Name() string { return a.name }
 
-func (a daemonTestAdapter) Detect(context.Context, agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
+func (a daemonTestAdapter) Detect(ctx context.Context, _ agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
+	if a.delay > 0 {
+		select {
+		case <-time.After(a.delay):
+		case <-ctx.Done():
+			return agentbridge.DetectResult{}, ctx.Err()
+		}
+	}
 	return agentbridge.DetectResult{
 		Available:         true,
 		Executable:        a.name,

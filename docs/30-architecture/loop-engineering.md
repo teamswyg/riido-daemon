@@ -913,20 +913,20 @@
 
 ### provider-real-cli-observation
 
-- Owner: `provider-real-cli-observation workflow`
-- Observe: Real provider CLI availability and integration status are observed through a scheduled/manual evidence artifact.
+- Owner: `provider-real-cli-observation manifest and local weekly Codex automation`
+- Observe: Public runners record contract or skip evidence through a scheduled/manual evidence artifact while a private logged-in Mac can execute paid provider side-effect scenarios.
   - Artifacts: `docs/30-architecture/provider-real-cli-observation.riido.json`
-- Hypothesis: Public runners may have no provider CLIs, but that must be recorded as observed skip rather than invisible absence.
-  - Artifacts: `tools/providerintegrationevidence/run_test.go`
-- Execute: Run the provider observation tool with integration enabled and upload the evidence JSON artifact.
-  - Artifacts: `.github/workflows/provider-real-cli-observation.yml`, `tools/providerintegrationevidence`
-- Evaluate: Missing executables produce skipped evidence; detected providers must pass TestIntegration or fail the workflow.
-  - Artifacts: `docs/30-architecture/provider-real-cli-observation.md`
-- Retrospective: Provider matrix wording points to generated observation evidence instead of a future unscheduled idea.
+- Hypothesis: One editable provider/scenario manifest with fail-closed cash and token limits can prevent silent provider drift without multiplying workflows.
+  - Artifacts: `tools/providerintegrationevidence/plan_test.go`
+- Execute: Validate the weekly budget, run available provider TestIntegration scenarios locally, and pass failed, partial, or skipped evidence into the existing local QA candidate path.
+  - Artifacts: `.github/workflows/provider-real-cli-observation.yml`, `tools/providerintegrationevidence`, `tools/localqarunner`
+- Evaluate: The verifier rejects over-budget plans; installed providers must pass filesystem side effects and all evidence records expiry, provider versions, and budget status.
+  - Artifacts: `docs/30-architecture/provider-real-cli-observation.md`, `tools/localqacandidatedecision`
+- Retrospective: Actual provider usage remains estimated until each provider exposes stable usage events, so evidence labels estimates instead of claiming exact spend.
   - Artifacts: `docs/30-architecture/integration-matrix/provider-matrix.md`
 - Evidence:
-  - `command`: go run ./tools/providerintegrationevidence -check-doc; proves provider observation docs are generated from the manifest
-  - `workflow`: .github/workflows/provider-real-cli-observation.yml; proves public CI records scheduled/manual real CLI observation artifacts
+  - `command`: go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 168h; proves the private weekly provider plan is within budget and installed CLIs pass side-effect scenarios
+  - `workflow`: .github/workflows/provider-real-cli-observation.yml; proves public CI records contract and skipped-provider evidence without requiring paid credentials
 
 ### provider-runtime-boundary-docs
 

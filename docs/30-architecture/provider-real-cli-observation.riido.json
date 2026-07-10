@@ -6,10 +6,36 @@
   "generated_doc": "docs/30-architecture/provider-real-cli-observation.md",
   "workflow": ".github/workflows/provider-real-cli-observation.yml",
   "evidence_artifact": "provider-real-cli-observation",
+  "execution_policy": {
+    "public_runner_mode": "contract_only",
+    "paid_runner_mode": "local_private_mac",
+    "cadence": "weekly",
+    "timezone": "Asia/Seoul",
+    "runs_per_month": 4
+  },
+  "budget_policy": {
+    "monthly_cash_budget_usd_per_provider": 20,
+    "max_estimated_input_tokens_per_run": 6000,
+    "max_estimated_output_tokens_per_run": 1500,
+    "max_estimated_total_tokens_per_provider_month": 30000,
+    "fail_closed": true,
+    "usage_accounting": "estimate_before_run_and_observe_provider_usage_when_available"
+  },
+  "scenarios": [
+    {"id": "provider-detect", "execution": "detect", "paid": false, "estimated_input_tokens": 0, "estimated_output_tokens": 0, "max_duration_seconds": 30},
+    {"id": "filesystem-side-effect", "execution": "integration_test", "paid": true, "estimated_input_tokens": 5000, "estimated_output_tokens": 1000, "max_duration_seconds": 300}
+  ],
+  "failure_promotion": {
+    "candidate_producer": "tools/localqarunner",
+    "decision_verifier": "tools/localqacandidatedecision",
+    "automation_mode": "codex_local_weekly",
+    "failure_states": ["failed", "partial", "skipped"],
+    "merge_policy": "pull_request_ci"
+  },
   "providers": [
-    {"id": "claude", "display_name": "Claude Code", "default_executable": "claude", "override_env": "RIIDO_CLAUDE_PATH", "go_package": "./internal/provider/claude", "test_regex": "TestIntegration"},
-    {"id": "codex", "display_name": "Codex", "default_executable": "codex", "override_env": "RIIDO_CODEX_PATH", "go_package": "./internal/provider/codex", "test_regex": "TestIntegration"},
-    {"id": "openclaw", "display_name": "OpenClaw", "default_executable": "openclaw", "override_env": "RIIDO_OPENCLAW_PATH", "go_package": "./internal/provider/openclaw", "test_regex": "TestIntegration"},
-    {"id": "cursor", "display_name": "Cursor Agent", "default_executable": "cursor-agent", "override_env": "RIIDO_CURSOR_PATH", "go_package": "./internal/provider/cursor", "test_regex": "TestIntegration"}
+    {"id": "claude", "display_name": "Claude Code", "default_executable": "claude", "override_env": "RIIDO_CLAUDE_PATH", "go_package": "./internal/provider/claude", "test_regex": "TestIntegration", "scenario_ids": ["provider-detect", "filesystem-side-effect"]},
+    {"id": "codex", "display_name": "Codex", "default_executable": "codex", "override_env": "RIIDO_CODEX_PATH", "go_package": "./internal/provider/codex", "test_regex": "TestIntegration", "scenario_ids": ["provider-detect", "filesystem-side-effect"]},
+    {"id": "openclaw", "display_name": "OpenClaw", "default_executable": "openclaw", "override_env": "RIIDO_OPENCLAW_PATH", "go_package": "./internal/provider/openclaw", "test_regex": "TestIntegration", "scenario_ids": ["provider-detect", "filesystem-side-effect"]},
+    {"id": "cursor", "display_name": "Cursor Agent", "default_executable": "cursor-agent", "override_env": "RIIDO_CURSOR_PATH", "go_package": "./internal/provider/cursor", "test_regex": "TestIntegration", "scenario_ids": ["provider-detect", "filesystem-side-effect"]}
   ]
 }

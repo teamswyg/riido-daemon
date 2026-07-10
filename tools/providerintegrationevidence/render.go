@@ -23,6 +23,7 @@ func renderMarkdown(m manifest) string {
 			integrationCommand(provider),
 		)
 	}
+	b.WriteString(renderQAPlan(m))
 	b.WriteString("\n## Semantics\n\n")
 	b.WriteString("- Missing executables are recorded as observed `skipped`, not PASS.\n")
 	b.WriteString("- Available executables run provider `TestIntegration` with `AGENTBRIDGE_INTEGRATION=1`.\n")

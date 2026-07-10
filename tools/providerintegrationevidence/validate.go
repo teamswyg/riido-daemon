@@ -16,6 +16,7 @@ func validateManifest(root string, m manifest) []string {
 		}
 	}
 	problems = append(problems, mustExist(root, m.Workflow)...)
+	problems = append(problems, validateQAPlan(root, m)...)
 	if len(m.Providers) == 0 {
 		problems = append(problems, "providers must not be empty")
 	}
@@ -37,6 +38,9 @@ func validateProvider(provider provider, seen map[string]bool) []string {
 		problems = append(problems, fmt.Sprintf("duplicate provider id %q", provider.ID))
 	}
 	seen[provider.ID] = true
+	if len(provider.ScenarioIDs) == 0 {
+		problems = append(problems, fmt.Sprintf("provider %q needs scenario_ids", provider.ID))
+	}
 	return problems
 }
 
