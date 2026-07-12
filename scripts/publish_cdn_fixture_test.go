@@ -2,6 +2,7 @@ package scripts_test
 
 import (
 	"archive/tar"
+	"archive/zip"
 	"compress/gzip"
 	"crypto/sha256"
 	"fmt"
@@ -17,11 +18,13 @@ func newCDNDistFixture(t *testing.T, version string) string {
 	assets := []string{
 		"riido-daemon_darwin_arm64.tar.gz",
 		"riido-daemon_darwin_amd64.tar.gz",
+		"riido-daemon_windows_amd64.zip",
+		"riido-daemon_windows_arm64.zip",
 	}
 	var sums strings.Builder
 	for _, asset := range assets {
 		path := filepath.Join(dist, asset)
-		writeCDNArchive(t, path, version)
+		writeCDNAsset(t, path, version)
 		sum := sha256.Sum256(readFile(t, path))
 		fmt.Fprintf(&sums, "%x  %s\n", sum, asset)
 	}
@@ -29,6 +32,15 @@ func newCDNDistFixture(t *testing.T, version string) string {
 		t.Fatalf("write SHA256SUMS: %v", err)
 	}
 	return dist
+}
+
+func writeCDNAsset(t *testing.T, path, version string) {
+	t.Helper()
+	if strings.HasSuffix(path, ".zip") {
+		writeCDNZip(t, path, version)
+		return
+	}
+	writeCDNArchive(t, path, version)
 }
 
 func writeCDNArchive(t *testing.T, path, version string) {
@@ -49,6 +61,34 @@ func writeCDNArchive(t *testing.T, path, version string) {
 	}
 	if err := file.Close(); err != nil {
 		t.Fatalf("close CDN archive: %v", err)
+	}
+}
+
+func writeCDNZip(t *testing.T, path, version string) {
+	t.Helper()
+	file, err := os.Create(path)
+	if err != nil {
+		t.Fatalf("create CDN zip: %v", err)
+	}
+	zw := zip.NewWriter(file)
+	writeZipFile(t, zw, "riido.exe", "daemon\n")
+	writeZipFile(t, zw, "VERSION", version+"\n")
+	if err := zw.Close(); err != nil {
+		t.Fatalf("close zip: %v", err)
+	}
+	if err := file.Close(); err != nil {
+		t.Fatalf("close CDN zip: %v", err)
+	}
+}
+
+func writeZipFile(t *testing.T, zw *zip.Writer, name, body string) {
+	t.Helper()
+	file, err := zw.Create(name)
+	if err != nil {
+		t.Fatalf("create %s in zip: %v", name, err)
+	}
+	if _, err := file.Write([]byte(body)); err != nil {
+		t.Fatalf("write %s in zip: %v", name, err)
 	}
 }
 

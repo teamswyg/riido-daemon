@@ -9,7 +9,7 @@ bucket="${RIIDO_CDN_BUCKET:-riido-production}"
 prefix="${RIIDO_CDN_PREFIX:-releases/latest/ai-agent}"
 distribution="${RIIDO_CLOUDFRONT_DISTRIBUTION_ID:-EWFLNFS69DNTL}"
 dry_run="${RIIDO_CDN_DRY_RUN:-false}"
-assets="riido-daemon_darwin_arm64.tar.gz riido-daemon_darwin_amd64.tar.gz SHA256SUMS"
+assets="riido-daemon_darwin_arm64.tar.gz riido-daemon_darwin_amd64.tar.gz riido-daemon_windows_amd64.zip riido-daemon_windows_arm64.zip SHA256SUMS"
 
 fail() { echo "$*" >&2; exit 1; }
 
@@ -29,7 +29,18 @@ check_asset() {
   expected="$(awk -v a="$asset" '$2 == a {print $1}' "$dist/SHA256SUMS")"
   [ -n "$expected" ] || fail "missing checksum for $asset"
   [ "$(sha256_value "$path")" = "$expected" ] || fail "checksum mismatch for $asset"
-  version="$(tar -xOzf "$path" ./VERSION 2>/dev/null || tar -xOzf "$path" VERSION)"
+  case "$asset" in
+    *.tar.gz)
+      version="$(tar -xOzf "$path" ./VERSION 2>/dev/null || tar -xOzf "$path" VERSION)"
+      ;;
+    *.zip)
+      command -v unzip >/dev/null 2>&1 || fail "unzip is required to verify $asset"
+      version="$(unzip -p "$path" VERSION)"
+      ;;
+    *)
+      fail "unsupported CDN asset format: $asset"
+      ;;
+  esac
   [ -n "$version" ] || fail "missing VERSION in $asset"
   if [ -n "${RIIDO_RELEASE_TAG:-}" ] && [ "$version" != "$RIIDO_RELEASE_TAG" ]; then
     fail "$asset VERSION=$version does not match RIIDO_RELEASE_TAG=$RIIDO_RELEASE_TAG"
