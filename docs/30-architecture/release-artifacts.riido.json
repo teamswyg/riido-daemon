@@ -37,7 +37,9 @@
     "cdn_latest_base_url": "https://cdn.riido.io/releases/latest/ai-agent/",
     "cdn_latest_paths": [
       "releases/latest/ai-agent/riido-daemon_darwin_arm64.tar.gz",
-      "releases/latest/ai-agent/riido-daemon_darwin_amd64.tar.gz"
+      "releases/latest/ai-agent/riido-daemon_darwin_amd64.tar.gz",
+      "releases/latest/ai-agent/riido-daemon_windows_amd64.zip",
+      "releases/latest/ai-agent/riido-daemon_windows_arm64.zip"
     ]
   },
   "forbidden_archive_items": [
@@ -58,11 +60,14 @@
     {"name": "cdn-workflow-release-published-trigger", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "types: [published]"},
     {"name": "cdn-workflow-release-tag-source", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "github.event.release.tag_name"},
     {"name": "cdn-workflow-manual-resync", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "workflow_dispatch"},
+    {"name": "cdn-workflow-download-windows-assets", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "riido-daemon_windows_*.zip"},
     {"name": "cdn-workflow-publish-script", "file": ".github/workflows/cdn-latest-ai-agent.yml", "contains": "scripts/publish-cdn-latest.sh sync"},
     {"name": "build-package-trimpath", "file": "scripts/build-release-package.sh", "contains": "-trimpath -ldflags"},
     {"name": "build-package-artifact-env", "file": "scripts/build-release-package.sh", "contains": "RIIDO_RELEASE_ARTIFACT_NAME"},
     {"name": "publish-checksums", "file": "scripts/publish-release-artifacts.sh", "contains": "sha256sum riido-daemon_* > SHA256SUMS"},
     {"name": "cdn-publish-version-check", "file": "scripts/publish-cdn-latest.sh", "contains": "RIIDO_RELEASE_TAG"},
+    {"name": "cdn-publish-windows-assets", "file": "scripts/publish-cdn-latest.sh", "contains": "riido-daemon_windows_amd64.zip"},
+    {"name": "cdn-publish-windows-zip-version-check", "file": "scripts/publish-cdn-latest.sh", "contains": "unzip -p"},
     {"name": "cdn-publish-cloudfront-invalidation", "file": "scripts/publish-cdn-latest.sh", "contains": "cloudfront create-invalidation"},
     {"name": "cdn-publish-no-cache", "file": "scripts/publish-cdn-latest.sh", "contains": "--cache-control no-cache"},
     {"name": "cdn-publish-version-mismatch-test", "file": "scripts/publish_cdn_latest_test.go", "contains": "TestPublishCDNLatestRejectsReleaseTagVersionMismatch"},

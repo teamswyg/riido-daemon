@@ -24,5 +24,7 @@ Mirror paths:
 
 - releases/latest/ai-agent/riido-daemon_darwin_arm64.tar.gz
 - releases/latest/ai-agent/riido-daemon_darwin_amd64.tar.gz
+- releases/latest/ai-agent/riido-daemon_windows_amd64.zip
+- releases/latest/ai-agent/riido-daemon_windows_arm64.zip
 
 The archive `VERSION` file must identify the release tag that was mirrored.

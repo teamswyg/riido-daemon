@@ -48,8 +48,16 @@ func TestPublishCDNLatestDryRunSyncWritesEvidenceWithoutInvalidation(t *testing.
 		t.Fatalf("dry-run sync failed: %v\n%s", err, out)
 	}
 	log := string(readFile(t, awsLog))
-	if strings.Count(log, "s3 cp ") != 3 || !strings.Contains(log, "--dryrun") {
+	if strings.Count(log, "s3 cp ") != 5 || !strings.Contains(log, "--dryrun") {
 		t.Fatalf("unexpected aws dry-run log: %s", log)
+	}
+	for _, want := range []string{
+		"riido-daemon_windows_amd64.zip",
+		"riido-daemon_windows_arm64.zip",
+	} {
+		if !strings.Contains(log, want) {
+			t.Fatalf("aws dry-run log missing %s: %s", want, log)
+		}
 	}
 	if strings.Contains(log, "cloudfront create-invalidation") {
 		t.Fatalf("dry-run must not invalidate CloudFront: %s", log)

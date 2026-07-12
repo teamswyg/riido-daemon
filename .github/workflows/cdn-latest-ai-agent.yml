@@ -56,7 +56,10 @@ jobs:
       - name: Download release assets
         run: |
           mkdir -p dist
-          gh release download "$RIIDO_RELEASE_TAG" --dir dist --pattern "riido-daemon_darwin_*.tar.gz" --pattern "SHA256SUMS"
+          gh release download "$RIIDO_RELEASE_TAG" --dir dist \
+            --pattern "riido-daemon_darwin_*.tar.gz" \
+            --pattern "riido-daemon_windows_*.zip" \
+            --pattern "SHA256SUMS"
       - name: Verify CDN mirror payload
         run: scripts/publish-cdn-latest.sh verify
       - name: Publish CDN latest mirror
