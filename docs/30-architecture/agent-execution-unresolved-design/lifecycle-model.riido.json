@@ -8,7 +8,7 @@
   "stream_rule": "final_answer is the completed body SSOT; answer_delta is only for background correction and live render.",
   "retry_policies": [
     {"class": "transport_transient", "retry": "yes", "rule": "timeout, reset, 502/503/504; idempotent request only"},
-    {"class": "transport_permanent", "retry": "no", "rule": "400/401/403/404 or contract violation"},
+    {"class": "transport_permanent", "retry": "no", "rule": "400/403/404 or contract violation; a device-credential 401 terminates the managed SaaS daemon so its launcher can reload the rotated credential"},
     {"class": "workspace_prepare_transient", "retry": "maybe", "rule": "network clone timeout or lock contention"},
     {"class": "workspace_prepare_permanent", "retry": "no", "rule": "private auth unsupported or branch not found"},
     {"class": "provider_spawn_transient", "retry": "maybe", "rule": "executable temporarily unavailable after TTL re-detect"},

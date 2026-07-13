@@ -58,6 +58,7 @@ func (p *Plane) doJSON(ctx context.Context, method, path string, body []byte, ou
 			StatusCode: resp.StatusCode,
 			Body:       strings.TrimSpace(string(b)),
 		}
+		p.reportDeviceCredentialRejection(resp.StatusCode, lastErr)
 		if attempt < attempts && retryableHTTPStatus(resp.StatusCode) {
 			if waitErr := waitJSONRetry(ctx, attempt); waitErr != nil {
 				return waitErr

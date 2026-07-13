@@ -159,11 +159,11 @@
         "label": "Codex 5.1 Max Extra High Fast"
       },
       {
-        "model_id": "grok-4.5-xhigh",
+        "model_id": "cursor-grok-4.5-high",
         "label": "Cursor Grok 4.5"
       },
       {
-        "model_id": "grok-4.5-fast-xhigh",
+        "model_id": "cursor-grok-4.5-high-fast",
         "label": "Cursor Grok 4.5 Fast"
       },
       {
@@ -227,19 +227,19 @@
         "label": "GPT-5.4 High Fast"
       },
       {
-        "model_id": "grok-4.5-medium",
+        "model_id": "cursor-grok-4.5-low",
         "label": "Cursor Grok 4.5 Low"
       },
       {
-        "model_id": "grok-4.5-fast-medium",
+        "model_id": "cursor-grok-4.5-low-fast",
         "label": "Cursor Grok 4.5 Low Fast"
       },
       {
-        "model_id": "grok-4.5-high",
+        "model_id": "cursor-grok-4.5-medium",
         "label": "Cursor Grok 4.5 Medium"
       },
       {
-        "model_id": "grok-4.5-fast-high",
+        "model_id": "cursor-grok-4.5-medium-fast",
         "label": "Cursor Grok 4.5 Medium Fast"
       },
       {

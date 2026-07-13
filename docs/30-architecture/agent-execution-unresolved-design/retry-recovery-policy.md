@@ -7,7 +7,7 @@
 | Error class | Retry | Rule |
 | --- | --- | --- |
 | `transport_transient` | yes | timeout, reset, 502/503/504; idempotent request only |
-| `transport_permanent` | no | 400/401/403/404 or contract violation |
+| `transport_permanent` | no | 400/403/404 or contract violation; a device-credential 401 terminates the managed SaaS daemon so its launcher can reload the rotated credential |
 | `workspace_prepare_transient` | maybe | network clone timeout or lock contention |
 | `workspace_prepare_permanent` | no | private auth unsupported or branch not found |
 | `provider_spawn_transient` | maybe | executable temporarily unavailable after TTL re-detect |

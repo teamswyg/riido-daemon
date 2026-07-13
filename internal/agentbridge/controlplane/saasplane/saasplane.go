@@ -6,10 +6,11 @@ func New(cfg Config) (*Plane, error) {
 		return nil, err
 	}
 	p := &Plane{
-		cfg:    cfg,
-		client: client,
-		ops:    make(chan stateOp, 64),
-		done:   make(chan struct{}),
+		cfg:                      cfg,
+		client:                   client,
+		ops:                      make(chan stateOp, 64),
+		done:                     make(chan struct{}),
+		deviceCredentialRejected: make(chan error, 1),
 	}
 	go p.loop()
 	return p, nil
