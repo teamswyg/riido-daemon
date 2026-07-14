@@ -2,7 +2,8 @@ package claude
 
 import (
 	"context"
-	"os/exec"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -24,13 +25,10 @@ func TestDetectMissingBinary(t *testing.T) {
 }
 
 func TestDetectOverrideReportsVersion(t *testing.T) {
-	echo, err := exec.LookPath("echo")
-	if err != nil {
-		t.Fatal(err)
-	}
+	exe := writeClaudeProbe(t, true)
 
 	res, err := Detect(context.Background(), agentbridge.DetectEnv{
-		EnvOverride: map[string]string{EnvOverride: echo},
+		EnvOverride: map[string]string{EnvOverride: exe},
 	})
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -38,7 +36,7 @@ func TestDetectOverrideReportsVersion(t *testing.T) {
 	if !res.Available {
 		t.Fatalf("Available: %+v", res)
 	}
-	if res.Executable != echo {
+	if res.Executable != exe {
 		t.Fatalf("Executable: %q", res.Executable)
 	}
 	if res.Version == "" {
@@ -47,4 +45,30 @@ func TestDetectOverrideReportsVersion(t *testing.T) {
 	if !res.SupportsStreaming || !res.SupportsResume {
 		t.Fatalf("capability flags wrong: %+v", res)
 	}
+}
+
+func TestDetectLoggedOutIsUnavailable(t *testing.T) {
+	res, err := Detect(context.Background(), agentbridge.DetectEnv{
+		EnvOverride: map[string]string{EnvOverride: writeClaudeProbe(t, false)},
+	})
+	if err != nil {
+		t.Fatalf("Detect: %v", err)
+	}
+	if res.Available || res.Reason != claudeAuthRecoveryMessage {
+		t.Fatalf("result: %+v", res)
+	}
+}
+
+func writeClaudeProbe(t *testing.T, loggedIn bool) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "claude")
+	status := "false"
+	if loggedIn {
+		status = "true"
+	}
+	script := "#!/bin/sh\nif [ \"$1 $2\" = \"auth status\" ]; then echo '{\"loggedIn\":" + status + "}'; else echo '2.1.202'; fi\n"
+	if err := os.WriteFile(path, []byte(script), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	return path
 }

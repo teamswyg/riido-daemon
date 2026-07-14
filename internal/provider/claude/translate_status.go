@@ -5,7 +5,7 @@ import "github.com/teamswyg/riido-daemon/internal/agentbridge"
 func translateStderrRaw(raw agentbridge.RawEvent) []agentbridge.Event {
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventLog,
-		Text: string(raw.Bytes),
+		Text: normalizeClaudeErrorMessage(string(raw.Bytes)),
 	}}
 }
 
@@ -20,14 +20,14 @@ func translateMalformed(raw agentbridge.RawEvent) []agentbridge.Event {
 func translateLog(raw agentbridge.RawEvent) []agentbridge.Event {
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventLog,
-		Text: stringField(raw.Payload, "message"),
+		Text: normalizeClaudeErrorMessage(stringField(raw.Payload, "message")),
 	}}
 }
 
 func translateError(raw agentbridge.RawEvent) []agentbridge.Event {
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventError,
-		Err:  stringField(raw.Payload, "message"),
+		Err:  normalizeClaudeErrorMessage(stringField(raw.Payload, "message")),
 	}}
 }
 

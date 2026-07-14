@@ -11,9 +11,8 @@ import (
 // executable when PATH lookup is unreliable (GUI-launched daemons).
 const EnvOverride = "RIIDO_CLAUDE_PATH"
 
-// Detect resolves the claude executable and reads --version. It does
-// NOT spawn `claude --help` or any login-bearing operation — version
-// alone is enough to populate DetectResult.
+// Detect resolves the executable, verifies authentication, and reads
+// --version. Authentication is required for runnable capability.
 //
 // When the binary is missing, returns Available=false with a clear
 // Reason (NOT an error) so the daemon can surface it as a runtime
@@ -24,6 +23,13 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		return agentbridge.DetectResult{
 			Available: false,
 			Reason:    "claude executable not found on PATH and " + EnvOverride + " is not set",
+		}, nil
+	}
+	if !claudeAuthenticated(ctx, exe) {
+		return agentbridge.DetectResult{
+			Available:  false,
+			Executable: exe,
+			Reason:     claudeAuthRecoveryMessage,
 		}, nil
 	}
 	res := agentbridge.DetectResult{
