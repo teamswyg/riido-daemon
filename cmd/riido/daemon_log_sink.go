@@ -17,6 +17,15 @@ func openLogSink(logFile string) (logging.Logger, func(), error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	w := io.MultiWriter(os.Stderr, f)
+	w := daemonLogWriter(os.Stderr, f)
 	return logging.NewWriterLogger(w), func() { _ = f.Close() }, nil
+}
+
+func daemonLogWriter(stderr, file *os.File) io.Writer {
+	stderrInfo, stderrErr := stderr.Stat()
+	fileInfo, fileErr := file.Stat()
+	if stderrErr == nil && fileErr == nil && os.SameFile(stderrInfo, fileInfo) {
+		return file
+	}
+	return io.MultiWriter(stderr, file)
 }
