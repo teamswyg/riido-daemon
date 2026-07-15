@@ -27,8 +27,10 @@ func (f *fakeAssignmentServer) handleAgentBindings(w http.ResponseWriter, r *htt
 	}
 	w.Header().Set("Content-Type", "application/json")
 	writeJSON(w, AgentRuntimeBindingListResponse{
-		SchemaVersion: assignmentcontract.SchemaVersion,
-		Bindings:      append([]assignmentcontract.AgentRuntimeBinding(nil), f.bindings...),
+		SchemaVersion:           assignmentcontract.SchemaVersion,
+		Bindings:                append([]assignmentcontract.AgentRuntimeBinding(nil), f.bindings...),
+		ConnectionRevision:      f.connectionRevision,
+		ConnectedPrincipalCount: f.connectedPrincipals,
 	})
 }
 
