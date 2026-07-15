@@ -10,25 +10,43 @@ import (
 )
 
 func (p *Plane) claimTaskFromCandidates(ctx context.Context, runtimeID, provider string, candidates []AgentBinding) (*bridge.TaskRequest, error) {
+	return p.claimTaskFromCandidatesWithRefresh(ctx, runtimeID, provider, candidates, nil)
+}
+
+type staleCandidateRefresh func(context.Context, AgentBinding) ([]AgentBinding, error)
+
+func (p *Plane) claimTaskFromCandidatesWithRefresh(
+	ctx context.Context,
+	runtimeID string,
+	provider string,
+	candidates []AgentBinding,
+	refresh staleCandidateRefresh,
+) (*bridge.TaskRequest, error) {
 	if len(candidates) == 0 {
 		return nil, nil
 	}
 	if len(candidates) == 1 {
 		req, err := p.claimTaskFromCandidate(ctx, runtimeID, provider, candidates[0], p.longPollWait(ctx))
 		if errors.Is(err, errStaleAgentBindingPoll) {
-			return nil, nil
+			return p.refreshCandidatesAfterStalePoll(ctx, runtimeID, provider, candidates[0], refresh)
 		}
 		return req, err
 	}
-	return p.claimTaskFromCandidatesWithSingleLongPoll(ctx, runtimeID, provider, candidates)
+	return p.claimTaskFromCandidatesWithSingleLongPoll(ctx, runtimeID, provider, candidates, refresh)
 }
 
-func (p *Plane) claimTaskFromCandidatesWithSingleLongPoll(ctx context.Context, runtimeID, provider string, candidates []AgentBinding) (*bridge.TaskRequest, error) {
+func (p *Plane) claimTaskFromCandidatesWithSingleLongPoll(
+	ctx context.Context,
+	runtimeID string,
+	provider string,
+	candidates []AgentBinding,
+	refresh staleCandidateRefresh,
+) (*bridge.TaskRequest, error) {
 	survivors := make([]AgentBinding, 0, len(candidates))
 	for _, candidate := range candidates {
 		req, err := p.claimTaskFromCandidate(ctx, runtimeID, provider, candidate, 0)
 		if errors.Is(err, errStaleAgentBindingPoll) {
-			continue
+			return p.refreshCandidatesAfterStalePoll(ctx, runtimeID, provider, candidate, refresh)
 		}
 		if err != nil || req != nil {
 			return req, err
@@ -44,9 +62,26 @@ func (p *Plane) claimTaskFromCandidatesWithSingleLongPoll(ctx context.Context, r
 	}
 	req, err := p.claimTaskFromCandidate(ctx, runtimeID, provider, survivors[0], wait)
 	if errors.Is(err, errStaleAgentBindingPoll) {
-		return nil, nil
+		return p.refreshCandidatesAfterStalePoll(ctx, runtimeID, provider, survivors[0], refresh)
 	}
 	return req, err
+}
+
+func (p *Plane) refreshCandidatesAfterStalePoll(
+	ctx context.Context,
+	runtimeID string,
+	provider string,
+	stale AgentBinding,
+	refresh staleCandidateRefresh,
+) (*bridge.TaskRequest, error) {
+	if refresh == nil {
+		return nil, nil
+	}
+	candidates, err := refresh(ctx, stale)
+	if err != nil {
+		return nil, err
+	}
+	return p.claimTaskFromCandidatesWithRefresh(ctx, runtimeID, provider, candidates, nil)
 }
 
 func (p *Plane) longPollWait(ctx context.Context) time.Duration {
