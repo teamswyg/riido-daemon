@@ -15,6 +15,8 @@ type planeState struct {
 	lastRuntimeSnapshotSync time.Time
 	agentBindingsCache      []assignmentcontract.AgentRuntimeBinding
 	agentBindingsCachedAt   time.Time
+	connectionRevision      string
+	connectedPrincipalCount int
 	nextAssignmentEventSeq  uint64
 	// partialBodies accumulates each execution's assistant text deltas between
 	// flushes so the daemon can forward a coherent evolving body instead of

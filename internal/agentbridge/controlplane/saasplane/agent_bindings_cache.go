@@ -18,6 +18,7 @@ func (p *Plane) agentBindings(ctx context.Context) ([]assignmentcontract.AgentRu
 		return nil, err
 	}
 	bindings := cloneAgentRuntimeBindings(out.Bindings)
+	p.observeDeviceConnections(ctx, out)
 	_ = p.withState(ctx, func(s *planeState) {
 		s.agentBindingsCache = cloneAgentRuntimeBindings(bindings)
 		s.agentBindingsCachedAt = now

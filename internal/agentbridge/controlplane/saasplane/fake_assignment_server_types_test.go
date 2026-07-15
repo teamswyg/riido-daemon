@@ -26,6 +26,8 @@ type fakeAssignmentServer struct {
 	transientStatuses    map[string]int
 	bindingsAfterFailure map[string][]assignmentcontract.AgentRuntimeBinding
 	bindings             []assignmentcontract.AgentRuntimeBinding
+	connectionRevision   string
+	connectedPrincipals  int
 	pollRequestsByAgent  map[string][]assignmentcontract.PollRequest
 	runtimeSnapshots     []DeviceRuntimeSnapshotSyncRequest
 	events               []assignmentcontract.AgentEventRequest

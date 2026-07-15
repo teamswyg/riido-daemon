@@ -35,6 +35,8 @@ type DeviceRuntimeSnapshotSyncRequest struct {
 }
 
 type AgentRuntimeBindingListResponse struct {
-	SchemaVersion string                                   `json:"schema_version"`
-	Bindings      []assignmentcontract.AgentRuntimeBinding `json:"bindings"`
+	SchemaVersion           string                                   `json:"schema_version"`
+	Bindings                []assignmentcontract.AgentRuntimeBinding `json:"bindings"`
+	ConnectionRevision      string                                   `json:"connection_revision,omitempty"`
+	ConnectedPrincipalCount int                                      `json:"connected_principal_count,omitempty"`
 }
