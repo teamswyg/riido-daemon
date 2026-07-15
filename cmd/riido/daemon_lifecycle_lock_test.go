@@ -23,15 +23,21 @@ func TestDaemonStartHoldsSingletonLock(t *testing.T) {
 	}()
 	dialDaemon(t, sock, 2*time.Second)
 
-	secondCtx, secondCancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
-	defer secondCancel()
-	err := runDaemonWithContext(secondCtx, []string{
-		"start", "--foreground",
-		"--socket", daemonSocketPath(t),
-		"--lock-file", lockPath,
-	})
-	if err == nil {
-		t.Fatal("expected second daemon start to fail while singleton lock is held")
+	secondErr := make(chan error, 1)
+	go func() {
+		secondErr <- runDaemonWithContext(context.Background(), []string{
+			"start", "--foreground",
+			"--socket", daemonSocketPath(t),
+			"--lock-file", lockPath,
+		})
+	}()
+	select {
+	case err := <-secondErr:
+		if err == nil {
+			t.Fatal("expected second daemon start to fail while singleton lock is held")
+		}
+	case <-time.After(time.Second):
+		t.Fatal("second foreground daemon remained blocked on singleton lock")
 	}
 
 	assertForegroundDaemonExits(t, cancel, errCh)

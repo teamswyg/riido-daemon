@@ -1,11 +1,15 @@
 package main
 
 import (
+	"context"
 	"os"
+	"time"
 
 	c9lock "github.com/teamswyg/riido-daemon/internal/lock"
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
+
+const daemonForegroundLockAcquireTimeout = 100 * time.Millisecond
 
 // runDaemonStartForeground is the in-process daemon path used by managed
 // launchers and by the background wrapper after it re-invokes this binary.
@@ -14,7 +18,9 @@ func runDaemonStartForeground(ctx lifecycle.Context, flags startFlags) error {
 	if err != nil {
 		return err
 	}
-	lock, err := c9lock.AcquireFile(ctx.Context(), flags.lockFile)
+	lockCtx, cancelLock := context.WithTimeout(ctx.Context(), daemonForegroundLockAcquireTimeout)
+	defer cancelLock()
+	lock, err := c9lock.AcquireFile(lockCtx, flags.lockFile)
 	if err != nil {
 		return daemonWrapf(ErrDaemonLock, "start.acquire-lock", err, "acquire daemon singleton lock %s", flags.lockFile)
 	}

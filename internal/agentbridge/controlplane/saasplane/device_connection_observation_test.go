@@ -3,6 +3,7 @@ package saasplane
 import (
 	"context"
 	"testing"
+	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
@@ -12,8 +13,7 @@ func TestPlaneDetectsCrossAccountConnectionAndRefreshesBindings(t *testing.T) {
 	fake.connectionRevision = "owner-revision"
 	fake.connectedPrincipals = 1
 	fake.bindings = []assignmentcontract.AgentRuntimeBinding{codexRuntimeBinding("owner-agent")}
-	plane := newTestPlane(t, fake.URL(), []AgentBinding{{AgentID: "bootstrap-agent", RuntimeProvider: "codex"}})
-	defer plane.Close()
+	plane := newRuntimeBindingPlane(t, fake, nil)
 
 	initial, err := plane.agentBindings(context.Background())
 	if err != nil || len(initial) != 1 {
@@ -22,7 +22,11 @@ func TestPlaneDetectsCrossAccountConnectionAndRefreshesBindings(t *testing.T) {
 	fake.connectionRevision = "cross-account-revision"
 	fake.connectedPrincipals = 2
 	fake.bindings = append(fake.bindings, codexRuntimeBinding("guest-agent"))
-	plane.invalidateAgentBindingsCache(context.Background())
+	if err := plane.withState(context.Background(), func(s *planeState) {
+		s.agentBindingsCachedAt = time.Now().Add(-agentBindingCacheTTL)
+	}); err != nil {
+		t.Fatalf("expire binding cache: %v", err)
+	}
 
 	refreshed, err := plane.agentBindings(context.Background())
 	if err != nil || len(refreshed) != 2 {
@@ -41,6 +45,17 @@ func TestPlaneDetectsCrossAccountConnectionAndRefreshesBindings(t *testing.T) {
 	}
 	if revision != "cross-account-revision" || principalCount != 2 {
 		t.Fatalf("connection observation revision=%q principals=%d", revision, principalCount)
+	}
+	fake.enqueue(assignmentcontract.Assignment{
+		ID:              "asn-cross-account",
+		TaskID:          "task-cross-account",
+		AgentID:         "guest-agent",
+		RuntimeProvider: "codex",
+		State:           assignmentcontract.AssignmentQueued,
+	})
+	claimed, err := plane.ClaimTask(context.Background(), "daemon-1:codex")
+	if err != nil || claimed == nil || claimed.ID != "asn-cross-account" {
+		t.Fatalf("cross-account claim = %+v, %v", claimed, err)
 	}
 }
 

@@ -19,6 +19,10 @@
     {"name": "daemon-lifecycle-workflow", "file": ".github/workflows/daemon-lifecycle.yml", "contains": "Verify daemon lifecycle black-box/domain gates"},
     {"name": "daemon-lifecycle-private-boundary", "file": ".github/workflows/daemon-lifecycle.yml", "contains": "cmd/riido daemon lifecycle must not import private source or server internals"},
     {"name": "daemon-lifecycle-local-listener-boundary", "file": ".github/workflows/daemon-lifecycle.yml", "contains": "daemon lifecycle must not open public TCP listeners"},
+    {"name": "daemon-foreground-lock-timeout", "file": "cmd/riido/daemon_start_foreground.go", "contains": "daemonForegroundLockAcquireTimeout"},
+    {"name": "daemon-foreground-lock-timeout-test", "file": "cmd/riido/daemon_lifecycle_lock_test.go", "contains": "second foreground daemon remained blocked on singleton lock"},
+    {"name": "daemon-log-same-file-dedup", "file": "cmd/riido/daemon_log_sink.go", "contains": "os.SameFile"},
+    {"name": "daemon-log-same-file-dedup-test", "file": "cmd/riido/daemon_log_sink_test.go", "contains": "TestDaemonLogWriterDoesNotDuplicateSameFile"},
     {"name": "daemon-help-start-command", "file": "cmd/riido/cli_helpers.go", "contains": "riido daemon start"},
     {"name": "daemon-task-queue-env", "file": "cmd/riido/daemon_config.go", "contains": "envTaskQueueDir                  = \"RIIDO_TASK_QUEUE_DIR\""},
     {"name": "daemon-task-db-env", "file": "cmd/riido/daemon_config.go", "contains": "envTaskDBSourcePath              = \"RIIDO_TASK_DB_SOURCE_PATH\""},
@@ -43,6 +47,8 @@
   "assertions": [
     "daemon lifecycle CLI migration notes are generated from fragments instead of hand-authored markdown",
     "daemon lifecycle CLI claims must stay anchored to CLI code, daemon-lifecycle CI, and provider integration gate SSOT",
+    "a duplicate foreground daemon must fail within a bounded lock acquisition window instead of remaining as a latent process",
+    "a launcher-routed stderr and explicit log file that resolve to the same file must emit each evidence line once",
     "store distribution migration claims must stay anchored to store contract tooling and generated store distribution docs",
     "Figma boundary migration claims must stay downstream-only and anchored to the daemon boundary manifest/tooling",
     "approval timeout migration claims must stay anchored to provider-runtime approval timeout evidence"
