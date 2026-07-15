@@ -45,6 +45,21 @@ func (p *Plane) invalidateAgentBindingsCache(ctx context.Context) {
 	})
 }
 
+func (p *Plane) excludeAgentBindingFromCache(ctx context.Context, agentID string) {
+	_ = p.withState(ctx, func(s *planeState) {
+		if s.agentBindingsCachedAt.IsZero() {
+			return
+		}
+		filtered := s.agentBindingsCache[:0]
+		for _, binding := range s.agentBindingsCache {
+			if binding.AgentID != agentID {
+				filtered = append(filtered, binding)
+			}
+		}
+		s.agentBindingsCache = filtered
+	})
+}
+
 func cloneAgentRuntimeBindings(in []assignmentcontract.AgentRuntimeBinding) []assignmentcontract.AgentRuntimeBinding {
 	if len(in) == 0 {
 		return nil

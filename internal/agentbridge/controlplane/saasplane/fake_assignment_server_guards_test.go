@@ -24,6 +24,12 @@ func (f *fakeAssignmentServer) handleTransientFailure(w http.ResponseWriter, pat
 		return false
 	}
 	f.transientFailures[path]--
+	if f.transientFailures[path] == 0 {
+		if bindings, ok := f.bindingsAfterFailure[path]; ok {
+			f.bindings = append(f.bindings[:0], bindings...)
+			delete(f.bindingsAfterFailure, path)
+		}
+	}
 	status := f.transientStatuses[path]
 	if status == 0 {
 		status = http.StatusServiceUnavailable

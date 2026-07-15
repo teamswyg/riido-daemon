@@ -26,6 +26,13 @@ func (f *fakeAssignmentServer) failNext(path string, count, status int) {
 	f.transientStatuses[path] = status
 }
 
+func (f *fakeAssignmentServer) replaceBindingsAfterNextFailure(
+	path string,
+	bindings []assignmentcontract.AgentRuntimeBinding,
+) {
+	f.bindingsAfterFailure[path] = append([]assignmentcontract.AgentRuntimeBinding(nil), bindings...)
+}
+
 func (f *fakeAssignmentServer) requestCount(path string) int {
 	f.mu.Lock()
 	defer f.mu.Unlock()
