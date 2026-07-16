@@ -4,13 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
-	"net"
 	"os"
 	"time"
 )
 
 func daemonCall(sock string, method daemonMethod) error {
-	conn, err := net.DialTimeout("unix", sock, 2*time.Second)
+	conn, err := dialDaemonSocket(sock, 2*time.Second)
 	if err != nil {
 		return daemonWrapf(ErrDaemonSocket, "ipc.call.dial", err, "dial %s", sock)
 	}

@@ -168,3 +168,12 @@ Claude daemon runs must start in provider approval mode, not acceptEdits or bypa
 - Docs: `docs/30-architecture/local-acceptance-coverage.riido.json`, `docs/30-architecture/local-qa-candidate-decision.riido.json`, `docs/30-architecture/product-loop-evidence.riido.json`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `staging.v3.thread_history.asn-000121-123.no_tool_approval_create`, `staging.v3.thread_history.uNYpHxDOzMp3vMy_urWsu.codex_success_claude_permission_gate_failure`, `claude_control_request_to_tool_approval`, `claude_mcp_helper_delegates_to_daemon_socket`, `claude_mcp_helper_has_no_saas_credentials`, `daemon_tool_approval_authorizes_assignment_before_saas_resolution`, `product_loop.provider_approval_round_trip`, `provider_input_control_response`, `web_tool_approval_round_trip`
 - Verifiers: `claude-daemon-start-mode-test`, `claude-control-request-test`, `session-web-approval-resolver-test`, `safe-shell-auto-approval-test`, `claude-mcp-helper-secret-boundary-test`, `claude-mcp-helper-socket-delegation-test`, `daemon-tool-approval-authorizer-test`, `product-loop-approval-round-trip-signal-test`
+
+### daemon_local_ipc_must_match_host_transport
+
+Daemon lifecycle, status, shutdown, and tool-approval IPC must use the host local transport: Unix sockets on Darwin/Linux and local-only named pipes on Windows, so desktop health checks cannot create a daemon restart loop.
+
+- Files: `cmd/riido/claude_permission_mcp_decision.go`, `cmd/riido/daemon_child_ready.go`, `cmd/riido/daemon_ipc_call.go`, `cmd/riido/daemon_ipc_transport.go`, `cmd/riido/daemon_ipc_transport_test.go`, `cmd/riido/daemon_shutdown_socket.go`, `cmd/riido/daemon_socket_server.go`, `internal/riidoapi/local_transport_endpoint.go`, `internal/riidoapi/local_transport_windows.go`, `internal/riidoapi/local_transport_windows_native.go`
+- Docs: `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `production.windows_daemon.restart_loop_47_pids_29m`, `windows_amd64.daemon_cross_compile`, `daemon_local_ipc_transport_regression`
+- Verifiers: `daemon-host-transport-selection-test`, `windows-named-pipe-remote-client-gate`

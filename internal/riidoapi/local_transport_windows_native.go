@@ -12,6 +12,7 @@ const (
 	namedPipeTypeByte     = 0x00000000
 	namedPipeReadModeByte = 0x00000000
 	namedPipeWait         = 0x00000000
+	namedPipeRejectRemote = 0x00000008
 	namedPipeInstances    = 255
 	namedPipeBufferSize   = 64 * 1024
 
@@ -33,7 +34,7 @@ func createNamedPipe(path string) (syscall.Handle, error) {
 	handle, _, callErr := kernel32ProcCreateNamedPipe.Call(
 		uintptr(unsafe.Pointer(name)),
 		uintptr(namedPipeAccessDuplex),
-		uintptr(namedPipeTypeByte|namedPipeReadModeByte|namedPipeWait),
+		uintptr(namedPipeTypeByte|namedPipeReadModeByte|namedPipeWait|namedPipeRejectRemote),
 		uintptr(namedPipeInstances),
 		uintptr(namedPipeBufferSize),
 		uintptr(namedPipeBufferSize),
