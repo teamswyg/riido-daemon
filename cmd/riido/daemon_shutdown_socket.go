@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"io"
-	"net"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
@@ -14,7 +13,7 @@ func tryShutdownViaSocket(socket string, timeout time.Duration, level lifecycle.
 		return false
 	}
 	deadline := time.Now().Add(timeout)
-	conn, err := net.DialTimeout("unix", socket, shutdownSocketDialTimeout(timeout))
+	conn, err := dialDaemonSocket(socket, shutdownSocketDialTimeout(timeout))
 	if err != nil {
 		return false
 	}
@@ -37,7 +36,7 @@ func tryShutdownViaSocket(socket string, timeout time.Duration, level lifecycle.
 
 func waitDaemonSocketClosed(socket string, timeout time.Duration) bool {
 	return waitDaemonShutdownCondition(timeout, func() bool {
-		c, err := net.DialTimeout("unix", socket, 100*time.Millisecond)
+		c, err := dialDaemonSocket(socket, 100*time.Millisecond)
 		if err != nil {
 			return true
 		}

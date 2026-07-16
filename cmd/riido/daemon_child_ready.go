@@ -1,7 +1,6 @@
 package main
 
 import (
-	"net"
 	"os/exec"
 	"time"
 )
@@ -36,7 +35,7 @@ func waitForDaemonChildReady(flags startFlags, cmd *exec.Cmd) error {
 }
 
 func daemonSocketReady(socket string) bool {
-	conn, err := net.DialTimeout("unix", socket, 200*time.Millisecond)
+	conn, err := dialDaemonSocket(socket, 200*time.Millisecond)
 	if err != nil {
 		return false
 	}

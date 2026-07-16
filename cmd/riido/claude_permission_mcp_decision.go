@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"net"
 	"strings"
 	"time"
 
@@ -47,7 +46,7 @@ func parseClaudePermissionArguments(raw json.RawMessage) (claudePermissionArgume
 }
 
 func requestDaemonToolApproval(opts claudePermissionMCPOptions, args claudePermissionArguments) (daemonToolApprovalResponse, error) {
-	conn, err := net.DialTimeout("unix", opts.socket, 5*time.Second)
+	conn, err := dialDaemonSocket(opts.socket, 5*time.Second)
 	if err != nil {
 		return daemonToolApprovalResponse{}, err
 	}
