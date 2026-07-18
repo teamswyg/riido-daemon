@@ -40,6 +40,7 @@
     {"name": "local-ipc-endpoint-model", "file": "internal/hostintegration/local_ipc_types.go", "contains": "type LocalIPCEndpoint struct"},
     {"name": "local-ipc-default-endpoint", "file": "internal/hostintegration/local_ipc.go", "contains": "It does not open sockets or named pipes."},
     {"name": "dev-local-default-socket", "file": "cmd/riido/daemon_ipc_default_paths.go", "contains": "DefaultLocalIPCEndpoint(hostintegration.LocalIPCEndpointInput"},
+    {"name": "dev-local-api-host-defaults", "file": "cmd/riido/api_connection_config_test.go", "contains": "TestDefaultAPICLIConfigForWindowsNamedPipe"},
     {"name": "mac-helper-runtime-plan", "file": "internal/hostintegration/helper_runtime_mac_app_store.go", "contains": "HelperStartupServiceManagementLoginItem"},
     {"name": "mac-helper-consent-review", "file": "internal/hostintegration/helper_runtime_test.go", "contains": "consent and review"},
     {"name": "mac-helper-shape", "file": "internal/hostintegration/helper_runtime_assert_test.go", "contains": "LocalIPCEndpointUnixSocket"},
