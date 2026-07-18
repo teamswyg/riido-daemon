@@ -171,9 +171,9 @@ Claude daemon runs must start in provider approval mode, not acceptEdits or bypa
 
 ### daemon_local_ipc_must_match_host_transport
 
-Daemon lifecycle, status, shutdown, and tool-approval IPC must use the host local transport: Unix sockets on Darwin/Linux and local-only named pipes on Windows, so desktop health checks cannot create a daemon restart loop.
+Daemon lifecycle, status, shutdown, tool-approval IPC, and default local paths must match the host: Unix sockets and Application Support roots on Darwin/Linux, and local-only named pipes plus LocalAppData workdirs on Windows, so desktop health checks and direct CLI recovery cannot create a daemon restart loop.
 
-- Files: `cmd/riido/claude_permission_mcp_decision.go`, `cmd/riido/daemon_child_ready.go`, `cmd/riido/daemon_ipc_call.go`, `cmd/riido/daemon_ipc_transport.go`, `cmd/riido/daemon_ipc_transport_test.go`, `cmd/riido/daemon_shutdown_socket.go`, `cmd/riido/daemon_socket_server.go`, `internal/riidoapi/local_transport_endpoint.go`, `internal/riidoapi/local_transport_windows.go`, `internal/riidoapi/local_transport_windows_native.go`
+- Files: `cmd/riido/claude_permission_mcp_decision.go`, `cmd/riido/daemon_child_ready.go`, `cmd/riido/daemon_config_workdir_default.go`, `cmd/riido/daemon_host_paths.go`, `cmd/riido/daemon_host_paths_test.go`, `cmd/riido/daemon_ipc_call.go`, `cmd/riido/daemon_ipc_default_paths.go`, `cmd/riido/daemon_ipc_transport.go`, `cmd/riido/daemon_ipc_transport_test.go`, `cmd/riido/daemon_shutdown_socket.go`, `cmd/riido/daemon_socket_server.go`, `internal/riidoapi/local_transport_endpoint.go`, `internal/riidoapi/local_transport_windows.go`, `internal/riidoapi/local_transport_windows_native.go`
 - Docs: `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `production.windows_daemon.restart_loop_47_pids_29m`, `windows_amd64.daemon_cross_compile`, `daemon_local_ipc_transport_regression`
-- Verifiers: `daemon-host-transport-selection-test`, `windows-named-pipe-remote-client-gate`
+- Verifiers: `daemon-host-transport-selection-test`, `daemon-host-default-path-selection-test`, `windows-named-pipe-remote-client-gate`
