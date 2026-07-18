@@ -12,11 +12,12 @@ import (
 )
 
 func runServe(args []string) error {
-	socketPath, err := riidoapi.DefaultSocketPath()
+	apiConfig, err := defaultAPICLIConfig()
 	if err != nil {
 		return err
 	}
-	transport := riidoapi.LocalTransportUnixSocket
+	socketPath := apiConfig.socketPath
+	transport := apiConfig.transport
 	taskDBPath, err := taskdb.DefaultTaskDBPath()
 	if err != nil {
 		return err
