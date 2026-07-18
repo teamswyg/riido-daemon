@@ -1094,11 +1094,15 @@
     },
     {
       "id": "daemon_local_ipc_must_match_host_transport",
-      "text": "Daemon lifecycle, status, shutdown, and tool-approval IPC must use the host local transport: Unix sockets on Darwin/Linux and local-only named pipes on Windows, so desktop health checks cannot create a daemon restart loop.",
+      "text": "Daemon lifecycle, status, shutdown, tool-approval IPC, and default local paths must match the host: Unix sockets and Application Support roots on Darwin/Linux, and local-only named pipes plus LocalAppData workdirs on Windows, so desktop health checks and direct CLI recovery cannot create a daemon restart loop.",
       "files": [
         "cmd/riido/claude_permission_mcp_decision.go",
         "cmd/riido/daemon_child_ready.go",
+        "cmd/riido/daemon_config_workdir_default.go",
+        "cmd/riido/daemon_host_paths.go",
+        "cmd/riido/daemon_host_paths_test.go",
         "cmd/riido/daemon_ipc_call.go",
+        "cmd/riido/daemon_ipc_default_paths.go",
         "cmd/riido/daemon_ipc_transport.go",
         "cmd/riido/daemon_ipc_transport_test.go",
         "cmd/riido/daemon_shutdown_socket.go",
@@ -1124,6 +1128,15 @@
             "TestDaemonLocalTransportForOS",
             "LocalTransportWindowsNamedPipe",
             "LocalTransportUnixSocket"
+          ]
+        },
+        {
+          "name": "daemon-host-default-path-selection-test",
+          "file": "cmd/riido/daemon_host_paths_test.go",
+          "contains": [
+            "TestDefaultAgentDaemonPathsForWindows",
+            "riido-dev-local-helper-agentd",
+            "TestDefaultAgentDaemonPathsPreserveDarwinDefaults"
           ]
         },
         {

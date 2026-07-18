@@ -8,21 +8,21 @@ import (
 )
 
 func defaultAgentDaemonSocket() (string, error) {
-	home, err := os.UserHomeDir()
+	return defaultAgentDaemonSocketForOS(currentDaemonHostOS(), os.UserHomeDir, os.UserCacheDir)
+}
+
+func defaultAgentDaemonSocketForOS(goos string, userHome, userCache daemonPathRootResolver) (string, error) {
+	input, err := defaultDaemonAppDataRootInput(goos, userHome, userCache)
 	if err != nil {
-		return "", daemonWrapf(ErrDaemonIO, "ipc.default-socket.user-home", err, "resolve user home")
+		return "", daemonWrapf(ErrDaemonIO, "ipc.default-socket.host-root", err, "resolve default host root")
 	}
-	root, err := hostintegration.DefaultAppDataRoot(hostintegration.AppDataRootInput{
-		Channel:  hostintegration.DistributionChannelDevLocal,
-		HostOS:   hostintegration.HostOSDarwin,
-		UserHome: home,
-	})
+	root, err := hostintegration.DefaultAppDataRoot(input)
 	if err != nil {
 		return "", daemonWrapf(ErrDaemonConfig, "ipc.default-socket.app-data-root", err, "resolve default app data root")
 	}
 	endpoint, err := hostintegration.DefaultLocalIPCEndpoint(hostintegration.LocalIPCEndpointInput{
 		Channel:     hostintegration.DistributionChannelDevLocal,
-		HostOS:      hostintegration.HostOSDarwin,
+		HostOS:      root.HostOS,
 		AppDataRoot: root,
 		Owner:       hostintegration.LocalIPCOwnerHelper,
 		Name:        "agentd",
