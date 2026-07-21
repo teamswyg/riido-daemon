@@ -17,6 +17,10 @@ const (
 	namedPipeBufferSize   = 64 * 1024
 
 	errorPipeBusy      syscall.Errno = 231
+	errorFileNotFound  syscall.Errno = 2
+	errorBrokenPipe    syscall.Errno = 109
+	errorNoData        syscall.Errno = 232
+	errorPipeNotConn   syscall.Errno = 233
 	errorPipeConnected syscall.Errno = 535
 )
 

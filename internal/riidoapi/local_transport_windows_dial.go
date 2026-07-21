@@ -23,7 +23,7 @@ func dialNamedPipe(ctx context.Context, path string) (net.Conn, error) {
 			return conn, nil
 		}
 		errno, ok := err.(syscall.Errno)
-		if !ok || errno != errorPipeBusy {
+		if !ok || (errno != errorPipeBusy && errno != errorFileNotFound) {
 			return nil, err
 		}
 		select {

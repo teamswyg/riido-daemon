@@ -4,6 +4,7 @@ package riidoapi
 
 import (
 	"errors"
+	"io"
 	"io/fs"
 	"net"
 	"os"
@@ -25,7 +26,13 @@ func newNamedPipeConn(handle syscall.Handle, path string, disconnect bool) *name
 	}
 }
 
-func (c *namedPipeConn) Read(p []byte) (int, error)  { return c.file.Read(p) }
+func (c *namedPipeConn) Read(p []byte) (int, error) {
+	n, err := c.file.Read(p)
+	if errors.Is(err, errorBrokenPipe) || errors.Is(err, errorNoData) || errors.Is(err, errorPipeNotConn) {
+		return n, io.EOF
+	}
+	return n, err
+}
 func (c *namedPipeConn) Write(p []byte) (int, error) { return c.file.Write(p) }
 
 func (c *namedPipeConn) Close() error {
