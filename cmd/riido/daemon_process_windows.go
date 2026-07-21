@@ -5,9 +5,13 @@ package main
 import (
 	"os"
 	"os/exec"
+
+	"github.com/teamswyg/riido-daemon/internal/process/execwindow"
 )
 
-func setDaemonChildSysProcAttr(*exec.Cmd) {}
+func setDaemonChildSysProcAttr(cmd *exec.Cmd) {
+	execwindow.Hide(cmd)
+}
 
 func daemonInterruptSignals() []os.Signal {
 	return []os.Signal{os.Interrupt}

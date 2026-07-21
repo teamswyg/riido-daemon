@@ -12,7 +12,7 @@ Evidence artifact: `process-lifecycle-evidence`.
 
 | Step | Responsibility |
 | --- | --- |
-| `spawn` | Session Start calls Process.Start with adapter-built command and keeps stdout, stderr, exit, stdin, and kill handles. |
+| `spawn` | Session Start calls Process.Start with adapter-built command and keeps stdout, stderr, exit, stdin, and kill handles; daemon-owned Windows children use the no-console-window process policy. |
 | `observe` | Session runner feeds stdout and stderr into Parser, then Adapter.Translate normalizes raw provider events. |
 | `interrupt` | Interrupt-like provider input is modeled as provider-neutral commands and process stdin/RPC writes; the process may remain alive. |
 | `stop` | CommandCancelProvider is executed by session, which kills the RunningProcess through lifecycle-aware process termination. |
@@ -32,3 +32,4 @@ Evidence artifact: `process-lifecycle-evidence`.
 - `observe path converts process streams through Parser and Adapter.Translate`
 - `provider observations map to ProviderEventDraft but terminal task transitions stay in terminal result mapping`
 - `stop path uses CommandCancelProvider and lifecycle-aware process kill`
+- `daemon-owned Windows child commands do not allocate visible console windows`

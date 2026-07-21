@@ -6,6 +6,8 @@ import (
 	"errors"
 	"os/exec"
 	"strings"
+
+	"github.com/teamswyg/riido-daemon/internal/process/execwindow"
 )
 
 // VersionProbeStrict runs the same probe as VersionProbe but exposes
@@ -18,6 +20,7 @@ func VersionProbeStrict(ctx context.Context, exe string, args ...string) ProbeRe
 	probeCtx, cancel := context.WithTimeout(ctx, versionProbeTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(probeCtx, exe, args...)
+	execwindow.Hide(cmd)
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = &buf
