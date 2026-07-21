@@ -76,3 +76,14 @@ jobs:
           name: riidoapi-evidence
           path: out/riidoapi-evidence.json
           if-no-files-found: error
+
+  windows-native-ipc:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify Windows named-pipe daemon status round trip
+        run: go test ./cmd/riido -run TestWindowsNamedPipeDaemonStatusRoundTrip -count=1

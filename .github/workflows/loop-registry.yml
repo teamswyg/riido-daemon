@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - ".github/workflows/loop-registry.yml"
+      - ".github/workflows/riidoapi.yml"
       - ".github/workflows/local-qa-runner.yml"
       - ".github/workflows/product-loop-evidence.yml"
       - ".pre-commit-config.yaml"
@@ -65,6 +66,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/loop-registry.yml"
+      - ".github/workflows/riidoapi.yml"
       - ".github/workflows/local-qa-runner.yml"
       - ".github/workflows/product-loop-evidence.yml"
       - ".pre-commit-config.yaml"
