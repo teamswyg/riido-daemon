@@ -15,9 +15,9 @@ Facts:
 - Workdir is a daemon-selected task/evidence root, not a filesystem sandbox boundary.
 - The full-access launch shape is C4 adapter-owned harness policy, not provider default or caller input.
 - A-57 added a real CLI gate that expects ResultCompleted and an expected file artifact inside daemon-selected workdir.
-- Codex runtime model catalog may report host Codex config model as runtime-scoped opaque model_id.
+- Codex runtime model catalog may report host Codex config model as runtime-scoped opaque model_id; it exposes visible host cache entries, honors their priority, and replaces an unavailable configured default with the preferred visible model.
 - Daemon never infers model catalog from OpenAI/ChatGPT tokens, account identity, API key, team id, or Open API key.
-- Control-plane fallback catalog ids are preserved in assignment metadata but normalized to StartRequest.Model=""; provider native flags need real provider model ids.
+- Explicit control-plane Codex model ids reach StartRequest.Model, while the synthetic codex-default id remains metadata-only and resolves through the runtime catalog for new sessions.
 
 Evidence artifacts:
 

@@ -15,6 +15,8 @@ type codexModelCache struct {
 type codexModelCacheRecord struct {
 	Slug        string `json:"slug"`
 	DisplayName string `json:"display_name"`
+	Visibility  string `json:"visibility"`
+	Priority    int    `json:"priority"`
 }
 
 func codexRuntimeModelsFromCache(home, defaultID string) []runtimeactor.RuntimeModel {
@@ -31,11 +33,28 @@ func parseCodexRuntimeModelsCache(body []byte, defaultID string) []runtimeactor.
 		return nil
 	}
 	models := make([]runtimeactor.RuntimeModel, 0, len(cache.Models))
+	configuredDefaultID := ""
+	fallbackDefaultID := ""
+	fallbackPriority := 0
 	for _, candidate := range cache.Models {
+		if candidate.Visibility != "" && candidate.Visibility != "list" {
+			continue
+		}
 		model, ok := runtimeModelRecord(candidate.Slug, candidate.DisplayName, false)
 		if ok {
 			models = append(models, model)
+			if candidate.Slug == defaultID {
+				configuredDefaultID = candidate.Slug
+			}
+			if fallbackDefaultID == "" || candidate.Priority > 0 && (fallbackPriority <= 0 || candidate.Priority < fallbackPriority) {
+				fallbackDefaultID = candidate.Slug
+				fallbackPriority = candidate.Priority
+			}
 		}
 	}
-	return normalizeRuntimeModels(models, defaultID)
+	selectedDefaultID := configuredDefaultID
+	if selectedDefaultID == "" {
+		selectedDefaultID = fallbackDefaultID
+	}
+	return normalizeRuntimeModels(models, selectedDefaultID)
 }
