@@ -95,70 +95,6 @@
         "label": "GPT-5.2"
       },
       {
-        "model_id": "gpt-5.2-codex-low",
-        "label": "Codex 5.2 Low"
-      },
-      {
-        "model_id": "gpt-5.2-codex-low-fast",
-        "label": "Codex 5.2 Low Fast"
-      },
-      {
-        "model_id": "gpt-5.2-codex",
-        "label": "Codex 5.2"
-      },
-      {
-        "model_id": "gpt-5.2-codex-fast",
-        "label": "Codex 5.2 Fast"
-      },
-      {
-        "model_id": "gpt-5.2-codex-high",
-        "label": "Codex 5.2 High"
-      },
-      {
-        "model_id": "gpt-5.2-codex-high-fast",
-        "label": "Codex 5.2 High Fast"
-      },
-      {
-        "model_id": "gpt-5.2-codex-xhigh",
-        "label": "Codex 5.2 Extra High"
-      },
-      {
-        "model_id": "gpt-5.2-codex-xhigh-fast",
-        "label": "Codex 5.2 Extra High Fast"
-      },
-      {
-        "model_id": "gpt-5.1-codex-max-low",
-        "label": "Codex 5.1 Max Low"
-      },
-      {
-        "model_id": "gpt-5.1-codex-max-low-fast",
-        "label": "Codex 5.1 Max Low Fast"
-      },
-      {
-        "model_id": "gpt-5.1-codex-max-medium",
-        "label": "Codex 5.1 Max"
-      },
-      {
-        "model_id": "gpt-5.1-codex-max-medium-fast",
-        "label": "Codex 5.1 Max Medium Fast"
-      },
-      {
-        "model_id": "gpt-5.1-codex-max-high",
-        "label": "Codex 5.1 Max High"
-      },
-      {
-        "model_id": "gpt-5.1-codex-max-high-fast",
-        "label": "Codex 5.1 Max High Fast"
-      },
-      {
-        "model_id": "gpt-5.1-codex-max-xhigh",
-        "label": "Codex 5.1 Max Extra High"
-      },
-      {
-        "model_id": "gpt-5.1-codex-max-xhigh-fast",
-        "label": "Codex 5.1 Max Extra High Fast"
-      },
-      {
         "model_id": "cursor-grok-4.5-high",
         "label": "Cursor Grok 4.5"
       },
@@ -773,18 +709,6 @@
       {
         "model_id": "gemini-3.5-flash",
         "label": "Gemini 3.5 Flash"
-      },
-      {
-        "model_id": "gpt-5.1-codex-mini-low",
-        "label": "Codex 5.1 Mini Low"
-      },
-      {
-        "model_id": "gpt-5.1-codex-mini",
-        "label": "Codex 5.1 Mini"
-      },
-      {
-        "model_id": "gpt-5.1-codex-mini-high",
-        "label": "Codex 5.1 Mini High"
       },
       {
         "model_id": "claude-4-sonnet",

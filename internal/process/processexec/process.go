@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/teamswyg/riido-daemon/internal/process"
+	"github.com/teamswyg/riido-daemon/internal/process/execwindow"
 )
 
 // New returns a process.Process that spawns via os/exec.
@@ -22,6 +23,7 @@ func (e *execProcess) Start(ctx context.Context, cmd process.Command) (process.R
 	command := exec.CommandContext(cmdCtx, cmd.Executable, cmd.Args...)
 	command.Env = mergeEnv(cmd.Env)
 	command.Dir = cmd.Dir
+	execwindow.Hide(command)
 	configureCommand(command)
 	return startRunningProcess(cmdCtx, cancel, command)
 }
