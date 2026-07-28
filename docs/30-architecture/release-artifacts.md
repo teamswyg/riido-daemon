@@ -27,6 +27,7 @@ Define how riido-daemon public release assets are built, published, installed, a
 ## Assertions
 
 - Release assets are generated from v* tags and dry-run built on pull requests.
+- Release artifact uploads use a bounded repository-relative dist path and fail when no package is present.
 - Provider CLIs and secrets are never bundled in riido-daemon release archives.
 - GitHub Releases are the immutable daemon binary source; CDN latest is only a mutable mirror.
 - CDN latest mirror is updated by CI/CD after release-artifacts succeeds, not by manual S3 copy.
