@@ -39,12 +39,13 @@ jobs:
       - name: Test unsafe bypass evidence tool
         run: go test ./tools/unsafebypassevidence -count=1
       - name: Verify unsafe bypass evidence
-        run: >
-          go run ./tools/unsafebypassevidence
-          -check-doc
-          -evidence-out /tmp/unsafe-bypass-evidence.json
+        run: |
+          mkdir -p out
+          go run ./tools/unsafebypassevidence \
+            -check-doc \
+            -evidence-out out/unsafe-bypass-evidence.json
       - uses: actions/upload-artifact@v7.0.1
         with:
           name: unsafe-bypass-evidence
-          path: /tmp/unsafe-bypass-evidence.json
+          path: out/unsafe-bypass-evidence.json
           if-no-files-found: error
