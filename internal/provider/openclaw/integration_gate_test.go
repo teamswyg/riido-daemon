@@ -45,7 +45,7 @@ func requireOpenClawDetectAvailable(
 
 func requireOpenClawConfigUsable(t *testing.T, ctx context.Context, exe string) {
 	t.Helper()
-	cmd := exec.CommandContext(ctx, exe, configProbeArgs()...)
+	cmd := exec.CommandContext(ctx, exe, configProbeArgs(time.Now().UnixNano())...)
 	out, _ := cmd.CombinedOutput()
 	text := strings.ToLower(string(out))
 	if strings.Contains(text, "config invalid") || strings.Contains(text, "invalid config") {
