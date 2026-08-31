@@ -15,6 +15,7 @@ type Actor struct {
 	stoppedCh chan struct{}
 	stopErrCh chan error
 
-	claimMu     sync.Mutex
-	claimCancel context.CancelFunc
+	claimMu                 sync.Mutex
+	claimCancel             context.CancelFunc
+	registeredRuntimeStates map[string]string
 }

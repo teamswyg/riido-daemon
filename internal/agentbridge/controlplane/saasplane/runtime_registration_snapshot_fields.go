@@ -3,6 +3,7 @@ package saasplane
 import (
 	"strings"
 
+	"github.com/teamswyg/riido-contracts/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 )
 
@@ -16,6 +17,29 @@ func runtimeModels(in []controlplane.RuntimeModel) []RuntimeModelRecord {
 		})
 	}
 	return out
+}
+
+func runtimeProviderHealthStatus(rt controlplane.RuntimeRegistration, provider string) hostintegration.ProviderHealthStatus {
+	value := hostintegration.ProviderHealthStatus(strings.TrimSpace(rt.CapabilityAttributes["provider."+provider+".health_status"]))
+	if value.Valid() {
+		return value
+	}
+	if available, ok := rt.Capabilities["provider."+provider+".available"]; ok && !available {
+		return hostintegration.ProviderHealthUnavailable
+	}
+	return hostintegration.ProviderHealthHealthy
+}
+
+func runtimeProviderDiagnosticCode(rt controlplane.RuntimeRegistration, provider string) hostintegration.ProviderDiagnosticCode {
+	value := hostintegration.ProviderDiagnosticCode(strings.TrimSpace(rt.CapabilityAttributes["provider."+provider+".diagnostic_code"]))
+	if value.Valid() {
+		return value
+	}
+	return hostintegration.ProviderDiagnosticNone
+}
+
+func runtimeProviderDiagnosticSummary(rt controlplane.RuntimeRegistration, provider string) string {
+	return strings.TrimSpace(rt.CapabilityAttributes["provider."+provider+".diagnostic_summary"])
 }
 
 func runtimeRequiresExperimentalOptIn(rt controlplane.RuntimeRegistration, provider string) bool {

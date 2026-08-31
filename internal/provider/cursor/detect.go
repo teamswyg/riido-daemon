@@ -17,6 +17,13 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		}, nil
 	}
 	res := detectedCursor(exe)
+	switch detectutil.AuthStatusProbe(ctx, exe, "status") {
+	case detectutil.AuthProbeUnauthenticated:
+		res.Available = false
+		res.Reason = "provider login is required"
+	case detectutil.AuthProbeUnknown:
+		res.Reason = "provider authentication probe did not complete"
+	}
 	if v, ok := detectutil.VersionProbe(ctx, exe, "--version"); ok {
 		res.Version = v
 		res.Metadata["raw_version"] = v

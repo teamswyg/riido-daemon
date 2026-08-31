@@ -32,12 +32,26 @@ func runtimeSnapshotFromRegistration(rt controlplane.RuntimeRegistration) (Runti
 		Availability:              availability,
 		DetectionState:            detectionState,
 		ProviderVersion:           runtimeProviderVersion(rt, provider),
+		HealthStatus:              runtimeProviderHealthStatus(rt, provider),
+		DiagnosticCode:            runtimeProviderDiagnosticCode(rt, provider),
+		DiagnosticSummary:         runtimeProviderDiagnosticSummary(rt, provider),
 		RequiresExperimentalOptIn: runtimeRequiresExperimentalOptIn(rt, provider),
 		Models:                    runtimeModels(rt.Models),
 	}, strings.TrimSpace(rt.DeviceName), true
 }
 
 func runtimeAvailability(rt controlplane.RuntimeRegistration, provider string) (string, string) {
+	health := runtimeProviderHealthStatus(rt, provider)
+	code := runtimeProviderDiagnosticCode(rt, provider)
+	if health == "unknown" {
+		return "offline", "error"
+	}
+	if health == "unavailable" {
+		if code == "executable-missing" || code == "none" {
+			return "offline", "missing"
+		}
+		return "offline", "detected"
+	}
 	if available, ok := rt.Capabilities["provider."+provider+".available"]; ok && !available {
 		return "offline", "missing"
 	}

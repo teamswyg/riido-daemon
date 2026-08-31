@@ -2,6 +2,7 @@ package openclaw
 
 import (
 	"context"
+	"encoding/json"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -65,6 +66,21 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 
 	base.Available = true
 	base.Metadata["protocol"] = "agent-exec-json"
+	auth := detectutil.VersionProbeStrict(ctx, exe, "models", "status", "--check", "--json")
+	if !auth.OK || !json.Valid([]byte(auth.Output)) {
+		base.Reason = "provider authentication probe did not complete"
+		return base
+	}
+	switch auth.ExitCode {
+	case 1:
+		base.Available = false
+		base.Reason = "provider login is required"
+	case 2:
+		base.Reason = "provider login requires attention"
+	case 0:
+	default:
+		base.Reason = "provider authentication probe did not complete"
+	}
 	return base
 }
 
