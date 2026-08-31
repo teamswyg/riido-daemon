@@ -12,6 +12,9 @@ func providerHealthObservation(capability runtimeactor.Capability) (
 	hostintegration.ProviderDiagnosticCode,
 	string,
 ) {
+	if capability.HealthStatus.Valid() && capability.DiagnosticCode.Valid() {
+		return capability.HealthStatus, capability.DiagnosticCode, providerDiagnosticSummary(capability.DiagnosticCode)
+	}
 	reason := strings.ToLower(strings.TrimSpace(capability.Reason))
 	if capability.Available && reason == "" {
 		return hostintegration.ProviderHealthHealthy, hostintegration.ProviderDiagnosticNone, ""
@@ -29,5 +32,26 @@ func providerHealthObservation(capability runtimeactor.Capability) (
 		return hostintegration.ProviderHealthUnavailable, hostintegration.ProviderDiagnosticVersionUnsupported, "provider version is not supported"
 	default:
 		return hostintegration.ProviderHealthUnknown, hostintegration.ProviderDiagnosticProbeFailed, "provider probe did not complete"
+	}
+}
+
+func providerDiagnosticSummary(code hostintegration.ProviderDiagnosticCode) string {
+	switch code {
+	case hostintegration.ProviderDiagnosticNone:
+		return ""
+	case hostintegration.ProviderDiagnosticExecutableMissing:
+		return "provider executable is not available"
+	case hostintegration.ProviderDiagnosticLoginRequired:
+		return "provider login is required"
+	case hostintegration.ProviderDiagnosticVersionUnsupported:
+		return "provider version is not supported"
+	case hostintegration.ProviderDiagnosticAuthProbeFailed:
+		return "provider authentication probe did not complete"
+	case hostintegration.ProviderDiagnosticVersionProbeFailed:
+		return "provider version probe did not complete"
+	case hostintegration.ProviderDiagnosticCapabilityProbeFailed:
+		return "provider capability probe did not complete"
+	default:
+		return "provider probe did not complete"
 	}
 }

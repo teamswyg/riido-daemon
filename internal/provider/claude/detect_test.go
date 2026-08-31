@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/teamswyg/riido-contracts/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
@@ -55,6 +56,20 @@ func TestDetectLoggedOutIsUnavailable(t *testing.T) {
 		t.Fatalf("Detect: %v", err)
 	}
 	if res.Available || res.Reason != claudeAuthRecoveryMessage {
+		t.Fatalf("result: %+v", res)
+	}
+}
+
+func TestDetectMalformedAuthIsUnknown(t *testing.T) {
+	exe := filepath.Join(t.TempDir(), "claude")
+	if err := os.WriteFile(exe, []byte("#!/bin/sh\nif [ \"$1 $2\" = \"auth status\" ]; then echo malformed; else echo 2.1.202; fi\n"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	res, err := Detect(context.Background(), agentbridge.DetectEnv{EnvOverride: map[string]string{EnvOverride: exe}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.HealthStatus != hostintegration.ProviderHealthUnknown || res.DiagnosticCode != hostintegration.ProviderDiagnosticAuthProbeFailed {
 		t.Fatalf("result: %+v", res)
 	}
 }

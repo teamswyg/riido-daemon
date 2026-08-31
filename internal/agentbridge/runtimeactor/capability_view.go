@@ -18,6 +18,8 @@ func buildRuntimeCapability(runtimeID, provider string, res agentbridge.DetectRe
 		Executable:                res.Executable,
 		Profile:                   metaProfile(res.Metadata),
 		Reason:                    res.Reason,
+		HealthStatus:              res.HealthStatus,
+		DiagnosticCode:            res.DiagnosticCode,
 		ProtocolKind:              string(domain.ProtocolKind),
 		AdapterID:                 domain.AdapterID,
 		AdapterVersion:            domain.AdapterVersion,

@@ -43,6 +43,23 @@ func TestProviderHealthUnknownDoesNotProjectRawReason(t *testing.T) {
 	}
 }
 
+func TestProviderHealthUsesTypedProbeFailure(t *testing.T) {
+	secret := "bearer-secret /Users/private/provider"
+	health, code, summary := providerHealthObservation(runtimeactor.Capability{
+		Provider:       "codex",
+		Available:      true,
+		HealthStatus:   hostintegration.ProviderHealthUnknown,
+		DiagnosticCode: hostintegration.ProviderDiagnosticAuthProbeFailed,
+		Reason:         secret,
+	})
+	if health != hostintegration.ProviderHealthUnknown || code != hostintegration.ProviderDiagnosticAuthProbeFailed {
+		t.Fatalf("health=%q code=%q", health, code)
+	}
+	if summary != "provider authentication probe did not complete" || strings.Contains(summary, secret) {
+		t.Fatalf("summary=%q", summary)
+	}
+}
+
 func TestRuntimeRegistrationStateChangesWithProviderHealth(t *testing.T) {
 	status := runtimeactor.Status{RuntimeID: "daemon:codex", Capabilities: []runtimeactor.Capability{{Provider: "codex", Available: true}}}
 	before := runtimeRegistrationState(status)

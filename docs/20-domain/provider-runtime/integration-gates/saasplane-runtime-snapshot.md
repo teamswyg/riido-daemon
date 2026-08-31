@@ -8,6 +8,6 @@ SaaS runtime snapshot reporting is a device-level full set, not a single-runtime
 
 - RegisterRuntime and heartbeat refresh post the accumulated runtime set sorted by RuntimeID.
 - Undetected providers remain present as `detection_state=missing` and `availability=offline`.
-- Provider capability changes are re-registered without a daemon restart and carry only bounded health status, diagnostic code, and fixed diagnostic summary values.
+- Provider capability changes are re-registered without a daemon restart and carry typed health plus bounded diagnostic codes that distinguish authentication, version, and capability probe failures.
 - Raw provider stderr, executable paths, credentials, and environment values never enter runtime snapshot diagnostics.
 - The control-plane device projection response shape is still owned by `riido-control-plane`.
