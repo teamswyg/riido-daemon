@@ -2,17 +2,11 @@ package openclaw
 
 import "github.com/teamswyg/riido-daemon/internal/agentbridge"
 
-func buildCommandArgs(req agentbridge.StartRequest, sessionID string) ([]string, []string) {
-	args := []string{
-		"agent",
-		"--local",
-		"--json",
-		"--session-id", sessionID,
-	}
-	args = append(args, "--message", buildMessage(req.SystemPrompt, req.Prompt))
-
+func buildCommandArgs(req agentbridge.StartRequest) ([]string, []string) {
+	args := []string{"agent", "exec", "--json"}
 	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, BlockedArgs())
-	return append(args, kept...), dropped
+	args = append(args, kept...)
+	return append(args, buildMessage(req.SystemPrompt, req.Prompt)), dropped
 }
 
 func envList(env map[string]string) []string {

@@ -7,7 +7,7 @@ func TestIntegration(t *testing.T) {
 	var lastErr error
 	for _, model := range openClawIntegrationModels() {
 		req, expected := openClawIntegrationRequest(t, detect, model)
-		obs := runOpenClawIntegrationSession(t, ctx, req, expected.sessionID)
+		obs := runOpenClawIntegrationSession(t, ctx, req)
 		if err := checkOpenClawIntegrationResult(obs); err != nil {
 			lastErr = err
 			t.Logf("openclaw integration model %s failed: %v", model, err)

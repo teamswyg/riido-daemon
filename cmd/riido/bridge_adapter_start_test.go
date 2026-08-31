@@ -52,7 +52,9 @@ func assertBridgeAdapterStart(t *testing.T, name string, cmd agentbridge.StartCo
 	case codex.Name:
 		assertCodexBridgeStart(t, cmd.Args, args, cmd.Env)
 	case openclaw.Name:
-		assertBridgeArgPair(t, cmd.Args, "--session-id", "task-openclaw")
+		if !strings.Contains(args, "agent exec --json") {
+			t.Fatalf("openclaw daemon adapter must use isolated agent exec: %v", cmd.Args)
+		}
 	case cursor.Name:
 		if strings.Contains(args, "--yolo") {
 			t.Fatalf("cursor daemon adapter must not default to --yolo: %v", cmd.Args)

@@ -7,6 +7,7 @@
 - Update the provider test and this matrix in the same PR when real CLI behavior changes.
 - New providers must add deterministic public tests before optional real-CLI integration.
 - New providers must define instruction placement and an effectiveness probe marker.
+- Provider upgrades must revalidate the adapter command/schema surface and the real filesystem side-effect gate.
 - A detected provider with a failed roundtrip is a failure, not a skip.
 
 Source manifests:

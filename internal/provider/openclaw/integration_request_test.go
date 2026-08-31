@@ -1,9 +1,7 @@
 package openclaw
 
 import (
-	"strconv"
 	"testing"
-	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -14,7 +12,6 @@ func openClawIntegrationRequest(
 	model string,
 ) (agentbridge.StartRequest, openClawIntegrationExpected) {
 	t.Helper()
-	sessionID := "integration-openclaw-" + strconv.FormatInt(time.Now().UnixNano(), 36)
 	workdir := t.TempDir()
 	preseedOpenClawIntegrationWorkspace(t, workdir)
 	req := agentbridge.StartRequest{
@@ -25,7 +22,6 @@ func openClawIntegrationRequest(
 		CustomArgs: []string{"--thinking", "off"},
 	}
 	return req, openClawIntegrationExpected{
-		sessionID:    sessionID,
 		workdir:      workdir,
 		artifactName: openClawIntegrationArtifactName,
 		artifactBody: openClawIntegrationArtifactBody,

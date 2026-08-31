@@ -15,10 +15,7 @@ func IntegrationModelCandidates() []string {
 	if model := strings.TrimSpace(os.Getenv(openClawIntegrationModelEnv)); model != "" {
 		return []string{model}
 	}
-	return []string{
-		openClawFastSideEffectModel,
-		openClawLongContextIntegrationModel,
-	}
+	return []string{""}
 }
 
 func openClawIntegrationModels() []string {

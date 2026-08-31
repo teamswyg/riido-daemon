@@ -11,7 +11,7 @@ func TestBuildStartDoesNotEmitUnsupportedModelFlag(t *testing.T) {
 	cmd, err := BuildStart(agentbridge.StartRequest{
 		Model:  "llama3.2:latest",
 		Prompt: "hello",
-	}, StartOptions{SessionID: "sess-model"})
+	}, StartOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}

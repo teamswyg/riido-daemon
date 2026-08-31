@@ -11,12 +11,12 @@ func TestBuildStartShape(t *testing.T) {
 	cmd, err := BuildStart(agentbridge.StartRequest{
 		Cwd:    "/tmp/work",
 		Prompt: "do the thing",
-	}, StartOptions{SessionID: "sess-1"})
+	}, StartOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}
 	args := strings.Join(cmd.Args, " ")
-	for _, want := range []string{"agent", "--local", "--json", "--session-id sess-1", "--message do the thing"} {
+	for _, want := range []string{"agent exec", "--json", "do the thing"} {
 		if !strings.Contains(args, want) {
 			t.Fatalf("missing %q in %q", want, args)
 		}

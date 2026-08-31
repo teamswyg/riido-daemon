@@ -6,9 +6,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-type integrationAdapter struct {
-	sessionID string
-}
+type integrationAdapter struct{}
 
 func (integrationAdapter) Name() string { return Name }
 
@@ -19,8 +17,8 @@ func (integrationAdapter) Detect(
 	return agentbridge.DetectResult{Available: true}, nil
 }
 
-func (a integrationAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
-	return BuildStart(req, StartOptions{SessionID: a.sessionID})
+func (integrationAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
+	return BuildStart(req, StartOptions{})
 }
 
 func (integrationAdapter) NewParser() agentbridge.Parser { return NewParser() }

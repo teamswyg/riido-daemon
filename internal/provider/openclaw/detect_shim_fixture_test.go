@@ -16,7 +16,7 @@ func writeShim(t *testing.T, version string) string {
 func writeShimInDir(t *testing.T, dir, version string) string {
 	t.Helper()
 	path := filepath.Join(dir, "openclaw")
-	script := "#!/bin/sh\necho '" + version + "'\nexit 0\n"
+	script := "#!/bin/sh\nif [ \"$1 $2 $3\" = \"agent exec --help\" ]; then echo 'Usage: openclaw agent exec --json'; else echo '" + version + "'; fi\nexit 0\n"
 	if err := os.WriteFile(path, []byte(script), 0o755); err != nil {
 		t.Fatalf("write shim: %v", err)
 	}
@@ -35,7 +35,7 @@ func writeShimFromFixture(t *testing.T, fixture string, exitCode int) string {
 		t.Fatalf("write content: %v", err)
 	}
 	exePath := filepath.Join(dir, "openclaw")
-	script := "#!/bin/sh\ncat " + contentPath + "\nexit " + strconv.Itoa(exitCode) + "\n"
+	script := "#!/bin/sh\nif [ \"$1 $2 $3\" = \"agent exec --help\" ]; then echo 'Usage: openclaw agent exec --json'; exit 0; fi\ncat " + contentPath + "\nexit " + strconv.Itoa(exitCode) + "\n"
 	if err := os.WriteFile(exePath, []byte(script), 0o755); err != nil {
 		t.Fatalf("write shim: %v", err)
 	}
