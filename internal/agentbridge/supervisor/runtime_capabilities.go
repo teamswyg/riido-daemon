@@ -29,6 +29,10 @@ func runtimeBoolCapabilities(out map[string]bool, capability runtimeactor.Capabi
 
 func runtimeCapabilityAttrs(out map[string]string, capability runtimeactor.Capability) {
 	prefix := runtimeCapabilityPrefix(capability)
+	health, code, summary := providerHealthObservation(capability)
+	out[prefix+"health_status"] = string(health)
+	out[prefix+"diagnostic_code"] = string(code)
+	out[prefix+"diagnostic_summary"] = summary
 	out[prefix+"compatibility_status"] = capability.CompatibilityStatus
 	out[prefix+"capability_fingerprint"] = capability.CapabilityFingerprint
 	out[prefix+"protocol_kind"] = capability.ProtocolKind

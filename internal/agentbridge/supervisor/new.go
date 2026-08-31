@@ -8,10 +8,11 @@ func New(cfg Config) (*Actor, error) {
 		return nil, err
 	}
 	return &Actor{
-		cfg:       cfg,
-		mailbox:   make(chan envelope, cfg.MailboxSize),
-		stopReqCh: make(chan lifecycle.ShutdownLevel, cfg.MailboxSize),
-		stoppedCh: make(chan struct{}),
-		stopErrCh: make(chan error, 1),
+		cfg:                     cfg,
+		mailbox:                 make(chan envelope, cfg.MailboxSize),
+		stopReqCh:               make(chan lifecycle.ShutdownLevel, cfg.MailboxSize),
+		stoppedCh:               make(chan struct{}),
+		stopErrCh:               make(chan error, 1),
+		registeredRuntimeStates: map[string]string{},
 	}, nil
 }

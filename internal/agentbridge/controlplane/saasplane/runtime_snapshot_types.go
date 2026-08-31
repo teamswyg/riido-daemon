@@ -4,6 +4,7 @@ import (
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+	"github.com/teamswyg/riido-contracts/hostintegration"
 )
 
 type RuntimeModelRecord struct {
@@ -13,13 +14,16 @@ type RuntimeModelRecord struct {
 }
 
 type RuntimeSnapshotRecord struct {
-	RuntimeID                 string               `json:"runtime_id"`
-	Kind                      string               `json:"kind"`
-	Availability              string               `json:"availability,omitempty"`
-	DetectionState            string               `json:"detection_state,omitempty"`
-	ProviderVersion           string               `json:"provider_version,omitempty"`
-	RequiresExperimentalOptIn bool                 `json:"requires_experimental_opt_in,omitempty"`
-	Models                    []RuntimeModelRecord `json:"models,omitempty"`
+	RuntimeID                 string                                 `json:"runtime_id"`
+	Kind                      string                                 `json:"kind"`
+	Availability              string                                 `json:"availability,omitempty"`
+	DetectionState            string                                 `json:"detection_state,omitempty"`
+	ProviderVersion           string                                 `json:"provider_version,omitempty"`
+	HealthStatus              hostintegration.ProviderHealthStatus   `json:"health_status,omitempty"`
+	DiagnosticCode            hostintegration.ProviderDiagnosticCode `json:"diagnostic_code,omitempty"`
+	DiagnosticSummary         string                                 `json:"diagnostic_summary,omitempty"`
+	RequiresExperimentalOptIn bool                                   `json:"requires_experimental_opt_in,omitempty"`
+	Models                    []RuntimeModelRecord                   `json:"models,omitempty"`
 }
 
 type DeviceRuntimeSnapshotSyncRequest struct {

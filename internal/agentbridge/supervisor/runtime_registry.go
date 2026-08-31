@@ -17,6 +17,7 @@ func (a *Actor) Start(ctx context.Context) error {
 		if err := a.register(ctx, status); err != nil {
 			return err
 		}
+		a.registeredRuntimeStates[status.RuntimeID] = runtimeRegistrationState(status)
 	}
 	go a.run(ctx, runtimes)
 	return nil
