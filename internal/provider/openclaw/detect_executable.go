@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"strings"
 
+	"github.com/teamswyg/riido-contracts/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
 )
@@ -25,6 +26,8 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 	probe := detectutil.VersionProbeStrict(ctx, exe, "--version")
 	if !probe.OK {
 		base.Available = false
+		base.HealthStatus = hostintegration.ProviderHealthUnknown
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticVersionProbeFailed
 		base.Reason = "openclaw --version did not run to completion (timeout or signal); cannot enforce minimum version " + MinSupportedVersion
 		return base
 	}
@@ -33,6 +36,8 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 		// Non-zero exit is authoritative: even if the output happens
 		// to look like a version, refuse to lift it.
 		base.Available = false
+		base.HealthStatus = hostintegration.ProviderHealthUnknown
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticVersionProbeFailed
 		base.Reason = sanitizeReason(probe.Output)
 		// Leave Version empty — exit code says we have no trustworthy
 		// version information.
@@ -42,6 +47,8 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 	parsed, ok := parseVersion(probe.Output)
 	if !ok {
 		base.Available = false
+		base.HealthStatus = hostintegration.ProviderHealthUnknown
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticVersionProbeFailed
 		base.Version = ""
 		base.Reason = "openclaw --version output did not match the expected YYYY.M.D shape: " + sanitizeReason(probe.Output)
 		return base
@@ -54,31 +61,45 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 	minTuple, _ := parseVersion(MinSupportedVersion)
 	if compareVersions(parsed, minTuple) < 0 {
 		base.Available = false
+		base.HealthStatus = hostintegration.ProviderHealthUnavailable
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticVersionUnsupported
 		base.Reason = "openclaw " + base.Version + " is older than minimum supported " + MinSupportedVersion + " — upgrade openclaw"
 		return base
 	}
 	help := detectutil.VersionProbeStrict(ctx, exe, "agent", "exec", "--help")
 	if !help.OK || help.ExitCode != 0 || !strings.Contains(help.Output, "--json") {
 		base.Available = false
+		base.HealthStatus = hostintegration.ProviderHealthUnavailable
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticVersionUnsupported
 		base.Reason = "openclaw agent exec --json is unavailable; upgrade openclaw"
 		return base
 	}
 
 	base.Available = true
+	base.HealthStatus = hostintegration.ProviderHealthHealthy
+	base.DiagnosticCode = hostintegration.ProviderDiagnosticNone
 	base.Metadata["protocol"] = "agent-exec-json"
 	auth := detectutil.VersionProbeStrict(ctx, exe, "models", "status", "--check", "--json")
 	if !auth.OK || !json.Valid([]byte(auth.Output)) {
+		base.HealthStatus = hostintegration.ProviderHealthUnknown
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticAuthProbeFailed
 		base.Reason = "provider authentication probe did not complete"
 		return base
 	}
 	switch auth.ExitCode {
 	case 1:
 		base.Available = false
+		base.HealthStatus = hostintegration.ProviderHealthUnavailable
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticLoginRequired
 		base.Reason = "provider login is required"
 	case 2:
 		base.Reason = "provider login requires attention"
+		base.HealthStatus = hostintegration.ProviderHealthDegraded
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticLoginRequired
 	case 0:
 	default:
+		base.HealthStatus = hostintegration.ProviderHealthUnknown
+		base.DiagnosticCode = hostintegration.ProviderDiagnosticAuthProbeFailed
 		base.Reason = "provider authentication probe did not complete"
 	}
 	return base

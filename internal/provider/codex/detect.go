@@ -3,6 +3,7 @@ package codex
 import (
 	"context"
 
+	"github.com/teamswyg/riido-contracts/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
 )
@@ -13,8 +14,9 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 	exe, ok := detectutil.ResolveExecutable(DefaultExecutable, envValue(env, EnvOverride))
 	if !ok {
 		return agentbridge.DetectResult{
-			Available: false,
-			Reason:    "codex executable not found on PATH and " + EnvOverride + " is not set",
+			HealthStatus:   hostintegration.ProviderHealthUnavailable,
+			DiagnosticCode: hostintegration.ProviderDiagnosticExecutableMissing,
+			Reason:         "codex executable not found on PATH and " + EnvOverride + " is not set",
 		}, nil
 	}
 	res := agentbridge.DetectResult{
@@ -28,13 +30,19 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		SupportsToolHooks: true,
 		SupportsUsage:     true,
 		Metadata:          map[string]string{},
+		HealthStatus:      hostintegration.ProviderHealthHealthy,
+		DiagnosticCode:    hostintegration.ProviderDiagnosticNone,
 	}
 	switch detectutil.AuthStatusProbe(ctx, exe, "login", "status") {
 	case detectutil.AuthProbeAuthenticated:
 	case detectutil.AuthProbeUnauthenticated:
 		res.Available = false
+		res.HealthStatus = hostintegration.ProviderHealthUnavailable
+		res.DiagnosticCode = hostintegration.ProviderDiagnosticLoginRequired
 		res.Reason = "provider login is required"
 	case detectutil.AuthProbeUnknown:
+		res.HealthStatus = hostintegration.ProviderHealthUnknown
+		res.DiagnosticCode = hostintegration.ProviderDiagnosticAuthProbeFailed
 		res.Reason = "provider authentication probe did not complete"
 	}
 	if v, ok := detectutil.VersionProbe(ctx, exe, "--version"); ok {

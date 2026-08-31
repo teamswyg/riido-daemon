@@ -1,5 +1,7 @@
 package agentbridge
 
+import "github.com/teamswyg/riido-contracts/hostintegration"
+
 // DetectEnv carries the environment an adapter consults during Detect.
 // Adapters MUST read only from this struct, never os.Environ directly.
 type DetectEnv struct {
@@ -22,6 +24,8 @@ type DetectResult struct {
 	SupportsMCP       bool
 	SupportsToolHooks bool
 	SupportsUsage     bool
+	HealthStatus      hostintegration.ProviderHealthStatus
+	DiagnosticCode    hostintegration.ProviderDiagnosticCode
 	Reason            string
 	Metadata          map[string]string
 }

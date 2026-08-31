@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/teamswyg/riido-contracts/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
@@ -31,5 +32,7 @@ func (a *Actor) detectCapability(ctx context.Context, adapter agentbridge.Adapte
 
 func capabilityWithProbeFailure(capability Capability) Capability {
 	capability.Reason = capabilityProbeFailedReason
+	capability.HealthStatus = hostintegration.ProviderHealthUnknown
+	capability.DiagnosticCode = hostintegration.ProviderDiagnosticProbeFailed
 	return capability
 }

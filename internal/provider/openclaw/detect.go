@@ -4,6 +4,7 @@ import (
 	"context"
 	"strconv"
 
+	"github.com/teamswyg/riido-contracts/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
 )
@@ -13,8 +14,9 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 	candidates := detectutil.ResolveExecutableCandidates(DefaultExecutable, envValue(env, EnvOverride))
 	if len(candidates) == 0 {
 		return agentbridge.DetectResult{
-			Available: false,
-			Reason:    "openclaw executable not found on PATH and " + EnvOverride + " is not set",
+			HealthStatus:   hostintegration.ProviderHealthUnavailable,
+			DiagnosticCode: hostintegration.ProviderDiagnosticExecutableMissing,
+			Reason:         "openclaw executable not found on PATH and " + EnvOverride + " is not set",
 		}, nil
 	}
 
