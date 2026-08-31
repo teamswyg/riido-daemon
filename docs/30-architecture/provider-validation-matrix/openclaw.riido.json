@@ -18,7 +18,8 @@
   "negative_or_limited_evidence": [
     "SaaS completed thread alone does not prove filesystem side effect",
     "Artifact integration must verify the daemon-selected cwd under isolated agent exec",
-    "Runtime capability still reports supports_worktree=false"
+    "Runtime capability still reports supports_worktree=false",
+    "Native CLI auth reported as indeterminate remains routable only when OpenClaw reports no missing or unusable credential profiles"
   ],
   "required_scheduling_gate": [
     "required_surfaces=[worktree] -> MISSING_REQUIRED_SURFACE:worktree"
