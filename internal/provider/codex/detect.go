@@ -30,6 +30,7 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		Metadata:          map[string]string{},
 	}
 	switch detectutil.AuthStatusProbe(ctx, exe, "login", "status") {
+	case detectutil.AuthProbeAuthenticated:
 	case detectutil.AuthProbeUnauthenticated:
 		res.Available = false
 		res.Reason = "provider login is required"
