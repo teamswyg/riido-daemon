@@ -25,7 +25,7 @@ func TestCodexProtocolDriverWritesInitializeOnStart(t *testing.T) {
 }
 
 func TestCodexProtocolDriverInitializeResponseWritesInitializedAndThreadStart(t *testing.T) {
-	d, _ := NewProtocolDriver(agentbridge.StartRequest{Model: "gpt-5.5"})
+	d, _ := NewProtocolDriver(agentbridge.StartRequest{Model: "gpt-5.5", Cwd: "/tmp/work"})
 	io := newRecordingIO()
 	if err := d.OnStart(context.Background(), io); err != nil {
 		t.Fatal(err)
@@ -47,5 +47,8 @@ func TestCodexProtocolDriverInitializeResponseWritesInitializedAndThreadStart(t 
 	}
 	if !strings.Contains(string(second), `"model":"gpt-5.5"`) {
 		t.Fatalf("thread/start missing model: %q", second)
+	}
+	if !strings.Contains(string(second), `"sandbox":"danger-full-access"`) || !strings.Contains(string(second), `"cwd":"/tmp/work"`) {
+		t.Fatalf("thread/start missing sandbox or cwd: %q", second)
 	}
 }
