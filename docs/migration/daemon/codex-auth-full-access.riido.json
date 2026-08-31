@@ -25,7 +25,7 @@
     {"name": "openclaw-workflow", "file": ".github/workflows/provider-openclaw.yml", "contains": "Verify OpenClaw adapter gates"},
     {"name": "openclaw-public-status", "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json", "contains": "RIID-4660 moved internal/provider/openclaw into public riido-daemon."},
     {"name": "openclaw-no-bundle", "file": "docs/20-domain/provider-runtime/public-migration-status.riido.json", "contains": "The package does not bundle OpenClaw CLI."},
-    {"name": "openclaw-session-required", "file": "internal/provider/openclaw/command_session_test.go", "contains": "TestBuildStartRequiresSessionID"},
+    {"name": "openclaw-agent-exec-shape", "file": "internal/provider/openclaw/command_shape_test.go", "contains": "agent exec"},
     {"name": "openclaw-ndjson-golden", "file": "internal/provider/openclaw/golden_test.go", "contains": "TestGoldenNDJSONResultJSONL"},
     {"name": "openclaw-calendar-gate", "file": "internal/provider/openclaw/detect_config.go", "contains": "MinSupportedVersion is calendar-versioned"},
     {"name": "cursor-workflow", "file": ".github/workflows/provider-cursor.yml", "contains": "Verify Cursor adapter gates"},
