@@ -18,6 +18,7 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 	}
 	res := detectedCursor(exe)
 	switch detectutil.AuthStatusProbe(ctx, exe, "status") {
+	case detectutil.AuthProbeAuthenticated:
 	case detectutil.AuthProbeUnauthenticated:
 		res.Available = false
 		res.Reason = "provider login is required"
