@@ -88,10 +88,16 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 	}
 	switch auth.ExitCode {
 	case 1:
-		base.Available = false
-		base.HealthStatus = hostintegration.ProviderHealthUnavailable
-		base.DiagnosticCode = hostintegration.ProviderDiagnosticLoginRequired
-		base.Reason = "provider login is required"
+		if openClawAuthRequiresLogin(auth.Output) {
+			base.Available = false
+			base.HealthStatus = hostintegration.ProviderHealthUnavailable
+			base.DiagnosticCode = hostintegration.ProviderDiagnosticLoginRequired
+			base.Reason = "provider login is required"
+		} else {
+			base.HealthStatus = hostintegration.ProviderHealthDegraded
+			base.DiagnosticCode = hostintegration.ProviderDiagnosticAuthProbeFailed
+			base.Reason = "provider authentication probe is inconclusive"
+		}
 	case 2:
 		base.Reason = "provider login requires attention"
 		base.HealthStatus = hostintegration.ProviderHealthDegraded
@@ -103,6 +109,33 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 		base.Reason = "provider authentication probe did not complete"
 	}
 	return base
+}
+
+func openClawAuthRequiresLogin(output string) bool {
+	var status struct {
+		Auth struct {
+			MissingProvidersInUse []json.RawMessage `json:"missingProvidersInUse"`
+			UnusableProfiles      []json.RawMessage `json:"unusableProfiles"`
+			ModelRouteIssues      []struct {
+				Kind string `json:"kind"`
+			} `json:"modelRouteIssues"`
+		} `json:"auth"`
+	}
+	if json.Unmarshal([]byte(output), &status) != nil {
+		return false
+	}
+	if len(status.Auth.MissingProvidersInUse) > 0 || len(status.Auth.UnusableProfiles) > 0 {
+		return true
+	}
+	if len(status.Auth.ModelRouteIssues) == 0 {
+		return true
+	}
+	for _, issue := range status.Auth.ModelRouteIssues {
+		if issue.Kind != "indeterminate" {
+			return true
+		}
+	}
+	return false
 }
 
 func envValue(env agentbridge.DetectEnv, key string) string {

@@ -41,3 +41,18 @@ func writeShimFromFixture(t *testing.T, fixture string, exitCode int) string {
 	}
 	return exePath
 }
+
+func writeAuthShim(t *testing.T, authJSON string, exitCode int) string {
+	t.Helper()
+	dir := t.TempDir()
+	authPath := filepath.Join(dir, "auth.json")
+	if err := os.WriteFile(authPath, []byte(authJSON), 0o644); err != nil {
+		t.Fatalf("write auth fixture: %v", err)
+	}
+	exePath := filepath.Join(dir, "openclaw")
+	script := "#!/bin/sh\nif [ \"$1\" = \"--version\" ]; then echo 'OpenClaw 2026.8.1'; exit 0; fi\nif [ \"$1 $2 $3\" = \"agent exec --help\" ]; then echo 'Usage: openclaw agent exec --json'; exit 0; fi\ncat " + authPath + "\nexit " + strconv.Itoa(exitCode) + "\n"
+	if err := os.WriteFile(exePath, []byte(script), 0o755); err != nil {
+		t.Fatalf("write auth shim: %v", err)
+	}
+	return exePath
+}
