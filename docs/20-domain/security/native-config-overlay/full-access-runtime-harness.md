@@ -14,9 +14,9 @@ Proves provider full-access execution is a daemon-owned runtime envelope with ca
 
 | Fact | Summary | Evidence |
 | --- | --- | --- |
-| Codex launch shape is daemon-owned | BuildStart emits codex --sandbox danger-full-access app-server --listen stdio:// from adapter code. | `codex-full-access-constant`, `codex-buildstart`, `codex-sandbox-arg`, `codex-app-server-arg`, `codex-listen-arg` |
+| Codex launch shape is daemon-owned | BuildStart emits the full-access CLI envelope and thread/start repeats the sandbox with the requested cwd. | `codex-full-access-constant`, `codex-buildstart`, `codex-sandbox-arg`, `codex-app-server-arg`, `codex-listen-arg`, `codex-thread-sandbox` |
 | Claude beta full-access launch shape is daemon-owned | The daemon runtime adapter emits Claude bypassPermissions only through an explicit beta harness flag and does not attach the web approval MCP prompt. | `claude-beta-adapter-field`, `claude-daemon-beta-adapter`, `claude-beta-start-option`, `claude-beta-adapter-test`, `claude-beta-provider-test` |
-| protocol-critical shape is tested | Codex tests assert full-access sandbox, app-server, stdio listener, cwd propagation, stdin pipe, and single sandbox selection. | `codex-protocol-test` |
+| protocol-critical shape is tested | Codex tests assert full-access CLI and app-server thread sandbox, cwd propagation, stdin pipe, and single sandbox selection. | `codex-protocol-test`, `codex-thread-start-test` |
 | caller sandbox override is dropped | Caller --sandbox and -s variants are reported in DroppedArgs while daemon-generated danger-full-access remains the only sandbox pair. | `codex-sandbox-override-test`, `codex-daemon-sandbox-only-test` |
 | unsafe approval bypass is dropped | Codex --yolo and --dangerously-bypass-approvals-and-sandbox variants are blocked from CustomArgs. | `codex-unsafe-custom-test`, `codex-unsafe-equals-test`, `codex-unsafe-arg-catalog` |
 | config and transport overrides are dropped | Caller -c/--config/--enable/--disable and --listen cannot rewrite the daemon-owned runtime envelope. | `codex-config-override-test`, `codex-listen-override-test`, `codex-security-critical-args` |

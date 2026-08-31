@@ -16,6 +16,7 @@
     "AGENTBRIDGE_INTEGRATION=1 must be set, otherwise the test skips.",
     "The provider executable must be discoverable or explicitly configured with RIIDO_<PROVIDER>_PATH, otherwise the test skips.",
     "The adapter Detect result must be available, otherwise the test skips with the detect reason.",
+    "Preflight config probes must use a fresh provider session; stale session model state must not turn an otherwise usable backend into an operator-environment skip.",
     "After all gates pass, a failed prompt roundtrip is a real integration failure."
   ],
   "instruction_probe": {
