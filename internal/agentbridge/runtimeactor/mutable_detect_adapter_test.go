@@ -2,6 +2,7 @@ package runtimeactor
 
 import (
 	"context"
+	"errors"
 	"sync"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -9,7 +10,8 @@ import (
 
 type mutableDetectAdapter struct {
 	stubAdapter
-	mu sync.Mutex
+	mu        sync.Mutex
+	detectErr error
 }
 
 func (a *mutableDetectAdapter) Detect(
@@ -18,7 +20,13 @@ func (a *mutableDetectAdapter) Detect(
 ) (agentbridge.DetectResult, error) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	return a.detected, nil
+	return a.detected, a.detectErr
+}
+
+func (a *mutableDetectAdapter) failDetection() {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	a.detectErr = errors.New("sensitive provider failure")
 }
 
 func (a *mutableDetectAdapter) setDetected(res agentbridge.DetectResult) {

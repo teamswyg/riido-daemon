@@ -26,6 +26,25 @@ func TestRuntimeActorStatusRefreshesUnavailableCapabilityAfterTTL(t *testing.T) 
 	assertSingleAvailableCapability(t, actorStatusCapabilities(t, actor), "2.0.0")
 }
 
+func TestRuntimeActorStatusMarksRefreshFailureUnknown(t *testing.T) {
+	now := time.Date(2026, 8, 31, 12, 0, 0, 0, time.UTC)
+	provider := &mutableDetectAdapter{stubAdapter: stubAdapter{
+		name: "codex", detected: availableDetectResult("1.0.0"),
+	}}
+	actor, _ := startActor(t, Config{
+		Adapters:               []agentbridge.Adapter{provider},
+		CapabilityRefreshEvery: time.Second,
+		Now:                    func() time.Time { return now },
+	})
+
+	provider.failDetection()
+	now = now.Add(2 * time.Second)
+	capability := actorStatusCapabilities(t, actor)[0]
+	if !capability.Available || capability.Reason != capabilityProbeFailedReason {
+		t.Fatalf("capability after failed refresh = %+v", capability)
+	}
+}
+
 func lateProvider(name string) *stubAdapter {
 	return &stubAdapter{
 		name:     name,

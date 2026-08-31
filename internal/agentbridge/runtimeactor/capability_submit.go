@@ -25,8 +25,11 @@ func (a *Actor) capabilityForSubmit(
 	}
 	refreshed, err := a.detectCapability(ctx, adapter)
 	if err != nil {
+		failed := capabilityWithProbeFailure(capView)
+		caps[idx] = failed
+		detectedAt[provider] = a.cfg.Now()
 		if capView.Available {
-			return capView, true, nil
+			return failed, true, nil
 		}
 		return Capability{}, true, fmt.Errorf("runtimeactor: Detect %s: %w", adapter.Name(), err)
 	}

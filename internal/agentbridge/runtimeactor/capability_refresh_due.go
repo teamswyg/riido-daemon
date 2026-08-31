@@ -25,6 +25,8 @@ func (a *Actor) refreshDueCapabilities(
 		}
 		refreshed, err := a.detectCapability(ctx, adapter)
 		if err != nil {
+			caps[idx] = capabilityWithProbeFailure(capView)
+			detectedAt[capView.Provider] = a.cfg.Now()
 			continue
 		}
 		blockRuntimeDriftedTasks(ctx, inFlight, capView, refreshed)
