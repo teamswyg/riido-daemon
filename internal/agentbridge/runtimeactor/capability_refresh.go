@@ -7,6 +7,8 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
+const capabilityProbeFailedReason = "provider probe failed"
+
 func (a *Actor) capabilityRefreshDue(capView Capability, detectedAt time.Time) bool {
 	ttl := a.cfg.CapabilityRefreshEvery
 	if ttl < 0 {
@@ -25,4 +27,9 @@ func (a *Actor) detectCapability(ctx context.Context, adapter agentbridge.Adapte
 		return Capability{}, err
 	}
 	return buildRuntimeCapability(a.cfg.RuntimeID, adapter.Name(), res, a.cfg.PolicyBundleVersion, now)
+}
+
+func capabilityWithProbeFailure(capability Capability) Capability {
+	capability.Reason = capabilityProbeFailedReason
+	return capability
 }
