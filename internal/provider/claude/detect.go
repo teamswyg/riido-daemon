@@ -28,6 +28,7 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		}, nil
 	}
 	switch claudeAuthProbe(ctx, exe) {
+	case detectutil.AuthProbeAuthenticated:
 	case detectutil.AuthProbeUnauthenticated:
 		return agentbridge.DetectResult{
 			Executable:     exe,
