@@ -13,7 +13,7 @@ func TestBuildStartWritesTaskScopedConfig(t *testing.T) {
 		Cwd:   "/tmp/riido-work",
 		Model: "ollama/fast",
 		Env:   map[string]string{openClawConfigPathEnv: source},
-	}, StartOptions{SessionID: "sess-config"})
+	}, StartOptions{})
 	if err != nil {
 		t.Fatal(err)
 	}

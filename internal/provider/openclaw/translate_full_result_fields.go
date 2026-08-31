@@ -4,6 +4,9 @@ func fullResultSessionID(p map[string]any) string {
 	if sid := stringField(p, "session_id"); sid != "" {
 		return sid
 	}
+	if sid := stringField(p, "sessionId"); sid != "" {
+		return sid
+	}
 	if meta, ok := mapField(p, "meta"); ok {
 		if agentMeta, ok := mapField(meta, "agentMeta"); ok {
 			return stringField(agentMeta, "sessionId")

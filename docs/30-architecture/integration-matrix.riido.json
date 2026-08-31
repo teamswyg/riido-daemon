@@ -16,7 +16,7 @@
     "AGENTBRIDGE_INTEGRATION=1 must be set, otherwise the test skips.",
     "The provider executable must be discoverable or explicitly configured with RIIDO_<PROVIDER>_PATH, otherwise the test skips.",
     "The adapter Detect result must be available, otherwise the test skips with the detect reason.",
-    "Preflight config probes must use a fresh provider session; stale session model state must not turn an otherwise usable backend into an operator-environment skip.",
+    "Preflight config probes must use an isolated provider run; stale session or Gateway state must not change the result.",
     "After all gates pass, a failed prompt roundtrip is a real integration failure."
   ],
   "instruction_probe": {
@@ -34,6 +34,7 @@
     "Update the provider test and this matrix in the same PR when real CLI behavior changes.",
     "New providers must add deterministic public tests before optional real-CLI integration.",
     "New providers must define instruction placement and an effectiveness probe marker.",
+    "Provider upgrades must revalidate the adapter command/schema surface and the real filesystem side-effect gate.",
     "A detected provider with a failed roundtrip is a failure, not a skip."
   ],
   "detail_docs": [

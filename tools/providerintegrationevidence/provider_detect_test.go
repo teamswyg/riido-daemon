@@ -32,7 +32,7 @@ func TestResolveOpenClawExecutableDoesNotFallbackToUnsupportedCandidate(t *testi
 
 func writeVersionShim(t *testing.T, path, version string) string {
 	t.Helper()
-	script := "#!/bin/sh\necho '" + version + "'\n"
+	script := "#!/bin/sh\nif [ \"$1 $2 $3\" = \"agent exec --help\" ]; then echo 'Usage: openclaw agent exec --json'; else echo '" + version + "'; fi\n"
 	if err := os.WriteFile(path, []byte(script), 0o755); err != nil {
 		t.Fatal(err)
 	}

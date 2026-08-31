@@ -5,14 +5,11 @@ import (
 	"testing"
 )
 
-func TestIntegrationModelCandidatesPreferFastLocalModel(t *testing.T) {
+func TestIntegrationModelCandidatesUseConfiguredDefault(t *testing.T) {
 	t.Setenv(openClawIntegrationModelEnv, "")
 
 	got := IntegrationModelCandidates()
-	want := []string{
-		"ollama/llama3.2:latest",
-		"ollama/qwen3:8b",
-	}
+	want := []string{""}
 
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("IntegrationModelCandidates() = %v, want %v", got, want)

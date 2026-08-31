@@ -2,6 +2,7 @@ package openclaw
 
 import (
 	"context"
+	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
@@ -11,7 +12,7 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 	base := agentbridge.DetectResult{
 		Executable:        exe,
 		SupportsStreaming: true,
-		SupportsResume:    true,  // --session-id
+		SupportsResume:    false, // agent exec owns an isolated run
 		SupportsSystem:    false, // inlined into --message
 		SupportsMaxTurns:  false,
 		SupportsMCP:       false,
@@ -55,8 +56,15 @@ func detectExecutable(ctx context.Context, exe string) agentbridge.DetectResult 
 		base.Reason = "openclaw " + base.Version + " is older than minimum supported " + MinSupportedVersion + " — upgrade openclaw"
 		return base
 	}
+	help := detectutil.VersionProbeStrict(ctx, exe, "agent", "exec", "--help")
+	if !help.OK || help.ExitCode != 0 || !strings.Contains(help.Output, "--json") {
+		base.Available = false
+		base.Reason = "openclaw agent exec --json is unavailable; upgrade openclaw"
+		return base
+	}
 
 	base.Available = true
+	base.Metadata["protocol"] = "agent-exec-json"
 	return base
 }
 

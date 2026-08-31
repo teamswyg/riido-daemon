@@ -16,7 +16,7 @@ func TestBuildStartBlockedArgs(t *testing.T) {
 	}
 	cmd, _ := BuildStart(agentbridge.StartRequest{
 		CustomArgs: []string{"--json", "compact", "--my-flag"},
-	}, StartOptions{SessionID: "x"})
+	}, StartOptions{})
 	if !slices.Contains(cmd.DroppedArgs, "--json") {
 		t.Fatalf("--json must be dropped: %v", cmd.DroppedArgs)
 	}

@@ -15,14 +15,13 @@ func runOpenClawIntegrationSession(
 	t *testing.T,
 	ctx context.Context,
 	req agentbridge.StartRequest,
-	sessionID string,
 ) openClawIntegrationObservation {
 	t.Helper()
-	spawn, err := BuildStart(req, StartOptions{SessionID: sessionID})
+	spawn, err := BuildStart(req, StartOptions{})
 	if err != nil {
 		t.Fatalf("BuildStart: %v", err)
 	}
-	sess, err := startOpenClawIntegrationSession(ctx, spawn, sessionID)
+	sess, err := startOpenClawIntegrationSession(ctx, spawn)
 	if err != nil {
 		t.Fatalf("Start: %v", err)
 	}
@@ -33,12 +32,11 @@ func runOpenClawIntegrationSession(
 func startOpenClawIntegrationSession(
 	ctx context.Context,
 	spawn agentbridge.StartCommand,
-	sessionID string,
 ) (*session.Session, error) {
 	return session.Start(ctx, session.Config{
 		TaskID:      "integration-openclaw",
 		RuntimeID:   "openclaw",
-		Adapter:     integrationAdapter{sessionID: sessionID},
+		Adapter:     integrationAdapter{},
 		Process:     processexec.New(),
 		Spawn:       processCommandFromStart(spawn),
 		HardTimeout: 180 * time.Second,

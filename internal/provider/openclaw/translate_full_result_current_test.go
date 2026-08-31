@@ -8,15 +8,10 @@ import (
 
 func TestTranslateCurrentFullResultShape(t *testing.T) {
 	raw := rawFull(t, `{
+		"status":"ok",
+		"sessionId":"integration-openclaw",
 		"payloads":[{"text":"ok","mediaUrl":null}],
-		"meta":{
-			"agentMeta":{
-				"sessionId":"integration-openclaw",
-				"usage":{"input":14886,"output":2,"total":14888},
-				"lastCallUsage":{"input":14886,"output":2,"cacheRead":0,"cacheWrite":0,"total":14888}
-			},
-			"aborted":false
-		}
+		"usage":{"input":14886,"output":2,"total":14888}
 	}`)
 	evs := tx(t, raw)
 

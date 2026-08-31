@@ -17,7 +17,7 @@ func assertOpenClawLimits(t *testing.T, row providerEvidence, docText, runtimeTe
 	}
 	for _, needle := range []string{
 		"ResultCompleted with non-empty provider output",
-		"deterministic provider-safe session id",
+		"isolated agent exec command surface",
 		"executable path that passed OpenClaw Detect",
 	} {
 		if !hasString(row.PassEvidence, needle) {

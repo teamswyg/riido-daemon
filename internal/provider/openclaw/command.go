@@ -20,21 +20,9 @@ func BlockedArgs() []string {
 type StartOptions struct {
 	// Executable overrides the binary path.
 	Executable string
-	// SessionID overrides the provider-neutral session id resolution.
-	// OpenClaw's resume model is session-id-based; silently using an
-	// empty session id would create an anonymous run.
-	SessionID string
 }
 
 func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.StartCommand, error) {
-	sessionID := opts.SessionID
-	if sessionID == "" {
-		var err error
-		sessionID, err = ResolveSessionID(req)
-		if err != nil {
-			return agentbridge.StartCommand{}, err
-		}
-	}
 	exe := opts.Executable
 	if exe == "" {
 		exe = req.Executable
@@ -43,7 +31,7 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 		exe = DefaultExecutable
 	}
 
-	args, dropped := buildCommandArgs(req, sessionID)
+	args, dropped := buildCommandArgs(req)
 	env, tempFiles, err := buildStartEnv(req)
 	if err != nil {
 		return agentbridge.StartCommand{}, err

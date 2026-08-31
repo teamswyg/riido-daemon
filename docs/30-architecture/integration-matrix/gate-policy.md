@@ -9,7 +9,7 @@ Each provider `TestIntegration` is optional until all gates pass:
 1. AGENTBRIDGE_INTEGRATION=1 must be set, otherwise the test skips.
 2. The provider executable must be discoverable or explicitly configured with RIIDO_<PROVIDER>_PATH, otherwise the test skips.
 3. The adapter Detect result must be available, otherwise the test skips with the detect reason.
-4. Preflight config probes must use a fresh provider session; stale session model state must not turn an otherwise usable backend into an operator-environment skip.
+4. Preflight config probes must use an isolated provider run; stale session or Gateway state must not change the result.
 5. After all gates pass, a failed prompt roundtrip is a real integration failure.
 
 Global rules from provider validation:
@@ -19,6 +19,7 @@ Global rules from provider validation:
 - Once an opt-in provider roundtrip starts, ResultCompleted without the required evidence for that provider is a failure.
 - SaaS completed thread evidence is not filesystem side-effect evidence unless the daemon-selected workdir artifact is also verified.
 - OpenClaw worktree-required task routing remains blocked while runtime capability reports supports_worktree=false.
+- Provider compatibility requires the command/schema surface used by the adapter, not only a parseable version string.
 - Provider full-access/trusted runtime modes must be explicit daemon-owned harness envelopes, never implicit provider defaults or caller-provided CustomArgs.
 
 `PASS` in this matrix means the provider produced the evidence named in `provider-validation-matrix.riido.json`.

@@ -2,14 +2,12 @@
 //
 // Spawn shape:
 //
-//	openclaw agent --local --json --session-id <id> --message <prompt>
+//	openclaw agent exec --json <prompt>
 //
 // OpenClaw is the volatile one: flag sets can change between versions, so:
-//   - We require an explicit session id. StartOptions.SessionID wins;
-//     otherwise ResolveSessionID maps provider-neutral ResumeSessionID
-//     or TaskID to --session-id. Empty fallback is never allowed.
+//   - agent exec owns isolated state so a running Gateway cannot collide.
 //   - When the caller passes a SystemPrompt, we inline it into --message
 //     because not every OpenClaw build supports --system-prompt.
-//   - The installed CLI does not accept --model for agent runs. Model
-//     selection is owned by OpenClaw config, for example `openclaw models set`.
+//   - Model and cwd selection are applied through the task-scoped config and
+//     process directory instead of caller-controlled protocol flags.
 package openclaw

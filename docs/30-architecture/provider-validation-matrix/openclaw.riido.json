@@ -12,12 +12,12 @@
   "worktree_support": "unsupported",
   "pass_evidence": [
     "ResultCompleted with non-empty provider output",
-    "deterministic provider-safe session id",
+    "isolated agent exec command surface",
     "executable path that passed OpenClaw Detect"
   ],
   "negative_or_limited_evidence": [
     "SaaS completed thread alone does not prove filesystem side effect",
-    "Optional artifact integration gate may pass only when local OpenClaw workspace configuration honors the daemon process cwd",
+    "Artifact integration must verify the daemon-selected cwd under isolated agent exec",
     "Runtime capability still reports supports_worktree=false"
   ],
   "required_scheduling_gate": [
@@ -33,7 +33,8 @@
     "A-41-AI-Agent-SSOT-OpenClaw-empty-result-fail-closed-public-반영",
     "A-42-AI-Agent-Live-E2E-OpenClaw-public-fail-closed-이후-재검증",
     "A-48-AI-Agent-Live-E2E-OpenClaw-filesystem-side-effect-검증",
-    "RIID-4890-Daemon-OpenClaw-detect-selected-executable-실행-경로-정합성"
+    "RIID-4890-Daemon-OpenClaw-detect-selected-executable-실행-경로-정합성",
+    "RIID-5278-OpenClaw-agent-exec-Gateway-충돌-대응"
   ],
   "must_not_claim": [
     "OpenClaw supports daemon-selected worktree",

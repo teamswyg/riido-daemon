@@ -14,6 +14,7 @@
     "Once an opt-in provider roundtrip starts, ResultCompleted without the required evidence for that provider is a failure.",
     "SaaS completed thread evidence is not filesystem side-effect evidence unless the daemon-selected workdir artifact is also verified.",
     "OpenClaw worktree-required task routing remains blocked while runtime capability reports supports_worktree=false.",
+    "Provider compatibility requires the command/schema surface used by the adapter, not only a parseable version string.",
     "Provider full-access/trusted runtime modes must be explicit daemon-owned harness envelopes, never implicit provider defaults or caller-provided CustomArgs."
   ],
   "provider_files": [
