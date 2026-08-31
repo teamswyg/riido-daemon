@@ -13,7 +13,7 @@ Evidence artifact: `session-lifecycle-evidence`.
 | Step | Status | Responsibility |
 | --- | --- | --- |
 | `pin` | `implemented` | provider EventSessionIdentified is converted to SessionPinned with providerSessionID and carried into terminal result |
-| `resume` | `implemented` | assignment ResumeSessionID flows through TaskRequest and StartRequest into provider-specific BuildStart surfaces |
+| `resume` | `implemented` | assignment ResumeSessionID flows through TaskRequest and StartRequest into provider-specific BuildStart surfaces that support resume; OpenClaw agent exec does not expose a resume surface |
 | `fork` | `reserved` | reserved vocabulary only; daemon has no fork=true or thread/fork session surface today |
 | `close` | `implemented` | process exit flushes parser close and session finish emits exactly one terminal result; no separate close draft is emitted |
 

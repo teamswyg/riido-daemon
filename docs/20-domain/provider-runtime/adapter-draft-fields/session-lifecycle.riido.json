@@ -8,7 +8,7 @@
   "evidence_artifact": "session-lifecycle-evidence",
   "steps": [
     {"step": "pin", "status": "implemented", "responsibility": "provider EventSessionIdentified is converted to SessionPinned with providerSessionID and carried into terminal result", "source_checks": ["provider session pin draft", "final result carries session id", "saas event carries provider session id"]},
-    {"step": "resume", "status": "implemented", "responsibility": "assignment ResumeSessionID flows through TaskRequest and StartRequest into provider-specific BuildStart surfaces", "source_checks": ["assignment to task resume id", "provider-neutral resume field", "claude resume arg", "cursor resume arg", "openclaw resume id"]},
+    {"step": "resume", "status": "implemented", "responsibility": "assignment ResumeSessionID flows through TaskRequest and StartRequest into provider-specific BuildStart surfaces that support resume; OpenClaw agent exec does not expose a resume surface", "source_checks": ["assignment to task resume id", "provider-neutral resume field", "claude resume arg", "cursor resume arg"]},
     {"step": "fork", "status": "reserved", "responsibility": "reserved vocabulary only; daemon has no fork=true or thread/fork session surface today", "source_checks": []},
     {"step": "close", "status": "implemented", "responsibility": "process exit flushes parser close and session finish emits exactly one terminal result; no separate close draft is emitted", "source_checks": ["parser close on exit", "finish sends terminal result", "result closes after one delivery"]}
   ],
@@ -20,7 +20,6 @@
     {"name": "provider-neutral resume field", "file": "internal/agentbridge/adapter_start.go", "contains": "ResumeSessionID string"},
     {"name": "claude resume arg", "file": "internal/provider/claude/start_args.go", "contains": "appendStringArg(args, \"--resume\", req.ResumeSessionID)"},
     {"name": "cursor resume arg", "file": "internal/provider/cursor/command_workspace.go", "contains": "args = append(args, \"--resume\", req.ResumeSessionID)"},
-    {"name": "openclaw resume id", "file": "internal/provider/openclaw/session_id.go", "contains": "return req.ResumeSessionID, nil"},
     {"name": "parser close on exit", "file": "internal/agentbridge/session/session_runner_process_exit.go", "contains": "r.parser.Close()"},
     {"name": "finish sends terminal result", "file": "internal/agentbridge/session/session_runner_finish.go", "contains": "r.sess.result <- r.finalResult()"},
     {"name": "result closes after one delivery", "file": "internal/agentbridge/session/session_result_test.go", "contains": "Result channel must close after one delivery"}
