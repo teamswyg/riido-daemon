@@ -12,7 +12,9 @@ func providerHealthObservation(capability runtimeactor.Capability) (
 	hostintegration.ProviderDiagnosticCode,
 	string,
 ) {
-	if capability.HealthStatus.Valid() && capability.DiagnosticCode.Valid() {
+	if capability.HealthStatus.Valid() && capability.DiagnosticCode.Valid() &&
+		(capability.HealthStatus == hostintegration.ProviderHealthHealthy ||
+			capability.DiagnosticCode != hostintegration.ProviderDiagnosticNone) {
 		return capability.HealthStatus, capability.DiagnosticCode, providerDiagnosticSummary(capability.DiagnosticCode)
 	}
 	reason := strings.ToLower(strings.TrimSpace(capability.Reason))
@@ -30,6 +32,8 @@ func providerHealthObservation(capability runtimeactor.Capability) (
 		return hostintegration.ProviderHealthUnavailable, hostintegration.ProviderDiagnosticLoginRequired, "provider login is required"
 	case strings.Contains(reason, "older than minimum") || strings.Contains(reason, "upgrade") || strings.Contains(reason, "unsupported"):
 		return hostintegration.ProviderHealthUnavailable, hostintegration.ProviderDiagnosticVersionUnsupported, "provider version is not supported"
+	case capability.HealthStatus.Valid() && capability.HealthStatus != hostintegration.ProviderHealthHealthy:
+		return capability.HealthStatus, hostintegration.ProviderDiagnosticProbeFailed, "provider probe did not complete"
 	default:
 		return hostintegration.ProviderHealthUnknown, hostintegration.ProviderDiagnosticProbeFailed, "provider probe did not complete"
 	}
