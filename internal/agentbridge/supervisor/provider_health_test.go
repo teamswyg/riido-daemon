@@ -60,6 +60,19 @@ func TestProviderHealthUsesTypedProbeFailure(t *testing.T) {
 	}
 }
 
+func TestProviderHealthReplacesNonHealthyNoneDiagnostic(t *testing.T) {
+	health, code, summary := providerHealthObservation(runtimeactor.Capability{
+		Provider:       "cursor",
+		HealthStatus:   hostintegration.ProviderHealthUnavailable,
+		DiagnosticCode: hostintegration.ProviderDiagnosticNone,
+	})
+	if health != hostintegration.ProviderHealthUnavailable ||
+		code != hostintegration.ProviderDiagnosticProbeFailed ||
+		summary != "provider probe did not complete" {
+		t.Fatalf("health=%q code=%q summary=%q", health, code, summary)
+	}
+}
+
 func TestRuntimeRegistrationStateChangesWithProviderHealth(t *testing.T) {
 	status := runtimeactor.Status{RuntimeID: "daemon:codex", Capabilities: []runtimeactor.Capability{{Provider: "codex", Available: true}}}
 	before := runtimeRegistrationState(status)
