@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -145,6 +146,7 @@ func startNamedRuntime(t *testing.T, fake *process.Fake, runtimeID string, provi
 }
 
 type runtimeRoutingSource struct {
+	mu           sync.Mutex
 	claims       map[string][]bridge.TaskRequest
 	registered   chan controlplane.RuntimeRegistration
 	deregistered chan string
@@ -173,6 +175,8 @@ func (s *runtimeRoutingSource) Heartbeat(_ context.Context, _ controlplane.Runti
 }
 
 func (s *runtimeRoutingSource) ClaimTask(_ context.Context, runtimeID string) (*bridge.TaskRequest, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	queue := s.claims[runtimeID]
 	if len(queue) == 0 {
 		return nil, nil

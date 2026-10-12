@@ -23,6 +23,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/supervisor"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/toolpolicy"
+	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/hostintegration"
 	c9lock "github.com/teamswyg/riido-daemon/internal/lock"
 	"github.com/teamswyg/riido-daemon/internal/logging"
@@ -370,6 +371,10 @@ func serveAgentDaemon(ctx context.Context, flags startFlags, settings daemonSett
 	if err != nil {
 		return err
 	}
+	bindings, err := execution.Load(settings.ExecutionBindingsFile)
+	if err != nil {
+		return fmt.Errorf("load execution bindings: %w", err)
+	}
 	workdirAdapter := workdir.NewFSAdapter(settings.WorkdirRoot)
 	supActor, err := supervisor.New(supervisor.Config{
 		DaemonID:            settings.DaemonID,
@@ -378,6 +383,7 @@ func serveAgentDaemon(ctx context.Context, flags startFlags, settings daemonSett
 		Source:              taskSource,
 		Reporter:            taskReporter,
 		Workdir:             workdirAdapter,
+		ExecutionBindings:   bindings,
 		PollEvery:           settings.PollEvery,
 		IdlePollEvery:       settings.IdlePollEvery,
 		HeartbeatEvery:      settings.HeartbeatEvery,

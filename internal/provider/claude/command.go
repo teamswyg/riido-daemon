@@ -119,6 +119,7 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 		"--output-format", "stream-json",
 		"--input-format", "stream-json",
 		"--verbose",
+		"--include-partial-messages",
 		"--permission-mode", string(opts.PermissionMode),
 	}
 

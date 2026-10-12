@@ -1,6 +1,8 @@
 package codex
 
 import (
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -54,7 +56,15 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 
 	case strings.HasPrefix(raw.Type, "server_request:"):
 		method := strings.TrimPrefix(raw.Type, "server_request:")
-		return translateServerRequest(method, params(raw)), nil, nil
+		events := translateServerRequest(method, params(raw))
+		id, err := json.Marshal(raw.Payload["id"])
+		if err != nil {
+			return nil, nil, err
+		}
+		for i := range events {
+			events[i].Tool.ProviderRequestID = string(id)
+		}
+		return events, nil, nil
 	}
 
 	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown frame: " + raw.Type}}, nil, nil
@@ -125,11 +135,23 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 		}}
 
 	case "turn_completed", "turn/completed":
+		turn := mapField(p, "turn")
+		status := agentbridge.ResultCompleted
+		switch stringField(turn, "status") {
+		case "failed":
+			status = agentbridge.ResultFailed
+		case "interrupted":
+			status = agentbridge.ResultCancelled
+		case "", "completed":
+		default:
+			status = agentbridge.ResultFailed
+		}
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventResult,
 			Result: agentbridge.Result{
-				Status: agentbridge.ResultCompleted,
+				Status: status,
 				Output: stringField(p, "output"),
+				Error:  stringField(mapField(turn, "error"), "message"),
 			},
 		}}
 
@@ -154,7 +176,29 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 	// they stop surfacing as "unknown notification" noise. Completion is NOT
 	// inferred here — that stays with turn/completed and thread/status/changed
 	// so a per-item completion can never truncate a live turn.
-	case "item/started", "item/updated", "item/completed",
+	case "item/started", "item/completed":
+		item := mapField(p, "item")
+		toolKind := ""
+		switch stringField(item, "type") {
+		case "commandExecution":
+			toolKind = "shell"
+		case "fileChange":
+			toolKind = "patch_apply"
+		case "mcpToolCall":
+			toolKind = "mcp"
+		}
+		if toolKind != "" {
+			kind := agentbridge.EventToolCallStarted
+			if method == "item/completed" {
+				kind = agentbridge.EventToolCallCompleted
+				if stringField(item, "status") == "failed" || intField(item, "exitCode") != 0 {
+					kind = agentbridge.EventToolCallFailed
+				}
+			}
+			return []agentbridge.Event{{Kind: kind, Tool: agentbridge.ToolRef{ID: stringField(item, "id"), Name: firstString(item, "command", "tool"), Kind: toolKind, Args: toolargs.FromPairs("command", stringField(item, "command"))}}}
+		}
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex " + method}}
+	case "item/updated",
 		"hook/started", "hook/completed",
 		"mcpServer/startupStatus/updated",
 		"remoteControl/status/changed":
@@ -182,21 +226,21 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 
 func translateServerRequest(method string, p map[string]any) []agentbridge.Event {
 	switch method {
-	case "approve_command":
+	case "approve_command", "item/commandExecution/requestApproval":
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolApprovalNeeded,
 			Tool: agentbridge.ToolRef{
-				ID:   stringField(p, "id"),
+				ID:   firstString(p, "itemId", "id"),
 				Name: stringField(p, "command"),
 				Kind: "shell",
 				Args: toolargs.FromPairs("command", stringField(p, "command")),
 			},
 		}}
-	case "approve_patch":
+	case "approve_patch", "item/fileChange/requestApproval":
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolApprovalNeeded,
 			Tool: agentbridge.ToolRef{
-				ID:   stringField(p, "id"),
+				ID:   firstString(p, "itemId", "id"),
 				Name: stringField(p, "path"),
 				Kind: "patch_apply",
 				Args: toolargs.FromPairs("path", stringField(p, "path")),
@@ -204,6 +248,33 @@ func translateServerRequest(method string, p map[string]any) []agentbridge.Event
 		}}
 	}
 	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown server_request: " + method}}
+}
+
+func firstString(p map[string]any, keys ...string) string {
+	for _, key := range keys {
+		if value := stringField(p, key); value != "" {
+			return value
+		}
+	}
+	return ""
+}
+
+// BuildProviderInput preserves both numeric and string JSON-RPC request IDs.
+func BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
+	var id any
+	if err := json.Unmarshal([]byte(cmd.ProviderRequestID), &id); err != nil || id == nil {
+		return nil, fmt.Errorf("codex: invalid approval request id")
+	}
+	decision := "decline"
+	switch cmd.Kind {
+	case agentbridge.CommandApproveTool:
+		decision = "accept"
+	case agentbridge.CommandRejectTool:
+	default:
+		return nil, fmt.Errorf("codex: unsupported provider input command %s", cmd.Kind)
+	}
+	body, err := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": id, "result": map[string]any{"decision": decision}})
+	return append(body, '\n'), err
 }
 
 func params(raw agentbridge.RawEvent) map[string]any {

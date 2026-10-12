@@ -42,7 +42,7 @@ func TestPlaneClaimSendsWaitMsAndUsesLongPollTimeout(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask: %v", err)
 	}
-	if req == nil || req.ID != "task-a" {
+	if req == nil || req.ID != "asn-1" {
 		t.Fatalf("claim = %+v", req)
 	}
 	if fake.lastPollWaitMs != 20000 {

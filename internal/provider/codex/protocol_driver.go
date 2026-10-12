@@ -91,6 +91,9 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		method := strings.TrimPrefix(raw.Type, "notification:")
 		if method == "error" {
 			errText := codexNotificationErrorMessage(params(raw))
+			if retry, _ := params(raw)["willRetry"].(bool); retry {
+				return []agentbridge.Event{{Kind: agentbridge.EventWarning, Text: "codex retrying", Err: errText}}, nil, nil
+			}
 			d.recordRuntimeError(errText)
 			return []agentbridge.Event{{Kind: agentbridge.EventError, Err: errText}}, nil, nil
 		}
@@ -99,14 +102,12 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		}
 		if method == "turn_completed" || method == "turn/completed" {
 			p := params(raw)
-			if d.lastRuntimeError != "" && !d.sawAssistantOutput && stringField(p, "output") == "" {
+			if d.lastRuntimeError != "" && !d.sawAssistantOutput && stringField(p, "output") == "" && stringField(mapField(p, "turn"), "status") == "" {
 				return d.failedEvents(d.lastRuntimeError), nil, nil
 			}
 		}
-		// Newer codex app-server builds signal turn end via thread/status/changed
-		// (the thread returns to a terminal/idle status) instead of
-		// turn/completed. Without this the run never receives a completion and
-		// fails with "codex unknown notification: thread/status/changed".
+		// Thread activity is independent of turn completion. Idle may precede
+		// turn/completed (including a failure), so it must not end the run.
 		if method == "thread/status/changed" || method == "thread_status_changed" {
 			events := d.threadStatusEvents(params(raw))
 			d.observeEvents(events)
@@ -125,7 +126,7 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 // callers never block forever waiting for a response that will never
 // arrive. Also clears the pending map (cleanup).
 func (d *protocolDriver) OnProcessExit(_ context.Context, status agentbridge.ProcessExitStatus, _ agentbridge.ProtocolIO) ([]agentbridge.Event, error) {
-	if d.lastRuntimeError != "" && !d.sawAssistantOutput {
+	if d.lastRuntimeError != "" {
 		return d.failedEvents(d.lastRuntimeError), nil
 	}
 	if len(d.pending) == 0 {
@@ -184,11 +185,8 @@ func (d *protocolDriver) failedEvents(message string) []agentbridge.Event {
 }
 
 // threadStatusEvents maps a codex app-server thread/status/changed notification
-// to run-scope events. The new codex protocol uses thread status transitions
-// (the thread returns to idle/completed when a turn finishes) instead of a
-// turn/completed notification. Completion is gated on turnStarted so an initial
-// idle status cannot end the run before any work happens; unknown statuses are
-// logged (never fail the run).
+// to run-scope events. Explicit legacy terminal statuses remain supported;
+// idle/ready only describe thread availability and cannot complete a turn.
 func (d *protocolDriver) threadStatusEvents(p map[string]any) []agentbridge.Event {
 	status := strings.ToLower(strings.TrimSpace(codexThreadStatus(p)))
 	switch {
@@ -225,7 +223,7 @@ func codexThreadStatus(p map[string]any) string {
 
 func codexStatusIsTerminal(status string) bool {
 	switch status {
-	case "idle", "completed", "complete", "finished", "done", "ready", "succeeded":
+	case "completed", "complete", "finished", "done", "succeeded":
 		return true
 	}
 	return false

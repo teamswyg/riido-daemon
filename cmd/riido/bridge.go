@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/provider/claude"
@@ -122,7 +123,7 @@ type bridgeClaudeAdapter struct{}
 
 func (bridgeClaudeAdapter) Name() string { return claude.Name }
 func (bridgeClaudeAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
-	return claude.Detect(ctx, env)
+	return claude.Detect(ctx, providerDetectEnvironment(env))
 }
 func (bridgeClaudeAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return claude.BuildStart(req, claude.StartOptions{PermissionMode: claude.PermissionModeApproval})
@@ -145,9 +146,13 @@ func (bridgeClaudeAdapter) NewProtocolDriver(req agentbridge.StartRequest) (agen
 
 type bridgeCodexAdapter struct{}
 
+func (bridgeCodexAdapter) BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
+	return codex.BuildProviderInput(cmd)
+}
+
 func (bridgeCodexAdapter) Name() string { return codex.Name }
 func (bridgeCodexAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
-	return codex.Detect(ctx, env)
+	return codex.Detect(ctx, providerDetectEnvironment(env))
 }
 func (bridgeCodexAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return codex.BuildStart(req, codex.StartOptions{})
@@ -168,7 +173,7 @@ type bridgeOpenClawAdapter struct{}
 
 func (bridgeOpenClawAdapter) Name() string { return openclaw.Name }
 func (bridgeOpenClawAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
-	return openclaw.Detect(ctx, env)
+	return openclaw.Detect(ctx, providerDetectEnvironment(env))
 }
 func (bridgeOpenClawAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return openclaw.BuildStart(req, openclaw.StartOptions{})
@@ -183,7 +188,7 @@ type bridgeCursorAdapter struct{}
 
 func (bridgeCursorAdapter) Name() string { return cursor.Name }
 func (bridgeCursorAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
-	return cursor.Detect(ctx, env)
+	return cursor.Detect(ctx, providerDetectEnvironment(env))
 }
 func (bridgeCursorAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	return cursor.BuildStart(req, cursor.StartOptions{})
@@ -193,3 +198,21 @@ func (bridgeCursorAdapter) Translate(raw agentbridge.RawEvent) ([]agentbridge.Ev
 	return cursor.Translate(raw)
 }
 func (bridgeCursorAdapter) BlockedArgs() []string { return cursor.BlockedArgs() }
+
+// Host CLI pins belong at the executable boundary; explicit caller values win.
+func providerDetectEnvironment(env agentbridge.DetectEnv) agentbridge.DetectEnv {
+	values := make(map[string]string, len(env.EnvOverride)+4)
+	for key, value := range env.EnvOverride {
+		values[key] = value
+	}
+	for _, key := range []string{claude.EnvOverride, codex.EnvOverride, openclaw.EnvOverride, cursor.EnvOverride} {
+		if _, exists := values[key]; exists {
+			continue
+		}
+		if value, exists := os.LookupEnv(key); exists {
+			values[key] = value
+		}
+	}
+	env.EnvOverride = values
+	return env
+}

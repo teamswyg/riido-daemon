@@ -27,8 +27,9 @@ import (
 // the prompt to stdin and `claude -p` blocked on stdin indefinitely,
 // hitting the hard-timeout.
 type protocolDriver struct {
-	req     agentbridge.StartRequest
-	written bool // OnStart should run only once even if reinvoked
+	req            agentbridge.StartRequest
+	written        bool // OnStart should run only once even if reinvoked
+	streamedBlocks map[int]bool
 }
 
 // NewProtocolDriver returns a provider-neutral ProtocolDriver that writes the
@@ -74,6 +75,35 @@ func (d *protocolDriver) OnStart(ctx context.Context, io agentbridge.ProtocolIO)
 // to inspect raw events itself — Claude's stream-json semantics are
 // already covered by the pure-translator path.
 func (d *protocolDriver) OnRaw(_ context.Context, raw agentbridge.RawEvent, _ agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
+	if raw.Type == "stream_event" {
+		event, _ := raw.Payload["event"].(map[string]any)
+		if event["type"] == "message_start" {
+			d.streamedBlocks = nil
+		}
+		delta, _ := event["delta"].(map[string]any)
+		if event["type"] == "content_block_delta" && (delta["type"] == "text_delta" || delta["type"] == "thinking_delta") {
+			if d.streamedBlocks == nil {
+				d.streamedBlocks = map[int]bool{}
+			}
+			index, _ := event["index"].(float64)
+			d.streamedBlocks[int(index)] = true
+		}
+	}
+	if raw.Type == "assistant" && len(d.streamedBlocks) > 0 {
+		// Copy the payload: parser data may also be consumed by diagnostics.
+		message, _ := raw.Payload["message"].(map[string]any)
+		content, _ := message["content"].([]any)
+		filtered := make([]any, 0, len(content))
+		for index, item := range content {
+			block, _ := item.(map[string]any)
+			if d.streamedBlocks[index] && (block["type"] == "text" || block["type"] == "thinking") {
+				continue
+			}
+			filtered = append(filtered, item)
+		}
+		raw.Payload = map[string]any{"message": map[string]any{"content": filtered}}
+		d.streamedBlocks = nil
+	}
 	return Translate(raw)
 }
 

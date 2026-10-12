@@ -22,6 +22,7 @@ import (
 )
 
 const (
+	MetadataTaskID          = "task_id"
 	MetadataAssignmentID    = "riido_saas_assignment_id"
 	MetadataAgentID         = "riido_saas_agent_id"
 	MetadataComponentID     = "riido_saas_component_id"
@@ -47,10 +48,6 @@ const (
 	// line's message_key so it can distinguish the evolving body from status
 	// narration lines.
 	assistantPartialProgressKey = "assistant.partial"
-	// partialBodyFlushInterval / partialBodyFlushChars debounce forwarding so
-	// many deltas coalesce into a coherent, low-frequency update.
-	partialBodyFlushInterval = 350 * time.Millisecond
-	partialBodyFlushChars    = 24
 )
 
 // AgentBinding maps a SaaS agent identity to one local provider runtime.
@@ -540,38 +537,24 @@ func (p *Plane) ReportEvent(ctx context.Context, taskID string, ev agentbridge.E
 	return err
 }
 
-// accumulatePartialBody appends a text delta to the task's evolving assistant
-// body and, on a debounce boundary (time or character growth), forwards the
-// full text-so-far as one tagged progress line. Raw per-delta fragments are
-// never forwarded on their own.
+// accumulatePartialBody receives deltas already batched by the supervisor's
+// real flush timer. Do not debounce again here: a short tail must reach SSE
+// even when no further provider output arrives.
 func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignmentcontract.Assignment, delta string) error {
 	if delta == "" {
 		return nil
 	}
-	var (
-		flush bool
-		body  string
-	)
-	now := time.Now()
+	var body string
 	if err := p.withState(ctx, func(s *planeState) {
-		st := s.partialBodies[assignment.TaskID]
+		st := s.partialBodies[assignment.ID]
 		if st == nil {
 			st = &partialBodyState{}
-			s.partialBodies[assignment.TaskID] = st
+			s.partialBodies[assignment.ID] = st
 		}
 		st.text += delta
-		grown := len(st.text) - st.lastFlushedLen
-		if st.lastFlushAt.IsZero() || now.Sub(st.lastFlushAt) >= partialBodyFlushInterval || grown >= partialBodyFlushChars {
-			flush = true
-			st.lastFlushAt = now
-			st.lastFlushedLen = len(st.text)
-			body = st.text
-		}
+		body = st.text
 	}); err != nil {
 		return err
-	}
-	if !flush {
-		return nil
 	}
 	return p.postPartialBody(ctx, assignment, body)
 }
@@ -628,8 +611,8 @@ func (p *Plane) CompleteTask(ctx context.Context, taskID string, res agentbridge
 		return err
 	}
 	return p.withState(ctx, func(s *planeState) {
-		delete(s.assignmentsByTask, taskID)
-		delete(s.runtimeIDsByTask, taskID)
+		delete(s.assignmentsByRun, taskID)
+		delete(s.runtimeIDsByRun, taskID)
 		delete(s.cancelWatchers, taskID)
 		delete(s.partialBodies, taskID)
 	})
@@ -731,9 +714,9 @@ func (p *Plane) getJSON(ctx context.Context, path string, out any) error {
 
 func (p *Plane) saveAssignmentRuntime(ctx context.Context, assignment assignmentcontract.Assignment, runtimeID string) error {
 	return p.withState(ctx, func(s *planeState) {
-		s.assignmentsByTask[assignment.TaskID] = assignment
+		s.assignmentsByRun[assignment.ID] = assignment
 		if runtimeID != "" {
-			s.runtimeIDsByTask[assignment.TaskID] = runtimeID
+			s.runtimeIDsByRun[assignment.ID] = runtimeID
 		}
 	})
 }
@@ -742,7 +725,7 @@ func (p *Plane) assignmentForTask(ctx context.Context, taskID string) (assignmen
 	var assignment assignmentcontract.Assignment
 	var ok bool
 	err := p.withState(ctx, func(s *planeState) {
-		assignment, ok = s.assignmentsByTask[taskID]
+		assignment, ok = s.assignmentsByRun[taskID]
 	})
 	return assignment, ok, err
 }
@@ -771,7 +754,7 @@ func (p *Plane) activeAssignmentIDsForHeartbeat(ctx context.Context, agentID str
 	var ids []string
 	err := p.withState(ctx, func(s *planeState) {
 		for _, taskID := range tasks {
-			assignment := s.assignmentsByTask[taskID]
+			assignment := s.assignmentsByRun[taskID]
 			if assignment.AgentID != agentID || assignment.ID == "" {
 				continue
 			}
@@ -792,7 +775,7 @@ func (p *Plane) activeAssignmentsByAgentForHeartbeat(ctx context.Context, runnin
 	byAgent := map[string][]string{}
 	err := p.withState(ctx, func(s *planeState) {
 		for _, taskID := range tasks {
-			assignment := s.assignmentsByTask[taskID]
+			assignment := s.assignmentsByRun[taskID]
 			if assignment.AgentID == "" || assignment.ID == "" {
 				continue
 			}
@@ -804,7 +787,7 @@ func (p *Plane) activeAssignmentsByAgentForHeartbeat(ctx context.Context, runnin
 
 func (p *Plane) deliverCancel(ctx context.Context, assignment assignmentcontract.Assignment) error {
 	return p.withState(ctx, func(s *planeState) {
-		ch := s.cancelWatchers[assignment.TaskID]
+		ch := s.cancelWatchers[assignment.ID]
 		if ch == nil {
 			return
 		}
@@ -823,6 +806,11 @@ func (p *Plane) deliverUnrefreshedHeartbeatCancels(ctx context.Context, requeste
 	for _, assignment := range response.RefreshedAssignments {
 		if strings.TrimSpace(assignment.ID) != "" {
 			refreshed[assignment.ID] = true
+			if assignment.State == assignmentcontract.AssignmentCancelling || assignment.State == assignmentcontract.AssignmentCancelled {
+				if err := p.deliverCancel(ctx, assignment); err != nil {
+					return err
+				}
+			}
 		}
 	}
 	return p.withState(ctx, func(s *planeState) {
@@ -831,7 +819,7 @@ func (p *Plane) deliverUnrefreshedHeartbeatCancels(ctx context.Context, requeste
 			if assignmentID == "" || refreshed[assignmentID] {
 				continue
 			}
-			for taskID, assignment := range s.assignmentsByTask {
+			for taskID, assignment := range s.assignmentsByRun {
 				if assignment.ID != assignmentID {
 					continue
 				}
@@ -841,8 +829,7 @@ func (p *Plane) deliverUnrefreshedHeartbeatCancels(ctx context.Context, requeste
 					default:
 					}
 				}
-				delete(s.assignmentsByTask, taskID)
-				delete(s.runtimeIDsByTask, taskID)
+				// Preserve the run identity until the cancelled result is reported.
 				break
 			}
 		}
@@ -850,24 +837,21 @@ func (p *Plane) deliverUnrefreshedHeartbeatCancels(ctx context.Context, requeste
 }
 
 type planeState struct {
-	assignmentsByTask       map[string]assignmentcontract.Assignment
-	runtimeIDsByTask        map[string]string
+	assignmentsByRun        map[string]assignmentcontract.Assignment
+	runtimeIDsByRun         map[string]string
 	cancelWatchers          map[string]chan error
 	registeredRuntimes      map[string]RuntimeSnapshotRecord
 	registeredDeviceName    string
 	lastRuntimeSnapshotSync time.Time
 	// partialBodies accumulates each task's assistant text deltas between
 	// flushes so the daemon can forward a coherent evolving body instead of
-	// per-token fragments. Keyed by task ID.
+	// per-token fragments. Keyed by assignment ID.
 	partialBodies map[string]*partialBodyState
 }
 
-// partialBodyState holds the running assistant text for one task and the
-// debounce bookkeeping for forwarding it as an evolving progress line.
+// partialBodyState holds the running assistant text for one assignment.
 type partialBodyState struct {
-	text           string
-	lastFlushAt    time.Time
-	lastFlushedLen int
+	text string
 }
 
 type stateOp struct {
@@ -878,8 +862,8 @@ type stateOp struct {
 
 func (p *Plane) loop() {
 	state := planeState{
-		assignmentsByTask:  map[string]assignmentcontract.Assignment{},
-		runtimeIDsByTask:   map[string]string{},
+		assignmentsByRun:   map[string]assignmentcontract.Assignment{},
+		runtimeIDsByRun:    map[string]string{},
 		cancelWatchers:     map[string]chan error{},
 		registeredRuntimes: map[string]RuntimeSnapshotRecord{},
 		partialBodies:      map[string]*partialBodyState{},
@@ -920,12 +904,13 @@ func (p *Plane) withState(ctx context.Context, fn func(*planeState)) error {
 func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge.TaskRequest {
 	metadata := map[string]string{
 		MetadataAssignmentID:    assignment.ID,
+		MetadataTaskID:          assignment.TaskID,
 		MetadataAgentID:         assignment.AgentID,
 		MetadataComponentID:     assignment.ComponentID,
 		MetadataLeaseToken:      assignment.LeaseToken,
 		MetadataModelID:         assignment.ModelID,
 		MetadataRuntimeProvider: assignment.RuntimeProvider,
-		"workspace_id":          firstNonEmpty(assignment.ComponentID, assignment.TaskID),
+		"workspace_id":          firstNonEmpty(assignment.WorkspaceID, assignment.ComponentID, assignment.TaskID),
 		"run_id":                assignment.ID,
 	}
 	prompt, systemPrompt, telemetryPlacement, instructionPlacement := agentbridge.ApplyRuntimeInstructionContract(assignment.RuntimeProvider, assignment.Prompt, "", assignment.AgentInstruction)
@@ -934,7 +919,7 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 		metadata[agentbridge.MetadataAgentInstruction] = instructionPlacement
 	}
 	return &bridge.TaskRequest{
-		ID:                       assignment.TaskID,
+		ID:                       assignment.ID,
 		Provider:                 bridge.Provider(assignment.RuntimeProvider),
 		Model:                    providerModelOverride(assignment.RuntimeProvider, assignment.ModelID),
 		Prompt:                   prompt,
@@ -995,14 +980,32 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 			req.State = assignmentcontract.AssignmentRunning
 			req.Message = "provider running"
 		} else {
-			return req, false
+			req.EventType = assignmentcontract.EventRiidoLog
+			req.Message = "실행 상태: " + string(ev.Phase)
+			req.Metadata = map[string]string{agentbridge.ProgressMessageMetadataKey: "runtime.activity"}
 		}
-	case agentbridge.EventLog:
-		req.EventType = assignmentcontract.EventProviderLog
-		req.Message = ev.Text
+	case agentbridge.EventToolApprovalNeeded, agentbridge.EventToolCallStarted, agentbridge.EventToolCallCompleted, agentbridge.EventToolCallFailed:
+		req.EventType = assignmentcontract.EventRiidoLog
+		switch ev.Kind {
+		case agentbridge.EventToolApprovalNeeded:
+			req.Message = "도구 실행 승인을 기다리고 있습니다: " + ev.Tool.Name
+		case agentbridge.EventToolCallStarted:
+			req.Message = "도구 실행 중: " + ev.Tool.Name
+		case agentbridge.EventToolCallCompleted:
+			req.Message = "도구 실행 완료: " + ev.Tool.Name
+		case agentbridge.EventToolCallFailed:
+			req.Message = "도구 실행 실패: " + ev.Tool.Name
+		}
+		req.Metadata = map[string]string{agentbridge.ProgressMessageMetadataKey: "runtime.activity"}
 	case agentbridge.EventWarning:
 		req.EventType = assignmentcontract.EventProviderWarning
 		req.Message = ev.Text
+		if ev.Err != "" && ev.Err != ev.Text {
+			if req.Message != "" {
+				req.Message += ": "
+			}
+			req.Message += ev.Err
+		}
 	case agentbridge.EventError:
 		req.EventType = assignmentcontract.EventProviderError
 		req.Message = firstNonEmpty(ev.Err, ev.Text)
@@ -1036,7 +1039,7 @@ func (p *Plane) runtimeIDForAssignment(ctx context.Context, assignment assignmen
 	if p.dynamicBindingsEnabled() {
 		var runtimeID string
 		err := p.withState(ctx, func(s *planeState) {
-			runtimeID = s.runtimeIDsByTask[assignment.TaskID]
+			runtimeID = s.runtimeIDsByRun[assignment.ID]
 		})
 		if err != nil {
 			return "", err

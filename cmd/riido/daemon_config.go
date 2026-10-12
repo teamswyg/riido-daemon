@@ -85,35 +85,37 @@ const (
 )
 
 type daemonSettings struct {
-	DaemonID            string
-	DaemonVersion       string
-	Profile             string
-	ServerURL           string
-	DeviceID            string
-	DeviceSecret        string
-	DeviceName          string
-	RuntimeOwner        string
-	WorkdirRoot         string
-	PolicyBundle        string
-	PolicyBundlePath    string
-	PolicyBundleDoc     policy.PolicyBundle
-	TaskQueueDir        string
-	TaskReportDir       string
-	TaskDBSourcePath    string
-	SaaSURL             string
-	PollEvery           time.Duration
-	IdlePollEvery       time.Duration
-	HeartbeatEvery      time.Duration
-	RunHardTimeout      time.Duration
-	RunSemanticIdle     time.Duration
-	ClaimWaitMs         int
-	LongPollTimeout     time.Duration
-	TextFlushBytes      int
-	TextFlushInterval   time.Duration
-	WorkdirRetention    time.Duration
-	WorkdirCleanupEvery time.Duration
-	WorkspaceCount      int
-	RuntimeAgents       []runtimeactor.AgentStatus
+	ExecutionBindingsFile string
+	RuntimeMaxConcurrent  int
+	DaemonID              string
+	DaemonVersion         string
+	Profile               string
+	ServerURL             string
+	DeviceID              string
+	DeviceSecret          string
+	DeviceName            string
+	RuntimeOwner          string
+	WorkdirRoot           string
+	PolicyBundle          string
+	PolicyBundlePath      string
+	PolicyBundleDoc       policy.PolicyBundle
+	TaskQueueDir          string
+	TaskReportDir         string
+	TaskDBSourcePath      string
+	SaaSURL               string
+	PollEvery             time.Duration
+	IdlePollEvery         time.Duration
+	HeartbeatEvery        time.Duration
+	RunHardTimeout        time.Duration
+	RunSemanticIdle       time.Duration
+	ClaimWaitMs           int
+	LongPollTimeout       time.Duration
+	TextFlushBytes        int
+	TextFlushInterval     time.Duration
+	WorkdirRetention      time.Duration
+	WorkdirCleanupEvery   time.Duration
+	WorkspaceCount        int
+	RuntimeAgents         []runtimeactor.AgentStatus
 }
 
 func loadDaemonSettings() (daemonSettings, error) {
@@ -275,35 +277,37 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func
 	}
 
 	return daemonSettings{
-		DaemonID:            defaultDaemonID(getenv(envDaemonID), deviceID),
-		DaemonVersion:       firstNonEmpty(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
-		Profile:             firstNonEmpty(getenv(envDaemonProfile), "local"),
-		ServerURL:           strings.TrimSpace(getenv(envServerURL)),
-		DeviceID:            deviceID,
-		DeviceSecret:        deviceSecret,
-		DeviceName:          deviceName,
-		RuntimeOwner:        owner,
-		WorkdirRoot:         workdirRoot,
-		PolicyBundle:        policyBundleVersion,
-		PolicyBundlePath:    policyBundlePath,
-		PolicyBundleDoc:     policyBundleDoc,
-		TaskQueueDir:        taskQueueDir,
-		TaskReportDir:       taskReportDir,
-		TaskDBSourcePath:    taskDBSourcePath,
-		SaaSURL:             saaSURL,
-		PollEvery:           pollEvery,
-		IdlePollEvery:       idlePollEvery,
-		HeartbeatEvery:      heartbeatEvery,
-		RunHardTimeout:      runHardTimeout,
-		RunSemanticIdle:     runSemanticIdle,
-		ClaimWaitMs:         claimWaitMs,
-		LongPollTimeout:     longPollTimeout,
-		TextFlushBytes:      textFlushBytes,
-		TextFlushInterval:   textFlushInterval,
-		WorkdirRetention:    workdirRetention,
-		WorkdirCleanupEvery: workdirCleanupEvery,
-		WorkspaceCount:      workspaceCount,
-		RuntimeAgents:       parseRuntimeAgents(getenv(envRuntimeAgents)),
+		ExecutionBindingsFile: strings.TrimSpace(getenv("RIIDO_EXECUTION_BINDINGS_FILE")),
+		RuntimeMaxConcurrent:  runtimeMaxConcurrent,
+		DaemonID:              defaultDaemonID(getenv(envDaemonID), deviceID),
+		DaemonVersion:         firstNonEmpty(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
+		Profile:               firstNonEmpty(getenv(envDaemonProfile), "local"),
+		ServerURL:             strings.TrimSpace(getenv(envServerURL)),
+		DeviceID:              deviceID,
+		DeviceSecret:          deviceSecret,
+		DeviceName:            deviceName,
+		RuntimeOwner:          owner,
+		WorkdirRoot:           workdirRoot,
+		PolicyBundle:          policyBundleVersion,
+		PolicyBundlePath:      policyBundlePath,
+		PolicyBundleDoc:       policyBundleDoc,
+		TaskQueueDir:          taskQueueDir,
+		TaskReportDir:         taskReportDir,
+		TaskDBSourcePath:      taskDBSourcePath,
+		SaaSURL:               saaSURL,
+		PollEvery:             pollEvery,
+		IdlePollEvery:         idlePollEvery,
+		HeartbeatEvery:        heartbeatEvery,
+		RunHardTimeout:        runHardTimeout,
+		RunSemanticIdle:       runSemanticIdle,
+		ClaimWaitMs:           claimWaitMs,
+		LongPollTimeout:       longPollTimeout,
+		TextFlushBytes:        textFlushBytes,
+		TextFlushInterval:     textFlushInterval,
+		WorkdirRetention:      workdirRetention,
+		WorkdirCleanupEvery:   workdirCleanupEvery,
+		WorkspaceCount:        workspaceCount,
+		RuntimeAgents:         parseRuntimeAgents(getenv(envRuntimeAgents)),
 	}, nil
 }
 

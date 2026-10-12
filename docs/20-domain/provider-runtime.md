@@ -948,6 +948,24 @@ Cursor adapter 를 [`internal/provider/cursor`](../../internal/provider/cursor) 
 
 ## 11. 미결정 / 오픈 이슈
 
+### Current protocol compatibility
+
+Claude stream-json uses `--include-partial-messages`; `stream_event` deltas are
+forwarded immediately. The per-run driver suppresses corresponding full-message
+text/thinking blocks to avoid double output. Full-message-only CLI output remains
+supported. Codex `turn/completed.turn.status` and `turn.error` are authoritative:
+partial assistant output does not turn a failure into success. Thread `idle` is
+not evidence that the active turn completed successfully.
+
+The cross-repository delivery and verification contract is recorded in
+[`assignment-execution-delivery.md`](../30-architecture/assignment-execution-delivery.md).
+
+SaaS `TaskRequest.ID` is the assignment identity used by runtime slots, report
+routing and cancellation. Original business task identity is preserved in
+`metadata.task_id` and in canonical IR/workspace task identity; `run_id` remains
+the assignment ID. Two assignments of one task must never share mutable report
+state. Heartbeats run independently of the supervisor's synchronous report path.
+
 Open questions roadmap 문서는 [`../50-roadmap/open-questions.md`](../50-roadmap/open-questions.md) 가 소유한다. `Q-RT-001` 과 legacy `Q-MULTICA-005` 는 §7.5 로 닫혔고, `Q-CTX-001` 은 §7.5/§7.7 로 닫혔으며, `Q-RT-003` 은 §5.6 으로 닫혔고, `Q-RT-005` 는 §8 로 닫혔다.
 
 - `Q-RT-002`: provider process crash 와 lease handoff 사이의 정확한 ordering (`ConnectionLost` draft → ingest → handoff orchestration).

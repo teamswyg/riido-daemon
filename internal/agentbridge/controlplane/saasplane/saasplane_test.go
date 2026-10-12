@@ -35,7 +35,7 @@ func TestPlaneClaimsAndReportsAssignment(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask: %v", err)
 	}
-	if req == nil || req.ID != "task-a" || req.Provider != "codex" {
+	if req == nil || req.ID != "asn-1" || req.Provider != "codex" {
 		t.Fatalf("request = %+v", req)
 	}
 	if got := req.Metadata[MetadataAssignmentID]; got != "asn-1" {
@@ -309,7 +309,7 @@ func TestPlaneClaimsActiveAssignmentAfterLocalStateLoss(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask active: %v", err)
 	}
-	if req == nil || req.ID != active.TaskID || req.Metadata[MetadataAssignmentID] != active.ID {
+	if req == nil || req.ID != active.ID || req.Metadata[MetadataAssignmentID] != active.ID {
 		t.Fatalf("active claim = %+v", req)
 	}
 	if !req.AllowExperimentalRuntime {
@@ -347,7 +347,7 @@ func TestPlanePollsOnlyRuntimeScopedAgent(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask jykim2: %v", err)
 	}
-	if req == nil || req.ID != "task-b" || req.Metadata[MetadataAgentID] != "jykim2" {
+	if req == nil || req.ID != "asn-2" || req.Metadata[MetadataAgentID] != "jykim2" {
 		t.Fatalf("jykim2 claim = %+v", req)
 	}
 }
@@ -372,7 +372,7 @@ func TestPlaneSendsBearerToken(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask with token: %v", err)
 	}
-	if req == nil || req.ID != "task-a" {
+	if req == nil || req.ID != "asn-1" {
 		t.Fatalf("request = %+v", req)
 	}
 }
@@ -407,7 +407,7 @@ func TestPlaneSendsDeviceCredentialHeaders(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask with device credential: %v", err)
 	}
-	if req == nil || req.ID != "task-a" {
+	if req == nil || req.ID != "asn-1" {
 		t.Fatalf("request = %+v", req)
 	}
 }
@@ -730,7 +730,7 @@ func TestPlaneClaimsDynamicAgentBinding(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ClaimTask: %v", err)
 	}
-	if req == nil || req.ID != "task-a" || req.Provider != "codex" || req.Metadata[MetadataAgentID] != "jykim1" {
+	if req == nil || req.ID != "asn-1" || req.Provider != "codex" || req.Metadata[MetadataAgentID] != "jykim1" {
 		t.Fatalf("dynamic claim = %+v", req)
 	}
 	if err := plane.StartTask(context.Background(), req.ID); err != nil {

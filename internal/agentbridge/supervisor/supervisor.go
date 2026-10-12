@@ -10,6 +10,7 @@ package supervisor
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -27,6 +28,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/toolargs"
+	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/ir/ingest"
 	"github.com/teamswyg/riido-daemon/internal/policy"
 	"github.com/teamswyg/riido-daemon/internal/scheduling"
@@ -71,10 +73,11 @@ type Config struct {
 	// provider capability boundary.
 	Runtime *runtimeactor.Actor
 	// Runtimes is the provider-runtime pool the supervisor dispatches over.
-	Runtimes []*runtimeactor.Actor
-	Source   controlplane.TaskSourcePort
-	Reporter controlplane.TaskReporterPort
-	Workdir  workdir.Adapter
+	Runtimes          []*runtimeactor.Actor
+	Source            controlplane.TaskSourcePort
+	Reporter          controlplane.TaskReporterPort
+	Workdir           workdir.Adapter
+	ExecutionBindings []execution.Binding
 
 	PollEvery      time.Duration
 	IdlePollEvery  time.Duration
@@ -138,19 +141,23 @@ type cancelMsg struct {
 }
 
 type runningTask struct {
-	taskID  string
-	report  controlplane.TaskReportContext
-	runtime *runtimeactor.Actor
-	handle  *runtimeactor.SessionHandle
+	executionContext context.Context
+	stopCancellation context.CancelFunc
+	taskID           string
+	report           controlplane.TaskReportContext
+	runtime          *runtimeactor.Actor
+	handle           *runtimeactor.SessionHandle
 	// freeCh is the claim goroutine capacity token for this task's runtime; the
 	// run goroutine returns a token here when the task terminates.
 	freeCh chan struct{}
 
+	execution *execution.Prepared
 	workspace *workdir.Workspace
 	events    *workspaceEventContext
 }
 
 type preparedWorkspace struct {
+	execution *execution.Prepared
 	workspace *workdir.Workspace
 	events    *workspaceEventContext
 }
@@ -317,8 +324,10 @@ func statusProvider(status runtimeactor.Status) string {
 
 func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	defer close(a.stoppedCh)
-	heartbeat := time.NewTicker(a.cfg.HeartbeatEvery)
-	defer heartbeat.Stop()
+	heartbeatCtx, stopHeartbeats := context.WithCancel(ctx)
+	heartbeatDone := make(chan struct{})
+	go func() { defer close(heartbeatDone); a.heartbeatLoop(heartbeatCtx, runtimes) }()
+	defer func() { stopHeartbeats(); <-heartbeatDone }()
 
 	inFlight := map[string]*runningTask{}
 	var stopErr error
@@ -351,22 +360,6 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 			a.stopErrCh <- nil
 			return
 
-		case <-heartbeat.C:
-			for _, rt := range runtimes {
-				hb, err := rt.HeartbeatPayload(ctx)
-				if err != nil {
-					continue
-				}
-				_ = a.cfg.Source.Heartbeat(ctx, controlplane.RuntimeHeartbeat{
-					RuntimeID:      hb.RuntimeID,
-					UptimeSeconds:  hb.UptimeSeconds,
-					DeviceName:     hb.DeviceName,
-					SlotLimit:      hb.SlotLimit,
-					SlotsInUse:     hb.SlotsInUse,
-					RunningTaskIDs: hb.RunningTaskIDs,
-				})
-			}
-
 		case msg := <-a.mailbox:
 			switch {
 			case msg.claimed != nil:
@@ -382,7 +375,7 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 					reportCtx = controlplane.ContextWithTaskReport(ctx, task.report)
 					a.appendProviderEvent(ctx, msg.taskEvent.taskID, task.events, msg.taskEvent.event)
 				}
-				_ = a.cfg.Reporter.ReportEvent(reportCtx, msg.taskEvent.taskID, msg.taskEvent.event)
+				a.reportTaskEvent(reportCtx, msg.taskEvent.taskID, msg.taskEvent.event)
 			case msg.taskResult != nil:
 				running := inFlight[msg.taskResult.taskID]
 				reportCtx := ctx
@@ -391,7 +384,10 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 					reportCtx = controlplane.ContextWithTaskReport(ctx, running.report)
 					res = a.recordTerminalResult(ctx, running, msg.taskResult.result)
 				}
-				_ = a.cfg.Reporter.CompleteTask(reportCtx, msg.taskResult.taskID, res)
+				a.reportCompleteTask(reportCtx, msg.taskResult.taskID, res)
+				if running != nil && running.stopCancellation != nil {
+					running.stopCancellation()
+				}
 				delete(inFlight, msg.taskResult.taskID)
 				if running != nil {
 					// The runtime is free again; let its claim goroutine resume.
@@ -404,6 +400,35 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 						reason = msg.cancel.cause.Error()
 					}
 					_ = inFlight[msg.cancel.taskID].runtime.Cancel(ctx, msg.cancel.taskID, reason)
+				}
+			}
+		}
+	}
+}
+
+// Heartbeats do not share the report mailbox: a slow event upload must not
+// expire otherwise healthy provider leases. Requests remain ordered and bounded.
+func (a *Actor) heartbeatLoop(ctx context.Context, runtimes []*runtimeactor.Actor) {
+	ticker := time.NewTicker(a.cfg.HeartbeatEvery)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			for _, rt := range runtimes {
+				requestCtx, cancel := context.WithTimeout(ctx, a.cfg.HeartbeatEvery)
+				hb, err := rt.HeartbeatPayload(requestCtx)
+				if err == nil {
+					err = a.cfg.Source.Heartbeat(requestCtx, controlplane.RuntimeHeartbeat{
+						RuntimeID: hb.RuntimeID, UptimeSeconds: hb.UptimeSeconds,
+						DeviceName: hb.DeviceName, SlotLimit: hb.SlotLimit,
+						SlotsInUse: hb.SlotsInUse, RunningTaskIDs: hb.RunningTaskIDs,
+					})
+				}
+				cancel()
+				if err != nil && ctx.Err() == nil {
+					log.Printf("supervisor heartbeat failed: %v", err)
 				}
 			}
 		}
@@ -526,10 +551,10 @@ func (a *Actor) startClaimedTask(ctx context.Context, msg *claimedMsg, inFlight 
 	report := reportContextFor(req)
 	reportCtx := controlplane.ContextWithTaskReport(ctx, report)
 
-	_ = a.cfg.Reporter.StartTask(reportCtx, req.ID)
+	a.reportStartTask(reportCtx, req.ID)
 	eligibility := taskEligibility(status, req)
 	if !eligibility.Eligible {
-		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, agentbridge.Result{
+		a.reportCompleteTask(reportCtx, req.ID, agentbridge.Result{
 			Status: agentbridge.ResultBlocked,
 			Error:  "supervisor: runtime ineligible: " + eligibility.Summary(),
 		})
@@ -537,7 +562,7 @@ func (a *Actor) startClaimedTask(ctx context.Context, msg *claimedMsg, inFlight 
 	}
 	prepared, err := a.prepareWorkspace(ctx, status, req)
 	if err != nil {
-		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, agentbridge.Result{
+		a.reportCompleteTask(reportCtx, req.ID, agentbridge.Result{
 			Status: agentbridge.ResultFailed,
 			Error:  err.Error(),
 		})
@@ -558,24 +583,45 @@ func (a *Actor) startClaimedTask(ctx context.Context, msg *claimedMsg, inFlight 
 				events:    prepared.events,
 			}, res)
 		}
-		_ = a.cfg.Reporter.CompleteTask(reportCtx, req.ID, res)
+		a.reportCompleteTask(reportCtx, req.ID, res)
 		return false
 	}
-	_ = a.cfg.Reporter.ReportEvent(reportCtx, req.ID, agentbridge.Event{
-		Kind:  agentbridge.EventLifecycle,
-		Phase: agentbridge.StateRunning,
-	})
+	var preparedExecution *execution.Prepared
 	var ws *workdir.Workspace
 	var events *workspaceEventContext
 	if prepared != nil {
+		preparedExecution = prepared.execution
 		ws = prepared.workspace
 		events = prepared.events
 	}
-	inFlight[req.ID] = &runningTask{taskID: req.ID, report: report, runtime: rt, handle: handle, freeCh: msg.freeCh, workspace: ws, events: events}
+	watchContext, stopCancellation := context.WithCancel(ctx)
+	inFlight[req.ID] = &runningTask{executionContext: watchContext, stopCancellation: stopCancellation, taskID: req.ID, report: report, runtime: rt, handle: handle, freeCh: msg.freeCh, workspace: ws, events: events, execution: preparedExecution}
 
 	go a.forwardSession(req.ID, handle.Events(), handle.Result())
-	go a.forwardCancellation(ctx, req.ID)
+	go a.forwardCancellation(watchContext, req.ID, rt, stopCancellation)
+	a.reportTaskEvent(reportCtx, req.ID, agentbridge.Event{
+		Kind:  agentbridge.EventLifecycle,
+		Phase: agentbridge.StateRunning,
+	})
 	return true
+}
+
+func (a *Actor) reportStartTask(ctx context.Context, taskID string) {
+	if err := a.cfg.Reporter.StartTask(ctx, taskID); err != nil {
+		log.Printf("agentbridge supervisor: report start task failed task_id=%s err=%v", taskID, err)
+	}
+}
+
+func (a *Actor) reportTaskEvent(ctx context.Context, taskID string, ev agentbridge.Event) {
+	if err := a.cfg.Reporter.ReportEvent(ctx, taskID, ev); err != nil {
+		log.Printf("agentbridge supervisor: report task event failed task_id=%s kind=%s err=%v", taskID, ev.Kind, err)
+	}
+}
+
+func (a *Actor) reportCompleteTask(ctx context.Context, taskID string, res agentbridge.Result) {
+	if err := a.cfg.Reporter.CompleteTask(ctx, taskID, res); err != nil {
+		log.Printf("agentbridge supervisor: report complete task failed task_id=%s status=%s err=%v", taskID, res.Status, err)
+	}
 }
 
 func taskEligibility(status runtimeactor.Status, req *bridge.TaskRequest) scheduling.Eligibility {
@@ -681,7 +727,8 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 	if !ok {
 		return nil, fmt.Errorf("supervisor: capability for provider %q disappeared before workspace prepare", req.Provider)
 	}
-	ws, err := a.cfg.Workdir.Prepare(workdir.TaskID{Workspace: workspaceID, Task: req.ID, Run: runID})
+	canonicalTaskID := firstNonEmptyString(req.Metadata["task_id"], req.ID)
+	ws, err := a.cfg.Workdir.Prepare(workdir.TaskID{Workspace: workspaceID, Task: canonicalTaskID, Run: runID})
 	if err != nil {
 		return nil, err
 	}
@@ -710,6 +757,12 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 	workdirGuidance := ""
 	if !workdirHasWorkContent(ws.Workdir) {
 		workdirGuidance = noRepoWorkdirGuidance(ws.Workdir)
+	}
+	for _, binding := range a.cfg.ExecutionBindings {
+		if binding.WorkspaceID == workspaceID && binding.TaskID == canonicalTaskID {
+			workdirGuidance = "The authorized source repository is cloned into the repository subdirectory. Perform the requested work there and validate the changes."
+			break
+		}
 	}
 	if err := a.cfg.Workdir.InjectRuntimeConfig(ws, workdir.RuntimeConfig{
 		Provider:                   string(req.Provider),
@@ -754,7 +807,23 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"files":               resolvedNativePlan.GeneratedFiles(),
 		"nativeConfigVersion": nativeConfigVersion,
 	})
-	return &preparedWorkspace{workspace: &ws, events: events}, nil
+	prepared := &preparedWorkspace{workspace: &ws, events: events}
+	for _, binding := range a.cfg.ExecutionBindings {
+		if binding.WorkspaceID != workspaceID || binding.TaskID != canonicalTaskID {
+			continue
+		}
+		prepared.execution, err = execution.Prepare(ctx, binding, ws.Workdir)
+		if err != nil {
+			return nil, err
+		}
+		req.Cwd = prepared.execution.Directory
+		req.Prompt += "\n\nHost completion criteria for this bound execution: changed files: " + strings.Join(binding.ChangedFiles, ", ") + ". Run the configured checks when executing the requested work. These criteria do not override a user request to only explain or to stop; report missing evidence honestly in that case."
+		for _, argv := range binding.Checks {
+			req.Prompt += "\nVerification: " + strings.Join(argv, " ")
+		}
+		break
+	}
+	return prepared, nil
 }
 
 func (a *Actor) nativeHookMode(plan workdir.ProviderNativeConfigPlan) string {
@@ -793,6 +862,30 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 	}
 	if res.Workdir == "" && running.workspace != nil {
 		res.Workdir = running.workspace.Workdir
+	}
+	if res.Status == agentbridge.ResultCompleted && running.execution != nil {
+		verificationContext := ctx
+		if running.executionContext != nil {
+			verificationContext = running.executionContext
+		}
+		evidence := running.execution.Verify(verificationContext)
+		data, marshalErr := json.MarshalIndent(evidence, "", "  ")
+		if marshalErr == nil && running.workspace != nil {
+			marshalErr = os.WriteFile(filepath.Join(running.workspace.Artifacts, "verification.json"), data, 0600)
+		}
+		res.Workdir = running.execution.Directory
+		if verificationContext.Err() != nil {
+			res.Status = agentbridge.ResultCancelled
+			res.Error = "Execution verification cancelled"
+		} else if evidence.Error != "" {
+			res.Status = agentbridge.ResultFailed
+			res.Error = "Execution verification failed: " + evidence.Error
+		} else if marshalErr != nil {
+			res.Status = agentbridge.ResultFailed
+			res.Error = "Could not persist execution evidence: " + marshalErr.Error()
+		} else {
+			res.Output += "\n\nVerified changed files: " + strings.Join(evidence.ChangedFiles, ", ") + fmt.Sprintf("; checks passed: %d", len(evidence.Checks))
+		}
 	}
 	a.appendTerminalResultEvent(ctx, running.taskID, running.events, res)
 	a.archiveTerminalWorkspace(ctx, running.taskID, running.workspace, running.events, res)
@@ -851,7 +944,7 @@ func (a *Actor) newWorkspaceEventContext(ws workdir.Workspace, statusRuntimeID s
 		return nil, err
 	}
 	return &workspaceEventContext{
-		taskID:        req.ID,
+		taskID:        firstNonEmptyString(req.Metadata["task_id"], req.ID),
 		runID:         runID,
 		runtimeID:     statusRuntimeID,
 		capability:    capView,
@@ -1133,8 +1226,9 @@ func workdirHasWorkContent(dir string) bool {
 func noRepoWorkdirGuidance(workdir string) string {
 	return strings.Join([]string{
 		"The working directory `" + workdir + "` is empty: it has no source repository, only this runtime config.",
-		"First decide whether this task needs a codebase — a coding task (reading, editing, running, or creating code) needs one; a non-coding task (answering, planning, writing docs) does not.",
-		"- If it needs a codebase: do not guess or scaffold in this empty directory. Stop and tell the user that no project is connected at this path, then ask them to place their project folder here — or offer to create a new one for them — before continuing.",
+		"First decide whether this task needs a codebase: changing an existing project requires its source; a self-contained new deliverable does not require an existing repository.",
+		"- If existing project source is required: do not guess its location or create a substitute. Explain that no project is connected, identify the missing repository, and ask for its binding.",
+		"- If the user asked to create a new one (program, document, or other self-contained deliverable): create it in this workspace using the available tools, validate it, and report the result. Do not stop at a plan merely because the directory is empty.",
 		"- If it does not need a codebase: continue normally.",
 	}, "\n")
 }
@@ -1241,7 +1335,7 @@ func (a *Actor) forwardSession(taskID string, events <-chan agentbridge.Event, r
 	}
 }
 
-func (a *Actor) forwardCancellation(ctx context.Context, taskID string) {
+func (a *Actor) forwardCancellation(ctx context.Context, taskID string, runtime *runtimeactor.Actor, cancel context.CancelFunc) {
 	ch, err := a.cfg.Source.WatchCancellation(ctx, taskID)
 	if err != nil {
 		return
@@ -1251,10 +1345,14 @@ func (a *Actor) forwardCancellation(ctx context.Context, taskID string) {
 		if !ok {
 			return
 		}
-		select {
-		case a.mailbox <- envelope{cancel: &cancelMsg{taskID: taskID, cause: cause}}:
-		case <-a.stoppedCh:
+		reason := "cancelled"
+		if cause != nil {
+			reason = cause.Error()
 		}
+		cancel()
+		cancelContext, stop := context.WithTimeout(context.Background(), 5*time.Second)
+		defer stop()
+		_ = runtime.Cancel(cancelContext, taskID, reason)
 	case <-a.stoppedCh:
 	case <-ctx.Done():
 	}
@@ -1263,6 +1361,9 @@ func (a *Actor) forwardCancellation(ctx context.Context, taskID string) {
 func (a *Actor) shutdown(ctx context.Context, runtimes []*runtimeactor.Actor, inFlight map[string]*runningTask) {
 	finishedAt := time.Now().UTC()
 	for taskID, task := range inFlight {
+		if task.stopCancellation != nil {
+			task.stopCancellation()
+		}
 		_ = task.runtime.Cancel(ctx, task.taskID, ErrStopped.Error())
 		res := a.recordTerminalResult(ctx, task, agentbridge.Result{
 			Status:     agentbridge.ResultCancelled,

@@ -39,6 +39,18 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 
 	case "assistant":
 		return translateAssistantMessage(raw), nil, nil
+	case "stream_event":
+		event, _ := raw.Payload["event"].(map[string]any)
+		delta, _ := event["delta"].(map[string]any)
+		if event["type"] == "content_block_delta" {
+			switch delta["type"] {
+			case "text_delta":
+				return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: stringField(delta, "text")}}, nil, nil
+			case "thinking_delta":
+				return []agentbridge.Event{{Kind: agentbridge.EventThinkingDelta, Text: stringField(delta, "thinking")}}, nil, nil
+			}
+		}
+		return nil, nil, nil
 
 	case "user":
 		return translateUserMessage(raw), nil, nil
