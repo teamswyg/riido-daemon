@@ -53,19 +53,21 @@ func (k EventKind) IsSemanticActivity() bool {
 // Event is the run-scope envelope passed to the reducer. Fields not
 // applicable to a given Kind are simply zero-valued.
 type Event struct {
-	Kind         EventKind
-	At           time.Time
-	SessionID    string
-	Phase        RunState
-	Text         string
-	ProgressCode int
-	ProgressKey  string
-	ProgressArgs map[string]string
-	Tool         ToolRef
-	Usage        Usage
-	Result       Result
-	ExitCode     int
-	Err          string
+	// AutomaticallyApproved is set by the session after evaluating its tool policy.
+	AutomaticallyApproved bool
+	Kind                  EventKind
+	At                    time.Time
+	SessionID             string
+	Phase                 RunState
+	Text                  string
+	ProgressCode          int
+	ProgressKey           string
+	ProgressArgs          map[string]string
+	Tool                  ToolRef
+	Usage                 Usage
+	Result                Result
+	ExitCode              int
+	Err                   string
 }
 
 // ToolRef identifies a single tool invocation within a run.

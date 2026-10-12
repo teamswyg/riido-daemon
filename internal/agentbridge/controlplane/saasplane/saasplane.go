@@ -527,6 +527,11 @@ func (p *Plane) ReportEvent(ctx context.Context, taskID string, ev agentbridge.E
 		return err
 	}
 	if ev.Kind == agentbridge.EventTextDelta {
+		if assignment.ConfirmationReason != "" {
+			if _, err := p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{AssignmentID: assignment.ID, TaskID: assignment.TaskID, State: assignmentcontract.AssignmentRunning, EventType: assignmentcontract.EventAssignmentRunning}); err != nil {
+				return err
+			}
+		}
 		return p.accumulatePartialBody(ctx, assignment, ev.Text)
 	}
 	req, ok := eventRequestFromAgentEvent(assignment, ev)
@@ -642,6 +647,20 @@ func (p *Plane) postAgentEvent(ctx context.Context, assignment assignmentcontrac
 	}
 	req.RuntimeID = runtimeID
 	err = p.postJSON(ctx, "/v1/agents/"+url.PathEscape(assignment.AgentID)+"/events", req, &out)
+	if err == nil {
+		err = p.withState(ctx, func(s *planeState) {
+			current, ok := s.assignmentsByRun[assignment.ID]
+			if !ok {
+				return
+			}
+			if req.EventType == assignmentcontract.EventAssignmentWaitingForUser {
+				current.ConfirmationReason = req.ConfirmationReason
+			} else if req.EventType == assignmentcontract.EventAssignmentRunning || assignmentcontract.IsTerminal(req.State) {
+				current.ConfirmationReason = ""
+			}
+			s.assignmentsByRun[assignment.ID] = current
+		})
+	}
 	return out, err
 }
 
@@ -975,7 +994,14 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 	// Coherent live streaming requires accumulating deltas into one evolving
 	// message (a separate feature), not one progress line per delta.
 	case agentbridge.EventLifecycle:
-		if ev.Phase == agentbridge.StateRunning {
+		if ev.Phase == agentbridge.StateWaitingToolApproval || ev.Phase == agentbridge.StateWaitingUserInput {
+			req.EventType = assignmentcontract.EventAssignmentWaitingForUser
+			req.State = assignmentcontract.AssignmentRunning
+			req.ConfirmationReason = assignmentcontract.ConfirmationApprovalRequired
+			if ev.Phase == agentbridge.StateWaitingUserInput {
+				req.ConfirmationReason = assignmentcontract.ConfirmationAnswerRequired
+			}
+		} else if ev.Phase == agentbridge.StateRunning || ev.Phase == agentbridge.StateToolRunning {
 			req.EventType = assignmentcontract.EventAssignmentRunning
 			req.State = assignmentcontract.AssignmentRunning
 			req.Message = "provider running"
@@ -988,9 +1014,20 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		req.EventType = assignmentcontract.EventRiidoLog
 		switch ev.Kind {
 		case agentbridge.EventToolApprovalNeeded:
+			if ev.AutomaticallyApproved {
+				return req, false
+			}
 			req.Message = "도구 실행 승인을 기다리고 있습니다: " + ev.Tool.Name
+			req.EventType = assignmentcontract.EventAssignmentWaitingForUser
+			req.State = assignmentcontract.AssignmentRunning
+			req.ConfirmationReason = assignmentcontract.ConfirmationApprovalRequired
+			if ev.Tool.Name == "AskUserQuestion" {
+				req.ConfirmationReason = assignmentcontract.ConfirmationAnswerRequired
+			}
 		case agentbridge.EventToolCallStarted:
 			req.Message = "도구 실행 중: " + ev.Tool.Name
+			req.EventType = assignmentcontract.EventAssignmentRunning
+			req.State = assignmentcontract.AssignmentRunning
 		case agentbridge.EventToolCallCompleted:
 			req.Message = "도구 실행 완료: " + ev.Tool.Name
 		case agentbridge.EventToolCallFailed:

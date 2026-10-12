@@ -216,6 +216,13 @@ func run(ctx context.Context, cfg Config, sess *Session, proc process.RunningPro
 				expanded = append(expanded, telemetry.Feed(ev.Text)...)
 			}
 			for _, expandedEvent := range expanded {
+				approver := cfg.AutoApprove
+				if expandedEvent.Kind == agentbridge.EventToolApprovalNeeded && approver != nil {
+					approved := approver(expandedEvent.Tool)
+					expandedEvent.AutomaticallyApproved = approved
+					// Evaluate a potentially stateful policy only once for this request.
+					approver = func(agentbridge.ToolRef) bool { return approved }
+				}
 				emit(expandedEvent)
 				if expandedEvent.Kind == agentbridge.EventToolCallStarted {
 					if decision := decideStartedTool(cfg.ToolStartGate, expandedEvent.Tool); decision.Block {
@@ -241,7 +248,7 @@ func run(ctx context.Context, cfg Config, sess *Session, proc process.RunningPro
 					}
 				}
 				var newCmds []agentbridge.Command
-				state, newCmds = agentbridge.Reduce(state, expandedEvent, cfg.AutoApprove)
+				state, newCmds = agentbridge.Reduce(state, expandedEvent, approver)
 				for _, cmdEvent := range executeCommands(proc, cfg.Adapter, newCmds) {
 					emit(cmdEvent)
 				}

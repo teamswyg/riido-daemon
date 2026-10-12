@@ -5,7 +5,7 @@
 //
 // What this package owns:
 //   - Adapter port + RawEvent / Parser / DetectResult
-//   - RunState (14 provider-neutral run-scope sub-states)
+//   - RunState (15 provider-neutral run-scope sub-states)
 //   - EventKind (provider-neutral run-scope event catalog)
 //   - CommandKind (reducer-emitted imperatives)
 //   - The reducer + the State accumulator
@@ -26,7 +26,7 @@
 // net/http, or any filesystem implementation.
 package agentbridge
 
-// RunState is one of the 14 run-scope sub-states of a single provider
+// RunState is one of the 15 run-scope sub-states of a single provider
 // session. A task's task-scope StateRunning may map to any non-terminal
 // RunState; a run reaching a terminal RunState informs the task FSM
 // through bridge events (delivered by the session actor).
@@ -41,6 +41,7 @@ const (
 	StateStartingProvider    RunState = "starting_provider"
 	StateHandshaking         RunState = "handshaking"
 	StateRunning             RunState = "running"
+	StateWaitingUserInput    RunState = "waiting_user_input"
 	StateWaitingToolApproval RunState = "waiting_tool_approval"
 	StateToolRunning         RunState = "tool_running"
 	StateWaitingProvider     RunState = "waiting_provider"
@@ -55,7 +56,7 @@ const (
 func AllStates() []RunState {
 	return []RunState{
 		StatePending, StatePreparing, StateStartingProvider,
-		StateHandshaking, StateRunning, StateWaitingToolApproval,
+		StateHandshaking, StateRunning, StateWaitingToolApproval, StateWaitingUserInput,
 		StateToolRunning, StateWaitingProvider, StateCompleting,
 		StateCompleted, StateFailed, StateCancelled, StateTimedOut,
 		StateIdleStopped,

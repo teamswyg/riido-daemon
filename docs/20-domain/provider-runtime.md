@@ -979,3 +979,9 @@ Open questions roadmap 문서는 [`../50-roadmap/open-questions.md`](../50-roadm
 - 금지 필드 표(§4.2)에 새 필드 추가는 `change:breaking-policy` (ingest 계층의 채움 책임을 늘리기 때문).
 - `Provider` 포트 시그니처 변경(`StartRun` / `Cancel` / `Drafts()` 등)은 `change:breaking-protocol`.
 - 어댑터 4 종 (§10) 중 한 종의 `ProtocolKind` 분류가 바뀌면 public `riido-contracts/docs/20-domain/provider-capability.md` §4 와 동시 갱신.
+
+## 사용자 개입 알림 전달
+
+SaaS 실행의 승인 대기는 `assignment_waiting_for_user`와 `approval_required`로, Codex `item/tool/requestUserInput` 및 Claude `AskUserQuestion` 대기는 `answer_required`로 전달한다. 사용자 답변 대기는 provider-neutral `waiting_user_input` lifecycle이며 자동 도구 승인 정책을 적용하지 않는다. `running` lifecycle와 도구 실행 재개는 confirmation_reason을 비운다. 일반 로그·경고·provider_error는 최종 실패 알림이 아니며 ReportResult의 terminal 결과만 최종 실패로 전달한다. 이 계약은 상태 전달을 소유하며 provider 입력 UI나 완전 종료 원격 푸시를 새로 만들지 않는다.
+
+Session이 도구 정책으로 자동 승인한 요청에는 AutomaticallyApproved를 표시하고 SaaS의 사용자 확인 이벤트에서 제외한다. 정책은 요청마다 한 번만 평가한다.

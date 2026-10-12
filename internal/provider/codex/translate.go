@@ -226,6 +226,8 @@ func translateNotification(method string, p map[string]any) []agentbridge.Event 
 
 func translateServerRequest(method string, p map[string]any) []agentbridge.Event {
 	switch method {
+	case "item/tool/requestUserInput":
+		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateWaitingUserInput, Tool: agentbridge.ToolRef{ID: firstString(p, "itemId", "id"), Kind: "user_input"}}}
 	case "approve_command", "item/commandExecution/requestApproval":
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventToolApprovalNeeded,
