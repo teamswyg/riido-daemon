@@ -24,6 +24,9 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 
 func taskRequestMetadata(assignment assignmentcontract.Assignment, telemetryPlacement, instructionPlacement string) map[string]string {
 	metadata := assignmentBaseMetadata(assignment)
+	if assignment.RequestID != "" {
+		metadata["request_id"] = assignment.RequestID
+	}
 	metadata[agentbridge.MetadataTelemetryContract] = telemetryPlacement
 	if instructionPlacement != "" {
 		metadata[agentbridge.MetadataAgentInstruction] = instructionPlacement

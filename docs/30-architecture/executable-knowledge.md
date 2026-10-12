@@ -10,8 +10,8 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | --- | ---: |
 | Generated reader docs | 86 |
 | Direct SSOT docs | 0 |
-| Registered manual docs | 0 |
-| Scanned docs | 86 |
+| Registered manual docs | 1 |
+| Scanned docs | 87 |
 
 ## Generated Reader Origins
 
@@ -75,15 +75,21 @@ _None missing._
 | `local-qa-daily-evidence-sweep` | `24h` | local-qa-schedule.json trigger<br>local-qa-coverage.json local.qa.daily_freshness row<br>dashboard stale rows after expires_at | refreshes_expired_evidence<br>daily-evidence-sweep trigger identity<br>semantic peer binding for freshness changes | .riido-local/evidence/local-qa-schedule.json<br>.riido-local/evidence/local-qa-coverage.json<br>executable-knowledge-coverage/local-qa-schedule-binding.json | evidence_missing<br>expires_at_missing<br>freshness_row_missing<br>semantic_drift |
 ## Registered Manual Surfaces
 
-_None._
+| Group | Owner | Next artifact | Matched docs |
+| --- | --- | --- | ---: |
+| `task-agent-requests` | riido-daemon | internal/agentbridge/controlplane/saasplane/task_agent_request_test.go | 1 |
 
 ## Manual Hotspots
 
-_None._
+| Directory | Matched docs |
+| --- | ---: |
+| `docs/30-architecture` | 1 |
 
 ## Manual Samples
 
-_None._
+| Group | Path |
+| --- | --- |
+| `task-agent-requests` | `docs/30-architecture/task-agent-requests.md` |
 
 ## Evidence Loop
 

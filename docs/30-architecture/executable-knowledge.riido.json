@@ -5,8 +5,20 @@
   "generated_doc": "docs/30-architecture/executable-knowledge.md",
   "workflow": ".github/workflows/executable-knowledge-coverage.yml",
   "evidence_artifact": "executable-knowledge-coverage",
-  "scan_roots": ["docs/30-architecture"],
-  "manual_groups": [],
+  "scan_roots": [
+    "docs/30-architecture"
+  ],
+  "manual_groups": [
+    {
+      "id": "task-agent-requests",
+      "owner": "riido-daemon",
+      "reason": "RIID-5828 request metadata compatibility and coordinated rollout.",
+      "next_artifact": "internal/agentbridge/controlplane/saasplane/task_agent_request_test.go",
+      "paths": [
+        "docs/30-architecture/task-agent-requests.md"
+      ]
+    }
+  ],
   "manifest_loop_budget": {
     "max_missing": 0,
     "max_missing_by_group": {

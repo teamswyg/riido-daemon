@@ -18,5 +18,5 @@ func cloneAssignmentWorktree(worktree *assignmentcontract.AssignmentWorktree) *a
 }
 
 func assignmentWorkspaceID(assignment assignmentcontract.Assignment) string {
-	return textutil.FirstNonEmptyTrimmed(assignment.ComponentID, assignment.TaskID)
+	return textutil.FirstNonEmptyTrimmed(assignment.WorkspaceID, assignment.ComponentID, assignment.TaskID)
 }
