@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"context"
+
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 

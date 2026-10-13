@@ -9,7 +9,7 @@ func assignmentTaskTitle(prompt string) string {
 		return ""
 	}
 	inTask := false
-	for _, line := range strings.Split(prompt, "\n") {
+	for line := range strings.SplitSeq(prompt, "\n") {
 		if line == "## Task" {
 			inTask = true
 			continue

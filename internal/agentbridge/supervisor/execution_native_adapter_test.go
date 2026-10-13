@@ -13,18 +13,24 @@ type nativeCorrectionAdapter struct {
 }
 
 func (a *nativeCorrectionAdapter) Name() string { return codex.Name }
+
 func (a *nativeCorrectionAdapter) Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectResult, error) {
 	return codex.Detect(ctx, env)
 }
+
 func (a *nativeCorrectionAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
 	a.requests <- req
 	return codex.BuildStart(req, codex.StartOptions{})
 }
+
 func (a *nativeCorrectionAdapter) NewParser() agentbridge.Parser { return codex.NewParser() }
+
 func (a *nativeCorrectionAdapter) Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
 	return codex.Translate(raw)
 }
+
 func (a *nativeCorrectionAdapter) BlockedArgs() []string { return codex.BlockedArgs() }
+
 func (a *nativeCorrectionAdapter) NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	d, err := codex.NewProtocolDriver(req)
 	return &nativeNameObserver{ProtocolDriver: d, names: a.names}, err

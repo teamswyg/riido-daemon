@@ -63,7 +63,7 @@ func TestExecutionVerificationDoesNotBlockOtherTaskOrCancellation(t *testing.T) 
 	}
 	source.Cancel("assignment", context.Canceled)
 	other.EmitStdout([]byte("done"))
-	for i := 0; i < 2; i++ {
+	for range 2 {
 		select {
 		case res := <-reporter.results:
 			if res.Status == agentbridge.ResultCancelled {
