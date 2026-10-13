@@ -14,3 +14,5 @@
 `ResolveExecutableCandidates` returns no-override candidates in PATH order. Concrete adapters decide whether to probe one or several candidates. `RIIDO_OPENCLAW_PATH` remains a pin even when the pinned executable is too old or invalid.
 
 Detect-selected executable path is capability snapshot execution evidence. `bridge.Run` and `runtimeactor.Submit` pass it into `StartRequest.Executable`; concrete provider adapters must not reinterpret it from PATH.
+
+RIID-5816: Claude authentication JSON is parsed from stdout separately from stderr noise, and absent/null or contradictory login status is unknown rather than logged out. Native Codex model/list advertises models without inference; cached preferences are honored only when the native catalog contains them.

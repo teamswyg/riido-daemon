@@ -19,6 +19,7 @@ type Config struct {
 	MaxConcurrent  int
 	HeartbeatEvery time.Duration // reserved for the supervisor's heartbeat loop
 	HardTimeout    time.Duration // forwarded to each session as its hard timeout
+	SemanticIdle   time.Duration // fallback when a request does not specify idle timeout
 	MailboxSize    int
 	// AutoApprove is forwarded to each session.
 	AutoApprove agentbridge.AutoApprover

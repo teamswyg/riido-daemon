@@ -31,7 +31,7 @@ func (r *sessionRunner) blockPendingApprovalIfNeeded(ev agentbridge.Event, cmds 
 
 func (r *sessionRunner) blockToolUse(warning, reason string) {
 	cancel := []agentbridge.Command{{Kind: agentbridge.CommandCancelProvider, Reason: reason}}
-	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, cancel, r.cfg.ProcessKillTimeout) {
+	for _, cmdEvent := range r.executeCommands(r.ctx, cancel) {
 		r.emit(cmdEvent)
 	}
 	r.emit(agentbridge.Event{Kind: agentbridge.EventWarning, Text: warning, Err: reason})
@@ -45,7 +45,7 @@ func (r *sessionRunner) blockToolUse(warning, reason string) {
 	r.emit(blocked)
 	var cmds []agentbridge.Command
 	r.state, cmds = agentbridge.Reduce(r.state, blocked, r.cfg.AutoApprove)
-	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
+	for _, cmdEvent := range r.executeCommands(r.ctx, cmds) {
 		r.emit(cmdEvent)
 	}
 }

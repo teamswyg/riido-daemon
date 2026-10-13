@@ -31,7 +31,7 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 		r.executeResolvedToolApproval(tool, result.resolution)
 		return true
 	case <-r.ctx.Done():
-		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventCancellation, Err: r.ctx.Err().Error()})
+		r.emitAndTerminate(contextTerminationEvent(r.ctx))
 		return true
 	case req := <-r.sess.cancel:
 		r.cancel(req)
@@ -55,7 +55,7 @@ func (r *sessionRunner) executeResolvedToolApproval(tool agentbridge.ToolRef, re
 	if resolution.Approved {
 		cmd.Kind = agentbridge.CommandApproveTool
 	}
-	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, []agentbridge.Command{cmd}, r.cfg.ProcessKillTimeout) {
+	for _, cmdEvent := range r.executeCommands(r.ctx, []agentbridge.Command{cmd}) {
 		r.emit(cmdEvent)
 	}
 	if !resolution.Approved {

@@ -15,7 +15,7 @@ func (r *sessionRunner) applyEventsWithContext(ctx context.Context, events []age
 	if slices.ContainsFunc(events, r.applyEvent) {
 		return
 	}
-	for _, cmdEvent := range executeCommands(ctx, r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
+	for _, cmdEvent := range r.executeCommands(ctx, cmds) {
 		r.emit(cmdEvent)
 	}
 }
@@ -35,6 +35,9 @@ func (r *sessionRunner) applyEvent(ev agentbridge.Event) bool {
 
 func (r *sessionRunner) applyExpandedEvent(ev agentbridge.Event) bool {
 	r.emit(ev)
+	if r.deliveryInterrupted {
+		return true
+	}
 	if r.blockStartedToolIfNeeded(ev) {
 		return true
 	}
@@ -43,7 +46,7 @@ func (r *sessionRunner) applyExpandedEvent(ev agentbridge.Event) bool {
 	if r.blockPendingApprovalIfNeeded(ev, cmds) {
 		return true
 	}
-	for _, cmdEvent := range executeCommands(r.ctx, r.proc, r.cfg.Adapter, cmds, r.cfg.ProcessKillTimeout) {
+	for _, cmdEvent := range r.executeCommands(r.ctx, cmds) {
 		r.emit(cmdEvent)
 	}
 	return false

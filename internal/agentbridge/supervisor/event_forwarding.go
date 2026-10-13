@@ -2,8 +2,9 @@ package supervisor
 
 import (
 	"context"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"time"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )

@@ -35,6 +35,7 @@ func (a *Actor) reportRuntimeHeartbeats(ctx context.Context, runtimes []*runtime
 	a.refreshRuntimeRegistrations(ctx, runtimes, inFlight)
 	a.reportLiveness(ctx, runtimes)
 }
+
 func (a *Actor) reportLiveness(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	for _, rt := range runtimes {
 		requestCtx, cancel := context.WithTimeout(ctx, a.cfg.HeartbeatEvery)
@@ -45,6 +46,7 @@ func (a *Actor) reportLiveness(ctx context.Context, runtimes []*runtimeactor.Act
 		cancel()
 	}
 }
+
 func (a *Actor) heartbeatLoop(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	ticker := time.NewTicker(a.cfg.HeartbeatEvery)
 	defer ticker.Stop()

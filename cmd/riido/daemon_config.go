@@ -35,9 +35,13 @@ const (
 	envWorkdirRetentionSeconds       = "RIIDO_WORKDIR_RETENTION_SECONDS"
 	envWorkdirCleanupIntervalSeconds = "RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS"
 	envDaemonPprofAddr               = "RIIDO_DAEMON_PPROF_ADDR"
+	envRunHardTimeout                = "RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS"
+	envRunSemanticIdle               = "RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS"
 )
 
 type daemonSettings struct {
+	RunHardTimeout       time.Duration
+	RunSemanticIdle      time.Duration
 	ExecutionBindings    []execution.Binding
 	DaemonID             string
 	DaemonVersion        string

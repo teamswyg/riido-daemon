@@ -14,6 +14,7 @@ func executeCommands(
 	adapter agentbridge.Adapter,
 	cmds []agentbridge.Command,
 	killTimeout time.Duration,
+	builders ...agentbridge.ProviderInputBuilder,
 ) []agentbridge.Event {
 	executor := commandExecutor{
 		proc:        proc,
@@ -21,6 +22,9 @@ func executeCommands(
 		killTimeout: killTimeout,
 	}
 
+	if len(builders) > 0 {
+		executor.builder = builders[0]
+	}
 	var out []agentbridge.Event
 	for _, cmd := range cmds {
 		out = append(out, executor.execute(ctx, cmd)...)
@@ -32,6 +36,7 @@ type commandExecutor struct {
 	proc        process.RunningProcess
 	adapter     agentbridge.Adapter
 	killTimeout time.Duration
+	builder     agentbridge.ProviderInputBuilder
 }
 
 func (e commandExecutor) execute(ctx context.Context, cmd agentbridge.Command) []agentbridge.Event {

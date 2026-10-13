@@ -17,12 +17,25 @@ func Start(ctx context.Context, cfg Config) (*Session, error) {
 		return nil, err
 	}
 	cfg = defaultSessionConfig(cfg)
-	running, err := cfg.Process.Start(ctx, cfg.Spawn)
+	runCtx, stop := context.WithCancelCause(ctx)
+	running, err := cfg.Process.Start(runCtx, cfg.Spawn)
 	if err != nil {
+		stop(err)
 		return nil, fmt.Errorf("session: process start: %w", err)
 	}
 	sess := newSessionHandle(cfg, running)
-	go run(ctx, cfg, sess, running)
+	sess.stop = stop
+	var deadline *time.Timer
+	if cfg.HardTimeout > 0 {
+		deadline = time.AfterFunc(cfg.HardTimeout, func() { stop(fmt.Errorf("%w (%s)", errRunHardDeadline, cfg.HardTimeout)) })
+	}
+	go func() {
+		defer stop(nil)
+		if deadline != nil {
+			defer deadline.Stop()
+		}
+		run(runCtx, cfg, sess, running)
+	}()
 	return sess, nil
 }
 
