@@ -25,7 +25,7 @@
     "validator": "ValidateInstructionEffectivenessOutput",
     "providers": [
       {"provider": "claude", "marker": "RIIDO_INSTRUCTION_ACK:claude", "surface": "system-prompt"},
-      {"provider": "codex", "marker": "RIIDO_INSTRUCTION_ACK:codex", "surface": "prompt prefix"},
+      {"provider": "codex", "marker": "RIIDO_INSTRUCTION_ACK:codex", "surface": "native developerInstructions"},
       {"provider": "openclaw", "marker": "RIIDO_INSTRUCTION_ACK:openclaw", "surface": "system-prompt-inline"},
       {"provider": "cursor", "marker": "RIIDO_INSTRUCTION_ACK:cursor", "surface": "prompt prefix"}
     ]

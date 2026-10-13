@@ -16,3 +16,5 @@
 Detect-selected executable path is capability snapshot execution evidence. `bridge.Run` and `runtimeactor.Submit` pass it into `StartRequest.Executable`; concrete provider adapters must not reinterpret it from PATH.
 
 RIID-5816: Claude authentication JSON is parsed from stdout separately from stderr noise, and absent/null or contradictory login status is unknown rather than logged out. Native Codex model/list advertises models without inference; cached preferences are honored only when the native catalog contains them.
+
+RIID-5817: OpenClaw models list --json is the native catalog authority, including CLI harness models omitted by legacy provider configuration. Discovery uses the pinned executable, separate stdout, a 2-second deadline and 64 KiB output bound without inference. Explicitly unavailable routes are excluded; listing a route does not prove inference availability. Agent exec applies the selected model via the native --model flag.

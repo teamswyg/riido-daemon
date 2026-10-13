@@ -2,6 +2,7 @@ package cursor
 
 import (
 	"context"
+	"strings"
 	"testing"
 	"time"
 
@@ -14,6 +15,9 @@ import (
 func runIntegrationSession(t *testing.T, ctx context.Context, profile Profile, workdir string) (agentbridge.Result, []agentbridge.Event) {
 	t.Helper()
 	req := integrationStartRequest(workdir)
+	req.Prompt = strings.Split(req.Prompt, "After the file is written,")[0]
+	req.Prompt, req.SystemPrompt, _, _ = agentbridge.ApplyRuntimeInstructionContract(Name, req.Prompt, "", "Perform the actual file write and validation.")
+	req.SystemPrompt = "After writing the requested file, include RIIDO_EXECUTION_ACK_CURSOR in the final reply."
 	spawn, err := BuildStart(req, StartOptions{Profile: profile})
 	if err != nil {
 		t.Fatalf("BuildStart: %v", err)

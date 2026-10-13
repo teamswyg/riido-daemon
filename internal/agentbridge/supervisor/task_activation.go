@@ -15,6 +15,10 @@ func (a *Actor) prepareAndSubmit(ctx context.Context, status runtimeactor.Status
 		a.forwardActivation(taskActivationMsg{taskID: req.ID, err: err})
 		return
 	}
+	if prepared != nil {
+		snapshot := *req
+		prepared.request = &snapshot
+	}
 	handle, err := rt.Submit(ctx, *req)
 	if err != nil {
 		a.forwardActivation(taskActivationMsg{taskID: req.ID, prepared: prepared, err: err})

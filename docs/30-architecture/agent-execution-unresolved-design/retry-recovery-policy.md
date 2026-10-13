@@ -13,3 +13,4 @@
 | `provider_spawn_transient` | maybe | executable temporarily unavailable after TTL re-detect |
 | `provider_policy_blocked` | no | explicit policy deny |
 | `provider_session_lost` | no blind rerun | require recovery_fresh_start_required without resume id |
+| `completed_with_failed_host_verification` | bounded opt-in correction | continuation_limit 0..2; same assignment/repository/native session; missing or unchanged output or failed check only; no cancellation, timeout, auth/policy failure or fresh session replay; docs/30-architecture/agent-task-execution.md |

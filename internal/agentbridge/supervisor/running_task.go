@@ -2,8 +2,10 @@ package supervisor
 
 import (
 	"context"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/execution"
@@ -22,9 +24,16 @@ type runningTask struct {
 	cancel                context.CancelFunc
 	cancelCause           error
 
-	workspace *workdir.Workspace
-	execution *execution.Prepared
-	events    *workspaceEventContext
+	workspace           *workdir.Workspace
+	execution           *execution.Prepared
+	request             *bridge.TaskRequest
+	canResume           bool
+	continuations       int
+	verificationPending bool
+	executionVerified   bool
+	priorUsage          agentbridge.Usage
+	initialStartedAt    time.Time
+	events              *workspaceEventContext
 
 	terminalResult *agentbridge.Result
 	pendingEvents  []agentbridge.Event
@@ -32,6 +41,8 @@ type runningTask struct {
 
 type preparedWorkspace struct {
 	execution *execution.Prepared
+	request   *bridge.TaskRequest
+	canResume bool
 	workspace *workdir.Workspace
 	events    *workspaceEventContext
 }

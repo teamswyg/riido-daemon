@@ -18,8 +18,8 @@ func RuntimeInstructionStrategies() []RuntimeInstructionStrategy {
 		},
 		{
 			Provider:                  string(providercatalog.KindCodex),
-			AgentInstructionPlacement: TelemetryPlacementPrompt,
-			TelemetryPlacement:        TelemetryPlacementPrompt,
+			AgentInstructionPlacement: TelemetryPlacementSystemPrompt,
+			TelemetryPlacement:        TelemetryPlacementSystemPrompt,
 			EffectivenessGate:         "opt-in-real-provider-probe",
 		},
 		{

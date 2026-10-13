@@ -10,6 +10,9 @@ import (
 
 func writeStatus(conn net.Conn, flags startFlags, settings daemonSettings, startedAt time.Time, runtimes []*runtimeactor.Actor) {
 	obs := observeDaemon(runtimes)
+	if settings.ownedExecutions != nil {
+		obs.retainOwnedExecutions(settings.ownedExecutions())
+	}
 	s := daemonStatus{
 		SchemaVersion:  DaemonStatusSchemaVersion,
 		DaemonID:       settings.DaemonID,

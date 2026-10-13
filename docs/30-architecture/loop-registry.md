@@ -68,6 +68,17 @@
 - Verifies: `interaction contract reaches provider instruction surface`, `assignment_result_status=needs_input is emitted`, `assignment is not reported completed`, `events endpoint shape is preserved`
 - Fails when: `clarification output completes assignment`, `needs_input metadata missing`, `endpoint shape changes`
 
+### provider-recovery-evidence-intake
+
+- Owner: `RIID-5822 / RIID-5823`
+- Kind: `harness-to-closed-loop-intake`
+- Candidate created at: `2026-10-13`
+- Promotion target: `provider automatic recovery with fault-injection evidence`
+- Expires after: `24h`
+- Observes: `provider versions and instruction/file-write gate failures`, `analysis-only completion and failed host checks`, `session loss, auth/quota failure, interrupted tools and duplicate side effects`
+- Verifies: `failed and skipped gates stay distinguishable from pass`, `host correction is bounded and native-session preserving`, `cancellation/auth/policy failures never trigger blind replay`, `restart recovery and external-effect idempotency remain open until verified`
+- Fails when: `binary detection is presented as task execution success`, `automatic CLI update or active-work restart is inferred from a failed probe`, `fresh session replay or unbounded correction is promoted without proof`
+
 ## Business Claims
 
 ### closed_loop_candidates_must_surface_harness_gaps
@@ -177,3 +188,12 @@ Daemon lifecycle, status, shutdown, tool-approval IPC, local API, and default lo
 - Docs: `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `production.windows_daemon.restart_loop_47_pids_29m`, `windows_amd64.daemon_cross_compile`, `windows_native.named_pipe.daemon_status_round_trip`, `daemon_local_ipc_transport_regression`, `local_api_host_defaults_regression`
 - Verifiers: `daemon-host-transport-selection-test`, `daemon-host-default-path-selection-test`, `local-api-host-default-selection-test`, `windows-named-pipe-remote-client-gate`, `windows-native-daemon-status-round-trip-test`, `windows-native-daemon-status-round-trip-workflow`
+
+### agent_execution_correction_must_preserve_identity_and_be_bounded
+
+A host-authorized correction preserves the native session and workspace, requires fresh evidence, and stops on cancellation or the configured limit.
+
+- Files: `internal/agentbridge/supervisor/execution_continuation.go`, `internal/agentbridge/supervisor/execution_verification.go`, `internal/execution/binding.go`, `internal/execution/types.go`, `internal/agentbridge/supervisor/heartbeat_executions.go`, `cmd/riido/daemon_observation.go`
+- Docs: `docs/30-architecture/agent-task-execution.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `TestExecutionCorrectionResumesSameWorkspaceAndAssignment`, `TestExecutionCorrectionStopsAtHostLimit`
+- Verifiers: `correction-identity-and-limit-tests`, `host-activity-ownership-test`

@@ -18,7 +18,7 @@ func daemonRuntimeModels(provider string) []runtimeactor.RuntimeModel {
 	case cursor.Name:
 		return cursorRuntimeModels(os.UserHomeDir)
 	case openclaw.Name:
-		return openClawRuntimeModels(os.UserHomeDir)
+		return liveOpenClawRuntimeModels()
 	case claude.Name:
 		return claudeRuntimeModels()
 	default:
