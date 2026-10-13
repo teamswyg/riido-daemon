@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"strings"
 	"testing"
 
@@ -72,5 +73,20 @@ func assertClaudeBridgeStart(t *testing.T, args string) {
 	}
 	if strings.Contains(args, "acceptEdits") {
 		t.Fatalf("claude daemon adapter must not rely on local edit approval shortcuts: %q", args)
+	}
+}
+
+func TestClaudeHostPinDoesNotBroadenApprovalMode(t *testing.T) {
+	t.Setenv("RIIDO_CLAUDE_PATH", "/no/explicit/claude")
+	result, err := (bridgeClaudeAdapter{}).Detect(context.Background(), agentbridge.DetectEnv{})
+	if err != nil || result.Available {
+		t.Fatalf("invalid host pin fell back: %+v %v", result, err)
+	}
+	command, err := (bridgeClaudeAdapter{}).BuildStart(agentbridge.StartRequest{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(strings.Join(command.Args, " "), "--permission-mode default") {
+		t.Fatalf("host pin broadened approval mode: %v", command.Args)
 	}
 }
