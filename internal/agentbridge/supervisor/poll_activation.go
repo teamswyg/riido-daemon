@@ -43,6 +43,7 @@ func applyPreparedWorkspace(task *runningTask, prepared *preparedWorkspace) {
 		return
 	}
 	task.workspace = prepared.workspace
+	task.execution = prepared.execution
 	task.events = prepared.events
 }
 

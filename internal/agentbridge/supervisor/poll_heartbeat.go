@@ -3,12 +3,13 @@ package supervisor
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
-func (a *Actor) reportRuntimeHeartbeats(
+func (a *Actor) refreshRuntimeRegistrations(
 	ctx context.Context,
 	runtimes []*runtimeactor.Actor,
 	inFlight map[string]*runningTask,
@@ -27,13 +28,29 @@ func (a *Actor) reportRuntimeHeartbeats(
 				a.registeredRuntimeStates[status.RuntimeID] = state
 			}
 		}
-		_ = a.cfg.Source.Heartbeat(ctx, controlplane.RuntimeHeartbeat{
-			RuntimeID:      status.RuntimeID,
-			UptimeSeconds:  status.UptimeSeconds,
-			DeviceName:     status.DeviceName,
-			SlotLimit:      status.MaxConcurrent,
-			SlotsInUse:     status.RunningSessions,
-			RunningTaskIDs: runtimeTaskIDs(status.RunningTasks),
-		})
+	}
+}
+
+func (a *Actor) reportLiveness(ctx context.Context, runtimes []*runtimeactor.Actor) {
+	for _, rt := range runtimes {
+		requestCtx, cancel := context.WithTimeout(ctx, a.cfg.HeartbeatEvery)
+		status, err := rt.Status(requestCtx)
+		if err == nil {
+			_ = a.cfg.Source.Heartbeat(requestCtx, controlplane.RuntimeHeartbeat{RuntimeID: status.RuntimeID, UptimeSeconds: status.UptimeSeconds, DeviceName: status.DeviceName, SlotLimit: status.MaxConcurrent, SlotsInUse: status.RunningSessions, RunningTaskIDs: runtimeTaskIDs(status.RunningTasks)})
+		}
+		cancel()
+	}
+}
+
+func (a *Actor) heartbeatLoop(ctx context.Context, runtimes []*runtimeactor.Actor) {
+	ticker := time.NewTicker(a.cfg.HeartbeatEvery)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+			a.reportLiveness(ctx, runtimes)
+		}
 	}
 }

@@ -50,6 +50,7 @@ Keeps the public riido-daemon env and flag catalog generated from a manifest and
 | `RIIDO_WORKDIR_RETENTION_SECONDS` | workdir cleanup | 0 | archived workdir TTL cleanup; zero disables |
 | `RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS` | workdir cleanup | 3600 with retention | cleanup loop interval |
 | `RIIDO_DAEMON_PPROF_ADDR` | local diagnostics | empty, or dev default 127.0.0.1:6061 | loopback-only pprof listener |
+| `RIIDO_EXECUTION_BINDINGS_FILE` | daemon config and host execution bindings | empty | exact workspace/task repository and completion-check bindings owned by the host |
 
 ## Coverage Anchors
 

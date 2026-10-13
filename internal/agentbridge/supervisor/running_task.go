@@ -6,6 +6,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
@@ -22,6 +23,7 @@ type runningTask struct {
 	cancelCause           error
 
 	workspace *workdir.Workspace
+	execution *execution.Prepared
 	events    *workspaceEventContext
 
 	terminalResult *agentbridge.Result
@@ -29,6 +31,7 @@ type runningTask struct {
 }
 
 type preparedWorkspace struct {
+	execution *execution.Prepared
 	workspace *workdir.Workspace
 	events    *workspaceEventContext
 }

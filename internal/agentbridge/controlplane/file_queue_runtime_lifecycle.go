@@ -8,6 +8,8 @@ import (
 )
 
 func (s *FileQueueSource) RegisterRuntime(ctx context.Context, rt RuntimeRegistration) error {
+	s.runtimeMu.Lock()
+	defer s.runtimeMu.Unlock()
 	if err := fileQueueContextErr(ctx); err != nil {
 		return err
 	}
@@ -22,6 +24,8 @@ func (s *FileQueueSource) RegisterRuntime(ctx context.Context, rt RuntimeRegistr
 }
 
 func (s *FileQueueSource) DeregisterRuntime(ctx context.Context, runtimeID string) error {
+	s.runtimeMu.Lock()
+	defer s.runtimeMu.Unlock()
 	if err := fileQueueContextErr(ctx); err != nil {
 		return err
 	}
@@ -35,6 +39,8 @@ func (s *FileQueueSource) DeregisterRuntime(ctx context.Context, runtimeID strin
 }
 
 func (s *FileQueueSource) Heartbeat(ctx context.Context, hb RuntimeHeartbeat) error {
+	s.runtimeMu.Lock()
+	defer s.runtimeMu.Unlock()
 	if err := fileQueueContextErr(ctx); err != nil {
 		return err
 	}

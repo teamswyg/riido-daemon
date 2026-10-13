@@ -2,6 +2,7 @@ package controlplane
 
 import (
 	"os"
+	"sync"
 	"time"
 )
 
@@ -12,8 +13,9 @@ import (
 // task is not replayed even if multiple daemon processes poll the same
 // local queue. Useful for batch testing and for ad-hoc CLI-driven queues.
 type FileQueueSource struct {
-	dir string
-	now func() time.Time
+	runtimeMu sync.Mutex
+	dir       string
+	now       func() time.Time
 }
 
 func NewFileQueueSource(dir string) (*FileQueueSource, error) {

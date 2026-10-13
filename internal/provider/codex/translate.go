@@ -1,6 +1,7 @@
 package codex
 
 import (
+	"encoding/json"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -54,7 +55,15 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 
 	case strings.HasPrefix(raw.Type, rawFrameServerRequestPrefix):
 		method := codexMethod(strings.TrimPrefix(raw.Type, rawFrameServerRequestPrefix))
-		return translateServerRequest(method, params(raw)), nil, nil
+		events := translateServerRequest(method, params(raw))
+		id, err := json.Marshal(raw.Payload["id"])
+		if err != nil {
+			return nil, nil, err
+		}
+		for i := range events {
+			events[i].Tool.ProviderRequestID = string(id)
+		}
+		return events, nil, nil
 	}
 
 	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown frame: " + raw.Type}}, nil, nil

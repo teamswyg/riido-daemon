@@ -3,11 +3,17 @@ package main
 import (
 	"strings"
 
+	"github.com/teamswyg/riido-daemon/internal/execution"
+
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )
 
 func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, userHome func() (string, error)) (daemonSettings, error) {
 	identity := loadDaemonIdentityEnv(getenv, hostname)
+	bindings, err := execution.Load(strings.TrimSpace(getenv(envExecutionBindings)))
+	if err != nil {
+		return daemonSettings{}, err
+	}
 	workspace, err := loadDaemonWorkspaceEnv(getenv, userHome)
 	if err != nil {
 		return daemonSettings{}, err
@@ -30,6 +36,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 	}
 
 	return daemonSettings{
+		ExecutionBindings:    bindings,
 		DaemonID:             defaultDaemonID(getenv(envDaemonID), controlPlane.deviceID),
 		DaemonVersion:        textutil.Default(getenv(envDaemonVersion), agentDaemonVersionLabel()),
 		Profile:              identity.profile,
