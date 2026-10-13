@@ -26,6 +26,7 @@ func protocolArgs(mode PermissionMode) []string {
 		"--output-format", "stream-json",
 		"--input-format", "stream-json",
 		"--verbose",
+		"--include-partial-messages",
 		"--permission-mode", string(mode),
 	}
 }

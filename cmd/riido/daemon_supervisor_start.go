@@ -18,6 +18,7 @@ func startDaemonSupervisor(ctx lifecycle.Context, settings daemonSettings, runti
 		Source:              source,
 		Reporter:            reporter,
 		Workdir:             workdirAdapter,
+		ExecutionBindings:   settings.ExecutionBindings,
 		PollEvery:           settings.PollEvery,
 		IdlePollEvery:       settings.IdlePollEvery,
 		HeartbeatEvery:      settings.HeartbeatEvery,

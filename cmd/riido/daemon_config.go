@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/policy"
 )
 
@@ -21,6 +22,7 @@ const (
 	envWorkspaceCount                = "RIIDO_WORKSPACE_COUNT"
 	envRuntimeMaxConcurrent          = "RIIDO_RUNTIME_MAX_CONCURRENT"
 	envWorkdirRoot                   = "RIIDO_WORKDIR_ROOT"
+	envExecutionBindings             = "RIIDO_EXECUTION_BINDINGS_FILE"
 	envPolicyBundle                  = "RIIDO_POLICY_BUNDLE_VERSION"
 	envPolicyBundlePath              = "RIIDO_POLICY_BUNDLE_PATH"
 	envTaskQueueDir                  = "RIIDO_TASK_QUEUE_DIR"
@@ -36,6 +38,7 @@ const (
 )
 
 type daemonSettings struct {
+	ExecutionBindings    []execution.Binding
 	DaemonID             string
 	DaemonVersion        string
 	Profile              string

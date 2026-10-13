@@ -5,6 +5,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/policy"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
@@ -19,10 +20,11 @@ type Config struct {
 	// provider capability boundary.
 	Runtime *runtimeactor.Actor
 	// Runtimes is the provider-runtime pool the supervisor dispatches over.
-	Runtimes []*runtimeactor.Actor
-	Source   controlplane.TaskSourcePort
-	Reporter controlplane.TaskReporterPort
-	Workdir  workdir.Adapter
+	Runtimes          []*runtimeactor.Actor
+	Source            controlplane.TaskSourcePort
+	Reporter          controlplane.TaskReporterPort
+	Workdir           workdir.Adapter
+	ExecutionBindings []execution.Binding
 
 	PollEvery           time.Duration
 	IdlePollEvery       time.Duration

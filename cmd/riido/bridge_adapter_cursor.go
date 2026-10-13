@@ -15,7 +15,7 @@ func (bridgeCursorAdapter) Detect(
 	ctx context.Context,
 	env agentbridge.DetectEnv,
 ) (agentbridge.DetectResult, error) {
-	return cursor.Detect(ctx, env)
+	return cursor.Detect(ctx, providerDetectEnvironment(env))
 }
 
 func (bridgeCursorAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {

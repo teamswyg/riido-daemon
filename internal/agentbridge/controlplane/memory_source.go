@@ -1,6 +1,7 @@
 package controlplane
 
 import (
+	"sync"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
@@ -9,10 +10,10 @@ import (
 // MemorySource is the simplest TaskSourcePort: tasks live in a FIFO,
 // runtimes in a map. Intended for tests, offline mode, and bootstrap.
 //
-// All state is owned by the calling goroutine -- the source itself is
-// NOT a separate actor. Callers (daemon main goroutine or a
-// SupervisorActor) serialize access. We do not use sync.Mutex here.
+// Adapter-local state is guarded because liveness, claim and cancellation
+// callers may operate concurrently. No lock is held across network/process IO.
 type MemorySource struct {
+	mu        sync.Mutex
 	queue     []bridge.TaskRequest
 	runtimes  map[string]*RegisteredRuntime
 	cancelChs map[string]chan error

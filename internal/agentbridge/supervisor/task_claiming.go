@@ -45,7 +45,7 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		})
 		return true
 	}
-	go a.forwardCancellation(taskCtx, req.ID)
+	go a.forwardCancellation(taskCtx, req.ID, rt, cancel)
 	go a.prepareAndSubmit(taskCtx, status, rt, req)
 	return true
 }

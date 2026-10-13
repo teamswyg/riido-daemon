@@ -2,10 +2,12 @@ package supervisor
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/teamswyg/riido-contracts/ir"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
@@ -62,5 +64,18 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"files":               native.resolved.GeneratedFiles(),
 		"nativeConfigVersion": nativeConfigVersion,
 	})
-	return &preparedWorkspace{workspace: &ws, events: events}, nil
+	prepared := &preparedWorkspace{workspace: &ws, events: events}
+	for _, binding := range a.cfg.ExecutionBindings {
+		if binding.WorkspaceID != ids.workspaceID || binding.TaskID != ids.logicalTaskID {
+			continue
+		}
+		prepared.execution, err = execution.Prepare(ctx, binding, ws.Workdir)
+		if err != nil {
+			return nil, err
+		}
+		req.Cwd = prepared.execution.Directory
+		req.Prompt += fmt.Sprintf("\n\nThe authorized source repository is at %s. Perform the requested work there and validate the changes. A successful reply alone is not completion; the host will require changed files and passing checks.", req.Cwd)
+		break
+	}
+	return prepared, nil
 }

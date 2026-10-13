@@ -45,7 +45,8 @@
     {"name": "RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS", "consumer": "supervisor", "default": "5", "meaning": "runtime heartbeat interval"},
     {"name": "RIIDO_WORKDIR_RETENTION_SECONDS", "consumer": "workdir cleanup", "default": "0", "meaning": "archived workdir TTL cleanup; zero disables"},
     {"name": "RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS", "consumer": "workdir cleanup", "default": "3600 with retention", "meaning": "cleanup loop interval"},
-    {"name": "RIIDO_DAEMON_PPROF_ADDR", "consumer": "local diagnostics", "default": "empty, or dev default 127.0.0.1:6061", "meaning": "loopback-only pprof listener"}
+    {"name": "RIIDO_DAEMON_PPROF_ADDR", "consumer": "local diagnostics", "default": "empty, or dev default 127.0.0.1:6061", "meaning": "loopback-only pprof listener"},
+    {"name": "RIIDO_EXECUTION_BINDINGS_FILE", "consumer": "daemon config and host execution bindings", "default": "empty", "meaning": "exact workspace/task repository and completion-check bindings owned by the host"}
   ],
   "coverage_anchors": [
     {"name": "RIIDO_CLAUDE_PATH", "file": "internal/provider/claude/detect.go", "contains": "RIIDO_CLAUDE_PATH", "meaning": "provider executable override"},

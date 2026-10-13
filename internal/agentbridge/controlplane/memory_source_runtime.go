@@ -7,6 +7,8 @@ import (
 
 // Registered returns a snapshot of registered runtimes sorted by id.
 func (s *MemorySource) Registered() []RegisteredRuntime {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	out := make([]RegisteredRuntime, 0, len(s.runtimes))
 	for _, r := range s.runtimes {
 		out = append(out, *r)
@@ -16,6 +18,8 @@ func (s *MemorySource) Registered() []RegisteredRuntime {
 }
 
 func (s *MemorySource) RegisterRuntime(_ context.Context, rt RuntimeRegistration) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if rt.RuntimeID == "" {
 		return controlPlaneErrorf(ErrControlPlaneRuntime, "memory.register-runtime", "empty RuntimeID")
 	}
@@ -27,6 +31,8 @@ func (s *MemorySource) RegisterRuntime(_ context.Context, rt RuntimeRegistration
 }
 
 func (s *MemorySource) DeregisterRuntime(_ context.Context, runtimeID string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	if _, ok := s.runtimes[runtimeID]; !ok {
 		return controlPlaneErrorf(ErrControlPlaneRuntime, "memory.deregister-runtime", "unknown runtime %q", runtimeID)
 	}
@@ -35,6 +41,8 @@ func (s *MemorySource) DeregisterRuntime(_ context.Context, runtimeID string) er
 }
 
 func (s *MemorySource) Heartbeat(_ context.Context, hb RuntimeHeartbeat) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	r, ok := s.runtimes[hb.RuntimeID]
 	if !ok {
 		return controlPlaneErrorf(ErrControlPlaneRuntime, "memory.heartbeat", "heartbeat for unknown runtime %q", hb.RuntimeID)

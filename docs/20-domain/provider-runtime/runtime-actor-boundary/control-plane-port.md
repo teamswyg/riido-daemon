@@ -22,3 +22,5 @@
 - `controlplane/saasplane` HTTP polling and event sync adapter.
 - Task DB source/reporter adapters outside the root package.
 - `riidoaiserver`, local API, project persistence, packaging, infra, and secrets.
+
+RIID-5827: task-source adapters serialize their own mutable state because lease heartbeats run independently of slow claim/event uploads. MemorySource guards its RAM state for concurrent registration, heartbeat and cancellation calls; FileQueueSource serializes runtime registry read-modify-write operations.

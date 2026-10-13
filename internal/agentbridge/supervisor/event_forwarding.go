@@ -2,12 +2,15 @@ package supervisor
 
 import (
 	"context"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 func (a *Actor) forwardSession(taskID string, events <-chan agentbridge.Event, results <-chan agentbridge.Result) {
 	for ev := range events {
+		a.cancelCurrentClaim()
 		select {
 		case a.mailbox <- envelope{taskEvent: &taskEventMsg{taskID: taskID, event: ev}}:
 		case <-a.stoppedCh:
@@ -24,7 +27,7 @@ func (a *Actor) forwardSession(taskID string, events <-chan agentbridge.Event, r
 	}
 }
 
-func (a *Actor) forwardCancellation(ctx context.Context, taskID string) {
+func (a *Actor) forwardCancellation(ctx context.Context, taskID string, rt *runtimeactor.Actor, cancel context.CancelFunc) {
 	ch, err := a.cfg.Source.WatchCancellation(ctx, taskID)
 	if err != nil {
 		return
@@ -34,6 +37,15 @@ func (a *Actor) forwardCancellation(ctx context.Context, taskID string) {
 		if !ok {
 			return
 		}
+		cancel()
+		a.cancelCurrentClaim()
+		requestCtx, release := context.WithTimeout(context.Background(), 5*time.Second)
+		reason := "cancelled"
+		if cause != nil {
+			reason = cause.Error()
+		}
+		_ = rt.Cancel(requestCtx, taskID, reason)
+		release()
 		select {
 		case a.mailbox <- envelope{cancel: &cancelMsg{taskID: taskID, cause: cause}}:
 		case <-a.stoppedCh:
