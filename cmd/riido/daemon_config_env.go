@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/teamswyg/riido-daemon/internal/execution"
 	"strings"
+
+	"github.com/teamswyg/riido-daemon/internal/execution"
 
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
 )

@@ -27,7 +27,7 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 		evidence := running.execution.Verify(verifyCtx)
 		data, err := json.MarshalIndent(evidence, "", "  ")
 		if err == nil && running.workspace != nil {
-			err = os.WriteFile(filepath.Join(running.workspace.Artifacts, "verification.json"), data, 0600)
+			err = os.WriteFile(filepath.Join(running.workspace.Artifacts, "verification.json"), data, 0o600)
 		}
 		res.Workdir = running.execution.Directory
 		switch {

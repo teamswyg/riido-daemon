@@ -24,6 +24,7 @@ func (s *blockedClaimHeartbeatSource) ClaimTask(ctx context.Context, _ string) (
 	<-ctx.Done()
 	return nil, ctx.Err()
 }
+
 func (s *blockedClaimHeartbeatSource) Heartbeat(context.Context, controlplane.RuntimeHeartbeat) error {
 	select {
 	case s.heartbeats <- struct{}{}:
@@ -31,6 +32,7 @@ func (s *blockedClaimHeartbeatSource) Heartbeat(context.Context, controlplane.Ru
 	}
 	return nil
 }
+
 func TestHeartbeatContinuesWhileClaimIsHeld(t *testing.T) {
 	source := &blockedClaimHeartbeatSource{MemorySource: controlplane.NewMemorySource(), entered: make(chan struct{}, 1), heartbeats: make(chan struct{}, 4)}
 	actor, err := New(Config{DaemonID: "heartbeat", RiidoDaemonVersion: "test", Runtime: startRuntime(t, process.NewFake()), Source: source, Reporter: newReporterProbe(), PollEvery: time.Millisecond, HeartbeatEvery: 10 * time.Millisecond})
@@ -50,7 +52,7 @@ func TestHeartbeatContinuesWhileClaimIsHeld(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("claim never held")
 	}
-	for i := 0; i < 3; i++ {
+	for range 3 {
 		select {
 		case <-source.heartbeats:
 		case <-time.After(100 * time.Millisecond):

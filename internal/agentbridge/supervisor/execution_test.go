@@ -2,19 +2,20 @@ package supervisor
 
 import (
 	"context"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-	"github.com/teamswyg/riido-daemon/internal/execution"
-	"github.com/teamswyg/riido-daemon/internal/workdir"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/execution"
+	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
 func TestProviderSuccessRequiresExecutionEvidenceForBoundTask(t *testing.T) {
 	repo := t.TempDir()
-	if err := os.WriteFile(filepath.Join(repo, "result.txt"), []byte("old"), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(repo, "result.txt"), []byte("old"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	for _, args := range [][]string{{"init", "-q", repo}, {"-C", repo, "add", "."}, {"-C", repo, "-c", "user.name=test", "-c", "user.email=test@example.invalid", "commit", "-qm", "fixture"}} {
@@ -35,7 +36,7 @@ func TestProviderSuccessRequiresExecutionEvidenceForBoundTask(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(task.workspace.Artifacts, "verification.json")); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(prepared.Directory, "result.txt"), []byte("fixed\n"), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(prepared.Directory, "result.txt"), []byte("fixed\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	result = actor.recordTerminalResult(context.Background(), task, agentbridge.Result{Status: agentbridge.ResultCompleted, Output: "Fixed."})

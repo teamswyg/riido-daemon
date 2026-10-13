@@ -27,9 +27,7 @@ type planeState struct {
 // partialBodyState holds the running assistant text for one task and the
 // debounce bookkeeping for forwarding it as an evolving progress line.
 type partialBodyState struct {
-	text           string
-	lastFlushAt    time.Time
-	lastFlushedLen int
+	text string
 }
 
 type stateOp struct {
