@@ -1,6 +1,9 @@
 package openclaw
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestIntegration(t *testing.T) {
 	ctx, detect := requireOpenClawIntegration(t)
@@ -17,6 +20,9 @@ func TestIntegration(t *testing.T) {
 			lastErr = err
 			t.Logf("openclaw integration model %s failed: %v", model, err)
 			continue
+		}
+		if !strings.Contains(obs.result.Output, "RIIDO_EXECUTION_ACK_OPENCLAW") {
+			t.Fatalf("runtime instruction not followed: %q", obs.result.Output)
 		}
 		t.Logf("openclaw integration model %s passed", model)
 		return

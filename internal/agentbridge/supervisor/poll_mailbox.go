@@ -20,6 +20,9 @@ func (a *Actor) handleMailboxMessage(
 	case msg.taskResult != nil:
 		a.handleTaskResult(ctx, msg.taskResult, inFlight, detachedReports)
 		return true
+	case msg.taskVerification != nil:
+		a.handleExecutionVerification(ctx, msg.taskVerification, inFlight)
+		return false
 	case msg.cancel != nil:
 		a.handleTaskCancel(ctx, msg.cancel, inFlight)
 		return false

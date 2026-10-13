@@ -51,3 +51,21 @@ func (o *daemonObservation) observeRuntime(rtStatus runtimeactor.Status) {
 		}
 	}
 }
+
+func (o *daemonObservation) retainOwnedExecutions(owned map[string][]string) {
+	native := map[string]bool{}
+	for _, rt := range o.runtimes {
+		for _, task := range rt.RunningTasks {
+			native[rt.RuntimeID+"\x00"+task.TaskID] = true
+		}
+	}
+	for runtime, ids := range owned {
+		for _, id := range ids {
+			key := runtime + "\x00" + id
+			if !native[key] {
+				o.metrics.RunningTasks++
+				native[key] = true
+			}
+		}
+	}
+}

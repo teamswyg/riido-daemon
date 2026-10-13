@@ -23,6 +23,7 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	detachedReports := []detachedReport{}
 
 	for {
+		a.publishHeartbeatExecutions(inFlight)
 		select {
 		case <-ctx.Done():
 			level := lifecycle.FromContext(ctx).ShutdownLevel()

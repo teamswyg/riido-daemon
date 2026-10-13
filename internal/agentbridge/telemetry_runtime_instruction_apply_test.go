@@ -24,7 +24,7 @@ func TestApplyRuntimeInstructionContractPlacesByProvider(t *testing.T) {
 }
 
 func TestApplyRuntimeInstructionContractIncludesIntentClarification(t *testing.T) {
-	prompt, _, _, _ := ApplyRuntimeInstructionContract("codex", "do it", "", "act as a PM")
+	_, prompt, _, _ := ApplyRuntimeInstructionContract("codex", "do it", "", "act as a PM")
 	if !strings.Contains(prompt, "Riido assignment interaction contract:") ||
 		!strings.Contains(prompt, "어떤 작업부터 진행할까요?") {
 		t.Fatalf("intent clarification contract missing: %q", prompt)

@@ -36,7 +36,7 @@ func (a *Actor) reportLiveness(ctx context.Context, runtimes []*runtimeactor.Act
 		requestCtx, cancel := context.WithTimeout(ctx, a.cfg.HeartbeatEvery)
 		status, err := rt.Status(requestCtx)
 		if err == nil {
-			_ = a.cfg.Source.Heartbeat(requestCtx, controlplane.RuntimeHeartbeat{RuntimeID: status.RuntimeID, UptimeSeconds: status.UptimeSeconds, DeviceName: status.DeviceName, SlotLimit: status.MaxConcurrent, SlotsInUse: status.RunningSessions, RunningTaskIDs: runtimeTaskIDs(status.RunningTasks)})
+			_ = a.cfg.Source.Heartbeat(requestCtx, controlplane.RuntimeHeartbeat{RuntimeID: status.RuntimeID, UptimeSeconds: status.UptimeSeconds, DeviceName: status.DeviceName, SlotLimit: status.MaxConcurrent, SlotsInUse: status.RunningSessions, RunningTaskIDs: a.heartbeatTaskIDs(status.RuntimeID, runtimeTaskIDs(status.RunningTasks))})
 		}
 		cancel()
 	}

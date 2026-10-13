@@ -30,6 +30,9 @@ func TestIntegration(t *testing.T) {
 		}
 		t.Fatalf("cursor integration did not complete: %+v", res)
 	}
+	if !strings.Contains(res.Output, "RIIDO_EXECUTION_ACK_CURSOR") {
+		t.Fatalf("inline instruction not followed: %q", res.Output)
+	}
 	artifact := readIntegrationArtifact(t, workdir)
 	if strings.TrimSpace(artifact) != integrationArtifactBody {
 		t.Fatalf("cursor artifact content = %q, want %q", artifact, integrationArtifactBody)

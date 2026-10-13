@@ -1,6 +1,7 @@
 package openclaw
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -21,6 +22,8 @@ func openClawIntegrationRequest(
 		Model:      model,
 		CustomArgs: []string{"--thinking", "off"},
 	}
+	req.Prompt = strings.Split(req.Prompt, "After writing the file,")[0]
+	req.Prompt, req.SystemPrompt, _, _ = agentbridge.ApplyRuntimeInstructionContract(Name, req.Prompt, "", "After the requested file write, include RIIDO_EXECUTION_ACK_OPENCLAW in the final reply.")
 	return req, openClawIntegrationExpected{
 		workdir:      workdir,
 		artifactName: openClawIntegrationArtifactName,

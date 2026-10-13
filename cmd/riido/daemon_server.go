@@ -44,6 +44,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	if err != nil {
 		return err
 	}
+	settings.ownedExecutions = supActor.OwnedExecutions
 	defer func() {
 		stopDaemonSupervisor(shutdownLevel, supActor, log)
 	}()

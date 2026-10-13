@@ -24,6 +24,9 @@ func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge
 
 func taskRequestMetadata(assignment assignmentcontract.Assignment, telemetryPlacement, instructionPlacement string) map[string]string {
 	metadata := assignmentBaseMetadata(assignment)
+	if title := assignmentTaskTitle(assignment.Prompt); title != "" {
+		metadata["task_title"] = title
+	}
 	metadata[agentbridge.MetadataTelemetryContract] = telemetryPlacement
 	if instructionPlacement != "" {
 		metadata[agentbridge.MetadataAgentInstruction] = instructionPlacement

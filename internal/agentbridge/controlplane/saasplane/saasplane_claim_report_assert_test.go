@@ -38,15 +38,15 @@ func assertClaimReportWorktree(t *testing.T, req *bridge.TaskRequest) {
 
 func assertClaimReportPrompt(t *testing.T, req *bridge.TaskRequest) {
 	t.Helper()
-	if !strings.Contains(req.Prompt, "<riido_log>") ||
+	if !strings.Contains(req.SystemPrompt, "<riido_log>") ||
 		!strings.Contains(req.Prompt, "golang hello world") ||
-		!strings.Contains(req.Prompt, "write concise Korean progress updates") {
+		!strings.Contains(req.SystemPrompt, "write concise Korean progress updates") {
 		t.Fatalf("prompt missing telemetry contract: %q", req.Prompt)
 	}
-	if got := req.Metadata[agentbridge.MetadataTelemetryContract]; got != agentbridge.TelemetryPlacementPrompt {
+	if got := req.Metadata[agentbridge.MetadataTelemetryContract]; got != agentbridge.TelemetryPlacementSystemPrompt {
 		t.Fatalf("telemetry placement = %q", got)
 	}
-	if got := req.Metadata[agentbridge.MetadataAgentInstruction]; got != agentbridge.TelemetryPlacementPrompt {
+	if got := req.Metadata[agentbridge.MetadataAgentInstruction]; got != agentbridge.TelemetryPlacementSystemPrompt {
 		t.Fatalf("instruction placement = %q", got)
 	}
 }

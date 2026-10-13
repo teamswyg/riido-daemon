@@ -20,9 +20,9 @@ func TestInjectTelemetryContract(t *testing.T) {
 
 func TestApplyTelemetryContractPlacesByProvider(t *testing.T) {
 	codexPrompt, codexSystem, codexPlacement := ApplyTelemetryContract("codex", "do it", "")
-	if codexPlacement != TelemetryPlacementPrompt ||
-		!strings.Contains(codexPrompt, "<riido_log>") ||
-		codexSystem != "" {
+	if codexPlacement != TelemetryPlacementSystemPrompt ||
+		codexPrompt != "do it" ||
+		!strings.Contains(codexSystem, "<riido_log>") {
 		t.Fatalf("codex placement prompt=%q system=%q placement=%q", codexPrompt, codexSystem, codexPlacement)
 	}
 	claudePrompt, claudeSystem, claudePlacement := ApplyTelemetryContract("claude", "do it", "be concise")

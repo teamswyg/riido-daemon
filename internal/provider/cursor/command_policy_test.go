@@ -16,7 +16,7 @@ func TestBuildStartBlockedArgs(t *testing.T) {
 	}
 }
 
-func TestBuildStartUnsupportedSystemPromptSurfaceWarning(t *testing.T) {
+func TestBuildStartPreservesSystemPromptInline(t *testing.T) {
 	cmd, _ := BuildStart(agentbridge.StartRequest{
 		Prompt:       "x",
 		SystemPrompt: "be careful",
@@ -26,8 +26,8 @@ func TestBuildStartUnsupportedSystemPromptSurfaceWarning(t *testing.T) {
 		t.Fatalf("expected DroppedArgs to record unsupported features, got none")
 	}
 	joined := strings.Join(cmd.DroppedArgs, " ")
-	if !strings.Contains(joined, "system_prompt") {
-		t.Fatalf("system_prompt not surfaced: %v", cmd.DroppedArgs)
+	if strings.Contains(joined, "system_prompt") || !strings.Contains(strings.Join(cmd.Args, " "), "be careful") {
+		t.Fatalf("system instruction discarded: %+v", cmd)
 	}
 	if !strings.Contains(joined, "max_turns") {
 		t.Fatalf("max_turns not surfaced: %v", cmd.DroppedArgs)

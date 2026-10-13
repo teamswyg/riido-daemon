@@ -64,7 +64,7 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"files":               native.resolved.GeneratedFiles(),
 		"nativeConfigVersion": nativeConfigVersion,
 	})
-	prepared := &preparedWorkspace{workspace: &ws, events: events}
+	prepared := &preparedWorkspace{workspace: &ws, events: events, canResume: capView.SupportsResume}
 	for _, binding := range a.cfg.ExecutionBindings {
 		if binding.WorkspaceID != ids.workspaceID || binding.TaskID != ids.logicalTaskID {
 			continue
