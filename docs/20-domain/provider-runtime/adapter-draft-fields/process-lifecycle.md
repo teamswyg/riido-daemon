@@ -33,3 +33,4 @@ Evidence artifact: `process-lifecycle-evidence`.
 - `provider observations map to ProviderEventDraft but terminal task transitions stay in terminal result mapping`
 - `stop path uses CommandCancelProvider and lifecycle-aware process kill`
 - `daemon-owned Windows child commands do not allocate visible console windows`
+- `RIID-5816: user/context cancellation and hard/idle timeout preempt event delivery backpressure. The process inherits a cancellable run context with an independent hard deadline, so blocked stdin cannot hold termination. Existing graceful/forced lifecycle authority is preserved.`

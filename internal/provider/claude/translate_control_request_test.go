@@ -26,3 +26,14 @@ func TestTranslateControlRequestProducesApprovalNeeded(t *testing.T) {
 		t.Fatalf("tool args: %+v", events[0].Tool.Args)
 	}
 }
+
+func TestNativeCanUseToolKeepsCorrelationAndRedactedPolicyArgs(t *testing.T) {
+	raw := mustParseRaw(t, `{"type":"control_request","request_id":"native-request","request":{"subtype":"can_use_tool","tool_use_id":"write","tool_name":"Write","input":{"file_path":"/tmp/result.txt","secret":"private"}}}`)
+	events, _, err := Translate(raw)
+	if err != nil || len(events) != 1 || events[0].Kind != agentbridge.EventToolApprovalNeeded {
+		t.Fatalf("native approval: %+v %v", events, err)
+	}
+	if events[0].Tool.ProviderRequestID != "native-request" || events[0].Tool.Args["secret"] != "[redacted]" {
+		t.Fatalf("correlation/policy summary lost: %+v", events[0].Tool)
+	}
+}

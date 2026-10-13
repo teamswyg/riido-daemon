@@ -37,7 +37,8 @@ func newDaemonRuntimeActorForAdapter(settings daemonSettings, adapter agentbridg
 
 func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter agentbridge.Adapter, agents []runtimeactor.AgentStatus, resolver agentbridge.ToolApprovalResolver) (*runtimeactor.Actor, error) {
 	return runtimeactor.New(runtimeactor.Config{
-		RuntimeID:            runtimeID,
+		RuntimeID:   runtimeID,
+		HardTimeout: settings.RunHardTimeout, SemanticIdle: settings.RunSemanticIdle,
 		Owner:                settings.RuntimeOwner,
 		DeviceName:           settings.DeviceName,
 		Agents:               agents,

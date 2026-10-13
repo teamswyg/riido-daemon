@@ -2,6 +2,7 @@ package claude
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -12,6 +13,7 @@ type protocolDriver struct {
 	req            agentbridge.StartRequest
 	written        bool
 	streamedBlocks map[int]bool
+	pendingInputs  map[string]any
 }
 
 // NewProtocolDriver writes one Claude user-message frame when the session
@@ -25,6 +27,15 @@ func (d *protocolDriver) OnRaw(
 	raw agentbridge.RawEvent,
 	_ agentbridge.ProtocolIO,
 ) ([]agentbridge.Event, []agentbridge.Command, error) {
+	if raw.Type == "control_request" {
+		request := mapField(raw.Payload, "request")
+		if subtype := stringField(request, "subtype"); subtype == "can_use_tool" || subtype == "permission_request" {
+			if d.pendingInputs == nil {
+				d.pendingInputs = map[string]any{}
+			}
+			d.pendingInputs[stringField(raw.Payload, "request_id")] = firstToolInput(request)
+		}
+	}
 	if raw.Type == "stream_event" {
 		event, _ := raw.Payload["event"].(map[string]any)
 		if event["type"] == "message_start" {
@@ -66,5 +77,18 @@ func (d *protocolDriver) OnProcessExit(
 }
 
 func (d *protocolDriver) OnClose(_ context.Context, _ agentbridge.ProtocolIO) error {
+	d.pendingInputs = nil
 	return nil
+}
+
+func (d *protocolDriver) BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
+	input, ok := d.pendingInputs[cmd.ProviderRequestID]
+	if !ok {
+		return nil, fmt.Errorf("claude: no pending control request for %s", cmd.Kind)
+	}
+	frame, err := buildProviderInput(cmd, input)
+	if err == nil {
+		delete(d.pendingInputs, cmd.ProviderRequestID)
+	}
+	return frame, err
 }

@@ -10,6 +10,10 @@ import (
 // BuildProviderInput serializes reducer approval commands into Claude's
 // stream-json control_response shape.
 func BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
+	return buildProviderInput(cmd, map[string]any{})
+}
+
+func buildProviderInput(cmd agentbridge.Command, input any) ([]byte, error) {
 	requestID := cmd.ProviderRequestID
 	if requestID == "" {
 		return nil, fmt.Errorf("claude: provider request id is required for %s", cmd.Kind)
@@ -17,6 +21,9 @@ func BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
 	response, err := providerInputResponse(cmd)
 	if err != nil {
 		return nil, err
+	}
+	if cmd.Kind == agentbridge.CommandApproveTool {
+		response["updatedInput"] = input
 	}
 	body, err := json.Marshal(map[string]any{
 		"type": "control_response",

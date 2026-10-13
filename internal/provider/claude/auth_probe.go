@@ -8,7 +8,7 @@ import (
 )
 
 type claudeAuthStatus struct {
-	LoggedIn bool `json:"loggedIn"`
+	LoggedIn *bool `json:"loggedIn"`
 }
 
 func claudeAuthProbe(ctx context.Context, executable string) detectutil.AuthProbeStatus {
@@ -17,11 +17,17 @@ func claudeAuthProbe(ctx context.Context, executable string) detectutil.AuthProb
 		return detectutil.AuthProbeUnknown
 	}
 	var status claudeAuthStatus
-	if json.Unmarshal([]byte(probe.Output), &status) != nil {
+	if json.Unmarshal([]byte(probe.Stdout), &status) != nil {
 		return detectutil.AuthProbeUnknown
 	}
-	if status.LoggedIn && probe.ExitCode == 0 {
+	if status.LoggedIn == nil {
+		return detectutil.AuthProbeUnknown
+	}
+	if !*status.LoggedIn {
+		return detectutil.AuthProbeUnauthenticated
+	}
+	if probe.ExitCode == 0 {
 		return detectutil.AuthProbeAuthenticated
 	}
-	return detectutil.AuthProbeUnauthenticated
+	return detectutil.AuthProbeUnknown
 }

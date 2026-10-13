@@ -18,6 +18,9 @@ func (e commandExecutor) writeProviderInput(input []byte) []agentbridge.Event {
 
 func (e commandExecutor) writeApprovalCommand(cmd agentbridge.Command) []agentbridge.Event {
 	builder, ok := e.adapter.(agentbridge.ProviderInputBuilder)
+	if e.builder != nil {
+		builder, ok = e.builder, true
+	}
 	if !ok {
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventWarning,

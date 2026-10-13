@@ -7,7 +7,7 @@ import (
 
 func translateControlRequest(raw agentbridge.RawEvent) []agentbridge.Event {
 	request, _ := raw.Payload["request"].(map[string]any)
-	if wireControlSubtype(stringField(request, "subtype")) == wireControlPermissionRequest {
+	if subtype := stringField(request, "subtype"); subtype == string(wireControlPermissionRequest) || subtype == "can_use_tool" {
 		return []agentbridge.Event{claudeToolApprovalNeededEvent(raw, request)}
 	}
 	return []agentbridge.Event{{

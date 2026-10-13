@@ -21,9 +21,9 @@ func VersionProbeStrict(ctx context.Context, exe string, args ...string) ProbeRe
 	defer cancel()
 	cmd := exec.CommandContext(probeCtx, exe, args...)
 	execwindow.Hide(cmd)
-	var buf bytes.Buffer
-	cmd.Stdout = &buf
-	cmd.Stderr = &buf
+	var stdout, stderr bytes.Buffer
+	cmd.Stdout = &stdout
+	cmd.Stderr = &stderr
 	err := cmd.Run()
 	if errors.Is(probeCtx.Err(), context.DeadlineExceeded) {
 		return ProbeResult{OK: false}
@@ -39,7 +39,9 @@ func VersionProbeStrict(ctx context.Context, exe string, args ...string) ProbeRe
 		}
 	}
 	return ProbeResult{
-		Output:   strings.TrimSpace(buf.String()),
+		Output:   strings.TrimSpace(stdout.String() + stderr.String()),
+		Stdout:   strings.TrimSpace(stdout.String()),
+		Stderr:   strings.TrimSpace(stderr.String()),
 		ExitCode: exitCode,
 		OK:       true,
 	}

@@ -14,7 +14,7 @@ import (
 func daemonRuntimeModels(provider string) []runtimeactor.RuntimeModel {
 	switch strings.TrimSpace(provider) {
 	case codex.Name:
-		return codexRuntimeModels(os.UserHomeDir)
+		return liveCodexRuntimeModels()
 	case cursor.Name:
 		return cursorRuntimeModels(os.UserHomeDir)
 	case openclaw.Name:

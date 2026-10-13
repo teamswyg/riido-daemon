@@ -19,7 +19,7 @@
     {"name": "RunningProcess", "file": "internal/process/port.go", "methods": ["Stdout", "Stderr", "Exited", "WriteStdin", "CloseStdin", "Kill"]}
   ],
   "source_checks": [
-    {"name": "session start spawns process", "file": "internal/agentbridge/session/start.go", "contains": "cfg.Process.Start(ctx, cfg.Spawn)"},
+    {"name": "session start spawns process", "file": "internal/agentbridge/session/start.go", "contains": "cfg.Process.Start(runCtx, cfg.Spawn)"},
     {"name": "Windows child commands stay background-only", "file": "internal/process/processexec/process.go", "contains": "execwindow.Hide(command)"},
     {"name": "session runner keeps stdout", "file": "internal/agentbridge/session/session_runner_new.go", "contains": "stdoutCh:  proc.Stdout()"},
     {"name": "session runner keeps stderr", "file": "internal/agentbridge/session/session_runner_new.go", "contains": "stderrCh:  proc.Stderr()"},
@@ -37,6 +37,7 @@
     "observe path converts process streams through Parser and Adapter.Translate",
     "provider observations map to ProviderEventDraft but terminal task transitions stay in terminal result mapping",
     "stop path uses CommandCancelProvider and lifecycle-aware process kill",
-    "daemon-owned Windows child commands do not allocate visible console windows"
+    "daemon-owned Windows child commands do not allocate visible console windows",
+    "RIID-5816: user/context cancellation and hard/idle timeout preempt event delivery backpressure. The process inherits a cancellable run context with an independent hard deadline, so blocked stdin cannot hold termination. Existing graceful/forced lifecycle authority is preserved."
   ]
 }
