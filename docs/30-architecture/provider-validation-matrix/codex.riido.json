@@ -1,0 +1,34 @@
+{
+  "provider": "codex",
+  "display_name": "Codex",
+  "runtime_kind": "codex",
+  "executable": "codex",
+  "deterministic_ci": [
+    "go test ./internal/provider/codex",
+    "go test ./internal/agentbridge"
+  ],
+  "opt_in_integration": "AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/codex -run TestIntegration -count=1",
+  "worktree_support": "supported",
+  "pass_evidence": [
+    "ResultCompleted",
+    "explicit daemon-owned codex --sandbox danger-full-access app-server --listen stdio:// launch shape",
+    "caller sandbox/config/unsafe-bypass args are dropped with DroppedArgs evidence",
+    "expected file artifact inside daemon-selected workdir"
+  ],
+  "skip_before_run": [
+    "AGENTBRIDGE_INTEGRATION not set",
+    "codex executable missing",
+    "Detect Available=false"
+  ],
+  "latest_evidence": [
+    "A-57-AI-Agent-Provider-Codex-worktree-side-effect-검증",
+    "RIID-4917-Codex-full-access-harness-policy"
+  ],
+  "must_not_claim": [
+    "Codex full-access came from provider default sandbox selection",
+    "Codex sandbox selection came from caller CustomArgs or SaaS payload",
+    "Codex auth/config home is copied into task workdir",
+    "Codex task-scoped permission profile is active",
+    "Skipped integration gate proves filesystem side effect"
+  ]
+}

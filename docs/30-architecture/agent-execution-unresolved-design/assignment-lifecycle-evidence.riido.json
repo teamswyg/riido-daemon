@@ -1,0 +1,33 @@
+{
+  "schema_version": "riido-agent-execution-evidence.v1",
+  "id": "agent-execution-risk-evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/agent-execution-risk.riido.json",
+  "riido_task": "RIID-4964",
+  "human_doc": "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md",
+  "source_documents": [
+    "docs/30-architecture/agent-execution-unresolved-design/overview.md",
+    "docs/30-architecture/agent-execution-unresolved-design/problem-map.md",
+    "docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md",
+    "docs/30-architecture/agent-execution-unresolved-design/execution-identity.md",
+    "docs/30-architecture/agent-execution-unresolved-design/workspace-plan.md",
+    "docs/30-architecture/agent-execution-unresolved-design/runtime-launch-envelope.md",
+    "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md",
+    "docs/30-architecture/agent-execution-unresolved-design/stream-envelope.md",
+    "docs/30-architecture/agent-execution-unresolved-design/retry-recovery-policy.md",
+    "docs/30-architecture/agent-execution-unresolved-design/repo-ownership.md",
+    "docs/30-architecture/agent-execution-unresolved-design/implementation-slices.md",
+    "docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md",
+    "docs/30-architecture/agent-execution-unresolved-design/verification-evidence.md",
+    "docs/50-roadmap/open-questions.md"
+  ],
+  "evidence_files": {
+    "local": [
+      "assignment-lifecycle-evidence/local-runtime.riido.json",
+      "assignment-lifecycle-evidence/local-transport.riido.json",
+      "assignment-lifecycle-evidence/local-platform.riido.json",
+      "assignment-lifecycle-evidence/local-approval.riido.json"
+    ],
+    "external": ["assignment-lifecycle-evidence/external.riido.json"],
+    "remaining_boundaries": ["assignment-lifecycle-evidence/remaining-boundaries.riido.json"]
+  }
+}

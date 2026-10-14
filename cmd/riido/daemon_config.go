@@ -1,16 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 	"time"
-	"unicode"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
-	"github.com/teamswyg/riido-daemon/internal/hostintegration"
+	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/policy"
 )
 
@@ -27,6 +22,7 @@ const (
 	envWorkspaceCount                = "RIIDO_WORKSPACE_COUNT"
 	envRuntimeMaxConcurrent          = "RIIDO_RUNTIME_MAX_CONCURRENT"
 	envWorkdirRoot                   = "RIIDO_WORKDIR_ROOT"
+	envExecutionBindings             = "RIIDO_EXECUTION_BINDINGS_FILE"
 	envPolicyBundle                  = "RIIDO_POLICY_BUNDLE_VERSION"
 	envPolicyBundlePath              = "RIIDO_POLICY_BUNDLE_PATH"
 	envTaskQueueDir                  = "RIIDO_TASK_QUEUE_DIR"
@@ -38,84 +34,41 @@ const (
 	envDaemonHeartbeatSeconds        = "RIIDO_DAEMON_HEARTBEAT_INTERVAL_SECONDS"
 	envWorkdirRetentionSeconds       = "RIIDO_WORKDIR_RETENTION_SECONDS"
 	envWorkdirCleanupIntervalSeconds = "RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS"
-	envDaemonRunHardTimeoutSeconds   = "RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS"
-	envDaemonRunSemanticIdleSeconds  = "RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS"
-	envDaemonClaimWaitMs             = "RIIDO_DAEMON_CLAIM_WAIT_MS"
-	envDaemonLongPollTimeoutSeconds  = "RIIDO_DAEMON_LONGPOLL_TIMEOUT_SECONDS"
-	envDaemonTextFlushBytes          = "RIIDO_DAEMON_TEXT_FLUSH_BYTES"
-	envDaemonTextFlushMs             = "RIIDO_DAEMON_TEXT_FLUSH_MS"
-)
-
-const (
-	// defaultTextFlushBytes / defaultTextFlushInterval coalesce streamed
-	// assistant text deltas so provider token-level output is reported as fewer,
-	// larger chunks (cuts the per-token request storm and lets reporting run
-	// asynchronously to the provider's token cadence). The interval is the
-	// max-latency before buffered text is flushed even mid-stream. Either env set
-	// to `0` disables that trigger; both `0` disables coalescing.
-	defaultTextFlushBytes    = 256
-	defaultTextFlushInterval = 200 * time.Millisecond
-)
-
-const (
-	// defaultClaimWaitMs is the long-poll hint the daemon sends on each claim
-	// poll. It sits below the control plane's default 25s hold budget so the
-	// server's clamp governs; `0` disables long-poll (legacy interval polling).
-	defaultClaimWaitMs = 20000
-	// defaultLongPollTimeout bounds a single held claim poll on the client side
-	// and must exceed both the hint and the server's hold budget.
-	defaultLongPollTimeout = 30 * time.Second
-)
-
-const (
-	// defaultRunHardTimeout is the daemon's default whole-run upper bound for a
-	// provider CLI run. It is deliberately generous so legitimate long agentic
-	// runs (large refactors, long test suites) are not killed, while still
-	// bounding a hung/runaway provider. Operators override with
-	// RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS; 0 disables. See
-	// docs/20-domain/provider-runtime.md §5.7.
-	defaultRunHardTimeout = 30 * time.Minute
-	// defaultRunSemanticIdle is the daemon's default idle watchdog: the run is
-	// timed out if the provider emits no semantic-progress event (text/tool/
-	// usage/progress) for this long. Conservative on purpose so a long *silent*
-	// tool execution (e.g. a multi-minute build) is tolerated while a genuinely
-	// stuck run (no progress at all) is reclaimed. Override with
-	// RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS; 0 disables.
-	defaultRunSemanticIdle = 10 * time.Minute
+	envDaemonPprofAddr               = "RIIDO_DAEMON_PPROF_ADDR"
+	envRunHardTimeout                = "RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS"
+	envRunSemanticIdle               = "RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS"
 )
 
 type daemonSettings struct {
-	ExecutionBindingsFile string
-	RuntimeMaxConcurrent  int
-	DaemonID              string
-	DaemonVersion         string
-	Profile               string
-	ServerURL             string
-	DeviceID              string
-	DeviceSecret          string
-	DeviceName            string
-	RuntimeOwner          string
-	WorkdirRoot           string
-	PolicyBundle          string
-	PolicyBundlePath      string
-	PolicyBundleDoc       policy.PolicyBundle
-	TaskQueueDir          string
-	TaskReportDir         string
-	TaskDBSourcePath      string
-	SaaSURL               string
-	PollEvery             time.Duration
-	IdlePollEvery         time.Duration
-	HeartbeatEvery        time.Duration
-	RunHardTimeout        time.Duration
-	RunSemanticIdle       time.Duration
-	ClaimWaitMs           int
-	LongPollTimeout       time.Duration
-	TextFlushBytes        int
-	TextFlushInterval     time.Duration
-	WorkdirRetention      time.Duration
-	WorkdirCleanupEvery   time.Duration
-	WorkspaceCount        int
-	RuntimeAgents         []runtimeactor.AgentStatus
+	ownedExecutions      func() map[string][]string
+	RunHardTimeout       time.Duration
+	RunSemanticIdle      time.Duration
+	ExecutionBindings    []execution.Binding
+	DaemonID             string
+	DaemonVersion        string
+	Profile              string
+	ServerURL            string
+	DeviceID             string
+	DeviceSecret         string
+	DeviceName           string
+	RuntimeOwner         string
+	WorkdirRoot          string
+	PolicyBundle         string
+	PolicyBundlePath     string
+	PolicyBundleDoc      policy.PolicyBundle
+	TaskQueueDir         string
+	TaskReportDir        string
+	TaskDBSourcePath     string
+	SaaSURL              string
+	PollEvery            time.Duration
+	IdlePollEvery        time.Duration
+	HeartbeatEvery       time.Duration
+	WorkdirRetention     time.Duration
+	WorkdirCleanupEvery  time.Duration
+	PprofAddr            string
+	WorkspaceCount       int
+	RuntimeMaxConcurrent int
+	RuntimeAgents        []runtimeactor.AgentStatus
 }
 
 func loadDaemonSettings() (daemonSettings, error) {
@@ -124,335 +77,4 @@ func loadDaemonSettings() (daemonSettings, error) {
 
 func loadDaemonSettingsFromEnv(getenv func(string) string, hostname func() (string, error)) (daemonSettings, error) {
 	return loadDaemonSettingsFromEnvWithHome(getenv, hostname, os.UserHomeDir)
-}
-
-func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname func() (string, error), userHome func() (string, error)) (daemonSettings, error) {
-	deviceName := strings.TrimSpace(getenv(envDeviceName))
-	if deviceName == "" {
-		if host, err := hostname(); err == nil {
-			deviceName = strings.TrimSpace(host)
-		}
-	}
-	if deviceName == "" {
-		deviceName = "localhost"
-	}
-
-	workspaceCount, err := parseOptionalNonNegativeInt(getenv(envWorkspaceCount), envWorkspaceCount)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-
-	// Max concurrent runtime sessions per provider. Default 4 so a single agent
-	// isn't limited to one task at a time; override with RIIDO_RUNTIME_MAX_CONCURRENT.
-	runtimeMaxConcurrent, err := parseOptionalNonNegativeInt(getenv(envRuntimeMaxConcurrent), envRuntimeMaxConcurrent)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	if runtimeMaxConcurrent == 0 {
-		runtimeMaxConcurrent = 4
-	}
-
-	owner := strings.TrimSpace(getenv(envRuntimeOwner))
-	if owner == "" {
-		owner = strings.TrimSpace(getenv("USER"))
-	}
-	if owner == "" {
-		owner = "local"
-	}
-
-	workdirRoot := strings.TrimSpace(getenv(envWorkdirRoot))
-	if workdirRoot == "" {
-		var err error
-		workdirRoot, err = defaultAgentDaemonWorkdirRoot(userHome)
-		if err != nil {
-			return daemonSettings{}, err
-		}
-	}
-	taskQueueDir := strings.TrimSpace(getenv(envTaskQueueDir))
-	taskReportDir := strings.TrimSpace(getenv(envTaskReportDir))
-	taskDBSourcePath := strings.TrimSpace(getenv(envTaskDBSourcePath))
-	policyBundleVersion := strings.TrimSpace(getenv(envPolicyBundle))
-	policyBundlePath := strings.TrimSpace(getenv(envPolicyBundlePath))
-	policyBundleDoc := policy.DefaultLocalPolicyBundle()
-	if policyBundlePath != "" {
-		bundle, err := policy.LoadPolicyBundleFile(policyBundlePath)
-		if err != nil {
-			return daemonSettings{}, err
-		}
-		if policyBundleVersion != "" && policyBundleVersion != bundle.Version {
-			return daemonSettings{}, fmt.Errorf("%s=%q does not match %s version %q", envPolicyBundle, policyBundleVersion, envPolicyBundlePath, bundle.Version)
-		}
-		policyBundleDoc = bundle
-		policyBundleVersion = bundle.Version
-	}
-	if policyBundleVersion == "" {
-		policyBundleVersion = policy.DefaultLocalPolicyBundleVersion
-	} else if policyBundlePath == "" {
-		policyBundleDoc.Version = policyBundleVersion
-	}
-	saaSURL := strings.TrimSpace(getenv(envSaaSURL))
-	deviceID := strings.TrimSpace(getenv(envDeviceID))
-	deviceSecret := strings.TrimSpace(getenv(envDeviceSecret))
-	if taskReportDir == "" && taskQueueDir != "" {
-		taskReportDir = filepath.Join(taskQueueDir, "reports")
-	}
-	if taskDBSourcePath != "" && taskQueueDir != "" {
-		return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envTaskDBSourcePath, envTaskQueueDir)
-	}
-	if taskDBSourcePath != "" && taskReportDir != "" {
-		return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envTaskDBSourcePath, envTaskReportDir)
-	}
-	if saaSURL != "" {
-		if taskQueueDir != "" {
-			return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envSaaSURL, envTaskQueueDir)
-		}
-		if taskReportDir != "" {
-			return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envSaaSURL, envTaskReportDir)
-		}
-		if taskDBSourcePath != "" {
-			return daemonSettings{}, fmt.Errorf("%s cannot be combined with %s", envSaaSURL, envTaskDBSourcePath)
-		}
-		if deviceID == "" || deviceSecret == "" {
-			return daemonSettings{}, fmt.Errorf("%s requires %s/%s", envSaaSURL, envDeviceID, envDeviceSecret)
-		}
-	}
-	if deviceID == "" && deviceSecret != "" {
-		return daemonSettings{}, fmt.Errorf("%s requires %s", envDeviceSecret, envDeviceID)
-	}
-	if deviceID != "" && deviceSecret == "" {
-		return daemonSettings{}, fmt.Errorf("%s requires %s", envDeviceID, envDeviceSecret)
-	}
-	workdirRetention, err := parseOptionalDurationSeconds(getenv(envWorkdirRetentionSeconds), envWorkdirRetentionSeconds)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	workdirCleanupEvery, err := parseOptionalDurationSeconds(getenv(envWorkdirCleanupIntervalSeconds), envWorkdirCleanupIntervalSeconds)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	if workdirCleanupEvery > 0 && workdirRetention <= 0 {
-		return daemonSettings{}, fmt.Errorf("%s requires %s", envWorkdirCleanupIntervalSeconds, envWorkdirRetentionSeconds)
-	}
-	if workdirRetention > 0 && workdirCleanupEvery <= 0 {
-		workdirCleanupEvery = time.Hour
-	}
-	pollEvery, err := parseOptionalPositiveDurationSeconds(getenv(envDaemonPollIntervalSeconds), envDaemonPollIntervalSeconds, time.Second)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	idlePollEvery, err := parseOptionalPositiveDurationSeconds(getenv(envDaemonIdlePollIntervalSeconds), envDaemonIdlePollIntervalSeconds, 5*time.Second)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	if idlePollEvery < pollEvery {
-		return daemonSettings{}, fmt.Errorf("%s must be greater than or equal to %s", envDaemonIdlePollIntervalSeconds, envDaemonPollIntervalSeconds)
-	}
-	heartbeatEvery, err := parseOptionalPositiveDurationSeconds(getenv(envDaemonHeartbeatSeconds), envDaemonHeartbeatSeconds, 5*time.Second)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	runHardTimeout, err := parseOptionalDurationSecondsWithDefault(getenv(envDaemonRunHardTimeoutSeconds), envDaemonRunHardTimeoutSeconds, defaultRunHardTimeout)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	runSemanticIdle, err := parseOptionalDurationSecondsWithDefault(getenv(envDaemonRunSemanticIdleSeconds), envDaemonRunSemanticIdleSeconds, defaultRunSemanticIdle)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	claimWaitMs, err := parseOptionalNonNegativeIntWithDefault(getenv(envDaemonClaimWaitMs), envDaemonClaimWaitMs, defaultClaimWaitMs)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	longPollTimeout, err := parseOptionalPositiveDurationSeconds(getenv(envDaemonLongPollTimeoutSeconds), envDaemonLongPollTimeoutSeconds, defaultLongPollTimeout)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	textFlushBytes, err := parseOptionalNonNegativeIntWithDefault(getenv(envDaemonTextFlushBytes), envDaemonTextFlushBytes, defaultTextFlushBytes)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-	textFlushInterval, err := parseOptionalDurationMillisWithDefault(getenv(envDaemonTextFlushMs), envDaemonTextFlushMs, defaultTextFlushInterval)
-	if err != nil {
-		return daemonSettings{}, err
-	}
-
-	return daemonSettings{
-		ExecutionBindingsFile: strings.TrimSpace(getenv("RIIDO_EXECUTION_BINDINGS_FILE")),
-		RuntimeMaxConcurrent:  runtimeMaxConcurrent,
-		DaemonID:              defaultDaemonID(getenv(envDaemonID), deviceID),
-		DaemonVersion:         firstNonEmpty(getenv(envDaemonVersion), "riido-agentd v0.0.0"),
-		Profile:               firstNonEmpty(getenv(envDaemonProfile), "local"),
-		ServerURL:             strings.TrimSpace(getenv(envServerURL)),
-		DeviceID:              deviceID,
-		DeviceSecret:          deviceSecret,
-		DeviceName:            deviceName,
-		RuntimeOwner:          owner,
-		WorkdirRoot:           workdirRoot,
-		PolicyBundle:          policyBundleVersion,
-		PolicyBundlePath:      policyBundlePath,
-		PolicyBundleDoc:       policyBundleDoc,
-		TaskQueueDir:          taskQueueDir,
-		TaskReportDir:         taskReportDir,
-		TaskDBSourcePath:      taskDBSourcePath,
-		SaaSURL:               saaSURL,
-		PollEvery:             pollEvery,
-		IdlePollEvery:         idlePollEvery,
-		HeartbeatEvery:        heartbeatEvery,
-		RunHardTimeout:        runHardTimeout,
-		RunSemanticIdle:       runSemanticIdle,
-		ClaimWaitMs:           claimWaitMs,
-		LongPollTimeout:       longPollTimeout,
-		TextFlushBytes:        textFlushBytes,
-		TextFlushInterval:     textFlushInterval,
-		WorkdirRetention:      workdirRetention,
-		WorkdirCleanupEvery:   workdirCleanupEvery,
-		WorkspaceCount:        workspaceCount,
-		RuntimeAgents:         parseRuntimeAgents(getenv(envRuntimeAgents)),
-	}, nil
-}
-
-func defaultAgentDaemonWorkdirRoot(userHome func() (string, error)) (string, error) {
-	home, err := userHome()
-	if err != nil {
-		return "", err
-	}
-	root, err := hostintegration.DefaultAppDataRoot(hostintegration.AppDataRootInput{
-		Channel:  hostintegration.DistributionChannelDevLocal,
-		HostOS:   hostintegration.HostOSDarwin,
-		UserHome: home,
-	})
-	if err != nil {
-		return "", err
-	}
-	return root.WorkdirRoot(), nil
-}
-
-func firstNonEmpty(value, fallback string) string {
-	if trimmed := strings.TrimSpace(value); trimmed != "" {
-		return trimmed
-	}
-	return fallback
-}
-
-func defaultDaemonID(configuredDaemonID string, deviceID string) string {
-	if daemonID := strings.TrimSpace(configuredDaemonID); daemonID != "" {
-		return daemonID
-	}
-	if devicePrincipalID := strings.TrimSpace(deviceID); devicePrincipalID != "" {
-		return devicePrincipalID
-	}
-	return "agentd-local"
-}
-
-func parseOptionalNonNegativeInt(raw, name string) (int, error) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" {
-		return 0, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil || n < 0 {
-		return 0, fmt.Errorf("%s must be a non-negative integer", name)
-	}
-	return n, nil
-}
-
-func parseOptionalDurationSeconds(raw, name string) (time.Duration, error) {
-	n, err := parseOptionalNonNegativeInt(raw, name)
-	if err != nil {
-		return 0, err
-	}
-	return time.Duration(n) * time.Second, nil
-}
-
-// parseOptionalDurationSecondsWithDefault parses a second-valued env knob that
-// defaults to a non-zero policy value when unset, while still allowing an
-// explicit 0 to disable the clock. Empty -> fallback; "0" -> 0 (disabled);
-// positive -> that duration; negative/non-numeric -> error.
-// parseOptionalNonNegativeIntWithDefault parses an int env knob that defaults to
-// a non-zero value when unset while still allowing an explicit 0 to disable.
-// Empty -> fallback; "0" -> 0; positive -> value; negative/non-numeric -> error.
-func parseOptionalNonNegativeIntWithDefault(raw, name string, fallback int) (int, error) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil || n < 0 {
-		return 0, fmt.Errorf("%s must be a non-negative integer (0 disables)", name)
-	}
-	return n, nil
-}
-
-// parseOptionalDurationMillisWithDefault parses a millisecond-valued env knob:
-// empty -> fallback; "0" -> 0 (disabled); positive -> that duration in ms;
-// negative/non-numeric -> error.
-func parseOptionalDurationMillisWithDefault(raw, name string, fallback time.Duration) (time.Duration, error) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil || n < 0 {
-		return 0, fmt.Errorf("%s must be a non-negative integer (0 disables)", name)
-	}
-	return time.Duration(n) * time.Millisecond, nil
-}
-
-func parseOptionalDurationSecondsWithDefault(raw, name string, fallback time.Duration) (time.Duration, error) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil || n < 0 {
-		return 0, fmt.Errorf("%s must be a non-negative integer (0 disables)", name)
-	}
-	return time.Duration(n) * time.Second, nil
-}
-
-func parseOptionalPositiveDurationSeconds(raw, name string, fallback time.Duration) (time.Duration, error) {
-	raw = strings.TrimSpace(raw)
-	if raw == "" {
-		return fallback, nil
-	}
-	n, err := strconv.Atoi(raw)
-	if err != nil || n <= 0 {
-		return 0, fmt.Errorf("%s must be a positive integer", name)
-	}
-	return time.Duration(n) * time.Second, nil
-}
-
-func parseRuntimeAgents(raw string) []runtimeactor.AgentStatus {
-	parts := strings.Split(raw, ",")
-	out := make([]runtimeactor.AgentStatus, 0, len(parts))
-	for _, part := range parts {
-		name := strings.TrimSpace(part)
-		if name == "" {
-			continue
-		}
-		out = append(out, runtimeactor.AgentStatus{
-			AgentID: slugAgentName(name),
-			Name:    name,
-			State:   "online",
-		})
-	}
-	return out
-}
-
-func slugAgentName(name string) string {
-	var b strings.Builder
-	lastDash := false
-	for _, r := range strings.ToLower(name) {
-		switch {
-		case unicode.IsLetter(r) || unicode.IsDigit(r):
-			b.WriteRune(r)
-			lastDash = false
-		default:
-			if !lastDash && b.Len() > 0 {
-				b.WriteByte('-')
-				lastDash = true
-			}
-		}
-	}
-	return strings.Trim(b.String(), "-")
 }

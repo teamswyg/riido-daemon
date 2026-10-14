@@ -1,0 +1,11 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "closed-loop-maturity",
+  "owner": "tools/localproductacceptance and local-qa-runner workflow",
+  "observation": {"summary": "Local QA added many harness and generated evidence surfaces, but meta complexity, product outcome linkage, and partial reduction debt were not measured as one loop.", "artifacts": ["docs/30-architecture/closed-loop-maturity.dsl.json"]},
+  "hypothesis": {"summary": "A compact maturity DSL can make harness growth, product outcome linkage, and stale partial candidates visible without changing runtime contracts.", "artifacts": ["tools/localproductacceptance/closed_loop_maturity_test.go"]},
+  "execution": {"summary": "Generate the maturity DSL mirror, run localproductacceptance, and publish closed-loop maturity fields into product acceptance evidence.", "artifacts": ["tools/localproductacceptance", ".github/workflows/local-qa-runner.yml"]},
+  "evaluation": {"summary": "The verifier rejects generated DSL drift and CI greps for local.qa.closed_loop_maturity, meta_complexity, product_acceptance, and partial_reduction evidence.", "artifacts": ["tools/localproductacceptance/closed_loop_maturity_test.go", ".github/workflows/local-qa-runner.yml"]},
+  "retrospective": {"summary": "New harnesses now have a visible maturity row; inferred product and partial metrics stay partial until promoted into runner-backed verifiers.", "artifacts": ["docs/30-architecture/loop-engineering.md"]},
+  "evidence": [{"kind": "command", "ref": "go test ./tools/localproductacceptance && go run ./tools/localproductacceptance -client-root /tmp/riido-daemon-loop-client -probe-routes=false -storage-state /tmp/no-riido-storage-state.json -workspace-id \"\" -api-token \"\" -evidence-out /tmp/ai-agent-product-acceptance.json -lab-out /tmp/contract-lab/index.html -manual-evidence-out /tmp/manual-qa-evidence.json", "proves": "closed-loop maturity DSL is fresh and maturity evidence is emitted"}, {"kind": "workflow", "ref": ".github/workflows/local-qa-runner.yml", "proves": "public CI preserves closed-loop maturity evidence fields"}]
+}

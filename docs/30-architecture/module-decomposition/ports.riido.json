@@ -1,0 +1,10 @@
+[
+  {"port": "Provider run", "package": "agentbridge.Adapter", "adapters": "Claude/Codex/OpenClaw/Cursor adapters"},
+  {"port": "Process", "package": "process.Process", "adapters": "processexec, FakeProcess"},
+  {"port": "Task source", "package": "controlplane.TaskSourcePort", "adapters": "memory, file queue, task DB, SaaS polling"},
+  {"port": "Task reporter", "package": "controlplane.TaskReporterPort", "adapters": "memory, file, task DB, SaaS events"},
+  {"port": "Workdir FS", "package": "workdir.FSAdapter", "adapters": "local filesystem"},
+  {"port": "Validation runner", "package": "validation.RunCommand", "adapters": "daemon-measured /bin/sh -lc"},
+  {"port": "Local API transport", "package": "riidoapi transport", "adapters": "Unix socket, Windows named pipe"},
+  {"port": "Host integration", "package": "hostintegration pure models", "adapters": "future GUI/helper OS adapters"}
+]

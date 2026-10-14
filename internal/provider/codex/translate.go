@@ -2,11 +2,9 @@ package codex
 
 import (
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/toolargs"
 )
 
 // Translate maps a Codex JSON-RPC RawEvent to run-scope Events.
@@ -33,29 +31,30 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 	switch raw.Source {
 	case agentbridge.RawSourceStderr:
 		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: string(raw.Bytes)}}, nil, nil
+	case agentbridge.RawSourceStdout, agentbridge.RawSourceClose:
 	}
 
 	switch {
-	case raw.Type == "malformed":
+	case rawFrameType(raw.Type) == rawFrameMalformed:
 		return []agentbridge.Event{{Kind: agentbridge.EventWarning, Text: "malformed codex json-rpc frame", Err: string(raw.Bytes)}}, nil, nil
 
-	case raw.Type == "error":
+	case rawFrameType(raw.Type) == rawFrameError:
 		return []agentbridge.Event{{
 			Kind: agentbridge.EventError,
 			Err:  errMessage(raw.Payload),
 		}}, nil, nil
 
-	case raw.Type == "response":
+	case rawFrameType(raw.Type) == rawFrameResponse:
 		// Plain RPC responses aren't run-scope events; the RPC actor
 		// resolves them. Emit a Log so observability is preserved.
 		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex rpc response"}}, nil, nil
 
-	case strings.HasPrefix(raw.Type, "notification:"):
-		method := strings.TrimPrefix(raw.Type, "notification:")
+	case strings.HasPrefix(raw.Type, rawFrameNotificationPrefix):
+		method := codexMethod(strings.TrimPrefix(raw.Type, rawFrameNotificationPrefix))
 		return translateNotification(method, params(raw)), nil, nil
 
-	case strings.HasPrefix(raw.Type, "server_request:"):
-		method := strings.TrimPrefix(raw.Type, "server_request:")
+	case strings.HasPrefix(raw.Type, rawFrameServerRequestPrefix):
+		method := codexMethod(strings.TrimPrefix(raw.Type, rawFrameServerRequestPrefix))
 		events := translateServerRequest(method, params(raw))
 		id, err := json.Marshal(raw.Payload["id"])
 		if err != nil {
@@ -68,261 +67,4 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 	}
 
 	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown frame: " + raw.Type}}, nil, nil
-}
-
-func translateNotification(method string, p map[string]any) []agentbridge.Event {
-	switch method {
-	case "thread_started", "thread_resumed":
-		return []agentbridge.Event{{Kind: agentbridge.EventSessionIdentified, SessionID: stringField(p, "thread_id")}}
-
-	case "thread/started", "thread/resumed":
-		return []agentbridge.Event{{Kind: agentbridge.EventSessionIdentified, SessionID: threadIDFromParams(p)}}
-
-	case "turn_started", "turn/started":
-		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}
-
-	case "agent_message":
-		return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: stringField(p, "text")}}
-
-	case "item/agentMessage/delta":
-		return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: stringField(p, "delta")}}
-
-	case "reasoning":
-		return []agentbridge.Event{{Kind: agentbridge.EventThinkingDelta, Text: stringField(p, "text")}}
-
-	case "command_execution_started":
-		return []agentbridge.Event{{
-			Kind: agentbridge.EventToolCallStarted,
-			Tool: agentbridge.ToolRef{
-				ID:   stringField(p, "id"),
-				Name: stringField(p, "command"),
-				Kind: "shell",
-				Args: toolargs.FromPairs("command", stringField(p, "command")),
-			},
-		}}
-
-	case "command_execution_output":
-		return []agentbridge.Event{{
-			Kind: agentbridge.EventToolCallDelta,
-			Tool: agentbridge.ToolRef{ID: stringField(p, "id")},
-			Text: stringField(p, "chunk"),
-		}}
-
-	case "command_execution_completed":
-		kind := agentbridge.EventToolCallCompleted
-		if intField(p, "exit_code") != 0 {
-			kind = agentbridge.EventToolCallFailed
-		}
-		return []agentbridge.Event{{
-			Kind: kind,
-			Tool: agentbridge.ToolRef{ID: stringField(p, "id"), Kind: "shell"},
-		}}
-
-	case "apply_patch_started":
-		return []agentbridge.Event{{
-			Kind: agentbridge.EventToolCallStarted,
-			Tool: agentbridge.ToolRef{
-				ID:   stringField(p, "id"),
-				Kind: "patch_apply",
-				Args: toolargs.FromPairs("path", stringField(p, "path")),
-			},
-		}}
-
-	case "apply_patch_completed":
-		return []agentbridge.Event{{
-			Kind: agentbridge.EventToolCallCompleted,
-			Tool: agentbridge.ToolRef{ID: stringField(p, "id"), Kind: "patch_apply"},
-		}}
-
-	case "turn_completed", "turn/completed":
-		turn := mapField(p, "turn")
-		status := agentbridge.ResultCompleted
-		switch stringField(turn, "status") {
-		case "failed":
-			status = agentbridge.ResultFailed
-		case "interrupted":
-			status = agentbridge.ResultCancelled
-		case "", "completed":
-		default:
-			status = agentbridge.ResultFailed
-		}
-		return []agentbridge.Event{{
-			Kind: agentbridge.EventResult,
-			Result: agentbridge.Result{
-				Status: status,
-				Output: stringField(p, "output"),
-				Error:  stringField(mapField(turn, "error"), "message"),
-			},
-		}}
-
-	case "turn_error", "turn/error", "turn/failed":
-		return []agentbridge.Event{{
-			Kind: agentbridge.EventResult,
-			Result: agentbridge.Result{
-				Status: agentbridge.ResultFailed,
-				Error:  stringField(p, "message"),
-			},
-		}}
-
-	case "account/rateLimits/updated", "account_rate_limits_updated":
-		// Codex app-server periodically reports current account rate-limit
-		// windows. Informational (not terminal) — surface as a clear log so it
-		// is no longer reported as an "unknown notification".
-		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex rate limits updated"}}
-
-	// Newer codex app-server (0.13x) "item" + lifecycle notifications. The
-	// assistant text still arrives via item/agentMessage/delta (handled above);
-	// these are structural/lifecycle signals we acknowledge as informational so
-	// they stop surfacing as "unknown notification" noise. Completion is NOT
-	// inferred here — that stays with turn/completed and thread/status/changed
-	// so a per-item completion can never truncate a live turn.
-	case "item/started", "item/completed":
-		item := mapField(p, "item")
-		toolKind := ""
-		switch stringField(item, "type") {
-		case "commandExecution":
-			toolKind = "shell"
-		case "fileChange":
-			toolKind = "patch_apply"
-		case "mcpToolCall":
-			toolKind = "mcp"
-		}
-		if toolKind != "" {
-			kind := agentbridge.EventToolCallStarted
-			if method == "item/completed" {
-				kind = agentbridge.EventToolCallCompleted
-				if stringField(item, "status") == "failed" || intField(item, "exitCode") != 0 {
-					kind = agentbridge.EventToolCallFailed
-				}
-			}
-			return []agentbridge.Event{{Kind: kind, Tool: agentbridge.ToolRef{ID: stringField(item, "id"), Name: firstString(item, "command", "tool"), Kind: toolKind, Args: toolargs.FromPairs("command", stringField(item, "command"))}}}
-		}
-		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex " + method}}
-	case "item/updated",
-		"hook/started", "hook/completed",
-		"mcpServer/startupStatus/updated",
-		"remoteControl/status/changed":
-		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex " + method}}
-
-	case "usage":
-		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: agentbridge.Usage{
-			PromptTokens:     intField(p, "input_tokens"),
-			CompletionTokens: intField(p, "output_tokens"),
-			ReasoningTokens:  intField(p, "reasoning_tokens"),
-		}}}
-
-	case "thread/tokenUsage/updated":
-		total := mapField(mapField(p, "tokenUsage"), "total")
-		return []agentbridge.Event{{Kind: agentbridge.EventUsageDelta, Usage: agentbridge.Usage{
-			PromptTokens:     intField(total, "inputTokens"),
-			CompletionTokens: intField(total, "outputTokens"),
-			ReasoningTokens:  intField(total, "reasoningOutputTokens"),
-			CacheReadTokens:  intField(total, "cachedInputTokens"),
-		}}}
-	}
-
-	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown notification: " + method}}
-}
-
-func translateServerRequest(method string, p map[string]any) []agentbridge.Event {
-	switch method {
-	case "item/tool/requestUserInput":
-		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateWaitingUserInput, Tool: agentbridge.ToolRef{ID: firstString(p, "itemId", "id"), Kind: "user_input"}}}
-	case "approve_command", "item/commandExecution/requestApproval":
-		return []agentbridge.Event{{
-			Kind: agentbridge.EventToolApprovalNeeded,
-			Tool: agentbridge.ToolRef{
-				ID:   firstString(p, "itemId", "id"),
-				Name: stringField(p, "command"),
-				Kind: "shell",
-				Args: toolargs.FromPairs("command", stringField(p, "command")),
-			},
-		}}
-	case "approve_patch", "item/fileChange/requestApproval":
-		return []agentbridge.Event{{
-			Kind: agentbridge.EventToolApprovalNeeded,
-			Tool: agentbridge.ToolRef{
-				ID:   firstString(p, "itemId", "id"),
-				Name: stringField(p, "path"),
-				Kind: "patch_apply",
-				Args: toolargs.FromPairs("path", stringField(p, "path")),
-			},
-		}}
-	}
-	return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex unknown server_request: " + method}}
-}
-
-func firstString(p map[string]any, keys ...string) string {
-	for _, key := range keys {
-		if value := stringField(p, key); value != "" {
-			return value
-		}
-	}
-	return ""
-}
-
-// BuildProviderInput preserves both numeric and string JSON-RPC request IDs.
-func BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
-	var id any
-	if err := json.Unmarshal([]byte(cmd.ProviderRequestID), &id); err != nil || id == nil {
-		return nil, fmt.Errorf("codex: invalid approval request id")
-	}
-	decision := "decline"
-	switch cmd.Kind {
-	case agentbridge.CommandApproveTool:
-		decision = "accept"
-	case agentbridge.CommandRejectTool:
-	default:
-		return nil, fmt.Errorf("codex: unsupported provider input command %s", cmd.Kind)
-	}
-	body, err := json.Marshal(map[string]any{"jsonrpc": "2.0", "id": id, "result": map[string]any{"decision": decision}})
-	return append(body, '\n'), err
-}
-
-func params(raw agentbridge.RawEvent) map[string]any {
-	p, _ := raw.Payload["params"].(map[string]any)
-	return p
-}
-
-func threadIDFromParams(p map[string]any) string {
-	if id := stringField(p, "threadId"); id != "" {
-		return id
-	}
-	if id := stringField(p, "thread_id"); id != "" {
-		return id
-	}
-	thread := mapField(p, "thread")
-	if id := stringField(thread, "id"); id != "" {
-		return id
-	}
-	return stringField(thread, "sessionId")
-}
-
-func stringField(m map[string]any, key string) string {
-	if m == nil {
-		return ""
-	}
-	s, _ := m[key].(string)
-	return s
-}
-
-func intField(m map[string]any, key string) int {
-	if m == nil {
-		return 0
-	}
-	switch v := m[key].(type) {
-	case float64:
-		return int(v)
-	case int:
-		return v
-	}
-	return 0
-}
-
-func errMessage(payload map[string]any) string {
-	e, ok := payload["error"].(map[string]any)
-	if !ok {
-		return ""
-	}
-	return stringField(e, "message")
 }

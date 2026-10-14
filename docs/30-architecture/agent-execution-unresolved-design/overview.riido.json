@@ -1,0 +1,23 @@
+{
+  "shared_shape": [
+    "execution must be keyed by assignment identity, not only logical task id",
+    "workspace materialization must be structured data, not prompt text",
+    "stop, stream, retry, approval, and resume must converge on one lifecycle FSM",
+    "provider launch must freeze executable, PATH, env, cwd, and approval policy"
+  ],
+  "focused_files": [
+    {"title": "Problem Map", "path": "problem-map.md"},
+    {"title": "Current Structure Evidence", "path": "current-structure-evidence.md"},
+    {"title": "Execution Identity", "path": "execution-identity.md"},
+    {"title": "Workspace Plan", "path": "workspace-plan.md"},
+    {"title": "Runtime Launch Envelope", "path": "runtime-launch-envelope.md"},
+    {"title": "Assignment Lifecycle FSM", "path": "assignment-lifecycle-fsm.md"},
+    {"title": "Stream Envelope", "path": "stream-envelope.md"},
+    {"title": "Retry And Recovery Policy", "path": "retry-recovery-policy.md"},
+    {"title": "Repo Ownership", "path": "repo-ownership.md"},
+    {"title": "Implementation Slices", "path": "implementation-slices.md"},
+    {"title": "Verification Evidence", "path": "verification-evidence.md"},
+    {"title": "Current Daemon Slice Status", "path": "current-daemon-slice-status.md"},
+    {"title": "RAG Guardrails", "path": "rag-guardrails.md"}
+  ]
+}

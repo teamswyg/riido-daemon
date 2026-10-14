@@ -12,18 +12,16 @@
 package codex
 
 import (
-	"fmt"
-	"maps"
-	"sort"
-	"strings"
-
 	providercap "github.com/teamswyg/riido-contracts/provider/capability"
+	providercatalog "github.com/teamswyg/riido-contracts/provider/catalog"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-const Name = "codex"
-const DefaultExecutable = "codex"
-const FullAccessSandboxMode = "danger-full-access"
+const (
+	Name                  = string(providercatalog.KindCodex)
+	DefaultExecutable     = "codex"
+	FullAccessSandboxMode = "danger-full-access"
+)
 
 // BlockedArgs are protocol-critical flags the adapter sets itself.
 // --listen is the load-bearing one: caller-supplied --listen would let
@@ -31,46 +29,6 @@ const FullAccessSandboxMode = "danger-full-access"
 // adapter's JSON-RPC-over-stdio contract.
 func BlockedArgs() []string {
 	return providercap.ProtocolCriticalArgs(providercap.ProtocolCodexAppServer)
-}
-
-// UnsafeBypassArgs are provider-native approval-bypass flags covered by
-// docs/20-domain/security.md §5. The daemon does not expose an allow path for
-// these free-form CustomArgs. Boolean equals-forms such as --yolo=true are the
-// same unsafe surface.
-//
-// Codex `--sandbox danger-full-access` is deliberately not in this list: it is
-// the daemon-owned provider full-access runtime envelope, not a caller-owned
-// bypass flag.
-func UnsafeBypassArgs() []string {
-	return []string{
-		"--yolo",
-		"--dangerously-bypass-approvals-and-sandbox",
-	}
-}
-
-// SandboxOverrideArgs are Codex sandbox-selection flags. The daemon owns the
-// provider trust envelope, so caller CustomArgs may not override it.
-func SandboxOverrideArgs() []string {
-	return []string{"--sandbox", "-s"}
-}
-
-// SecurityCriticalArgs are Codex app-server flags that can rewrite the
-// daemon-owned launch/trust shape. They are distinct from protocol-critical
-// args: --listen protects transport shape, while these protect C4/C7 runtime
-// policy decisions from caller-provided config overlays.
-func SecurityCriticalArgs() []string {
-	return []string{
-		"-c",
-		"--config",
-		"--enable",
-		"--disable",
-	}
-}
-
-// StartOptions carries Codex-specific knobs.
-type StartOptions struct {
-	// Executable overrides the binary path. Falls back to DefaultExecutable.
-	Executable string
 }
 
 // BuildStart turns an agentbridge.StartRequest + Codex options into a
@@ -103,120 +61,4 @@ func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.St
 		StdinMode:   agentbridge.StdinPipe,
 		DroppedArgs: dropped,
 	}, nil
-}
-
-func filterCustomArgs(custom []string) (kept []string, dropped []string) {
-	kept, dropped = agentbridge.FilterBlockedArgs(custom, BlockedArgs())
-	kept, dropped = filterConfigOverrideArgs(kept, dropped)
-	kept, dropped = filterSandboxOverrideArgs(kept, dropped)
-	return filterUnsafeBypassArgs(kept, dropped)
-}
-
-func filterConfigOverrideArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
-	blocked := make(map[string]struct{}, len(SecurityCriticalArgs()))
-	for _, arg := range SecurityCriticalArgs() {
-		blocked[arg] = struct{}{}
-	}
-
-	allDropped = append(allDropped, dropped...)
-	for i := 0; i < len(custom); i++ {
-		arg := custom[i]
-		if _, isBlocked := blocked[arg]; isBlocked {
-			allDropped = append(allDropped, arg)
-			if (arg == "-c" || arg == "--config" || arg == "--enable" || arg == "--disable") && i+1 < len(custom) {
-				allDropped = append(allDropped, custom[i+1])
-				i++
-			}
-			continue
-		}
-		if strings.HasPrefix(arg, "-c=") ||
-			strings.HasPrefix(arg, "--config=") ||
-			strings.HasPrefix(arg, "--enable=") ||
-			strings.HasPrefix(arg, "--disable=") {
-			allDropped = append(allDropped, arg)
-			continue
-		}
-		kept = append(kept, arg)
-	}
-	return kept, allDropped
-}
-
-func filterSandboxOverrideArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
-	blocked := make(map[string]struct{}, len(SandboxOverrideArgs()))
-	for _, arg := range SandboxOverrideArgs() {
-		blocked[arg] = struct{}{}
-	}
-
-	allDropped = append(allDropped, dropped...)
-	for i := 0; i < len(custom); i++ {
-		arg := custom[i]
-		if _, isBlocked := blocked[arg]; isBlocked {
-			allDropped = append(allDropped, arg)
-			if i+1 < len(custom) {
-				allDropped = append(allDropped, custom[i+1])
-				i++
-			}
-			continue
-		}
-		if strings.HasPrefix(arg, "--sandbox=") || strings.HasPrefix(arg, "-s=") {
-			allDropped = append(allDropped, arg)
-			continue
-		}
-		kept = append(kept, arg)
-	}
-	return kept, allDropped
-}
-
-func filterUnsafeBypassArgs(custom []string, dropped []string) (kept []string, allDropped []string) {
-	blocked := make(map[string]struct{}, len(UnsafeBypassArgs()))
-	for _, arg := range UnsafeBypassArgs() {
-		blocked[arg] = struct{}{}
-	}
-
-	allDropped = append(allDropped, dropped...)
-	for i := 0; i < len(custom); i++ {
-		arg := custom[i]
-		if _, isBlocked := blocked[arg]; isBlocked {
-			allDropped = append(allDropped, arg)
-			continue
-		}
-		if strings.HasPrefix(arg, "--yolo=") ||
-			strings.HasPrefix(arg, "--dangerously-bypass-approvals-and-sandbox=") {
-			allDropped = append(allDropped, arg)
-			continue
-		}
-		kept = append(kept, arg)
-	}
-	return kept, allDropped
-}
-
-// buildEnv merges caller env with adapter-reserved env. Reserved keys
-// always win — caller values for those keys are silently dropped. We
-// don't surface the drop as a Warning event because env collisions are
-// expected (the daemon may pass through user $PATH etc. that contains
-// no secrets, and adding a warning per env collision would be noisy).
-// If we later need observability, switch to returning a separate
-// DroppedEnvKeys slice.
-func buildEnv(caller map[string]string, _ StartOptions) []string {
-	reserved := map[string]string{}
-
-	merged := make(map[string]string, len(caller)+len(reserved))
-	for k, v := range caller {
-		if _, isReserved := reserved[k]; isReserved {
-			continue
-		}
-		merged[k] = v
-	}
-	maps.Copy(merged, reserved)
-
-	keys := make([]string, 0, len(merged))
-	for k := range merged {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-	env := make([]string, 0, len(keys))
-	for _, k := range keys {
-		env = append(env, fmt.Sprintf("%s=%s", k, merged[k]))
-	}
-	return env
 }

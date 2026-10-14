@@ -2,9 +2,10 @@ package claude
 
 import (
 	"context"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"strings"
 	"testing"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 func TestClaudePartialFlag(t *testing.T) {
@@ -16,6 +17,7 @@ func TestClaudePartialFlag(t *testing.T) {
 		t.Fatal("token streaming is not enabled by generated CLI args")
 	}
 }
+
 func TestClaudeStreamDelta(t *testing.T) {
 	raws := feedStdoutAll(t, NewParser(), `{"type":"stream_event","event":{"type":"content_block_delta","index":0,"delta":{"type":"text_delta","text":"hello"}}}`+"\n")
 	for _, r := range raws {

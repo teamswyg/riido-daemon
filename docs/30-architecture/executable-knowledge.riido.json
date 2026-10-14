@@ -1,0 +1,62 @@
+{
+  "schema_version": "riido-executable-knowledge-coverage.v1",
+  "id": "architecture-executable-knowledge-coverage",
+  "title": "Architecture Executable Knowledge Coverage",
+  "generated_doc": "docs/30-architecture/executable-knowledge.md",
+  "workflow": ".github/workflows/executable-knowledge-coverage.yml",
+  "evidence_artifact": "executable-knowledge-coverage",
+  "scan_roots": ["docs/30-architecture"],
+  "manual_groups": [],
+  "manifest_loop_budget": {
+    "max_missing": 0,
+    "max_missing_by_group": {
+      "docs": 0
+    }
+  },
+  "loop_registry": [
+    {
+      "id": "local-qa-daily-evidence-sweep",
+      "loop_source": "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json",
+      "observes": [
+        "local-qa-schedule.json trigger",
+        "local-qa-coverage.json local.qa.daily_freshness row",
+        "dashboard stale rows after expires_at"
+      ],
+      "verifies": [
+        "refreshes_expired_evidence",
+        "daily-evidence-sweep trigger identity",
+        "semantic peer binding for freshness changes"
+      ],
+      "evidence": [
+        ".riido-local/evidence/local-qa-schedule.json",
+        ".riido-local/evidence/local-qa-coverage.json",
+        "executable-knowledge-coverage/local-qa-schedule-binding.json"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "evidence_missing",
+        "expires_at_missing",
+        "freshness_row_missing",
+        "semantic_drift"
+      ]
+    }
+  ],
+  "assertions": [
+    "30-architecture markdown must be generated, backed by a direct .riido.json, or registered as a manual surface with a next executable artifact",
+    "manual surface registration is debt inventory, not a replacement for executable SSOT",
+    "new unregistered architecture prose must fail CI before it can silently expand interpretation variance",
+    "the architecture executable knowledge coverage manifest must expose a complete evidence loop",
+    "architecture executable knowledge coverage must show generated reader origins as bounded samples",
+    "architecture executable knowledge generated reader origins must have public workflow references",
+    "architecture executable knowledge coverage must show repository executable manifest inventory as bounded samples",
+    "architecture executable knowledge coverage must show repository executable manifest loop debt as bounded samples",
+    "new loop-less executable manifest debt must not exceed the manifest_loop_budget"
+  ],
+  "loop": {
+    "observation": "Architecture documentation can grow as generated readers while the architecture coverage gate itself does not expose its loop or the executable manifests that support the repository.",
+    "hypothesis": "Making the architecture coverage manifest carry the loop plus bounded generated-reader and manifest inventory samples keeps architecture docs as generated human surfaces and makes the verifier intent visible in CI evidence.",
+    "execute": "Scan docs/30-architecture markdown, classify generated/direct/manual surfaces, sample generated reader origins by generator, require generated origins to be referenced by public workflows, sample repository executable manifests by group, require manual debt registration, require a complete evidence loop, and publish JSON evidence from the workflow.",
+    "evaluate": "The verifier fails on unregistered manual architecture prose, generated reader origins without workflow references, stale generated coverage, or missing evidence-loop phases in the coverage manifest while reporting generated-reader origins and manifest inventory groups.",
+    "retrospective": "This keeps architecture coverage aligned with executable knowledge: the manifest is the SSOT, the reader is generated, and public CI preserves evidence for reader and executable-manifest surfaces."
+  }
+}

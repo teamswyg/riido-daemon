@@ -7,7 +7,9 @@ on:
       - ".github/workflows/store-distribution-contract.yml"
       - "NOTICE.md"
       - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
+      - "docs/30-architecture/loop-engineering/store-distribution.riido.json"
       - "docs/migration/daemon.md"
       - "internal/hostintegration/**"
       - "internal/policy/**"
@@ -20,7 +22,9 @@ on:
       - ".github/workflows/store-distribution-contract.yml"
       - "NOTICE.md"
       - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
+      - "docs/30-architecture/loop-engineering/store-distribution.riido.json"
       - "docs/migration/daemon.md"
       - "internal/hostintegration/**"
       - "internal/policy/**"
@@ -33,12 +37,22 @@ jobs:
   store-contract-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
         with:
           go-version-file: go.mod
           cache: false
       - name: Test store contract tool
         run: go test ./tools/storecontract -count=1
       - name: Verify store distribution contract
-        run: go run ./tools/storecontract -contract packaging/store/riido_daemon_store_distribution.riido.json -repo .
+        run: >
+          go run ./tools/storecontract
+          -contract packaging/store/riido_daemon_store_distribution.riido.json
+          -repo .
+          -check-policy-table
+          -evidence-out /tmp/store-distribution-contract.json
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: store-distribution-contract
+          path: /tmp/store-distribution-contract.json
+          if-no-files-found: error

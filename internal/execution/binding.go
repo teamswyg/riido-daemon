@@ -15,34 +15,6 @@ import (
 	"time"
 )
 
-type Binding struct {
-	WorkspaceID    string     `json:"workspace_id"`
-	TaskID         string     `json:"task_id"`
-	Repository     string     `json:"repository"`
-	ChangedFiles   []string   `json:"changed_files"`
-	Checks         [][]string `json:"checks"`
-	TimeoutSeconds int        `json:"timeout_seconds"`
-}
-
-type Prepared struct {
-	Binding   Binding
-	Directory string
-	before    map[string][32]byte
-	existed   map[string]bool
-}
-
-type Evidence struct {
-	Directory    string        `json:"directory"`
-	ChangedFiles []string      `json:"changed_files"`
-	Checks       []CheckResult `json:"checks"`
-	Error        string        `json:"error,omitempty"`
-}
-type CheckResult struct {
-	Command []string `json:"command"`
-	Output  string   `json:"output"`
-	Passed  bool     `json:"passed"`
-}
-
 func Load(path string) ([]Binding, error) {
 	if path == "" {
 		return nil, nil
@@ -76,6 +48,9 @@ func Load(path string) ([]Binding, error) {
 		}
 		if binding.TimeoutSeconds < 0 || binding.TimeoutSeconds > 600 {
 			return nil, errors.New("execution binding timeout must be 0..600 seconds")
+		}
+		if binding.ContinuationLimit < 0 || binding.ContinuationLimit > 2 {
+			return nil, errors.New("execution binding continuation_limit must be 0..2")
 		}
 		for _, path := range binding.ChangedFiles {
 			if !filepath.IsLocal(path) || path == "." {
@@ -124,10 +99,15 @@ func (p *Prepared) Verify(ctx context.Context) Evidence {
 		body, err := readFile(p.Directory, path)
 		if err != nil {
 			evidence.Error = fmt.Sprintf("required output %s: %v", path, err)
+			evidence.ErrorKind = "invalid_output"
+			if errors.Is(err, os.ErrNotExist) {
+				evidence.ErrorKind = "missing_output"
+			}
 			return evidence
 		}
 		if p.existed[path] && p.before[path] == sha256.Sum256(body) {
 			evidence.Error = "required output was not changed: " + path
+			evidence.ErrorKind = "unchanged_output"
 			return evidence
 		}
 		evidence.ChangedFiles = append(evidence.ChangedFiles, path)
@@ -149,6 +129,10 @@ func (p *Prepared) Verify(ctx context.Context) Evidence {
 		evidence.Checks = append(evidence.Checks, CheckResult{Command: argv, Output: string(output.body), Passed: err == nil})
 		if err != nil {
 			evidence.Error = fmt.Sprintf("verification %s failed: %v: %s", strings.Join(argv, " "), err, output.body)
+			evidence.ErrorKind = "check_failed"
+			if ctx.Err() != nil {
+				evidence.ErrorKind = "verification_timeout"
+			}
 			return evidence
 		}
 	}

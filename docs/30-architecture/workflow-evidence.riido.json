@@ -1,0 +1,29 @@
+{
+  "schema_version": "riido-daemon-workflow-evidence.v1",
+  "id": "daemon-workflow-evidence",
+  "title": "Daemon Workflow Evidence",
+  "generated_doc": "docs/30-architecture/workflow-evidence.md",
+  "workflow": ".github/workflows/workflow-evidence.yml",
+  "evidence_artifact": "workflow-evidence",
+  "workflow_root": ".github/workflows",
+  "accepted_gaps": [],
+  "assertions": [
+    "workflows with executable checks must either publish evidence artifacts or be registered as accepted gaps",
+    "artifact uploads must fail closed with if-no-files-found:error",
+    "each evidence-out path must be uploaded by a strict artifact step",
+    "workflow evidence must expose status distribution as top-level evidence",
+    "run steps are executable workflow surfaces even when they invoke shell scripts",
+    "every evidence-out capable tool must be invoked by at least one workflow",
+    "every evidence-out capable tool must have an evidence-out invocation bound to an uploaded artifact",
+    "workflow inventory must include both .yml and .yaml GitHub Actions files",
+    "accepted gaps are debt, not completion",
+    "daemon executable workflow evidence must converge to zero accepted gaps"
+  ],
+  "loop": {
+    "observation": "Daemon has many public GitHub Actions workflows, but command-only checks can pass or fail without a durable JSON evidence artifact, making loop-engineering claims weaker than control-plane workflow evidence.",
+    "hypothesis": "A daemon workflow evidence manifest can classify every executable workflow, fail on non-strict uploads or missing evidence-out bindings, and keep accepted gaps at zero once legacy command-only workflows are bound to evidence tools.",
+    "execute": "Scan .yml and .yaml GitHub Actions workflows, treat every run step as executable surface, classify evidence coverage, require fail-closed artifact uploads, require every evidence-out path to be uploaded, compare evidence-out capable tools with workflow invocations, and render a generated workflow evidence reader.",
+    "evaluate": "The verifier fails on unregistered executable workflows including shell-script run steps, non-strict artifact uploads, missing evidence uploads, evidence-capable tools without workflow coverage, stale generated docs, unused accepted gaps, or workflow extension drift.",
+    "retrospective": "Daemon workflow observability is now an executable migration surface: covered evidence workflows stay green, broad CI emits compact evidence, and future workflow drift cannot remain silent."
+  }
+}

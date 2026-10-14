@@ -1,0 +1,42 @@
+{
+  "schema_version": "riido-feature-ui-dsl.v1",
+  "id": "contract-lab-functional-qa",
+  "atomic": {
+    "atoms": ["Button", "Input", "Select", "StatusPill"],
+    "molecules": ["ScenarioRow", "EvidenceActionBar", "CaptureSummary"],
+    "organisms": ["ManualQAWorkbench", "EvidenceReplay", "FigmaIntentCatalog"]
+  },
+  "tokens": {
+    "surface": "#ffffff",
+    "ink": "#172033",
+    "accent": "#2357d8",
+    "line": "#d8dee8",
+    "radius": 6,
+    "gap": 8
+  },
+  "captures": [
+    {
+      "id": "manual-qa-pass",
+      "tab": "Manual QA",
+      "viewport": "1280x720",
+      "raster": "1265x720",
+      "path": ".riido-local/screenshots/contract-lab/feature-ui-manual-pass.png"
+    }
+  ],
+  "interactions": [
+    {
+      "id": "manual-pass-intent",
+      "do": ["open Manual QA", "select contract.ui.lab", "click Pass", "enter note"],
+      "expect": ["contract.ui.lab - passed", "Pass aria-pressed true", "manual note persisted"]
+    }
+  ],
+  "golden": {
+    "max_pixels": 120,
+    "max_ratio": 0.025,
+    "antialias_pixels": 12
+  },
+  "precommit": {
+    "generated": "tools/localproductacceptance/feature_ui.generated.json",
+    "check": "go test ./tools/localproductacceptance"
+  }
+}

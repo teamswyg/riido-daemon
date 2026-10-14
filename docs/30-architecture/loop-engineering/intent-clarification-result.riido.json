@@ -1,0 +1,42 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "intent-clarification-result",
+  "owner": "saasplane assignment reporter",
+  "observation": {
+    "summary": "Intent-oriented tasks can make the provider ask a clarification question and exit successfully, and research-heavy follow-up work can fail on provider token, quota, rate-limit, or cloud-credit exhaustion.",
+    "artifacts": ["internal/agentbridge/assignment_interaction_contract.go", "internal/agentbridge/controlplane/saasplane/task_completion.go"]
+  },
+  "hypothesis": {
+    "summary": "The daemon can guide providers to ask for intent when task context is non-command text, then preserve the existing SaaS events endpoint shape by carrying wait-for-user semantics through assignment_result_status=needs_input metadata and provider exhaustion through assignment_failure_category=provider_limit metadata.",
+    "artifacts": ["internal/agentbridge/assignment_interaction_contract.go", "internal/agentbridge/telemetry_apply.go", "internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go", "internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go"]
+  },
+  "execution": {
+    "summary": "Inject the interaction contract into provider runtime instructions, detect canonical clarification result text on completed provider output, and detect provider exhaustion markers on failed or blocked provider output.",
+    "artifacts": ["internal/agentbridge/telemetry_runtime_instruction_apply_test.go", "internal/agentbridge/controlplane/saasplane/saasplane_system_prompt_test.go", "internal/agentbridge/controlplane/saasplane/needs_input_markers.go", "internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go", "internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go"]
+  },
+  "evaluation": {
+    "summary": "Regression tests prove the interaction contract is placed on provider instruction surfaces while both needs_input and provider_limit stay on the existing AgentEventRequest metadata surface.",
+    "artifacts": ["internal/agentbridge/telemetry_runtime_instruction_apply_test.go", "internal/agentbridge/controlplane/saasplane/needs_input_completion_test.go", "internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go"]
+  },
+  "retrospective": {
+    "summary": "Clarification and provider exhaustion become runtime semantics instead of raw provider text, without adding or changing client-facing endpoints.",
+    "artifacts": ["docs/30-architecture/loop-engineering.md"]
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go test ./internal/agentbridge -run TestApplyRuntimeInstructionContractPlacesByProvider -count=1",
+      "proves": "provider runtime instructions include the assignment interaction contract without client-facing endpoint changes"
+    },
+    {
+      "kind": "command",
+      "ref": "go test ./internal/agentbridge/controlplane/saasplane -run TestCompleteTaskReportsNeedsInputWithoutCompletingAssignment -count=1",
+      "proves": "completed clarification output is reported as assignment_result_status=needs_input without endpoint shape changes"
+    },
+    {
+      "kind": "command",
+      "ref": "go test ./internal/agentbridge/controlplane/saasplane -run TestPlaneCompleteTaskClassifiesProviderLimitFailure -count=1",
+      "proves": "provider token, quota, rate-limit, and cloud-credit exhaustion is reported as assignment_failure_category=provider_limit without endpoint shape changes"
+    }
+  ]
+}

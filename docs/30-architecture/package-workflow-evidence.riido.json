@@ -1,0 +1,13 @@
+{
+  "schema_version": "riido-daemon-package-workflow-evidence.v1",
+  "id": "daemon-package-workflow-evidence",
+  "loop_source": "docs/30-architecture/loop-engineering/package-workflow-evidence.riido.json",
+  "workflow_sources": [
+    "package-workflow-evidence/boundaries.riido.json",
+    "package-workflow-evidence/local-planes.riido.json",
+    "package-workflow-evidence/provider-adapters.riido.json",
+    "package-workflow-evidence/runtime-operations.riido.json",
+    "package-workflow-evidence/runtime-policy.riido.json"
+  ],
+  "workflows": []
+}

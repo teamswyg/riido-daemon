@@ -1,0 +1,94 @@
+name: semantic-change-binding
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/semantic-change-binding.yml"
+      - ".pre-commit-config.yaml"
+      - "docs/30-architecture/semantic-change-bindings.riido.json"
+      - "docs/30-architecture/closed-loop-maturity.dsl.json"
+      - "docs/30-architecture/local-qa-daily-trigger.dsl.json"
+      - "docs/30-architecture/local-qa-closed-loop-promotions.dsl.json"
+      - "docs/30-architecture/local-acceptance-coverage.riido.json"
+      - "docs/30-architecture/executable-knowledge.riido.json"
+      - "docs/30-architecture/executable-knowledge.md"
+      - "docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json"
+      - "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json"
+      - "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json"
+      - "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md"
+      - ".github/workflows/local-daemon-contract-evidence.yml"
+      - "tools/semanticchangebinding/**"
+      - "tools/localqarunner/closed_loop_candidate*"
+      - "tools/localqadashboard/run_candidate.go"
+      - "tools/localqadashboard/run_evidence_test.go"
+      - "tools/localqadashboard/render_expectation_test.go"
+      - "tools/localqadashboard/schedule_evidence*"
+      - "tools/localqaschedule/**"
+      - "tools/localproductacceptance/closed_loop_maturity*"
+      - "tools/localproductacceptance/generate.go"
+      - "tools/localproductacceptance/run.go"
+      - "internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go"
+      - "internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go"
+      - "internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go"
+      - "internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go"
+
+jobs:
+  semantic-change-binding:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Verify semantic change binding
+        run: |
+          mkdir -p out
+          go test ./tools/semanticchangebinding -count=1
+          if go run ./tools/semanticchangebinding \
+            -changed-files docs/30-architecture/closed-loop-maturity.dsl.json \
+            -evidence-out out/semantic-change-binding-negative.json; then
+            echo "negative semantic binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files docs/30-architecture/closed-loop-maturity.dsl.json,tools/localproductacceptance/closed_loop_maturity_test.go,tools/localproductacceptance/closed_loop_maturity.generated.json,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/closed-loop-maturity.riido.json \
+            -evidence-out out/semantic-change-binding.json
+          if go run ./tools/semanticchangebinding \
+            -changed-files internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go \
+            -evidence-out out/taskdb-lease-fencing-negative.json; then
+            echo "negative business claim binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json,docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md,internal/agentbridge/controlplane/taskdbplane/task_request_from_record.go,internal/agentbridge/controlplane/taskdbplane/runtime_lease_require.go,internal/agentbridge/controlplane/taskdbplane/task_claim_lease_metadata_test.go,internal/agentbridge/controlplane/taskdbplane/runtime_lease_start_reject_test.go,.github/workflows/local-daemon-contract-evidence.yml \
+            -evidence-out out/taskdb-lease-fencing-binding.json
+          grep -q "business_claims" out/taskdb-lease-fencing-binding.json
+          grep -q "evidence_graph" out/taskdb-lease-fencing-binding.json
+          grep -q "taskdb-lease-fencing-claim" out/taskdb-lease-fencing-binding.json
+          grep -q "failed_missing_semantic_peers" out/taskdb-lease-fencing-negative.json
+          if go run ./tools/semanticchangebinding \
+            -changed-files tools/localqarunner/closed_loop_candidate_graph.go \
+            -evidence-out out/local-qa-graph-negative.json; then
+            echo "negative local QA graph binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files tools/localqarunner/closed_loop_candidate_graph.go,tools/localqarunner/closed_loop_candidate_types.go,tools/localqarunner/closed_loop_candidate_test.go,tools/localqarunner/closed_loop_candidate_promotion_test.go,tools/localqarunner/closed_loop_promotion_apply.go,tools/localqarunner/closed_loop_promotion_load.go,tools/localqarunner/closed_loop_promotion_test.go,tools/localqarunner/closed_loop_promotion_types.go,tools/localqadashboard/run_candidate.go,tools/localqadashboard/run_evidence_test.go,tools/localqadashboard/render_candidate_fixture_test.go,tools/localqadashboard/render_expectation_test.go,tools/localqadashboard/render_run_fixture_test.go,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/local-qa-closed-loop-candidates.riido.json,docs/30-architecture/local-qa-closed-loop-promotions.dsl.json \
+            -evidence-out out/local-qa-graph-binding.json
+          if go run ./tools/semanticchangebinding \
+            -changed-files docs/30-architecture/local-qa-daily-trigger.dsl.json \
+            -evidence-out out/local-qa-schedule-negative.json; then
+            echo "negative local QA schedule binding check unexpectedly passed" >&2
+            exit 1
+          fi
+          go run ./tools/semanticchangebinding \
+            -changed-files docs/30-architecture/local-qa-daily-trigger.dsl.json,tools/localqaschedule/evidence_types.go,tools/localqaschedule/evidence_test.go,tools/localqaschedule/trigger.go,tools/localqadashboard/schedule_evidence.go,tools/localqadashboard/schedule_evidence_checks.go,tools/localqadashboard/schedule_evidence_types.go,tools/localqadashboard/schedule_evidence_freshness_test.go,docs/30-architecture/local-acceptance-coverage.riido.json,docs/30-architecture/executable-knowledge.riido.json,docs/30-architecture/executable-knowledge.md,.github/workflows/local-qa-runner.yml,docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json \
+            -evidence-out out/local-qa-schedule-binding.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: semantic-change-binding
+          path: out/*
+          if-no-files-found: error

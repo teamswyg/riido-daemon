@@ -29,8 +29,8 @@ jobs:
   runtimeactor-mailbox-capability-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
         with:
           go-version-file: go.mod
           cache: false
@@ -53,3 +53,16 @@ jobs:
       - name: Verify runtimeactor gates
         run: |
           go test ./internal/agentbridge/runtimeactor ./internal/agentbridge/session ./internal/process -run 'RuntimeActor|Capability|DetectedFingerprint|ProtocolDriver|Stop|Cancel|Heartbeat|Mailbox|Slot|Submit|Goroutine' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/runtimeactor.yml \
+            -evidence-out out/runtimeactor-evidence.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: runtimeactor-evidence
+          path: out/runtimeactor-evidence.json
+          if-no-files-found: error

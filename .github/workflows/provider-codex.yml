@@ -37,8 +37,8 @@ jobs:
   codex-adapter-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
         with:
           go-version-file: go.mod
           cache: false
@@ -64,3 +64,16 @@ jobs:
       - name: Verify Codex full-access harness SSOT
         run: |
           go test ./tools/providervalidation -run TestProviderValidationMatrix -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/provider-codex.yml \
+            -evidence-out out/provider-codex-evidence.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: provider-codex-evidence
+          path: out/provider-codex-evidence.json
+          if-no-files-found: error

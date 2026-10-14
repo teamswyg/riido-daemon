@@ -1,0 +1,111 @@
+{
+  "schema_version": "riido-agent-task-execution.v1",
+  "id": "agent-task-execution",
+  "riido_task": "RIID-5817",
+  "reader_doc": "docs/30-architecture/agent-task-execution.md",
+  "owning_code": [
+    "internal/agentbridge/assignment_interaction_contract.go",
+    "internal/agentbridge/telemetry_strategy.go",
+    "internal/agentbridge/supervisor/execution_verification.go",
+    "internal/agentbridge/supervisor/execution_continuation.go",
+    "internal/execution/binding.go",
+    "internal/provider/cursor/message.go",
+    "internal/provider/cursor/translate_result.go",
+    "internal/agentbridge/controlplane/saasplane/task_request_title.go",
+    "internal/provider/codex/task_title.go",
+    "internal/provider/openclaw/model_catalog.go",
+    "cmd/riido/openclaw_runtime_live_models.go",
+    "internal/provider/openclaw/command_args.go",
+    "internal/agentbridge/supervisor/heartbeat_executions.go",
+    "cmd/riido/daemon_observation.go"
+  ],
+  "policy": {
+    "completion": "required files changed and host argv checks passed for explicitly bound tasks",
+    "continuation_limit": {
+      "minimum": 0,
+      "maximum": 2,
+      "default": 0
+    },
+    "retryable_verification": [
+      "missing_output",
+      "unchanged_output",
+      "check_failed"
+    ],
+    "never_retry": [
+      "cancellation",
+      "provider_failure",
+      "auth_or_quota_failure",
+      "policy_denial",
+      "invalid_output",
+      "verification_timeout",
+      "evidence_persistence",
+      "missing_native_session",
+      "unsupported_resume"
+    ],
+    "identity": "same assignment, prepared repository, native session, provider/model and permission envelope",
+    "verification_scheduling": "outside supervisor mailbox",
+    "instruction_placement": {
+      "codex": "native developerInstructions",
+      "claude": "native system prompt",
+      "cursor": "task-first inline system fallback",
+      "openclaw": "existing inline instruction contract"
+    },
+    "native_thread_title": "canonical task title via optional thread/name/set after turn/start; unsupported naming is warning only",
+    "openclaw_catalog": "pinned native models list --json; 2 seconds and 64 KiB bound; native --model for selection",
+    "heartbeat_ownership": "retain supervisor-owned execution IDs through verification/correction/terminal acknowledgement independently of native slot count",
+    "daemon_update_activity": "IPC counts supervisor-owned verification and pending results alongside native sessions without double counting"
+  },
+  "verification": {
+    "observed_date": "2026-10-13",
+    "provider_versions": {
+      "claude": "2.1.274",
+      "codex": "0.158.0",
+      "cursor-agent": "2026.10.01",
+      "openclaw": "2026.8.1"
+    },
+    "real_file_and_instruction_gates": [
+      "claude",
+      "codex",
+      "cursor",
+      "openclaw"
+    ],
+    "native_correction": "Codex two-turn native resume, instruction marker, same clone, real file change and host check passed",
+    "regressions": [
+      "TestExecutionCorrectionResumesSameWorkspaceAndAssignment",
+      "TestExecutionCorrectionStopsAtHostLimit",
+      "TestExecutionCorrectionHonorsCancellation",
+      "TestExecutionVerificationDoesNotBlockOtherTaskOrCancellation",
+      "TestCursorErrorResultNeverCompletes",
+      "TestCodexNamesThreadAfterFirstTurnStarts",
+      "TestAssignmentTitleIsDisplayMetadataFromSnapshot",
+      "TestNativeCatalogUsesCLIHarnessDefaultWithoutLegacyProviderConfig",
+      "TestBuildStartPinsModelWithAgentExecFlag",
+      "TestDaemonObservationRetainsSupervisorOwnedExecutions"
+    ],
+    "limits": [
+      "local selected versions/accounts only",
+      "OpenClaw worktree scheduling capability remains conservative",
+      "no automatic provider outage recovery or CLI updates",
+      "unbound tasks do not have host semantic verification"
+    ]
+  },
+  "open_loop": {
+    "registry_id": "provider-recovery-evidence-intake",
+    "status": "open",
+    "observation_owner": "RIID-5822",
+    "recovery_owner": "RIID-5823",
+    "promote_after": [
+      "failure taxonomy and restart/session continuity",
+      "cancellation and approval fencing",
+      "bounded retry latency",
+      "external-effect idempotency and terminal delivery convergence"
+    ]
+  },
+  "loop": {
+    "observation": "Planning-only results, repeated setup prompts and discarded instructions can leave assigned work undone.",
+    "hypothesis": "Native instruction delivery and bounded host-evidence feedback improve actual execution without blind replay.",
+    "execute": "Run deterministic identity/limit/cancellation tests and separate opt-in native file-write/instruction gates.",
+    "evaluate": "Reject missing evidence, unsafe recovery and unbounded correction; preserve provider-native failure reasons.",
+    "retrospective": "Selected local provider gates pass; provider-outage recovery remains an explicit open intake loop."
+  }
+}

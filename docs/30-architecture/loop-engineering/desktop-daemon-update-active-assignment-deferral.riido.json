@@ -1,0 +1,35 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "desktop-daemon-update-active-assignment-deferral",
+  "owner": "riido-desktop daemon launcher",
+  "observation": {
+    "summary": "Live staging evidence showed asn-000138 stopped at the same instant Desktop auto-updated the daemon to v0.0.56 while the daemon status surface already exposes running_tasks.",
+    "artifacts": [
+      "docs/30-architecture/runtime-upgrade-flow.riido.json"
+    ]
+  },
+  "hypothesis": {
+    "summary": "Desktop daemon replacement must be deferred while status.running_tasks is greater than zero, otherwise auto-update can interrupt user-visible assignments."
+  },
+  "execution": {
+    "summary": "Keep the daemon-side runtime-upgrade rule reserved and require a riido-desktop daemonLauncher verifier plus local QA evidence before claiming closure."
+  },
+  "evaluation": {
+    "summary": "runtimeupgrade must continue to report the reserved rule, while loopevidence keeps root open_gap_count at zero so unresolved work cannot be used as closed self-improvement evidence."
+  },
+  "retrospective": {
+    "summary": "The daemon repo owns the observed runtime contract and evidence requirement; riido-desktop must close the loop with launcher tests that prove active assignments survive update checks."
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/runtimeupgrade -check-doc -evidence-out /tmp/runtime-upgrade-flow-evidence.json",
+      "proves": "daemon runtime-upgrade evidence exposes the active-assignment update deferral rule as reserved, not implemented"
+    },
+    {
+      "kind": "command",
+      "ref": "go run ./tools/loopevidence -check -evidence-out /tmp/loop-engineering-evidence.json",
+      "proves": "loop evidence records the candidate without introducing root open gaps that would break self-improvement closure"
+    }
+  ]
+}

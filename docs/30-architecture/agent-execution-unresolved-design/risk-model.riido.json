@@ -1,0 +1,24 @@
+{
+  "problems": [
+    {"id": "F3", "symptom": "AI works in empty temp folder", "cause": "repo/branch was prompt text", "direction": "public clone, private fail-closed, later token-ref broker"},
+    {"id": "C1", "symptom": "stop feels inconsistent", "cause": "stop intent, process kill, projection state split", "direction": "generated lifecycle states"},
+    {"id": "S2/S4/S5", "symptom": "stream cleanup is client-hidden", "cause": "delta/progress/final share a path", "direction": "StreamEnvelope split"},
+    {"id": "F4/F5", "symptom": "child tools missing", "cause": "detection and launch env diverged", "direction": "frozen launch PATH and TTL re-detect"},
+    {"id": "F6", "symptom": "headless approvals blocked", "cause": "web approval absent", "direction": "DTO plus fail-closed fallback"},
+    {"id": "F7", "symptom": "transient network failures skip retry", "cause": "transport lacks retry taxonomy", "direction": "safe/idempotent retry wrapper"},
+    {"id": "R4", "symptom": "restart can rerun from scratch", "cause": "session id not durable enough", "direction": "resume or explicit fresh-start refusal"},
+    {"id": "R5", "symptom": "watcher can leak", "cause": "terminal release was not invariant", "direction": "execution-id watcher cleanup"},
+    {"id": "D5", "symptom": "stale PID could kill wrong process", "cause": "PID alone was trusted", "direction": "identity probe before kill"},
+    {"id": "D7", "symptom": "Windows stale .claim can block", "cause": "lock claim had no freshness metadata", "direction": "owner/refreshed_at reclaim"},
+    {"id": "F8", "symptom": "workspace prep can block heartbeat", "cause": "preparation ran on actor path", "direction": "async activation goroutine"},
+    {"id": "R1", "symptom": "provider starts per task", "cause": "one-shot process model", "direction": "long-lived session policy later"}
+  ],
+  "structure_observations": [
+    {"observation": "SaaS assignment id is execution id", "ssot": "saasplane/runtime_id.go", "meaning": "same task can carry multiple assignments"},
+    {"observation": "state maps use execution id", "ssot": "state_loop.go", "meaning": "watcher/runtime/body cleanup is assignment-scoped"},
+    {"observation": "supervisor duplicate guard uses TaskRequest.ID", "ssot": "supervisor.go", "meaning": "SaaS adapter can supply assignment id as run key"},
+    {"observation": "heartbeat reports running ids", "ssot": "saasplane/http_client.go", "meaning": "active assignment refresh needs no task-id reverse lookup"},
+    {"observation": "provider launch PATH is frozen", "ssot": "runtimeactor, detectutil", "meaning": "detect and spawn now share child tool lookup"},
+    {"observation": "C7 gate fails closed without approval path", "ssot": "toolpolicy, session", "meaning": "web approval DTO is the wider shared lifecycle step"}
+  ]
+}

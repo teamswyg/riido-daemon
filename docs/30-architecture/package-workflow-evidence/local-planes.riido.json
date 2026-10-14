@@ -1,0 +1,37 @@
+{
+  "schema_version": "riido-daemon-package-workflow-evidence.v1",
+  "id": "package-workflow-local-planes",
+  "loop_source": "docs/30-architecture/package-workflow-evidence.riido.json",
+  "workflows": [
+    {
+      "id": "riidoapi",
+      "workflow": ".github/workflows/riidoapi.yml",
+      "evidence_artifact": "riidoapi-evidence",
+      "required_fragments": ["Verify riidoapi public boundary", "go list -f '{{range .Imports}}{{println .}}{{end}}{{range .TestImports}}{{println .}}{{end}}{{range .XTestImports}}{{println .}}{{end}}' ./internal/riidoapi", "go test ./internal/riidoapi ./internal/taskdb ./internal/hostintegration ./internal/validation -count=1"]
+    },
+    {
+      "id": "runtimeactor",
+      "workflow": ".github/workflows/runtimeactor.yml",
+      "evidence_artifact": "runtimeactor-evidence",
+      "required_fragments": ["Verify runtimeactor stays provider neutral", "go list -f '{{range .Imports}}{{println .}}{{end}}' ./internal/agentbridge/runtimeactor", "go test ./internal/agentbridge/runtimeactor ./internal/agentbridge/session ./internal/process -run 'RuntimeActor|Capability|DetectedFingerprint|ProtocolDriver|Stop|Cancel|Heartbeat|Mailbox|Slot|Submit|Goroutine' -count=1"]
+    },
+    {
+      "id": "taskdbplane",
+      "workflow": ".github/workflows/taskdbplane.yml",
+      "evidence_artifact": "taskdbplane-evidence",
+      "required_fragments": ["Verify taskdbplane public boundary", "go list -f '{{range .Imports}}{{println .}}{{end}}{{range .TestImports}}{{println .}}{{end}}{{range .XTestImports}}{{println .}}{{end}}' ./internal/taskdb ./internal/agentbridge/controlplane/taskdbplane", "go test ./internal/taskdb ./internal/agentbridge/controlplane/taskdbplane -count=1"]
+    },
+    {
+      "id": "cli",
+      "workflow": ".github/workflows/cli.yml",
+      "evidence_artifact": "cli-evidence",
+      "required_fragments": ["Verify CLI public boundary", "Verify CLI local-only gate", "go run ./cmd/riido bridge providers | grep -q '\"name\": \"codex\"'"]
+    },
+    {
+      "id": "daemon-lifecycle",
+      "workflow": ".github/workflows/daemon-lifecycle.yml",
+      "evidence_artifact": "daemon-lifecycle-evidence",
+      "required_fragments": ["Verify daemon lifecycle public boundary", "Verify daemon lifecycle black-box/domain gates", "go test ./cmd/riido -run 'TestDaemon|TestLoadDaemon|TestBuildDaemon|TestForeground|TestDaemonBackground' -count=1"]
+    }
+  ]
+}

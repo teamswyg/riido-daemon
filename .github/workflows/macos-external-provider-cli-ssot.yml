@@ -6,6 +6,7 @@ on:
     paths:
       - ".github/workflows/macos-external-provider-cli-ssot.yml"
       - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
       - "docs/migration/daemon.md"
       - "internal/policy/store_channel.go"
@@ -16,6 +17,7 @@ on:
     paths:
       - ".github/workflows/macos-external-provider-cli-ssot.yml"
       - "docs/20-domain/distribution-host-integration.md"
+      - "docs/20-domain/distribution-host-integration/**"
       - "docs/30-architecture/store-distribution.md"
       - "docs/migration/daemon.md"
       - "internal/policy/store_channel.go"
@@ -27,8 +29,8 @@ jobs:
   q-dist-001:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
         with:
           go-version-file: go.mod
           cache: false
@@ -36,9 +38,23 @@ jobs:
         run: |
           grep -q "Q-DIST-001.*resolved" docs/20-domain/distribution-host-integration.md
           grep -q "Q-DIST-001.*RESOLVED" docs/20-domain/distribution-host-integration.md
+          grep -q "StoreReviewApproved=true" docs/20-domain/distribution-host-integration/local-ipc/macos-external-provider-cli.md
           grep -q "user-selected/sandbox/security-scoped OS grant 와 App Review approval" docs/30-architecture/store-distribution.md
           grep -q "StoreChannelPolicyInput.StoreReviewApproved=true" docs/migration/daemon.md
       - name: Verify macOS external Provider CLI gate
         run: |
           grep -q "mac-app-store provider CLI execution requires App Review approval" internal/policy/store_channel.go
           go test ./internal/policy -run 'StoreChannelPolicyMacAppStoreProviderPathRequiresOSGrantAndStoreReview' -count=1
+      - name: Write package workflow evidence
+        if: always()
+        run: |
+          mkdir -p out
+          go run ./tools/packageworkflowevidence \
+            -workflow .github/workflows/macos-external-provider-cli-ssot.yml \
+            -evidence-out out/macos-external-provider-cli-ssot-evidence.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: macos-external-provider-cli-ssot-evidence
+          path: out/macos-external-provider-cli-ssot-evidence.json
+          if-no-files-found: error

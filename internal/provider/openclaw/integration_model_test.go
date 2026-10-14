@@ -1,0 +1,28 @@
+package openclaw
+
+import (
+	"reflect"
+	"testing"
+)
+
+func TestIntegrationModelCandidatesUseConfiguredDefault(t *testing.T) {
+	t.Setenv(openClawIntegrationModelEnv, "")
+
+	got := IntegrationModelCandidates()
+	want := []string{""}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("IntegrationModelCandidates() = %v, want %v", got, want)
+	}
+}
+
+func TestIntegrationModelCandidatesAllowsOperatorPin(t *testing.T) {
+	t.Setenv(openClawIntegrationModelEnv, "ollama/custom-fast")
+
+	got := IntegrationModelCandidates()
+	want := []string{"ollama/custom-fast"}
+
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("IntegrationModelCandidates() = %v, want %v", got, want)
+	}
+}

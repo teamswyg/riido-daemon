@@ -5,14 +5,19 @@ package lock
 import (
 	"errors"
 	"os"
+	"time"
 )
 
 func tryLockFile(_ *os.File, path string) error {
-	claim, err := os.OpenFile(path+".claim", os.O_CREATE|os.O_EXCL|os.O_RDWR, 0o644)
-	if err != nil {
+	if err := writeNewLockClaim(path); err == nil {
+		return nil
+	} else if !errors.Is(err, os.ErrExist) {
 		return err
 	}
-	return claim.Close()
+	if err := reclaimStaleLockClaim(path, time.Now()); err != nil {
+		return err
+	}
+	return writeNewLockClaim(path)
 }
 
 func isLockBusy(err error) bool {
@@ -24,7 +29,7 @@ func unlockFile(_ *os.File, _ string) error {
 }
 
 func cleanupLockFile(path string) error {
-	err := os.Remove(path + ".claim")
+	err := os.Remove(lockClaimPath(path))
 	if err == nil || errors.Is(err, os.ErrNotExist) {
 		return nil
 	}

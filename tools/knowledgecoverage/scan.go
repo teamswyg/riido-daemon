@@ -1,0 +1,69 @@
+package main
+
+import (
+	"os"
+	"path/filepath"
+	"slices"
+	"strings"
+)
+
+func scanDocs(root string, m manifest) ([]docClass, []string) {
+	manualByPath := manualPathIndex(m)
+	var docs []docClass
+	var problems []string
+	for _, scanRoot := range m.ScanRoots {
+		found, err := scanRootDocs(root, scanRoot, m, manualByPath)
+		if err != nil {
+			problems = append(problems, err.Error())
+			continue
+		}
+		docs = append(docs, found...)
+	}
+	for _, scanFile := range m.ScanFiles {
+		docs = append(docs, classifyDoc(root, scanFile, m, manualByPath))
+	}
+	slices.SortFunc(docs, func(a, b docClass) int {
+		return strings.Compare(a.Path, b.Path)
+	})
+	problems = append(problems, validateManualEntries(root, m, docs)...)
+	loops, err := scanManifestLoops(root)
+	if err != nil {
+		problems = append(problems, "manifest loop scan failed: "+err.Error())
+		return docs, problems
+	}
+	problems = append(problems, manifestLoopBudgetProblems(loops, m.ManifestLoopBudget)...)
+	problems = append(problems, generatedOriginWorkflowProblems(root, generatedOrigins(docs))...)
+	return docs, problems
+}
+
+func scanRootDocs(root, scanRoot string, m manifest, manualByPath map[string]manualGroup) ([]docClass, error) {
+	var docs []docClass
+	err := filepath.WalkDir(resolvePath(root, scanRoot), func(path string, d os.DirEntry, err error) error {
+		if err != nil || d.IsDir() || !strings.HasSuffix(path, ".md") {
+			return err
+		}
+		rel := slashPath(root, path)
+		docs = append(docs, classifyDoc(root, rel, m, manualByPath))
+		return nil
+	})
+	return docs, err
+}
+
+func classifyDoc(root, rel string, m manifest, manualByPath map[string]manualGroup) docClass {
+	text, err := os.ReadFile(resolvePath(root, rel))
+	if err == nil {
+		if generator, ok := generatedDocCommand(string(text)); ok {
+			return docClass{Path: rel, Kind: "generated", Generator: generator}
+		}
+	}
+	if _, err := os.Stat(resolvePath(root, siblingManifest(rel))); err == nil {
+		return docClass{Path: rel, Kind: "direct_ssot"}
+	}
+	if group, ok := manualByPath[rel]; ok {
+		return docClass{Path: rel, Kind: "manual_registered", Group: group.ID, Reason: group.Reason}
+	}
+	if group, ok := manualPrefixMatch(m, rel); ok {
+		return docClass{Path: rel, Kind: "manual_registered", Group: group.ID, Reason: group.Reason}
+	}
+	return docClass{Path: rel, Kind: "unregistered_manual"}
+}

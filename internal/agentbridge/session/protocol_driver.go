@@ -9,9 +9,11 @@ import (
 
 // Compatibility aliases keep package-local tests and older internal callers on
 // the same type names while the owning port lives in internal/agentbridge.
-type ProtocolDriver = agentbridge.ProtocolDriver
-type ProtocolIO = agentbridge.ProtocolIO
-type ProtocolDriverProvider = agentbridge.ProtocolDriverProvider
+type (
+	ProtocolDriver         = agentbridge.ProtocolDriver
+	ProtocolIO             = agentbridge.ProtocolIO
+	ProtocolDriverProvider = agentbridge.ProtocolDriverProvider
+)
 
 // protocolIOImpl is the session's internal ProtocolIO bound to one
 // process's stdin. The session actor is the sole owner — drivers

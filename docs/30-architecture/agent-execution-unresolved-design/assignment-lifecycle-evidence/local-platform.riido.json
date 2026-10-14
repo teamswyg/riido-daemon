@@ -1,0 +1,9 @@
+[
+  {"risk":"stale-pid-kill-refusal","status":"verified","package":"./cmd/riido","test":"TestDaemonStopRejectsNonDaemonPidFile","proves":"daemon stop refuses stale pid fallback without daemon identity evidence"},
+  {"risk":"headless-tool-risk-fail-closed","status":"verified","package":"./internal/agentbridge/toolpolicy","test":"TestPolicyToolStartGateBlocksClassifiedRiskWithoutApprovalPath","proves":"classified tool start fails closed when no approval path is available"},
+  {"risk":"windows-stale-claim-recovery","status":"verified","package":"./internal/lock","test":"TestReclaimStaleLockClaimRemovesOldClaim","proves":"old daemon lock claims can be reclaimed"},
+  {"risk":"windows-fresh-claim-retained","status":"verified","package":"./internal/lock","test":"TestReclaimStaleLockClaimKeepsFreshClaim","proves":"fresh daemon lock claims are retained"},
+  {"risk":"workspace-prepare-cancel-fence","status":"verified","package":"./internal/agentbridge/supervisor","test":"TestSupervisorCancellationDuringWorkspacePrepareStopsBeforeRuntimeStart","proves":"cancellation during workspace preparation stops before provider runtime start"},
+  {"risk":"generated-fsm-daemon-consumption","status":"verified","package":"./internal/contractscompat","test":"TestContractsBaseline","proves":"daemon consumes contracts generated assignment and task FSM service providers"},
+  {"risk":"web-approval-contract-consumption","status":"verified","package":"./internal/contractscompat","test":"TestContractsBaseline","proves":"daemon consumes contracts tool approval timeout status and decision vocabulary"}
+]

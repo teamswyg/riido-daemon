@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-local-qa-closed-loop-promotions.v1",
+  "id": "local-qa-closed-loop-promotions",
+  "promotions": [
+    {
+      "candidate_id": "coverage.local-qa-daily-freshness",
+      "loop_id": "local-qa-daily-evidence-sweep",
+      "loop_source": "docs/30-architecture/loop-engineering/local-qa-daily-trigger.riido.json",
+      "verifier": "go run ./tools/localqaschedule && go run ./tools/localqadashboard",
+      "evidence": "local.qa.daily_freshness",
+      "decision": "promoted_to_closed_loop"
+    }
+  ]
+}

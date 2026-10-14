@@ -3,8 +3,9 @@ package codex
 import (
 	"context"
 	"encoding/json"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"testing"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 func TestCodexModernApproval(t *testing.T) {
@@ -20,6 +21,7 @@ func TestCodexModernApproval(t *testing.T) {
 	}
 	t.Fatalf("approval request becomes %+v", es)
 }
+
 func TestCodexFailedTurnAfterOutput(t *testing.T) {
 	d, _ := NewProtocolDriver(agentbridge.StartRequest{})
 	ctx := context.Background()
@@ -64,6 +66,7 @@ func TestModernApprovalRoundTripPreservesID(t *testing.T) {
 		}
 	}
 }
+
 func TestIdleAfterPartialOutputDoesNotCompleteTurn(t *testing.T) {
 	d := &protocolDriver{turnStarted: true, sawAssistantOutput: true}
 	for _, event := range d.threadStatusEvents(map[string]any{"status": map[string]any{"type": "idle"}}) {

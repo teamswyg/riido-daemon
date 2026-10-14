@@ -1,0 +1,37 @@
+{
+  "schema_version": "riido-daemon-package-workflow-evidence.v1",
+  "id": "package-workflow-provider-adapters",
+  "loop_source": "docs/30-architecture/package-workflow-evidence.riido.json",
+  "workflows": [
+    {
+      "id": "macos-external-provider-cli-ssot",
+      "workflow": ".github/workflows/macos-external-provider-cli-ssot.yml",
+      "evidence_artifact": "macos-external-provider-cli-ssot-evidence",
+      "required_fragments": ["Verify Q-DIST-001 is resolved in C11 SSOT", "Verify macOS external Provider CLI gate", "go test ./internal/policy -run 'StoreChannelPolicyMacAppStoreProviderPathRequiresOSGrantAndStoreReview' -count=1"]
+    },
+    {
+      "id": "provider-claude",
+      "workflow": ".github/workflows/provider-claude.yml",
+      "evidence_artifact": "provider-claude-evidence",
+      "required_fragments": ["Verify Claude adapter stays daemon-local", "Verify Claude adapter gates", "go test ./internal/provider/claude -count=1"]
+    },
+    {
+      "id": "provider-codex",
+      "workflow": ".github/workflows/provider-codex.yml",
+      "evidence_artifact": "provider-codex-evidence",
+      "required_fragments": ["Verify Codex adapter stays daemon-local", "Verify Codex adapter gates", "go test ./tools/providervalidation -run TestProviderValidationMatrix -count=1"]
+    },
+    {
+      "id": "provider-cursor",
+      "workflow": ".github/workflows/provider-cursor.yml",
+      "evidence_artifact": "provider-cursor-evidence",
+      "required_fragments": ["Verify Cursor adapter stays daemon-local", "Verify Cursor adapter gates", "go test ./internal/provider/cursor -count=1"]
+    },
+    {
+      "id": "provider-openclaw",
+      "workflow": ".github/workflows/provider-openclaw.yml",
+      "evidence_artifact": "provider-openclaw-evidence",
+      "required_fragments": ["Verify OpenClaw adapter stays daemon-local", "Verify OpenClaw adapter gates", "go test ./internal/provider/openclaw -count=1"]
+    }
+  ]
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "riido-doc-map.v1",
+  "loop_source": "docs/30-architecture/loop-engineering/doc-map-evidence.riido.json",
+  "id": "daemon-doc-map",
+  "title": "riido-daemon 문서 지도",
+  "generated_docs": {
+    "readme": "docs/README.md",
+    "document_map": "docs/readme/document-map.md"
+  },
+  "evidence_artifact": "doc-map-evidence",
+  "intro": "public riido-daemon의 daemon-side SSOT와 generated reader entrypoint를 정의한다.",
+  "read_order": [
+    {"doc": "docs/20-domain/context-map.md", "description": "daemon bounded context와 repo 책임 경계"},
+    {"doc": "docs/30-architecture/module-decomposition.md", "description": "package 역할, import rule, 12-factor boundary"},
+    {"doc": "docs/20-domain/provider-runtime.md", "description": "provider process/session/run lifecycle과 adapter ACL"},
+    {"doc": "docs/20-domain/distribution-host-integration.md", "description": "store role split과 external provider CLI 원칙"},
+    {"doc": "docs/20-domain/runtime-scheduling/saas-assignment-source.md", "description": "SaaS assignment source/reporter executable evidence"},
+    {"doc": "docs/20-domain/validation.md", "description": "validation truth source and transition evidence"},
+    {"doc": "docs/30-architecture/cli-surface.md", "description": "CLI/env/flag surface"},
+    {"doc": "docs/30-architecture/figma-ai-agent-daemon-boundary.md", "description": "Figma AI Agent 화면의 daemon 경계"},
+    {"doc": "docs/30-architecture/agent-execution-unresolved-design.md", "description": "AI Agent 실행 미해결 이슈의 구조 분석"},
+    {"doc": "docs/30-architecture/loop-engineering.md", "description": "generated evidence loop view"},
+    {"doc": "docs/30-architecture/executable-knowledge.md", "description": "generated coverage of manual architecture knowledge debt"},
+    {"doc": "docs/executable-knowledge.md", "description": "generated repo-wide coverage of manual docs knowledge debt"}
+  ],
+  "decisions": [
+    {"topic": "daemon bounded context", "docs": ["docs/20-domain/context-map.md"]},
+    {"topic": "provider runtime and adapter ACL", "docs": ["docs/20-domain/provider-runtime.md"]},
+    {"topic": "store/distribution boundary", "docs": ["docs/20-domain/distribution-host-integration.md", "docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.md", "docs/20-domain/distribution-host-integration/store-channel-policy/policy-table.riido.json", "docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.md", "docs/20-domain/distribution-host-integration/store-channel-policy/server-facing-metadata.riido.json", "docs/30-architecture/store-distribution.md", "docs/30-architecture/release-artifacts.md"]},
+    {"topic": "security, redaction, runtime secret evidence", "docs": ["docs/20-domain/security.md", "docs/20-domain/security/enforcement-locations/native-config-and-mcp.md", "docs/20-domain/security/enforcement-locations/native-config-and-mcp.riido.json", "docs/20-domain/security/enforcement-locations/tool-use-gates.md", "docs/20-domain/security/enforcement-locations/tool-use-gates.riido.json", "docs/20-domain/security/enforcement-locations/unsafe-bypass.md", "docs/20-domain/security/enforcement-locations/unsafe-bypass.riido.json", "docs/20-domain/security/invariants/policy-bundle-loader.md", "docs/20-domain/security/invariants/policy-bundle-loader.riido.json", "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.md", "docs/20-domain/security/native-config-overlay/full-access-runtime-harness.riido.json", "docs/20-domain/security-redaction.md", "docs/30-architecture/runtime-secret-private-evidence.md"]},
+    {"topic": "runtime scheduling, workspace, validation, locking", "docs": ["docs/20-domain/runtime-scheduling.md", "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.md", "docs/20-domain/runtime-scheduling/invariants/local-daemon-contract.riido.json", "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.md", "docs/20-domain/runtime-scheduling/invariants/runtime-eligibility.riido.json", "docs/20-domain/runtime-scheduling/invariants/task-requirements.md", "docs/20-domain/runtime-scheduling/invariants/task-requirements.riido.json", "docs/20-domain/runtime-scheduling/saas-assignment-source.md", "docs/20-domain/runtime-scheduling/saas-assignment-source.riido.json", "docs/20-domain/workspace.md", "docs/20-domain/validation.md", "docs/20-domain/validation.riido.json", "docs/20-domain/locking.md"]},
+    {"topic": "CLI, package map, branch gate, config", "docs": ["docs/30-architecture/cli-surface.md", "docs/30-architecture/cli-surface.riido.json", "docs/30-architecture/module-decomposition.md", "docs/30-architecture/riido-work-branch-gate.md", "docs/30-architecture/riido-work-branch-gate.riido.json", "docs/30-architecture/config-reference.md", "docs/30-architecture/config-reference.riido.json", "docs/30-architecture/config-reference/executable-search-path.md", "docs/30-architecture/config-reference/executable-search-path.riido.json"]},
+    {"topic": "runtime compatibility and upgrade evidence", "docs": ["docs/30-architecture/compatibility-gate.md", "docs/30-architecture/compatibility-gate.riido.json", "docs/30-architecture/runtime-upgrade-flow.md", "docs/30-architecture/runtime-upgrade-flow.riido.json"]},
+    {"topic": "provider real CLI and loop evidence", "docs": ["docs/30-architecture/integration-matrix.md", "docs/30-architecture/provider-real-cli-observation.md", "docs/30-architecture/loop-engineering.md", "docs/30-architecture/executable-knowledge.md", "docs/30-architecture/executable-knowledge.riido.json", "docs/executable-knowledge.md", "docs/executable-knowledge.riido.json"]},
+    {"topic": "repository handoff pages", "docs": ["docs/readme/readme-pages.riido.json", "docs/readme/module-map.md", "docs/readme/module-map.riido.json", "docs/readme/provider-cli.md", "docs/readme/provider-cli.riido.json", "docs/readme/repository-boundary.md", "docs/readme/repository-boundary.riido.json", "docs/readme/run-and-smoke.md", "docs/readme/run-and-smoke.riido.json"]},
+    {"topic": "repository verification command set", "docs": ["docs/readme/verification.md", "docs/readme/verification.riido.json"]},
+    {"topic": "semantic event activity evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.md", "docs/20-domain/provider-runtime/adapter-draft-fields/idle-watchdog.riido.json"]},
+    {"topic": "event ingest authority evidence", "docs": ["docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.md", "docs/20-domain/provider-runtime/adapter-acl/event-ingestor-contract.riido.json"]},
+    {"topic": "provider draft mapping evidence", "docs": ["docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.md", "docs/20-domain/provider-runtime/runtime-responsibility/provider-event-draft.riido.json"]},
+    {"topic": "terminal result mapping evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.md", "docs/20-domain/provider-runtime/adapter-draft-fields/run-lifecycle.riido.json"]},
+    {"topic": "shutdown authority evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.md", "docs/20-domain/provider-runtime/adapter-draft-fields/cancel-interrupt-input.riido.json"]},
+    {"topic": "approval wait timeout evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md", "docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json"]},
+    {"topic": "process lifecycle evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.md", "docs/20-domain/provider-runtime/adapter-draft-fields/process-lifecycle.riido.json"]},
+    {"topic": "draft field surface evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md", "docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md", "docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json"]},
+    {"topic": "session lifecycle evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md", "docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json"]},
+    {"topic": "Figma boundary and unresolved execution design", "docs": ["docs/30-architecture/figma-ai-agent-daemon-boundary.md", "docs/30-architecture/agent-execution-unresolved-design.md", "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md", "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json"]},
+    {"topic": "migration history and open questions", "docs": ["docs/migration/daemon.md", "docs/migration/cli.md", "docs/migration/cli.riido.json", "docs/50-roadmap/open-questions.md", "docs/50-roadmap/open-questions.riido.json"]}
+  ],
+  "repos": [
+    {"repo": "riido-daemon", "responsibility": "customer-PC daemon, CLI/local helper, provider adapters, local IPC, host integration, store distribution executable contract"},
+    {"repo": "riido-contracts", "responsibility": "shared task/IR/provider capability/assignment/API contracts"},
+    {"repo": "riido-control-plane", "responsibility": "SaaS HTTP/SSE behavior, RBAC/authZ, assignment store/read model, client-facing API"},
+    {"repo": "riido-infra", "responsibility": "Terraform, AWS deployment topology, remote state, private release/deploy evidence"}
+  ],
+  "rules": [
+    "create a Riido task first and use its returned branchName exactly",
+    "same fact in multiple repos must be promoted to riido-contracts instead of copied",
+    "deployment-only facts belong to riido-infra and server runtime facts belong to riido-control-plane",
+    "retired riido_daemon_private and riido-daemon-private sources must not be read, compared, cherry-picked, pushed, or merged",
+    "provider CLIs are user-installed external tools and must not be bundled into package artifacts",
+    "cmd/riido is local-only and must not open public TCP or HTTP listeners",
+    "new env vars or flags must update config-reference and parser tests in the same PR",
+    "provider adapter behavior changes must update deterministic tests and integration-matrix",
+    "store distribution changes must update the store contract, distribution docs, release docs, and storecontract verification"
+  ]
+}

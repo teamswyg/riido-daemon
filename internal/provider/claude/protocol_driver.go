@@ -2,7 +2,6 @@ package claude
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -10,71 +9,33 @@ import (
 
 // protocolDriver implements agentbridge.ProtocolDriver for Claude Code's
 // `claude -p --input-format stream-json` mode.
-//
-// Claude reads ONE stream-json user-message frame from stdin and then
-// waits for EOF before responding. The Codex driver is long-lived
-// JSON-RPC; the Claude driver is simpler:
-//
-//	OnStart            → write {"type":"user","message":{...}} to stdin
-//	                   → CloseStdin (EOF signal)
-//	OnRaw              → delegate to claude.Translate (existing logic)
-//	OnProcessExit      → no-op (no pending requests to fail; Claude does
-//	                      not use server-initiated RPC requests)
-//	OnClose            → no-op
-//
-// Discovered during real-CLI smoke (audit "real CLI integration matrix"
-// op-quality work): without this driver the session actor never wrote
-// the prompt to stdin and `claude -p` blocked on stdin indefinitely,
-// hitting the hard-timeout.
 type protocolDriver struct {
 	req            agentbridge.StartRequest
-	written        bool // OnStart should run only once even if reinvoked
+	written        bool
 	streamedBlocks map[int]bool
+	pendingInputs  map[string]any
 }
 
-// NewProtocolDriver returns a provider-neutral ProtocolDriver that writes the
-// Claude user-message stream-json frame on session start.
+// NewProtocolDriver writes one Claude user-message frame when the session
+// starts, then lets the existing stream-json translator handle raw output.
 func NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	return &protocolDriver{req: req}, nil
 }
 
-// OnStart writes the user-message stream-json frame to claude's stdin
-// and immediately closes stdin so claude knows there's no more input.
-// Claude then processes the prompt and streams its response back on
-// stdout, which the session actor feeds through Translate the normal
-// way.
-func (d *protocolDriver) OnStart(ctx context.Context, io agentbridge.ProtocolIO) error {
-	if d.written {
-		return nil
+func (d *protocolDriver) OnRaw(
+	_ context.Context,
+	raw agentbridge.RawEvent,
+	_ agentbridge.ProtocolIO,
+) ([]agentbridge.Event, []agentbridge.Command, error) {
+	if raw.Type == "control_request" {
+		request := mapField(raw.Payload, "request")
+		if subtype := stringField(request, "subtype"); subtype == "can_use_tool" || subtype == "permission_request" {
+			if d.pendingInputs == nil {
+				d.pendingInputs = map[string]any{}
+			}
+			d.pendingInputs[stringField(raw.Payload, "request_id")] = firstToolInput(request)
+		}
 	}
-	frame := map[string]any{
-		"type": "user",
-		"message": map[string]any{
-			"role": "user",
-			"content": []map[string]any{
-				{"type": "text", "text": d.req.Prompt},
-			},
-		},
-	}
-	body, err := json.Marshal(frame)
-	if err != nil {
-		return fmt.Errorf("claude driver: marshal user frame: %w", err)
-	}
-	body = append(body, '\n')
-	if err := io.WriteStdin(ctx, body); err != nil {
-		return fmt.Errorf("claude driver: write user frame: %w", err)
-	}
-	if err := io.CloseStdin(ctx); err != nil {
-		return fmt.Errorf("claude driver: close stdin: %w", err)
-	}
-	d.written = true
-	return nil
-}
-
-// OnRaw delegates to the existing Translate. The driver does not need
-// to inspect raw events itself — Claude's stream-json semantics are
-// already covered by the pure-translator path.
-func (d *protocolDriver) OnRaw(_ context.Context, raw agentbridge.RawEvent, _ agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
 	if raw.Type == "stream_event" {
 		event, _ := raw.Payload["event"].(map[string]any)
 		if event["type"] == "message_start" {
@@ -107,14 +68,27 @@ func (d *protocolDriver) OnRaw(_ context.Context, raw agentbridge.RawEvent, _ ag
 	return Translate(raw)
 }
 
-// OnProcessExit is a no-op for Claude — there are no pending RPC
-// requests to fail. The canonical reducer's process-exit policy
-// handles "exited without provider result".
-func (d *protocolDriver) OnProcessExit(_ context.Context, _ agentbridge.ProcessExitStatus, _ agentbridge.ProtocolIO) ([]agentbridge.Event, error) {
+func (d *protocolDriver) OnProcessExit(
+	_ context.Context,
+	_ agentbridge.ProcessExitStatus,
+	_ agentbridge.ProtocolIO,
+) ([]agentbridge.Event, error) {
 	return nil, nil
 }
 
-// OnClose is a no-op for Claude.
 func (d *protocolDriver) OnClose(_ context.Context, _ agentbridge.ProtocolIO) error {
+	d.pendingInputs = nil
 	return nil
+}
+
+func (d *protocolDriver) BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
+	input, ok := d.pendingInputs[cmd.ProviderRequestID]
+	if !ok {
+		return nil, fmt.Errorf("claude: no pending control request for %s", cmd.Kind)
+	}
+	frame, err := buildProviderInput(cmd, input)
+	if err == nil {
+		delete(d.pendingInputs, cmd.ProviderRequestID)
+	}
+	return frame, err
 }

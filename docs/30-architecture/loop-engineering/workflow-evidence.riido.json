@@ -1,0 +1,36 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "workflow-evidence",
+  "owner": "tools/workflowevidence and workflow-evidence workflow",
+  "observation": {
+    "summary": "Daemon had many executable GitHub Actions workflows, but legacy package and provider workflows could pass without durable JSON evidence while evidence-producing workflows used mixed upload path shapes.",
+    "artifacts": [".github/workflows", "docs/30-architecture/workflow-evidence.riido.json"]
+  },
+  "hypothesis": {
+    "summary": "A workflow evidence verifier can make missing evidence artifacts visible, reject non-strict artifact uploads, understand glob or directory evidence uploads, and keep legacy workflow gaps registered as debt.",
+    "artifacts": ["tools/workflowevidence"]
+  },
+  "execution": {
+    "summary": "Scan all .yml and .yaml workflows, classify covered workflows, accepted gaps, strict uploads, evidence-out upload bindings, and evidence-capable tool coverage, then emit workflow evidence JSON.",
+    "artifacts": ["tools/workflowevidence", ".github/workflows/workflow-evidence.yml"]
+  },
+  "evaluation": {
+    "summary": "The verifier fails on unregistered executable workflows, missing evidence-out uploads, non-strict artifact uploads, missing evidence tool coverage, missing evidence tool bindings, stale generated docs, or unused accepted gaps.",
+    "artifacts": ["docs/30-architecture/workflow-evidence.md"]
+  },
+  "retrospective": {
+    "summary": "Daemon workflow observability now has a generated reader and CI gate: 72 workflows are evidence-covered, 26 legacy workflows are explicit accepted debt, and future workflow drift cannot remain silent."
+  },
+  "evidence": [
+    {
+      "kind": "command",
+      "ref": "go run ./tools/workflowevidence -check-doc -evidence-out /tmp/workflow-evidence.json",
+      "proves": "daemon workflow evidence coverage is generated, current, and machine-readable"
+    },
+    {
+      "kind": "workflow",
+      "ref": ".github/workflows/workflow-evidence.yml",
+      "proves": "public CI uploads daemon workflow evidence artifacts"
+    }
+  ]
+}

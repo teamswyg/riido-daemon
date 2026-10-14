@@ -1,6 +1,6 @@
-github.com/teamswyg/riido-contracts v0.3.4 h1:QJh+2rkov6ZM6jQiGKHdjbVicNkPl8rsa5KnxvD6Kcs=
-github.com/teamswyg/riido-contracts v0.3.4/go.mod h1:UOHHonaAbnAICnQjdFJ+uuC05/lAb9j/L0iYf7f8I2M=
-github.com/teamswyg/riido-contracts v0.3.5-0.20261012083212-c2c155b7ea17 h1:Z8campGx6+JiOHENEGFD6G92B6xq8cHJuj1X2ryr9mc=
-github.com/teamswyg/riido-contracts v0.3.5-0.20261012083212-c2c155b7ea17/go.mod h1:UOHHonaAbnAICnQjdFJ+uuC05/lAb9j/L0iYf7f8I2M=
-github.com/teamswyg/riido-contracts v0.3.5-0.20261012084411-c3aa9306a36c h1:6OWGXejsMsWqzey7372BqykBOuLjhFINukdWMCgVsz4=
-github.com/teamswyg/riido-contracts v0.3.5-0.20261012084411-c3aa9306a36c/go.mod h1:UOHHonaAbnAICnQjdFJ+uuC05/lAb9j/L0iYf7f8I2M=
+github.com/teamswyg/riido-contracts v0.3.7-0.20260831080944-851773674b38 h1:1mIyUvYO2op+0RNhTi3SbLYXm7fMyu9M3HS8ePTU+sQ=
+github.com/teamswyg/riido-contracts v0.3.7-0.20260831080944-851773674b38/go.mod h1:E1PR5OpNls64Bun+d7z6Efwy70/fi11v1q1GhVRO3TA=
+github.com/teamswyg/riido-contracts v0.3.7-0.20261013041832-5a430e16b232 h1:1l/Zh0OypfwgWWiYzwptodA8b6KtnONangaclRwyYo8=
+github.com/teamswyg/riido-contracts v0.3.7-0.20261013041832-5a430e16b232/go.mod h1:E1PR5OpNls64Bun+d7z6Efwy70/fi11v1q1GhVRO3TA=
+github.com/teamswyg/riido-contracts v0.3.7-0.20261014025026-0c36d7e6519f h1:B5h1gv7ELERJrmH67G8xlX7/B81SLQ7HQI4ETxFQHEw=
+github.com/teamswyg/riido-contracts v0.3.7-0.20261014025026-0c36d7e6519f/go.mod h1:E1PR5OpNls64Bun+d7z6Efwy70/fi11v1q1GhVRO3TA=

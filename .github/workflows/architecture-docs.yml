@@ -1,90 +1,174 @@
 name: architecture-docs
 
 on:
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
       - ".github/workflows/architecture-docs.yml"
-      - "docs/20-domain/context-map.md"
-      - "docs/20-domain/provider-runtime.md"
-      - "docs/20-domain/security.md"
+      - ".github/workflows/loop-engineering-evidence.yml"
+      - ".github/workflows/repo-executable-knowledge-coverage.yml"
+      - ".github/workflows/context-map-docs.yml"
+      - ".github/workflows/locking-docs.yml"
+      - ".github/workflows/security-docs.yml"
+      - ".github/workflows/security-redaction-docs.yml"
+      - ".github/workflows/security-invariants-docs.yml"
+      - ".github/workflows/security-native-config-overlay-docs.yml"
+      - ".github/workflows/provider-runtime-docs.yml"
+      - ".github/workflows/provider-runtime-responsibility-docs.yml"
+      - ".github/workflows/provider-adapter-acl-docs.yml"
+      - ".github/workflows/provider-integration-gate-docs.yml"
+      - ".github/workflows/provider-runtime-boundary-docs.yml"
+      - ".github/workflows/workspace-docs.yml"
+      - ".github/workflows/readme-docs.yml"
+      - ".github/workflows/roadmap-docs.yml"
+      - ".github/workflows/migration-cli-docs.yml"
+      - ".github/workflows/migration-daemon-docs.yml"
+      - ".github/workflows/migration-daemon-overview-docs.yml"
+      - ".github/workflows/migration-daemon-riidoapi-local-api-docs.yml"
+      - ".github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml"
+      - ".github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml"
+      - ".github/workflows/migration-daemon-distribution-host-integration-docs.yml"
+      - ".github/workflows/migration-daemon-macos-provider-cli-review-docs.yml"
+      - ".github/workflows/migration-daemon-figma-boundary-provenance-docs.yml"
+      - ".github/workflows/migration-daemon-codex-auth-full-access-docs.yml"
+      - ".github/workflows/workspace-invariants-docs.yml"
+      - ".github/workflows/workspace-native-config-docs.yml"
+      - ".github/workflows/distribution-host-docs.yml"
+      - ".github/workflows/distribution-host-invariants-docs.yml"
+      - ".github/workflows/distribution-host-local-ipc-docs.yml"
+      - ".github/workflows/provider-public-migration-docs.yml"
+      - "docs/executable-knowledge.md"
+      - "docs/executable-knowledge.riido.json"
+      - "docs/readme/**"
+      - "docs/20-domain/**"
       - "docs/30-architecture/**"
-      - "docs/50-roadmap/open-questions.md"
-      - "docs/migration/daemon.md"
-      - "docs/migration/cli.md"
+      - "docs/50-roadmap/**"
+      - "docs/migration/**"
+      - "scripts/verify-architecture-docs.sh"
+      - "scripts/architecture-docs/**"
+      - ".github/workflows/compatibility-gate.yml"
+      - ".github/workflows/runtime-upgrade-flow.yml"
+      - ".github/workflows/runtime-scheduling-docs.yml"
+      - ".github/workflows/local-daemon-contract-evidence.yml"
+      - ".github/workflows/runtime-eligibility-evidence.yml"
+      - ".github/workflows/task-requirements-evidence.yml"
+      - ".github/workflows/saas-assignment-source.yml"
+      - ".github/workflows/validation-evidence.yml"
+      - ".github/workflows/policy-bundle-loader-evidence.yml"
+      - ".github/workflows/tool-use-gate-evidence.yml"
+      - ".github/workflows/native-config-mcp-evidence.yml"
+      - ".github/workflows/full-access-harness-evidence.yml"
+      - ".github/workflows/assignment-fsm-evidence.yml"
+      - ".github/workflows/privacy-metadata-evidence.yml"
+      - ".github/workflows/store-distribution-contract.yml"
+      - ".github/workflows/cli-surface-evidence.yml"
+      - ".github/workflows/config-reference-evidence.yml"
+      - ".github/workflows/executable-search-path-evidence.yml"
+      - ".github/workflows/executable-knowledge-coverage.yml"
+      - ".github/workflows/release-artifact-docs.yml"
+      - ".github/workflows/integration-matrix-docs.yml"
+      - ".github/workflows/module-decomposition-docs.yml"
+      - ".github/workflows/store-distribution-docs.yml"
+      - ".github/workflows/agent-execution-design-docs.yml"
+      - ".github/workflows/figma-boundary-docs.yml"
+      - ".github/workflows/unsafe-bypass-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
-      - "tools/figmaboundary/**"
-      - "tools/providervalidation/**"
+      - "tools/**"
   pull_request:
     paths:
       - ".github/workflows/architecture-docs.yml"
-      - "docs/20-domain/context-map.md"
-      - "docs/20-domain/provider-runtime.md"
-      - "docs/20-domain/security.md"
+      - ".github/workflows/loop-engineering-evidence.yml"
+      - ".github/workflows/repo-executable-knowledge-coverage.yml"
+      - ".github/workflows/context-map-docs.yml"
+      - ".github/workflows/locking-docs.yml"
+      - ".github/workflows/security-docs.yml"
+      - ".github/workflows/security-redaction-docs.yml"
+      - ".github/workflows/security-invariants-docs.yml"
+      - ".github/workflows/security-native-config-overlay-docs.yml"
+      - ".github/workflows/provider-runtime-docs.yml"
+      - ".github/workflows/provider-runtime-responsibility-docs.yml"
+      - ".github/workflows/provider-adapter-acl-docs.yml"
+      - ".github/workflows/provider-integration-gate-docs.yml"
+      - ".github/workflows/provider-runtime-boundary-docs.yml"
+      - ".github/workflows/workspace-docs.yml"
+      - ".github/workflows/readme-docs.yml"
+      - ".github/workflows/roadmap-docs.yml"
+      - ".github/workflows/migration-cli-docs.yml"
+      - ".github/workflows/migration-daemon-docs.yml"
+      - ".github/workflows/migration-daemon-overview-docs.yml"
+      - ".github/workflows/migration-daemon-riidoapi-local-api-docs.yml"
+      - ".github/workflows/migration-daemon-daemon-lifecycle-cli-docs.yml"
+      - ".github/workflows/migration-daemon-runtime-snapshot-heartbeat-docs.yml"
+      - ".github/workflows/migration-daemon-distribution-host-integration-docs.yml"
+      - ".github/workflows/migration-daemon-macos-provider-cli-review-docs.yml"
+      - ".github/workflows/migration-daemon-figma-boundary-provenance-docs.yml"
+      - ".github/workflows/migration-daemon-codex-auth-full-access-docs.yml"
+      - ".github/workflows/workspace-invariants-docs.yml"
+      - ".github/workflows/workspace-native-config-docs.yml"
+      - ".github/workflows/distribution-host-docs.yml"
+      - ".github/workflows/distribution-host-invariants-docs.yml"
+      - ".github/workflows/distribution-host-local-ipc-docs.yml"
+      - ".github/workflows/provider-public-migration-docs.yml"
+      - "docs/executable-knowledge.md"
+      - "docs/executable-knowledge.riido.json"
+      - "docs/readme/**"
+      - "docs/20-domain/**"
       - "docs/30-architecture/**"
-      - "docs/50-roadmap/open-questions.md"
-      - "docs/migration/daemon.md"
-      - "docs/migration/cli.md"
+      - "docs/50-roadmap/**"
+      - "docs/migration/**"
+      - "scripts/verify-architecture-docs.sh"
+      - "scripts/architecture-docs/**"
+      - ".github/workflows/compatibility-gate.yml"
+      - ".github/workflows/runtime-upgrade-flow.yml"
+      - ".github/workflows/runtime-scheduling-docs.yml"
+      - ".github/workflows/local-daemon-contract-evidence.yml"
+      - ".github/workflows/runtime-eligibility-evidence.yml"
+      - ".github/workflows/task-requirements-evidence.yml"
+      - ".github/workflows/saas-assignment-source.yml"
+      - ".github/workflows/validation-evidence.yml"
+      - ".github/workflows/policy-bundle-loader-evidence.yml"
+      - ".github/workflows/tool-use-gate-evidence.yml"
+      - ".github/workflows/native-config-mcp-evidence.yml"
+      - ".github/workflows/full-access-harness-evidence.yml"
+      - ".github/workflows/assignment-fsm-evidence.yml"
+      - ".github/workflows/privacy-metadata-evidence.yml"
+      - ".github/workflows/store-distribution-contract.yml"
+      - ".github/workflows/cli-surface-evidence.yml"
+      - ".github/workflows/config-reference-evidence.yml"
+      - ".github/workflows/executable-search-path-evidence.yml"
+      - ".github/workflows/executable-knowledge-coverage.yml"
+      - ".github/workflows/release-artifact-docs.yml"
+      - ".github/workflows/integration-matrix-docs.yml"
+      - ".github/workflows/module-decomposition-docs.yml"
+      - ".github/workflows/store-distribution-docs.yml"
+      - ".github/workflows/agent-execution-design-docs.yml"
+      - ".github/workflows/figma-boundary-docs.yml"
+      - ".github/workflows/unsafe-bypass-evidence.yml"
       - "scripts/verify-riido-work-branch.sh"
-      - "tools/figmaboundary/**"
-      - "tools/providervalidation/**"
+      - "tools/**"
 
 jobs:
   docs:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
         with:
           go-version-file: go.mod
           cache: false
-      - name: Verify architecture SSOT files exist
+      - name: Verify architecture docs
+        run: scripts/verify-architecture-docs.sh
+      - name: Publish architecture executable knowledge evidence
         run: |
-          test -f docs/20-domain/context-map.md
-          test -f docs/30-architecture/module-decomposition.md
-          test -f docs/30-architecture/cli-surface.md
-          test -f docs/30-architecture/config-reference.md
-          test -f docs/30-architecture/integration-matrix.md
-          test -f docs/30-architecture/compatibility-gate.md
-          test -f docs/30-architecture/runtime-upgrade-flow.md
-          test -f docs/30-architecture/figma-ai-agent-daemon-boundary.md
-          test -f docs/30-architecture/figma-ai-agent-daemon-boundary.riido.json
-          test -f docs/30-architecture/riido-work-branch-gate.md
-          test -f docs/50-roadmap/open-questions.md
-      - name: Verify Riido work branch gate
-        run: |
-          scripts/verify-riido-work-branch.sh "A-40-AI-Agent-SSOT-Riido-작업-branchName-사용-강제"
-          if scripts/verify-riido-work-branch.sh "codex/not-allowed"; then
-            echo "namespaced helper branch unexpectedly passed"
-            exit 1
-          fi
-          if scripts/verify-riido-work-branch.sh "feature-branch"; then
-            echo "non-Riido branch unexpectedly passed"
-            exit 1
-          fi
-      - name: Verify split-repo wording
-        run: |
-          stale="$(grep -R --line-number -E '후속 architecture-doc migration|architecture-doc migration slice|github.com/teamswyg/riido_daemon|cmd/riido_ai_server|internal/riidoaiserver|terraform/' docs/20-domain docs/30-architecture docs/50-roadmap || true)"
-          if [ -n "$stale" ]; then
-            printf 'Stale or cross-boundary architecture wording:\n%s\n' "$stale"
-            exit 1
-          fi
-      - name: Verify config reference covers daemon env surface
-        run: |
-          for key in RIIDO_CLAUDE_PATH RIIDO_CODEX_PATH RIIDO_OPENCLAW_PATH RIIDO_CURSOR_PATH AGENTBRIDGE_INTEGRATION RIIDO_TASK_QUEUE_DIR RIIDO_TASK_DB_SOURCE_PATH RIIDO_SAAS_URL RIIDO_POLICY_BUNDLE_PATH; do
-            grep -q "$key" docs/30-architecture/config-reference.md
-          done
-      - name: Verify no non-Riido Go dependencies
-        run: |
-          allowed="github.com/teamswyg/riido-contracts"
-          disallowed="$(go list -m all | awk -v allowed="$allowed" 'NR > 1 && $1 != allowed { print $1 }')"
-          if [ -n "$disallowed" ]; then
-            printf 'Disallowed Go dependencies:\n%s\n' "$disallowed"
-            exit 1
-          fi
-      - name: Verify Figma AI Agent daemon boundary
-        run: go test ./tools/figmaboundary -count=1
-      - name: Verify provider validation matrix
-        run: go test ./tools/providervalidation -count=1
-      - name: Test
-        run: go test ./...
+          mkdir -p out
+          go run ./tools/knowledgecoverage \
+            -manifest docs/30-architecture/executable-knowledge.riido.json \
+            -check-doc \
+            -evidence-out out/architecture-docs-evidence.json
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: architecture-docs-evidence
+          path: out/architecture-docs-evidence.json
+          if-no-files-found: error

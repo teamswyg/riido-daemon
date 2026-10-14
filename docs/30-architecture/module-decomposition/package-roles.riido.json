@@ -1,0 +1,22 @@
+[
+  {"label": "cmd/riido", "packages": ["cmd/riido"], "role": "CLI/local daemon adapter. Parses flags/env and composes local-only surfaces."},
+  {"label": "internal/agentbridge", "packages": ["internal/agentbridge"], "role": "Provider-neutral C4 run/request/event/result domain."},
+  {"label": "internal/agentbridge/session", "packages": ["internal/agentbridge/session"], "role": "Per-run session actor over the process port and protocol driver."},
+  {"label": "internal/agentbridge/runtimeactor", "packages": ["internal/agentbridge/runtimeactor"], "role": "One runtime mailbox/slot and capability reconciliation."},
+  {"label": "internal/agentbridge/supervisor", "packages": ["internal/agentbridge/supervisor"], "role": "Daemon control loop, task claim/dispatch, workdir preparation, event ingest delegation."},
+  {"label": "internal/agentbridge/controlplane", "packages": ["internal/agentbridge/controlplane"], "role": "Task source/reporter ports and memory/file adapters."},
+  {"label": "internal/agentbridge/controlplane/taskdbplane", "packages": ["internal/agentbridge/controlplane/taskdbplane"], "role": "Local task DB source/reporter adapter."},
+  {"label": "internal/agentbridge/controlplane/saasplane", "packages": ["internal/agentbridge/controlplane/saasplane"], "role": "SaaS polling/reporting adapter over assignment contracts."},
+  {"label": "internal/provider/{claude,codex,openclaw,cursor}", "packages": ["internal/provider/claude", "internal/provider/codex", "internal/provider/openclaw", "internal/provider/cursor"], "role": "Concrete provider adapter ACLs."},
+  {"label": "internal/process / internal/process/processexec", "packages": ["internal/process", "internal/process/processexec"], "role": "Process port, fake process, and os/exec adapter."},
+  {"label": "internal/workdir", "packages": ["internal/workdir"], "role": "Isolated run workdir and native config materialization."},
+  {"label": "internal/scheduling", "packages": ["internal/scheduling"], "role": "Pure runtime eligibility/selection rules."},
+  {"label": "internal/policy", "packages": ["internal/policy"], "role": "C7 security/policy decisions."},
+  {"label": "internal/hostintegration", "packages": ["internal/hostintegration"], "role": "C11 distribution/store/host pure models."},
+  {"label": "internal/riidoapi", "packages": ["internal/riidoapi"], "role": "Local IPC JSON API over Unix socket or Windows named pipe."},
+  {"label": "internal/taskdb", "packages": ["internal/taskdb"], "role": "Public daemon copy of riido-task-db.v1 guarded mutation adapter."},
+  {"label": "internal/mwsdbridge / internal/project", "packages": ["internal/mwsdbridge", "internal/project"], "role": "mwsd ACL and workspace/task projection."},
+  {"label": "internal/ir/ingest", "packages": ["internal/ir/ingest"], "role": "Daemon-side event append/redaction boundary."},
+  {"label": "tools/storecontract", "packages": ["tools/storecontract"], "role": "Store distribution contract verifier."},
+  {"label": "tools/riidogen", "packages": ["tools/riidogen"], "role": "Local generator for executable Riido contracts."}
+]

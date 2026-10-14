@@ -1,0 +1,30 @@
+{
+  "provider": "cursor",
+  "display_name": "Cursor Agent",
+  "runtime_kind": "cursor",
+  "executable": "cursor-agent",
+  "deterministic_ci": [
+    "go test ./internal/provider/cursor",
+    "go test ./internal/agentbridge"
+  ],
+  "opt_in_integration": "AGENTBRIDGE_INTEGRATION=1 go test ./internal/provider/cursor -run TestIntegration -count=1",
+  "worktree_support": "supported",
+  "pass_evidence": [
+    "ResultCompleted",
+    "expected file artifact inside daemon-selected workdir",
+    "launch profile includes --trust without --yolo"
+  ],
+  "skip_before_run": [
+    "AGENTBRIDGE_INTEGRATION not set",
+    "cursor-agent executable missing",
+    "Detect Available=false",
+    "cursor-agent account missing"
+  ],
+  "latest_evidence": [
+    "A-54-AI-Agent-Provider-Cursor-Agent-worktree-side-effect-검증"
+  ],
+  "must_not_claim": [
+    "Cursor --trust enables --yolo or any provider-native approval bypass",
+    "Skipped integration gate proves filesystem side effect"
+  ]
+}

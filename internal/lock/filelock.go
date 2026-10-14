@@ -16,46 +16,9 @@ import (
 
 // FileLock is an exclusive advisory lock backed by the host OS lock primitive.
 type FileLock struct {
-	file *os.File
-	path string
-}
-
-// ErrLocked is returned by TryAcquireFile when the lock is currently held by
-// another holder. It is a typed sentinel so callers can distinguish "already
-// held" from a real I/O error.
-var ErrLocked = errors.New("lock: already held")
-
-// TryAcquireFile attempts a single non-blocking acquire. It returns ErrLocked
-// without waiting if the lock is already held. On Unix the underlying flock is
-// released by the kernel when a holding process dies, so ErrLocked means a live
-// holder still owns the lock; a dead holder's lock is acquirable immediately.
-func TryAcquireFile(path string) (*FileLock, error) {
-	if strings.TrimSpace(path) == "" {
-		return nil, errors.New("lock: empty path")
-	}
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		return nil, fmt.Errorf("lock: create lock directory: %w", err)
-	}
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o644)
-	if err != nil {
-		return nil, fmt.Errorf("lock: open file lock: %w", err)
-	}
-	if err := tryLockFile(file, path); err != nil {
-		_ = file.Close()
-		if isLockBusy(err) {
-			return nil, ErrLocked
-		}
-		return nil, fmt.Errorf("lock: acquire file lock: %w", err)
-	}
-	return &FileLock{file: file, path: path}, nil
-}
-
-// RemoveStaleLock removes a lock artifact left by a holder that died without
-// releasing (e.g. a Windows ".claim" file after a crash). On Unix the flock is
-// already released on process death, so this is a no-op. Only call it after
-// confirming the recorded owner is not alive.
-func RemoveStaleLock(path string) error {
-	return cleanupLockFile(path)
+	file            *os.File
+	path            string
+	stopMaintenance func()
 }
 
 // AcquireFile waits until an exclusive lock can be acquired or ctx is done.
@@ -75,7 +38,7 @@ func AcquireFile(ctx context.Context, path string) (*FileLock, error) {
 	for {
 		err := tryLockFile(file, path)
 		if err == nil {
-			return &FileLock{file: file, path: path}, nil
+			return &FileLock{file: file, path: path, stopMaintenance: startLockMaintenance(path)}, nil
 		}
 		if !isLockBusy(err) {
 			_ = file.Close()
@@ -88,36 +51,4 @@ func AcquireFile(ctx context.Context, path string) (*FileLock, error) {
 		case <-ticker.C:
 		}
 	}
-}
-
-// Release releases the advisory lock and closes the underlying file.
-func (l *FileLock) Release() error {
-	if l == nil || l.file == nil {
-		return nil
-	}
-	err := unlockFile(l.file, l.path)
-	closeErr := l.file.Close()
-	path := l.path
-	l.file = nil
-	l.path = ""
-	if err != nil {
-		return fmt.Errorf("lock: release file lock: %w", err)
-	}
-	if closeErr != nil {
-		return fmt.Errorf("lock: close file lock: %w", closeErr)
-	}
-	if err := cleanupLockFile(path); err != nil {
-		return fmt.Errorf("lock: cleanup file lock: %w", err)
-	}
-	return nil
-}
-
-// WithFile runs fn while holding an exclusive advisory file lock.
-func WithFile(ctx context.Context, path string, fn func() error) error {
-	lock, err := AcquireFile(ctx, path)
-	if err != nil {
-		return err
-	}
-	defer lock.Release()
-	return fn()
 }

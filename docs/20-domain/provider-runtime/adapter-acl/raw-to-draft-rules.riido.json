@@ -1,0 +1,14 @@
+{
+  "schema_version": "riido-provider-adapter-acl-detail.v1",
+  "loop_source": "docs/20-domain/provider-runtime/adapter-acl.riido.json",
+  "id": "raw-to-draft-rules",
+  "title": "Raw To Draft Rules",
+  "generated_doc": "docs/20-domain/provider-runtime/adapter-acl/raw-to-draft-rules.md",
+  "blocks": [
+    {"kind": "paragraph", "text": "Adapter parsers own provider-local `RawEvent` envelopes. Adapter translation maps those envelopes into provider-neutral run-scope events; supervisor draft construction maps those run events into canonical IR event types."},
+    {"kind": "ordered", "items": ["Known provider raw types map to registered domain `EventType` values through adapter translation and `providerEventDraft`.", "Unknown provider raw types must become non-transition provider observations or logs; they must not create FSM authority.", "Known raw types with unknown fields preserve unknown source data only through explicitly modeled draft payload/unknown surfaces.", "Derived meaning must be marked by the translating adapter when provider output did not directly report the fact.", "Provider transition-after-side facts are drafts only; ingest/orchestration decides state transitions."]},
+    {"kind": "paragraph", "text": "The adjacent [`event-ingestor-contract.md`](event-ingestor-contract.md) owns final `CanonicalEvent` envelope completion and validation."},
+    {"kind": "paragraph", "text": "RIID-5827: Claude partial text is forwarded without duplicating final blocks. Codex native turn status distinguishes completed, failed and interrupted even after partial output; idle/ready thread availability does not complete a turn. Native approval responses retain JSON-RPC request identity. The SaaS adapter forwards every supervisor-batched partial snapshot without a second debounce."},
+    {"kind": "paragraph", "text": "RIID-5816: Claude native can_use_tool and legacy permission_request preserve original input in a run-local driver, while redacted ToolRef arguments remain diagnostic only. Its stdin stays open until shutdown. Error, budget and turn-limit results retain failure reasons instead of reporting success."}
+  ]
+}

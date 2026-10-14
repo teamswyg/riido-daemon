@@ -1,0 +1,33 @@
+{
+  "schema_version": "riido-domain-journey-dsl.v1",
+  "id": "domain-fixture-journey",
+  "name": "Domain Fixture Journey",
+  "common_name": "도메인 픽스처 여정",
+  "remote_environment": "staging",
+  "verification_source": "local",
+  "cadence": "at least daily",
+  "cache": ".riido-local/evidence/domain-fixture-journey-cache.json",
+  "ux": {
+    "audience": "riido-internal-stakeholders",
+    "mode": "execution-like-stepper",
+    "pagination": "one meaningful domain entity per page",
+    "figma_evidence": "link each step to Figma intent and evidence rows"
+  },
+  "entities": [
+    {"id": "account", "create": "guarded signup fixture", "verify": "GET /users/me", "evidence": "domain.fixture.account"},
+    {"id": "workspace", "create": "POST /workspaces", "verify": "GET /workspaces/{workspace_id}", "evidence": "domain.fixture.workspace"},
+    {"id": "team", "create": "POST /workspaces/{workspace_id}/teams", "verify": "GET /workspaces/{workspace_id}/teams/{team_key}", "evidence": "domain.fixture.team"},
+    {"id": "project", "create": "POST /teams/{team_id}/components project", "verify": "GET /teams/{team_id}/components/lists", "evidence": "domain.fixture.project"},
+    {"id": "milestone", "create": "POST /teams/{team_id}/components milestone", "verify": "GET /teams/{team_id}/components/lists", "evidence": "domain.fixture.milestone"},
+    {"id": "task", "create": "POST /teams/{team_id}/components task", "verify": "GET /tasks/{task_id}/assignable-agents", "evidence": "domain.fixture.task"},
+    {"id": "agent", "create": "POST /v2/client/workspaces/{workspace_id}/ai-agent/agents", "verify": "GET /v2/client/workspaces/{workspace_id}/ai-agent/devices", "evidence": "domain.fixture.agent"},
+    {"id": "thread", "create": "POST /tasks/{task_id}/agent-assignments", "verify": "GET /tasks/{task_id}/thread-stream-subscription", "evidence": "domain.fixture.thread"}
+  ],
+  "rules": [
+    "reuse cached ids before creating new fixtures",
+    "write every meaningful entity id as evidence",
+    "staging is the only remote server target",
+    "local running frontend/daemon is the verification surface",
+    "expired evidence must be refreshed by the daily QA trigger"
+  ]
+}

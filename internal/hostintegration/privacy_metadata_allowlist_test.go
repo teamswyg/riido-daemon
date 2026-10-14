@@ -33,7 +33,7 @@ func TestPrivacyMetadataAllowlistMatchesServerFacingMetadataShape(t *testing.T) 
 		t.Fatalf("missing surface %s", PrivacySurfaceServerFacingClientMetadata)
 	}
 
-	got := jsontest.StructJSONPaths(reflect.TypeOf(ServerFacingClientMetadata{}))
+	got := jsontest.StructJSONPaths(reflect.TypeFor[ServerFacingClientMetadata]())
 	if !reflect.DeepEqual(got, surface.AllowedJSONPaths) {
 		t.Fatalf("server-facing metadata paths = %#v, want %#v", got, surface.AllowedJSONPaths)
 	}

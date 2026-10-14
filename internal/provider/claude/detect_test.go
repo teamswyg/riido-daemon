@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/teamswyg/riido-contracts/hostintegration"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
@@ -24,16 +25,11 @@ func TestDetectMissingBinary(t *testing.T) {
 	}
 }
 
-func TestDetectFakeBinaryReportsVersion(t *testing.T) {
-	dir := t.TempDir()
-	fake := filepath.Join(dir, "claude")
-	script := "#!/bin/sh\necho '1.5.7 (anthropic-claude-code)'\nexit 0\n"
-	if err := os.WriteFile(fake, []byte(script), 0o755); err != nil {
-		t.Fatal(err)
-	}
+func TestDetectOverrideReportsVersion(t *testing.T) {
+	exe := writeClaudeProbe(t, true)
 
 	res, err := Detect(context.Background(), agentbridge.DetectEnv{
-		EnvOverride: map[string]string{EnvOverride: fake},
+		EnvOverride: map[string]string{EnvOverride: exe},
 	})
 	if err != nil {
 		t.Fatalf("Detect: %v", err)
@@ -41,7 +37,7 @@ func TestDetectFakeBinaryReportsVersion(t *testing.T) {
 	if !res.Available {
 		t.Fatalf("Available: %+v", res)
 	}
-	if res.Executable != fake {
+	if res.Executable != exe {
 		t.Fatalf("Executable: %q", res.Executable)
 	}
 	if res.Version == "" {
@@ -50,4 +46,44 @@ func TestDetectFakeBinaryReportsVersion(t *testing.T) {
 	if !res.SupportsStreaming || !res.SupportsResume {
 		t.Fatalf("capability flags wrong: %+v", res)
 	}
+}
+
+func TestDetectLoggedOutIsUnavailable(t *testing.T) {
+	res, err := Detect(context.Background(), agentbridge.DetectEnv{
+		EnvOverride: map[string]string{EnvOverride: writeClaudeProbe(t, false)},
+	})
+	if err != nil {
+		t.Fatalf("Detect: %v", err)
+	}
+	if res.Available || res.Reason != claudeAuthRecoveryMessage {
+		t.Fatalf("result: %+v", res)
+	}
+}
+
+func TestDetectMalformedAuthIsUnknown(t *testing.T) {
+	exe := filepath.Join(t.TempDir(), "claude")
+	if err := os.WriteFile(exe, []byte("#!/bin/sh\nif [ \"$1 $2\" = \"auth status\" ]; then echo malformed; else echo 2.1.202; fi\n"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	res, err := Detect(context.Background(), agentbridge.DetectEnv{EnvOverride: map[string]string{EnvOverride: exe}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if res.HealthStatus != hostintegration.ProviderHealthUnknown || res.DiagnosticCode != hostintegration.ProviderDiagnosticAuthProbeFailed {
+		t.Fatalf("result: %+v", res)
+	}
+}
+
+func writeClaudeProbe(t *testing.T, loggedIn bool) string {
+	t.Helper()
+	path := filepath.Join(t.TempDir(), "claude")
+	status := "false"
+	if loggedIn {
+		status = "true"
+	}
+	script := "#!/bin/sh\nif [ \"$1 $2\" = \"auth status\" ]; then echo '{\"loggedIn\":" + status + "}'; else echo '2.1.202'; fi\n"
+	if err := os.WriteFile(path, []byte(script), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	return path
 }

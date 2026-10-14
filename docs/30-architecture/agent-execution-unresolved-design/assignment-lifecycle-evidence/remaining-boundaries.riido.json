@@ -1,0 +1,4 @@
+[
+  {"id":"private-repo-auth","owner":"contracts/control-plane/infra policy","current_handling":"private repositories fail closed without token broker","required_next_artifact":"token-ref auth design and contract; raw token remains outside public daemon SSOT"},
+  {"id":"client-desktop-consumption","owner":"client/desktop","current_handling":"server exposes active stream handoff but UI consumption is outside daemon ownership","required_next_artifact":"client active stream subscription and desktop update/quit handoff"}
+]

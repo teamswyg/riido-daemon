@@ -1,0 +1,11 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "provider-real-cli-observation",
+  "owner": "provider-real-cli-observation manifest and local weekly Codex automation",
+  "observation": {"summary": "Public runners record contract or skip evidence through a scheduled/manual evidence artifact while a private logged-in Mac can execute paid provider side-effect scenarios.", "artifacts": ["docs/30-architecture/provider-real-cli-observation.riido.json"]},
+  "hypothesis": {"summary": "One editable provider/scenario manifest with fail-closed cash and token limits can prevent silent provider drift without multiplying workflows.", "artifacts": ["tools/providerintegrationevidence/plan_test.go"]},
+  "execution": {"summary": "Validate the weekly budget, run available provider TestIntegration scenarios locally, and pass failed, partial, or skipped evidence into the existing local QA candidate path.", "artifacts": [".github/workflows/provider-real-cli-observation.yml", "tools/providerintegrationevidence", "tools/localqarunner"]},
+  "evaluation": {"summary": "The verifier rejects over-budget plans; installed providers must pass filesystem side effects and all evidence records expiry, provider versions, and budget status.", "artifacts": ["docs/30-architecture/provider-real-cli-observation.md", "tools/localqacandidatedecision"]},
+  "retrospective": {"summary": "Actual provider usage remains estimated until each provider exposes stable usage events, so evidence labels estimates instead of claiming exact spend.", "artifacts": ["docs/30-architecture/integration-matrix/provider-matrix.md"]},
+  "evidence": [{"kind": "command", "ref": "go run ./tools/providerintegrationevidence -check-doc -run-integration -valid-for 168h", "proves": "the private weekly provider plan is within budget and installed CLIs pass side-effect scenarios"}, {"kind": "workflow", "ref": ".github/workflows/provider-real-cli-observation.yml", "proves": "public CI records contract and skipped-provider evidence without requiring paid credentials"}]
+}

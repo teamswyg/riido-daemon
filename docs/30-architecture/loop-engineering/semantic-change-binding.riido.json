@@ -1,0 +1,17 @@
+{
+  "loop_source": "docs/30-architecture/loop-engineering.riido.json",
+  "id": "semantic-change-binding",
+  "owner": "tools/semanticchangebinding and semantic-change-binding workflow",
+  "observation": {"summary": "Closed-loop maturity, task DB lease-fencing, and local QA candidate graph claims span DSL, generated readers, implementation, tests, workflows, and loop registry entries, but no common gate forced future changes to keep those semantic peers aligned.", "artifacts": ["docs/30-architecture/semantic-change-bindings.riido.json"]},
+  "hypothesis": {"summary": "A compact semantic binding manifest can make trigger files name the required evidence peers that must change with them, so an agent cannot silently update only one side of a claim or code/test/doc triad.", "artifacts": ["tools/semanticchangebinding/run_test.go", "tools/semanticchangebinding/business_claim_test.go"]},
+  "execution": {"summary": "Read changed files from staged git diff or explicit CI inputs, evaluate each semantic binding, and emit evidence JSON with missing peer paths.", "artifacts": ["tools/semanticchangebinding", ".pre-commit-config.yaml"]},
+  "evaluation": {"summary": "The verifier rejects closed-loop maturity, task DB lease-fencing, and local QA candidate graph trigger changes unless their required tests, generated evidence, workflows, and loop-engineering entries are changed together.", "artifacts": [".github/workflows/semantic-change-binding.yml"]},
+  "retrospective": {"summary": "The bindings close the gap between harness maturity claims and generated/evidence surfaces, between runtime lease-fencing and code/test/doc/workflow peers, and between local QA closed-loop candidates and the evidence graph surfaces that preserve their promotion path.", "artifacts": ["docs/30-architecture/loop-engineering.md"]},
+  "evidence": [
+    {"kind": "command", "ref": "go run ./tools/semanticchangebinding -changed-files docs/30-architecture/closed-loop-maturity.dsl.json -evidence-out /tmp/semantic-change-binding-negative.json", "proves": "closed-loop maturity trigger changes fail when required semantic peers are absent"},
+    {"kind": "workflow", "ref": ".github/workflows/semantic-change-binding.yml", "proves": "dedicated public CI preserves positive and negative semantic binding evidence"},
+    {"kind": "command", "ref": "go run ./tools/semanticchangebinding -changed-files tools/localqarunner/closed_loop_candidate_graph.go -evidence-out /tmp/local-qa-graph-negative.json", "proves": "local QA candidate graph implementation changes fail when dashboard, tests, workflow, and loop claim peers are absent"},
+    {"kind": "workflow", "ref": ".github/workflows/executable-knowledge-coverage.yml", "proves": "PR executable-knowledge CI runs semantic binding evidence alongside manifest-loop debt checks"},
+    {"kind": "workflow", "ref": ".github/workflows/local-daemon-contract-evidence.yml", "proves": "local daemon contract CI preserves the task DB lease-fencing claim binding"}
+  ]
+}

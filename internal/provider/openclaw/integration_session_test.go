@@ -1,0 +1,65 @@
+package openclaw
+
+import (
+	"context"
+	"testing"
+	"time"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/session"
+	"github.com/teamswyg/riido-daemon/internal/process"
+	"github.com/teamswyg/riido-daemon/internal/process/processexec"
+)
+
+func runOpenClawIntegrationSession(
+	t *testing.T,
+	ctx context.Context,
+	req agentbridge.StartRequest,
+) openClawIntegrationObservation {
+	t.Helper()
+	spawn, err := BuildStart(req, StartOptions{})
+	if err != nil {
+		t.Fatalf("BuildStart: %v", err)
+	}
+	sess, err := startOpenClawIntegrationSession(ctx, spawn)
+	if err != nil {
+		t.Fatalf("Start: %v", err)
+	}
+	events := collectOpenClawIntegrationEvents(sess)
+	return openClawIntegrationObservation{result: <-sess.Result(), events: <-events}
+}
+
+func startOpenClawIntegrationSession(
+	ctx context.Context,
+	spawn agentbridge.StartCommand,
+) (*session.Session, error) {
+	return session.Start(ctx, session.Config{
+		TaskID:      "integration-openclaw",
+		RuntimeID:   "openclaw",
+		Adapter:     integrationAdapter{},
+		Process:     processexec.New(),
+		Spawn:       processCommandFromStart(spawn),
+		HardTimeout: 180 * time.Second,
+	})
+}
+
+func processCommandFromStart(spawn agentbridge.StartCommand) process.Command {
+	return process.Command{
+		Executable: spawn.Executable,
+		Args:       spawn.Args,
+		Env:        spawn.Env,
+		Dir:        spawn.Dir,
+	}
+}
+
+func collectOpenClawIntegrationEvents(sess *session.Session) <-chan []agentbridge.Event {
+	done := make(chan []agentbridge.Event, 1)
+	go func() {
+		var events []agentbridge.Event
+		for ev := range sess.Events() {
+			events = append(events, ev)
+		}
+		done <- events
+	}()
+	return done
+}

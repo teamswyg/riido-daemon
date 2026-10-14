@@ -54,7 +54,7 @@ func TestAnswerResumeOnTextDelta(t *testing.T) {
 	if err := plane.ReportEvent(ctx, assignment.ID, agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: "resumed"}); err != nil {
 		t.Fatal(err)
 	}
-	current, ok, err := plane.assignmentForTask(ctx, assignment.ID)
+	current, ok, err := plane.assignmentForExecution(ctx, assignment.ID)
 	if err != nil || !ok || current.ConfirmationReason != "" {
 		t.Fatalf("answer still waiting: %+v %v", current, err)
 	}
