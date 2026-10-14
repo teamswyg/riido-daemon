@@ -18,6 +18,7 @@ Facts:
 - Codex runtime model catalog may report host Codex config model as runtime-scoped opaque model_id; it exposes visible host cache entries, honors their priority, and replaces an unavailable configured default with the preferred visible model.
 - Daemon never infers model catalog from OpenAI/ChatGPT tokens, account identity, API key, team id, or Open API key.
 - Explicit control-plane Codex model ids reach StartRequest.Model, while the synthetic codex-default id remains metadata-only and resolves through the runtime catalog for new sessions.
+- Codex error notifications with willRetry=true are non-terminal warnings owned by app-server recovery. Explicit turn/completed failed or interrupted status is authoritative even after partial text or a prior error; partial output before a later legacy error does not prove recovery.
 
 Evidence artifacts:
 

@@ -7,6 +7,7 @@ import (
 )
 
 func TestDaemonStartHoldsSingletonLock(t *testing.T) {
+	isolateDaemonLifecycleProviders(t)
 	sock := daemonSocketPath(t)
 	lockPath := daemonLockPath(t)
 	t.Setenv(envTaskQueueDir, "")

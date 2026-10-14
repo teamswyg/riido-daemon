@@ -27,4 +27,6 @@ func (d *protocolDriver) recordRuntimeError(message string) {
 		message = "codex runtime error"
 	}
 	d.lastRuntimeError = message
+	// Only output after this error can demonstrate legacy stream recovery.
+	d.sawAssistantOutput = false
 }

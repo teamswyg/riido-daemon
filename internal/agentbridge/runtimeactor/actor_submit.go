@@ -21,6 +21,7 @@ func (a *Actor) handleSubmit(
 	if err != nil {
 		return nil, err
 	}
+	blockRuntimeDriftedTasks(msg.ctx, inFlight, capView)
 	launchEnv := submitLaunchEnv(msg)
 	startReq := submitStartRequest(msg, capView, a.cfg.RuntimeID, launchEnv, a.cfg.Models)
 	spawn, err := adapter.BuildStart(startReq)
