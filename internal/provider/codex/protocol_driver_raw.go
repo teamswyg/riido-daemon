@@ -40,7 +40,11 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 
 func (d *protocolDriver) handleNotification(method codexMethod, raw agentbridge.RawEvent) ([]agentbridge.Event, bool) {
 	if method == codexMethodError {
-		errText := codexNotificationErrorMessage(params(raw))
+		p := params(raw)
+		errText := codexNotificationErrorMessage(p)
+		if retry, _ := p["willRetry"].(bool); retry {
+			return []agentbridge.Event{{Kind: agentbridge.EventWarning, Err: errText}}, true
+		}
 		d.recordRuntimeError(errText)
 		return []agentbridge.Event{{Kind: agentbridge.EventError, Err: errText}}, true
 	}
@@ -49,6 +53,11 @@ func (d *protocolDriver) handleNotification(method codexMethod, raw agentbridge.
 	}
 	if method == codexMethodTurnCompleted || method == codexMethodTurnCompleteSlash {
 		p := params(raw)
+		if stringField(mapField(p, "turn"), "status") != "" {
+			// Native terminal status is authoritative; legacy error fallback must
+			// neither overwrite interruption nor reject a successful retry.
+			return nil, false
+		}
 		if d.lastRuntimeError != "" && !d.sawAssistantOutput && stringField(p, "output") == "" {
 			return d.failedEvents(d.lastRuntimeError), true
 		}
