@@ -30,18 +30,19 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 	// Coherent live streaming requires accumulating deltas into one evolving
 	// message (a separate feature), not one progress line per delta.
 	case agentbridge.EventLifecycle:
-		if ev.Phase == agentbridge.StateWaitingToolApproval || ev.Phase == agentbridge.StateWaitingUserInput {
+		switch ev.Phase {
+		case agentbridge.StateWaitingToolApproval, agentbridge.StateWaitingUserInput:
 			req.EventType = assignmentcontract.EventAssignmentWaitingForUser
 			req.State = assignmentcontract.AssignmentRunning
 			req.ConfirmationReason = assignmentcontract.ConfirmationApprovalRequired
 			if ev.Phase == agentbridge.StateWaitingUserInput {
 				req.ConfirmationReason = assignmentcontract.ConfirmationAnswerRequired
 			}
-		} else if ev.Phase == agentbridge.StateRunning || ev.Phase == agentbridge.StateToolRunning {
+		case agentbridge.StateRunning, agentbridge.StateToolRunning:
 			req.EventType = assignmentcontract.EventAssignmentRunning
 			req.State = assignmentcontract.AssignmentRunning
 			req.Message = "provider running"
-		} else {
+		default:
 			return req, false
 		}
 	case agentbridge.EventToolApprovalNeeded, agentbridge.EventToolCallStarted, agentbridge.EventToolCallCompleted, agentbridge.EventToolCallFailed:
@@ -66,6 +67,8 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 			req.Message = "도구 실행 완료: " + ev.Tool.Name
 		case agentbridge.EventToolCallFailed:
 			req.Message = "도구 실행 실패: " + ev.Tool.Name
+		default:
+			return req, false
 		}
 		req.Metadata = map[string]string{agentbridge.ProgressMessageMetadataKey: "runtime.activity"}
 	case agentbridge.EventLog:

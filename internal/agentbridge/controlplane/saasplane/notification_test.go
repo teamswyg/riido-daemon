@@ -2,9 +2,10 @@ package saasplane
 
 import (
 	"context"
+	"testing"
+
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-	"testing"
 )
 
 func TestNotificationWaitingAndResume(t *testing.T) {

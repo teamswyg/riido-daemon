@@ -1,8 +1,9 @@
 package codex
 
 import (
-	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"testing"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 func TestUserInputNotification(t *testing.T) {
