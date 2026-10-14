@@ -21,7 +21,8 @@
     {"doc": "docs/30-architecture/agent-execution-unresolved-design.md", "description": "AI Agent 실행 미해결 이슈의 구조 분석"},
     {"doc": "docs/30-architecture/loop-engineering.md", "description": "generated evidence loop view"},
     {"doc": "docs/30-architecture/executable-knowledge.md", "description": "generated coverage of manual architecture knowledge debt"},
-    {"doc": "docs/executable-knowledge.md", "description": "generated repo-wide coverage of manual docs knowledge debt"}
+    {"doc": "docs/executable-knowledge.md", "description": "generated repo-wide coverage of manual docs knowledge debt"},
+    {"doc": "docs/30-architecture/agent-task-context.md", "description": "RIID-5818 작업 맥락·이전 대화 해석과 실행 범위"}
   ],
   "decisions": [
     {"topic": "daemon bounded context", "docs": ["docs/20-domain/context-map.md"]},
@@ -44,7 +45,8 @@
     {"topic": "draft field surface evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/allowed-fields.md", "docs/20-domain/provider-runtime/adapter-draft-fields/forbidden-fields.md", "docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json"]},
     {"topic": "session lifecycle evidence", "docs": ["docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md", "docs/20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json"]},
     {"topic": "Figma boundary and unresolved execution design", "docs": ["docs/30-architecture/figma-ai-agent-daemon-boundary.md", "docs/30-architecture/agent-execution-unresolved-design.md", "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md", "docs/30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json"]},
-    {"topic": "migration history and open questions", "docs": ["docs/migration/daemon.md", "docs/migration/cli.md", "docs/migration/cli.riido.json", "docs/50-roadmap/open-questions.md", "docs/50-roadmap/open-questions.riido.json"]}
+    {"topic": "migration history and open questions", "docs": ["docs/migration/daemon.md", "docs/migration/cli.md", "docs/migration/cli.riido.json", "docs/50-roadmap/open-questions.md", "docs/50-roadmap/open-questions.riido.json"]},
+    {"topic": "assigned task context interpretation", "docs": ["docs/30-architecture/agent-task-context.md", "docs/30-architecture/agent-task-context.riido.json"]}
   ],
   "repos": [
     {"repo": "riido-daemon", "responsibility": "customer-PC daemon, CLI/local helper, provider adapters, local IPC, host integration, store distribution executable contract"},
