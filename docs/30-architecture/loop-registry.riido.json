@@ -832,6 +832,29 @@
       ]
     },
     {
+      "id": "task_context_must_preserve_assignment_ownership",
+      "text": "Providers must interpret enriched task context and prior replies as bounded reference evidence, preserve the assigned task and verify actual requested changes on their existing instruction surfaces.",
+      "files": [
+        "internal/agentbridge/task_context_contract.go",
+        "internal/agentbridge/telemetry_apply.go",
+        "internal/agentbridge/task_context_contract_test.go"
+      ],
+      "docs": [
+        "docs/30-architecture/agent-task-context.md",
+        "docs/30-architecture/agent-task-context.riido.json",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": ["deterministic instruction placement on Claude, Codex, Cursor and OpenClaw; no live model comprehension claim"],
+      "verifiers": [
+        {
+          "name": "task-context-contract-placement-test",
+          "file": "internal/agentbridge/task_context_contract_test.go",
+          "contains": ["TestTaskContextContractUsesEveryNativeProviderInstructionSurface", "reference evidence", "unavailable or truncated"]
+        }
+      ]
+    },
+    {
       "id": "intent_clarification_must_wait_for_user",
       "text": "When task context does not contain a concrete action, the daemon must instruct providers to ask what work to do first; when a provider exits successfully after that question, the daemon must report needs_input instead of completing the assignment.",
       "files": [
