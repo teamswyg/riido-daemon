@@ -20,7 +20,7 @@
     "cmd/riido/daemon_observation.go"
   ],
   "policy": {
-    "completion": "required files changed and host argv checks passed for explicitly bound tasks",
+    "completion": "required files changed and host argv checks passed only for tasks with configured host verification; repository-only selection remains not_configured",
     "continuation_limit": {
       "minimum": 0,
       "maximum": 2,

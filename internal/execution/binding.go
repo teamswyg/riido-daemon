@@ -15,6 +15,8 @@ import (
 	"time"
 )
 
+const maxBindingsJSONBytes = 512 * 1024
+
 func Load(path string) ([]Binding, error) {
 	if path == "" {
 		return nil, nil
@@ -25,7 +27,7 @@ func Load(path string) ([]Binding, error) {
 	}
 	defer file.Close()
 	var bindings []Binding
-	decoder := json.NewDecoder(io.LimitReader(file, 1024*1024))
+	decoder := json.NewDecoder(io.LimitReader(file, maxBindingsJSONBytes))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&bindings); err != nil {
 		return nil, err
@@ -40,6 +42,13 @@ func Load(path string) ([]Binding, error) {
 }
 
 func ValidateBindings(bindings []Binding) error {
+	body, err := json.Marshal(bindings)
+	if err != nil {
+		return err
+	}
+	if len(body) > maxBindingsJSONBytes {
+		return errors.New("execution binding file size limit exceeded")
+	}
 	if len(bindings) > 256 {
 		return errors.New("execution binding limit exceeded")
 	}

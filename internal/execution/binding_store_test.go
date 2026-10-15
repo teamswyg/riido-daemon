@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
 	"testing"
 )
@@ -100,5 +101,32 @@ func TestRepositoryOnlyBindingDoesNotClaimVerification(t *testing.T) {
 	binding.ChangedFiles = []string{"out"}
 	if ValidateBindings([]Binding{binding}) == nil {
 		t.Fatal("half-configured verification accepted")
+	}
+}
+
+func TestOversizedBindingUpdateKeepsReadableConfiguration(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "bindings.json")
+	store, err := OpenBindingStore(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	binding := Binding{WorkspaceID: "w", TaskID: "t", Repository: t.TempDir(), ChangedFiles: []string{"out"}, Checks: [][]string{{"git", "diff", "--check"}}}
+	if err := store.Replace("w", "t", &binding); err != nil {
+		t.Fatal(err)
+	}
+	huge := binding
+	huge.Checks = make([][]string, 32)
+	for i := range huge.Checks {
+		huge.Checks[i] = []string{"git", strings.Repeat("x", maxBindingsJSONBytes/16)}
+	}
+	if store.Replace("w", "t", &huge) == nil {
+		t.Fatal("accepted unreadable oversized configuration")
+	}
+	restored, err := OpenBindingStore(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if restored.Snapshot()[0].Checks[0][1] != "diff" {
+		t.Fatal("rejected update replaced prior configuration")
 	}
 }
