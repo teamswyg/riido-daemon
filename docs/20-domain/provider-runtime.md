@@ -10,6 +10,8 @@ This C4 entrypoint is generated from executable provider-runtime wrapper SSOT an
 
 The root remains a compatibility surface for existing CI anchors while the source of those anchors moves into this manifest.
 
+RIID-5829: human approval and answer requests emit assignment_waiting_for_user with approval_required or answer_required. Automatically approved tool requests do not notify; the session evaluates its policy once per request. Explicit running and text resumption clear the reason. Logs and recoverable errors never emit terminal-failure notifications.
+
 ## Compatibility Markers
 
 - `figma-ai-agent-daemon-boundary`

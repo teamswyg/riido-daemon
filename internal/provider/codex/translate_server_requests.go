@@ -7,6 +7,8 @@ import (
 
 func translateServerRequest(method codexMethod, p map[string]any) []agentbridge.Event {
 	switch method {
+	case codexMethod("item/tool/requestUserInput"):
+		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateWaitingUserInput, Tool: agentbridge.ToolRef{ID: firstApprovalID(p), Kind: "user_input"}}}
 	case codexMethodApproveCommand, codexMethod("item/commandExecution/requestApproval"):
 		return codexApproveCommandEvent(p)
 	case codexMethodApprovePatch, codexMethod("item/fileChange/requestApproval"):

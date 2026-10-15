@@ -52,4 +52,6 @@ files/native configuration with separate run artifacts, owner/runtime/grant
 isolation, missing/corrupt bindings, fresh host verification baselines, and
 native identity drift before publication. No model calls are required.
 
+승인·답변 대기 통합 시에도 native session identity 검사를 먼저 수행한다. 자동 승인 정책은 한 번만 평가하며, 외부 세션으로 바뀐 출력이나 승인 요청은 게시하지 않는다.
+
 요청 식별자 메타데이터를 추가해도 기존 Agent 소유권, 작업 제목, 서버가 지정한 native resume ID를 유지한다.

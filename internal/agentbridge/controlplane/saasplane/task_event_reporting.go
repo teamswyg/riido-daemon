@@ -28,6 +28,11 @@ func (p *Plane) ReportEvent(ctx context.Context, executionID string, ev agentbri
 		return err
 	}
 	if ev.Kind == agentbridge.EventTextDelta {
+		if assignment.ConfirmationReason != "" {
+			if _, err := p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{AssignmentID: assignment.ID, TaskID: assignment.TaskID, State: assignmentcontract.AssignmentRunning, EventType: assignmentcontract.EventAssignmentRunning}); err != nil {
+				return err
+			}
+		}
 		return p.accumulatePartialBody(ctx, assignment, executionID, ev.Text)
 	}
 	req, ok := eventRequestFromAgentEvent(assignment, ev)

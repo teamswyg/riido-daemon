@@ -1,9 +1,10 @@
 package saasplane
 
 import (
-	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"strings"
 	"testing"
+
+	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
 
 func TestTaskAgentRequestsKeepExecutionIdentityAndUserInstruction(t *testing.T) {

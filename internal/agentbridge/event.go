@@ -18,4 +18,7 @@ type Event struct {
 	Result       Result
 	ExitCode     int
 	Err          string
+
+	// AutomaticallyApproved records the session tool-policy decision.
+	AutomaticallyApproved bool
 }

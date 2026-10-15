@@ -43,6 +43,7 @@ const (
 	StateStartingProvider    = contractrunstate.StateStartingProvider
 	StateHandshaking         = contractrunstate.StateHandshaking
 	StateRunning             = contractrunstate.StateRunning
+	StateWaitingUserInput    = contractrunstate.StateWaitingUserInput
 	StateWaitingToolApproval = contractrunstate.StateWaitingToolApproval
 	StateToolRunning         = contractrunstate.StateToolRunning
 	StateWaitingProvider     = contractrunstate.StateWaitingProvider

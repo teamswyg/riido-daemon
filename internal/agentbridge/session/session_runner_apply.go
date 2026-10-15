@@ -39,6 +39,12 @@ func (r *sessionRunner) applyExpandedEvent(ev agentbridge.Event) bool {
 	if !accepted {
 		return false
 	}
+	approver := r.cfg.AutoApprove
+	if ev.Kind == agentbridge.EventToolApprovalNeeded && approver != nil {
+		approved := approver(ev.Tool)
+		ev.AutomaticallyApproved = approved
+		approver = func(agentbridge.ToolRef) bool { return approved }
+	}
 	r.emit(ev)
 	if r.deliveryInterrupted {
 		return true
@@ -47,7 +53,7 @@ func (r *sessionRunner) applyExpandedEvent(ev agentbridge.Event) bool {
 		return true
 	}
 	var cmds []agentbridge.Command
-	r.state, cmds = agentbridge.Reduce(r.state, ev, r.cfg.AutoApprove)
+	r.state, cmds = agentbridge.Reduce(r.state, ev, approver)
 	if r.blockPendingApprovalIfNeeded(ev, cmds) {
 		return true
 	}
