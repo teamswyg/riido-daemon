@@ -34,6 +34,11 @@ func (r *sessionRunner) applyEvent(ev agentbridge.Event) bool {
 }
 
 func (r *sessionRunner) applyExpandedEvent(ev agentbridge.Event) bool {
+	var accepted bool
+	ev, accepted = r.guardSessionIdentity(ev)
+	if !accepted {
+		return false
+	}
 	r.emit(ev)
 	if r.deliveryInterrupted {
 		return true
@@ -49,7 +54,7 @@ func (r *sessionRunner) applyExpandedEvent(ev agentbridge.Event) bool {
 	for _, cmdEvent := range r.executeCommands(r.ctx, cmds) {
 		r.emit(cmdEvent)
 	}
-	return false
+	return r.sessionIdentityBlocked
 }
 
 func (r *sessionRunner) emitAndTerminate(synthetic agentbridge.Event) {

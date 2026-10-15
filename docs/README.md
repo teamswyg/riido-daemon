@@ -21,6 +21,7 @@ public riido-daemon의 daemon-side SSOT와 generated reader entrypoint를 정의
 11. [`30-architecture/executable-knowledge.md`](30-architecture/executable-knowledge.md): generated coverage of manual architecture knowledge debt
 12. [`executable-knowledge.md`](executable-knowledge.md): generated repo-wide coverage of manual docs knowledge debt
 13. [`30-architecture/agent-task-context.md`](30-architecture/agent-task-context.md): RIID-5818 작업 맥락·이전 대화 해석과 실행 범위
+14. [`30-architecture/agent-session-history.md`](30-architecture/agent-session-history.md): RIID-5819 native 세션과 작업 폴더·이력 연결 및 재개 경계
 
 ## 결정별 문서
 

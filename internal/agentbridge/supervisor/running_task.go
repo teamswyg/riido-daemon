@@ -35,8 +35,10 @@ type runningTask struct {
 	initialStartedAt    time.Time
 	events              *workspaceEventContext
 
-	terminalResult *agentbridge.Result
-	pendingEvents  []agentbridge.Event
+	nativeSessionID   string
+	sessionBindingErr error
+	terminalResult    *agentbridge.Result
+	pendingEvents     []agentbridge.Event
 }
 
 type preparedWorkspace struct {

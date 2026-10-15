@@ -1,0 +1,46 @@
+{
+  "schema_version": "riido-agent-session-history.v1",
+  "id": "agent-session-history",
+  "riido_task": "RIID-5819",
+  "reader_doc": "docs/30-architecture/agent-session-history.md",
+  "owning_code": [
+    "internal/workdir/fs_native_session.go",
+    "internal/workdir/native_session.go",
+    "internal/agentbridge/supervisor/native_session_binding.go",
+    "internal/agentbridge/session/session_identity.go",
+    "internal/execution/binding.go",
+    "internal/provider/claude/translate_result.go",
+    "internal/provider/cursor/translate_result.go"
+  ],
+  "policy": {
+    "authority": "server-selected resume ID only; no guessing or automatic replacement",
+    "ownership": "workspace/task/agent/provider/capability/repository binding",
+    "history": "original cwd/native history retained; per-run IR and fresh verification baseline",
+    "persistence": "metadata only; atomic mode 0600; immutable ownership",
+    "concurrency": "one supervisor-owned turn per native session",
+    "migration": "unindexed legacy selection warned; unindexed repository resume blocked",
+    "missing_history": "known missing or invalid history blocked before workspace creation"
+  },
+  "verification": {
+    "tests": [
+      "TestNativeSessionFollowupsRetainWorkspaceAcrossRestart",
+      "TestNativeSessionFollowupReopensCloneWithFreshVerification",
+      "TestNativeSessionIdentityGuardBeforePublication",
+      "TestNativeSessionBindingCannotBeReassigned"
+    ],
+    "real_provider_calls": false
+  },
+  "limits": [
+    "no OpenClaw resume or session fork",
+    "no UI session navigation or frontend deployment",
+    "no automatic provider recovery",
+    "legacy unindexed session continuity remains unverified"
+  ],
+  "loop": {
+    "observation": "Session IDs alone do not preserve cwd/history across runs and non-Codex providers can replace pins.",
+    "hypothesis": "Durable context-bound ownership and pre-publication identity validation preserve native history without guessing sessions.",
+    "execute": "Pin metadata before server publication; restore retained cwd and reopen host verification baseline.",
+    "evaluate": "Hermetic restart/follow-up/isolation/missing-history/conflicting-pin tests, race and full CI.",
+    "retrospective": "Keep server resume authority and per-run evidence separate from provider-native history; unknown legacy history remains explicit."
+  }
+}
