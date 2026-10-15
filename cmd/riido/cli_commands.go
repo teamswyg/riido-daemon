@@ -28,13 +28,15 @@ const (
 type daemonMethod string
 
 const (
-	daemonMethodDefault      daemonMethod = ""
-	daemonMethodStatus       daemonMethod = "status"
-	daemonMethodHealth       daemonMethod = "health"
-	daemonMethodReady        daemonMethod = "ready"
-	daemonMethodMetrics      daemonMethod = "metrics"
-	daemonMethodShutdown     daemonMethod = "shutdown"
-	daemonMethodToolApproval daemonMethod = "tool_approval"
+	daemonMethodDefault                daemonMethod = ""
+	daemonMethodExecutionBindingUpdate daemonMethod = "execution_binding_update"
+	daemonMethodExecutionBindingRemove daemonMethod = "execution_binding_remove"
+	daemonMethodStatus                 daemonMethod = "status"
+	daemonMethodHealth                 daemonMethod = "health"
+	daemonMethodReady                  daemonMethod = "ready"
+	daemonMethodMetrics                daemonMethod = "metrics"
+	daemonMethodShutdown               daemonMethod = "shutdown"
+	daemonMethodToolApproval           daemonMethod = "tool_approval"
 )
 
 type taskCommand string

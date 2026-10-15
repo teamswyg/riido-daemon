@@ -1,6 +1,7 @@
 package main
 
 import (
+	"path/filepath"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/execution"
@@ -19,6 +20,14 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 		return daemonSettings{}, err
 	}
 	workspace, err := loadDaemonWorkspaceEnv(getenv, userHome)
+	if err != nil {
+		return daemonSettings{}, err
+	}
+	bindingPath := strings.TrimSpace(getenv(envExecutionBindings))
+	if bindingPath == "" {
+		bindingPath = filepath.Join(workspace.root, "execution-bindings.json")
+	}
+	bindingStore, err := execution.OpenBindingStore(bindingPath)
 	if err != nil {
 		return daemonSettings{}, err
 	}
@@ -41,31 +50,32 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 
 	return daemonSettings{
 		RunHardTimeout: hard, RunSemanticIdle: idle,
-		ExecutionBindings:    bindings,
-		DaemonID:             defaultDaemonID(getenv(envDaemonID), controlPlane.deviceID),
-		DaemonVersion:        textutil.Default(getenv(envDaemonVersion), agentDaemonVersionLabel()),
-		Profile:              identity.profile,
-		ServerURL:            strings.TrimSpace(getenv(envServerURL)),
-		DeviceID:             controlPlane.deviceID,
-		DeviceSecret:         controlPlane.deviceSecret,
-		DeviceName:           identity.deviceName,
-		RuntimeOwner:         identity.owner,
-		WorkdirRoot:          workspace.root,
-		PolicyBundle:         policyEnv.version,
-		PolicyBundlePath:     policyEnv.path,
-		PolicyBundleDoc:      policyEnv.doc,
-		TaskQueueDir:         controlPlane.taskQueueDir,
-		TaskReportDir:        controlPlane.taskReportDir,
-		TaskDBSourcePath:     controlPlane.taskDBSourcePath,
-		SaaSURL:              controlPlane.saaSURL,
-		PollEvery:            intervals.pollEvery,
-		IdlePollEvery:        intervals.idlePollEvery,
-		HeartbeatEvery:       intervals.heartbeatEvery,
-		WorkdirRetention:     workspace.retention,
-		WorkdirCleanupEvery:  workspace.cleanupEvery,
-		PprofAddr:            pprofAddr,
-		WorkspaceCount:       workspace.count,
-		RuntimeMaxConcurrent: workspace.runtimeMaxConcurrent,
-		RuntimeAgents:        parseRuntimeAgents(getenv(envRuntimeAgents)),
+		ExecutionBindings:     bindings,
+		ExecutionBindingStore: bindingStore,
+		DaemonID:              defaultDaemonID(getenv(envDaemonID), controlPlane.deviceID),
+		DaemonVersion:         textutil.Default(getenv(envDaemonVersion), agentDaemonVersionLabel()),
+		Profile:               identity.profile,
+		ServerURL:             strings.TrimSpace(getenv(envServerURL)),
+		DeviceID:              controlPlane.deviceID,
+		DeviceSecret:          controlPlane.deviceSecret,
+		DeviceName:            identity.deviceName,
+		RuntimeOwner:          identity.owner,
+		WorkdirRoot:           workspace.root,
+		PolicyBundle:          policyEnv.version,
+		PolicyBundlePath:      policyEnv.path,
+		PolicyBundleDoc:       policyEnv.doc,
+		TaskQueueDir:          controlPlane.taskQueueDir,
+		TaskReportDir:         controlPlane.taskReportDir,
+		TaskDBSourcePath:      controlPlane.taskDBSourcePath,
+		SaaSURL:               controlPlane.saaSURL,
+		PollEvery:             intervals.pollEvery,
+		IdlePollEvery:         intervals.idlePollEvery,
+		HeartbeatEvery:        intervals.heartbeatEvery,
+		WorkdirRetention:      workspace.retention,
+		WorkdirCleanupEvery:   workspace.cleanupEvery,
+		PprofAddr:             pprofAddr,
+		WorkspaceCount:        workspace.count,
+		RuntimeMaxConcurrent:  workspace.runtimeMaxConcurrent,
+		RuntimeAgents:         parseRuntimeAgents(getenv(envRuntimeAgents)),
 	}, nil
 }

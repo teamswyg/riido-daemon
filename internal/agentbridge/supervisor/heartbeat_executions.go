@@ -1,6 +1,10 @@
 package supervisor
 
-import "sort"
+import (
+	"sort"
+
+	"github.com/teamswyg/riido-daemon/internal/execution"
+)
 
 // OwnedExecutions is an immutable observation for host activity checks. Native
 // process slots and end-to-end assignment ownership are distinct observations.
@@ -18,11 +22,14 @@ func (a *Actor) OwnedExecutions() map[string][]string {
 // heartbeat goroutine never reads the actor's mutable in-flight task map.
 func (a *Actor) publishHeartbeatExecutions(inFlight map[string]*runningTask) {
 	byRuntime := map[string][]string{}
+	observations := []execution.Observation{}
 	for id, task := range inFlight {
 		byRuntime[task.runtimeID] = append(byRuntime[task.runtimeID], id)
+		observations = append(observations, executionObservation(task))
 	}
 	a.heartbeatMu.Lock()
 	a.heartbeatExecutions = byRuntime
+	a.executionObservations = observations
 	a.heartbeatMu.Unlock()
 }
 
@@ -42,4 +49,10 @@ func (a *Actor) heartbeatTaskIDs(runtimeID string, nativeIDs []string) []string 
 	}
 	sort.Strings(ids)
 	return ids
+}
+
+func (a *Actor) ExecutionObservations() []execution.Observation {
+	a.heartbeatMu.RLock()
+	defer a.heartbeatMu.RUnlock()
+	return append([]execution.Observation{}, a.executionObservations...)
 }

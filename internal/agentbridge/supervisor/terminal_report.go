@@ -13,6 +13,7 @@ func (a *Actor) finishTaskWithResult(
 	task *runningTask,
 	res agentbridge.Result,
 ) bool {
+	res.ExecutionContext = resultExecutionContext(task, res)
 	cancelRunningTask(task)
 	task.terminalResult = &res
 	return a.flushTerminalReport(ctx, inFlight, task)

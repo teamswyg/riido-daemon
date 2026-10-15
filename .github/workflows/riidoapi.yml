@@ -86,4 +86,6 @@ jobs:
           go-version-file: go.mod
           cache: false
       - name: Verify Windows named-pipe daemon status round trip
-        run: go test ./cmd/riido -run TestWindowsNamedPipeDaemonStatusRoundTrip -count=1
+        run: |
+          go test ./internal/riidoapi -run TestWindowsNamedPipeClosePreservesBufferedResponse -count=20
+          go test ./cmd/riido -run TestWindowsNamedPipeDaemonStatusRoundTrip -count=20

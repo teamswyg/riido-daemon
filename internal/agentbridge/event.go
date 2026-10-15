@@ -1,10 +1,16 @@
 package agentbridge
 
-import "time"
+import (
+	"time"
+
+	"github.com/teamswyg/riido-contracts/assignment"
+)
 
 // Event is the run-scope envelope passed to the reducer. Fields not
 // applicable to a given Kind are simply zero-valued.
 type Event struct {
+	ExecutionContext *assignment.ExecutionContext
+
 	Kind         EventKind
 	At           time.Time
 	SessionID    string

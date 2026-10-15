@@ -55,3 +55,5 @@ native identity drift before publication. No model calls are required.
 승인·답변 대기 통합 시에도 native session identity 검사를 먼저 수행한다. 자동 승인 정책은 한 번만 평가하며, 외부 세션으로 바뀐 출력이나 승인 요청은 게시하지 않는다.
 
 요청 식별자 메타데이터를 추가해도 기존 Agent 소유권, 작업 제목, 서버가 지정한 native resume ID를 유지한다.
+
+RIID-5820: 실행 시작 시 선택한 로컬 binding을 한 번만 캡처한다. 이후 폴더·검사 설정 변경은 다음 실행에 적용하며 진행 중 clone/native session의 권한과 cwd는 바꾸지 않는다. 변경된 binding으로 기존 세션을 이어가려 하면 기존 grant 검사를 유지한다.

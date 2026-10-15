@@ -20,11 +20,12 @@ type Config struct {
 	// provider capability boundary.
 	Runtime *runtimeactor.Actor
 	// Runtimes is the provider-runtime pool the supervisor dispatches over.
-	Runtimes          []*runtimeactor.Actor
-	Source            controlplane.TaskSourcePort
-	Reporter          controlplane.TaskReporterPort
-	Workdir           workdir.Adapter
-	ExecutionBindings []execution.Binding
+	Runtimes              []*runtimeactor.Actor
+	Source                controlplane.TaskSourcePort
+	Reporter              controlplane.TaskReporterPort
+	Workdir               workdir.Adapter
+	ExecutionBindings     []execution.Binding
+	ExecutionBindingStore *execution.BindingStore
 
 	PollEvery           time.Duration
 	IdlePollEvery       time.Duration

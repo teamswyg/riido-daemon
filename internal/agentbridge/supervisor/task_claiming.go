@@ -3,6 +3,8 @@ package supervisor
 import (
 	"context"
 
+	"github.com/teamswyg/riido-contracts/assignment"
+
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
@@ -39,7 +41,7 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		cancel:                cancel,
 	}
 	if nativeSessionInUse(inFlight, req.ID, string(req.Provider), req.ResumeSessionID) {
-		a.finishTaskWithResult(ctx, inFlight, inFlight[req.ID], agentbridge.Result{Status: agentbridge.ResultBlocked, Error: "native session is already executing another turn"})
+		a.finishTaskWithResult(ctx, inFlight, inFlight[req.ID], agentbridge.Result{Status: agentbridge.ResultBlocked, Error: "native session is already executing another turn", ExecutionContext: &assignment.ExecutionContext{DiagnosticCode: "session_scope_conflict", NextAction: "review_session", VerificationStatus: "not_configured"}})
 		return true
 	}
 	eligibility := taskEligibility(status, req)

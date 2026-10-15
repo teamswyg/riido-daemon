@@ -43,7 +43,7 @@ func (l *namedPipeListener) acceptHandle(handle syscall.Handle) (net.Conn, error
 		_ = syscall.CloseHandle(handle)
 		return nil, net.ErrClosed
 	}
-	return newNamedPipeConn(handle, l.path, true), nil
+	return newNamedPipeConn(handle, l.path), nil
 }
 
 func (l *namedPipeListener) Close() error {

@@ -4,6 +4,8 @@ import (
 	"context"
 	"sync"
 
+	"github.com/teamswyg/riido-daemon/internal/execution"
+
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
 
@@ -20,4 +22,5 @@ type Actor struct {
 	registeredRuntimeStates map[string]string
 	heartbeatMu             sync.RWMutex
 	heartbeatExecutions     map[string][]string
+	executionObservations   []execution.Observation
 }

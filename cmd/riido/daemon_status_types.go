@@ -1,6 +1,9 @@
 package main
 
-import "github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+import (
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"github.com/teamswyg/riido-daemon/internal/execution"
+)
 
 // DaemonStatusSchemaVersion identifies the JSON shape returned by
 // `riido daemon status` and `riido daemon health`.
@@ -8,6 +11,10 @@ const DaemonStatusSchemaVersion = "riido-agent-daemon-status.v1"
 
 // daemonStatus is the JSON payload exposed by the daemon local socket.
 type daemonStatus struct {
+	ExecutionBindingSupport bool                    `json:"execution_binding_support"`
+	ExecutionBindings       []execution.Binding     `json:"execution_bindings"`
+	Executions              []execution.Observation `json:"executions"`
+
 	SchemaVersion  string                `json:"schema_version"`
 	DaemonID       string                `json:"daemon_id"`
 	DaemonVersion  string                `json:"daemon_version"`

@@ -22,6 +22,8 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 	if err != nil {
 		return nil, err
 	}
+	req.HostExecutionBinding = a.nativeSessionExecutionBinding(req)
+	req.HostExecutionBindingSelected = true
 	capView, err := workspacePrepareCapability(status, req)
 	if err != nil {
 		return nil, err
@@ -75,10 +77,8 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"nativeConfigVersion": nativeConfigVersion,
 	})
 	prepared := &preparedWorkspace{workspace: &ws, events: events, canResume: capView.SupportsResume}
-	for _, binding := range a.cfg.ExecutionBindings {
-		if binding.WorkspaceID != ids.workspaceID || binding.TaskID != ids.logicalTaskID {
-			continue
-		}
+	if selected := req.HostExecutionBinding; selected != nil {
+		binding := *selected
 		if resumed {
 			prepared.execution, err = execution.Reopen(binding, ws.Workdir)
 		} else {
@@ -92,7 +92,6 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		}
 		req.Cwd = prepared.execution.Directory
 		req.Prompt += fmt.Sprintf("\n\nThe authorized source repository is at %s. Perform the requested work there and validate the changes. A successful reply alone is not completion; the host will require changed files and passing checks.", req.Cwd)
-		break
 	}
 	return prepared, nil
 }

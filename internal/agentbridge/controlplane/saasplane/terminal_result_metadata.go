@@ -1,6 +1,7 @@
 package saasplane
 
 import (
+	"maps"
 	"strings"
 
 	"github.com/teamswyg/riido-contracts/metadatakeys"
@@ -20,6 +21,9 @@ func terminalResultMetadata(res agentbridge.Result, message string) map[string]s
 	}
 	if category := terminalFailureCategory(status, firstNonEmpty(message, res.Error)); category != "" {
 		metadata[metadatakeys.AssignmentFailureCategory.String()] = category
+	}
+	if res.ExecutionContext != nil {
+		maps.Copy(metadata, res.ExecutionContext.Metadata())
 	}
 	return metadata
 }

@@ -12,6 +12,8 @@ import (
 
 func startDaemonSupervisor(ctx lifecycle.Context, settings daemonSettings, runtimes []*runtimeactor.Actor, source controlplane.TaskSourcePort, reporter controlplane.TaskReporterPort, workdirAdapter workdir.Adapter) (*supervisor.Actor, error) {
 	supActor, err := supervisor.New(supervisor.Config{
+		ExecutionBindingStore: settings.ExecutionBindingStore,
+
 		DaemonID:            settings.DaemonID,
 		RiidoDaemonVersion:  settings.DaemonVersion,
 		Runtimes:            runtimes,

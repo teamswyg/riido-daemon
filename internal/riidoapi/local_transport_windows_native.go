@@ -3,6 +3,7 @@
 package riidoapi
 
 import (
+	"errors"
 	"syscall"
 	"unsafe"
 )
@@ -25,9 +26,8 @@ const (
 )
 
 var (
-	kernel32ProcConnectNamedPipe    = syscall.NewLazyDLL("kernel32.dll").NewProc("ConnectNamedPipe")
-	kernel32ProcCreateNamedPipe     = syscall.NewLazyDLL("kernel32.dll").NewProc("CreateNamedPipeW")
-	kernel32ProcDisconnectNamedPipe = syscall.NewLazyDLL("kernel32.dll").NewProc("DisconnectNamedPipe")
+	kernel32ProcConnectNamedPipe = syscall.NewLazyDLL("kernel32.dll").NewProc("ConnectNamedPipe")
+	kernel32ProcCreateNamedPipe  = syscall.NewLazyDLL("kernel32.dll").NewProc("CreateNamedPipeW")
 )
 
 func createNamedPipe(path string) (syscall.Handle, error) {
@@ -56,7 +56,8 @@ func connectNamedPipe(handle syscall.Handle) (bool, error) {
 	if ok != 0 {
 		return true, nil
 	}
-	errno, isErrno := callErr.(syscall.Errno)
+	var errno syscall.Errno
+	isErrno := errors.As(callErr, &errno)
 	if isErrno && errno == errorPipeConnected {
 		return true, nil
 	}

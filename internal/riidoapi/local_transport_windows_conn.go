@@ -13,16 +13,14 @@ import (
 )
 
 type namedPipeConn struct {
-	file       *os.File
-	path       string
-	disconnect bool
+	file *os.File
+	path string
 }
 
-func newNamedPipeConn(handle syscall.Handle, path string, disconnect bool) *namedPipeConn {
+func newNamedPipeConn(handle syscall.Handle, path string) *namedPipeConn {
 	return &namedPipeConn{
-		file:       os.NewFile(uintptr(handle), path),
-		path:       path,
-		disconnect: disconnect,
+		file: os.NewFile(uintptr(handle), path),
+		path: path,
 	}
 }
 
@@ -36,9 +34,9 @@ func (c *namedPipeConn) Read(p []byte) (int, error) {
 func (c *namedPipeConn) Write(p []byte) (int, error) { return c.file.Write(p) }
 
 func (c *namedPipeConn) Close() error {
-	if c.disconnect {
-		_, _, _ = kernel32ProcDisconnectNamedPipe.Call(c.file.Fd())
-	}
+	// Every connection owns a fresh handle, so it is never reconnected.
+	// DisconnectNamedPipe would discard response bytes a client has not read.
+	// Closing the handle leaves the pipe in CLOSING until buffered data drains.
 	return c.file.Close()
 }
 

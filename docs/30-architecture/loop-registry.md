@@ -79,6 +79,15 @@
 - Verifies: `failed and skipped gates stay distinguishable from pass`, `host correction is bounded and native-session preserving`, `cancellation/auth/policy failures never trigger blind replay`, `restart recovery and external-effect idempotency remain open until verified`
 - Fails when: `binary detection is presented as task execution success`, `automatic CLI update or active-work restart is inferred from a failed probe`, `fresh session replay or unbounded correction is promoted without proof`
 
+### task-execution-environment
+
+- Owner: `RIID-5820 daemon host execution`
+- Kind: `closed-loop`
+- Expires after: `24h`
+- Observes: `local binding changes`, `active execution cwd`, `terminal host check evidence`
+- Verifies: `current execution retains captured binding`, `other task configuration is preserved`, `shared diagnostics are bounded`
+- Fails when: `current cwd changes on settings update`, `provider reply is labeled host verified`, `foreign task binding is overwritten`
+
 ## Business Claims
 
 ### closed_loop_candidates_must_surface_harness_gaps
@@ -193,10 +202,10 @@ Claude daemon runs must start in provider approval mode, not acceptEdits or bypa
 
 Daemon lifecycle, status, shutdown, tool-approval IPC, local API, and default local paths must match the host: Unix sockets and Application Support roots on Darwin/Linux, and local-only named pipes plus LocalAppData workdirs on Windows. Windows clients must retry the pre-Accept file-not-found startup window, named-pipe closure conditions must surface as EOF after a complete response, and a native Windows daemon status round trip must pass, so desktop health checks and direct CLI recovery cannot create a daemon restart loop, reject a valid response, or select an unsupported transport.
 
-- Files: `cmd/riido/api_connection_config.go`, `cmd/riido/api_connection_config_test.go`, `cmd/riido/claude_permission_mcp_decision.go`, `cmd/riido/daemon_child_ready.go`, `cmd/riido/daemon_config_workdir_default.go`, `cmd/riido/daemon_host_paths.go`, `cmd/riido/daemon_host_paths_test.go`, `cmd/riido/daemon_ipc_call.go`, `cmd/riido/daemon_ipc_default_paths.go`, `cmd/riido/daemon_ipc_transport.go`, `cmd/riido/daemon_ipc_transport_test.go`, `cmd/riido/daemon_ipc_windows_integration_test.go`, `cmd/riido/daemon_shutdown_socket.go`, `cmd/riido/daemon_socket_server.go`, `cmd/riido/serve_command.go`, `internal/riidoapi/local_transport_endpoint.go`, `internal/riidoapi/local_transport_windows.go`, `internal/riidoapi/local_transport_windows_conn.go`, `internal/riidoapi/local_transport_windows_dial.go`, `internal/riidoapi/local_transport_windows_native.go`, `.github/workflows/riidoapi.yml`
+- Files: `cmd/riido/api_connection_config.go`, `cmd/riido/api_connection_config_test.go`, `cmd/riido/claude_permission_mcp_decision.go`, `cmd/riido/daemon_child_ready.go`, `cmd/riido/daemon_config_workdir_default.go`, `cmd/riido/daemon_host_paths.go`, `cmd/riido/daemon_host_paths_test.go`, `cmd/riido/daemon_ipc_call.go`, `cmd/riido/daemon_ipc_default_paths.go`, `cmd/riido/daemon_ipc_transport.go`, `cmd/riido/daemon_ipc_transport_test.go`, `cmd/riido/daemon_ipc_windows_integration_test.go`, `cmd/riido/daemon_shutdown_socket.go`, `cmd/riido/daemon_socket_server.go`, `cmd/riido/serve_command.go`, `internal/riidoapi/local_transport_endpoint.go`, `internal/riidoapi/local_transport_windows.go`, `internal/riidoapi/local_transport_windows_conn.go`, `internal/riidoapi/local_transport_windows_dial.go`, `internal/riidoapi/local_transport_windows_native.go`, `.github/workflows/riidoapi.yml`, `internal/riidoapi/local_transport_windows_conn.go`
 - Docs: `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
-- Evidence: `production.windows_daemon.restart_loop_47_pids_29m`, `windows_amd64.daemon_cross_compile`, `windows_native.named_pipe.daemon_status_round_trip`, `daemon_local_ipc_transport_regression`, `local_api_host_defaults_regression`
-- Verifiers: `daemon-host-transport-selection-test`, `daemon-host-default-path-selection-test`, `local-api-host-default-selection-test`, `windows-named-pipe-remote-client-gate`, `windows-native-daemon-status-round-trip-test`, `windows-native-daemon-status-round-trip-workflow`
+- Evidence: `production.windows_daemon.restart_loop_47_pids_29m`, `windows_amd64.daemon_cross_compile`, `windows_native.named_pipe.daemon_status_round_trip`, `daemon_local_ipc_transport_regression`, `local_api_host_defaults_regression`, `TestWindowsNamedPipeClosePreservesBufferedResponse`
+- Verifiers: `daemon-host-transport-selection-test`, `daemon-host-default-path-selection-test`, `local-api-host-default-selection-test`, `windows-named-pipe-remote-client-gate`, `windows-native-daemon-status-round-trip-test`, `windows-native-daemon-status-round-trip-workflow`, `windows-delayed-read-close-regression`
 
 ### agent_execution_correction_must_preserve_identity_and_be_bounded
 
@@ -215,3 +224,12 @@ Native session resume preserves the original task-owned cwd and rejects foreign 
 - Docs: `docs/30-architecture/agent-session-history.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `TestNativeSessionFollowupsRetainWorkspaceAcrossRestart`, `TestNativeSessionFollowupReopensCloneWithFreshVerification`, `TestNativeSessionIdentityGuardBeforePublication`, `TestNativeSessionBindingCannotBeReassigned`
 - Verifiers: `saas-native-session-owner-mapping-test`, `session-history-restart-and-isolation-tests`, `native-session-event-identity-guard-tests`, `native-session-durable-binding-tests`
+
+### task_execution_environment_keeps_local_authority
+
+Task-scoped host bindings are atomically persisted and captured once per execution. Shared diagnostics contain bounded codes; provider completion alone is never host verification.
+
+- Files: `internal/execution/binding_store.go`, `internal/execution/observation.go`, `cmd/riido/daemon_execution_binding.go`, `cmd/riido/daemon_ipc_status.go`, `internal/agentbridge/supervisor/execution_context.go`, `internal/agentbridge/supervisor/heartbeat_executions.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`
+- Docs: `docs/30-architecture/agent-task-execution.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `TestBindingSelectionIsFrozenForCurrentExecution`, `TestReportedCompletionDoesNotInventHostVerification`, `TestExecutionBindingIPCRequiresScopeAndPreservesOtherTask`
+- Verifiers: `execution-evidence-and-snapshot-tests`, `host-binding-ipc-tests`

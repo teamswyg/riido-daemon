@@ -40,6 +40,9 @@ const (
 )
 
 type daemonSettings struct {
+	executionObservations func() []execution.Observation
+	ExecutionBindingStore *execution.BindingStore
+
 	ownedExecutions      func() map[string][]string
 	RunHardTimeout       time.Duration
 	RunSemanticIdle      time.Duration

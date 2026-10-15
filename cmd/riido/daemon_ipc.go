@@ -30,6 +30,8 @@ func dispatchDaemonRequest(conn net.Conn, req daemonRequest, flags startFlags, s
 	switch req.Method {
 	case daemonMethodStatus, daemonMethodDefault:
 		writeStatus(conn, flags, settings, startedAt, runtimes)
+	case daemonMethodExecutionBindingUpdate, daemonMethodExecutionBindingRemove:
+		writeExecutionBindingUpdate(conn, req, settings)
 	case daemonMethodHealth:
 		writeHealth(conn)
 	case daemonMethodReady:

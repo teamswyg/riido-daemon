@@ -26,7 +26,7 @@ func (a *Actor) nativeSessionRecord(req *bridge.TaskRequest, capView runtimeacto
 	if err != nil {
 		return workdir.NativeSession{}, err
 	}
-	binding := a.nativeSessionExecutionBinding(ids)
+	binding := a.nativeSessionExecutionBinding(req)
 	data, err := json.Marshal(struct {
 		Worktree any
 		Binding  *execution.Binding
@@ -66,11 +66,11 @@ func (a *Actor) restoreNativeSessionWorkspace(req *bridge.TaskRequest, capView r
 	if !found {
 		// Compatibility for sessions made before this index existed. Never
 		// claim that their local cwd/history ownership has been verified.
-		ids, idErr := workspacePrepareIDs(req)
+		_, idErr := workspacePrepareIDs(req)
 		if idErr != nil {
 			return false, idErr
 		}
-		if req.Worktree != nil || a.nativeSessionExecutionBinding(ids) != nil {
+		if req.Worktree != nil || a.nativeSessionExecutionBinding(req) != nil {
 			return false, fmt.Errorf("%w: repository resume has no local binding", errNativeSessionBinding)
 		}
 		a.forwardReportEvent(taskEventMsg{taskID: req.ID, event: agentbridge.Event{
@@ -133,8 +133,19 @@ func (a *Actor) pinTaskNativeSession(task *runningTask, ev agentbridge.Event) er
 	return nil
 }
 
-func (a *Actor) nativeSessionExecutionBinding(ids workspaceIDs) *execution.Binding {
-	for _, candidate := range a.cfg.ExecutionBindings {
+func (a *Actor) nativeSessionExecutionBinding(req *bridge.TaskRequest) *execution.Binding {
+	if req.HostExecutionBindingSelected {
+		return req.HostExecutionBinding
+	}
+	ids, err := workspacePrepareIDs(req)
+	if err != nil {
+		return nil
+	}
+	bindings := a.cfg.ExecutionBindings
+	if a.cfg.ExecutionBindingStore != nil {
+		bindings = a.cfg.ExecutionBindingStore.Snapshot()
+	}
+	for _, candidate := range bindings {
 		if candidate.WorkspaceID == ids.workspaceID && candidate.TaskID == ids.logicalTaskID {
 			return &candidate
 		}

@@ -30,9 +30,11 @@ func (a *Actor) handleTaskActivation(
 		forwardActivatedSession(a, task)
 		return false
 	}
+	executionContext := executionContextForTask(task)
 	a.reportTaskEvent(ctx, task, agentbridge.Event{
-		Kind:  agentbridge.EventLifecycle,
-		Phase: agentbridge.StateRunning,
+		ExecutionContext: &executionContext,
+		Kind:             agentbridge.EventLifecycle,
+		Phase:            agentbridge.StateRunning,
 	})
 	forwardActivatedSession(a, task)
 	return false
