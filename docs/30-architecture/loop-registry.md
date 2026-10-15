@@ -144,6 +144,15 @@ Product success loops must measure meta-complexity, product acceptance linkage, 
 - Evidence: `product-loop-evidence`, `meta_complexity`, `route_coverage`, `qa_schedule`, `local_qa_run_evidence_state`, `local_qa_run_evidence_fresh`, `product_acceptance`, `partial_reduction`, `closed_loop_candidates`, `client_surface_anomaly_monitoring`, `stress_capacity`, `scale_chaos`, `release_readiness`
 - Verifiers: `product-loop-acceptance-test`, `product-loop-mapping-test`, `product-loop-route-coverage-test`, `product-loop-candidate-test`, `product-loop-open-candidate-debt-test`, `product-loop-qa-schedule-test`, `product-loop-local-qa-freshness-test`, `product-loop-operational-readiness-test`, `product-loop-claim-binding-test`
 
+### task_context_must_preserve_assignment_ownership
+
+Providers must interpret enriched task context and prior replies as bounded reference evidence, preserve the assigned task and verify actual requested changes on their existing instruction surfaces.
+
+- Files: `internal/agentbridge/task_context_contract.go`, `internal/agentbridge/telemetry_apply.go`, `internal/agentbridge/task_context_contract_test.go`
+- Docs: `docs/30-architecture/agent-task-context.md`, `docs/30-architecture/agent-task-context.riido.json`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `deterministic instruction placement on Claude, Codex, Cursor and OpenClaw; no live model comprehension claim`
+- Verifiers: `task-context-contract-placement-test`
+
 ### intent_clarification_must_wait_for_user
 
 When task context does not contain a concrete action, the daemon must instruct providers to ask what work to do first; when a provider exits successfully after that question, the daemon must report needs_input instead of completing the assignment.
@@ -197,3 +206,12 @@ A host-authorized correction preserves the native session and workspace, require
 - Docs: `docs/30-architecture/agent-task-execution.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `TestExecutionCorrectionResumesSameWorkspaceAndAssignment`, `TestExecutionCorrectionStopsAtHostLimit`
 - Verifiers: `correction-identity-and-limit-tests`, `host-activity-ownership-test`
+
+### native_session_history_must_preserve_owner_and_workspace
+
+Native session resume preserves the original task-owned cwd and rejects foreign identity before publication; each turn requires fresh host evidence.
+
+- Files: `internal/workdir/fs_native_session.go`, `internal/workdir/native_session.go`, `internal/agentbridge/controlplane/metadata.go`, `internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go`, `internal/agentbridge/supervisor/native_session_binding.go`, `internal/agentbridge/session/session_identity.go`, `internal/execution/binding.go`, `internal/agentbridge/supervisor/workspace_lifecycle.go`, `internal/agentbridge/supervisor/task_claiming.go`, `internal/agentbridge/session/session_runner_apply.go`, `internal/agentbridge/session/session_runner_result.go`, `internal/provider/claude/translate_result.go`, `internal/provider/cursor/translate_result.go`
+- Docs: `docs/30-architecture/agent-session-history.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `TestNativeSessionFollowupsRetainWorkspaceAcrossRestart`, `TestNativeSessionFollowupReopensCloneWithFreshVerification`, `TestNativeSessionIdentityGuardBeforePublication`, `TestNativeSessionBindingCannotBeReassigned`
+- Verifiers: `saas-native-session-owner-mapping-test`, `session-history-restart-and-isolation-tests`, `native-session-event-identity-guard-tests`, `native-session-durable-binding-tests`

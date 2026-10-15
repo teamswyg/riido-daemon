@@ -7,8 +7,8 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-func blockRuntimeDriftedTasks(ctx context.Context, inFlight map[string]*runningTask, oldCap, newCap Capability) {
-	if !capabilityFingerprintDrifted(oldCap, newCap) {
+func blockRuntimeDriftedTasks(ctx context.Context, inFlight map[string]*runningTask, newCap Capability) {
+	if newCap.CapabilityFingerprint == "" {
 		return
 	}
 	for _, task := range inFlight {
@@ -20,13 +20,6 @@ func blockRuntimeDriftedTasks(ctx context.Context, inFlight map[string]*runningT
 			Error:  runtimePinViolationError(task, newCap),
 		})
 	}
-}
-
-func capabilityFingerprintDrifted(oldCap, newCap Capability) bool {
-	return oldCap.Provider == newCap.Provider &&
-		oldCap.CapabilityFingerprint != "" &&
-		newCap.CapabilityFingerprint != "" &&
-		oldCap.CapabilityFingerprint != newCap.CapabilityFingerprint
 }
 
 func taskPinnedToDriftedCapability(task *runningTask, capView Capability) bool {

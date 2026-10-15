@@ -22,7 +22,7 @@ func (a *Actor) handleTaskResult(
 		} else {
 			res.StartedAt = running.initialStartedAt
 		}
-		if res.Status == agentbridge.ResultCompleted && running.execution != nil {
+		if res.Status == agentbridge.ResultCompleted && running.execution != nil && running.sessionBindingErr == nil {
 			a.beginExecutionVerification(running, res)
 			return
 		}

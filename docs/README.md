@@ -20,6 +20,8 @@ public riido-daemon의 daemon-side SSOT와 generated reader entrypoint를 정의
 10. [`30-architecture/loop-engineering.md`](30-architecture/loop-engineering.md): generated evidence loop view
 11. [`30-architecture/executable-knowledge.md`](30-architecture/executable-knowledge.md): generated coverage of manual architecture knowledge debt
 12. [`executable-knowledge.md`](executable-knowledge.md): generated repo-wide coverage of manual docs knowledge debt
+13. [`30-architecture/agent-task-context.md`](30-architecture/agent-task-context.md): RIID-5818 작업 맥락·이전 대화 해석과 실행 범위
+14. [`30-architecture/agent-session-history.md`](30-architecture/agent-session-history.md): RIID-5819 native 세션과 작업 폴더·이력 연결 및 재개 경계
 
 ## 결정별 문서
 
@@ -46,6 +48,7 @@ public riido-daemon의 daemon-side SSOT와 generated reader entrypoint를 정의
 | session lifecycle evidence | [`20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md`](20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.md), [`20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json`](20-domain/provider-runtime/adapter-draft-fields/session-lifecycle.riido.json) |
 | Figma boundary and unresolved execution design | [`30-architecture/figma-ai-agent-daemon-boundary.md`](30-architecture/figma-ai-agent-daemon-boundary.md), [`30-architecture/agent-execution-unresolved-design.md`](30-architecture/agent-execution-unresolved-design.md), [`30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md`](30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.md), [`30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json`](30-architecture/agent-execution-unresolved-design/assignment-lifecycle-fsm.riido.json) |
 | migration history and open questions | [`migration/daemon.md`](migration/daemon.md), [`migration/cli.md`](migration/cli.md), [`migration/cli.riido.json`](migration/cli.riido.json), [`50-roadmap/open-questions.md`](50-roadmap/open-questions.md), [`50-roadmap/open-questions.riido.json`](50-roadmap/open-questions.riido.json) |
+| assigned task context interpretation | [`30-architecture/agent-task-context.md`](30-architecture/agent-task-context.md), [`30-architecture/agent-task-context.riido.json`](30-architecture/agent-task-context.riido.json) |
 
 ## Repo 간 책임 경계
 

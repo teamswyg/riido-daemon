@@ -8,6 +8,9 @@ import (
 
 func translateResult(raw agentbridge.RawEvent) []agentbridge.Event {
 	var out []agentbridge.Event
+	if id := stringField(raw.Payload, "session_id"); id != "" {
+		out = append(out, agentbridge.Event{Kind: agentbridge.EventSessionIdentified, SessionID: id})
+	}
 	if usage, ok := raw.Payload["usage"].(map[string]any); ok {
 		out = append(out, agentbridge.Event{Kind: agentbridge.EventUsageDelta, Usage: parseUsage(usage)})
 	}

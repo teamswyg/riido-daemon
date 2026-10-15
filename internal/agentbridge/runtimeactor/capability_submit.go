@@ -33,6 +33,7 @@ func (a *Actor) capabilityForSubmit(
 		}
 		return Capability{}, true, fmt.Errorf("runtimeactor: Detect %s: %w", adapter.Name(), err)
 	}
+	refreshed = retainCapabilityProbeIdentity(capView, refreshed)
 	caps[idx] = refreshed
 	detectedAt[provider] = a.cfg.Now()
 	return refreshed, true, nil

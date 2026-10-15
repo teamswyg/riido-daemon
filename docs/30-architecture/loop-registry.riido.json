@@ -832,6 +832,29 @@
       ]
     },
     {
+      "id": "task_context_must_preserve_assignment_ownership",
+      "text": "Providers must interpret enriched task context and prior replies as bounded reference evidence, preserve the assigned task and verify actual requested changes on their existing instruction surfaces.",
+      "files": [
+        "internal/agentbridge/task_context_contract.go",
+        "internal/agentbridge/telemetry_apply.go",
+        "internal/agentbridge/task_context_contract_test.go"
+      ],
+      "docs": [
+        "docs/30-architecture/agent-task-context.md",
+        "docs/30-architecture/agent-task-context.riido.json",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": ["deterministic instruction placement on Claude, Codex, Cursor and OpenClaw; no live model comprehension claim"],
+      "verifiers": [
+        {
+          "name": "task-context-contract-placement-test",
+          "file": "internal/agentbridge/task_context_contract_test.go",
+          "contains": ["TestTaskContextContractUsesEveryNativeProviderInstructionSurface", "reference evidence", "unavailable or truncated"]
+        }
+      ]
+    },
+    {
       "id": "intent_clarification_must_wait_for_user",
       "text": "When task context does not contain a concrete action, the daemon must instruct providers to ask what work to do first; when a provider exits successfully after that question, the daemon must report needs_input instead of completing the assignment.",
       "files": [
@@ -1259,6 +1282,76 @@
           "contains": [
             "TestDaemonObservationRetainsSupervisorOwnedExecutions",
             "pending-report"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "native_session_history_must_preserve_owner_and_workspace",
+      "text": "Native session resume preserves the original task-owned cwd and rejects foreign identity before publication; each turn requires fresh host evidence.",
+      "files": [
+        "internal/workdir/fs_native_session.go",
+        "internal/workdir/native_session.go",
+        "internal/agentbridge/controlplane/metadata.go",
+        "internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go",
+        "internal/agentbridge/supervisor/native_session_binding.go",
+        "internal/agentbridge/session/session_identity.go",
+        "internal/execution/binding.go",
+        "internal/agentbridge/supervisor/workspace_lifecycle.go",
+        "internal/agentbridge/supervisor/task_claiming.go",
+        "internal/agentbridge/session/session_runner_apply.go",
+        "internal/agentbridge/session/session_runner_result.go",
+        "internal/provider/claude/translate_result.go",
+        "internal/provider/cursor/translate_result.go"
+      ],
+      "docs": [
+        "docs/30-architecture/agent-session-history.md",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "TestNativeSessionFollowupsRetainWorkspaceAcrossRestart",
+        "TestNativeSessionFollowupReopensCloneWithFreshVerification",
+        "TestNativeSessionIdentityGuardBeforePublication",
+        "TestNativeSessionBindingCannotBeReassigned"
+      ],
+      "verifiers": [
+        {
+          "name": "saas-native-session-owner-mapping-test",
+          "file": "internal/agentbridge/controlplane/saasplane/native_session_owner_test.go",
+          "contains": [
+            "TestAssignmentCarriesNativeSessionOwnership",
+            "controlplane.MetadataAgentID",
+            "MetadataAgentID"
+          ]
+        },
+        {
+          "name": "session-history-restart-and-isolation-tests",
+          "file": "internal/agentbridge/supervisor/native_session_binding_test.go",
+          "contains": [
+            "TestNativeSessionFollowupsRetainWorkspaceAcrossRestart",
+            "TestNativeSessionResumeRejectsChangedOwnerRuntimeAndGrant",
+            "TestNativeSessionResumeDoesNotRecreateMissingHistory",
+            "TestNativeSessionFollowupReopensCloneWithFreshVerification",
+            "TestNativeSessionConflictingPinIsNotReported",
+            "TestNativeSessionAssignmentCloneIsNotRepeated"
+          ]
+        },
+        {
+          "name": "native-session-event-identity-guard-tests",
+          "file": "internal/agentbridge/session/session_identity_test.go",
+          "contains": [
+            "TestNativeSessionIdentityGuardBeforePublication",
+            "TestResumeIdentitySurvivesEarlyProviderExit"
+          ]
+        },
+        {
+          "name": "native-session-durable-binding-tests",
+          "file": "internal/workdir/fs_native_session_test.go",
+          "contains": [
+            "TestNativeSessionBindingSurvivesAdapterRestart",
+            "TestNativeSessionBindingCannotBeReassigned",
+            "TestNativeSessionBindingRejectsCorruptionAndTraversal"
           ]
         }
       ]

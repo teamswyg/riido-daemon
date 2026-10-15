@@ -29,7 +29,8 @@ func (a *Actor) refreshDueCapabilities(
 			detectedAt[capView.Provider] = a.cfg.Now()
 			continue
 		}
-		blockRuntimeDriftedTasks(ctx, inFlight, capView, refreshed)
+		refreshed = retainCapabilityProbeIdentity(capView, refreshed)
+		blockRuntimeDriftedTasks(ctx, inFlight, refreshed)
 		caps[idx] = refreshed
 		detectedAt[capView.Provider] = a.cfg.Now()
 	}
