@@ -16,6 +16,8 @@
 - Project `Status` and `HeartbeatPayload` for local settings UI and control-plane heartbeat consumers.
 - An inconclusive authentication/probe refresh must preserve the last observed executable/capability identity for running sessions; it reports unknown health and retries after the existing TTL. A confirmed executable/version change still blocks pinned runs.
 - Capability refresh on Submit must fence existing sessions against a confirmed executable/version change just like Status refresh; changing the cached capability cannot erase a running session pin.
+- RIID-5822/5823 periodic Detect runs outside the runtime mailbox, with at most one probe per provider. Status returns the last immutable observation immediately; only a Submit requiring fresh capability waits in a bounded provider queue.
+- Apply asynchronous probe results only for the current generation and captured capability fingerprint. Cancellation, Stop and unrelated provider work remain responsive; Stop cancels probes and refuses queued submissions. Probe failure does not replay an execution or declare recovery.
 
 ## Nonresponsibilities
 

@@ -1,6 +1,7 @@
 package supervisor
 
 import (
+	"github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
@@ -15,6 +16,11 @@ type envelope struct {
 }
 
 type taskActivationMsg struct {
+	runtime       *runtimeactor.Actor
+	status        runtimeactor.Status
+	recovery      *assignment.RecoveryContext
+	recoveryScope string
+
 	taskID   string
 	prepared *preparedWorkspace
 	handle   *runtimeactor.SessionHandle

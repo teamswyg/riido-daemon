@@ -27,6 +27,8 @@ const (
 
 // Result is the terminal outcome of a run.
 type Result struct {
+	RecoveryContext *assignment.RecoveryContext
+
 	ExecutionContext *assignment.ExecutionContext
 
 	Status     ResultStatus

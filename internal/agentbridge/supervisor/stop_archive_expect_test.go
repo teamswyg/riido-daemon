@@ -17,6 +17,9 @@ func expectStopArchiveEvent(
 	t.Helper()
 	select {
 	case event := <-reporter.events:
+		if event.RecoveryContext != nil && event.Kind == agentbridge.EventProgress {
+			return expectStopArchiveEvent(t, reporter, timeoutMessage)
+		}
 		return event
 	case <-time.After(2 * time.Second):
 		t.Fatal(timeoutMessage)

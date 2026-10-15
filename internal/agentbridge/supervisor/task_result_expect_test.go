@@ -23,6 +23,10 @@ func expectTaskResultRunningEvent(t *testing.T, reporter *reporterProbe) {
 	t.Helper()
 	select {
 	case ev := <-reporter.events:
+		if ev.RecoveryContext != nil && ev.Kind == agentbridge.EventProgress {
+			expectTaskResultRunningEvent(t, reporter)
+			return
+		}
 		if ev.Kind != agentbridge.EventLifecycle || ev.Phase != agentbridge.StateRunning {
 			t.Fatalf("running event: %+v", ev)
 		}

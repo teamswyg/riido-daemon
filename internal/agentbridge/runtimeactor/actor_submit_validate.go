@@ -36,7 +36,10 @@ func (a *Actor) submitCapability(
 		return nil, Capability{}, err
 	}
 	if !ok || !capView.Available {
-		return nil, Capability{}, fmt.Errorf("%w: %s", ErrProviderUnavailable, msg.req.Provider)
+		cause := fmt.Errorf("%w: %s", ErrProviderUnavailable, msg.req.Provider)
+		retryable := capView.DiagnosticCode == "probe-failed" || capView.DiagnosticCode == "auth-probe-failed" || capView.DiagnosticCode == "version-probe-failed" || capView.DiagnosticCode == "capability-probe-failed"
+		switchable := capView.DiagnosticCode == "executable-missing" || capView.DiagnosticCode == "version-unsupported"
+		return nil, Capability{}, preflightError("provider_unavailable", retryable, switchable, cause)
 	}
 	return adapter, capView, nil
 }

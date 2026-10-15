@@ -1,0 +1,54 @@
+{
+  "schema_version": "riido-provider-recovery-runtime.v1",
+  "tasks": [
+    "RIID-5822",
+    "RIID-5823"
+  ],
+  "reader_doc": "docs/30-architecture/provider-recovery.md",
+  "contract": "github.com/teamswyg/riido-contracts/docs/20-domain/provider-recovery.riido.json",
+  "implemented": {
+    "verification": "single asynchronous Detect per provider, 30 second deadline, bounded submit wait queue, generation and captured environment fingerprint fence",
+    "pre_dispatch": "default three attempts in 30 seconds, maximum three in 60 seconds; only typed not-started transient spawn/probe/slot failures",
+    "circuit": "provider plus capability fingerprint scope, two failures opens for one second, atomically one half-open owner, provider completion closes; at most 64 tracked scopes",
+    "failover": "at most one explicitly server-approved provider/model handoff before dispatch; no native resume/session crossing, provider-specific environment/args/MCP rejected; neutral source instructions regenerated and same prepared directory retained",
+    "authorization": "synchronous bounded Riido log acknowledgement before attempts and switches; current assignment lease/device/runtime checked by backend, temporary lease token never persisted",
+    "lease": "original claim runtime retains assignment heartbeat ownership; target native runtime does not renew the same execution under another lease",
+    "outcome": "dispatch is started, never recovered; first-attempt protocol completion stays dispatched/confirmed; only successful retry/handoff is recovered, and neither establishes host semantic completion",
+    "cancellation": "task cancellation and deadline win during probe/admission/backoff/switch; admission context is distinct from the admitted execution context"
+  },
+  "never_automatic": [
+    "replay of any dispatched failure or unknown outcome",
+    "login or credentials refresh",
+    "quota or authorization bypass",
+    "CLI installation or update",
+    "process restart due solely to failed health probe",
+    "cross-provider native session transfer",
+    "remote prompt-derived recovery policy"
+  ],
+  "journal": "bounded RecoveryContext on existing Riido log events with deterministic assignment/run/attempt/state/provider/switch idempotency key and terminal metadata; no raw prompt/error/path/argv/token diagnostics",
+  "restart": "existing active assignment without durable native session remains skipped; no fresh recovery replay after daemon state loss",
+  "tests": [
+    "slow probe Status/Cancel/Stop responsiveness",
+    "stale generation and environment rejection",
+    "cancelled queued submission never starts",
+    "preflight retry same workspace and finite budget",
+    "backoff cancellation",
+    "post-dispatch unknown never replayed",
+    "explicit fallback model and neutral instruction isolation",
+    "auth failure never switches",
+    "atomic half-open contention",
+    "origin runtime heartbeat lease"
+  ],
+  "limits": [
+    "deterministic fixture validation does not prove current real provider accounts or model quality",
+    "no web or desktop deployment",
+    "native host checks retain existing explicit host binding and continuation limits"
+  ],
+  "loop": {
+    "observation": "Synchronous Detect can block cancellation, and execution failures lack a safe replay boundary.",
+    "hypothesis": "Generation-fenced asynchronous probes and typed not-started failures permit finite recovery without replaying uncertain work.",
+    "execute": "Run fixture process failures, explicit approved fallback, cancellation and circuit contention tests.",
+    "evaluate": "Require bounded attempts/deadline/scope count, unchanged workspace and original lease; reject any replay after dispatch.",
+    "retrospective": "Only the tested pre-dispatch subset is implemented. Real account/model behavior and post-dispatch repair remain independent evidence."
+  }
+}

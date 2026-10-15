@@ -3,7 +3,6 @@ package supervisor
 import (
 	"context"
 	"errors"
-	"fmt"
 
 	"github.com/teamswyg/riido-contracts/assignment"
 
@@ -13,21 +12,7 @@ import (
 )
 
 func (a *Actor) prepareAndSubmit(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest) {
-	prepared, err := a.prepareWorkspace(ctx, status, req)
-	if err != nil {
-		a.forwardActivation(taskActivationMsg{taskID: req.ID, err: fmt.Errorf("%w: %w", errWorkspacePreparation, err)})
-		return
-	}
-	if prepared != nil {
-		snapshot := *req
-		prepared.request = &snapshot
-	}
-	handle, err := rt.Submit(ctx, *req)
-	if err != nil {
-		a.forwardActivation(taskActivationMsg{taskID: req.ID, prepared: prepared, err: err})
-		return
-	}
-	a.forwardActivation(taskActivationMsg{taskID: req.ID, prepared: prepared, handle: handle})
+	a.recoverAndSubmit(ctx, status, rt, req)
 }
 
 func (a *Actor) forwardActivation(msg taskActivationMsg) {
@@ -39,6 +24,10 @@ func (a *Actor) forwardActivation(msg taskActivationMsg) {
 
 func resultForActivationError(err error) agentbridge.Result {
 	status := agentbridge.ResultFailed
+	var recoveryErr *recoveryFailure
+	if errors.As(err, &recoveryErr) && recoveryErr.blocked {
+		status = agentbridge.ResultBlocked
+	}
 	if errors.Is(err, context.Canceled) || errors.Is(err, ErrStopped) {
 		status = agentbridge.ResultCancelled
 	}

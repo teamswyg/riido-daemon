@@ -1,0 +1,17 @@
+# Provider verification and bounded recovery · RIID-5822/5823
+
+[Runtime policy source](provider-recovery.riido.json) implements the safe pre-dispatch subset of the [shared recovery design](https://github.com/teamswyg/riido-contracts/blob/main/docs/20-domain/provider-recovery.md).
+
+Runtime actors probe compatibility and authentication outside their mailbox. One probe per provider is allowed; Status returns the last observation immediately and admission can wait in a finite queue. Cancel/Stop and other providers remain responsive. Only a completion with the current generation and captured environment fingerprint is applied. Unknown authentication preserves running session identity; confirmed binary drift still fences pinned sessions. Probe success does not mean a task or model invocation succeeded.
+
+The supervisor can retry only a typed failure known to occur before a provider process starts. Default policy permits three attempts within 30 seconds; the maximum is three within 60 seconds. Login, quota, authorization, cancellation and any dispatched or unknown outcome never cause automatic replay. Backoff has jitter and respects the total deadline. A provider/environment circuit opens after two failures, permits one half-open owner, and closes on confirmed provider completion. Tracking is bounded to 64 scopes.
+
+Cross-provider handoff requires an explicit backend-authorized provider/model candidate. The same assignment, authorized prepared directory and permission scope are retained. Native resume, provider-specific environment/arguments/MCP configuration or unsupported required surfaces prevent handoff. The target must be on the same daemon/owner/device, expose the approved model and pass capability eligibility. Its instructions are regenerated from the original provider-neutral input. A foreign native session ID is never passed to it.
+
+Each attempt and switch requires a synchronous existing Riido-log acknowledgement under the original assignment lease before dispatch. The event carries only bounded recovery fields and a deterministic idempotency key. Its lease token is transport-only and must be removed by backend validation before storage/logging. Fallback native session IDs remain in the local provenance index and are never pinned to the original provider assignment, including its terminal payload. Recovery outcome journals use the Riido-log event; terminal delivery keeps the existing contract and is not blocked by an outcome-journal delivery failure.
+
+Original runtime ownership continues renewing the assignment during preparation, backoff and target execution. Target native activity does not renew the same assignment under a different runtime lease.
+
+Dispatched means started, never recovered. Ordinary first-attempt completion stays dispatched/confirmed and is not counted as a recovery. Only a successful retry or handoff followed by confirmed provider protocol completion becomes recovered; host verification and semantic task completion remain separate. Existing host verification/correction rules continue to apply. The admission deadline is separate from the authorized run lifetime so successful admission does not immediately cancel a running task.
+
+No CLI update, authentication refresh, provider process restart, permission widening, post-dispatch replay or fresh restart recovery is introduced. Stateless active assignments without durable session continuity continue to be skipped. Tests use deterministic process/adapter fixtures; they do not claim a fresh real-account/model experiment.

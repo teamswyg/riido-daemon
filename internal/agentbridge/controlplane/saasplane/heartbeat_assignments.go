@@ -8,7 +8,7 @@ import (
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
 
-func (p *Plane) activeAssignmentsByAgentForHeartbeat(ctx context.Context, runningTaskIDs []string) (map[string][]string, error) {
+func (p *Plane) activeAssignmentsForRuntimeHeartbeat(ctx context.Context, runtimeID string, runningTaskIDs []string) (map[string][]string, error) {
 	executions := normalizedExecutionIDs(runningTaskIDs)
 	if len(executions) == 0 {
 		return nil, nil
@@ -16,6 +16,9 @@ func (p *Plane) activeAssignmentsByAgentForHeartbeat(ctx context.Context, runnin
 	byAgent := map[string][]string{}
 	err := p.withState(ctx, func(s *planeState) {
 		for _, executionID := range executions {
+			if runtimeID != "" && s.runtimeIDsByExecution[executionID] != "" && s.runtimeIDsByExecution[executionID] != runtimeID {
+				continue
+			}
 			assignment := s.assignmentsByExecution[executionID]
 			if assignment.AgentID == "" || assignment.ID == "" {
 				continue

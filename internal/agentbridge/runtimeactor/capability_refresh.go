@@ -21,8 +21,7 @@ func (a *Actor) capabilityRefreshDue(capView Capability, detectedAt time.Time) b
 	return !detectedAt.IsZero() && a.cfg.Now().Sub(detectedAt) >= ttl
 }
 
-func (a *Actor) detectCapability(ctx context.Context, adapter agentbridge.Adapter) (Capability, error) {
-	now := a.cfg.Now()
+func (a *Actor) detectCapabilityAt(ctx context.Context, adapter agentbridge.Adapter, now time.Time) (Capability, error) {
 	res, err := adapter.Detect(ctx, a.cfg.DetectEnv)
 	if err != nil {
 		return Capability{}, err

@@ -1,6 +1,9 @@
 package supervisor
 
-import "github.com/teamswyg/riido-daemon/pkg/lifecycle"
+import (
+	"github.com/teamswyg/riido-daemon/internal/providerrecovery"
+	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
+)
 
 func New(cfg Config) (*Actor, error) {
 	cfg, err := normalizeConfig(cfg)
@@ -9,6 +12,7 @@ func New(cfg Config) (*Actor, error) {
 	}
 	return &Actor{
 		cfg:                     cfg,
+		recovery:                providerrecovery.NewCircuits(),
 		mailbox:                 make(chan envelope, cfg.MailboxSize),
 		stopReqCh:               make(chan lifecycle.ShutdownLevel, cfg.MailboxSize),
 		stoppedCh:               make(chan struct{}),

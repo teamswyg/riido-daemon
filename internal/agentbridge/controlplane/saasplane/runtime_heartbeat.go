@@ -19,7 +19,7 @@ func (p *Plane) dynamicHeartbeat(ctx context.Context, hb controlplane.RuntimeHea
 	if err := p.refreshRegisteredRuntimeSnapshot(ctx, hb); err != nil {
 		return err
 	}
-	assignmentsByAgent, err := p.activeAssignmentsByAgentForHeartbeat(ctx, hb.RunningTaskIDs)
+	assignmentsByAgent, err := p.activeAssignmentsForRuntimeHeartbeat(ctx, hb.RuntimeID, hb.RunningTaskIDs)
 	if err != nil {
 		return err
 	}

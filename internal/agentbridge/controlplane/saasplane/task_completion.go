@@ -2,6 +2,7 @@ package saasplane
 
 import (
 	"context"
+	"log"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -12,15 +13,25 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 	if err != nil || !ok {
 		return err
 	}
+	if res.RecoveryContext != nil {
+		c := res.RecoveryContext.Sanitized()
+		if journalErr := p.ReportEvent(ctx, executionID, agentbridge.Event{Kind: agentbridge.EventProgress, RecoveryContext: &c}); journalErr != nil {
+			log.Printf("riido_daemon event=recovery_journal_delivery_failed state=%q provider=%q", c.State, c.Provider)
+		}
+	}
 	message, err := p.terminalMessage(ctx, executionID, res)
 	if err != nil {
 		return err
 	}
 	state, eventType := taskCompletionStateAndEvent(res, message)
+	sessionID := res.SessionID
+	if res.RecoveryContext != nil && res.RecoveryContext.SwitchCount > 0 {
+		sessionID = ""
+	}
 	_, err = p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{
 		AssignmentID:      assignment.ID,
 		TaskID:            assignment.TaskID,
-		ProviderSessionID: res.SessionID,
+		ProviderSessionID: sessionID,
 		State:             state,
 		EventType:         eventType,
 		Message:           message,
