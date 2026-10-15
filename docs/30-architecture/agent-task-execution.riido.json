@@ -61,7 +61,8 @@
       "local_visibility": "actual prepared execution directories remain in local IPC observations; no directory or command is exported as shared execution context",
       "run_binding": "capture the host binding before workspace preparation; native session scope pins that immutable selection",
       "diagnostics": "bounded workspace kind, verification status, failure code, and next action; legacy absence is unknown rather than verified",
-      "automatic_reexecution": "not introduced; provider verification and failover remain RIID-5822/5823"
+      "automatic_reexecution": "not introduced; provider verification and failover remain RIID-5822/5823",
+      "repository_only": "A repository-only binding runs without host verification; changed_files and checks must both be empty or both configured."
     }
   },
   "verification": {

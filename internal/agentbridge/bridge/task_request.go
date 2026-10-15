@@ -13,13 +13,14 @@ type TaskRequest struct {
 	// Host bindings are captured once during preparation and never decoded from task input.
 	HostExecutionBinding         *execution.Binding `json:"-"`
 	HostExecutionBindingSelected bool               `json:"-"`
-	ID                           string
-	Provider                     Provider
-	Prompt                       string
-	Cwd                          string
-	Model                        string
-	SystemPrompt                 string
-	MaxTurns                     int
+
+	ID           string
+	Provider     Provider
+	Prompt       string
+	Cwd          string
+	Model        string
+	SystemPrompt string
+	MaxTurns     int
 
 	// RequiredSurfaces names provider-neutral surfaces that must be
 	// present before the daemon scheduler may execute the task.

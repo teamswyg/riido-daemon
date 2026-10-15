@@ -14,15 +14,16 @@ import (
 
 // daemonRequest is the JSON envelope read off the socket.
 type daemonRequest struct {
-	WorkspaceID      string              `json:"workspace_id,omitempty"`
-	ExecutionBinding *execution.Binding  `json:"execution_binding,omitempty"`
-	Method           daemonMethod        `json:"method"`
-	ShutdownLevel    string              `json:"shutdown_level,omitempty"`
-	Force            bool                `json:"force,omitempty"`
-	AssignmentID     string              `json:"assignment_id,omitempty"`
-	TaskID           string              `json:"task_id,omitempty"`
-	RuntimeID        string              `json:"runtime_id,omitempty"`
-	Tool             agentbridge.ToolRef `json:"tool"`
+	WorkspaceID      string             `json:"workspace_id,omitempty"`
+	ExecutionBinding *execution.Binding `json:"execution_binding,omitempty"`
+
+	Method        daemonMethod        `json:"method"`
+	ShutdownLevel string              `json:"shutdown_level,omitempty"`
+	Force         bool                `json:"force,omitempty"`
+	AssignmentID  string              `json:"assignment_id,omitempty"`
+	TaskID        string              `json:"task_id,omitempty"`
+	RuntimeID     string              `json:"runtime_id,omitempty"`
+	Tool          agentbridge.ToolRef `json:"tool"`
 }
 
 func readDaemonRequest(conn net.Conn) (daemonRequest, bool, error) {

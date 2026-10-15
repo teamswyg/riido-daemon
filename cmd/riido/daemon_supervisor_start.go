@@ -12,20 +12,21 @@ import (
 
 func startDaemonSupervisor(ctx lifecycle.Context, settings daemonSettings, runtimes []*runtimeactor.Actor, source controlplane.TaskSourcePort, reporter controlplane.TaskReporterPort, workdirAdapter workdir.Adapter) (*supervisor.Actor, error) {
 	supActor, err := supervisor.New(supervisor.Config{
-		DaemonID:              settings.DaemonID,
-		RiidoDaemonVersion:    settings.DaemonVersion,
-		Runtimes:              runtimes,
-		Source:                source,
-		Reporter:              reporter,
-		Workdir:               workdirAdapter,
-		ExecutionBindings:     settings.ExecutionBindings,
 		ExecutionBindingStore: settings.ExecutionBindingStore,
-		PollEvery:             settings.PollEvery,
-		IdlePollEvery:         settings.IdlePollEvery,
-		HeartbeatEvery:        settings.HeartbeatEvery,
-		PolicyBundleVersion:   settings.PolicyBundle,
-		PolicyBundle:          settings.PolicyBundleDoc,
-		RuntimeTrustTier:      policy.TrustTierHost,
+
+		DaemonID:            settings.DaemonID,
+		RiidoDaemonVersion:  settings.DaemonVersion,
+		Runtimes:            runtimes,
+		Source:              source,
+		Reporter:            reporter,
+		Workdir:             workdirAdapter,
+		ExecutionBindings:   settings.ExecutionBindings,
+		PollEvery:           settings.PollEvery,
+		IdlePollEvery:       settings.IdlePollEvery,
+		HeartbeatEvery:      settings.HeartbeatEvery,
+		PolicyBundleVersion: settings.PolicyBundle,
+		PolicyBundle:        settings.PolicyBundleDoc,
+		RuntimeTrustTier:    policy.TrustTierHost,
 	})
 	if err != nil {
 		return nil, daemonWrapf(ErrDaemonSupervisor, "serve.new-supervisor", err, "supervisor.New")

@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -84,5 +85,20 @@ func TestBindingStoreRejectsSymlinkTarget(t *testing.T) {
 	}
 	if _, err := OpenBindingStore(path); err == nil {
 		t.Fatal("symlink binding target accepted")
+	}
+}
+
+func TestRepositoryOnlyBindingDoesNotClaimVerification(t *testing.T) {
+	binding := Binding{WorkspaceID: "w", TaskID: "t", Repository: t.TempDir()}
+	if err := ValidateBindings([]Binding{binding}); err != nil {
+		t.Fatal(err)
+	}
+	prepared := &Prepared{Binding: binding}
+	if evidence := prepared.Verify(context.Background()); evidence.ErrorKind != "not_configured" {
+		t.Fatal("missing checks were accepted as verified")
+	}
+	binding.ChangedFiles = []string{"out"}
+	if ValidateBindings([]Binding{binding}) == nil {
+		t.Fatal("half-configured verification accepted")
 	}
 }

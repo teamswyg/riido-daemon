@@ -56,8 +56,8 @@ func ValidateBindings(bindings []Binding) error {
 			return errors.New("execution binding repeats workspace/task")
 		}
 		seen[key] = true
-		if len(binding.ChangedFiles) == 0 || len(binding.Checks) == 0 {
-			return errors.New("execution binding requires changed_files and checks")
+		if (len(binding.ChangedFiles) == 0) != (len(binding.Checks) == 0) {
+			return errors.New("execution verification requires both changed_files and checks")
 		}
 		if binding.TimeoutSeconds < 0 || binding.TimeoutSeconds > 600 {
 			return errors.New("execution binding timeout must be 0..600 seconds")
@@ -136,6 +136,11 @@ func Reopen(binding Binding, workdir string) (*Prepared, error) {
 
 func (p *Prepared) Verify(ctx context.Context) Evidence {
 	evidence := Evidence{Directory: p.Directory}
+	if !p.Binding.HasChecks() {
+		evidence.Error = "host verification is not configured"
+		evidence.ErrorKind = "not_configured"
+		return evidence
+	}
 	for _, path := range p.Binding.ChangedFiles {
 		body, err := readFile(p.Directory, path)
 		if err != nil {

@@ -17,7 +17,7 @@ func TestReportedCompletionDoesNotInventHostVerification(t *testing.T) {
 	if got.VerificationStatus != "not_configured" {
 		t.Fatal("provider reply was presented as host verified")
 	}
-	task := &runningTask{execution: &execution.Prepared{}, executionVerified: true}
+	task := &runningTask{execution: &execution.Prepared{Binding: execution.Binding{ChangedFiles: []string{"out"}, Checks: [][]string{{"git", "diff", "--check"}}}}, executionVerified: true}
 	got = resultExecutionContext(task, agentbridge.Result{Status: agentbridge.ResultCompleted})
 	if got.VerificationStatus != "passed" || got.WorkspaceKind != "repository_clone" {
 		t.Fatal("verified host execution lost evidence")
@@ -39,7 +39,7 @@ func TestExecutionFailuresKeepTypedCauseAndCancellationPrecedence(t *testing.T) 
 			t.Fatalf("got %s, want %s", context.DiagnosticCode, row.code)
 		}
 	}
-	task := &runningTask{execution: &execution.Prepared{}, verificationPending: true}
+	task := &runningTask{execution: &execution.Prepared{Binding: execution.Binding{ChangedFiles: []string{"out"}, Checks: [][]string{{"git", "diff", "--check"}}}}, verificationPending: true}
 	got := resultExecutionContext(task, agentbridge.Result{Status: agentbridge.ResultCancelled})
 	if got.VerificationStatus != "cancelled" || got.DiagnosticCode != "run_cancelled" {
 		t.Fatal("cancelled verification presented as passed or retryable")
@@ -47,7 +47,7 @@ func TestExecutionFailuresKeepTypedCauseAndCancellationPrecedence(t *testing.T) 
 }
 
 func TestFailedExecutionDoesNotLeaveHostChecksPending(t *testing.T) {
-	task := &runningTask{execution: &execution.Prepared{}}
+	task := &runningTask{execution: &execution.Prepared{Binding: execution.Binding{ChangedFiles: []string{"out"}, Checks: [][]string{{"git", "diff", "--check"}}}}}
 	got := resultExecutionContext(task, agentbridge.Result{Status: agentbridge.ResultTimeout})
 	if got.VerificationStatus != "not_run" {
 		t.Fatalf("checks never started: %s", got.VerificationStatus)
@@ -77,5 +77,13 @@ func TestBindingSelectionIsFrozenForCurrentExecution(t *testing.T) {
 	request.HostExecutionBinding = nil
 	if actor.nativeSessionExecutionBinding(request) != nil {
 		t.Fatal("new configuration retroactively bound an isolated run")
+	}
+}
+
+func TestRepositorySelectionWithoutChecksIsNotVerified(t *testing.T) {
+	task := &runningTask{execution: &execution.Prepared{Binding: execution.Binding{Repository: t.TempDir()}}, executionVerified: true}
+	got := resultExecutionContext(task, agentbridge.Result{Status: agentbridge.ResultCompleted})
+	if got.WorkspaceKind != "repository_clone" || got.VerificationStatus != "not_configured" {
+		t.Fatalf("folder selection invented host evidence: %+v", got)
 	}
 }

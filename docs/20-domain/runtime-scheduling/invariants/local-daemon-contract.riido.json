@@ -36,7 +36,7 @@
   "source_checks": [
     {"name": "daemon-env-task-queue", "file": "cmd/riido/daemon_config.go", "contains": "envTaskQueueDir                  = \"RIIDO_TASK_QUEUE_DIR\""},
     {"name": "daemon-env-task-db", "file": "cmd/riido/daemon_config.go", "contains": "envTaskDBSourcePath              = \"RIIDO_TASK_DB_SOURCE_PATH\""},
-    {"name": "supervisor-runtime-pool", "file": "cmd/riido/daemon_supervisor_start.go", "contains": "Runtimes:              runtimes"},
+    {"name": "supervisor-runtime-pool", "file": "cmd/riido/daemon_supervisor_start.go", "contains": "Runtimes:            runtimes"},
     {"name": "supervisor-runtime-claim", "file": "internal/agentbridge/supervisor/task_claiming.go", "contains": "a.cfg.Source.ClaimTask(claimCtx, status.RuntimeID)"},
     {"name": "supervisor-runtime-heartbeat", "file": "internal/agentbridge/supervisor/poll_heartbeat.go", "contains": "RunningTaskIDs: a.heartbeatTaskIDs(status.RuntimeID, runtimeTaskIDs(status.RunningTasks))"},
     {"name": "supervisor-start-report-gate", "file": "internal/agentbridge/supervisor/start_report_gate_test.go", "contains": "TestSupervisorDoesNotStartProviderWhenStartReportFails"},

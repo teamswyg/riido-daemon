@@ -28,12 +28,13 @@ const (
 // Result is the terminal outcome of a run.
 type Result struct {
 	ExecutionContext *assignment.ExecutionContext
-	Status           ResultStatus
-	Output           string
-	Error            string
-	SessionID        string
-	Workdir          string
-	Usage            Usage
-	StartedAt        time.Time
-	FinishedAt       time.Time
+
+	Status     ResultStatus
+	Output     string
+	Error      string
+	SessionID  string
+	Workdir    string
+	Usage      Usage
+	StartedAt  time.Time
+	FinishedAt time.Time
 }

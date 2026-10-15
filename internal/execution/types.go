@@ -10,6 +10,9 @@ type Binding struct {
 	ContinuationLimit int        `json:"continuation_limit,omitempty"`
 }
 
+// HasChecks distinguishes a repository selection from configured host verification.
+func (b Binding) HasChecks() bool { return len(b.ChangedFiles) > 0 && len(b.Checks) > 0 }
+
 type Prepared struct {
 	Binding   Binding
 	Directory string

@@ -30,7 +30,9 @@ func executionContextForTask(task *runningTask) assignment.ExecutionContext {
 		if c.WorkspaceKind != "native_resume" {
 			c.WorkspaceKind = "repository_clone"
 		}
-		c.VerificationStatus = "pending"
+		if task.execution.Binding.HasChecks() {
+			c.VerificationStatus = "pending"
+		}
 	}
 	return c
 }
@@ -62,7 +64,7 @@ func resultExecutionContext(task *runningTask, res agentbridge.Result) *assignme
 			}
 		}
 	case agentbridge.ResultCompleted:
-		if task != nil && task.execution != nil && task.executionVerified && c.VerificationStatus != "failed" {
+		if task != nil && task.execution != nil && task.execution.Binding.HasChecks() && task.executionVerified && c.VerificationStatus != "failed" {
 			c.VerificationStatus = "passed"
 		}
 	}

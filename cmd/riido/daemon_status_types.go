@@ -14,25 +14,26 @@ type daemonStatus struct {
 	ExecutionBindingSupport bool                    `json:"execution_binding_support"`
 	ExecutionBindings       []execution.Binding     `json:"execution_bindings"`
 	Executions              []execution.Observation `json:"executions"`
-	SchemaVersion           string                  `json:"schema_version"`
-	DaemonID                string                  `json:"daemon_id"`
-	DaemonVersion           string                  `json:"daemon_version"`
-	PID                     int                     `json:"pid"`
-	UptimeSeconds           int                     `json:"uptime_seconds"`
-	Health                  string                  `json:"health"`
-	Ready                   bool                    `json:"ready"`
-	Readiness               string                  `json:"readiness"`
-	Profile                 string                  `json:"profile"`
-	ServerURL               string                  `json:"server_url,omitempty"`
-	DeviceName              string                  `json:"device_name"`
-	WorkspaceCount          int                     `json:"workspace_count"`
-	SocketPath              string                  `json:"socket_path"`
-	LogFile                 string                  `json:"log_file,omitempty"`
-	PIDFile                 string                  `json:"pid_file,omitempty"`
-	RunningTasks            int                     `json:"running_tasks"`
-	Metrics                 daemonMetrics           `json:"metrics"`
-	Runtimes                []runtimeactor.Status   `json:"runtimes"`
-	StartedAt               string                  `json:"started_at"`
+
+	SchemaVersion  string                `json:"schema_version"`
+	DaemonID       string                `json:"daemon_id"`
+	DaemonVersion  string                `json:"daemon_version"`
+	PID            int                   `json:"pid"`
+	UptimeSeconds  int                   `json:"uptime_seconds"`
+	Health         string                `json:"health"`
+	Ready          bool                  `json:"ready"`
+	Readiness      string                `json:"readiness"`
+	Profile        string                `json:"profile"`
+	ServerURL      string                `json:"server_url,omitempty"`
+	DeviceName     string                `json:"device_name"`
+	WorkspaceCount int                   `json:"workspace_count"`
+	SocketPath     string                `json:"socket_path"`
+	LogFile        string                `json:"log_file,omitempty"`
+	PIDFile        string                `json:"pid_file,omitempty"`
+	RunningTasks   int                   `json:"running_tasks"`
+	Metrics        daemonMetrics         `json:"metrics"`
+	Runtimes       []runtimeactor.Status `json:"runtimes"`
+	StartedAt      string                `json:"started_at"`
 }
 
 type daemonMetrics struct {

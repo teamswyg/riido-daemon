@@ -18,8 +18,11 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 	}
 	if res.Workdir == "" && running.workspace != nil {
 		res.Workdir = running.workspace.Workdir
+		if running.execution != nil {
+			res.Workdir = running.execution.Directory
+		}
 	}
-	if res.Status == agentbridge.ResultCompleted && running.execution != nil && !running.executionVerified {
+	if res.Status == agentbridge.ResultCompleted && running.execution != nil && running.execution.Binding.HasChecks() && !running.executionVerified {
 		res, _ = verifyExecutionResult(ctx, running, res)
 	}
 	res.ExecutionContext = resultExecutionContext(running, res)
