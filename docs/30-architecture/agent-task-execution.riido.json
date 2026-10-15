@@ -53,7 +53,16 @@
     "native_thread_title": "canonical task title via optional thread/name/set after turn/start; unsupported naming is warning only",
     "openclaw_catalog": "pinned native models list --json; 2 seconds and 64 KiB bound; native --model for selection",
     "heartbeat_ownership": "retain supervisor-owned execution IDs through verification/correction/terminal acknowledgement independently of native slot count",
-    "daemon_update_activity": "IPC counts supervisor-owned verification and pending results alongside native sessions without double counting"
+    "daemon_update_activity": "IPC counts supervisor-owned verification and pending results alongside native sessions without double counting",
+    "execution_environment_status": {
+      "task": "RIID-5820",
+      "shared_design": "github.com/teamswyg/riido-contracts/docs/20-domain/provider-recovery.md",
+      "local_configuration": "host-only IPC stores exact workspace/task repository and host verification bindings atomically; changes affect subsequent executions only",
+      "local_visibility": "actual prepared execution directories remain in local IPC observations; no directory or command is exported as shared execution context",
+      "run_binding": "capture the host binding before workspace preparation; native session scope pins that immutable selection",
+      "diagnostics": "bounded workspace kind, verification status, failure code, and next action; legacy absence is unknown rather than verified",
+      "automatic_reexecution": "not introduced; provider verification and failover remain RIID-5822/5823"
+    }
   },
   "verification": {
     "observed_date": "2026-10-13",

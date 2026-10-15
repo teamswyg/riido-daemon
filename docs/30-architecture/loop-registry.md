@@ -79,6 +79,15 @@
 - Verifies: `failed and skipped gates stay distinguishable from pass`, `host correction is bounded and native-session preserving`, `cancellation/auth/policy failures never trigger blind replay`, `restart recovery and external-effect idempotency remain open until verified`
 - Fails when: `binary detection is presented as task execution success`, `automatic CLI update or active-work restart is inferred from a failed probe`, `fresh session replay or unbounded correction is promoted without proof`
 
+### task-execution-environment
+
+- Owner: `RIID-5820 daemon host execution`
+- Kind: `closed-loop`
+- Expires after: `24h`
+- Observes: `local binding changes`, `active execution cwd`, `terminal host check evidence`
+- Verifies: `current execution retains captured binding`, `other task configuration is preserved`, `shared diagnostics are bounded`
+- Fails when: `current cwd changes on settings update`, `provider reply is labeled host verified`, `foreign task binding is overwritten`
+
 ## Business Claims
 
 ### closed_loop_candidates_must_surface_harness_gaps
@@ -215,3 +224,12 @@ Native session resume preserves the original task-owned cwd and rejects foreign 
 - Docs: `docs/30-architecture/agent-session-history.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `TestNativeSessionFollowupsRetainWorkspaceAcrossRestart`, `TestNativeSessionFollowupReopensCloneWithFreshVerification`, `TestNativeSessionIdentityGuardBeforePublication`, `TestNativeSessionBindingCannotBeReassigned`
 - Verifiers: `saas-native-session-owner-mapping-test`, `session-history-restart-and-isolation-tests`, `native-session-event-identity-guard-tests`, `native-session-durable-binding-tests`
+
+### task_execution_environment_keeps_local_authority
+
+Task-scoped host bindings are atomically persisted and captured once per execution. Shared diagnostics contain bounded codes; provider completion alone is never host verification.
+
+- Files: `internal/execution/binding_store.go`, `internal/execution/observation.go`, `cmd/riido/daemon_execution_binding.go`, `cmd/riido/daemon_ipc_status.go`, `internal/agentbridge/supervisor/execution_context.go`, `internal/agentbridge/supervisor/heartbeat_executions.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`
+- Docs: `docs/30-architecture/agent-task-execution.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `TestBindingSelectionIsFrozenForCurrentExecution`, `TestReportedCompletionDoesNotInventHostVerification`, `TestExecutionBindingIPCRequiresScopeAndPreservesOtherTask`
+- Verifiers: `execution-evidence-and-snapshot-tests`, `host-binding-ipc-tests`

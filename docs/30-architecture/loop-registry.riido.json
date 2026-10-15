@@ -278,6 +278,39 @@
         "decision": "Open intake; do not claim provider outage self-repair, CLI auto-update, or worktree support for all adapters.",
         "next_loop": "RIID-5822 capture recurring version/fault evidence; RIID-5823 classify safe recovery; promote only after restart and duplicate-effect tests."
       }
+    },
+    {
+      "id": "task-execution-environment",
+      "owner": "RIID-5820 daemon host execution",
+      "kind": "closed-loop",
+      "observes": [
+        "local binding changes",
+        "active execution cwd",
+        "terminal host check evidence"
+      ],
+      "verifies": [
+        "current execution retains captured binding",
+        "other task configuration is preserved",
+        "shared diagnostics are bounded"
+      ],
+      "evidence": [
+        "go test ./internal/execution ./internal/agentbridge/supervisor ./cmd/riido"
+      ],
+      "expires_after": "24h",
+      "fails_when": [
+        "current cwd changes on settings update",
+        "provider reply is labeled host verified",
+        "foreign task binding is overwritten"
+      ],
+      "evidence_graph": {
+        "observation": "Users cannot configure or inspect the local execution environment and generic stop messages lose actionable causes.",
+        "hypothesis": "Local task-scoped bindings and bounded shared execution codes preserve host authority and explain execution state.",
+        "change": "Atomic binding IPC, immutable run selection, active cwd observation and result metadata.",
+        "verifier": "TestBindingSelectionIsFrozenForCurrentExecution; TestExecutionBindingIPCRequiresScopeAndPreservesOtherTask; TestReportedCompletionDoesNotInventHostVerification",
+        "evidence": "Hermetic execution context, IPC and binding store tests.",
+        "decision": "Local execution settings and status are implemented; automatic provider replay and failover remain design only.",
+        "next_loop": "RIID-5822 verification and RIID-5823 provider recovery require separate failure-injection evidence."
+      }
     }
   ],
   "business_claims": [
@@ -845,12 +878,18 @@
         "docs/30-architecture/loop-registry.riido.json",
         "docs/30-architecture/loop-registry.md"
       ],
-      "evidence": ["deterministic instruction placement on Claude, Codex, Cursor and OpenClaw; no live model comprehension claim"],
+      "evidence": [
+        "deterministic instruction placement on Claude, Codex, Cursor and OpenClaw; no live model comprehension claim"
+      ],
       "verifiers": [
         {
           "name": "task-context-contract-placement-test",
           "file": "internal/agentbridge/task_context_contract_test.go",
-          "contains": ["TestTaskContextContractUsesEveryNativeProviderInstructionSurface", "reference evidence", "unavailable or truncated"]
+          "contains": [
+            "TestTaskContextContractUsesEveryNativeProviderInstructionSurface",
+            "reference evidence",
+            "unavailable or truncated"
+          ]
         }
       ]
     },
@@ -887,7 +926,7 @@
           "contains": [
             "TestApplyRuntimeInstructionContractPlacesByProvider",
             "Riido assignment interaction contract:",
-            "\uc5b4\ub5a4 \uc791\uc5c5\ubd80\ud130 \uc9c4\ud589\ud560\uae4c\uc694?"
+            "어떤 작업부터 진행할까요?"
           ]
         },
         {
@@ -1352,6 +1391,48 @@
             "TestNativeSessionBindingSurvivesAdapterRestart",
             "TestNativeSessionBindingCannotBeReassigned",
             "TestNativeSessionBindingRejectsCorruptionAndTraversal"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "task_execution_environment_keeps_local_authority",
+      "text": "Task-scoped host bindings are atomically persisted and captured once per execution. Shared diagnostics contain bounded codes; provider completion alone is never host verification.",
+      "files": [
+        "internal/execution/binding_store.go",
+        "internal/execution/observation.go",
+        "cmd/riido/daemon_execution_binding.go",
+        "cmd/riido/daemon_ipc_status.go",
+        "internal/agentbridge/supervisor/execution_context.go",
+        "internal/agentbridge/supervisor/heartbeat_executions.go",
+        "internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go"
+      ],
+      "docs": [
+        "docs/30-architecture/agent-task-execution.md",
+        "docs/30-architecture/loop-registry.riido.json",
+        "docs/30-architecture/loop-registry.md"
+      ],
+      "evidence": [
+        "TestBindingSelectionIsFrozenForCurrentExecution",
+        "TestReportedCompletionDoesNotInventHostVerification",
+        "TestExecutionBindingIPCRequiresScopeAndPreservesOtherTask"
+      ],
+      "verifiers": [
+        {
+          "name": "execution-evidence-and-snapshot-tests",
+          "file": "internal/agentbridge/supervisor/execution_context_test.go",
+          "contains": [
+            "TestBindingSelectionIsFrozenForCurrentExecution",
+            "TestReportedCompletionDoesNotInventHostVerification",
+            "TestFailedExecutionDoesNotLeaveHostChecksPending"
+          ]
+        },
+        {
+          "name": "host-binding-ipc-tests",
+          "file": "cmd/riido/daemon_execution_binding_test.go",
+          "contains": [
+            "TestExecutionBindingIPCRequiresScopeAndPreservesOtherTask",
+            "daemonMethodExecutionBindingUpdate"
           ]
         }
       ]

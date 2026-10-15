@@ -25,7 +25,7 @@ func Load(path string) ([]Binding, error) {
 	}
 	defer file.Close()
 	var bindings []Binding
-	decoder := json.NewDecoder(file)
+	decoder := json.NewDecoder(io.LimitReader(file, 1024*1024))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&bindings); err != nil {
 		return nil, err
@@ -33,37 +33,55 @@ func Load(path string) ([]Binding, error) {
 	if err := decoder.Decode(new(any)); err != io.EOF {
 		return nil, errors.New("execution bindings: trailing JSON")
 	}
+	if err := ValidateBindings(bindings); err != nil {
+		return nil, err
+	}
+	return bindings, nil
+}
+
+func ValidateBindings(bindings []Binding) error {
+	if len(bindings) > 256 {
+		return errors.New("execution binding limit exceeded")
+	}
 	seen := map[string]bool{}
 	for _, binding := range bindings {
+		if len(binding.WorkspaceID) > 256 || len(binding.TaskID) > 256 || len(binding.Repository) > 4096 || len(binding.ChangedFiles) > 128 || len(binding.Checks) > 32 {
+			return errors.New("execution binding size limit exceeded")
+		}
 		key := binding.WorkspaceID + "\x00" + binding.TaskID
-		if binding.WorkspaceID == "" || binding.TaskID == "" || !filepath.IsAbs(binding.Repository) {
-			return nil, errors.New("execution binding requires workspace_id, task_id and absolute repository")
+		if binding.WorkspaceID == "" || binding.TaskID == "" || strings.ContainsAny(binding.WorkspaceID+binding.TaskID+binding.Repository, "\x00") || !filepath.IsAbs(binding.Repository) {
+			return errors.New("execution binding requires workspace_id, task_id and absolute repository")
 		}
 		if seen[key] {
-			return nil, errors.New("execution binding repeats workspace/task")
+			return errors.New("execution binding repeats workspace/task")
 		}
 		seen[key] = true
 		if len(binding.ChangedFiles) == 0 || len(binding.Checks) == 0 {
-			return nil, errors.New("execution binding requires changed_files and checks")
+			return errors.New("execution binding requires changed_files and checks")
 		}
 		if binding.TimeoutSeconds < 0 || binding.TimeoutSeconds > 600 {
-			return nil, errors.New("execution binding timeout must be 0..600 seconds")
+			return errors.New("execution binding timeout must be 0..600 seconds")
 		}
 		if binding.ContinuationLimit < 0 || binding.ContinuationLimit > 2 {
-			return nil, errors.New("execution binding continuation_limit must be 0..2")
+			return errors.New("execution binding continuation_limit must be 0..2")
 		}
 		for _, path := range binding.ChangedFiles {
-			if !filepath.IsLocal(path) || path == "." {
-				return nil, fmt.Errorf("invalid changed file %q", path)
+			if len(path) > 4096 || strings.ContainsRune(path, 0) || !filepath.IsLocal(path) || path == "." {
+				return fmt.Errorf("invalid changed file %q", path)
 			}
 		}
 		for _, argv := range binding.Checks {
-			if len(argv) == 0 || strings.TrimSpace(argv[0]) == "" {
-				return nil, errors.New("execution check requires an executable")
+			if len(argv) == 0 || len(argv) > 64 || strings.TrimSpace(argv[0]) == "" {
+				return errors.New("execution check requires an executable")
+			}
+			for _, arg := range argv {
+				if len(arg) > 4096 || strings.ContainsRune(arg, 0) {
+					return errors.New("invalid execution check argument")
+				}
 			}
 		}
 	}
-	return bindings, nil
+	return nil
 }
 
 func Prepare(ctx context.Context, binding Binding, workdir string) (*Prepared, error) {

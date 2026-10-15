@@ -34,5 +34,13 @@ func writeStatus(conn net.Conn, flags startFlags, settings daemonSettings, start
 		Runtimes:       obs.runtimes,
 		StartedAt:      startedAt.UTC().Format(time.RFC3339Nano),
 	}
+	s.ExecutionBindings = settings.ExecutionBindings
+	if settings.ExecutionBindingStore != nil {
+		s.ExecutionBindings = settings.ExecutionBindingStore.Snapshot()
+		s.ExecutionBindingSupport = true
+	}
+	if settings.executionObservations != nil {
+		s.Executions = settings.executionObservations()
+	}
 	_ = writeDaemonJSON(conn, s)
 }

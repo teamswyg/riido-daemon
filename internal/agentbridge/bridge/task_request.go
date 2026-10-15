@@ -3,18 +3,23 @@ package bridge
 import (
 	"time"
 
+	"github.com/teamswyg/riido-daemon/internal/execution"
+
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
 
 // TaskRequest is the provider-neutral input to Run.
 type TaskRequest struct {
-	ID           string
-	Provider     Provider
-	Prompt       string
-	Cwd          string
-	Model        string
-	SystemPrompt string
-	MaxTurns     int
+	// Host bindings are captured once during preparation and never decoded from task input.
+	HostExecutionBinding         *execution.Binding `json:"-"`
+	HostExecutionBindingSelected bool               `json:"-"`
+	ID                           string
+	Provider                     Provider
+	Prompt                       string
+	Cwd                          string
+	Model                        string
+	SystemPrompt                 string
+	MaxTurns                     int
 
 	// RequiredSurfaces names provider-neutral surfaces that must be
 	// present before the daemon scheduler may execute the task.

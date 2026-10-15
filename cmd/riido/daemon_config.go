@@ -40,35 +40,37 @@ const (
 )
 
 type daemonSettings struct {
-	ownedExecutions      func() map[string][]string
-	RunHardTimeout       time.Duration
-	RunSemanticIdle      time.Duration
-	ExecutionBindings    []execution.Binding
-	DaemonID             string
-	DaemonVersion        string
-	Profile              string
-	ServerURL            string
-	DeviceID             string
-	DeviceSecret         string
-	DeviceName           string
-	RuntimeOwner         string
-	WorkdirRoot          string
-	PolicyBundle         string
-	PolicyBundlePath     string
-	PolicyBundleDoc      policy.PolicyBundle
-	TaskQueueDir         string
-	TaskReportDir        string
-	TaskDBSourcePath     string
-	SaaSURL              string
-	PollEvery            time.Duration
-	IdlePollEvery        time.Duration
-	HeartbeatEvery       time.Duration
-	WorkdirRetention     time.Duration
-	WorkdirCleanupEvery  time.Duration
-	PprofAddr            string
-	WorkspaceCount       int
-	RuntimeMaxConcurrent int
-	RuntimeAgents        []runtimeactor.AgentStatus
+	executionObservations func() []execution.Observation
+	ownedExecutions       func() map[string][]string
+	RunHardTimeout        time.Duration
+	RunSemanticIdle       time.Duration
+	ExecutionBindings     []execution.Binding
+	ExecutionBindingStore *execution.BindingStore
+	DaemonID              string
+	DaemonVersion         string
+	Profile               string
+	ServerURL             string
+	DeviceID              string
+	DeviceSecret          string
+	DeviceName            string
+	RuntimeOwner          string
+	WorkdirRoot           string
+	PolicyBundle          string
+	PolicyBundlePath      string
+	PolicyBundleDoc       policy.PolicyBundle
+	TaskQueueDir          string
+	TaskReportDir         string
+	TaskDBSourcePath      string
+	SaaSURL               string
+	PollEvery             time.Duration
+	IdlePollEvery         time.Duration
+	HeartbeatEvery        time.Duration
+	WorkdirRetention      time.Duration
+	WorkdirCleanupEvery   time.Duration
+	PprofAddr             string
+	WorkspaceCount        int
+	RuntimeMaxConcurrent  int
+	RuntimeAgents         []runtimeactor.AgentStatus
 }
 
 func loadDaemonSettings() (daemonSettings, error) {

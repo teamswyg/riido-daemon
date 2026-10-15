@@ -87,3 +87,7 @@ probes passed after the changes. A real Codex two-turn native resume preserved
 the same clone, wrote the expected file and passed the host check.
 Record failed or skipped gates explicitly; unbound tasks still lack host semantic
 verification and provider outage self-recovery is not claimed.
+
+## Execution environment and status · RIID-5820
+
+The contracts [Provider recovery design](https://github.com/teamswyg/riido-contracts/blob/main/docs/20-domain/provider-recovery.md) defines the target recovery hierarchy; this slice does not implement provider failover or blind retries. Host-only execution binding configuration owns exact workspace/task repository paths and verification argv. Atomic local updates affect subsequent executions; each preparation captures an immutable binding and resumed sessions retain their scope checks. Local IPC observations expose the actual execution directory to the host. SaaS receives only bounded workspace kind, verification status, diagnostic code and next action. Absolute paths, commands and credentials are not shared diagnostics. A provider-reported completion without a host check stays `not_configured`, not `passed`. Stop/cancel, timeout, preparation, native-session and verification failures carry distinct codes rather than inferred authentication failures.

@@ -1,6 +1,10 @@
 package agentbridge
 
-import "time"
+import (
+	"time"
+
+	"github.com/teamswyg/riido-contracts/assignment"
+)
 
 // ResultStatus enumerates the terminal outcomes of a run.
 //
@@ -23,12 +27,13 @@ const (
 
 // Result is the terminal outcome of a run.
 type Result struct {
-	Status     ResultStatus
-	Output     string
-	Error      string
-	SessionID  string
-	Workdir    string
-	Usage      Usage
-	StartedAt  time.Time
-	FinishedAt time.Time
+	ExecutionContext *assignment.ExecutionContext
+	Status           ResultStatus
+	Output           string
+	Error            string
+	SessionID        string
+	Workdir          string
+	Usage            Usage
+	StartedAt        time.Time
+	FinishedAt       time.Time
 }

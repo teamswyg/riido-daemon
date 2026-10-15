@@ -22,6 +22,7 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 	if res.Status == agentbridge.ResultCompleted && running.execution != nil && !running.executionVerified {
 		res, _ = verifyExecutionResult(ctx, running, res)
 	}
+	res.ExecutionContext = resultExecutionContext(running, res)
 	a.appendTaskTerminalResultEvent(ctx, running, res)
 	a.archiveTerminalWorkspace(ctx, running, res)
 	return res

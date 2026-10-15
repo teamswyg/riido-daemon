@@ -58,6 +58,16 @@ func verifyExecutionResult(ctx context.Context, task *runningTask, res agentbrid
 	default:
 		res.Output += "\n\nVerified changed files: " + strings.Join(evidence.ChangedFiles, ", ") + fmt.Sprintf("; checks passed: %d", len(evidence.Checks))
 	}
+	executionContext := executionContextForTask(task)
+	switch {
+	case ctx.Err() != nil:
+		executionContext.VerificationStatus = "cancelled"
+	case err != nil || evidence.Error != "":
+		executionContext.VerificationStatus, executionContext.DiagnosticCode, executionContext.NextAction = "failed", "host_verification_failed", "review_result"
+	default:
+		executionContext.VerificationStatus = "passed"
+	}
+	res.ExecutionContext = &executionContext
 	return res, evidence
 }
 

@@ -2,6 +2,7 @@ package saasplane
 
 import (
 	"context"
+	"maps"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -38,6 +39,12 @@ func (p *Plane) ReportEvent(ctx context.Context, executionID string, ev agentbri
 	req, ok := eventRequestFromAgentEvent(assignment, ev)
 	if !ok {
 		return nil
+	}
+	if ev.ExecutionContext != nil {
+		if req.Metadata == nil {
+			req.Metadata = map[string]string{}
+		}
+		maps.Copy(req.Metadata, ev.ExecutionContext.Metadata())
 	}
 	_, err = p.postAgentEvent(ctx, assignment, req)
 	return err
