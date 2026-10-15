@@ -37,14 +37,15 @@ func taskRequestMetadata(assignment assignmentcontract.Assignment, telemetryPlac
 func assignmentBaseMetadata(assignment assignmentcontract.Assignment) map[string]string {
 	executionID := assignmentExecutionID(assignment)
 	return map[string]string{
-		MetadataAssignmentID:        assignment.ID,
-		MetadataAgentID:             assignment.AgentID,
-		MetadataComponentID:         assignment.ComponentID,
-		MetadataLeaseToken:          assignment.LeaseToken,
-		MetadataModelID:             assignment.ModelID,
-		MetadataRuntimeProvider:     assignment.RuntimeProvider,
-		controlplane.MetadataTaskID: assignment.TaskID,
-		"workspace_id":              assignmentWorkspaceID(assignment),
-		"run_id":                    executionID,
+		MetadataAssignmentID:         assignment.ID,
+		MetadataAgentID:              assignment.AgentID,
+		controlplane.MetadataAgentID: assignment.AgentID,
+		MetadataComponentID:          assignment.ComponentID,
+		MetadataLeaseToken:           assignment.LeaseToken,
+		MetadataModelID:              assignment.ModelID,
+		MetadataRuntimeProvider:      assignment.RuntimeProvider,
+		controlplane.MetadataTaskID:  assignment.TaskID,
+		"workspace_id":               assignmentWorkspaceID(assignment),
+		"run_id":                     executionID,
 	}
 }

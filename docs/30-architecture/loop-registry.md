@@ -206,3 +206,12 @@ A host-authorized correction preserves the native session and workspace, require
 - Docs: `docs/30-architecture/agent-task-execution.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `TestExecutionCorrectionResumesSameWorkspaceAndAssignment`, `TestExecutionCorrectionStopsAtHostLimit`
 - Verifiers: `correction-identity-and-limit-tests`, `host-activity-ownership-test`
+
+### native_session_history_must_preserve_owner_and_workspace
+
+Native session resume preserves the original task-owned cwd and rejects foreign identity before publication; each turn requires fresh host evidence.
+
+- Files: `internal/workdir/fs_native_session.go`, `internal/workdir/native_session.go`, `internal/agentbridge/controlplane/metadata.go`, `internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go`, `internal/agentbridge/supervisor/native_session_binding.go`, `internal/agentbridge/session/session_identity.go`, `internal/execution/binding.go`, `internal/agentbridge/supervisor/workspace_lifecycle.go`, `internal/agentbridge/supervisor/task_claiming.go`, `internal/agentbridge/session/session_runner_apply.go`, `internal/agentbridge/session/session_runner_result.go`, `internal/provider/claude/translate_result.go`, `internal/provider/cursor/translate_result.go`
+- Docs: `docs/30-architecture/agent-session-history.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
+- Evidence: `TestNativeSessionFollowupsRetainWorkspaceAcrossRestart`, `TestNativeSessionFollowupReopensCloneWithFreshVerification`, `TestNativeSessionIdentityGuardBeforePublication`, `TestNativeSessionBindingCannotBeReassigned`
+- Verifiers: `saas-native-session-owner-mapping-test`, `session-history-restart-and-isolation-tests`, `native-session-event-identity-guard-tests`, `native-session-durable-binding-tests`

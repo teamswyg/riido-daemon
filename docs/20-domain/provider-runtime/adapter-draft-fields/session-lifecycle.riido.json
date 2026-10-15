@@ -7,12 +7,14 @@
   "workflow": ".github/workflows/session-lifecycle.yml",
   "evidence_artifact": "session-lifecycle-evidence",
   "steps": [
-    {"step": "pin", "status": "implemented", "responsibility": "provider EventSessionIdentified is converted to SessionPinned with providerSessionID and carried into terminal result", "source_checks": ["provider session pin draft", "final result carries session id", "saas event carries provider session id"]},
-    {"step": "resume", "status": "implemented", "responsibility": "assignment ResumeSessionID flows through TaskRequest and StartRequest into provider-specific BuildStart surfaces that support resume; OpenClaw agent exec does not expose a resume surface", "source_checks": ["assignment to task resume id", "provider-neutral resume field", "claude resume arg", "cursor resume arg"]},
+    {"step": "pin", "status": "implemented", "responsibility": "provider EventSessionIdentified is converted to SessionPinned with providerSessionID and carried into terminal result; RIID-5819 validates immutable identity before publication and persists task/workspace ownership", "source_checks": ["provider session pin draft", "final result carries session id", "saas event carries provider session id", "session identity guard", "durable session ownership"]},
+    {"step": "resume", "status": "implemented", "responsibility": "assignment ResumeSessionID flows through TaskRequest and StartRequest into provider-specific BuildStart surfaces that support resume; OpenClaw agent exec does not expose a resume surface; indexed sessions retain original cwd and reject ownership/grant drift", "source_checks": ["assignment to task resume id", "provider-neutral resume field", "claude resume arg", "cursor resume arg"]},
     {"step": "fork", "status": "reserved", "responsibility": "reserved vocabulary only; daemon has no fork=true or thread/fork session surface today", "source_checks": []},
     {"step": "close", "status": "implemented", "responsibility": "process exit flushes parser close and session finish emits exactly one terminal result; no separate close draft is emitted", "source_checks": ["parser close on exit", "finish sends terminal result", "result closes after one delivery"]}
   ],
   "source_checks": [
+    {"name": "session identity guard", "file": "internal/agentbridge/session/session_identity.go", "contains": "guardSessionIdentity"},
+    {"name": "durable session ownership", "file": "internal/agentbridge/supervisor/native_session_binding.go", "contains": "PinNativeSession"},
     {"name": "provider session pin draft", "file": "internal/agentbridge/supervisor/provider_event_draft.go", "contains": "EventSessionPinned"},
     {"name": "final result carries session id", "file": "internal/agentbridge/session/session_runner_result.go", "contains": "finalResult.SessionID = r.state.SessionID"},
     {"name": "saas event carries provider session id", "file": "internal/agentbridge/controlplane/saasplane/saasplane_claim_report_events_test.go", "contains": "EventProviderSessionPinned"},

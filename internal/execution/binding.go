@@ -78,6 +78,29 @@ func Prepare(ctx context.Context, binding Binding, workdir string) (*Prepared, e
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("remove clone remote: %w: %s", err, output)
 	}
+	return Reopen(binding, workdir)
+}
+
+// Reopen captures a new turn's verification baseline without resetting the
+// retained repository. The caller must verify its durable ownership binding.
+func Reopen(binding Binding, workdir string) (*Prepared, error) {
+	dir := filepath.Join(workdir, "repository")
+	canonical, err := filepath.EvalSymlinks(dir)
+	if err != nil {
+		return nil, errors.New("execution: retained repository is missing")
+	}
+	root, err := filepath.EvalSymlinks(workdir)
+	if err != nil {
+		return nil, err
+	}
+	relative, err := filepath.Rel(root, canonical)
+	if err != nil || !filepath.IsLocal(relative) || relative == "." {
+		return nil, errors.New("execution: retained repository escapes workdir")
+	}
+	info, err := os.Stat(filepath.Join(dir, ".git"))
+	if err != nil || !info.IsDir() {
+		return nil, errors.New("execution: retained repository is missing")
+	}
 	prepared := &Prepared{Binding: binding, Directory: dir, before: map[string][32]byte{}, existed: map[string]bool{}}
 	for _, path := range binding.ChangedFiles {
 		body, err := readFile(dir, path)
