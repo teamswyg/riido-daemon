@@ -21,7 +21,8 @@
     "persistence": "metadata only; atomic mode 0600; immutable ownership",
     "concurrency": "one supervisor-owned turn per native session",
     "migration": "unindexed legacy selection warned; unindexed repository resume blocked",
-    "missing_history": "known missing or invalid history blocked before workspace creation"
+    "missing_history": "known missing or invalid history blocked before workspace creation",
+    "approval_order": "validate the native session identity before evaluating auto approval or publishing a human confirmation event; stateful approval policy is evaluated once"
   },
   "verification": {
     "tests": [

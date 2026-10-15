@@ -5,10 +5,17 @@
   "generated_doc": "docs/20-domain/provider-runtime.md",
   "workflow": ".github/workflows/provider-runtime-docs.yml",
   "evidence_artifact": "provider-runtime-docs",
-  "loop": {"observation": "Provider runtime wrapper docs generate the C4 reader, but page fragments and sub-surfaces were still visible as loop-less manifest debt.", "hypothesis": "The provider-runtime root can own the C4 wrapper evidence loop while focused sub-surfaces delegate or own narrower loops.", "execute": "Generate the provider-runtime reader, verify compatibility markers, source anchors, and linked page fragments, and publish provider-runtime evidence in public CI.", "evaluate": "The verifier fails when root markers, source checks, generated docs, or declared page fragments drift from the executable manifest.", "retrospective": "C4 remains reviewable through a single generated wrapper while implementation-specific fragments stay small and delegated."},
+  "loop": {
+    "observation": "Provider runtime wrapper docs generate the C4 reader, but page fragments and sub-surfaces were still visible as loop-less manifest debt.",
+    "hypothesis": "The provider-runtime root can own the C4 wrapper evidence loop while focused sub-surfaces delegate or own narrower loops.",
+    "execute": "Generate the provider-runtime reader, verify compatibility markers, source anchors, and linked page fragments, and publish provider-runtime evidence in public CI.",
+    "evaluate": "The verifier fails when root markers, source checks, generated docs, or declared page fragments drift from the executable manifest.",
+    "retrospective": "C4 remains reviewable through a single generated wrapper while implementation-specific fragments stay small and delegated."
+  },
   "summary": [
     "This C4 entrypoint is generated from executable provider-runtime wrapper SSOT and delegates detailed ownership to focused provider runtime evidence tools.",
-    "The root remains a compatibility surface for existing CI anchors while the source of those anchors moves into this manifest."
+    "The root remains a compatibility surface for existing CI anchors while the source of those anchors moves into this manifest.",
+    "RIID-5829: human approval and answer requests emit assignment_waiting_for_user with approval_required or answer_required. Automatically approved tool requests do not notify; the session evaluates its policy once per request. Explicit running and text resumption clear the reason. Logs and recoverable errors never emit terminal-failure notifications."
   ],
   "compatibility_markers": [
     "`figma-ai-agent-daemon-boundary`",
@@ -35,36 +42,127 @@
     "EventIngestor does not own approval"
   ],
   "parts": [
-    {"title": "Overview", "path": "provider-runtime/overview.md"},
-    {"title": "Public Migration Status", "path": "provider-runtime/public-migration-status.md"},
-    {"title": "Integration Gates", "path": "provider-runtime/integration-gates.md"},
-    {"title": "Runtime Responsibility", "path": "provider-runtime/runtime-responsibility.md"},
-    {"title": "Adapter Draft Fields", "path": "provider-runtime/adapter-draft-fields.md"},
-    {"title": "Adapter ACL", "path": "provider-runtime/adapter-acl.md"},
-    {"title": "RuntimeActor Boundary", "path": "provider-runtime/runtime-actor-boundary.md"},
-    {"title": "Versioning", "path": "provider-runtime/versioning.md"}
+    {
+      "title": "Overview",
+      "path": "provider-runtime/overview.md"
+    },
+    {
+      "title": "Public Migration Status",
+      "path": "provider-runtime/public-migration-status.md"
+    },
+    {
+      "title": "Integration Gates",
+      "path": "provider-runtime/integration-gates.md"
+    },
+    {
+      "title": "Runtime Responsibility",
+      "path": "provider-runtime/runtime-responsibility.md"
+    },
+    {
+      "title": "Adapter Draft Fields",
+      "path": "provider-runtime/adapter-draft-fields.md"
+    },
+    {
+      "title": "Adapter ACL",
+      "path": "provider-runtime/adapter-acl.md"
+    },
+    {
+      "title": "RuntimeActor Boundary",
+      "path": "provider-runtime/runtime-actor-boundary.md"
+    },
+    {
+      "title": "Versioning",
+      "path": "provider-runtime/versioning.md"
+    }
   ],
   "related_pages": [
-    {"title": "Runtime Scheduling", "path": "runtime-scheduling.md"},
-    {"title": "Workspace", "path": "workspace.md"},
-    {"title": "Security", "path": "security.md"},
-    {"title": "Validation", "path": "validation.md"},
-    {"title": "Integration Matrix", "path": "../30-architecture/integration-matrix.md"}
+    {
+      "title": "Runtime Scheduling",
+      "path": "runtime-scheduling.md"
+    },
+    {
+      "title": "Workspace",
+      "path": "workspace.md"
+    },
+    {
+      "title": "Security",
+      "path": "security.md"
+    },
+    {
+      "title": "Validation",
+      "path": "validation.md"
+    },
+    {
+      "title": "Integration Matrix",
+      "path": "../30-architecture/integration-matrix.md"
+    }
   ],
-  "fragments": ["provider-runtime/overview.riido.json", "provider-runtime/adapter-draft-fields.riido.json", "provider-runtime/versioning.riido.json"],
+  "fragments": [
+    "provider-runtime/overview.riido.json",
+    "provider-runtime/adapter-draft-fields.riido.json",
+    "provider-runtime/versioning.riido.json"
+  ],
   "source_checks": [
-    {"name": "runtime-responsibility-generated", "file": "docs/20-domain/provider-runtime/runtime-responsibility.riido.json", "contains": "provider-runtime-responsibility-docs"},
-    {"name": "adapter-acl-generated", "file": "docs/20-domain/provider-runtime/adapter-acl.riido.json", "contains": "provider-adapter-acl-docs"},
-    {"name": "integration-gate-generated", "file": "docs/20-domain/provider-runtime/integration-gates.riido.json", "contains": "supports_worktree=false"},
-    {"name": "runtime-boundary-generated", "file": "docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.riido.json", "contains": "Q-RT-001"},
-    {"name": "approval-timeout-owner", "file": "docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json", "contains": "EventIngestor does not own timeout decisions"},
-    {"name": "draft-field-authority", "file": "docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json", "contains": "EventIngestor remains the only append authority"},
-    {"name": "process-stdout-buffer", "file": "internal/process/port.go", "contains": "DefaultStdoutBuffer = 64"},
-    {"name": "session-event-buffer", "file": "internal/agentbridge/session/config.go", "contains": "DefaultEventBuffer = 256"},
-    {"name": "runtimeactor-mailbox", "file": "internal/agentbridge/runtimeactor/defaults.go", "contains": "DefaultMailboxSize = 16"},
-    {"name": "supervisor-mailbox", "file": "internal/agentbridge/supervisor/constants.go", "contains": "DefaultMailboxSize = 64"},
-    {"name": "codex-full-access-envelope", "file": "internal/provider/codex/command.go", "contains": "FullAccessSandboxMode = \"danger-full-access\""},
-    {"name": "openclaw-worktree-gate", "file": "docs/30-architecture/provider-validation-matrix/openclaw.riido.json", "contains": "MISSING_REQUIRED_SURFACE:worktree"}
+    {
+      "name": "runtime-responsibility-generated",
+      "file": "docs/20-domain/provider-runtime/runtime-responsibility.riido.json",
+      "contains": "provider-runtime-responsibility-docs"
+    },
+    {
+      "name": "adapter-acl-generated",
+      "file": "docs/20-domain/provider-runtime/adapter-acl.riido.json",
+      "contains": "provider-adapter-acl-docs"
+    },
+    {
+      "name": "integration-gate-generated",
+      "file": "docs/20-domain/provider-runtime/integration-gates.riido.json",
+      "contains": "supports_worktree=false"
+    },
+    {
+      "name": "runtime-boundary-generated",
+      "file": "docs/20-domain/provider-runtime/runtime-actor-boundary/open-issues.riido.json",
+      "contains": "Q-RT-001"
+    },
+    {
+      "name": "approval-timeout-owner",
+      "file": "docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json",
+      "contains": "EventIngestor does not own timeout decisions"
+    },
+    {
+      "name": "draft-field-authority",
+      "file": "docs/20-domain/provider-runtime/adapter-draft-fields/draft-field-surface.riido.json",
+      "contains": "EventIngestor remains the only append authority"
+    },
+    {
+      "name": "process-stdout-buffer",
+      "file": "internal/process/port.go",
+      "contains": "DefaultStdoutBuffer = 64"
+    },
+    {
+      "name": "session-event-buffer",
+      "file": "internal/agentbridge/session/config.go",
+      "contains": "DefaultEventBuffer = 256"
+    },
+    {
+      "name": "runtimeactor-mailbox",
+      "file": "internal/agentbridge/runtimeactor/defaults.go",
+      "contains": "DefaultMailboxSize = 16"
+    },
+    {
+      "name": "supervisor-mailbox",
+      "file": "internal/agentbridge/supervisor/constants.go",
+      "contains": "DefaultMailboxSize = 64"
+    },
+    {
+      "name": "codex-full-access-envelope",
+      "file": "internal/provider/codex/command.go",
+      "contains": "FullAccessSandboxMode = \"danger-full-access\""
+    },
+    {
+      "name": "openclaw-worktree-gate",
+      "file": "docs/30-architecture/provider-validation-matrix/openclaw.riido.json",
+      "contains": "MISSING_REQUIRED_SURFACE:worktree"
+    }
   ],
   "assertions": [
     "C4 owns provider process/session/run lifecycle and adapter ACL outputs, not C3 capability, C5 scheduling, C6 workspace, C7 policy, C8 validation, or C2 canonical append authority.",

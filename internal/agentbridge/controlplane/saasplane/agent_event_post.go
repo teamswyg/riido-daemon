@@ -25,5 +25,19 @@ func (p *Plane) postAgentEvent(
 		return out, err
 	}
 	err = p.postJSON(ctx, "/v1/agents/"+url.PathEscape(assignment.AgentID)+"/events", req, &out)
+	if err == nil {
+		err = p.withState(ctx, func(s *planeState) {
+			current, ok := s.assignmentsByExecution[assignmentExecutionID(assignment)]
+			if !ok {
+				return
+			}
+			if req.EventType == assignmentcontract.EventAssignmentWaitingForUser {
+				current.ConfirmationReason = req.ConfirmationReason
+			} else if req.EventType == assignmentcontract.EventAssignmentRunning || assignmentcontract.IsTerminal(req.State) {
+				current.ConfirmationReason = ""
+			}
+			s.assignmentsByExecution[assignmentExecutionID(assignment)] = current
+		})
+	}
 	return out, err
 }
