@@ -18,9 +18,6 @@ func (d *protocolDriver) OnStart(ctx context.Context, io agentbridge.ProtocolIO)
 	if err := io.WriteStdin(ctx, body); err != nil {
 		return fmt.Errorf("claude driver: write user frame: %w", err)
 	}
-	if err := io.CloseStdin(ctx); err != nil {
-		return fmt.Errorf("claude driver: close stdin: %w", err)
-	}
 	d.written = true
 	return nil
 }

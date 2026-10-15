@@ -5,11 +5,12 @@ type codexMethod string
 const (
 	codexMethodError codexMethod = "error"
 
-	codexMethodInitialize   codexMethod = "initialize"
-	codexMethodInitialized  codexMethod = "initialized"
-	codexMethodThreadStart  codexMethod = "thread/start"
-	codexMethodThreadResume codexMethod = "thread/resume"
-	codexMethodTurnStart    codexMethod = "turn/start"
+	codexMethodInitialize    codexMethod = "initialize"
+	codexMethodInitialized   codexMethod = "initialized"
+	codexMethodThreadStart   codexMethod = "thread/start"
+	codexMethodThreadNameSet codexMethod = "thread/name/set"
+	codexMethodThreadResume  codexMethod = "thread/resume"
+	codexMethodTurnStart     codexMethod = "turn/start"
 
 	codexMethodThreadStarted       codexMethod = "thread_started"
 	codexMethodThreadResumed       codexMethod = "thread_resumed"

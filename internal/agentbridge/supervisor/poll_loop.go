@@ -10,6 +10,10 @@ import (
 
 func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	defer close(a.stoppedCh)
+	heartbeatCtx, stopHeartbeats := context.WithCancel(ctx)
+	heartbeatDone := make(chan struct{})
+	go func() { defer close(heartbeatDone); a.heartbeatLoop(heartbeatCtx, runtimes) }()
+	defer func() { stopHeartbeats(); <-heartbeatDone }()
 	poll := time.NewTimer(a.cfg.PollEvery)
 	defer stopTimer(poll)
 	heartbeat := time.NewTicker(a.cfg.HeartbeatEvery)
@@ -19,6 +23,7 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	detachedReports := []detachedReport{}
 
 	for {
+		a.publishHeartbeatExecutions(inFlight)
 		select {
 		case <-ctx.Done():
 			level := lifecycle.FromContext(ctx).ShutdownLevel()
@@ -34,7 +39,7 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 			claimed := a.claimAvailable(ctx, runtimes, inFlight)
 			resetTimer(poll, a.nextPollInterval(claimed, len(inFlight)))
 		case <-heartbeat.C:
-			a.reportRuntimeHeartbeats(ctx, runtimes, inFlight)
+			a.refreshRuntimeRegistrations(ctx, runtimes, inFlight)
 		case msg := <-a.mailbox:
 			if a.handleMailboxMessage(ctx, msg, inFlight, &detachedReports) {
 				resetTimer(poll, a.cfg.PollEvery)

@@ -7,7 +7,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-func TestBuildStartDoesNotEmitUnsupportedModelFlag(t *testing.T) {
+func TestBuildStartPinsModelWithAgentExecFlag(t *testing.T) {
 	cmd, err := BuildStart(agentbridge.StartRequest{
 		Model:  "llama3.2:latest",
 		Prompt: "hello",
@@ -15,7 +15,8 @@ func TestBuildStartDoesNotEmitUnsupportedModelFlag(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if slices.Contains(cmd.Args, "--model") {
-		t.Fatalf("OpenClaw CLI does not accept --model for agent runs: %v", cmd.Args)
+	index := slices.Index(cmd.Args, "--model")
+	if index < 0 || index+1 >= len(cmd.Args) || cmd.Args[index+1] != "llama3.2:latest" {
+		t.Fatalf("OpenClaw agent exec ignored selected model: %v", cmd.Args)
 	}
 }

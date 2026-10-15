@@ -21,6 +21,9 @@ func (d *protocolDriver) handleInitializeResponse(ctx context.Context, io agentb
 func (d *protocolDriver) threadStartRequest() (codexMethod, map[string]any) {
 	method := codexMethodThreadStart
 	params := map[string]any{"sandbox": FullAccessSandboxMode}
+	if d.req.SystemPrompt != "" {
+		params["developerInstructions"] = d.req.SystemPrompt
+	}
 	if d.req.Cwd != "" {
 		params["cwd"] = d.req.Cwd
 	}

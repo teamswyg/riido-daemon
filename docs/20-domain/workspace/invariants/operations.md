@@ -16,3 +16,5 @@ Each workspace operation has one responsibility, deterministic output, and an IR
 | `ArchiveWorkspace` | Terminal run | `archive.json` and `WorkdirArchived(workdirPath, archiveURI)` |
 | `CleanupWorkspace` | Terminal run plus expired retention policy | Filesystem removal evidence |
 | `ReinjectNativeConfig` | T-CONFIG trigger | Native config refresh and `ConfigTemplateReinjected(from, to)` |
+
+RIID-5827: RIIDO_EXECUTION_BINDINGS_FILE selects an exact authenticated workspace/task, host repository, required changed files and argv checks. Committed HEAD is cloned into the run repository; completion requires changed outputs and successful bounded checks. The original checkout is preserved. Main terminal-report retention, native session resume, worktree grants and lifecycle authority remain in force.

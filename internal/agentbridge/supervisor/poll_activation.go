@@ -43,6 +43,10 @@ func applyPreparedWorkspace(task *runningTask, prepared *preparedWorkspace) {
 		return
 	}
 	task.workspace = prepared.workspace
+	task.execution = prepared.execution
+	task.request = prepared.request
+	task.canResume = prepared.canResume
+	task.executionVerified = false
 	task.events = prepared.events
 }
 

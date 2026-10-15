@@ -19,6 +19,9 @@ func (d *protocolDriver) OnProcessExit(_ context.Context, status agentbridge.Pro
 	}
 	out := make([]agentbridge.Event, 0, len(d.pending))
 	for id, pr := range d.pending {
+		if pr.method == codexMethodThreadNameSet {
+			continue
+		}
 		out = append(out, agentbridge.Event{
 			Kind: agentbridge.EventError,
 			Err:  fmt.Sprintf("codex: pending RPC request id=%d method=%s cancelled by process exit code=%d", id, pr.method, status.Code),

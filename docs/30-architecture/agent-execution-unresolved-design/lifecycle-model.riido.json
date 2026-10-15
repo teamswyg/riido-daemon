@@ -13,7 +13,8 @@
     {"class": "workspace_prepare_permanent", "retry": "no", "rule": "private auth unsupported or branch not found"},
     {"class": "provider_spawn_transient", "retry": "maybe", "rule": "executable temporarily unavailable after TTL re-detect"},
     {"class": "provider_policy_blocked", "retry": "no", "rule": "explicit policy deny"},
-    {"class": "provider_session_lost", "retry": "no blind rerun", "rule": "require recovery_fresh_start_required without resume id"}
+    {"class": "provider_session_lost", "retry": "no blind rerun", "rule": "require recovery_fresh_start_required without resume id"},
+    {"class": "completed_with_failed_host_verification", "retry": "bounded opt-in correction", "rule": "continuation_limit 0..2; same assignment/repository/native session; missing or unchanged output or failed check only; no cancellation, timeout, auth/policy failure or fresh session replay; docs/30-architecture/agent-task-execution.md"}
   ],
   "implementation_slices": [
     {"title": "P0: Safety And Identity Foundation", "items": ["Add daemon ExecutionIdentity helper.", "Key saasplane maps, watchers, and partial body buffers by assignment id.", "Preserve logical task_id as report metadata.", "Add transient retry/backoff for safe/idempotent JSON transport.", "Freeze selected executable and launch PATH into StartRequest.Env and spawn env."]},

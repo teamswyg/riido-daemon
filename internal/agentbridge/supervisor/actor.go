@@ -18,4 +18,6 @@ type Actor struct {
 	claimMu                 sync.Mutex
 	claimCancel             context.CancelFunc
 	registeredRuntimeStates map[string]string
+	heartbeatMu             sync.RWMutex
+	heartbeatExecutions     map[string][]string
 }

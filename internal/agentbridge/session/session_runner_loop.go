@@ -9,7 +9,7 @@ func (r *sessionRunner) loop() {
 		}
 		select {
 		case <-r.ctx.Done():
-			r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventCancellation, Err: r.ctx.Err().Error()})
+			r.emitAndTerminate(contextTerminationEvent(r.ctx))
 		case req := <-r.sess.cancel:
 			r.cancel(req)
 		case req := <-r.sess.terminal:

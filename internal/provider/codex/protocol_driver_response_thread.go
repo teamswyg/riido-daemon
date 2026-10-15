@@ -2,12 +2,19 @@ package codex
 
 import (
 	"context"
+	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 func (d *protocolDriver) handleThreadReadyResponse(ctx context.Context, raw agentbridge.RawEvent, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
 	d.threadID = threadIDFromResult(mapField(raw.Payload, "result"))
+	if strings.TrimSpace(d.threadID) == "" {
+		return d.failedEvents("codex: missing thread identity"), nil, nil
+	}
+	if d.req.ResumeSessionID != "" && d.threadID != d.req.ResumeSessionID {
+		return d.failedEvents("codex: resumed thread identity mismatch"), nil, nil
+	}
 	events := d.threadIdentifiedEvents()
 	if _, err := d.sendRequest(ctx, io, codexMethodTurnStart, d.turnStartParams()); err != nil {
 		return nil, nil, err

@@ -18,15 +18,17 @@ func ApplyRuntimeInstructionContract(provider, prompt, systemPrompt, agentInstru
 	strategy := RuntimeInstructionStrategyForProvider(provider)
 	agentSection := AgentInstructionContract(agentInstruction)
 	interactionSection := AssignmentInteractionContractInstruction()
+	contextSection := TaskContextContractInstruction()
 	switch strategy.AgentInstructionPlacement {
 	case TelemetryPlacementSystemPrompt, TelemetryPlacementSystemPromptInline:
 		system := appendPromptSection(systemPrompt, agentSection)
 		system = appendPromptSection(system, interactionSection)
+		system = appendPromptSection(system, contextSection)
 		system = appendPromptSection(system, TelemetryContractInstruction())
 		return strings.TrimSpace(prompt), system, strategy.TelemetryPlacement, placementForSection(agentSection, strategy.AgentInstructionPlacement)
 	case TelemetryPlacementPrompt:
-		return InjectPromptSections(prompt, agentSection, interactionSection, TelemetryContractInstruction()), strings.TrimSpace(systemPrompt), TelemetryPlacementPrompt, placementForSection(agentSection, TelemetryPlacementPrompt)
+		return InjectPromptSections(prompt, agentSection, interactionSection, contextSection, TelemetryContractInstruction()), strings.TrimSpace(systemPrompt), TelemetryPlacementPrompt, placementForSection(agentSection, TelemetryPlacementPrompt)
 	default:
-		return InjectPromptSections(prompt, agentSection, interactionSection, TelemetryContractInstruction()), strings.TrimSpace(systemPrompt), TelemetryPlacementPrompt, placementForSection(agentSection, TelemetryPlacementPrompt)
+		return InjectPromptSections(prompt, agentSection, interactionSection, contextSection, TelemetryContractInstruction()), strings.TrimSpace(systemPrompt), TelemetryPlacementPrompt, placementForSection(agentSection, TelemetryPlacementPrompt)
 	}
 }

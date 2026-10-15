@@ -27,6 +27,9 @@ func taskRequestMetadata(assignment assignmentcontract.Assignment, telemetryPlac
 	if assignment.RequestID != "" {
 		metadata["request_id"] = assignment.RequestID
 	}
+	if title := assignmentTaskTitle(assignment.Prompt); title != "" {
+		metadata["task_title"] = title
+	}
 	metadata[agentbridge.MetadataTelemetryContract] = telemetryPlacement
 	if instructionPlacement != "" {
 		metadata[agentbridge.MetadataAgentInstruction] = instructionPlacement
@@ -37,14 +40,15 @@ func taskRequestMetadata(assignment assignmentcontract.Assignment, telemetryPlac
 func assignmentBaseMetadata(assignment assignmentcontract.Assignment) map[string]string {
 	executionID := assignmentExecutionID(assignment)
 	return map[string]string{
-		MetadataAssignmentID:        assignment.ID,
-		MetadataAgentID:             assignment.AgentID,
-		MetadataComponentID:         assignment.ComponentID,
-		MetadataLeaseToken:          assignment.LeaseToken,
-		MetadataModelID:             assignment.ModelID,
-		MetadataRuntimeProvider:     assignment.RuntimeProvider,
-		controlplane.MetadataTaskID: assignment.TaskID,
-		"workspace_id":              assignmentWorkspaceID(assignment),
-		"run_id":                    executionID,
+		MetadataAssignmentID:         assignment.ID,
+		MetadataAgentID:              assignment.AgentID,
+		controlplane.MetadataAgentID: assignment.AgentID,
+		MetadataComponentID:          assignment.ComponentID,
+		MetadataLeaseToken:           assignment.LeaseToken,
+		MetadataModelID:              assignment.ModelID,
+		MetadataRuntimeProvider:      assignment.RuntimeProvider,
+		controlplane.MetadataTaskID:  assignment.TaskID,
+		"workspace_id":               assignmentWorkspaceID(assignment),
+		"run_id":                     executionID,
 	}
 }

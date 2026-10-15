@@ -11,8 +11,16 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 	if running == nil {
 		return res
 	}
+	if running.sessionBindingErr != nil {
+		res.Status, res.Error = agentbridge.ResultBlocked, running.sessionBindingErr.Error()
+		res.SessionID = ""
+		res.Output = ""
+	}
 	if res.Workdir == "" && running.workspace != nil {
 		res.Workdir = running.workspace.Workdir
+	}
+	if res.Status == agentbridge.ResultCompleted && running.execution != nil && !running.executionVerified {
+		res, _ = verifyExecutionResult(ctx, running, res)
 	}
 	a.appendTaskTerminalResultEvent(ctx, running, res)
 	a.archiveTerminalWorkspace(ctx, running, res)

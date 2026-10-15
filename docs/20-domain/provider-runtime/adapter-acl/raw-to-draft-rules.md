@@ -13,3 +13,7 @@ Adapter parsers own provider-local `RawEvent` envelopes. Adapter translation map
 5. Provider transition-after-side facts are drafts only; ingest/orchestration decides state transitions.
 
 The adjacent [`event-ingestor-contract.md`](event-ingestor-contract.md) owns final `CanonicalEvent` envelope completion and validation.
+
+RIID-5827: Claude partial text is forwarded without duplicating final blocks. Codex native turn status distinguishes completed, failed and interrupted even after partial output; idle/ready thread availability does not complete a turn. Native approval responses retain JSON-RPC request identity. The SaaS adapter forwards every supervisor-batched partial snapshot without a second debounce.
+
+RIID-5816: Claude native can_use_tool and legacy permission_request preserve original input in a run-local driver, while redacted ToolRef arguments remain diagnostic only. Its stdin stays open until shutdown. Error, budget and turn-limit results retain failure reasons instead of reporting success.

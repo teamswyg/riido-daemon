@@ -15,7 +15,7 @@ func (bridgeCodexAdapter) Detect(
 	ctx context.Context,
 	env agentbridge.DetectEnv,
 ) (agentbridge.DetectResult, error) {
-	return codex.Detect(ctx, env)
+	return codex.Detect(ctx, providerDetectEnvironment(env))
 }
 
 func (bridgeCodexAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {
@@ -32,4 +32,8 @@ func (bridgeCodexAdapter) BlockedArgs() []string { return codex.BlockedArgs() }
 
 func (bridgeCodexAdapter) NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	return codex.NewProtocolDriver(req)
+}
+
+func (bridgeCodexAdapter) BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
+	return codex.BuildProviderInput(cmd)
 }

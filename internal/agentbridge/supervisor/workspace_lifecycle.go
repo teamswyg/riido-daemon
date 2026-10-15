@@ -2,10 +2,12 @@ package supervisor
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/teamswyg/riido-contracts/ir"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
@@ -24,9 +26,17 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 	if err != nil {
 		return nil, err
 	}
+	var retained workdir.Workspace
+	resumed, err := a.restoreNativeSessionWorkspace(req, capView, &retained)
+	if err != nil {
+		return nil, err
+	}
 	ws, err := a.cfg.Workdir.Prepare(workdir.TaskID{Workspace: ids.workspaceID, Task: ids.logicalTaskID, Run: ids.runID})
 	if err != nil {
 		return nil, err
+	}
+	if resumed {
+		ws.Workdir = retained.Workdir
 	}
 	events, err := a.newWorkspaceEventContext(ws, status.RuntimeID, req, ids.logicalTaskID, ids.runID, capView)
 	if err != nil {
@@ -36,8 +46,10 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"workdirPath": ws.Workdir,
 		"taskID":      ids.logicalTaskID,
 	})
-	if err := materializeAssignmentWorktree(ctx, ws.Workdir, req.Worktree); err != nil {
-		return nil, err
+	if !resumed {
+		if err := materializeAssignmentWorktree(ctx, ws.Workdir, req.Worktree); err != nil {
+			return nil, err
+		}
 	}
 	native, err := a.resolveNativeWorkspaceConfig(req)
 	if err != nil {
@@ -62,5 +74,25 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"files":               native.resolved.GeneratedFiles(),
 		"nativeConfigVersion": nativeConfigVersion,
 	})
-	return &preparedWorkspace{workspace: &ws, events: events}, nil
+	prepared := &preparedWorkspace{workspace: &ws, events: events, canResume: capView.SupportsResume}
+	for _, binding := range a.cfg.ExecutionBindings {
+		if binding.WorkspaceID != ids.workspaceID || binding.TaskID != ids.logicalTaskID {
+			continue
+		}
+		if resumed {
+			prepared.execution, err = execution.Reopen(binding, ws.Workdir)
+		} else {
+			prepared.execution, err = execution.Prepare(ctx, binding, ws.Workdir)
+		}
+		if err != nil {
+			if resumed {
+				return nil, fmt.Errorf("%w: retained repository could not be reopened: %w", errNativeSessionBinding, err)
+			}
+			return nil, err
+		}
+		req.Cwd = prepared.execution.Directory
+		req.Prompt += fmt.Sprintf("\n\nThe authorized source repository is at %s. Perform the requested work there and validate the changes. A successful reply alone is not completion; the host will require changed files and passing checks.", req.Cwd)
+		break
+	}
+	return prepared, nil
 }

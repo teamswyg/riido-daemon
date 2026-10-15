@@ -6,7 +6,7 @@ func TestRuntimeInstructionStrategiesAreStable(t *testing.T) {
 	want := []RuntimeInstructionStrategy{
 		expectedRuntimeInstructionStrategy("claude", TelemetryPlacementSystemPrompt),
 		expectedRuntimeInstructionStrategy("openclaw", TelemetryPlacementSystemPromptInline),
-		expectedRuntimeInstructionStrategy("codex", TelemetryPlacementPrompt),
+		expectedRuntimeInstructionStrategy("codex", TelemetryPlacementSystemPrompt),
 		expectedRuntimeInstructionStrategy("cursor", TelemetryPlacementPrompt),
 	}
 	got := RuntimeInstructionStrategies()

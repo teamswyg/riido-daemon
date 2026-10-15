@@ -29,9 +29,11 @@ func runtimeInstructionCases() []runtimeInstructionCase {
 		},
 		{
 			provider:        "codex",
-			wantInstruction: TelemetryPlacementPrompt,
-			wantTelemetry:   TelemetryPlacementPrompt,
-			wantPromptHas:   []string{"Riido agent instruction:", "act as a PM", "Riido assignment interaction contract:", "<riido_log>", "User task:", "do it"},
+			wantInstruction: TelemetryPlacementSystemPrompt,
+			wantTelemetry:   TelemetryPlacementSystemPrompt,
+			wantPromptHas:   []string{"do it"},
+			wantSystemHas:   []string{"Riido agent instruction:", "act as a PM", "Riido assignment interaction contract:", "<riido_log>"},
+			wantPromptExact: true,
 		},
 		{
 			provider:        "cursor",

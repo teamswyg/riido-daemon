@@ -9,9 +9,9 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Class | Count |
 | --- | ---: |
 | Generated reader docs | 86 |
-| Direct SSOT docs | 0 |
-| Registered manual docs | 1 |
-| Scanned docs | 87 |
+| Direct SSOT docs | 4 |
+| Registered manual docs | 0 |
+| Scanned docs | 90 |
 
 ## Generated Reader Origins
 
@@ -51,14 +51,14 @@ _None missing._
 
 | Group | Count | Sample paths |
 | --- | ---: | --- |
-| `docs` | 363 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
+| `docs` | 367 | `docs/20-domain/context-map/acl-locations.riido.json`<br>`docs/20-domain/context-map/change-procedure.riido.json`<br>`docs/20-domain/context-map/dependency-direction.riido.json` |
 | `packaging` | 5 | `packaging/store/riido_daemon_store_distribution/developer-id.riido.json`<br>`packaging/store/riido_daemon_store_distribution/mac-app-store.riido.json`<br>`packaging/store/riido_daemon_store_distribution/msix-sideload.riido.json` |
 | `internal` | 2 | `internal/hostintegration/privacy_metadata_allowlist.riido.json`<br>`internal/workdir/native_config_plan.riido.json` |
 
 ## Manifest Loop Inventory
 
-- Complete manifest loops: `370`
-- Direct manifest loops: `27`
+- Complete manifest loops: `374`
+- Direct manifest loops: `31`
 - Delegated manifest loops: `343`
 - Missing manifest loops: `0`
 - Missing loop budget: `0`
@@ -75,21 +75,15 @@ _None missing._
 | `local-qa-daily-evidence-sweep` | `24h` | local-qa-schedule.json trigger<br>local-qa-coverage.json local.qa.daily_freshness row<br>dashboard stale rows after expires_at | refreshes_expired_evidence<br>daily-evidence-sweep trigger identity<br>semantic peer binding for freshness changes | .riido-local/evidence/local-qa-schedule.json<br>.riido-local/evidence/local-qa-coverage.json<br>executable-knowledge-coverage/local-qa-schedule-binding.json | evidence_missing<br>expires_at_missing<br>freshness_row_missing<br>semantic_drift |
 ## Registered Manual Surfaces
 
-| Group | Owner | Next artifact | Matched docs |
-| --- | --- | --- | ---: |
-| `task-agent-requests` | riido-daemon | internal/agentbridge/controlplane/saasplane/task_agent_request_test.go | 1 |
+_None._
 
 ## Manual Hotspots
 
-| Directory | Matched docs |
-| --- | ---: |
-| `docs/30-architecture` | 1 |
+_None._
 
 ## Manual Samples
 
-| Group | Path |
-| --- | --- |
-| `task-agent-requests` | `docs/30-architecture/task-agent-requests.md` |
+_None._
 
 ## Evidence Loop
 

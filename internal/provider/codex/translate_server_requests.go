@@ -7,9 +7,9 @@ import (
 
 func translateServerRequest(method codexMethod, p map[string]any) []agentbridge.Event {
 	switch method {
-	case codexMethodApproveCommand:
+	case codexMethodApproveCommand, codexMethod("item/commandExecution/requestApproval"):
 		return codexApproveCommandEvent(p)
-	case codexMethodApprovePatch:
+	case codexMethodApprovePatch, codexMethod("item/fileChange/requestApproval"):
 		return codexApprovePatchEvent(p)
 	default:
 		return []agentbridge.Event{{
@@ -24,7 +24,7 @@ func codexApproveCommandEvent(p map[string]any) []agentbridge.Event {
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventToolApprovalNeeded,
 		Tool: agentbridge.ToolRef{
-			ID:   stringField(p, "id"),
+			ID:   firstApprovalID(p),
 			Name: command,
 			Kind: "shell",
 			Args: toolargs.FromPairs("command", command),
@@ -37,10 +37,17 @@ func codexApprovePatchEvent(p map[string]any) []agentbridge.Event {
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventToolApprovalNeeded,
 		Tool: agentbridge.ToolRef{
-			ID:   stringField(p, "id"),
+			ID:   firstApprovalID(p),
 			Name: path,
 			Kind: "patch_apply",
 			Args: toolargs.FromPairs("path", path),
 		},
 	}}
+}
+
+func firstApprovalID(p map[string]any) string {
+	if id := stringField(p, "itemId"); id != "" {
+		return id
+	}
+	return stringField(p, "id")
 }

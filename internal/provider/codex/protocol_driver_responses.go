@@ -26,7 +26,13 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 	case codexMethodThreadStart, codexMethodThreadResume:
 		return d.handleThreadReadyResponse(ctx, raw, io)
 	case codexMethodTurnStart:
-		return d.handleTurnStartResponse()
+		events, commands, err := d.handleTurnStartResponse()
+		if title := codexTaskTitle(d.req); title != "" {
+			if _, nameErr := d.sendRequest(ctx, io, codexMethodThreadNameSet, map[string]any{"threadId": d.threadID, "name": title}); nameErr != nil {
+				events = append(events, agentbridge.Event{Kind: agentbridge.EventWarning, Err: "Codex thread name could not be sent"})
+			}
+		}
+		return events, commands, err
 	default:
 		return nil, nil, nil
 	}

@@ -4,6 +4,8 @@ package detectutil
 // completion from command success.
 type ProbeResult struct {
 	Output   string
+	Stdout   string
+	Stderr   string
 	ExitCode int
 	OK       bool
 }

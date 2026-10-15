@@ -2,6 +2,8 @@ package supervisor
 
 import (
 	"context"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 func (a *Actor) handleTaskResult(
@@ -14,7 +16,17 @@ func (a *Actor) handleTaskResult(
 	reportCtx := ctx
 	res := msg.result
 	if running != nil {
-		res = a.recordTerminalResult(ctx, running, msg.result)
+		res.Usage = running.priorUsage.Add(res.Usage)
+		if running.initialStartedAt.IsZero() {
+			running.initialStartedAt = res.StartedAt
+		} else {
+			res.StartedAt = running.initialStartedAt
+		}
+		if res.Status == agentbridge.ResultCompleted && running.execution != nil && running.sessionBindingErr == nil {
+			a.beginExecutionVerification(running, res)
+			return
+		}
+		res = a.recordTerminalResult(ctx, running, res)
 		a.finishTaskWithResult(ctx, inFlight, running, res)
 		return
 	}

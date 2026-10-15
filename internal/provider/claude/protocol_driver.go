@@ -2,6 +2,7 @@ package claude
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -9,8 +10,10 @@ import (
 // protocolDriver implements agentbridge.ProtocolDriver for Claude Code's
 // `claude -p --input-format stream-json` mode.
 type protocolDriver struct {
-	req     agentbridge.StartRequest
-	written bool
+	req            agentbridge.StartRequest
+	written        bool
+	streamedBlocks map[int]bool
+	pendingInputs  map[string]any
 }
 
 // NewProtocolDriver writes one Claude user-message frame when the session
@@ -24,6 +27,44 @@ func (d *protocolDriver) OnRaw(
 	raw agentbridge.RawEvent,
 	_ agentbridge.ProtocolIO,
 ) ([]agentbridge.Event, []agentbridge.Command, error) {
+	if raw.Type == "control_request" {
+		request := mapField(raw.Payload, "request")
+		if subtype := stringField(request, "subtype"); subtype == "can_use_tool" || subtype == "permission_request" {
+			if d.pendingInputs == nil {
+				d.pendingInputs = map[string]any{}
+			}
+			d.pendingInputs[stringField(raw.Payload, "request_id")] = firstToolInput(request)
+		}
+	}
+	if raw.Type == "stream_event" {
+		event, _ := raw.Payload["event"].(map[string]any)
+		if event["type"] == "message_start" {
+			d.streamedBlocks = nil
+		}
+		delta, _ := event["delta"].(map[string]any)
+		if event["type"] == "content_block_delta" && (delta["type"] == "text_delta" || delta["type"] == "thinking_delta") {
+			if d.streamedBlocks == nil {
+				d.streamedBlocks = map[int]bool{}
+			}
+			index, _ := event["index"].(float64)
+			d.streamedBlocks[int(index)] = true
+		}
+	}
+	if raw.Type == "assistant" && len(d.streamedBlocks) > 0 {
+		// Copy the payload: parser data may also be consumed by diagnostics.
+		message, _ := raw.Payload["message"].(map[string]any)
+		content, _ := message["content"].([]any)
+		filtered := make([]any, 0, len(content))
+		for index, item := range content {
+			block, _ := item.(map[string]any)
+			if d.streamedBlocks[index] && (block["type"] == "text" || block["type"] == "thinking") {
+				continue
+			}
+			filtered = append(filtered, item)
+		}
+		raw.Payload = map[string]any{"message": map[string]any{"content": filtered}}
+		d.streamedBlocks = nil
+	}
 	return Translate(raw)
 }
 
@@ -36,5 +77,18 @@ func (d *protocolDriver) OnProcessExit(
 }
 
 func (d *protocolDriver) OnClose(_ context.Context, _ agentbridge.ProtocolIO) error {
+	d.pendingInputs = nil
 	return nil
+}
+
+func (d *protocolDriver) BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
+	input, ok := d.pendingInputs[cmd.ProviderRequestID]
+	if !ok {
+		return nil, fmt.Errorf("claude: no pending control request for %s", cmd.Kind)
+	}
+	frame, err := buildProviderInput(cmd, input)
+	if err == nil {
+		delete(d.pendingInputs, cmd.ProviderRequestID)
+	}
+	return frame, err
 }

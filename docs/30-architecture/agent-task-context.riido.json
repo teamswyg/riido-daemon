@@ -1,0 +1,35 @@
+{
+  "schema_version": "riido-daemon-context-interpretation.v1",
+  "id": "daemon-task-context-interpretation",
+  "riido_task": "RIID-5818",
+  "reader_doc": "docs/30-architecture/agent-task-context.md",
+  "owning_code": [
+    "internal/agentbridge/task_context_contract.go",
+    "internal/agentbridge/telemetry_apply.go"
+  ],
+  "policy": {
+    "provider_placement": "existing native/inline surfaces; task-first fallback remains",
+    "precedence": "latest user directive, current assigned task, reference documents and prior replies",
+    "scope": "same task/session/authorized workspace; references do not expand permissions",
+    "missing_context": "explicit unavailable/truncated markers; ask only for necessary gaps",
+    "completion": "perform changes and validation; report actual evidence"
+  },
+  "verification": {
+    "tests": [
+      "TestTaskContextContractUsesEveryNativeProviderInstructionSurface"
+    ],
+    "real_provider_calls": false
+  },
+  "limits": [
+    "not a universal comprehension guarantee",
+    "not automatic provider recovery",
+    "no frontend deployment"
+  ],
+  "loop": {
+    "observation": "Providers need a consistent interpretation of newly enriched task context and prior replies.",
+    "hypothesis": "The existing native/inline instruction surfaces can preserve current task ownership and reference boundaries.",
+    "execute": "Verify deterministic placement on all four provider paths and regenerate source/document coverage.",
+    "evaluate": "Contract placement, task-first fallback and existing bridge regressions must pass; live model comprehension remains unproven.",
+    "retrospective": "Keep interpretation daemon-owned and context acquisition Control Plane-owned; no permissions or automatic recovery are inferred."
+  }
+}

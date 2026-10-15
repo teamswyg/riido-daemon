@@ -2,8 +2,8 @@ package codex
 
 func codexStatusIsTerminal(status threadStatus) bool {
 	switch status {
-	case threadStatusIdle, threadStatusCompleted, threadStatusComplete, threadStatusFinished,
-		threadStatusDone, threadStatusReady, threadStatusSucceeded:
+	case threadStatusCompleted, threadStatusComplete, threadStatusFinished,
+		threadStatusDone, threadStatusSucceeded:
 		return true
 	default:
 		return false

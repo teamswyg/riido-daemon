@@ -7,6 +7,7 @@ import (
 )
 
 func TestForegroundPathStillWorks(t *testing.T) {
+	isolateDaemonLifecycleProviders(t)
 	paths := newDaemonBackgroundPaths(t)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

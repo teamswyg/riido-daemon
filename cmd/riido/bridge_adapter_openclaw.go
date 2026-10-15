@@ -15,7 +15,7 @@ func (bridgeOpenClawAdapter) Detect(
 	ctx context.Context,
 	env agentbridge.DetectEnv,
 ) (agentbridge.DetectResult, error) {
-	return openclaw.Detect(ctx, env)
+	return openclaw.Detect(ctx, providerDetectEnvironment(env))
 }
 
 func (bridgeOpenClawAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {

@@ -10,9 +10,11 @@ C4 Provider Runtime owns only how an assignment-created `Assignment.agent_instru
 | --- | --- | --- | --- |
 | Claude Code | `system-prompt` | `system-prompt` | `go test ./internal/agentbridge` |
 | OpenClaw | `system-prompt-inline` | `system-prompt-inline` | `go test ./internal/agentbridge` |
-| Codex | `prompt` prefix | `prompt` prefix | `go test ./internal/agentbridge` |
+| Codex | native `developerInstructions` | native `developerInstructions` | `go test ./internal/agentbridge` |
 | Cursor Agent | `prompt` prefix | `prompt` prefix | `go test ./internal/agentbridge` |
 
 The matrix is implemented by `RuntimeInstructionStrategies()` and consumed by `ApplyRuntimeInstructionContract`. Public CI verifies deterministic placement, metadata, idempotent section composition, and provider-neutral effectiveness probe shape without executing external provider CLIs.
 
 Provider-specific effectiveness means the real provider obeys the delivered instruction after it is placed on that provider's chosen surface. It is verified by `BuildInstructionEffectivenessProbe` and `ValidateInstructionEffectivenessOutput`; real provider execution remains opt-in integration evidence.
+
+RIID-5817: Concrete implementation requests require actual work and verification. Codex user input starts with the task while reusable instructions use native developerInstructions. Cursor preserves separately supplied system instructions through an inline fallback. See docs/30-architecture/agent-task-execution.md for bounded host verification and correction.

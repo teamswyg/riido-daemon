@@ -36,6 +36,13 @@ func (p *Plane) deliverUnrefreshedHeartbeatCancels(ctx context.Context, requeste
 	if len(requestedAssignmentIDs) == 0 {
 		return nil
 	}
+	for _, assignment := range response.RefreshedAssignments {
+		if assignment.State == assignmentcontract.AssignmentCancelling || assignment.State == assignmentcontract.AssignmentCancelled {
+			if err := p.deliverCancel(ctx, assignment); err != nil {
+				return err
+			}
+		}
+	}
 	refreshed := refreshedAssignmentIDs(response.RefreshedAssignments)
 	return p.withState(ctx, func(s *planeState) {
 		cancelUnrefreshedHeartbeatAssignments(s, requestedAssignmentIDs, refreshed)
@@ -60,9 +67,6 @@ func cancelUnrefreshedHeartbeatAssignments(s *planeState, requestedAssignmentIDs
 		}
 		if assignment, ok := s.assignmentsByExecution[assignmentID]; ok {
 			sendAndCloseCancelWatcher(s, assignmentID, fmt.Errorf("saas assignment %s heartbeat lease stale", assignment.ID))
-			delete(s.assignmentsByExecution, assignmentID)
-			delete(s.runtimeIDsByExecution, assignmentID)
-			delete(s.partialBodies, assignmentID)
 		}
 	}
 }

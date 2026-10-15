@@ -25,6 +25,7 @@ func codexIntegrationRequest(
 	t.Helper()
 	workdir := t.TempDir()
 	req := agentbridge.StartRequest{
+		Model:  os.Getenv("AGENTBRIDGE_CODEX_MODEL"),
 		Prompt: codexIntegrationPrompt(),
 		Cwd:    workdir,
 		Env:    codexIntegrationEnv(),

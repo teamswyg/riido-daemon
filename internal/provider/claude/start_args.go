@@ -10,13 +10,18 @@ func buildStartArgs(req agentbridge.StartRequest, opts StartOptions) ([]string, 
 	args := protocolArgs(opts.PermissionMode)
 	tempFiles := []string{}
 	args, tempFiles = appendMCPArgs(args, tempFiles, opts.MCPConfigPath)
-	args = appendPermissionPromptTool(args, opts.PermissionPromptToolName)
+	if opts.PermissionMode != PermissionModeBypassDangerous || opts.PermissionPromptToolName != "" {
+		args = appendPermissionPromptTool(args, opts.PermissionPromptToolName)
+	}
 	args = appendRequestArgs(args, req)
 	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, BlockedArgs())
 	return append(args, kept...), dropped, tempFiles
 }
 
 func appendPermissionPromptTool(args []string, name string) []string {
+	if name == "" {
+		name = "stdio"
+	}
 	return appendStringArg(args, "--permission-prompt-tool", name)
 }
 
@@ -26,6 +31,7 @@ func protocolArgs(mode PermissionMode) []string {
 		"--output-format", "stream-json",
 		"--input-format", "stream-json",
 		"--verbose",
+		"--include-partial-messages",
 		"--permission-mode", string(mode),
 	}
 }

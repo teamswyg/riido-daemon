@@ -20,6 +20,9 @@ func Translate(raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Com
 	}
 
 	switch wireEventType(raw.Type) {
+	case wireEventType("stream_event"):
+		return claudeStreamEvents(raw), nil, nil
+
 	case wireEventMalformed:
 		return translateMalformed(raw), nil, nil
 

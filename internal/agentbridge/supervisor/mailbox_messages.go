@@ -6,11 +6,12 @@ import (
 )
 
 type envelope struct {
-	taskActivation *taskActivationMsg
-	taskEvent      *taskEventMsg
-	taskReport     *taskEventMsg
-	taskResult     *taskResultMsg
-	cancel         *cancelMsg
+	taskActivation   *taskActivationMsg
+	taskEvent        *taskEventMsg
+	taskReport       *taskEventMsg
+	taskResult       *taskResultMsg
+	taskVerification *taskVerificationMsg
+	cancel           *cancelMsg
 }
 
 type taskActivationMsg struct {

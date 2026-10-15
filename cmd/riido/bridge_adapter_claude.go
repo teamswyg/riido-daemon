@@ -18,7 +18,7 @@ func (bridgeClaudeAdapter) Detect(
 	ctx context.Context,
 	env agentbridge.DetectEnv,
 ) (agentbridge.DetectResult, error) {
-	return claude.Detect(ctx, env)
+	return claude.Detect(ctx, providerDetectEnvironment(env))
 }
 
 func (a bridgeClaudeAdapter) BuildStart(req agentbridge.StartRequest) (agentbridge.StartCommand, error) {

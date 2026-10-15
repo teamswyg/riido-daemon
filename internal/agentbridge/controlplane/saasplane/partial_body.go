@@ -2,7 +2,6 @@ package saasplane
 
 import (
 	"context"
-	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -14,11 +13,7 @@ func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignment
 	if delta == "" {
 		return nil
 	}
-	var (
-		flush bool
-		body  string
-	)
-	now := time.Now()
+	var body string
 	if err := p.withState(ctx, func(s *planeState) {
 		st := s.partialBodies[executionID]
 		if st == nil {
@@ -26,18 +21,9 @@ func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignment
 			s.partialBodies[executionID] = st
 		}
 		st.text += delta
-		grown := len(st.text) - st.lastFlushedLen
-		if st.lastFlushAt.IsZero() || now.Sub(st.lastFlushAt) >= partialBodyFlushInterval || grown >= partialBodyFlushChars {
-			flush = true
-			st.lastFlushAt = now
-			st.lastFlushedLen = len(st.text)
-			body = st.text
-		}
+		body = st.text
 	}); err != nil {
 		return err
-	}
-	if !flush {
-		return nil
 	}
 	return p.postPartialBody(ctx, assignment, body)
 }

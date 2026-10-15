@@ -29,5 +29,7 @@ type sessionRunner struct {
 	idleTimer *time.Timer
 	idleC     <-chan time.Time
 
-	deferredExit *process.ExitStatus
+	deferredExit           *process.ExitStatus
+	deliveryInterrupted    bool
+	sessionIdentityBlocked bool
 }

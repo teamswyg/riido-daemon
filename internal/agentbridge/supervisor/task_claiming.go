@@ -32,10 +32,15 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		provider:              string(req.Provider),
 		runtimeID:             status.RuntimeID,
 		capabilityFingerprint: pin.capabilityFingerprint,
+		nativeSessionID:       req.ResumeSessionID,
 		ctx:                   taskCtx,
 		report:                report,
 		runtime:               rt,
 		cancel:                cancel,
+	}
+	if nativeSessionInUse(inFlight, req.ID, string(req.Provider), req.ResumeSessionID) {
+		a.finishTaskWithResult(ctx, inFlight, inFlight[req.ID], agentbridge.Result{Status: agentbridge.ResultBlocked, Error: "native session is already executing another turn"})
+		return true
 	}
 	eligibility := taskEligibility(status, req)
 	if !eligibility.Eligible {
@@ -45,7 +50,19 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		})
 		return true
 	}
-	go a.forwardCancellation(taskCtx, req.ID)
+	go a.forwardCancellation(taskCtx, req.ID, rt, cancel)
 	go a.prepareAndSubmit(taskCtx, status, rt, req)
 	return true
+}
+
+func nativeSessionInUse(inFlight map[string]*runningTask, taskID, provider, sessionID string) bool {
+	if sessionID == "" {
+		return false
+	}
+	for id, task := range inFlight {
+		if id != taskID && task.provider == provider && task.nativeSessionID == sessionID {
+			return true
+		}
+	}
+	return false
 }

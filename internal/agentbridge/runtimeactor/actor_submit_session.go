@@ -21,7 +21,7 @@ func (a *Actor) startSubmitSession(
 		Spawn:                submitSpawnCommand(spawn, startReq, launchEnv),
 		Request:              startReq,
 		HardTimeout:          submitHardTimeout(msg, a.cfg.HardTimeout),
-		SemanticIdle:         msg.req.SemanticIdle,
+		SemanticIdle:         submitSemanticIdle(msg, a.cfg.SemanticIdle),
 		AutoApprove:          a.cfg.AutoApprove,
 		ToolStartGate:        a.cfg.ToolStartGate,
 		ToolApprovalGate:     a.cfg.ToolApprovalGate,

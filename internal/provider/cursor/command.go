@@ -3,7 +3,7 @@ package cursor
 import "github.com/teamswyg/riido-daemon/internal/agentbridge"
 
 func BuildStart(req agentbridge.StartRequest, opts StartOptions) (agentbridge.StartCommand, error) {
-	args, err := profileArgs(startProfile(opts), req.Prompt)
+	args, err := profileArgs(startProfile(opts), cursorMessage(req))
 	if err != nil {
 		return agentbridge.StartCommand{}, err
 	}

@@ -7,6 +7,8 @@ import (
 )
 
 const (
+	// MetadataAgentID is the stable logical agent owner of a native session.
+	MetadataAgentID                      = "agent_id"
 	MetadataRuntimeLeaseID               = string(metadatakeys.RuntimeLeaseID)
 	MetadataRuntimeFencingToken          = string(metadatakeys.RuntimeFencingToken)
 	MetadataRuntimeCapabilityFingerprint = string(metadatakeys.RuntimeCapabilityFingerprint)

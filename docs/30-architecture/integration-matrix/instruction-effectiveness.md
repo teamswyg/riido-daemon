@@ -18,6 +18,6 @@ Real provider evidence is opt-in and must use the same harness:
 | Provider | Probe marker | Expected instruction surface |
 | --- | --- | --- |
 | Claude Code | `RIIDO_INSTRUCTION_ACK:claude` | `system-prompt` |
-| Codex | `RIIDO_INSTRUCTION_ACK:codex` | `prompt prefix` |
+| Codex | `RIIDO_INSTRUCTION_ACK:codex` | `native developerInstructions` |
 | OpenClaw | `RIIDO_INSTRUCTION_ACK:openclaw` | `system-prompt-inline` |
 | Cursor Agent | `RIIDO_INSTRUCTION_ACK:cursor` | `prompt prefix` |

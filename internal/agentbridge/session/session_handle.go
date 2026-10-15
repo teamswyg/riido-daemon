@@ -17,6 +17,7 @@ type Session struct {
 	done     chan struct{}
 
 	running process.RunningProcess
+	stop    context.CancelCauseFunc
 }
 
 type cancelRequest struct {
@@ -47,6 +48,12 @@ func (s *Session) Cancel(cause error) {
 func (s *Session) CancelWithContext(ctx context.Context, cause error) {
 	if ctx == nil {
 		ctx = context.Background()
+	}
+	if cause == nil {
+		cause = context.Canceled
+	}
+	if s.stop != nil {
+		s.stop(cause)
 	}
 	if lifecycle.FromContext(ctx).ShutdownLevel().IsForced() && s.running != nil {
 		go func() { _ = s.running.Kill(ctx) }()
