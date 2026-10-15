@@ -45,14 +45,15 @@ func TestExecutionVerificationDoesNotBlockOtherTaskOrCancellation(t *testing.T) 
 	deadline = time.Now().Add(time.Second)
 	for {
 		rows := source.Registered()
-		if len(rows) > 0 && rows[0].SlotsInUse == 0 {
-			if !slices.Contains(rows[0].RunningTaskIDs, "assignment") {
-				t.Fatalf("verification lease disappeared after provider exit: %+v", rows[0].RunningTaskIDs)
-			}
+		// Registration/heartbeat delivery is asynchronous. The initial idle
+		// registration can still be visible after the host check has started.
+		// Wait for the verification lease observation rather than asserting on
+		// that earlier snapshot; a missing lease still fails at the deadline.
+		if len(rows) > 0 && rows[0].SlotsInUse == 0 && slices.Contains(rows[0].RunningTaskIDs, "assignment") {
 			break
 		}
 		if time.Now().After(deadline) {
-			t.Fatal("native session slot not released during verification")
+			t.Fatal("verification lease with a released native slot was not observed")
 		}
 		time.Sleep(5 * time.Millisecond)
 	}
