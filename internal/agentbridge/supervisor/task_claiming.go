@@ -6,7 +6,6 @@ import (
 	"github.com/teamswyg/riido-contracts/assignment"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
@@ -22,11 +21,6 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		return false
 	}
 	report := reportContextFor(req)
-	reportCtx := controlplane.ContextWithTaskReport(ctx, report)
-
-	if err := a.cfg.Reporter.StartTask(reportCtx, req.ID); err != nil {
-		return true
-	}
 	pin := runtimePinForClaim(status, req)
 	taskCtx, cancel := context.WithCancel(ctx)
 	inFlight[req.ID] = &runningTask{
@@ -45,7 +39,7 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		return true
 	}
 	go a.forwardCancellation(taskCtx, req.ID, rt, cancel)
-	go a.prepareAndSubmit(taskCtx, status, rt, req)
+	go a.prepareClaimedTask(taskCtx, status, rt, req, report)
 	return true
 }
 

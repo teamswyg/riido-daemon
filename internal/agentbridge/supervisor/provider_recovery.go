@@ -36,6 +36,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 	}
 	observation := assignment.RecoveryContext{State: "checking", Reason: "none", Provider: string(req.Provider), Circuit: "closed", OutcomeCertainty: "not_started"}
 	var prepared *preparedWorkspace
+	workspacePrepared := false
 	scope := ""
 	finish := func(cause error, blocked bool) {
 		if observation.Circuit == "half_open" {
@@ -52,7 +53,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 			cause = ctx.Err()
 		}
 		copyObservation := observation.Sanitized()
-		a.forwardActivation(taskActivationMsg{taskID: req.ID, prepared: prepared, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope, err: &recoveryFailure{cause: cause, blocked: blocked}})
+		a.forwardActivation(taskActivationMsg{claimContext: ctx, taskID: req.ID, prepared: prepared, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope, err: &recoveryFailure{cause: cause, blocked: blocked}})
 	}
 	if err != nil {
 		observation.State = "user_action_required"
@@ -127,13 +128,29 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 				return
 			}
 		} else {
-			if prepared == nil {
+			if !workspacePrepared {
 				req.ExpectedCapabilityFingerprint = capability.CapabilityFingerprint
-				prepared, err = a.prepareWorkspace(budgetCtx, status, req)
+				// Repository materialization is ordinary task preparation, not a
+				// provider recovery attempt. Pause only elapsed recovery accounting:
+				// keep cancellation and resume with exactly the remaining budget.
+				deadline, _ := budgetCtx.Deadline()
+				remaining := time.Until(deadline)
+				if remaining <= 0 {
+					observation.State = "unavailable"
+					observation.Reason = "deadline_exceeded"
+					finish(context.DeadlineExceeded, false)
+					return
+				}
+				cancel()
+				prepared, err = a.prepareWorkspace(ctx, status, req)
+				nextBudgetCtx, releaseBudget := context.WithTimeout(ctx, remaining)
+				defer releaseBudget()
+				budgetCtx = nextBudgetCtx
 				if err != nil {
 					finish(fmt.Errorf("%w: %w", errWorkspacePreparation, err), false)
 					return
 				}
+				workspacePrepared = true
 			}
 			if prepared != nil {
 				snapshot := *req
@@ -146,7 +163,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 				observation.Reason = "none"
 				observation.OutcomeCertainty = "started"
 				copyObservation := observation.Sanitized()
-				a.forwardActivation(taskActivationMsg{taskID: req.ID, prepared: prepared, handle: handle, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope})
+				a.forwardActivation(taskActivationMsg{claimContext: ctx, taskID: req.ID, prepared: prepared, handle: handle, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope})
 				return
 			}
 		}
