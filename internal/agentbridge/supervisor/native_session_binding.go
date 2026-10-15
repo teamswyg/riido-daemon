@@ -11,6 +11,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
@@ -41,7 +42,7 @@ func (a *Actor) nativeSessionRecord(req *bridge.TaskRequest, capView runtimeacto
 	return workdir.NativeSession{
 		Schema: 1, Provider: string(req.Provider), SessionID: sessionID,
 		WorkspaceID: ids.workspaceID, TaskID: ids.logicalTaskID,
-		AgentID: req.Metadata["agent_id"], Fingerprint: capView.CapabilityFingerprint,
+		AgentID: req.Metadata[controlplane.MetadataAgentID], Fingerprint: capView.CapabilityFingerprint,
 		GrantHash: hex.EncodeToString(hash[:]), OriginRunID: origin,
 	}, nil
 }

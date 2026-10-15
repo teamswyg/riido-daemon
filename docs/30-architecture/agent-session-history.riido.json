@@ -10,7 +10,9 @@
     "internal/agentbridge/session/session_identity.go",
     "internal/execution/binding.go",
     "internal/provider/claude/translate_result.go",
-    "internal/provider/cursor/translate_result.go"
+    "internal/provider/cursor/translate_result.go",
+    "internal/agentbridge/controlplane/metadata.go",
+    "internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go"
   ],
   "policy": {
     "authority": "server-selected resume ID only; no guessing or automatic replacement",
@@ -26,7 +28,8 @@
       "TestNativeSessionFollowupsRetainWorkspaceAcrossRestart",
       "TestNativeSessionFollowupReopensCloneWithFreshVerification",
       "TestNativeSessionIdentityGuardBeforePublication",
-      "TestNativeSessionBindingCannotBeReassigned"
+      "TestNativeSessionBindingCannotBeReassigned",
+      "TestAssignmentCarriesNativeSessionOwnership"
     ],
     "real_provider_calls": false
   },

@@ -9,7 +9,9 @@ session or starts another session as an automatic recovery policy.
 For providers with native resume capability, the filesystem workdir adapter stores a metadata-only native session binding
 before publishing the provider pin. It binds provider/session ID to the exact
 workspace, logical task, agent, runtime capability fingerprint, repository grant
-and host execution binding. Prompts, replies, credentials and environment values
+and host execution binding. The SaaS source copies its stable Agent ID into
+the provider-neutral `controlplane.MetadataAgentID`; SaaS report-routing keys
+remain separate. Prompts, replies, credentials and environment values
 are not stored in this index. Existing run IR remains the execution history.
 
 A known resumed session reuses its original working directory (and therefore its

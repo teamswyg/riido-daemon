@@ -1292,6 +1292,8 @@
       "files": [
         "internal/workdir/fs_native_session.go",
         "internal/workdir/native_session.go",
+        "internal/agentbridge/controlplane/metadata.go",
+        "internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go",
         "internal/agentbridge/supervisor/native_session_binding.go",
         "internal/agentbridge/session/session_identity.go",
         "internal/execution/binding.go",
@@ -1314,6 +1316,15 @@
         "TestNativeSessionBindingCannotBeReassigned"
       ],
       "verifiers": [
+        {
+          "name": "saas-native-session-owner-mapping-test",
+          "file": "internal/agentbridge/controlplane/saasplane/native_session_owner_test.go",
+          "contains": [
+            "TestAssignmentCarriesNativeSessionOwnership",
+            "controlplane.MetadataAgentID",
+            "MetadataAgentID"
+          ]
+        },
         {
           "name": "session-history-restart-and-isolation-tests",
           "file": "internal/agentbridge/supervisor/native_session_binding_test.go",
