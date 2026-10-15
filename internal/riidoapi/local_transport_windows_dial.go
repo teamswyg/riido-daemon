@@ -4,6 +4,7 @@ package riidoapi
 
 import (
 	"context"
+	"errors"
 	"net"
 	"syscall"
 	"time"
@@ -22,7 +23,8 @@ func dialNamedPipe(ctx context.Context, path string) (net.Conn, error) {
 		if err == nil {
 			return conn, nil
 		}
-		errno, ok := err.(syscall.Errno)
+		var errno syscall.Errno
+		ok := errors.As(err, &errno)
 		if !ok || (errno != errorPipeBusy && errno != errorFileNotFound) {
 			return nil, err
 		}
@@ -47,5 +49,5 @@ func tryDialNamedPipe(name *uint16, path string) (net.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-	return newNamedPipeConn(handle, path, false), nil
+	return newNamedPipeConn(handle, path), nil
 }

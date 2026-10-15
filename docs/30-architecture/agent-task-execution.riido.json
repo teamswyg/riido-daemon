@@ -62,7 +62,8 @@
       "run_binding": "capture the host binding before workspace preparation; native session scope pins that immutable selection",
       "diagnostics": "bounded workspace kind, verification status, failure code, and next action; legacy absence is unknown rather than verified",
       "automatic_reexecution": "not introduced; provider verification and failover remain RIID-5822/5823",
-      "repository_only": "A repository-only binding runs without host verification; changed_files and checks must both be empty or both configured."
+      "repository_only": "A repository-only binding runs without host verification; changed_files and checks must both be empty or both configured.",
+      "windows_ipc": "Each accepted connection owns a fresh pipe handle. Closing preserves buffered response for a delayed client read; do not force-disconnect or block on flushing an unread response."
     }
   },
   "verification": {

@@ -1216,7 +1216,8 @@
         "internal/riidoapi/local_transport_windows_conn.go",
         "internal/riidoapi/local_transport_windows_dial.go",
         "internal/riidoapi/local_transport_windows_native.go",
-        ".github/workflows/riidoapi.yml"
+        ".github/workflows/riidoapi.yml",
+        "internal/riidoapi/local_transport_windows_conn.go"
       ],
       "docs": [
         "docs/30-architecture/loop-registry.riido.json",
@@ -1227,7 +1228,8 @@
         "windows_amd64.daemon_cross_compile",
         "windows_native.named_pipe.daemon_status_round_trip",
         "daemon_local_ipc_transport_regression",
-        "local_api_host_defaults_regression"
+        "local_api_host_defaults_regression",
+        "TestWindowsNamedPipeClosePreservesBufferedResponse"
       ],
       "verifiers": [
         {
@@ -1281,6 +1283,14 @@
             "windows-native-ipc",
             "windows-latest",
             "TestWindowsNamedPipeDaemonStatusRoundTrip"
+          ]
+        },
+        {
+          "name": "windows-delayed-read-close-regression",
+          "file": "internal/riidoapi/local_transport_windows_close_test.go",
+          "contains": [
+            "TestWindowsNamedPipeClosePreservesBufferedResponse",
+            "io.ReadAll"
           ]
         }
       ]
