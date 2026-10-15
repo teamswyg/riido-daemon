@@ -1,0 +1,25 @@
+{
+  "schema_version": "riido-daemon-task-agent-requests.v1",
+  "id": "task-agent-requests",
+  "reader_doc": "docs/30-architecture/task-agent-requests.md",
+  "owning_code": [
+    "internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go"
+  ],
+  "policy": {
+    "identity": "Server assignment execution ID remains authoritative; request_id and workspace_id are metadata, and task_title/native session ownership metadata remain intact.",
+    "instruction": "Supplemental user requests remain in the task prompt, not the Agent system instruction."
+  },
+  "verification": {
+    "tests": [
+      "TestTaskRequestPreservesIdentifiedRequestMetadata"
+    ],
+    "real_provider_calls": false
+  },
+  "loop": {
+    "observation": "Distinct requests and retries need stable metadata across daemon transport.",
+    "hypothesis": "Preserving server identities alongside current session owner metadata avoids accidental request/session replacement.",
+    "execute": "Verify request metadata transformation and legacy fallback.",
+    "evaluate": "Hermetic SaaS transport and session-owner regressions.",
+    "retrospective": "No new model execution or frontend rollout is implied."
+  }
+}
