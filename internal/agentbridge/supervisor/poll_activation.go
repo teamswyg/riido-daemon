@@ -12,7 +12,16 @@ func (a *Actor) handleTaskActivation(
 	inFlight map[string]*runningTask,
 ) bool {
 	task := inFlight[msg.taskID]
-	if task == nil {
+	if task == nil || task.terminalResult != nil || (msg.claimContext != nil && task.ctx != msg.claimContext) {
+		if msg.handle != nil {
+			// A cancelled old run already owns its own execution context. Drain
+			// only that handle; cancelling by task ID could touch a newer claim.
+			go func() {
+				for range msg.handle.Events() {
+				}
+				<-msg.handle.Result()
+			}()
+		}
 		return false
 	}
 	applyActivationRecovery(task, msg)

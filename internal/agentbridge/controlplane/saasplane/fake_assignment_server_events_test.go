@@ -2,6 +2,7 @@ package saasplane
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -22,7 +23,12 @@ func (f *fakeAssignmentServer) handleEvents(w http.ResponseWriter, r *http.Reque
 	f.applyEventState(req)
 	writeJSON(w, assignmentcontract.AgentEventResponse{
 		SchemaVersion: assignmentcontract.SchemaVersion,
+		Assignment:    func() *assignmentcontract.Assignment { value := f.assignmentsByID[req.AssignmentID]; return &value }(),
 		Event: assignmentcontract.TaskEvent{
+			WorkspaceID:  f.assignmentsByID[req.AssignmentID].WorkspaceID,
+			TeamID:       f.assignmentsByID[req.AssignmentID].TeamID,
+			CreatedBy:    f.assignmentsByID[req.AssignmentID].CreatedBy,
+			EventID:      fmt.Sprintf("%s:%d", req.AssignmentID, len(f.events)),
 			Seq:          int64(len(f.events)),
 			TaskID:       req.TaskID,
 			AssignmentID: req.AssignmentID,
@@ -30,8 +36,12 @@ func (f *fakeAssignmentServer) handleEvents(w http.ResponseWriter, r *http.Reque
 			Type:         req.EventType,
 			State:        req.State,
 			Message:      req.Message,
-			Metadata:     cloneEventMetadata(req.Metadata),
-			At:           time.Now().UTC(),
+			Metadata: func() map[string]string {
+				metadata := cloneEventMetadata(req.Metadata)
+				delete(metadata, "lease_token")
+				return metadata
+			}(),
+			At: time.Now().UTC(),
 		},
 	})
 }

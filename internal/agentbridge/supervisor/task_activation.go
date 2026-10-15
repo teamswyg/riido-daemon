@@ -24,6 +24,10 @@ func (a *Actor) forwardActivation(msg taskActivationMsg) {
 
 func resultForActivationError(err error) agentbridge.Result {
 	status := agentbridge.ResultFailed
+	var readyErr *readyAcknowledgementFailure
+	if errors.As(err, &readyErr) && readyErr.blocked {
+		status = agentbridge.ResultBlocked
+	}
 	var recoveryErr *recoveryFailure
 	if errors.As(err, &recoveryErr) && recoveryErr.blocked {
 		status = agentbridge.ResultBlocked
@@ -35,6 +39,9 @@ func resultForActivationError(err error) agentbridge.Result {
 		status = agentbridge.ResultBlocked
 	}
 	code, action := "provider_failed", "check_provider"
+	if readyErr != nil {
+		code, action = "unknown", "review_result"
+	}
 	if errors.Is(err, errWorkspacePreparation) {
 		code, action = "workspace_preparation_failed", "check_workspace"
 	}

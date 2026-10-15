@@ -271,10 +271,10 @@
         "fresh session replay or unbounded correction is promoted without proof"
       ],
       "evidence_graph": {
-        "observation": "Provider upgrades and planning-only responses can leave assigned work undone.",
+        "observation": "Provider upgrades and planning-only responses can leave assigned work undone. Normal first repository preparation must not inherit recovery timing; a lost Ready acknowledgement must not discard a locally proven unstarted claim.",
         "hypothesis": "Bounded host-evidence feedback repairs safe execution gaps; provider outage recovery needs additional failure-injection proof.",
-        "change": "RIID-5822/5823 adds asynchronous single-flight verification and finite typed pre-dispatch retry/approved handoff; RIID-5817 host correction remains separate.",
-        "verifier": "Runtimeactor responsiveness/generation tests, supervisor retry/unknown/fallback tests, saasplane lease/idempotency tests and atomic circuit contention fixtures.",
+        "change": "RIID-5822/5823 adds asynchronous single-flight verification and finite typed pre-dispatch retry/approved handoff; RIID-5817 host correction remains separate. Preserve remaining recovery time across ordinary preparation, and retain local pending Ready ownership with bounded same-key retries and cancellation/generation fences.",
+        "verifier": "Runtimeactor responsiveness/generation tests, supervisor retry/unknown/fallback tests, saasplane lease/idempotency tests and atomic circuit contention fixtures. Default30/31-second clone boundary, consumed-budget preservation, Ready HTTP exhaustion/lost-ACK, pending heartbeat, cancellation/stop/drift and obsolete-activation fixtures.",
         "evidence": "docs/30-architecture/agent-task-execution.md; private native-run artifacts stay outside public source.",
         "decision": "The tested pre-dispatch subset is implemented. Keep full post-dispatch repair, real-account fault tests and restart external-effect guarantees as separate evidence requirements.",
         "next_loop": "Observe deployed bounded recovery telemetry; add adapter-specific repair only after side-effect and authorization proof."
@@ -1338,7 +1338,7 @@
     },
     {
       "id": "native_session_history_must_preserve_owner_and_workspace",
-      "text": "Native session resume preserves the original task-owned cwd and rejects foreign identity before publication; each turn requires fresh host evidence.",
+      "text": "Native session resume preserves the original task-owned cwd and rejects foreign identity before publication; each turn requires fresh host evidence. A locally retained pending Ready claim remains unstarted, cannot authorize stateless replay, and obsolete claim contexts cannot activate a replacement.",
       "files": [
         "internal/workdir/fs_native_session.go",
         "internal/workdir/native_session.go",

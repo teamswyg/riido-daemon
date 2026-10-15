@@ -8,7 +8,8 @@
   "contract": "github.com/teamswyg/riido-contracts/docs/20-domain/provider-recovery.riido.json",
   "implemented": {
     "verification": "single asynchronous Detect per provider, 30 second deadline, bounded submit wait queue, generation and captured environment fingerprint fence",
-    "pre_dispatch": "default three attempts in 30 seconds, maximum three in 60 seconds; only typed not-started transient spawn/probe/slot failures",
+    "pre_dispatch": "default three attempts in 30 seconds, maximum three in 60 seconds; only typed not-started transient spawn/probe/slot failures; first normal workspace preparation pauses elapsed accounting without resetting remaining budget and uses cancellable assignment lifetime",
+    "ready_acknowledgement": "locally proven unstarted claim retained before asynchronous Ready; original lease heartbeat and cancellation stay active; same lease-scoped deterministic Ready payload/key at most three supervisor attempts within 30 seconds, transient errors only; validate durable identity ACK before dispatch; exhaustion/permanent failure produces terminal report; late obsolete claim completion cannot revive work",
     "circuit": "provider plus capability fingerprint scope, two failures opens for one second, atomically one half-open owner, provider completion closes; at most 64 tracked scopes",
     "failover": "at most one explicitly server-approved provider/model handoff before dispatch; no native resume/session crossing, provider-specific environment/args/MCP rejected; neutral source instructions regenerated and same prepared directory retained",
     "authorization": "synchronous bounded Riido log acknowledgement before attempts and switches; current assignment lease/device/runtime checked by backend, temporary lease token never persisted",
@@ -37,7 +38,10 @@
     "explicit fallback model and neutral instruction isolation",
     "auth failure never switches",
     "atomic half-open contention",
-    "origin runtime heartbeat lease"
+    "origin runtime heartbeat lease",
+    "normal default-policy 31-second workspace clone completes without consuming provider budget",
+    "Ready HTTP retry exhaustion then restored connectivity dispatches once",
+    "Ready acknowledgement loss, cancellation, stop, drift, finite retry and obsolete completion fences"
   ],
   "limits": [
     "deterministic fixture validation does not prove current real provider accounts or model quality",

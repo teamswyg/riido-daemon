@@ -39,10 +39,11 @@ func (a *Actor) continueExecution(ctx context.Context, task *runningTask, res ag
 	req.Prompt = correctionPrompt(req.Prompt, evidence)
 	prepared := &preparedWorkspace{workspace: task.workspace, execution: task.execution, events: task.events, request: task.request, canResume: task.canResume}
 	previous := task.handle
+	claimCtx, runtime, taskID := task.ctx, task.runtime, task.taskID
 	// Submission and session cleanup waits never hold the supervisor mailbox.
 	go func() {
-		handle, err := submitExecutionCorrection(task.ctx, task.runtime, previous, req)
-		a.forwardActivation(taskActivationMsg{taskID: task.taskID, prepared: prepared, handle: handle, err: err})
+		handle, err := submitExecutionCorrection(claimCtx, runtime, previous, req)
+		a.forwardActivation(taskActivationMsg{claimContext: claimCtx, taskID: taskID, prepared: prepared, handle: handle, err: err})
 	}()
 }
 
