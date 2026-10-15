@@ -44,14 +44,6 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		a.finishTaskWithResult(ctx, inFlight, inFlight[req.ID], agentbridge.Result{Status: agentbridge.ResultBlocked, Error: "native session is already executing another turn", ExecutionContext: &assignment.ExecutionContext{DiagnosticCode: "session_scope_conflict", NextAction: "review_session", VerificationStatus: "not_configured"}})
 		return true
 	}
-	eligibility := taskEligibility(status, req)
-	if !eligibility.Eligible {
-		a.finishTaskWithResult(ctx, inFlight, inFlight[req.ID], agentbridge.Result{
-			Status: agentbridge.ResultBlocked,
-			Error:  "supervisor: runtime ineligible: " + eligibility.Summary(),
-		})
-		return true
-	}
 	go a.forwardCancellation(taskCtx, req.ID, rt, cancel)
 	go a.prepareAndSubmit(taskCtx, status, rt, req)
 	return true

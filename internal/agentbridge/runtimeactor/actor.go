@@ -1,6 +1,7 @@
 package runtimeactor
 
 import (
+	"sync/atomic"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
@@ -8,6 +9,8 @@ import (
 
 // Actor is the runtime tier actor.
 type Actor struct {
+	stopping atomic.Bool
+
 	cfg Config
 
 	// Single owning goroutine writes to capabilities/inFlight/...; all

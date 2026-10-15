@@ -17,6 +17,7 @@ func (a *Actor) Stop(ctx context.Context) error {
 // level. Forced shutdown skips the graceful drain wait; a forced request can
 // also escalate an already-draining graceful stop.
 func (a *Actor) StopLifecycle(ctx lifecycle.Context) error {
+	a.stopping.Store(true)
 	select {
 	case <-a.stoppedCh:
 		return nil

@@ -24,7 +24,7 @@ func TestUnknownAuthProbePreservesRunningSessionAndRecovers(t *testing.T) {
 	original := actorStatusCapabilities(t, actor)[0]
 	adapter.setDetected(agentbridge.DetectResult{Executable: verified.Executable, HealthStatus: hostintegration.ProviderHealthUnknown, DiagnosticCode: hostintegration.ProviderDiagnosticAuthProbeFailed, Reason: "provider authentication probe did not complete"})
 	now = now.Add(2 * time.Second)
-	unknown := actorStatusCapabilities(t, actor)[0]
+	unknown := awaitCapability(t, actor, func(c Capability) bool { return c.HealthStatus == hostintegration.ProviderHealthUnknown })
 	if unknown.CapabilityFingerprint != original.CapabilityFingerprint || unknown.HealthStatus != hostintegration.ProviderHealthUnknown {
 		t.Fatalf("unknown probe changed identity: %+v", unknown)
 	}
@@ -41,7 +41,7 @@ func TestUnknownAuthProbePreservesRunningSessionAndRecovers(t *testing.T) {
 	}
 	adapter.setDetected(verified)
 	now = now.Add(2 * time.Second)
-	recovered := actorStatusCapabilities(t, actor)[0]
+	recovered := awaitCapability(t, actor, func(c Capability) bool { return c.Available })
 	if !recovered.Available || recovered.CapabilityFingerprint != original.CapabilityFingerprint {
 		t.Fatalf("recovered capability=%+v", recovered)
 	}

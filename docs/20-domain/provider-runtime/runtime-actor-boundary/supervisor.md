@@ -11,6 +11,7 @@
 - Register the RuntimeActor pool with the control-plane source and send heartbeat.
 - Claim tasks by runtime id and prevent duplicate in-flight task execution.
 - Use `internal/scheduling` eligibility before provider process spawn.
+- Compose provider-neutral budgets/circuits from `internal/providerrecovery`; concrete provider parsers/commands remain behind the runtime adapter boundary. CI matches forbidden package directories exactly, so `internal/provider` and its children are rejected without rejecting the sibling `internal/providerrecovery` namespace.
 - Prepare task/run workdir and inject native config when a workdir adapter is configured.
 - Delegate provider events and terminal result drafts to daemon-side `internal/ir/ingest` for canonical append.
 - Report terminal results through `TaskReporterPort` and clean in-flight runs on stop/cancel.

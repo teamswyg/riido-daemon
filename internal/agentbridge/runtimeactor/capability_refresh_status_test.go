@@ -23,7 +23,8 @@ func TestRuntimeActorStatusRefreshesUnavailableCapabilityAfterTTL(t *testing.T) 
 	}
 
 	now = now.Add(2 * time.Second)
-	assertSingleAvailableCapability(t, actorStatusCapabilities(t, actor), "2.0.0")
+	capability := awaitCapability(t, actor, func(c Capability) bool { return c.Available && c.Version == "2.0.0" })
+	assertSingleAvailableCapability(t, []Capability{capability}, "2.0.0")
 }
 
 func TestRuntimeActorStatusMarksRefreshFailureUnknown(t *testing.T) {
@@ -39,7 +40,7 @@ func TestRuntimeActorStatusMarksRefreshFailureUnknown(t *testing.T) {
 
 	provider.failDetection()
 	now = now.Add(2 * time.Second)
-	capability := actorStatusCapabilities(t, actor)[0]
+	capability := awaitCapability(t, actor, func(c Capability) bool { return c.Reason == capabilityProbeFailedReason })
 	if !capability.Available || capability.Reason != capabilityProbeFailedReason {
 		t.Fatalf("capability after failed refresh = %+v", capability)
 	}

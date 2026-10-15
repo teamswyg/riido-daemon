@@ -15,6 +15,7 @@ on:
       - "internal/policy/**"
       - "internal/process/**"
       - "internal/scheduling/**"
+      - "internal/providerrecovery/**"
       - "internal/workdir/**"
       - "docs/20-domain/provider-runtime.md"
       - "docs/20-domain/runtime-scheduling.md"
@@ -34,6 +35,7 @@ on:
       - "internal/policy/**"
       - "internal/process/**"
       - "internal/scheduling/**"
+      - "internal/providerrecovery/**"
       - "internal/workdir/**"
       - "docs/20-domain/provider-runtime.md"
       - "docs/20-domain/runtime-scheduling.md"
@@ -61,7 +63,32 @@ jobs:
       - name: Verify supervisor dependency boundary
         run: |
           imports="$(go list -deps -f '{{if not .Standard}}{{.ImportPath}}{{end}}' ./internal/agentbridge/supervisor)"
-          forbidden="$(printf '%s\n' "$imports" | grep -E 'github.com/teamswyg/riido_daemon|github.com/teamswyg/riido-daemon/internal/(provider|task|project|riidoapi|riidoaiserver|mwsdbridge|agentbridge/controlplane/(saasplane|taskdbplane))' || true)"
+          forbidden_pattern='github.com/teamswyg/riido_daemon(/|$)|github.com/teamswyg/riido-daemon/internal/(provider|task|project|riidoapi|riidoaiserver|mwsdbridge|agentbridge/controlplane/(saasplane|taskdbplane))(/|$)'
+          for denied in \
+            github.com/teamswyg/riido_daemon/internal/legacy \
+            github.com/teamswyg/riido-daemon/internal/provider \
+            github.com/teamswyg/riido-daemon/internal/provider/claude \
+            github.com/teamswyg/riido-daemon/internal/task \
+            github.com/teamswyg/riido-daemon/internal/project \
+            github.com/teamswyg/riido-daemon/internal/riidoapi \
+            github.com/teamswyg/riido-daemon/internal/riidoaiserver \
+            github.com/teamswyg/riido-daemon/internal/mwsdbridge \
+            github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/saasplane \
+            github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/taskdbplane; do
+            if ! printf '%s\n' "$denied" | grep -Eq "$forbidden_pattern"; then
+              printf 'Dependency boundary failed to reject %s\n' "$denied"
+              exit 1
+            fi
+          done
+          for allowed in \
+            github.com/teamswyg/riido-daemon/internal/providerrecovery \
+            github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor; do
+            if printf '%s\n' "$allowed" | grep -Eq "$forbidden_pattern"; then
+              printf 'Dependency boundary rejected allowed package %s\n' "$allowed"
+              exit 1
+            fi
+          done
+          forbidden="$(printf '%s\n' "$imports" | grep -E "$forbidden_pattern" || true)"
           if [ -n "$forbidden" ]; then
             printf 'Forbidden supervisor imports:\n%s\n' "$forbidden"
             exit 1

@@ -23,6 +23,9 @@ func (a *Actor) handleTaskEvent(
 			return
 		}
 		a.appendTaskProviderEvent(ctx, task, msg.event)
+		if msg.event.Kind == agentbridge.EventSessionIdentified && task.recovery != nil && task.recovery.SwitchCount > 0 {
+			return
+		}
 		a.reportTaskEvent(ctx, task, msg.event)
 		return
 	}

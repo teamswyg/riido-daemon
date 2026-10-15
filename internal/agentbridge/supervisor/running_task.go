@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/teamswyg/riido-contracts/assignment"
+
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
@@ -13,6 +15,9 @@ import (
 )
 
 type runningTask struct {
+	recovery      *assignment.RecoveryContext
+	recoveryScope string
+
 	taskID                string
 	provider              string
 	runtimeID             string

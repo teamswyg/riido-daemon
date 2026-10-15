@@ -10,6 +10,14 @@ import (
 
 // TaskRequest is the provider-neutral input to Run.
 type TaskRequest struct {
+	ExpectedCapabilityFingerprint string `json:"-"`
+	RequireHealthyCapability      bool   `json:"-"`
+
+	RecoveryPolicy *assignmentcontract.ProviderRecoveryPolicy `json:"recovery_policy,omitempty"`
+	// Original neutral input is retained only in memory for an explicitly authorized handoff.
+	ProviderNeutralPrompt string `json:"-"`
+	AgentInstruction      string `json:"-"`
+
 	// Host bindings are captured once during preparation and never decoded from task input.
 	HostExecutionBinding         *execution.Binding `json:"-"`
 	HostExecutionBindingSelected bool               `json:"-"`

@@ -10,6 +10,9 @@ import (
 func taskRequestFromAssignment(assignment assignmentcontract.Assignment) *bridge.TaskRequest {
 	prompt, systemPrompt, telemetryPlacement, instructionPlacement := agentbridge.ApplyRuntimeInstructionContract(assignment.RuntimeProvider, assignment.Prompt, "", assignment.AgentInstruction)
 	return &bridge.TaskRequest{
+		RecoveryPolicy:           assignmentcontract.CloneProviderRecoveryPolicy(assignment.RecoveryPolicy),
+		ProviderNeutralPrompt:    assignment.Prompt,
+		AgentInstruction:         assignment.AgentInstruction,
 		ID:                       assignmentExecutionID(assignment),
 		Provider:                 bridge.Provider(assignment.RuntimeProvider),
 		Model:                    assignmentProviderModelOverride(assignment),

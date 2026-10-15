@@ -13,7 +13,11 @@ func (a *Actor) startSubmitSession(
 	launchEnv map[string]string,
 	driver agentbridge.ProtocolDriver,
 ) (*session.Session, error) {
-	sess, err := session.Start(msg.ctx, session.Config{
+	runCtx := msg.runCtx
+	if runCtx == nil {
+		runCtx = msg.ctx
+	}
+	sess, err := session.Start(runCtx, session.Config{
 		TaskID:               msg.req.ID,
 		RuntimeID:            a.cfg.RuntimeID,
 		Adapter:              adapter,

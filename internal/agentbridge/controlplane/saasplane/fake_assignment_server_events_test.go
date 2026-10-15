@@ -30,6 +30,7 @@ func (f *fakeAssignmentServer) handleEvents(w http.ResponseWriter, r *http.Reque
 			Type:         req.EventType,
 			State:        req.State,
 			Message:      req.Message,
+			Metadata:     cloneEventMetadata(req.Metadata),
 			At:           time.Now().UTC(),
 		},
 	})

@@ -91,7 +91,16 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 			return nil, err
 		}
 		req.Cwd = prepared.execution.Directory
-		req.Prompt += fmt.Sprintf("\n\nThe authorized source repository is at %s. Perform the requested work there and validate the changes. A successful reply alone is not completion; the host will require changed files and passing checks.", req.Cwd)
+		appendRepositoryInstructions(req, binding)
 	}
 	return prepared, nil
+}
+
+func appendRepositoryInstructions(req *bridge.TaskRequest, binding execution.Binding) {
+	req.Prompt += fmt.Sprintf("\n\nThe authorized source repository is at %s. Perform the requested work there and validate the changes.", req.Cwd)
+	if binding.HasChecks() {
+		req.Prompt += " A successful reply alone is not completion; the host will require changed files and passing checks."
+	} else {
+		req.Prompt += " Host verification is not configured. Run appropriate checks and report what was actually verified; do not claim host-verified completion."
+	}
 }

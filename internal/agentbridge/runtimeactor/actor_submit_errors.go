@@ -11,5 +11,5 @@ func submitBuildStartError(adapter agentbridge.Adapter, err error) error {
 }
 
 func submitSessionStartError(err error) error {
-	return fmt.Errorf("runtimeactor: session.Start: %w", err)
+	return preflightError("transient_preflight", transientSpawnError(err), transientSpawnError(err), fmt.Errorf("runtimeactor: session.Start: %w", err))
 }

@@ -261,7 +261,8 @@
       "evidence": [
         "docs/30-architecture/agent-task-execution.md",
         "go test ./internal/agentbridge/supervisor -run TestExecutionCorrection",
-        "opt-in real provider filesystem and instruction observations"
+        "opt-in real provider filesystem and instruction observations",
+        "docs/30-architecture/provider-recovery.md"
       ],
       "expires_after": "24h",
       "fails_when": [
@@ -272,11 +273,11 @@
       "evidence_graph": {
         "observation": "Provider upgrades and planning-only responses can leave assigned work undone.",
         "hypothesis": "Bounded host-evidence feedback repairs safe execution gaps; provider outage recovery needs additional failure-injection proof.",
-        "change": "RIID-5817 adds action-oriented instructions, native Codex instructions and opt-in verified correction.",
-        "verifier": "Provider adapter tests, supervisor cancellation/limit tests and separate real file-write gates.",
+        "change": "RIID-5822/5823 adds asynchronous single-flight verification and finite typed pre-dispatch retry/approved handoff; RIID-5817 host correction remains separate.",
+        "verifier": "Runtimeactor responsiveness/generation tests, supervisor retry/unknown/fallback tests, saasplane lease/idempotency tests and atomic circuit contention fixtures.",
         "evidence": "docs/30-architecture/agent-task-execution.md; private native-run artifacts stay outside public source.",
-        "decision": "Open intake; do not claim provider outage self-repair, CLI auto-update, or worktree support for all adapters.",
-        "next_loop": "RIID-5822 capture recurring version/fault evidence; RIID-5823 classify safe recovery; promote only after restart and duplicate-effect tests."
+        "decision": "The tested pre-dispatch subset is implemented. Keep full post-dispatch repair, real-account fault tests and restart external-effect guarantees as separate evidence requirements.",
+        "next_loop": "Observe deployed bounded recovery telemetry; add adapter-specific repair only after side-effect and authorization proof."
       }
     },
     {

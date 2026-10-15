@@ -11,6 +11,11 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 		AssignmentID: assignment.ID,
 		TaskID:       assignment.TaskID,
 	}
+	if ev.Kind == agentbridge.EventProgress && ev.RecoveryContext != nil {
+		req.EventType = assignmentcontract.EventRiidoLog
+		req.Message = "Provider recovery: " + ev.RecoveryContext.Sanitized().State
+		return req, true
+	}
 	switch ev.Kind {
 	case agentbridge.EventSessionIdentified:
 		if ev.SessionID == "" {

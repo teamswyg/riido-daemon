@@ -8,11 +8,14 @@ import (
 
 // envelope is the actor's mailbox shape: one message kind per call.
 type envelope struct {
-	submit *submitMsg
-	cancel *cancelMsg
+	submit  *submitMsg
+	cancel  *cancelMsg
+	refresh *refreshMsg
 }
 
 type submitMsg struct {
+	runCtx context.Context
+
 	ctx   context.Context
 	req   bridge.TaskRequest
 	reply chan submitReply
@@ -38,4 +41,9 @@ type statusMsg struct {
 type statusReply struct {
 	status Status
 	hb     Heartbeat
+}
+
+type refreshMsg struct {
+	provider string
+	reply    chan error
 }

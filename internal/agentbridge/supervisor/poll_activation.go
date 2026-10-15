@@ -15,6 +15,17 @@ func (a *Actor) handleTaskActivation(
 	if task == nil {
 		return false
 	}
+	applyActivationRecovery(task, msg)
+	if msg.runtime != nil {
+		task.runtime = msg.runtime
+		// Assignment lease ownership stays on the originally claimed runtime.
+		if msg.prepared != nil && msg.prepared.request != nil {
+			task.provider = string(msg.prepared.request.Provider)
+		}
+		if capView, ok := findCapability(msg.status.Capabilities, task.provider); ok {
+			task.capabilityFingerprint = capView.CapabilityFingerprint
+		}
+	}
 	if msg.err != nil {
 		a.finishActivationError(ctx, task, msg, inFlight)
 		return true
@@ -30,11 +41,15 @@ func (a *Actor) handleTaskActivation(
 		forwardActivatedSession(a, task)
 		return false
 	}
+	if task.recovery != nil {
+		a.reportTaskEvent(ctx, task, agentbridge.Event{Kind: agentbridge.EventProgress, Text: "Provider recovery: dispatched", RecoveryContext: task.recovery})
+	}
 	executionContext := executionContextForTask(task)
 	a.reportTaskEvent(ctx, task, agentbridge.Event{
 		ExecutionContext: &executionContext,
-		Kind:             agentbridge.EventLifecycle,
-		Phase:            agentbridge.StateRunning,
+
+		Kind:  agentbridge.EventLifecycle,
+		Phase: agentbridge.StateRunning,
 	})
 	forwardActivatedSession(a, task)
 	return false
@@ -54,4 +69,13 @@ func applyPreparedWorkspace(task *runningTask, prepared *preparedWorkspace) {
 
 func forwardActivatedSession(a *Actor, task *runningTask) {
 	go a.forwardSession(task.taskID, task.handle.Events(), task.handle.Result())
+}
+
+// Correction activation reuses the original recovery ownership and provider
+// boundary unless a new pre-dispatch recovery explicitly replaces them.
+func applyActivationRecovery(task *runningTask, msg *taskActivationMsg) {
+	if msg.recovery != nil {
+		task.recovery = msg.recovery
+		task.recoveryScope = msg.recoveryScope
+	}
 }

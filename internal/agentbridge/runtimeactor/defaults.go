@@ -10,4 +10,6 @@ const (
 	// A provider that was missing at daemon start can become available
 	// without requiring a daemon restart.
 	DefaultCapabilityRefreshEvery = 30 * time.Second
+	// DefaultCapabilityProbeTimeout bounds one background Detect without occupying the actor.
+	DefaultCapabilityProbeTimeout = 30 * time.Second
 )
