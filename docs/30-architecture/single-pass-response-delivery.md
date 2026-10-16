@@ -21,6 +21,15 @@ configured verification continuations and provider recovery are unchanged.
   server clock. Do not subtract clocks across machines or call these UI paint time.
 - Logs contain identifiers, status and timing only, never prompts, tokens or answers.
 
+## Active-run scheduling
+
+Long-poll only while there are no in-flight runs and no queued supervisor
+messages. Preparing, running and pending terminal delivery all count as in-flight.
+A claim earlier in the same runtime wave disables long-poll for later runtimes.
+Otherwise a provider that has already buffered its events can lose the cancellation
+wakeup and each timer tick can delay another event by an entire poll timeout.
+Short polls remain enabled so other providers can accept work during a run.
+
 ## Verification and boundaries
 
 Focused regressions cover normal single-turn answers, text-only completion,
@@ -120,3 +129,23 @@ golangci-lint run ./... --timeout=5m
 Both full Go suites and the listed race checks passed. Lint is recorded in the PR.
 Raw local logs are intentionally excluded; sanitized measurement values are kept
 in the companion executable manifest.
+
+## Loading regression — 2026-10-16
+
+A local staging session showed provider event processing separated by repeated
+25-second pauses while another runtime had no work. Pending events had already
+cancelled an earlier claim, so a subsequent idle long-poll could still block the
+single supervisor mailbox. Restrict long-poll to completely idle claim waves.
+
+The deterministic active-run/queued-message probe exhausted its 200 ms deadline
+before the change; afterwards the two claim waves took 38/17 microseconds in one
+local observation. These values measure scheduling only, not model speed.
+The original task page was verified with a one-line Claude answer after installing
+an explicitly labelled local daemon build. Claim-to-first-text was 14425 ms,
+first delivery acknowledgement 14844 ms, and terminal acknowledgement 18145 ms.
+The answer and stopped loading indicator were verified in the browser. Initial
+idle assignment discovery and provider time remain outside the fixed queue stall.
+
+The client separately bounds an open-but-silent task SSE connection to 30 seconds,
+then re-reads state and reconnects. This recovers missed terminal events; it neither
+retries the task nor calls the model. This daemon change adds no model calls.

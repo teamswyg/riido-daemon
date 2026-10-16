@@ -8,7 +8,8 @@
     "internal/agentbridge/controlplane/saasplane/task_completion.go",
     "internal/agentbridge/controlplane/saasplane/response_timing.go",
     "scripts/measure-single-pass-response.py",
-    "internal/agentbridge/controlplane/saasplane/terminal_event_key.go"
+    "internal/agentbridge/controlplane/saasplane/terminal_event_key.go",
+    "internal/agentbridge/supervisor/poll_claim.go"
   ],
   "invariants": [
     "No additional classifier, reviewer or quality-retry model turn on the default path.",
@@ -23,16 +24,17 @@
       "TestFirstResponseTimingIsStableAcrossSnapshotsAndReclaims",
       "TestIntegrationAnswerOnlyUsesOneProviderTurn",
       "TestTerminalDeliveryKeepsKeyAfterExhaustedHTTPRetries",
-      "TestTerminalDeliveryKeySeparatesLeaseAndOutcome"
+      "TestTerminalDeliveryKeySeparatesLeaseAndOutcome",
+      "TestSupervisorActiveDeliveryDoesNotWaitForIdlePoll"
     ],
     "live_test_opt_in": "AGENTBRIDGE_INTEGRATION=1",
     "measurement_script": "riido-daemon/scripts/measure-single-pass-response.py"
   },
   "loop": {
-    "observation": "Simple requests could stall on intent gates; failed first-event transitions could lose answer text; empty provider success could be presented as completion.",
+    "observation": "Simple requests could stall on intent gates; failed first-event transitions could lose answer text; empty provider success could be presented as completion. A buffered provider event could miss claim cancellation and wait behind repeated idle long polls.",
     "hypothesis": "Single-turn guidance, buffered delivery and deterministic completion checks improve reliability without a new model call.",
     "execute": "Run scoped regressions, full Go tests, race checks, a real one-turn Codex probe and before/after authenticated SSE measurements.",
-    "evaluate": "No extra turn/start on an answer-only task; recover failed delivery text; reject empty unverified results; report timing without a speedup claim from small samples.",
+    "evaluate": "No extra turn/start on an answer-only task; recover failed delivery text; reject empty unverified results; report timing without a speedup claim from small samples. Pending delivery must not spend the idle poll timeout; idle waves still long poll.",
     "retrospective": "Keep semantic quality distinct from deterministic evidence; retain existing opt-in continuations and recovery."
   },
   "evidence_tool": "tools/knowledgecoverage",

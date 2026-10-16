@@ -24,7 +24,10 @@ func (a *Actor) claimAvailable(
 		if err != nil {
 			continue
 		}
-		runtimeClaimCtx := controlplane.ContextWithClaimLongPoll(claimCtx, idx == len(runtimes)-1)
+		// Buffered provider events may have cancelled the previous claim before
+		// this wave began. Do not block their delivery on another idle wait.
+		longPoll := idx == len(runtimes)-1 && len(inFlight) == 0 && len(a.mailbox) == 0
+		runtimeClaimCtx := controlplane.ContextWithClaimLongPoll(claimCtx, longPoll)
 		if a.claimOne(ctx, runtimeClaimCtx, rt, status, inFlight) {
 			claimed = true
 		}
