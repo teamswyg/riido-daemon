@@ -30,7 +30,7 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 	// another model turn just to repair an empty response.
 	if res.Status == agentbridge.ResultCompleted && strings.TrimSpace(message) == "" && !hasVerifiedResult(res) {
 		res.Status = agentbridge.ResultFailed
-		res.Error = "The provider finished without an answer or verified result. Retry the request; no additional model turn was started."
+		res.Error = "The provider finished without an answer or verified result. Retry the request; no automatic retry was started for this empty result."
 		message = res.Error
 		if res.ExecutionContext != nil {
 			execution := *res.ExecutionContext
