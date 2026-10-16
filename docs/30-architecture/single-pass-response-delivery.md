@@ -84,16 +84,14 @@ these are prompt-building costs only, not model or end-to-end latency.
 ## Reproduce locally
 
 Clone both PR branches into sibling `riido-daemon` and `riido-control-plane`
-directories. From each repository respectively:
+directories. From riido-daemon:
 
 ```sh
 # riido-daemon
  go build -o /tmp/riido-response-daemon ./cmd/riido
-# riido-control-plane
- go build -o /tmp/riido-response-server ./cmd/riido_ai_server
 ```
 
-Then, from riido-daemon:
+Build `/tmp/riido-response-server` using the [control-plane build and verification instructions](https://github.com/teamswyg/riido-control-plane/blob/1d8280d816c6b10713d281b3ef2466d0e13a8672/docs/30-architecture/single-pass-response-delivery.md#reproduce-locally). Then, from riido-daemon:
 
 ```sh
 python3 scripts/measure-single-pass-response.py \
@@ -117,9 +115,6 @@ go test ./...
 golangci-lint run ./... --timeout=5m
 # riido-daemon
  go test -race ./internal/agentbridge/controlplane/saasplane ./internal/agentbridge/supervisor
-# riido-control-plane
- go test -race ./internal/riidoaiserver
- go test ./internal/riidoaiserver -run '^$' -bench '^BenchmarkSinglePassAssignmentPrompt$' -benchmem -count=3
 ```
 
 Both full Go suites and the listed race checks passed. Lint is recorded in the PR.

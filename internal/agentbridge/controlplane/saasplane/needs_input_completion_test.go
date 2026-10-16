@@ -51,3 +51,18 @@ func assertNeedsInputEvent(t *testing.T, event assignmentcontract.AgentEventRequ
 		t.Fatalf("needs-input event missing identity/message: %+v", event)
 	}
 }
+
+// A whitespace final must preserve a streamed clarification as needs_input,
+// rather than accepting an empty success or classifying a real question as failure.
+func TestCompleteTaskPreservesStreamedClarification(t *testing.T) {
+	fake, plane, req := newTextDeltaFixture(t)
+	question := "어떤 작업부터 진행할까요?"
+	reportTextDeltas(t, plane, req.ID, question)
+	if err := plane.CompleteTask(context.Background(), req.ID, agentbridge.Result{Status: agentbridge.ResultCompleted, Output: " \n"}); err != nil {
+		t.Fatal(err)
+	}
+	last := fake.events[len(fake.events)-1]
+	if last.State != assignmentcontract.AssignmentRunning || last.Message != question || last.Metadata[metadatakeys.AssignmentResultStatus.String()] != "needs_input" {
+		t.Fatalf("streamed clarification changed semantics: %+v", last)
+	}
+}
