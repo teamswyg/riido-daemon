@@ -3,8 +3,11 @@ package saasplane
 import (
 	"context"
 	"log"
+	"strings"
+	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
+	"github.com/teamswyg/riido-contracts/metadatakeys"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
@@ -23,12 +26,24 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 	if err != nil {
 		return err
 	}
+	// Provider completion is not evidence of a delivered answer. Do not run
+	// another model turn just to repair an empty response.
+	if res.Status == agentbridge.ResultCompleted && strings.TrimSpace(message) == "" && !hasVerifiedResult(res) {
+		res.Status = agentbridge.ResultFailed
+		res.Error = "The provider finished without an answer or verified result. Retry the request; no additional model turn was started."
+		message = res.Error
+		if res.ExecutionContext != nil {
+			execution := *res.ExecutionContext
+			execution.DiagnosticCode, execution.NextAction = "provider_failed", "check_provider"
+			res.ExecutionContext = &execution
+		}
+	}
 	state, eventType := taskCompletionStateAndEvent(res, message)
 	sessionID := res.SessionID
 	if res.RecoveryContext != nil && res.RecoveryContext.SwitchCount > 0 {
 		sessionID = ""
 	}
-	_, err = p.postAgentEvent(ctx, assignment, assignmentcontract.AgentEventRequest{
+	request := assignmentcontract.AgentEventRequest{
 		AssignmentID:      assignment.ID,
 		TaskID:            assignment.TaskID,
 		ProviderSessionID: sessionID,
@@ -36,7 +51,9 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 		EventType:         eventType,
 		Message:           message,
 		Metadata:          terminalResultMetadata(res, message),
-	})
+	}
+	request.Metadata[metadatakeys.AssignmentEventKey.String()] = terminalEventKey(assignment, executionID, request)
+	_, err = p.postAgentEvent(ctx, assignment, request)
 	if err != nil {
 		return err
 	}
@@ -55,7 +72,7 @@ func (p *Plane) terminalMessage(ctx context.Context, executionID string, res age
 	if message != "" || res.Status != agentbridge.ResultCompleted {
 		return firstNonEmpty(message, res.Output), nil
 	}
-	if res.Output != "" {
+	if strings.TrimSpace(res.Output) != "" {
 		return res.Output, nil
 	}
 	err := p.withState(ctx, func(s *planeState) {
@@ -71,6 +88,9 @@ func (p *Plane) clearCompletedAssignment(ctx context.Context, executionID string
 		closeCancelWatcher(s, executionID)
 		delete(s.assignmentsByExecution, executionID)
 		delete(s.runtimeIDsByExecution, executionID)
+		if st := s.partialBodies[executionID]; st != nil {
+			logResponseTiming(executionID, "terminal_ack", st.claimedAt, time.Now())
+		}
 		delete(s.partialBodies, executionID)
 	})
 }

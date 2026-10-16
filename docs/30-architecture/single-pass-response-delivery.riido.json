@@ -1,0 +1,107 @@
+{
+  "schema_version": "riido-single-pass-response-delivery.v1",
+  "id": "single-pass-response-delivery",
+  "riido_task": "RIID-5827",
+  "reader_doc": "docs/30-architecture/single-pass-response-delivery.md",
+  "owning_code": [
+    "internal/agentbridge/controlplane/saasplane/partial_body.go",
+    "internal/agentbridge/controlplane/saasplane/task_completion.go",
+    "internal/agentbridge/controlplane/saasplane/response_timing.go",
+    "scripts/measure-single-pass-response.py",
+    "internal/agentbridge/controlplane/saasplane/terminal_event_key.go"
+  ],
+  "invariants": [
+    "No additional classifier, reviewer or quality-retry model turn on the default path.",
+    "Answer-only requests require neither a repository nor file changes.",
+    "Only observed evidence may substantiate completion.",
+    "Timing logs never contain prompt, answer or credential content."
+  ],
+  "verification": {
+    "tests": [
+      "TestFirstAnswerSurvivesFailedConfirmationTransition",
+      "TestAnswerCompletionRequiresTextOrVerifiedResult",
+      "TestFirstResponseTimingIsStableAcrossSnapshotsAndReclaims",
+      "TestIntegrationAnswerOnlyUsesOneProviderTurn",
+      "TestTerminalDeliveryKeepsKeyAfterExhaustedHTTPRetries",
+      "TestTerminalDeliveryKeySeparatesLeaseAndOutcome"
+    ],
+    "live_test_opt_in": "AGENTBRIDGE_INTEGRATION=1",
+    "measurement_script": "riido-daemon/scripts/measure-single-pass-response.py"
+  },
+  "loop": {
+    "observation": "Simple requests could stall on intent gates; failed first-event transitions could lose answer text; empty provider success could be presented as completion.",
+    "hypothesis": "Single-turn guidance, buffered delivery and deterministic completion checks improve reliability without a new model call.",
+    "execute": "Run scoped regressions, full Go tests, race checks, a real one-turn Codex probe and before/after authenticated SSE measurements.",
+    "evaluate": "No extra turn/start on an answer-only task; recover failed delivery text; reject empty unverified results; report timing without a speedup claim from small samples.",
+    "retrospective": "Keep semantic quality distinct from deterministic evidence; retain existing opt-in continuations and recovery."
+  },
+  "evidence_tool": "tools/knowledgecoverage",
+  "measurement": {
+    "date": "2026-10-16",
+    "scenario": "answer-only two-sentence Korean summary",
+    "provider_version": "codex-cli 0.161.0",
+    "model": "runtime-default (resolved ID not pinned)",
+    "units": "milliseconds",
+    "columns": [
+      "request_to_first_sse",
+      "request_to_terminal_observed"
+    ],
+    "before": [
+      [
+        6324,
+        7051
+      ],
+      [
+        6751,
+        7255
+      ],
+      [
+        6824,
+        7300
+      ],
+      [
+        7494,
+        8138
+      ],
+      [
+        6275,
+        7064
+      ]
+    ],
+    "after": [
+      [
+        7139,
+        8281
+      ],
+      [
+        12265,
+        12767
+      ],
+      [
+        6857,
+        7459
+      ],
+      [
+        7347,
+        8075
+      ],
+      [
+        6253,
+        6923
+      ]
+    ],
+    "after_first_text_to_delivery_ack_ms": [
+      22,
+      9,
+      10,
+      16,
+      11
+    ],
+    "native_probe": {
+      "turn_start_count": 1,
+      "process_start_count": 1,
+      "provider_elapsed_ms": 5272
+    },
+    "interpretation": "Small unrandomized sample; observed medians increased; no speedup/no-regression claim. SSE receipt, not UI paint."
+  }
+}
