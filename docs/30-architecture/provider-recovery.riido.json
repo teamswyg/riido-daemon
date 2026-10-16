@@ -15,7 +15,8 @@
     "authorization": "synchronous bounded Riido log acknowledgement before attempts and switches; current assignment lease/device/runtime checked by backend, temporary lease token never persisted",
     "lease": "original claim runtime retains assignment heartbeat ownership; target native runtime does not renew the same execution under another lease",
     "outcome": "dispatch is started, never recovered; first-attempt protocol completion stays dispatched/confirmed; only successful retry/handoff is recovered, and neither establishes host semantic completion",
-    "cancellation": "task cancellation and deadline win during probe/admission/backoff/switch; admission context is distinct from the admitted execution context"
+    "cancellation": "task cancellation and deadline win during probe/admission/backoff/switch; admission context is distinct from the admitted execution context; cancellation watchers retain the original claim context and only the supervisor can cancel a matching current claim, never a replacement sharing its task ID",
+    "model_rejection": "Codex model_not_found or unsupported_model errors and the exact ChatGPT-account unsupported-model diagnostic terminate as blocked/check-provider; generic 400/auth/transport failures are not inferred to be model rejection; no automatic replay or fallback after process start"
   },
   "never_automatic": [
     "replay of any dispatched failure or unknown outcome",
@@ -41,7 +42,9 @@
     "origin runtime heartbeat lease",
     "normal default-policy 31-second workspace clone completes without consuming provider budget",
     "Ready HTTP retry exhaustion then restored connectivity dispatches once",
-    "Ready acknowledgement loss, cancellation, stop, drift, finite retry and obsolete completion fences"
+    "Ready acknowledgement loss, cancellation, stop, drift, finite retry and obsolete completion fences",
+    "obsolete cancellation watch completion cannot cancel a replacement claim with the same execution ID",
+    "Codex unsupported model errors are blocked, native transient retries stay warnings, and ordinary auth/transport errors are not model rejections"
   ],
   "limits": [
     "deterministic fixture validation does not prove current real provider accounts or model quality",

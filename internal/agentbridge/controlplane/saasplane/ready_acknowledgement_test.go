@@ -201,3 +201,26 @@ func TestReadyCommittedButAllHTTPAcknowledgementsLostRetriesIdenticalEvent(t *te
 		}
 	}
 }
+
+func TestReadyRetryClassificationMatchesDependencyHTTPStatuses(t *testing.T) {
+	for _, row := range []struct {
+		status int
+		retry  bool
+	}{
+		{http.StatusRequestTimeout, true},
+		{http.StatusServiceUnavailable, true},
+		{http.StatusGatewayTimeout, true},
+		{http.StatusBadRequest, false},
+		{http.StatusUnauthorized, false},
+		{http.StatusForbidden, false},
+		{http.StatusConflict, false},
+		{http.StatusUnprocessableEntity, false},
+	} {
+		if got := retryableReadyFailure(httpStatusError{StatusCode: row.status}); got != row.retry {
+			t.Fatalf("HTTP %d retry=%t want=%t", row.status, got, row.retry)
+		}
+	}
+	if retryableReadyFailure(context.Canceled) {
+		t.Fatal("caller cancellation must not authorize another Ready attempt")
+	}
+}

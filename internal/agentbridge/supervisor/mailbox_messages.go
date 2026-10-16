@@ -41,6 +41,7 @@ type taskResultMsg struct {
 }
 
 type cancelMsg struct {
-	taskID string
-	cause  error
+	claimContext context.Context
+	taskID       string
+	cause        error
 }

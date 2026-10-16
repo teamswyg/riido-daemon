@@ -21,7 +21,7 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 			if pr.method == codexMethodThreadNameSet {
 				return []agentbridge.Event{{Kind: agentbridge.EventWarning, Err: "Codex thread name unavailable: " + codexRPCErrorMessage(raw.Payload)}}, nil, nil
 			}
-			return d.failedEvents("codex " + string(pr.method) + " rpc error: " + codexRPCErrorMessage(raw.Payload)), nil, nil
+			return codexFailureEvents(raw.Payload, "codex "+string(pr.method)+" rpc error: "+codexRPCErrorMessage(raw.Payload)), nil, nil
 		}
 		d.recordRuntimeError(codexRPCErrorMessage(raw.Payload))
 		events, cmds, err := Translate(raw)

@@ -7,7 +7,7 @@ func codexTurnCompletedEvent(p map[string]any) []agentbridge.Event {
 	status := agentbridge.ResultCompleted
 	switch stringField(turn, "status") {
 	case "failed":
-		status = agentbridge.ResultFailed
+		status = codexFailureStatus(mapField(turn, "error"), stringField(mapField(turn, "error"), "message"))
 	case "interrupted":
 		status = agentbridge.ResultCancelled
 	case "", "completed":
@@ -25,11 +25,12 @@ func codexTurnCompletedEvent(p map[string]any) []agentbridge.Event {
 }
 
 func codexTurnFailedEvent(p map[string]any) []agentbridge.Event {
+	message := codexNotificationErrorMessage(p)
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventResult,
 		Result: agentbridge.Result{
-			Status: agentbridge.ResultFailed,
-			Error:  stringField(p, "message"),
+			Status: codexFailureStatus(p, message),
+			Error:  message,
 		},
 	}}
 }
