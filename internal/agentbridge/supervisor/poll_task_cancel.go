@@ -8,7 +8,7 @@ func (a *Actor) handleTaskCancel(
 	inFlight map[string]*runningTask,
 ) {
 	task := inFlight[msg.taskID]
-	if task == nil {
+	if task == nil || (msg.claimContext != nil && task.ctx != msg.claimContext) {
 		return
 	}
 	task.cancelCause = cancellationCause(msg.cause)

@@ -2,9 +2,6 @@ package supervisor
 
 import (
 	"context"
-	"time"
-
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -28,27 +25,22 @@ func (a *Actor) forwardSession(taskID string, events <-chan agentbridge.Event, r
 	}
 }
 
-func (a *Actor) forwardCancellation(ctx context.Context, taskID string, rt *runtimeactor.Actor, cancel context.CancelFunc) {
+func (a *Actor) forwardCancellation(ctx context.Context, taskID string, cancel context.CancelFunc) {
 	ch, err := a.cfg.Source.WatchCancellation(ctx, taskID)
 	if err != nil {
 		return
 	}
 	select {
 	case cause, ok := <-ch:
-		if !ok {
+		if !ok || ctx.Err() != nil {
 			return
 		}
+		// Cancel only this captured claim immediately. A runtime cancellation
+		// addressed by task ID belongs in the mailbox after its claim fence.
 		cancel()
 		a.cancelCurrentClaim()
-		requestCtx, release := context.WithTimeout(context.Background(), 5*time.Second)
-		reason := "cancelled"
-		if cause != nil {
-			reason = cause.Error()
-		}
-		_ = rt.Cancel(requestCtx, taskID, reason)
-		release()
 		select {
-		case a.mailbox <- envelope{cancel: &cancelMsg{taskID: taskID, cause: cause}}:
+		case a.mailbox <- envelope{cancel: &cancelMsg{claimContext: ctx, taskID: taskID, cause: cause}}:
 		case <-a.stoppedCh:
 		}
 	case <-a.stoppedCh:

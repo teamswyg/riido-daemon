@@ -22,7 +22,8 @@
     "concurrency": "one supervisor-owned turn per native session",
     "migration": "unindexed legacy selection warned; unindexed repository resume blocked",
     "missing_history": "known missing or invalid history blocked before workspace creation",
-    "approval_order": "validate the native session identity before evaluating auto approval or publishing a human confirmation event; stateful approval policy is evaluated once"
+    "approval_order": "validate the native session identity before evaluating auto approval or publishing a human confirmation event; stateful approval policy is evaluated once",
+    "cancellation": "A cancellation watch retains its original claim context. Direct cancellation touches only that context; provider cancellation by execution ID occurs only after the supervisor verifies current claim ownership. A delayed old cancellation cannot stop or mutate a replacement claim with the same execution ID."
   },
   "verification": {
     "tests": [
@@ -30,7 +31,10 @@
       "TestNativeSessionFollowupReopensCloneWithFreshVerification",
       "TestNativeSessionIdentityGuardBeforePublication",
       "TestNativeSessionBindingCannotBeReassigned",
-      "TestAssignmentCarriesNativeSessionOwnership"
+      "TestAssignmentCarriesNativeSessionOwnership",
+      "TestObsoleteCancellationCannotCancelReplacementClaim",
+      "TestCurrentClaimCancellationStillCancelsPendingPreparation",
+      "TestCancellationWatchCarriesOriginalClaimIntoMailbox"
     ],
     "real_provider_calls": false
   },

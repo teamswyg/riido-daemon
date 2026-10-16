@@ -3,6 +3,10 @@ package codex
 import "github.com/teamswyg/riido-daemon/internal/agentbridge"
 
 func (d *protocolDriver) failedEvents(message string) []agentbridge.Event {
+	return codexFailureEvents(nil, message)
+}
+
+func codexFailureEvents(details map[string]any, message string) []agentbridge.Event {
 	if message == "" {
 		message = "codex runtime error"
 	}
@@ -11,7 +15,7 @@ func (d *protocolDriver) failedEvents(message string) []agentbridge.Event {
 		{
 			Kind: agentbridge.EventResult,
 			Result: agentbridge.Result{
-				Status: agentbridge.ResultFailed,
+				Status: codexFailureStatus(details, message),
 				Error:  message,
 			},
 		},
