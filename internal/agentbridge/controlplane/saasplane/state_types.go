@@ -24,10 +24,13 @@ type planeState struct {
 	partialBodies map[string]*partialBodyState
 }
 
-// partialBodyState holds the running assistant text for one task and the
-// debounce bookkeeping for forwarding it as an evolving progress line.
+// partialBodyState holds the running assistant text and process-local delivery
+// timings for one execution.
 type partialBodyState struct {
-	text string
+	text             string
+	claimedAt        time.Time
+	firstTextAt      time.Time
+	firstDeliveredAt time.Time
 }
 
 type stateOp struct {

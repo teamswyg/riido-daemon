@@ -3,6 +3,7 @@ package saasplane
 import (
 	"context"
 	"strings"
+	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
@@ -11,6 +12,9 @@ func (p *Plane) saveAssignmentRuntime(ctx context.Context, assignment assignment
 	return p.withState(ctx, func(s *planeState) {
 		executionID := assignmentExecutionID(assignment)
 		s.assignmentsByExecution[executionID] = assignment
+		if s.partialBodies[executionID] == nil {
+			s.partialBodies[executionID] = &partialBodyState{claimedAt: time.Now()}
+		}
 		if runtimeID != "" {
 			s.runtimeIDsByExecution[executionID] = runtimeID
 		}
