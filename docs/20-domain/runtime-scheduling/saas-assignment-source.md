@@ -14,6 +14,7 @@ Prove the daemon-side SaaS assignment source/reporter contract without claiming 
 
 | Fact | Status | Summary | Evidence |
 | --- | --- | --- | --- |
+| active delivery fairness | `implemented` | Long-poll is restricted to idle waves with no in-flight runs or queued supervisor messages; active execution and terminal delivery retain short polls. | `active-delivery-poll-test` |
 | shared assignment contract | `implemented` | SaaS adapter consumes assignment DTO/state/event constants from riido-contracts. | `shared-contract-test`, `shared-contract-import` |
 | poll start active cancel mapping | `implemented` | Poll start/active become TaskRequest; poll cancel is delivered to the local cancellation watcher. | `poll-action-switch`, `poll-cancel-branch` |
 | long poll wait contract | `implemented` | PollRequest.wait_ms defaults to 30 seconds and extends the HTTP timeout. | `long-poll-default`, `poll-wait-ms`, `long-poll-wait-test` |

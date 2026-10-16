@@ -9,6 +9,7 @@
   "evidence_artifact": "saas-assignment-source-evidence",
   "purpose": "Prove the daemon-side SaaS assignment source/reporter contract without claiming control-plane or client presentation ownership.",
   "facts": [
+    {"name": "active delivery fairness", "status": "implemented", "summary": "Long-poll is restricted to idle waves with no in-flight runs or queued supervisor messages; active execution and terminal delivery retain short polls.", "source_checks": ["active-delivery-poll-test"]},
     {"name": "shared assignment contract", "status": "implemented", "summary": "SaaS adapter consumes assignment DTO/state/event constants from riido-contracts.", "source_checks": ["shared-contract-test", "shared-contract-import"]},
     {"name": "poll start active cancel mapping", "status": "implemented", "summary": "Poll start/active become TaskRequest; poll cancel is delivered to the local cancellation watcher.", "source_checks": ["poll-action-switch", "poll-cancel-branch"]},
     {"name": "long poll wait contract", "status": "implemented", "summary": "PollRequest.wait_ms defaults to 30 seconds and extends the HTTP timeout.", "source_checks": ["long-poll-default", "poll-wait-ms", "long-poll-wait-test"]},
@@ -33,6 +34,7 @@
     {"name": "private server package import", "scope": ["internal/agentbridge/controlplane/saasplane"], "tokens": ["internal/riidoaiserver", "cmd/riido_ai_server"], "reason": "public daemon must not import private control-plane implementation"}
   ],
   "source_checks": [
+    {"name": "active-delivery-poll-test", "file": "internal/agentbridge/supervisor/claim_active_delivery_test.go", "contains": "TestSupervisorActiveDeliveryDoesNotWaitForIdlePoll"},
     {"name": "shared-contract-test", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_contract_test.go", "contains": "TestPlaneUsesSharedAssignmentContractSurface"},
     {"name": "shared-contract-import", "file": "internal/agentbridge/controlplane/saasplane/doc.go", "contains": "github.com/teamswyg/riido-contracts/assignment"},
     {"name": "poll-action-switch", "file": "internal/agentbridge/controlplane/saasplane/task_claim_poll_action.go", "contains": "case assignmentcontract.PollStart, assignmentcontract.PollActive"},
