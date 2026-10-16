@@ -52,22 +52,30 @@ func TestCancellationDuringRecoveryBackoffNeverSpawnsAgain(t *testing.T) {
 	p := &retryStartProcess{failures: 10, started: make(chan *process.FakeRunning, 2)}
 	rt, _ := newRecoveryRuntime(t, "fake", "", p)
 	req := recoveryRequest()
-	_, reporter, source := startRecoverySupervisor(t, req, rt)
-	deadline := time.NewTimer(time.Second)
-	defer deadline.Stop()
-	for {
-		select {
-		case ev := <-reporter.events:
-			if ev.RecoveryContext != nil && ev.RecoveryContext.State == "backoff" {
-				goto cancel
-			}
-		case <-deadline.C:
-			t.Fatal("backoff event missing")
-		}
+	reporter, source := startBackoffCancellationSupervisor(t, req, rt)
+	// A buffered progress event can be observed after all attempts have ended.
+	// Hold the first backoff journal and arm the actual source watch instead.
+	var backoffCtx context.Context
+	select {
+	case backoffCtx = <-reporter.backoff:
+	case <-time.After(supervisorCancellationTestTimeout):
+		t.Fatal("backoff journal boundary missing")
 	}
-cancel:
+	select {
+	case <-source.watched:
+	case <-time.After(supervisorCancellationTestTimeout):
+		t.Fatal("cancellation watch was not registered")
+	}
+	if p.count() != 1 {
+		t.Fatal("provider retried before the cancellation boundary")
+	}
 	source.Cancel(req.ID, context.Canceled)
-	result := expectTaskResult(t, reporter, "cancel did not finish recovery")
+	select {
+	case <-backoffCtx.Done():
+	case <-time.After(supervisorCancellationTestTimeout):
+		t.Fatal("cancellation did not reach the recovery context")
+	}
+	result := expectTaskResult(t, reporter.reporterProbe, "cancel did not finish recovery")
 	if result.Status != agentbridge.ResultCancelled || p.count() != 1 {
 		t.Fatalf("cancelled result=%+v attempts=%d", result, p.count())
 	}
