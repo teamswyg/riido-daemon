@@ -22,7 +22,13 @@ func (a *Actor) handleTaskEvent(
 			a.reportTaskEvent(ctx, task, agentbridge.Event{Kind: agentbridge.EventError, Err: err.Error()})
 			return
 		}
-		a.appendTaskProviderEvent(ctx, task, msg.event)
+		if len(msg.originalEvents) == 0 {
+			a.appendTaskProviderEvent(ctx, task, msg.event)
+		} else {
+			for _, ev := range msg.originalEvents {
+				a.appendTaskProviderEvent(ctx, task, ev)
+			}
+		}
 		if msg.event.Kind == agentbridge.EventSessionIdentified && task.recovery != nil && task.recovery.SwitchCount > 0 {
 			return
 		}

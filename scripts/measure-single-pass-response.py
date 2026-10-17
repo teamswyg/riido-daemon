@@ -16,12 +16,17 @@ import time
 import urllib.error
 import urllib.request
 
+from response_delay_proxy import ResponseDelayProxy
+
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--daemon', required=True, type=pathlib.Path)
 parser.add_argument('--server', required=True, type=pathlib.Path)
 parser.add_argument('--port', type=int, default=0)
 parser.add_argument('--model', default='')
+parser.add_argument('--event-delay-ms', type=int, default=0, help='Test-only added delay per daemon event HTTP acknowledgement')
 args = parser.parse_args()
+if args.event_delay_ms < 0:
+    parser.error("--event-delay-ms must be nonnegative")
 for binary in [args.daemon, args.server]:
     if not binary.is_absolute() or not os.access(binary, os.X_OK):
         parser.error('Binary paths must be absolute executables')
@@ -43,6 +48,7 @@ auth = json.dumps([{'principal_id': 'local-validation', 'token_sha256': hashlib.
 base = f'http://127.0.0.1:{args.port}'
 client = f'/v2/client/workspaces/{workspace}/ai-agent'
 processes, logs, streams = [], [], []
+delay_proxy = None
 finished = threading.Event()
 stream_ready = threading.Event()
 events = []
@@ -100,8 +106,10 @@ def read_stream():
 try:
     launch(args.server, {'RIIDO_AI_SERVER_ADDR': f'127.0.0.1:{args.port}', 'RIIDO_AI_SERVER_LOCAL_STATE_DIR': str(server_dir), 'RIIDO_AI_SERVER_AUTHZ_TOKENS_JSON': auth}, [], 'server')
     wait_for(ready, 20)
+    if args.event_delay_ms:
+        delay_proxy = ResponseDelayProxy(base, args.event_delay_ms)
     device = api(f'/v2/desktop/workspaces/{workspace}/devices/enroll', {'machine_id': root.name, 'display_name': 'Disposable validation', 'platform': 'darwin'})
-    launch(args.daemon, {'RIIDO_DAEMON_ID': device['device_id'], 'RIIDO_DEVICE_ID': device['device_id'], 'RIIDO_DEVICE_SECRET': device['device_secret'], 'RIIDO_SAAS_URL': base, 'RIIDO_DAEMON_PROFILE': 'local', 'RIIDO_WORKDIR_ROOT': str(root / 'workspaces'), 'RIIDO_EXECUTION_BINDINGS_FILE': str(root / 'bindings.json'), 'RIIDO_POLICY_BUNDLE_PATH': str(root / 'policy.json'), 'RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS': '150'}, ['daemon', 'start', '--foreground', '--socket', str(root / 'daemon.sock'), '--pid-file', str(root / 'daemon.pid'), '--lock-file', str(root / 'daemon.lock')], 'daemon')
+    launch(args.daemon, {'RIIDO_DAEMON_ID': device['device_id'], 'RIIDO_DEVICE_ID': device['device_id'], 'RIIDO_DEVICE_SECRET': device['device_secret'], 'RIIDO_SAAS_URL': delay_proxy.url if delay_proxy else base, 'RIIDO_DAEMON_PROFILE': 'local', 'RIIDO_WORKDIR_ROOT': str(root / 'workspaces'), 'RIIDO_EXECUTION_BINDINGS_FILE': str(root / 'bindings.json'), 'RIIDO_POLICY_BUNDLE_PATH': str(root / 'policy.json'), 'RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS': '150'}, ['daemon', 'start', '--foreground', '--socket', str(root / 'daemon.sock'), '--pid-file', str(root / 'daemon.pid'), '--lock-file', str(root / 'daemon.lock')], 'daemon')
     def runtime_ready():
         devices = api(client + '/devices')['devices']
         for item in devices:
@@ -127,6 +135,9 @@ try:
     assert partials, 'No partial response observed before completion'
     measurement = {'request_to_first_sse_ms': round((partials[0]['seconds'] - request_at)*1000), 'request_to_terminal_observed_ms': round((completed_at-request_at)*1000), 'partial_snapshots': len(partials), 'model': args.model or 'runtime-default', 'scenario': 'answer-only', 'poll_interval_ms': 100}
     run_events = [json.loads(line) for path in (root / 'workspaces').rglob('events.jsonl') for line in path.read_text().splitlines()]
+    if delay_proxy:
+        measurement.update(delay_proxy.summary())
+        measurement['added_event_ack_delay_ms'] = args.event_delay_ms
     measurement['provider_versions'] = sorted({event['ProviderVersion'] for event in run_events if event.get('ProviderVersion')})
     timing_lines = (root / 'daemon.log').read_text().splitlines()
     measurement['daemon_claim_elapsed_ms'] = {match.group(1): int(match.group(2)) for line in timing_lines if (match := re.search(r'event=agent_response_timing .*phase=\"([^\"]+)\" claim_elapsed_ms=(\d+)', line))}
@@ -145,6 +156,8 @@ finally:
             except subprocess.TimeoutExpired:
                 os.killpg(process.pid, signal.SIGKILL)
                 process.wait()
+    if delay_proxy:
+        delay_proxy.close()
     for log in logs:
         log.close()
     print(f'Processes stopped; retained private local state: {root}', flush=True)

@@ -41,7 +41,7 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 		case <-heartbeat.C:
 			a.refreshRuntimeRegistrations(ctx, runtimes, inFlight)
 		case msg := <-a.mailbox:
-			if a.handleMailboxMessage(ctx, msg, inFlight, &detachedReports) {
+			if a.handleMailboxDelivery(ctx, msg, inFlight, &detachedReports) {
 				resetTimer(poll, a.cfg.PollEvery)
 			}
 		}
