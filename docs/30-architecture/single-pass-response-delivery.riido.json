@@ -9,13 +9,16 @@
     "internal/agentbridge/controlplane/saasplane/response_timing.go",
     "scripts/measure-single-pass-response.py",
     "internal/agentbridge/controlplane/saasplane/terminal_event_key.go",
-    "internal/agentbridge/supervisor/poll_claim.go"
+    "internal/agentbridge/supervisor/poll_claim.go",
+    "internal/agentbridge/supervisor/mailbox_delivery.go",
+    "scripts/response_delay_proxy.py"
   ],
   "invariants": [
     "No additional classifier, reviewer or quality-retry model turn on the default path.",
     "Answer-only requests require neither a repository nor file changes.",
     "Only observed evidence may substantiate completion.",
-    "Timing logs never contain prompt, answer or credential content."
+    "Timing logs never contain prompt, answer or credential content.",
+    "Coalesce only already-queued plain text/log events of one execution within bounded groups; retain original journal events and all semantic boundaries."
   ],
   "verification": {
     "tests": [
@@ -25,7 +28,11 @@
       "TestIntegrationAnswerOnlyUsesOneProviderTurn",
       "TestTerminalDeliveryKeepsKeyAfterExhaustedHTTPRetries",
       "TestTerminalDeliveryKeySeparatesLeaseAndOutcome",
-      "TestSupervisorActiveDeliveryDoesNotWaitForIdlePoll"
+      "TestSupervisorActiveDeliveryDoesNotWaitForIdlePoll",
+      "TestDeliveryBacklogDoesNotPayOneRoundTripPerToken",
+      "TestDeliveryGroupsPreserveBoundariesAndFirstToken",
+      "TestDeliveryGroupsAreBounded",
+      "TestDeliveryGroupingPreservesOriginalJournal"
     ],
     "live_test_opt_in": "AGENTBRIDGE_INTEGRATION=1",
     "measurement_script": "riido-daemon/scripts/measure-single-pass-response.py"
@@ -105,5 +112,29 @@
       "provider_elapsed_ms": 5272
     },
     "interpretation": "Small unrandomized sample; observed medians increased; no speedup/no-regression claim. SSE receipt, not UI paint."
+  },
+  "latency_measurement_2026_10_17": {
+    "conditions": "one live Codex run per revision, local control-plane, extra 200 ms event acknowledgement delay; same prompt, runtime-default model not pinned",
+    "baseline_daemon": "3349ddc",
+    "baseline_control_plane": "70dd668",
+    "before": {
+      "first_sse_ms": 10388,
+      "terminal_ms": 19924,
+      "provider_turn_ms": 5918,
+      "provider_done_to_daemon_done_ms": 11740,
+      "event_http_requests": 87
+    },
+    "after": {
+      "first_sse_ms": 8098,
+      "terminal_ms": 9729,
+      "provider_turn_ms": 6959,
+      "provider_done_to_daemon_done_ms": 577,
+      "event_http_requests": 25
+    },
+    "not_claimed": [
+      "production speedup guarantee",
+      "desktop paint timing",
+      "fixed model latency"
+    ]
   }
 }
