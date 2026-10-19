@@ -31,8 +31,9 @@ type taskActivationMsg struct {
 }
 
 type taskEventMsg struct {
-	taskID string
-	event  agentbridge.Event
+	originalEvents []agentbridge.Event
+	taskID         string
+	event          agentbridge.Event
 }
 
 type taskResultMsg struct {

@@ -9,13 +9,22 @@
     "internal/agentbridge/controlplane/saasplane/response_timing.go",
     "scripts/measure-single-pass-response.py",
     "internal/agentbridge/controlplane/saasplane/terminal_event_key.go",
-    "internal/agentbridge/supervisor/poll_claim.go"
+    "internal/agentbridge/supervisor/poll_claim.go",
+    "internal/agentbridge/supervisor/mailbox_delivery.go",
+    "scripts/response_delay_proxy.py",
+    "internal/agentbridge/supervisor/cancellation_delivery.go",
+    "internal/agentbridge/supervisor/terminal_report.go",
+    "internal/agentbridge/supervisor/poll_task_result.go"
   ],
   "invariants": [
     "No additional classifier, reviewer or quality-retry model turn on the default path.",
     "Answer-only requests require neither a repository nor file changes.",
     "Only observed evidence may substantiate completion.",
-    "Timing logs never contain prompt, answer or credential content."
+    "Timing logs never contain prompt, answer or credential content.",
+    "Coalesce only already-queued plain text/log events of one execution within bounded groups; retain original journal events and all semantic boundaries.",
+    "Explicit matching-claim cancellation before the first terminal attempt supersedes queued provider completion; internal finish cancellation alone does not.",
+    "Cancelled executions do not indefinitely retry obsolete running/waiting notifications ahead of their terminal outcome.",
+    "An attempted terminal outcome stays immutable across ambiguous delivery failure, late cancellation and shutdown; stable event keys are preserved."
   ],
   "verification": {
     "tests": [
@@ -25,16 +34,32 @@
       "TestIntegrationAnswerOnlyUsesOneProviderTurn",
       "TestTerminalDeliveryKeepsKeyAfterExhaustedHTTPRetries",
       "TestTerminalDeliveryKeySeparatesLeaseAndOutcome",
-      "TestSupervisorActiveDeliveryDoesNotWaitForIdlePoll"
+      "TestSupervisorActiveDeliveryDoesNotWaitForIdlePoll",
+      "TestDeliveryBacklogDoesNotPayOneRoundTripPerToken",
+      "TestDeliveryGroupsPreserveBoundariesAndFirstToken",
+      "TestDeliveryGroupsAreBounded",
+      "TestDeliveryGroupingPreservesOriginalJournal",
+      "TestCancelledClaimSupersedesPendingLifecycleBeforeTerminal",
+      "TestCancellationBeforeQueuedCompletionWins",
+      "TestInternalFinishCancellationDoesNotRewriteCompletedRetry",
+      "TestLateCancelPreservesPreparedUnknownTerminal",
+      "TestRetainedLifecycleWithoutCancellationKeepsRetryOrder",
+      "TestOldClaimCancellationDoesNotSupersedeReplacementDelivery",
+      "TestCancellationBeforeFirstTerminalAttemptSupersedesBufferedCompletion",
+      "TestUnattemptedCancellationCorrectsJournalAndArchive",
+      "TestCancellationSettlesOwnershipAndAdmitsNextTask",
+      "TestSupersessionDiagnosticDoesNotLeakUnknownPhase",
+      "TestCancelledDeliveryRetainsSessionPinsAndOtherEventOrder",
+      "TestShutdownPreservesPreparedUnknownTerminal"
     ],
     "live_test_opt_in": "AGENTBRIDGE_INTEGRATION=1",
     "measurement_script": "riido-daemon/scripts/measure-single-pass-response.py"
   },
   "loop": {
-    "observation": "Simple requests could stall on intent gates; failed first-event transitions could lose answer text; empty provider success could be presented as completion. A buffered provider event could miss claim cancellation and wait behind repeated idle long polls.",
-    "hypothesis": "Single-turn guidance, buffered delivery and deterministic completion checks improve reliability without a new model call.",
-    "execute": "Run scoped regressions, full Go tests, race checks, a real one-turn Codex probe and before/after authenticated SSE measurements.",
-    "evaluate": "No extra turn/start on an answer-only task; recover failed delivery text; reject empty unverified results; report timing without a speedup claim from small samples. Pending delivery must not spend the idle poll timeout; idle waves still long poll.",
+    "observation": "Simple requests could stall on intent gates; failed first-event transitions could lose answer text; empty provider success could be presented as completion. A buffered provider event could miss claim cancellation and wait behind repeated idle long polls. An uncommitted Running notification retained across a user stop could prevent Cancelled delivery forever; an already queued provider completion could ignore an earlier explicit claim cancellation.",
+    "hypothesis": "Single-turn guidance, buffered delivery and deterministic completion checks improve reliability without a new model call. Claim-fenced cancellation precedence before the first terminal attempt and selective supersession of obsolete intermediate delivery close these two cancellation deadlocks without changing an outcome after ambiguous acknowledgement.",
+    "execute": "Run scoped offline regressions, full Go tests, race, lint, vet and document/architecture gates. Preserve earlier opt-in live measurements as historical evidence; do not repeat provider calls for this cancellation fix.",
+    "evaluate": "No extra turn/start on an answer-only task; recover failed delivery text; reject empty unverified results; report timing without a speedup claim from small samples. Pending delivery must not spend the idle poll timeout; idle waves still long poll. Cancellation before queued completion settles once with no retained ownership; superseded lifecycle/approval notifications cannot block it; no-cancel retries and already-attempted terminal keys remain unchanged.",
     "retrospective": "Keep semantic quality distinct from deterministic evidence; retain existing opt-in continuations and recovery."
   },
   "evidence_tool": "tools/knowledgecoverage",
@@ -105,5 +130,29 @@
       "provider_elapsed_ms": 5272
     },
     "interpretation": "Small unrandomized sample; observed medians increased; no speedup/no-regression claim. SSE receipt, not UI paint."
+  },
+  "latency_measurement_2026_10_17": {
+    "conditions": "one live Codex run per revision, local control-plane, extra 200 ms event acknowledgement delay; same prompt, runtime-default model not pinned",
+    "baseline_daemon": "3349ddc",
+    "baseline_control_plane": "70dd668",
+    "before": {
+      "first_sse_ms": 10388,
+      "terminal_ms": 19924,
+      "provider_turn_ms": 5918,
+      "provider_done_to_daemon_done_ms": 11740,
+      "event_http_requests": 87
+    },
+    "after": {
+      "first_sse_ms": 8098,
+      "terminal_ms": 9729,
+      "provider_turn_ms": 6959,
+      "provider_done_to_daemon_done_ms": 577,
+      "event_http_requests": 25
+    },
+    "not_claimed": [
+      "production speedup guarantee",
+      "desktop paint timing",
+      "fixed model latency"
+    ]
   }
 }

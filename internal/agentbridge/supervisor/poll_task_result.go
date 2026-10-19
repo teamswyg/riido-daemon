@@ -16,6 +16,11 @@ func (a *Actor) handleTaskResult(
 	reportCtx := ctx
 	res := msg.result
 	if running != nil {
+		if running.terminalResult != nil {
+			a.flushTerminalReport(ctx, inFlight, running)
+			return
+		}
+		res = resultAfterClaimCancellation(running, res)
 		res.Usage = running.priorUsage.Add(res.Usage)
 		if running.initialStartedAt.IsZero() {
 			running.initialStartedAt = res.StartedAt

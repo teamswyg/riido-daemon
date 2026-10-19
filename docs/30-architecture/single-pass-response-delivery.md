@@ -149,3 +149,85 @@ idle assignment discovery and provider time remain outside the fixed queue stall
 The client separately bounds an open-but-silent task SSE connection to 30 seconds,
 then re-reads state and reconnects. This recovers missed terminal events; it neither
 retries the task nor calls the model. This daemon change adds no model calls.
+
+## Bounded delivery backlog coalescing
+
+When the supervisor has queued consecutive plain text deltas or diagnostic log
+lines from one execution, combine their network report. Do not wait for a timer
+or for another event: an isolated first token is delivered immediately. Bound
+each group to 64 events and 64 KiB. Keep original provider events in the local
+journal. Never merge across executions, event kinds, structured metadata,
+approval/recovery/lifecycle boundaries or terminal results. Preserve the order
+of every non-coalesced event and the final result. Existing failed-delivery text
+retention and terminal retries remain authoritative. This reduces serial HTTP
+round trips under network backpressure without adding model calls or changing
+the control-plane event contract.
+
+## Delivery measurements — 2026-10-17
+
+An actual development-app run finished its Codex turn in 13.089 seconds, but
+reported daemon completion 57.647 seconds later. The supervisor was synchronously
+reporting diagnostic lines and tiny text deltas as separate HTTP round trips.
+
+A deterministic queued-event test (20 logs, 44 text fragments, 5 ms per report)
+failed before the change with 64 reports / 361 ms; after grouping it used 3 reports
+/ 17 ms. Original text, journal records, execution boundaries, structured events,
+approval state and terminal ordering are covered. An isolated first token does
+not wait for a timer. Codex JSON parsing plus text-event translation measured
+1710–1736 ns per representative delta (3 benchmark samples), far below the observed
+network backlog. This microbenchmark does not measure all possible large frames.
+
+The live comparison used daemon baseline `3349ddc`, control-plane base `70dd668`
+with timing instrumentation, Codex CLI 0.161.0, and the same two-sentence Korean
+summary request. A loopback proxy added **200 ms to each event acknowledgement**
+to reproduce network backpressure. The client SSE connection bypassed this proxy.
+
+| Metric | Before | After |
+| --- | ---: | ---: |
+| Request to first SSE answer | 10.388 s | 8.098 s |
+| Request to terminal state (100 ms polling) | 19.924 s | 9.729 s |
+| Provider turn | 5.918 s | 6.959 s |
+| Provider completion to daemon completion | 11.740 s | 0.577 s |
+| Event HTTP requests | 87 | 25 |
+| Partial SSE snapshots | 37 | 2 |
+
+Local server partial/terminal processing medians were 12.5 / 14 ms, including
+assignment commit medians 5.5 / 6 ms and client projection medians 6 / 7 ms.
+One run per revision, variable model output/startup and runtime-default model:
+these are observations, not a production speedup guarantee. There was one native
+session per run and no additional model-call stage. SSE receipt is not UI paint
+time. The separate client silent-stream recovery PR remains a distinct concern.
+
+Reproduce with the existing script plus `--event-delay-ms 200`; the default is
+zero (no proxy). Run the same current script with the before and after daemon
+binaries and the same server. The proxy records event type/count and upstream
+duration only, and is loopback-only. Provider turn timings above were extracted
+from the exact local Codex session IDs pinned by these two disposable runs; no
+prompts, answers or credentials are included in the measurements.
+
+
+## Cancellation and deferred terminal delivery
+
+A cancellation observed for the matching claim before its first terminal report
+is attempted takes precedence over a queued provider completion, with or without
+host verification. Do not infer an external stop from the task context alone:
+finishing a task also cancels that context internally. An old claim cancellation
+must neither change a replacement claim's result nor supersede its notifications.
+
+After an explicit claim cancellation or a Cancelled result, obsolete Running,
+tool-running, waiting-for-input and approval notifications no longer precede the
+Cancelled terminal report. Keep their existing local provider journal records and
+append a bounded local supersession diagnostic. Session ownership and other
+non-superseded delivery records keep their existing retry order. No generic
+HTTP400 is treated as success and server transition/lease fences remain intact.
+
+A buffered result that has not reached the reporter can still be cancelled; append
+a cancellation correction and update its keep-in-place archive without erasing
+the earlier provider completion evidence or usage.
+
+Once a terminal report has been attempted, keep that outcome immutable
+across ambiguous HTTP failures, late cancellation and shutdown. Retry the same
+terminal event key so a committed outcome whose acknowledgement was lost can be
+recognized. This change does not add an authoritative assignment readback API or
+claim to reconcile every stop occurring after an unacknowledged terminal attempt;
+that broader race remains separate work. It adds no provider or model calls.

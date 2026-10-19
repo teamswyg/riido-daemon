@@ -11,6 +11,10 @@ func (a *Actor) reportTaskEvent(ctx context.Context, task *runningTask, ev agent
 	if task == nil {
 		return
 	}
+	if claimDeliveryCancelled(task) && obsoleteAfterCancellation(ev) {
+		a.recordSupersededNotification(ctx, task, ev)
+		return
+	}
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
 	if err := a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, ev); err != nil {
 		retainReportEvent(task, ev)
@@ -27,6 +31,7 @@ func retainReportEvent(task *runningTask, ev agentbridge.Event) {
 func (a *Actor) retryEventReports(ctx context.Context, inFlight map[string]*runningTask) bool {
 	reported := false
 	for _, task := range inFlight {
+		a.supersedeCancelledNotifications(ctx, task)
 		if len(task.pendingEvents) == 0 {
 			continue
 		}

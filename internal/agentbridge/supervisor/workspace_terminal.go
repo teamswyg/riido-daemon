@@ -16,6 +16,7 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 		res.SessionID = ""
 		res.Output = ""
 	}
+	res = resultAfterClaimCancellation(running, res)
 	if res.Workdir == "" && running.workspace != nil {
 		res.Workdir = running.workspace.Workdir
 		if running.execution != nil {
