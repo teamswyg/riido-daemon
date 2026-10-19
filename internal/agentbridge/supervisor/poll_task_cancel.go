@@ -13,6 +13,7 @@ func (a *Actor) handleTaskCancel(
 	}
 	task.cancelCause = cancellationCause(msg.cause)
 	cancelRunningTask(task)
+	a.supersedeCancelledNotifications(ctx, task)
 	if task.handle != nil {
 		_ = task.runtime.Cancel(ctx, task.taskID, task.cancelCause.Error())
 	}

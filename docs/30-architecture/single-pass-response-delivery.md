@@ -204,3 +204,30 @@ binaries and the same server. The proxy records event type/count and upstream
 duration only, and is loopback-only. Provider turn timings above were extracted
 from the exact local Codex session IDs pinned by these two disposable runs; no
 prompts, answers or credentials are included in the measurements.
+
+
+## Cancellation and deferred terminal delivery
+
+A cancellation observed for the matching claim before its first terminal report
+is attempted takes precedence over a queued provider completion, with or without
+host verification. Do not infer an external stop from the task context alone:
+finishing a task also cancels that context internally. An old claim cancellation
+must neither change a replacement claim's result nor supersede its notifications.
+
+After an explicit claim cancellation or a Cancelled result, obsolete Running,
+tool-running, waiting-for-input and approval notifications no longer precede the
+Cancelled terminal report. Keep their existing local provider journal records and
+append a bounded local supersession diagnostic. Session ownership and other
+non-superseded delivery records keep their existing retry order. No generic
+HTTP400 is treated as success and server transition/lease fences remain intact.
+
+A buffered result that has not reached the reporter can still be cancelled; append
+a cancellation correction and update its keep-in-place archive without erasing
+the earlier provider completion evidence or usage.
+
+Once a terminal report has been attempted, keep that outcome immutable
+across ambiguous HTTP failures, late cancellation and shutdown. Retry the same
+terminal event key so a committed outcome whose acknowledgement was lost can be
+recognized. This change does not add an authoritative assignment readback API or
+claim to reconcile every stop occurring after an unacknowledged terminal attempt;
+that broader race remains separate work. It adds no provider or model calls.

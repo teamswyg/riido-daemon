@@ -25,6 +25,13 @@ func (a *Actor) cancelInFlightTask(
 	task *runningTask,
 	finishedAt time.Time,
 ) {
+	if task.terminalResult != nil {
+		if !task.terminalDeliveryAttempted {
+			task.cancelCause = ErrStopped
+		}
+		a.flushTerminalReport(ctx, inFlight, task)
+		return
+	}
 	if task.handle != nil {
 		_ = task.runtime.Cancel(ctx, task.taskID, ErrStopped.Error())
 	}
