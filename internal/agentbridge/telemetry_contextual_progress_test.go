@@ -5,6 +5,27 @@ import (
 	"testing"
 )
 
+func TestTelemetryProgressCodeMeaningsReachSharedInstructionSurfaces(t *testing.T) {
+	for name, instruction := range map[string]string{
+		"injected": TelemetryContractInstruction(),
+		"native":   strings.Join(TelemetryNativeConfigHardRules(), "\n"),
+	} {
+		t.Run(name, func(t *testing.T) {
+			for _, meaning := range []string{
+				"1001 thinking",
+				"1101 tool collecting",
+				"1102 collection completed count",
+				"1103 tool running",
+				"1104 tool completed",
+			} {
+				if !strings.Contains(instruction, meaning) {
+					t.Errorf("missing progress code meaning %q", meaning)
+				}
+			}
+		})
+	}
+}
+
 func TestContextualProgressRulesReachEveryInstructionSurface(t *testing.T) {
 	surfaces := map[string]string{
 		"injected": InjectTelemetryContract("inspect reply permissions"),
