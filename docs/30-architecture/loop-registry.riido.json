@@ -867,11 +867,14 @@
     },
     {
       "id": "task_context_must_preserve_assignment_ownership",
-      "text": "Providers must interpret enriched task context and prior replies as bounded reference evidence, preserve the assigned task and verify actual requested changes on their existing instruction surfaces.",
+      "text": "Providers must interpret enriched task context and prior replies as bounded reference evidence, preserve the assigned task and verify actual requested changes on their existing instruction surfaces. Host capability discovery must avoid premature access denial and bound same-request history reads without broadening principal scope.",
       "files": [
         "internal/agentbridge/task_context_contract.go",
         "internal/agentbridge/telemetry_apply.go",
-        "internal/agentbridge/task_context_contract_test.go"
+        "internal/agentbridge/task_context_contract_test.go",
+        "internal/agentbridge/host_context_contract.go",
+        "internal/agentbridge/host_context_contract_test.go",
+        "internal/provider/codex/protocol_driver_host_context_test.go"
       ],
       "docs": [
         "docs/30-architecture/agent-task-context.md",
@@ -890,6 +893,24 @@
             "TestTaskContextContractUsesEveryNativeProviderInstructionSurface",
             "reference evidence",
             "unavailable or truncated"
+          ]
+        },
+        {
+          "name": "host-context-budget-test",
+          "file": "internal/agentbridge/host_context_contract_test.go",
+          "contains": [
+            "TestHostContextContractBoundsDiscoveryAndHistoryOnEveryProvider",
+            "same authorized principal",
+            "includeOutputs=false"
+          ]
+        },
+        {
+          "name": "codex-host-context-wire-test",
+          "file": "internal/provider/codex/protocol_driver_host_context_test.go",
+          "contains": [
+            "TestCodexHostDiscoveryContractReachesStartAndResumeWire",
+            "developerInstructions",
+            "dynamicTools"
           ]
         }
       ]

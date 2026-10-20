@@ -155,12 +155,12 @@ Product success loops must measure meta-complexity, product acceptance linkage, 
 
 ### task_context_must_preserve_assignment_ownership
 
-Providers must interpret enriched task context and prior replies as bounded reference evidence, preserve the assigned task and verify actual requested changes on their existing instruction surfaces.
+Providers must interpret enriched task context and prior replies as bounded reference evidence, preserve the assigned task and verify actual requested changes on their existing instruction surfaces. Host capability discovery must avoid premature access denial and bound same-request history reads without broadening principal scope.
 
-- Files: `internal/agentbridge/task_context_contract.go`, `internal/agentbridge/telemetry_apply.go`, `internal/agentbridge/task_context_contract_test.go`
+- Files: `internal/agentbridge/task_context_contract.go`, `internal/agentbridge/telemetry_apply.go`, `internal/agentbridge/task_context_contract_test.go`, `internal/agentbridge/host_context_contract.go`, `internal/agentbridge/host_context_contract_test.go`, `internal/provider/codex/protocol_driver_host_context_test.go`
 - Docs: `docs/30-architecture/agent-task-context.md`, `docs/30-architecture/agent-task-context.riido.json`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `deterministic instruction placement on Claude, Codex, Cursor and OpenClaw; no live model comprehension claim`
-- Verifiers: `task-context-contract-placement-test`
+- Verifiers: `task-context-contract-placement-test`, `host-context-budget-test`, `codex-host-context-wire-test`
 
 ### intent_clarification_must_wait_for_user
 
