@@ -62,3 +62,13 @@ RIID-5820: 실행 시작 시 선택한 로컬 binding을 한 번만 캡처한다
 Locally retained claims wait for the original lease-scoped Ready acknowledgement before preparation or provider admission. This pending state is not resumable execution evidence: a fresh daemon still skips active assignments without a durable native session. Cancellation, stop and runtime drift invalidate that local claim, and an activation from its old context cannot alter a replacement with the same execution ID.
 
 Cancellation watches preserve the original claim context across asynchronous delivery. They directly cancel only that captured context. The supervisor checks that the same claim still owns an execution ID before routing provider cancellation. A delayed cancellation from an old claim cannot stop or mutate a replacement sharing that ID; current-claim cancellation still interrupts preparation and running sessions. Hermetic obsolete-watch and pending-preparation regressions cover this boundary.
+
+## Response timing boundary · RIID-5821
+
+The claim-to-terminal metric starts at the accepted claim and includes preparation,
+verification and delivery. Adapter elapsed time may include event backpressure;
+it is not native inference time. Multiple explicit continuation results are counted
+and do not appear as one native turn. Timing summaries contain no session/task
+identifiers and never change native pin ownership, cwd/grant binding, resume
+selection or terminal acknowledgement identity. Native-session continuity and fresh
+host-verification regressions remain required alongside timing tests.
