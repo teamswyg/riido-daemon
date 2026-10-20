@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"context"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -16,6 +17,7 @@ func (a *Actor) handleTaskEvent(
 		if task.sessionBindingErr != nil {
 			return
 		}
+		task.timing.observe(msg, time.Now())
 		if err := a.pinTaskNativeSession(task, msg.event); err != nil {
 			task.sessionBindingErr = err
 			cancelRunningTask(task)

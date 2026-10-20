@@ -2,15 +2,17 @@ package supervisor
 
 import (
 	"context"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
 func (a *Actor) forwardSession(taskID string, events <-chan agentbridge.Event, results <-chan agentbridge.Result) {
 	for ev := range events {
+		queuedAt := time.Now()
 		a.cancelCurrentClaim()
 		select {
-		case a.mailbox <- envelope{taskEvent: &taskEventMsg{taskID: taskID, event: ev}}:
+		case a.mailbox <- envelope{taskEvent: &taskEventMsg{taskID: taskID, event: ev, queuedAt: queuedAt}}:
 		case <-a.stoppedCh:
 			return
 		}

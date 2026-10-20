@@ -31,6 +31,7 @@ func (a *Actor) handleMailboxDelivery(ctx context.Context, msg envelope, inFligh
 func (a *Actor) coalesceQueuedDelivery(msg envelope) (envelope, *envelope) {
 	group := *msg.taskEvent
 	group.originalEvents = []agentbridge.Event{group.event}
+	group.originalQueuedAt = []time.Time{group.queuedAt}
 	for len(group.originalEvents) < maxDeliveryGroupEvents && len(group.event.Text) < maxDeliveryGroupBytes {
 		select {
 		case next := <-a.mailbox:
@@ -44,6 +45,7 @@ func (a *Actor) coalesceQueuedDelivery(msg envelope) (envelope, *envelope) {
 			}
 			group.event.Text += item.event.Text
 			group.originalEvents = append(group.originalEvents, item.event)
+			group.originalQueuedAt = append(group.originalQueuedAt, item.queuedAt)
 		default:
 			msg.taskEvent = &group
 			return msg, nil

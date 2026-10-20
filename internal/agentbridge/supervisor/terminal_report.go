@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"context"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
@@ -41,9 +42,10 @@ func (a *Actor) flushTerminalReport(
 	// Freeze the outcome before invoking the reporter: even an error can mean
 	// the server committed it and the acknowledgement was lost.
 	task.terminalDeliveryAttempted = true
-	if err := a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, *task.terminalResult); err != nil {
+	if err := task.timing.report(func() error { return a.cfg.Reporter.CompleteTask(reportCtx, task.taskID, *task.terminalResult) }); err != nil {
 		return false
 	}
+	a.logResponseMetrics(task, time.Now())
 	delete(inFlight, task.taskID)
 	return true
 }

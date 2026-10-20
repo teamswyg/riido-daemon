@@ -16,7 +16,8 @@ func (a *Actor) reportTaskEvent(ctx context.Context, task *runningTask, ev agent
 		return
 	}
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
-	if err := a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, ev); err != nil {
+	err := task.timing.report(func() error { return a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, ev) })
+	if err != nil {
 		retainReportEvent(task, ev)
 	}
 }
@@ -44,7 +45,7 @@ func (a *Actor) retryEventReports(ctx context.Context, inFlight map[string]*runn
 
 func (a *Actor) flushNextEventReport(ctx context.Context, task *runningTask) bool {
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
-	if err := a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, task.pendingEvents[0]); err != nil {
+	if err := task.timing.report(func() error { return a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, task.pendingEvents[0]) }); err != nil {
 		return false
 	}
 	task.pendingEvents = task.pendingEvents[1:]
