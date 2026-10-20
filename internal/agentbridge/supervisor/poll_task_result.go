@@ -20,6 +20,9 @@ func (a *Actor) handleTaskResult(
 			a.flushTerminalReport(ctx, inFlight, running)
 			return
 		}
+		running.timing.providerStartedAt = res.StartedAt
+		running.timing.providerFinishedAt = res.FinishedAt
+		running.timing.providerResults++
 		res = resultAfterClaimCancellation(running, res)
 		res.Usage = running.priorUsage.Add(res.Usage)
 		if running.initialStartedAt.IsZero() {

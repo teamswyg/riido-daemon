@@ -15,6 +15,7 @@ import (
 )
 
 type runningTask struct {
+	timing        responseMetrics
 	recovery      *assignment.RecoveryContext
 	recoveryScope string
 

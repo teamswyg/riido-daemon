@@ -14,7 +14,11 @@
     "scripts/response_delay_proxy.py",
     "internal/agentbridge/supervisor/cancellation_delivery.go",
     "internal/agentbridge/supervisor/terminal_report.go",
-    "internal/agentbridge/supervisor/poll_task_result.go"
+    "internal/agentbridge/supervisor/poll_task_result.go",
+    "internal/agentbridge/supervisor/response_metrics.go",
+    "internal/agentbridge/supervisor/response_metrics_values.go",
+    "internal/agentbridge/supervisor/event_forwarding.go",
+    "internal/agentbridge/session/session_runner_result.go"
   ],
   "invariants": [
     "No additional classifier, reviewer or quality-retry model turn on the default path.",
@@ -24,7 +28,10 @@
     "Coalesce only already-queued plain text/log events of one execution within bounded groups; retain original journal events and all semantic boundaries.",
     "Explicit matching-claim cancellation before the first terminal attempt supersedes queued provider completion; internal finish cancellation alone does not.",
     "Cancelled executions do not indefinitely retry obsolete running/waiting notifications ahead of their terminal outcome.",
-    "An attempted terminal outcome stays immutable across ambiguous delivery failure, late cancellation and shutdown; stable event keys are preserved."
+    "An attempted terminal outcome stays immutable across ambiguous delivery failure, late cancellation and shutdown; stable event keys are preserved.",
+    "Phase metrics preserve producer timestamps and original Unicode/event counts across delivery groups; unknown durations are -1, not fast success.",
+    "Adapter completion is captured before host verification; terminal summary follows ACK exactly once and includes failed/cancelled outcomes.",
+    "Timing provider/version/status are allowlisted; no task/session IDs, error text, prompt or answer is logged in the structured summary."
   ],
   "verification": {
     "tests": [
@@ -50,7 +57,13 @@
       "TestCancellationSettlesOwnershipAndAdmitsNextTask",
       "TestSupersessionDiagnosticDoesNotLeakUnknownPhase",
       "TestCancelledDeliveryRetainsSessionPinsAndOtherEventOrder",
-      "TestShutdownPreservesPreparedUnknownTerminal"
+      "TestShutdownPreservesPreparedUnknownTerminal",
+      "TestTimingUsesProducerObservationAndPreservesOriginalCounts",
+      "TestTimingUnknownValuesAndPrivacy",
+      "TestTimingReportFailuresAreCountedWithoutErrorContents",
+      "TestAdapterElapsedIncludesBlockedEventDelivery",
+      "TestTimingSummaryRequiresTerminalACKAndEmitsOnce",
+      "TestTimingContinuationCannotClaimSingleNativeTurn"
     ],
     "live_test_opt_in": "AGENTBRIDGE_INTEGRATION=1",
     "measurement_script": "riido-daemon/scripts/measure-single-pass-response.py"
@@ -154,5 +167,13 @@
       "desktop paint timing",
       "fixed model latency"
     ]
+  },
+  "phase_metrics": {
+    "schema": "agent-execution-timing.v1",
+    "owning_contract": "riido-contracts/docs/20-domain/agent-response-metrics.riido.json",
+    "unknown_duration": -1,
+    "provider_inference_time_proven": false,
+    "new_real_model_experiment": false,
+    "comparison_policy": "matched_native_vs_daemon"
   }
 }

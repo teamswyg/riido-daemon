@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"context"
+	"time"
 
 	"github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -31,9 +32,11 @@ type taskActivationMsg struct {
 }
 
 type taskEventMsg struct {
-	originalEvents []agentbridge.Event
-	taskID         string
-	event          agentbridge.Event
+	queuedAt         time.Time
+	originalQueuedAt []time.Time
+	originalEvents   []agentbridge.Event
+	taskID           string
+	event            agentbridge.Event
 }
 
 type taskResultMsg struct {

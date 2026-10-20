@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"context"
+	"time"
 
 	"github.com/teamswyg/riido-contracts/assignment"
 
@@ -24,6 +25,7 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 	pin := runtimePinForClaim(status, req)
 	taskCtx, cancel := context.WithCancel(ctx)
 	inFlight[req.ID] = &runningTask{
+		timing:                responseMetrics{claimedAt: time.Now()},
 		taskID:                req.ID,
 		provider:              string(req.Provider),
 		runtimeID:             status.RuntimeID,

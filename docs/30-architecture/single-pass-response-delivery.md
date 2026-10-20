@@ -231,3 +231,55 @@ terminal event key so a committed outcome whose acknowledgement was lost can be
 recognized. This change does not add an authoritative assignment readback API or
 claim to reconcile every stop occurring after an unacknowledged terminal attempt;
 that broader race remains separate work. It adds no provider or model calls.
+
+
+## Phase metrics and matched latency diagnosis · RIID-5821
+
+Emit one bounded JSON `agent_execution_timing` summary after a successful terminal
+ACK. Include completed/failed/cancelled/timeout/aborted/blocked outcomes separately;
+a fast failure is not a fast successful answer. Unknown or inverted durations
+are -1. Do not log task/session/account identifiers, answers, errors, model prompts
+or local paths. Provider/status/version labels are allowlisted.
+
+Capture the first nonblank text at runtime forwarding before the supervisor
+mailbox, preserving per-fragment timestamps and original Unicode character/event
+counts across batching. This is not necessarily the provider's first native token.
+Label the adapter clock explicitly as including possible backpressure; native
+turn time remains -1 when not independently observed. Unobserved queue/report
+durations are also -1. Capture adapter Result.StartedAt/FinishedAt before optional host verification;
+multiple explicit continuation results are counted separately and their combined
+provider duration remains unknown rather than pretending they were one model turn.
+This adapter lifetime is not pure inference time. Record the maximum observed
+mailbox wait and total reporter-call time/attempts/failures including retries.
+Keep terminal outcome/ACK identity, event ordering and original journal unchanged.
+A terminal that never receives an ACK does not produce a successful summary; its
+absence must not be counted as zero latency or zero failures.
+
+Metrics are monotonic process-local intervals. `claim_to_terminal_ms` includes
+preparation, model/tool execution, host verification and delivery.
+`post_provider_ms` includes journal/queue/verification/retries after the original
+adapter result. A version alone does not prove model/configuration equality.
+The user-supplied v92/v93 observations (780267→96780 ms total;
+615593→2762 ms after provider; provider 163330→92285 ms) are historical single
+samples without reproduced artifacts here. No fixed completion-time target is
+set. These intervals alone neither establish optimal latency nor isolate native
+model time; adapter event backpressure can delay terminal processing.
+
+Use fixed answer-only tasks and pinned provider/model/configuration, at least
+20 samples plus failures/cancellations and independent answer/host checks before
+comparing native and daemon paths with matching task/context/session/reasoning
+settings. Preserve longer work/approval behavior and recovery fences.
+Do not change the user's model, remove task context or replay uncertain work to
+force a shorter duration. Ordinary CI uses synthetic integrations, never real model calls.
+The owning cross-repository metric and trust contract is
+[agent-response-metrics](https://github.com/teamswyg/riido-contracts/blob/main/docs/20-domain/agent-response-metrics.md).
+
+Local summaries can be allowlist-extracted and archived by the bounded operator
+analysis tool in riido-infra; the daemon does not gain direct public S3 access or
+automatically upload prompts/logs. Anonymous incident metadata remains untrusted,
+separate from CloudWatch observations and local synthetic tests.
+
+The controlled-clock `TestAdapterElapsedIncludesBlockedEventDelivery` reproduces
+consumer wait in the adapter interval with no model call. Terminal metric tests
+cover ACK failure/retry, one summary only after ACK, and explicit multiple-result
+continuations; they do not infer native inference speed.
