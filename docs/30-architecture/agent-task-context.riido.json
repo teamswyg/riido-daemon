@@ -5,30 +5,37 @@
   "reader_doc": "docs/30-architecture/agent-task-context.md",
   "owning_code": [
     "internal/agentbridge/task_context_contract.go",
-    "internal/agentbridge/telemetry_apply.go"
+    "internal/agentbridge/telemetry_apply.go",
+    "internal/agentbridge/host_context_contract.go"
   ],
   "policy": {
     "provider_placement": "existing native/inline surfaces; task-first fallback remains",
     "precedence": "latest user directive, current assigned task, reference documents and prior replies",
     "scope": "same task/session/authorized workspace; references do not expand permissions",
     "missing_context": "explicit unavailable/truncated markers; ask only for necessary gaps",
-    "completion": "perform changes and validation; report actual evidence"
+    "completion": "perform changes and validation; report actual evidence",
+    "host_discovery": "Discover repository/project, history/session and account-status capabilities once; empty workdir is not account denial; no credential reads or new cross-principal grants",
+    "history_reads": "Compact list/search first; up to3 initial threads/concurrent calls; outputs=false/3turns/1500chars when supported; same-request exact-page reuse; returned cursors for older pages; fresh after mutations or account/session changes"
   },
   "verification": {
     "tests": [
-      "TestTaskContextContractUsesEveryNativeProviderInstructionSurface"
+      "TestTaskContextContractUsesEveryNativeProviderInstructionSurface",
+      "TestHostContextContractBoundsDiscoveryAndHistoryOnEveryProvider",
+      "TestCodexHostDiscoveryContractReachesStartAndResumeWire"
     ],
     "real_provider_calls": false
   },
   "limits": [
     "not a universal comprehension guarantee",
     "not automatic provider recovery",
-    "no frontend deployment"
+    "no frontend deployment",
+    "Prompt-level read budgets are not an enforced native MCP cache or universal model adherence guarantee",
+    "Initial app-server and resumed TUI tool inventories may differ; never infer identical capability from a resumed session"
   ],
   "loop": {
-    "observation": "Providers need a consistent interpretation of newly enriched task context and prior replies.",
+    "observation": "Providers need a consistent interpretation of newly enriched task context and prior replies. A native resume inspection found premature account-access denial followed by8distinct/10total history reads and truncated output.",
     "hypothesis": "The existing native/inline instruction surfaces can preserve current task ownership and reference boundaries.",
-    "execute": "Verify deterministic placement on all four provider paths and regenerate source/document coverage.",
+    "execute": "Verify deterministic placement on all four provider paths and regenerate source/document coverage. Deliver bounded host discovery/history rules on all providers and both Codex thread/start and thread/resume without injecting new native tools.",
     "evaluate": "Contract placement, task-first fallback and existing bridge regressions must pass; live model comprehension remains unproven.",
     "retrospective": "Keep interpretation daemon-owned and context acquisition Control Plane-owned; no permissions or automatic recovery are inferred."
   }
