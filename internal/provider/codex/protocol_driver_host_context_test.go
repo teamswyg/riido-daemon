@@ -25,6 +25,11 @@ func TestCodexHostDiscoveryContractReachesStartAndResumeWire(t *testing.T) {
 			if err != nil || !strings.Contains(string(wire), "Riido host context discovery contract:") || !strings.Contains(string(wire), "includeOutputs=false") {
 				t.Fatal("native wire lost discovery/read budget instructions")
 			}
+			for _, rule := range []string{"context lookup failed", "explicitly empty", "unknown chronology", "latest Yjs"} {
+				if !strings.Contains(string(wire), rule) {
+					t.Fatalf("native context boundary missing %q", rule)
+				}
+			}
 			if _, ok := params["dynamicTools"]; ok {
 				t.Fatal("instruction tuning must not fabricate or grant native tools")
 			}

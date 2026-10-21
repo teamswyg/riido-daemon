@@ -46,3 +46,14 @@ adherence. Deterministic tests cover all four placement paths and serialized
 Codex start/resume developerInstructions; a changed initial-vs-resumed CLI/tool
 inventory remains distinct from prompt behavior. No new live model invocation
 is claimed by these tests.
+
+Document delivery boundaries · RIID-5818
+
+A missing context lookup must not erase or stall an explicit authorized user
+directive. An explicitly empty stored projection is different from unavailable
+content; providers must not resurrect an older body to fill it. Stored JSON/HTML
+and component snapshots can have unconfirmed freshness. Alternate conflicting
+representations carry no known chronology, and must not be treated as proof of
+the latest Yjs revision or new instructions. The latest user directive remains
+authoritative. These are interpretation rules, not a new read API, forced model
+retry or proof of semantic adherence.

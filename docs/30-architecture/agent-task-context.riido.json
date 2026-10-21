@@ -12,16 +12,18 @@
     "provider_placement": "existing native/inline surfaces; task-first fallback remains",
     "precedence": "latest user directive, current assigned task, reference documents and prior replies",
     "scope": "same task/session/authorized workspace; references do not expand permissions",
-    "missing_context": "explicit unavailable/truncated markers; ask only for necessary gaps",
+    "missing_context": "Explicit directives remain usable despite context lookup failure; stored empty differs from unavailable/truncated; never resurrect older body.",
     "completion": "perform changes and validation; report actual evidence",
     "host_discovery": "Discover repository/project, history/session and account-status capabilities once; empty workdir is not account denial; no credential reads or new cross-principal grants",
-    "history_reads": "Compact list/search first; up to3 initial threads/concurrent calls; outputs=false/3turns/1500chars when supported; same-request exact-page reuse; returned cursors for older pages; fresh after mutations or account/session changes"
+    "history_reads": "Compact list/search first; up to3 initial threads/concurrent calls; outputs=false/3turns/1500chars when supported; same-request exact-page reuse; returned cursors for older pages; fresh after mutations or account/session changes",
+    "freshness": "Unversioned provider JSON/HTML and component snapshots are not proof of current Yjs; conflicting alternate representations have unknown chronology and remain references."
   },
   "verification": {
     "tests": [
       "TestTaskContextContractUsesEveryNativeProviderInstructionSurface",
       "TestHostContextContractBoundsDiscoveryAndHistoryOnEveryProvider",
-      "TestCodexHostDiscoveryContractReachesStartAndResumeWire"
+      "TestCodexHostDiscoveryContractReachesStartAndResumeWire",
+      "TestContextProjectionSemanticsReachEveryProvider"
     ],
     "real_provider_calls": false
   },
