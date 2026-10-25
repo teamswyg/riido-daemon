@@ -158,7 +158,8 @@
         {"kind": "paragraph", "text": "Legacy `RIIDO_SAAS_AGENTS` and `RIIDO_SAAS_TOKEN` are not read by the daemon settings model."},
         {"kind": "paragraph", "text": "If `RIIDO_DAEMON_ID` is unset on this path, daemon id defaults to `RIIDO_DEVICE_ID`. This keeps runtime ids such as `device-enrolled-000123:codex` scoped to the enrolled device instead of `agentd-local:codex`."},
         {"kind": "paragraph", "text": "Desktop first enrolls the device through the logged-in webview session, then launches daemon with `RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET`. `saasplane` sends them as `X-Riido-Device-ID` and `X-Riido-Device-Secret`."},
-        {"kind": "paragraph", "text": "Team IDs, Open API keys, task-context paths, and workspace API keys are not identity bridges."}
+        {"kind": "paragraph", "text": "Team IDs, Open API keys, task-context paths, and workspace API keys are not identity bridges."},
+        {"kind": "paragraph", "text": "`RIIDO_DEVICE_SECRET` stays inside the daemon process. Every process the daemon starts — provider runtimes, provider version and model probes, validation commands, and repository preparation — gets its environment from `internal/process/childenv`, which removes `RIIDO_DEVICE_SECRET`, `RIIDO_SAAS_TOKEN`, and `RIIDO_TOKEN` (case-insensitive) even when the caller passes no overrides."}
       ]
     },
     {

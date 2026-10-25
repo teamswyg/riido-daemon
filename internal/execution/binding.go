@@ -13,6 +13,8 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"github.com/teamswyg/riido-daemon/internal/process/childenv"
 )
 
 const maxBindingsJSONBytes = 512 * 1024
@@ -98,10 +100,12 @@ func Prepare(ctx context.Context, binding Binding, workdir string) (*Prepared, e
 	defer cancel()
 	dir := filepath.Join(workdir, "repository")
 	cmd := exec.CommandContext(ctx, "git", "-c", "core.hooksPath=/dev/null", "clone", "--no-local", "--", binding.Repository, dir)
+	cmd.Env = childenv.Environ()
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("repository preparation failed: %w: %s", err, output)
 	}
 	cmd = exec.CommandContext(ctx, "git", "-C", dir, "remote", "remove", "origin")
+	cmd.Env = childenv.Environ()
 	if output, err := cmd.CombinedOutput(); err != nil {
 		return nil, fmt.Errorf("remove clone remote: %w: %s", err, output)
 	}
@@ -176,6 +180,7 @@ func (p *Prepared) Verify(ctx context.Context) Evidence {
 	for _, argv := range p.Binding.Checks {
 		cmd := exec.CommandContext(ctx, argv[0], argv[1:]...)
 		cmd.Dir = p.Directory
+		cmd.Env = childenv.Environ()
 		cmd.WaitDelay = 2 * time.Second
 		output := &boundedOutput{}
 		cmd.Stdout = output
