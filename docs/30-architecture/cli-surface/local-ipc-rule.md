@@ -4,7 +4,7 @@
 
 [Back to CLI Surface SSOT](../cli-surface.md)
 
-`riido serve`, `riido api`, and `riido daemon` may use:
+`riido serve`, `riido api`, `riido daemon`, and the agent-mode work-context commands (`riido work`, `riido context`, `riido whoami`, `riido doctor`) may use:
 
 - Unix socket
 - Windows named pipe

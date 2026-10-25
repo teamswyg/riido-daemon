@@ -11,6 +11,12 @@ const (
 	mainCommandClaudePermissionMCP mainCommand = "claude-permission-mcp"
 	mainCommandDaemon              mainCommand = "daemon"
 	mainCommandVersion             mainCommand = "version"
+	mainCommandWork                mainCommand = "work"
+	mainCommandContext             mainCommand = "context"
+	mainCommandAuth                mainCommand = "auth"
+	mainCommandWhoami              mainCommand = "whoami"
+	mainCommandDoctor              mainCommand = "doctor"
+	mainCommandCapabilities        mainCommand = "capabilities"
 )
 
 type daemonCommand string

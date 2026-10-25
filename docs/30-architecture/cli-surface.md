@@ -12,6 +12,12 @@ Keeps the public cmd/riido command surface generated from a manifest and verifie
 
 | Group | Subcommands | Owner | Boundary | Evidence |
 | --- | --- | --- | --- | --- |
+| `work` | `get`, `tree`, `relations`, `comments`, `activity`, `search` | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener | `main-command-work`, `work-subcommand-vocabulary` |
+| `context` | `get`, `changes` | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work | `main-command-context`, `context-subcommand-vocabulary` |
+| `auth` | `login`, `logout`, `status` | cmd/riido, internal/contextcli | user-mode sign-in state; never accepts secrets as arguments and never prints credentials | `main-command-auth`, `auth-subcommand-vocabulary` |
+| `whoami` | _none_ | cmd/riido, internal/contextcli | reports the acting principal, workspace, and mode without printing secrets | `main-command-whoami` |
+| `doctor` | _none_ | cmd/riido, internal/contextcli | local diagnosis of binary, PATH, mode, daemon IPC, and auth state; remote checks only with --check-api | `main-command-doctor` |
+| `capabilities` | _none_ | cmd/riido, internal/contextcli | static description of CLI, envelope, and IPC schema versions plus command availability | `main-command-capabilities` |
 | `serve` | _none_ | internal/riidoapi | local IPC server over Unix socket or Windows named pipe | `main-command-serve`, `run-serve-dispatch` |
 | `api` | `status`, `tasks`, `review-demo`, `transition`, `evidence`, `validate` | internal/riidoapi | local IPC client for guarded task and status APIs | `main-command-api`, `api-subcommand-vocabulary` |
 | `mwsd` | `snapshot`, `projection`, `sync`, `orchestration`, `projects`, `status` | internal/mwsdbridge, internal/project, internal/taskdb | reads MWSD snapshots and promotes local workspace/task projections | `main-command-mwsd`, `mwsd-subcommand-vocabulary` |
@@ -33,9 +39,11 @@ Keeps the public cmd/riido command surface generated from a manifest and verifie
 - [Local IPC rule](cli-surface/local-ipc-rule.md)
 - [Guarded mutation rule](cli-surface/guarded-mutation-rule.md)
 - [Validation](cli-surface/validation.md)
+- [Work context CLI](cli-surface/work-context.md)
 
 ## Assertions
 
 - cmd/riido remains local-only and must not open public TCP or HTTP listeners
 - usage output must expose each declared command group
 - bridge providers output must expose the provider vocabulary without launching provider tasks
+- work-context commands must reject secrets passed as arguments and keep the envelope on stdout

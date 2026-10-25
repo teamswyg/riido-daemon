@@ -1,0 +1,62 @@
+package contextcli
+
+// CommandStatus says whether a command works in this binary today.
+type CommandStatus string
+
+const (
+	CommandAvailable   CommandStatus = "available"
+	CommandNeedsDaemon CommandStatus = "needs_daemon_support"
+	CommandUnavailable CommandStatus = "unavailable"
+)
+
+// CommandCapability describes one command and the modes it serves.
+type CommandCapability struct {
+	Name   string        `json:"name"`
+	Modes  []Mode        `json:"modes"`
+	Status CommandStatus `json:"status"`
+	Note   string        `json:"note,omitempty"`
+}
+
+// CapabilitiesData is the data payload of `riido capabilities`.
+type CapabilitiesData struct {
+	CLIVersion            string              `json:"cli_version"`
+	EnvelopeSchemaVersion string              `json:"envelope_schema_version"`
+	ContextIPCMethod      string              `json:"context_ipc_method"`
+	ContextIPCSchema      string              `json:"context_ipc_schema_version"`
+	Commands              []CommandCapability `json:"commands"`
+}
+
+const (
+	noteDaemonBroker = "agent mode: Riido Desktop에 포함된 daemon이 context_read를 지원해야 합니다"
+	noteUserMode     = "user mode: 서버 인증 계약(ADR) 확정 전까지 사용할 수 없습니다"
+)
+
+// Capabilities returns the static capability table for cliVersion.
+func Capabilities(cliVersion string) CapabilitiesData {
+	agentRead := func(name string) CommandCapability {
+		return CommandCapability{Name: name, Modes: []Mode{ModeAgent}, Status: CommandNeedsDaemon, Note: noteDaemonBroker}
+	}
+	local := func(name string) CommandCapability {
+		return CommandCapability{Name: name, Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable}
+	}
+	commands := []CommandCapability{
+		local("capabilities"),
+		local("doctor"),
+		local("auth status"),
+		local("auth logout"),
+		{Name: "auth login", Modes: []Mode{ModeUser}, Status: CommandUnavailable, Note: noteUserMode},
+		agentRead("whoami"),
+		agentRead("context get"),
+		agentRead("context changes"),
+	}
+	for _, sub := range []string{"get", "tree", "relations", "comments", "activity", "search"} {
+		commands = append(commands, agentRead("work "+sub))
+	}
+	return CapabilitiesData{
+		CLIVersion:            cliVersion,
+		EnvelopeSchemaVersion: EnvelopeSchemaVersion,
+		ContextIPCMethod:      IPCMethodContextRead,
+		ContextIPCSchema:      ContextIPCSchemaVersion,
+		Commands:              commands,
+	}
+}
