@@ -19,3 +19,7 @@
 6. `msix-store` must support review/demo mode without provider installation.
 
 `ResolveHelperRuntimePlan` computes MSIX roles and named-pipe local IPC, but does not spawn provider processes, open named pipes, or install Windows services.
+
+The `windows-native-ipc` job in `.github/workflows/riidoapi.yml` runs the real compiled CLI child through the native Windows named-pipe transport to the real context broker with synthetic run activity and a synthetic control-plane fetcher. `TestContextCLINativeIPCRoundTrip` verifies all seven supported read leaves, source/envelope and exit-code preservation, workspace/task scope denial, inconclusive activity, and rejection of the same capability after the synthetic run ends. Capability and lease values are absent from stdout, stderr and audit lines. The same test uses Unix sockets on Unix hosts; cross-compilation alone is not Windows execution evidence.
+
+This isolated CI gate keeps existing transport security policy unchanged, including local-only named pipes and run capability checks. It does not establish cross-user Windows ACL isolation, packaged Desktop installation/update/PATH integration, device credential storage or authentication, provider installation/login/native approvals, actual staging reads or an actual provider-run end. Those require separate Windows device/account QA. The synthetic activity callback does not validate RuntimeActor heartbeat ownership.

@@ -6,6 +6,9 @@ on:
     paths:
       - ".github/workflows/riidoapi.yml"
       - "internal/riidoapi/**"
+      - "cmd/riido/**"
+      - "internal/contextcli/**"
+      - "internal/contextbroker/**"
       - "internal/taskdb/**"
       - "internal/hostintegration/**"
       - "internal/validation/**"
@@ -19,6 +22,9 @@ on:
     paths:
       - ".github/workflows/riidoapi.yml"
       - "internal/riidoapi/**"
+      - "cmd/riido/**"
+      - "internal/contextcli/**"
+      - "internal/contextbroker/**"
       - "internal/taskdb/**"
       - "internal/hostintegration/**"
       - "internal/validation/**"
@@ -88,4 +94,8 @@ jobs:
       - name: Verify Windows named-pipe daemon status round trip
         run: |
           go test ./internal/riidoapi -run TestWindowsNamedPipeClosePreservesBufferedResponse -count=20
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           go test ./cmd/riido -run TestWindowsNamedPipeDaemonStatusRoundTrip -count=20
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify Windows context CLI and broker round trip
+        run: go test ./cmd/riido -run TestContextCLINativeIPCRoundTrip -count=1 -timeout=5m
