@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"os"
 	"path/filepath"
@@ -16,6 +17,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/contextbroker"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
+	"github.com/teamswyg/riido-daemon/internal/logging"
 )
 
 const contextRunActiveTimeout = time.Second
@@ -76,7 +78,7 @@ func contextBindingForRun(req bridge.TaskRequest, runtimeID string) contextbroke
 
 // writeContextRead answers the CLI broker request. With the feature off the
 // daemon behaves like older builds and reports an unknown method.
-func writeContextRead(conn net.Conn, req daemonRequest, settings daemonSettings, runtimes []*runtimeactor.Actor) {
+func writeContextRead(conn net.Conn, req daemonRequest, settings daemonSettings, runtimes []*runtimeactor.Actor, log logging.Logger) {
 	if settings.contextBroker == nil {
 		_ = writeUnknownDaemonMethod(conn, req.Method)
 		return
@@ -91,7 +93,23 @@ func writeContextRead(conn net.Conn, req daemonRequest, settings daemonSettings,
 		WorkspaceID:   req.WorkspaceID,
 		RequestID:     req.RequestID,
 	}, runtimeRunActive(runtimes))
+	log.Printf("%s", contextReadAuditLine(req, reply))
 	_ = writeDaemonJSON(conn, reply)
+}
+
+// contextReadAuditLine records command, target, result, and request id.
+// It never includes the run capability or response bodies.
+func contextReadAuditLine(req daemonRequest, reply contextcli.Envelope) string {
+	result := "ok"
+	if reply.Error != nil {
+		result = string(reply.Error.Code)
+	}
+	target := req.Args["work"]
+	if target == "" {
+		target = "-"
+	}
+	return fmt.Sprintf("context_read command=%q target=%q result=%s request_id=%q sources=%d",
+		req.Command, target, result, reply.RequestID, len(reply.Sources))
 }
 
 // runtimeRunActive reports whether any runtime still has the run in flight.

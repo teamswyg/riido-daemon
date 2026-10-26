@@ -48,7 +48,7 @@ func dispatchDaemonRequest(conn net.Conn, req daemonRequest, flags startFlags, s
 		}
 		log.Printf("shutdown request received level=%s", level)
 	case daemonMethodContextRead:
-		writeContextRead(conn, req, settings, runtimes)
+		writeContextRead(conn, req, settings, runtimes, log)
 	case daemonMethodToolApproval:
 		_ = conn.SetDeadline(time.Time{})
 		ctx, cancel := daemonConnClosedContext(conn)

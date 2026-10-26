@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"errors"
+	"io"
 	"net"
 	"strings"
 	"testing"
@@ -13,6 +14,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/saasplane"
 	"github.com/teamswyg/riido-daemon/internal/contextbroker"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
+	"github.com/teamswyg/riido-daemon/internal/logging"
 )
 
 func TestParseDaemonContextCLI(t *testing.T) {
@@ -65,7 +67,7 @@ func brokerDial(settings daemonSettings) func(string, time.Duration) (net.Conn, 
 			if err != nil || !ok {
 				return
 			}
-			writeContextRead(server, req, settings, nil)
+			writeContextRead(server, req, settings, nil, logging.NewWriterLogger(io.Discard))
 		}()
 		return client, nil
 	}
@@ -109,5 +111,22 @@ func TestCLIAgainstDaemonBrokerEndToEnd(t *testing.T) {
 				t.Fatal("run capability leaked to CLI output")
 			}
 		})
+	}
+}
+
+func TestContextReadAuditLineHasNoSecrets(t *testing.T) {
+	req := daemonRequest{Command: "work get", Args: map[string]string{"work": "RIID-5900\ninjected"}, RunCapability: "rrc_secret"}
+	reply := contextcli.FailureEnvelope("cli_1", contextcli.Fail(contextcli.CodeControlPlaneUnsupported, "x", ""))
+	line := contextReadAuditLine(req, reply)
+	if strings.Contains(line, "rrc_secret") {
+		t.Fatalf("audit line leaked the run capability: %q", line)
+	}
+	for _, want := range []string{`command="work get"`, "result=CONTROL_PLANE_UNSUPPORTED", `request_id="cli_1"`} {
+		if !strings.Contains(line, want) {
+			t.Fatalf("audit line missing %s: %q", want, line)
+		}
+	}
+	if strings.ContainsRune(line, '\n') {
+		t.Fatalf("audit line must stay on one line: %q", line)
 	}
 }
