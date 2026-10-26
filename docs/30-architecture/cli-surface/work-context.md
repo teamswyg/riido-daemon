@@ -42,3 +42,9 @@ Exit codes:
 Secrets never travel in argv. `--token`, `--secret`, `--password`, `--api-key` and their `--flag=value` forms are rejected with exit 2 on every work-context command; `riido auth login --with-token` reads stdin only.
 
 The envelope and exit codes are provisional in `internal/contextcli`. They must move to `riido-contracts` before Riido Desktop or control-plane consume them.
+
+QA reproduction tools are preserved in `scripts/riido-cli-qa/` and require Python 3.9 or newer with only the standard library. From the repository root, run `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/riido-cli-qa -p 'test_*.py' -v` for the offline fixtures, and `python3 scripts/riido-cli-qa/staging_probe.py` for the offline NOT_RUN report. Neither command contacts a daemon, server, or provider.
+
+`staging_probe.py --execute` is only for an already approved staging Agent run with daemon-injected capability/socket/task environment. `--help` lists the required non-secret approval reference, approved daemon build and CLI SHA-256, assigned work, in-snapshot parent, outside-snapshot work, and comment fixture count. The operator must independently verify the running daemon endpoint/build: the probe checks only the CLI binary on PATH. Do not copy credentials into arguments, files, or logs. The probe does not install, authenticate, dispatch an Agent, deploy, or grant approval; successful reads add server audit records, stop at the first failed check, and are not retried.
+
+Every probe report keeps `staging_acceptance=NOT_COMPLETE` and manual checks at `NOT_RUN`. Offline fixtures, local socket/provider checks, actual server authentication and lease checks, Desktop installation, SSE visibility, and retention acceptance remain separate evidence. Automated PASS alone is not staging or release approval.
