@@ -33,7 +33,7 @@ func setIfPresent(env map[string]string, key, value string) {
 	}
 }
 
-// prependPATH puts dir first on PATH, keeping the existing key spelling
+// prependPATH puts dir first on PATH (moving it if already present), keeping the existing key spelling
 // (Windows uses Path).
 func prependPATH(env map[string]string, dir string) {
 	if dir == "" {
@@ -46,13 +46,9 @@ func prependPATH(env map[string]string, dir string) {
 			break
 		}
 	}
-	current := env[key]
-	if slices.Contains(strings.Split(current, string(os.PathListSeparator)), dir) {
-		return
-	}
-	if current == "" {
-		env[key] = dir
-		return
-	}
-	env[key] = dir + string(os.PathListSeparator) + current
+	// Drop later occurrences so an older riido earlier on PATH cannot win.
+	entries := slices.DeleteFunc(strings.Split(env[key], string(os.PathListSeparator)), func(entry string) bool {
+		return entry == dir || entry == ""
+	})
+	env[key] = strings.Join(append([]string{dir}, entries...), string(os.PathListSeparator))
 }

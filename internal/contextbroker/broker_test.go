@@ -157,3 +157,17 @@ func TestRegistryEvictsOldestWhenFull(t *testing.T) {
 		t.Fatalf("registry size = %d, want %d", r.Len(), maxBindings)
 	}
 }
+
+func TestPrependPATHMovesDaemonBinFirst(t *testing.T) {
+	sep := string(os.PathListSeparator)
+	env := map[string]string{"PATH": "/usr/local/bin" + sep + "/opt/riido/bin" + sep + "/usr/bin"}
+	prependPATH(env, "/opt/riido/bin")
+	if env["PATH"] != "/opt/riido/bin"+sep+"/usr/local/bin"+sep+"/usr/bin" {
+		t.Fatalf("PATH=%q", env["PATH"])
+	}
+	empty := map[string]string{}
+	prependPATH(empty, "/opt/riido/bin")
+	if empty["PATH"] != "/opt/riido/bin" {
+		t.Fatalf("empty PATH=%q", empty["PATH"])
+	}
+}
