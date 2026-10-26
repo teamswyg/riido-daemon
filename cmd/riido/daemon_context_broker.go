@@ -101,6 +101,9 @@ func contextReadAuditLine(req daemonRequest, reply contextcli.Envelope) string {
 		result = string(reply.Error.Code)
 	}
 	target := req.Args["work"]
+	if req.Command == "agents show" {
+		target = req.Args["agent"]
+	}
 	if target == "" {
 		target = "-"
 	}

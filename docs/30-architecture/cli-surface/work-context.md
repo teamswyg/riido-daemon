@@ -26,6 +26,8 @@ Current availability in this binary:
 
 Output contract (envelope v1): with `--json`, stdout carries exactly one JSON object `{schema_version, request_id, data, sources, warnings, page, error}`; progress and diagnostics go to stderr. `error` is `{code, message, retryable, next_action, request_id}` and never contains tokens or response headers.
 
+Local context-read audit lines identify the requested target: `agents show` records its agent ID, work/context reads record an explicit work ID, and commands without a target record `-`. Command and target remain quoted on one line. Run capabilities, lease credentials and response bodies are never included.
+
 Exit codes:
 
 - 0 success (including accepted queued work)
