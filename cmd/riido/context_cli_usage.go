@@ -12,6 +12,7 @@ func printContextUsage(w io.Writer) {
 	printWorkUsage(w)
 	printContextGroupUsage(w)
 	printAgentsUsage(w)
+	printMeetingUsage(w)
 	printAuthUsage(w)
 	fmt.Fprintln(w, "  riido whoami [--json]")
 	fmt.Fprintln(w, "  riido doctor [--check-api] [--json]")
@@ -38,4 +39,9 @@ func printAgentsUsage(w io.Writer) {
 func printAuthUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido auth <login|logout|status> [--json]")
 	fmt.Fprintln(w, "    riido auth login --desktop|--browser|--with-token   (--with-token reads stdin; secrets are never accepted as arguments)")
+}
+
+func printMeetingUsage(w io.Writer) {
+	fmt.Fprintln(w, "  riido meeting list [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (snapshot metadata; defaults to the assigned task)")
+	fmt.Fprintln(w, "  riido meeting get <MEETING-ID> [--budget CHARS] [--json]   (captured document body)")
 }

@@ -24,6 +24,8 @@ func TestContextCLINativeIPCRoundTrip(t *testing.T) {
 		{"comments", []string{"work", "comments", "RIID-5900"}},
 		{"agents", []string{"agents", "list"}},
 		{"agent", []string{"agents", "show", "synthetic-agent"}},
+		{"meetings", []string{"meeting", "list", "--work", "RIID-5900"}},
+		{"meeting", []string{"meeting", "get", "synthetic-meeting"}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.view, func(t *testing.T) {

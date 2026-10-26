@@ -28,8 +28,11 @@ func cursorPage(view string, data json.RawMessage) *contextcli.Page {
 }
 
 // queryTarget is the read's target: a work item for work views, an agent ID
-// for `agents show`.
+// for `agents show`, or a meeting ID for `meeting get`.
 func queryTarget(args map[string]string) string {
+	if meeting := strings.TrimSpace(args["meeting"]); meeting != "" {
+		return meeting
+	}
 	if agent := strings.TrimSpace(args["agent"]); agent != "" {
 		return agent
 	}

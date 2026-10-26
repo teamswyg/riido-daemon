@@ -19,12 +19,12 @@ func TestCodexContextCLIUsesDaemonExecutable(t *testing.T) {
 		quote = "''"
 	}
 	got := ApplyContextCLIContract("codex", req)
-	for _, want := range []string{quote, "context get --json --no-input", "work get"} {
+	for _, want := range []string{quote, "context get --json --no-input", "work get", "meeting list", "meeting get"} {
 		if !strings.Contains(got.SystemPrompt, want) {
 			t.Errorf("missing daemon executable instruction %q", want)
 		}
 	}
-	for _, unwanted := range []string{"Begin with riido context", "/caller/wrong-riido"} {
+	for _, unwanted := range []string{"Begin with riido context", "riido meeting", "/caller/wrong-riido"} {
 		if strings.Contains(got.SystemPrompt, unwanted) {
 			t.Errorf("untrusted or PATH-selected command: %q", unwanted)
 		}

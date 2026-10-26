@@ -14,6 +14,8 @@ func TestContextReadAuditIdentifiesRequestedTarget(t *testing.T) {
 		want    string
 	}{
 		{"agents show", map[string]string{"agent": "agent-5900"}, `target="agent-5900"`},
+		{"meeting get", map[string]string{"meeting": "meeting-5900"}, `target="meeting-5900"`},
+		{"meeting list", map[string]string{"work": "RIID-5900"}, `target="RIID-5900"`},
 		{"work get", map[string]string{"work": "RIID-5900"}, `target="RIID-5900"`},
 		{"context get", map[string]string{"work": "RIID-5900"}, `target="RIID-5900"`},
 		{"agents list", nil, `target="-"`},
