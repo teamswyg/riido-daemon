@@ -1229,7 +1229,7 @@
     },
     {
       "id": "daemon_local_ipc_must_match_host_transport",
-      "text": "Daemon lifecycle, status, shutdown, tool-approval IPC, local API, and default local paths must match the host: Unix sockets and Application Support roots on Darwin/Linux, and local-only named pipes plus LocalAppData workdirs on Windows. Windows clients must retry the pre-Accept file-not-found startup window, named-pipe closure conditions must surface as EOF after a complete response, and a native Windows daemon status round trip must pass, so desktop health checks and direct CLI recovery cannot create a daemon restart loop, reject a valid response, or select an unsupported transport.",
+      "text": "Daemon lifecycle, status, shutdown, tool-approval IPC, local API, and default local paths must match the host: Unix sockets and Application Support roots on Darwin/Linux, and local-only named pipes plus LocalAppData workdirs on Windows. Windows clients must retry the pre-Accept file-not-found startup window, named-pipe closure conditions must surface as EOF after a complete response, and a native Windows daemon status round trip must pass, so desktop health checks and direct CLI recovery cannot create a daemon restart loop, reject a valid response, or select an unsupported transport. The compiled context CLI child must round-trip all supported read leaves through native IPC and the real broker with synthetic fixtures, rejecting mismatched, uncertain and ended runs without leaking capabilities; this is separate from provider or Desktop acceptance.",
       "files": [
         "cmd/riido/api_connection_config.go",
         "cmd/riido/api_connection_config_test.go",
@@ -1252,11 +1252,15 @@
         "internal/riidoapi/local_transport_windows_dial.go",
         "internal/riidoapi/local_transport_windows_native.go",
         ".github/workflows/riidoapi.yml",
-        "internal/riidoapi/local_transport_windows_conn.go"
+        "internal/riidoapi/local_transport_windows_conn.go",
+        "cmd/riido/daemon_ipc_context_native_integration_test.go",
+        "cmd/riido/daemon_ipc_context_native_fixture_test.go"
       ],
       "docs": [
         "docs/30-architecture/loop-registry.riido.json",
-        "docs/30-architecture/loop-registry.md"
+        "docs/30-architecture/loop-registry.md",
+        "docs/20-domain/distribution-host-integration/local-ipc/windows-msix-strategy.riido.json",
+        "docs/20-domain/distribution-host-integration/local-ipc/windows-msix-strategy.md"
       ],
       "evidence": [
         "production.windows_daemon.restart_loop_47_pids_29m",
@@ -1264,7 +1268,8 @@
         "windows_native.named_pipe.daemon_status_round_trip",
         "daemon_local_ipc_transport_regression",
         "local_api_host_defaults_regression",
-        "TestWindowsNamedPipeClosePreservesBufferedResponse"
+        "TestWindowsNamedPipeClosePreservesBufferedResponse",
+        "TestContextCLINativeIPCRoundTrip"
       ],
       "verifiers": [
         {
@@ -1326,6 +1331,25 @@
           "contains": [
             "TestWindowsNamedPipeClosePreservesBufferedResponse",
             "io.ReadAll"
+          ]
+        },
+        {
+          "name": "context-cli-native-broker-round-trip",
+          "file": "cmd/riido/daemon_ipc_context_native_integration_test.go",
+          "contains": [
+            "TestContextCLINativeIPCRoundTrip",
+            "PERMISSION_DENIED",
+            "OUT_OF_RUN_SCOPE"
+          ]
+        },
+        {
+          "name": "windows-context-cli-native-workflow",
+          "file": ".github/workflows/riidoapi.yml",
+          "contains": [
+            "TestContextCLINativeIPCRoundTrip",
+            "internal/contextcli/**",
+            "internal/contextbroker/**",
+            "cmd/riido/**"
           ]
         }
       ]
