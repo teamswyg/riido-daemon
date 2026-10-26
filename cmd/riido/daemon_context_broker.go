@@ -73,6 +73,7 @@ func contextBindingForRun(req bridge.TaskRequest, runtimeID string) contextbroke
 		RuntimeID:    runtimeID,
 		AgentID:      strings.TrimSpace(req.Metadata[saasplane.MetadataAgentID]),
 		AssignmentID: strings.TrimSpace(req.Metadata[saasplane.MetadataAssignmentID]),
+		LeaseToken:   strings.TrimSpace(req.Metadata[saasplane.MetadataLeaseToken]),
 	}
 }
 

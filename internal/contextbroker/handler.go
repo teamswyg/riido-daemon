@@ -11,6 +11,9 @@ type Broker struct {
 	Socket string
 	// BinDir is prepended to PATH so runs resolve the bundled `riido`.
 	BinDir string
+	// Fetcher reads assignment context snapshots; nil means reads stay
+	// CONTROL_PLANE_UNSUPPORTED (non-SaaS control planes).
+	Fetcher Fetcher
 }
 
 // New returns a broker with an empty registry.
@@ -36,7 +39,10 @@ type CapabilitiesData struct {
 	Run          Binding `json:"run"`
 }
 
-const controlPlaneUnavailable = "unsupported"
+const (
+	controlPlaneUnavailable        = "unsupported"
+	controlPlaneAssignmentSnapshot = "assignment_snapshot"
+)
 
 // Handle verifies the run capability and answers inside the run scope.
 func (b *Broker) Handle(req contextcli.ContextReadRequest, active RunActive) contextcli.Envelope {
@@ -50,7 +56,11 @@ func (b *Broker) Handle(req contextcli.ContextReadRequest, active RunActive) con
 	}
 	switch req.Command {
 	case "capabilities":
-		return contextcli.NewEnvelope(requestID, CapabilitiesData{Broker: "daemon", ControlPlane: controlPlaneUnavailable, Run: binding})
+		controlPlane := controlPlaneUnavailable
+		if b.Fetcher != nil {
+			controlPlane = controlPlaneAssignmentSnapshot
+		}
+		return contextcli.NewEnvelope(requestID, CapabilitiesData{Broker: "daemon", ControlPlane: controlPlane, Run: binding})
 	case "whoami":
 		env := contextcli.NewEnvelope(requestID, WhoamiData{Mode: contextcli.ModeAgent, Run: binding})
 		env.Warnings = append(env.Warnings, contextcli.Warning{
@@ -59,9 +69,7 @@ func (b *Broker) Handle(req contextcli.ContextReadRequest, active RunActive) con
 		})
 		return env
 	default:
-		return contextcli.FailureEnvelope(requestID, contextcli.Fail(contextcli.CodeControlPlaneUnsupported,
-			"control-plane 실행 grant API가 아직 없어 Riido 데이터를 조회할 수 없습니다",
-			"프롬프트로 받은 맥락을 사용하세요"))
+		return b.read(req, requestID, binding)
 	}
 }
 

@@ -39,11 +39,15 @@ func contextGetCall() contextReadCall {
 		spec:    contextcli.ArgSpec{Values: []string{"--work", "--budget"}},
 		usage:   printContextGroupUsage,
 		payload: func(args contextcli.Args) (map[string]string, *contextcli.CLIError) {
-			ref, cliErr := contextcli.ParseWorkRef(args.Value("--work"))
-			if cliErr != nil {
-				return nil, cliErr
+			// Without --work an agent run reads its own assigned task.
+			payload := map[string]string{"work": ""}
+			if raw := args.Value("--work"); raw != "" {
+				ref, cliErr := contextcli.ParseWorkRef(raw)
+				if cliErr != nil {
+					return nil, cliErr
+				}
+				payload = map[string]string{"work": ref.Value, "work_ref_kind": string(ref.Kind)}
 			}
-			payload := map[string]string{"work": ref.Value, "work_ref_kind": string(ref.Kind)}
 			if budget := args.Value("--budget"); budget != "" {
 				chars, err := strconv.Atoi(budget)
 				if err != nil || chars < 1 {

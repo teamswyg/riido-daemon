@@ -25,13 +25,16 @@ const (
 
 // Binding is the run scope a capability stands for.
 type Binding struct {
-	RunKey       string    `json:"-"`
-	TaskID       string    `json:"task_id,omitempty"`
-	WorkspaceID  string    `json:"workspace_id,omitempty"`
-	RuntimeID    string    `json:"runtime_id,omitempty"`
-	AgentID      string    `json:"agent_id,omitempty"`
-	AssignmentID string    `json:"assignment_id,omitempty"`
-	IssuedAt     time.Time `json:"issued_at"`
+	RunKey       string `json:"-"`
+	TaskID       string `json:"task_id,omitempty"`
+	WorkspaceID  string `json:"workspace_id,omitempty"`
+	RuntimeID    string `json:"runtime_id,omitempty"`
+	AgentID      string `json:"agent_id,omitempty"`
+	AssignmentID string `json:"assignment_id,omitempty"`
+	// LeaseToken proves the SaaS lease when the broker reads the assignment
+	// context. It never leaves the daemon: not in JSON, env, or logs.
+	LeaseToken string    `json:"-"`
+	IssuedAt   time.Time `json:"issued_at"`
 }
 
 type tokenHash [sha256.Size]byte

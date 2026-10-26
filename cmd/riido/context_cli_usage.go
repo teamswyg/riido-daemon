@@ -25,7 +25,7 @@ func printWorkUsage(w io.Writer) {
 }
 
 func printContextGroupUsage(w io.Writer) {
-	fmt.Fprintln(w, "  riido context get --work <RIID-1234|ID> [--budget CHARS] [--json]")
+	fmt.Fprintln(w, "  riido context get [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (agent runs default to the assigned task)")
 	fmt.Fprintln(w, "  riido context changes --since SNAPSHOT [--json]")
 }
 
