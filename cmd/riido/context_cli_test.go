@@ -165,7 +165,7 @@ func TestCapabilitiesListsEveryWorkContextCommand(t *testing.T) {
 		t.Fatalf("capabilities: %v", err)
 	}
 	out := h.stdout.String()
-	for _, name := range []string{"work get", "work search", "context get", "context changes", "auth login", "whoami", "doctor"} {
+	for _, name := range []string{"work get", "work search", "context get", "context changes", "agents list", "agents show", "auth login", "whoami", "doctor"} {
 		if !strings.Contains(out, `"name": "`+name+`"`) {
 			t.Fatalf("capabilities missing %q:\n%s", name, out)
 		}

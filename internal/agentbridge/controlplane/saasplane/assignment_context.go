@@ -27,13 +27,15 @@ type AssignmentContextSource struct {
 	Version string `json:"version,omitempty"`
 }
 
-// AssignmentContextResponse is the snapshot view returned to the lease holder.
+// AssignmentContextResponse is the snapshot (or live, for the agent
+// directory) view returned to the lease holder.
 type AssignmentContextResponse struct {
 	AssignmentID string                    `json:"assignment_id"`
 	TaskID       string                    `json:"task_id"`
 	View         string                    `json:"view"`
 	CapturedAt   time.Time                 `json:"captured_at"`
 	Truncated    bool                      `json:"truncated,omitempty"`
+	Live         bool                      `json:"live,omitempty"`
 	Data         json.RawMessage           `json:"data"`
 	Sources      []AssignmentContextSource `json:"sources"`
 }

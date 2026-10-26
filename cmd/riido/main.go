@@ -50,6 +50,8 @@ func run(args []string) error {
 		return runWork(defaultContextIO(), args[1:])
 	case mainCommandContext:
 		return runContext(defaultContextIO(), args[1:])
+	case mainCommandAgents:
+		return runAgents(defaultContextIO(), args[1:])
 	case mainCommandAuth:
 		return runAuth(defaultContextIO(), args[1:])
 	case mainCommandWhoami:

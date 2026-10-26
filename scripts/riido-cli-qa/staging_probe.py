@@ -30,7 +30,7 @@ FORBIDDEN_ENV = {
     "RIIDO_LEASE_TOKEN", "LEASE_TOKEN",
 }
 READ_CHECKS = ["context", "work", "parent", "tree", "relations", "comments",
-               "outside_scope", "activity_unsupported", "search_unsupported",
+               "agents", "outside_scope", "activity_unsupported", "search_unsupported",
                "changes_unsupported"]
 MAX_RESPONSE_BYTES = 17 * 1024 * 1024
 
@@ -84,6 +84,33 @@ def snapshot_envelope(result):
         require(isinstance(source.get("fetched_at"), str) and bool(source["fetched_at"]),
                 "SOURCE_CAPTURE_TIME_MISSING")
     return value
+
+
+AGENT_FIELDS = {"agent_id", "name", "role_status", "work_status", "runtime", "callable"}
+AGENT_PRIVATE_KEYS = {"instruction", "owner_principal_id", "model_id", "lease_token"}
+
+
+def validate_agents(listing, shown):
+    """RIID-5892 directory: live, requester-scoped, no private agent fields."""
+    require("LIVE_STATUS" in {w.get("code") for w in listing["warnings"] if isinstance(w, dict)},
+            "LIVE_WARNING_MISSING")
+    agents = listing["data"].get("agents")
+    require(isinstance(agents, list) and len(agents) >= 1, "AGENT_FIXTURE_MISSING")
+    current = 0
+    for entry in agents:
+        require(isinstance(entry, dict) and AGENT_FIELDS <= entry.keys(), "AGENT_FIELDS_MISSING")
+        require(not AGENT_PRIVATE_KEYS & entry.keys(), "AGENT_PRIVATE_FIELD_LEAK")
+        require(isinstance(entry["callable"], bool)
+                and entry["callable"] == (not entry.get("unavailable_reasons")), "AGENT_CALLABLE_MISMATCH")
+        require(entry["runtime"].get("connection") in {"online", "offline"}, "AGENT_CONNECTION_INVALID")
+        current += 1 if entry.get("is_current_agent") else 0
+    require(current == 1, "CURRENT_AGENT_NOT_MARKED")
+    require(listing["data"].get("policy_checked") is False or
+            listing["data"].get("policy_checked") is True, "POLICY_FLAG_MISSING")
+    if shown is not None:
+        require(shown["data"].get("agent", {}).get("agent_id") in {a["agent_id"] for a in agents},
+                "AGENT_SHOW_MISMATCH")
+    return len(agents)
 
 
 def validate_comments(pages, expected_total):
@@ -199,11 +226,18 @@ def run_suite(runner, work, parent, outside, expected_comments):
             require(cursor == str(len(pages)), "REPEATED_OR_SKIPPED_CURSOR")
         raise ProbeFailure("PAGE_BUDGET_EXCEEDED")
 
+    def agents():
+        listing = envelope(runner(["agents", "list", "--json"]))
+        others = [a.get("agent_id") for a in listing["data"].get("agents") or []
+                  if isinstance(a, dict) and not a.get("is_current_agent")]
+        shown = envelope(runner(["agents", "show", others[0], "--json"])) if others else None
+        return validate_agents(listing, shown)
+
     checks = [
         ("context", lambda: body(["context", "get"], work)),
         ("work", lambda: body(["work", "get", work], work)),
         ("parent", lambda: body(["work", "get", parent], parent)),
-        ("tree", tree), ("relations", relations), ("comments", comments),
+        ("tree", tree), ("relations", relations), ("comments", comments), ("agents", agents),
         ("outside_scope", lambda: envelope(runner(["work", "get", outside, "--json"]),
                                            4, "OUT_OF_RUN_SCOPE")),
         ("activity_unsupported", lambda: envelope(runner(["work", "activity", work, "--json"]),

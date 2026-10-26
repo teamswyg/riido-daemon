@@ -33,6 +33,9 @@ type Result struct {
 	Sources    []ResultSource  `json:"sources"`
 	CapturedAt time.Time       `json:"captured_at"`
 	Truncated  bool            `json:"truncated"`
+	// Live marks views read from current control-plane state at CapturedAt
+	// instead of the assignment-time snapshot.
+	Live bool `json:"live"`
 }
 
 // FetchError is a non-2xx control-plane answer. Message is the server's
@@ -59,10 +62,13 @@ const (
 	viewTree      = "tree"
 	viewResources = "resources"
 	viewComments  = "comments"
+	viewAgents    = "agents"
+	viewAgent     = "agent"
 )
 
-// viewForCommand maps CLI read commands onto snapshot views. Activity,
-// search and changes are not in the snapshot.
+// viewForCommand maps CLI read commands onto control-plane views: snapshot
+// views for work context, live views for the agent directory. Activity,
+// search and changes are not served.
 func viewForCommand(command string) (string, bool) {
 	switch command {
 	case "context get":
@@ -75,6 +81,10 @@ func viewForCommand(command string) (string, bool) {
 		return viewResources, true
 	case "work comments":
 		return viewComments, true
+	case "agents list":
+		return viewAgents, true
+	case "agents show":
+		return viewAgent, true
 	}
 	return "", false
 }

@@ -102,3 +102,28 @@ func TestReadCommentsPagesThroughCursor(t *testing.T) {
 		t.Fatalf("query=%+v", q)
 	}
 }
+
+func TestReadAgentsDirectoryIsLiveAndPaged(t *testing.T) {
+	fetcher := &fakeFetcher{result: Result{
+		Live:       true,
+		CapturedAt: time.Date(2026, 10, 26, 9, 0, 0, 0, time.UTC),
+		Data:       json.RawMessage(`{"agents":[{"agent_id":"agent-b"}],"total":60,"cursor":"0","next_cursor":"1"}`),
+		Sources:    []ResultSource{{Kind: "agent", ID: "agent-b", Part: "profile"}},
+	}}
+	b := New("", "")
+	b.Fetcher = fetcher
+	token := issueForTest(t, b, saasBinding())
+	env := b.Handle(request(token, "agents list"), activeSet("run-1"))
+	if env.Error != nil || env.Page == nil || env.Page.Limit != agentPageSize || env.Page.NextCursor != "1" {
+		t.Fatalf("envelope=%+v page=%+v", env, env.Page)
+	}
+	if len(env.Warnings) == 0 || env.Warnings[0].Code != "LIVE_STATUS" {
+		t.Fatalf("live answer must not claim snapshot freshness: %+v", env.Warnings)
+	}
+	req := request(token, "agents show")
+	req.Args = map[string]string{"agent": "agent-b"}
+	b.Handle(req, activeSet("run-1"))
+	if q := fetcher.queries[len(fetcher.queries)-1]; q.View != viewAgent || q.Target != "agent-b" {
+		t.Fatalf("query=%+v", q)
+	}
+}

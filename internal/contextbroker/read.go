@@ -27,7 +27,7 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	defer cancel()
 	result, err := b.Fetcher.FetchAssignmentContext(ctx, Query{
 		AgentID: binding.AgentID, AssignmentID: binding.AssignmentID, LeaseToken: binding.LeaseToken,
-		View: view, Target: strings.TrimSpace(req.Args["work"]), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
+		View: view, Target: queryTarget(req.Args), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
 	})
 	if err != nil {
 		return contextcli.FailureEnvelope(requestID, fetchFailure(err))
@@ -35,8 +35,8 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	data, budgetCut, budgetFits := applyBudget(result.Data, budgetChars(req.Args))
 	truncated := result.Truncated || budgetCut
 	env := contextcli.NewEnvelope(requestID, data)
-	if view == viewComments {
-		env.Page = commentPage(result.Data)
+	if view == viewComments || view == viewAgents {
+		env.Page = cursorPage(view, result.Data)
 	}
 	status := contextcli.SourceAvailable
 	if truncated {
@@ -46,10 +46,7 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	for _, source := range result.Sources {
 		env.Sources = append(env.Sources, contextcli.Source{ID: source.ID, Kind: source.Kind, Version: source.Version, FetchedAt: fetchedAt, Status: status, Truncated: truncated})
 	}
-	env.Warnings = append(env.Warnings, contextcli.Warning{
-		Code:    "ASSIGNMENT_SNAPSHOT",
-		Message: "배정 시점(" + fetchedAt + ")에 저장된 맥락입니다. 이후 변경은 반영되지 않습니다",
-	})
+	env.Warnings = append(env.Warnings, freshnessWarning(result.Live, fetchedAt))
 	if result.Truncated {
 		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "SNAPSHOT_TRUNCATED", Message: "본문이 길어 일부만 저장됐습니다"})
 	}

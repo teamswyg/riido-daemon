@@ -7,7 +7,7 @@ func appendContextCLIReadArgs(args []string, enabled bool) []string {
 		return args
 	}
 	var rules []string
-	for _, leaf := range []string{"context get", "work get", "work tree", "work relations", "work comments"} {
+	for _, leaf := range []string{"context get", "work get", "work tree", "work relations", "work comments", "agents list", "agents show"} {
 		rules = append(rules, "Bash(riido "+leaf+")", "Bash(riido "+leaf+" *)")
 	}
 	return append(args, "--allowedTools", strings.Join(rules, ","))

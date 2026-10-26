@@ -52,6 +52,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 	for _, sub := range []string{"get", "tree", "relations", "comments", "activity", "search"} {
 		commands = append(commands, agentRead("work "+sub))
 	}
+	commands = append(commands, agentRead("agents list"), agentRead("agents show"))
 	return CapabilitiesData{
 		CLIVersion:            cliVersion,
 		EnvelopeSchemaVersion: EnvelopeSchemaVersion,
