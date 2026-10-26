@@ -32,7 +32,7 @@ func request(token, command string) contextcli.ContextReadRequest {
 }
 
 func activeSet(keys ...string) RunActive {
-	return func(runKey string) bool { return slices.Contains(keys, runKey) }
+	return func(runKey string) (bool, bool) { return slices.Contains(keys, runKey), true }
 }
 
 func errorCode(t *testing.T, env contextcli.Envelope) contextcli.ErrorCode {

@@ -48,6 +48,9 @@ func dispatchDaemonRequest(conn net.Conn, req daemonRequest, flags startFlags, s
 		}
 		log.Printf("shutdown request received level=%s", level)
 	case daemonMethodContextRead:
+		// A control-plane fetch may take up to its own timeout; the default
+		// 5s connection deadline would drop a slower successful answer.
+		_ = conn.SetDeadline(time.Now().Add(contextReadConnDeadline))
 		writeContextRead(conn, req, settings, runtimes, log)
 	case daemonMethodToolApproval:
 		_ = conn.SetDeadline(time.Time{})

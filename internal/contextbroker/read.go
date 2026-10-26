@@ -32,17 +32,19 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	if err != nil {
 		return contextcli.FailureEnvelope(requestID, fetchFailure(err))
 	}
-	env := contextcli.NewEnvelope(requestID, result.Data)
+	data, budgetCut, budgetFits := applyBudget(result.Data, budgetChars(req.Args))
+	truncated := result.Truncated || budgetCut
+	env := contextcli.NewEnvelope(requestID, data)
 	if view == viewComments {
 		env.Page = commentPage(result.Data)
 	}
 	status := contextcli.SourceAvailable
-	if result.Truncated {
+	if truncated {
 		status = contextcli.SourcePartial
 	}
 	fetchedAt := result.CapturedAt.UTC().Format(time.RFC3339)
 	for _, source := range result.Sources {
-		env.Sources = append(env.Sources, contextcli.Source{ID: source.ID, Kind: source.Kind, Version: source.Version, FetchedAt: fetchedAt, Status: status, Truncated: result.Truncated})
+		env.Sources = append(env.Sources, contextcli.Source{ID: source.ID, Kind: source.Kind, Version: source.Version, FetchedAt: fetchedAt, Status: status, Truncated: truncated})
 	}
 	env.Warnings = append(env.Warnings, contextcli.Warning{
 		Code:    "ASSIGNMENT_SNAPSHOT",
@@ -51,7 +53,7 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	if result.Truncated {
 		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "SNAPSHOT_TRUNCATED", Message: "본문이 길어 일부만 저장됐습니다"})
 	}
-	return env
+	return withBudgetWarnings(env, budgetCut, budgetFits)
 }
 
 func fetchFailure(err error) *contextcli.CLIError {

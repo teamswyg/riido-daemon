@@ -1,15 +1,12 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
@@ -19,8 +16,6 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/logging"
 )
-
-const contextRunActiveTimeout = time.Second
 
 func parseDaemonContextCLI(raw string) (bool, error) {
 	value := strings.TrimSpace(raw)
@@ -111,19 +106,4 @@ func contextReadAuditLine(req daemonRequest, reply contextcli.Envelope) string {
 	}
 	return fmt.Sprintf("context_read command=%q target=%q result=%s request_id=%q sources=%d",
 		req.Command, target, result, reply.RequestID, len(reply.Sources))
-}
-
-// runtimeRunActive reports whether any runtime still has the run in flight.
-func runtimeRunActive(runtimes []*runtimeactor.Actor) contextbroker.RunActive {
-	return func(runKey string) bool {
-		ctx, cancel := context.WithTimeout(context.Background(), contextRunActiveTimeout)
-		defer cancel()
-		for _, rt := range runtimes {
-			beat, err := rt.HeartbeatPayload(ctx)
-			if err == nil && slices.Contains(beat.RunningTaskIDs, runKey) {
-				return true
-			}
-		}
-		return false
-	}
 }

@@ -21,8 +21,9 @@ func New(socket, binDir string) *Broker {
 	return &Broker{Registry: NewRegistry(), Socket: socket, BinDir: binDir}
 }
 
-// RunActive reports whether runKey still has a running session.
-type RunActive func(runKey string) bool
+// RunActive reports whether runKey still has a running session. certain is
+// false when a runtime could not answer in time: the run may still be going.
+type RunActive func(runKey string) (active, certain bool)
 
 // WhoamiData is returned for `riido whoami` in agent mode. Requester
 // identity needs the control-plane run grant, so it is reported as missing.
@@ -85,7 +86,15 @@ func (b *Broker) authorize(req contextcli.ContextReadRequest, active RunActive) 
 	if !ok {
 		return Binding{}, contextcli.Fail(contextcli.CodePermissionDenied, "알 수 없거나 만료된 실행 capability입니다", "")
 	}
-	if active == nil || !active(binding.RunKey) {
+	if active == nil {
+		return Binding{}, contextcli.Fail(contextcli.CodePermissionDenied, "이미 끝난 실행의 capability입니다", "")
+	}
+	running, certain := active(binding.RunKey)
+	if !certain {
+		// Inconclusive: keep the capability so a retry can still succeed.
+		return Binding{}, contextcli.Fail(contextcli.CodeUnavailable, "실행 상태를 확인하지 못했습니다", "잠시 후 다시 시도하세요")
+	}
+	if !running {
 		b.Registry.Revoke(binding.RunKey)
 		return Binding{}, contextcli.Fail(contextcli.CodePermissionDenied, "이미 끝난 실행의 capability입니다", "")
 	}
