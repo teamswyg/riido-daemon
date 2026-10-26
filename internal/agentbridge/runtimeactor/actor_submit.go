@@ -39,7 +39,7 @@ func (a *Actor) handleSubmit(
 	if a.cfg.LaunchEnv != nil {
 		a.cfg.LaunchEnv(msg.req, a.cfg.RuntimeID, launchEnv)
 	}
-	startReq := submitStartRequest(msg, capView, a.cfg.RuntimeID, launchEnv, a.cfg.Models)
+	startReq := submitStartRequest(msg, capView, a.cfg.RuntimeID, launchEnv, a.cfg.Models, a.cfg.LaunchEnv != nil)
 	spawn, err := adapter.BuildStart(startReq)
 	if err != nil {
 		return nil, submitBuildStartError(adapter, err)

@@ -15,7 +15,10 @@ import (
 const claudePermissionPromptToolName = "mcp__riido__approval"
 
 func (a bridgeClaudeAdapter) startOptions(req agentbridge.StartRequest) (claude.StartOptions, error) {
-	opts := claude.StartOptions{PermissionMode: claude.PermissionModeApproval}
+	opts := claude.StartOptions{
+		PermissionMode:  claude.PermissionModeApproval,
+		ContextCLIReads: req.ContextCLIEnabled && agentbridge.ContextCLIAvailable(req.Env),
+	}
 	if a.betaFullAccess {
 		opts.PermissionMode = claude.PermissionModeBypassDangerous
 		opts.BetaFullAccessAllowed = true

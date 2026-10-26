@@ -14,6 +14,8 @@ type StartRequest struct {
 	CustomArgs      []string
 	MCPConfig       []byte
 	Metadata        map[string]string
+	// ContextCLIEnabled is set by the daemon launch hook, never by run Env.
+	ContextCLIEnabled bool
 }
 
 // StartCommand is the process-port input the session actor uses to spawn the
