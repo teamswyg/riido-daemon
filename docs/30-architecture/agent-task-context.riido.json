@@ -7,7 +7,8 @@
     "internal/agentbridge/task_context_contract.go",
     "internal/agentbridge/telemetry_apply.go",
     "internal/agentbridge/host_context_contract.go",
-    "internal/agentbridge/task_context_cli_contract.go"
+    "internal/agentbridge/task_context_cli_contract.go",
+    "internal/agentbridge/task_context_cli_executable.go"
   ],
   "policy": {
     "provider_placement": "existing native/inline surfaces; task-first fallback remains",
@@ -18,6 +19,7 @@
     "host_discovery": "Discover repository/project, history/session and account-status capabilities once; empty workdir is not account denial; no credential reads or new cross-principal grants",
     "history_reads": "Compact list/search first; up to3 initial threads/concurrent calls; outputs=false/3turns/1500chars when supported; same-request exact-page reuse; returned cursors for older pages; fresh after mutations or account/session changes",
     "freshness": "Unversioned provider JSON/HTML and component snapshots are not proof of current Yjs; conflicting alternate representations have unknown chronology and remain references.",
+    "context_cli_executable": "Codex uses the daemon-owned absolute executable from runtime configuration, shell-quoted per host; assignment environment cannot override it. PATH changes in login shells must not select another riido. Existing sandbox policy remains unchanged.",
     "context_cli": "RIID-5900: only capability/socket/task-bearing launches get snapshot CLI rules. Read context get once, expand supported work leaves only as needed, page by returned cursor, retain snapshot/truncation/status evidence, never claim live/freely searchable context or expose credentials."
   },
   "verification": {
@@ -26,7 +28,10 @@
       "TestHostContextContractBoundsDiscoveryAndHistoryOnEveryProvider",
       "TestCodexHostDiscoveryContractReachesStartAndResumeWire",
       "TestContextProjectionSemanticsReachEveryProvider",
-      "TestSubmitStartRequestContextCLIContractPlacement"
+      "TestSubmitStartRequestContextCLIContractPlacement",
+      "TestCodexContextCLIUsesDaemonExecutable",
+      "TestCodexContextCLIQuotedExecutableSurvivesPATHReplacement",
+      "TestContextCLIExecutableWindowsQuoting"
     ],
     "real_provider_calls": false
   },

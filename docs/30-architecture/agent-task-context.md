@@ -81,3 +81,7 @@ allowedTools aliases are filtered. Claude owns shell separator/substitution
 permission checks; the four-provider live approval/socket matrix is still QA.
 References: https://code.claude.com/docs/en/cli-reference and
 https://code.claude.com/docs/en/permissions.
+
+### Codex login-shell executable selection
+
+The daemon supplies its own absolute executable path through trusted runtime configuration when the context CLI is enabled. Codex instructions invoke that executable directly with shell-safe quoting, so a login shell cannot select an older `riido` from a different PATH. The path is never accepted from assignment environment values. Other provider instructions and Claude read allow rules retain their existing command forms. This changes executable selection only; it does not grant socket access or relax provider sandbox policy. A read-only Codex sandbox may still reject the daemon socket and must be reported as unsupported in that mode.

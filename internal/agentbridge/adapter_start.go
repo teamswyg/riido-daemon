@@ -16,6 +16,8 @@ type StartRequest struct {
 	Metadata        map[string]string
 	// ContextCLIEnabled is set by the daemon launch hook, never by run Env.
 	ContextCLIEnabled bool
+	// ContextCLIExecutable is the daemon-owned absolute binary, not assignment input.
+	ContextCLIExecutable string
 }
 
 // StartCommand is the process-port input the session actor uses to spawn the

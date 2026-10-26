@@ -11,23 +11,24 @@ func submitLaunchEnv(msg *submitMsg) map[string]string {
 	return detectutil.EnvMapWithLaunchPATH(msg.req.Env)
 }
 
-func submitStartRequest(msg *submitMsg, capView Capability, runtimeID string, launchEnv map[string]string, models []RuntimeModel, contextCLIEnabled bool) agentbridge.StartRequest {
+func submitStartRequest(msg *submitMsg, capView Capability, runtimeID string, launchEnv map[string]string, models []RuntimeModel, contextCLIEnabled bool, contextCLIExecutable string) agentbridge.StartRequest {
 	metadata := cloneSubmitMetadata(msg.req.Metadata)
 	metadata[agentbridge.MetadataRuntimeID] = runtimeID
 	req := agentbridge.StartRequest{
-		TaskID:            msg.req.ID,
-		Prompt:            msg.req.Prompt,
-		Cwd:               msg.req.Cwd,
-		Executable:        capView.Executable,
-		Model:             submitModel(msg.req.Provider, msg.req.Model, msg.req.ResumeSessionID, models),
-		SystemPrompt:      msg.req.SystemPrompt,
-		MaxTurns:          msg.req.MaxTurns,
-		ResumeSessionID:   msg.req.ResumeSessionID,
-		Env:               launchEnv,
-		CustomArgs:        msg.req.CustomArgs,
-		MCPConfig:         msg.req.MCPConfig,
-		Metadata:          metadata,
-		ContextCLIEnabled: contextCLIEnabled,
+		TaskID:               msg.req.ID,
+		Prompt:               msg.req.Prompt,
+		Cwd:                  msg.req.Cwd,
+		Executable:           capView.Executable,
+		Model:                submitModel(msg.req.Provider, msg.req.Model, msg.req.ResumeSessionID, models),
+		SystemPrompt:         msg.req.SystemPrompt,
+		MaxTurns:             msg.req.MaxTurns,
+		ResumeSessionID:      msg.req.ResumeSessionID,
+		Env:                  launchEnv,
+		CustomArgs:           msg.req.CustomArgs,
+		MCPConfig:            msg.req.MCPConfig,
+		Metadata:             metadata,
+		ContextCLIEnabled:    contextCLIEnabled,
+		ContextCLIExecutable: contextCLIExecutable,
 	}
 	return agentbridge.ApplyContextCLIContract(string(msg.req.Provider), req)
 }

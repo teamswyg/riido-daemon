@@ -14,7 +14,7 @@ func ApplyContextCLIContract(provider string, req StartRequest) StartRequest {
 	if !req.ContextCLIEnabled || !ContextCLIAvailable(req.Env) {
 		return req
 	}
-	section := TaskContextCLIContractInstruction()
+	section := contextCLIInstruction(provider, req.ContextCLIExecutable)
 	strategy := RuntimeInstructionStrategyForProvider(provider)
 	switch strategy.AgentInstructionPlacement {
 	case TelemetryPlacementSystemPrompt, TelemetryPlacementSystemPromptInline:

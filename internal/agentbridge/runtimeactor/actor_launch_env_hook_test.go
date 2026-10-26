@@ -13,9 +13,10 @@ func TestRuntimeActorLaunchEnvHookReachesStartRequest(t *testing.T) {
 	startReqCh := make(chan agentbridge.StartRequest, 1)
 	var hookRuntimeID, hookTaskID string
 	a, p := startActor(t, Config{
-		RuntimeID:     "rt-test",
-		Adapters:      []agentbridge.Adapter{detectedOpenClawAdapter("/opt/riido/bin/openclaw", startReqCh)},
-		MaxConcurrent: 1,
+		RuntimeID:            "rt-test",
+		Adapters:             []agentbridge.Adapter{detectedOpenClawAdapter("/opt/riido/bin/openclaw", startReqCh)},
+		MaxConcurrent:        1,
+		ContextCLIExecutable: "/daemon/owned/riido",
 		LaunchEnv: func(req bridge.TaskRequest, runtimeID string, env map[string]string) {
 			hookRuntimeID, hookTaskID = runtimeID, req.ID
 			env["RIIDO_RUN_TOKEN"] = "rrc_test"
@@ -30,6 +31,9 @@ func TestRuntimeActorLaunchEnvHookReachesStartRequest(t *testing.T) {
 	r := waitForRunning(t, p, 0, time.Second)
 	select {
 	case req := <-startReqCh:
+		if req.ContextCLIExecutable != "/daemon/owned/riido" {
+			t.Fatal("daemon-owned executable did not reach StartRequest")
+		}
 		if req.Env["RIIDO_RUN_TOKEN"] != "rrc_test" || req.Env["KEEP"] != "1" || req.Env["PATH"] != "/riido/test/bin" {
 			t.Fatalf("launch env = %v", req.Env)
 		}

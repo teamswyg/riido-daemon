@@ -12,7 +12,7 @@ func TestSubmitStartRequestContextCLIContractPlacement(t *testing.T) {
 		t.Run(provider, func(t *testing.T) {
 			msg := &submitMsg{req: bridge.TaskRequest{ID: "task-1", Provider: bridge.Provider(provider), Prompt: "Keep my task.", SystemPrompt: "Existing policy."}}
 			env := map[string]string{"RIIDO_RUN_TOKEN": "cap-secret", "RIIDO_DAEMON_SOCKET": "/tmp/agentd.sock", "RIIDO_TASK_ID": "task-1"}
-			req := submitStartRequest(msg, Capability{}, "rt-1", env, nil, true)
+			req := submitStartRequest(msg, Capability{}, "rt-1", env, nil, true, "")
 			combined := req.Prompt + req.SystemPrompt
 			for _, want := range []string{"riido context get --json --no-input", "assignment-time snapshot", "work comments", "returned cursor", "not supported", "Never print"} {
 				if !strings.Contains(combined, want) {
@@ -29,14 +29,14 @@ func TestSubmitStartRequestContextCLIContractPlacement(t *testing.T) {
 			} else if !strings.HasPrefix(req.Prompt, msg.req.Prompt) || req.SystemPrompt != msg.req.SystemPrompt {
 				t.Fatal("inline placement lost task-first order")
 			}
-			off := submitStartRequest(msg, Capability{}, "rt-1", env, nil, false)
+			off := submitStartRequest(msg, Capability{}, "rt-1", env, nil, false, "")
 			if off.Prompt != msg.req.Prompt || off.SystemPrompt != msg.req.SystemPrompt {
 				t.Fatal("environment alone enabled CLI instructions without a launch hook")
 			}
 			for _, key := range []string{"RIIDO_RUN_TOKEN", "RIIDO_DAEMON_SOCKET", "RIIDO_TASK_ID"} {
 				previous := env[key]
 				delete(env, key)
-				off := submitStartRequest(msg, Capability{}, "rt-1", env, nil, true)
+				off := submitStartRequest(msg, Capability{}, "rt-1", env, nil, true, "")
 				if off.Prompt != msg.req.Prompt || off.SystemPrompt != msg.req.SystemPrompt {
 					t.Fatalf("incomplete wiring (%s) changed instructions", key)
 				}
