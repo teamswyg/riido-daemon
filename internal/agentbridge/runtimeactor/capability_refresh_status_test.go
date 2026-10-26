@@ -41,7 +41,7 @@ func TestRuntimeActorStatusMarksRefreshFailureUnknown(t *testing.T) {
 	provider.failDetection()
 	now = now.Add(2 * time.Second)
 	capability := awaitCapability(t, actor, func(c Capability) bool { return c.Reason == capabilityProbeFailedReason })
-	if !capability.Available || capability.Reason != capabilityProbeFailedReason {
+	if capability.Available || capability.Reason != capabilityProbeFailedReason {
 		t.Fatalf("capability after failed refresh = %+v", capability)
 	}
 }
