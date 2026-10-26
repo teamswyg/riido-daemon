@@ -41,13 +41,21 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		res.DiagnosticCode = hostintegration.ProviderDiagnosticLoginRequired
 		res.Reason = "provider login is required"
 	case detectutil.AuthProbeUnknown:
+		res.Available = false
 		res.HealthStatus = hostintegration.ProviderHealthUnknown
 		res.DiagnosticCode = hostintegration.ProviderDiagnosticAuthProbeFailed
 		res.Reason = "provider authentication probe did not complete"
 	}
-	if v, ok := detectutil.VersionProbe(ctx, exe, "--version"); ok {
+	if v, ok := detectedVersion(ctx, exe); ok {
 		res.Version = v
 		res.Metadata["raw_version"] = v
+	} else {
+		res.Available = false
+		if res.HealthStatus == hostintegration.ProviderHealthHealthy {
+			res.HealthStatus = hostintegration.ProviderHealthUnknown
+			res.DiagnosticCode = hostintegration.ProviderDiagnosticVersionProbeFailed
+			res.Reason = "provider version probe did not complete"
+		}
 	}
 	return res, nil
 }

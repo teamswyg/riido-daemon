@@ -97,6 +97,7 @@ func (r *capabilityRefresh) finish(a *Actor, result capabilityProbeResult, caps 
 			observed = retainCapabilityProbeIdentity(caps[idx], observed)
 		}
 		blockRuntimeDriftedTasks(context.Background(), inFlight, observed)
+		blockUnauthenticatedTasks(context.Background(), inFlight, observed)
 		caps[idx] = observed
 		detectedAt[result.provider] = a.cfg.Now()
 	} else {
