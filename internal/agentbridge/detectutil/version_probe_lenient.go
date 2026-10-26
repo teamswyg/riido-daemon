@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"strings"
 
+	"github.com/teamswyg/riido-daemon/internal/process/childenv"
 	"github.com/teamswyg/riido-daemon/internal/process/execwindow"
 )
 
@@ -19,6 +20,7 @@ func VersionProbe(ctx context.Context, exe string, args ...string) (string, bool
 	probeCtx, cancel := context.WithTimeout(ctx, versionProbeTimeout)
 	defer cancel()
 	cmd := exec.CommandContext(probeCtx, exe, args...)
+	cmd.Env = childenv.Environ()
 	execwindow.Hide(cmd)
 	var buf bytes.Buffer
 	cmd.Stdout = &buf

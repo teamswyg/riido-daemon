@@ -19,4 +19,6 @@ type StartOptions struct {
 	MCPConfigPath string
 	// PermissionPromptToolName routes Claude permission prompts to an MCP tool.
 	PermissionPromptToolName string
+	// ContextCLIReads adds only daemon-owned Riido snapshot read rules.
+	ContextCLIReads bool
 }

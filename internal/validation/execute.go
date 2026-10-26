@@ -3,6 +3,8 @@ package validation
 import (
 	"context"
 	"os/exec"
+
+	"github.com/teamswyg/riido-daemon/internal/process/childenv"
 )
 
 type commandExecution struct {
@@ -18,6 +20,7 @@ func executeValidationCommand(ctx context.Context, req normalizedCommandRequest)
 
 	cmd := exec.CommandContext(runCtx, "/bin/sh", "-lc", req.Command)
 	cmd.Dir = req.Workdir
+	cmd.Env = childenv.Environ()
 	output, err := cmd.CombinedOutput()
 	exitCode := exitCodeFor(runCtx, err)
 	return commandExecution{

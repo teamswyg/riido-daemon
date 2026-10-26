@@ -23,3 +23,4 @@
 | `RIIDO_DAEMON_PPROF_ADDR` | local diagnostics | empty, or dev default 127.0.0.1:6061 | loopback-only pprof listener |
 | `RIIDO_POLICY_BUNDLE_PATH` | policy loader | empty | optional riido-policy-bundle.v1 file |
 | `RIIDO_POLICY_BUNDLE_VERSION` | config/runtime/workdir | policy-bundle.local.v0 | active policy version |
+| `RIIDO_CONTEXT_CLI` | work-context CLI broker | off | on/off or boolean; on injects a per-run capability, socket, task/workspace ids, and PATH into provider runs and answers context_read IPC |

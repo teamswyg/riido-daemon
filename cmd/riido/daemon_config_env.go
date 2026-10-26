@@ -43,6 +43,10 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 	if err != nil {
 		return daemonSettings{}, err
 	}
+	contextCLI, err := parseDaemonContextCLI(getenv(envContextCLI))
+	if err != nil {
+		return daemonSettings{}, err
+	}
 	pprofAddr, err := parseDaemonPprofAddr(getenv(envDaemonPprofAddr), identity.profile)
 	if err != nil {
 		return daemonSettings{}, err
@@ -50,6 +54,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 
 	return daemonSettings{
 		RunHardTimeout: hard, RunSemanticIdle: idle,
+		ContextCLI:            contextCLI,
 		ExecutionBindings:     bindings,
 		ExecutionBindingStore: bindingStore,
 		DaemonID:              defaultDaemonID(getenv(envDaemonID), controlPlane.deviceID),

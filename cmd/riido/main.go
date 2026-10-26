@@ -1,12 +1,17 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 )
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
+		var reported reportedExit
+		if errors.As(err, &reported) {
+			os.Exit(reported.ExitCode())
+		}
 		fmt.Fprintln(os.Stderr, "riido:", err)
 		os.Exit(1)
 	}
@@ -41,6 +46,18 @@ func run(args []string) error {
 		return runDaemon(args[1:])
 	case mainCommandVersion:
 		return runVersion(args[1:])
+	case mainCommandWork:
+		return runWork(defaultContextIO(), args[1:])
+	case mainCommandContext:
+		return runContext(defaultContextIO(), args[1:])
+	case mainCommandAuth:
+		return runAuth(defaultContextIO(), args[1:])
+	case mainCommandWhoami:
+		return runWhoami(defaultContextIO(), args[1:])
+	case mainCommandDoctor:
+		return runDoctor(defaultContextIO(), args[1:])
+	case mainCommandCapabilities:
+		return runCapabilities(defaultContextIO(), args[1:])
 	default:
 		printUsage()
 		return fmt.Errorf("unknown command: %s", args[0])

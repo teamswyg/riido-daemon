@@ -10,6 +10,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
+	"github.com/teamswyg/riido-daemon/internal/process/childenv"
 	"github.com/teamswyg/riido-daemon/internal/process/execwindow"
 )
 
@@ -30,6 +31,7 @@ func ModelCatalog(ctx context.Context, env agentbridge.DetectEnv) ([]CatalogMode
 	defer cancel()
 	cmd := exec.CommandContext(ctx, exe, "models", "list", "--json")
 	cmd.WaitDelay = 100 * time.Millisecond
+	cmd.Env = childenv.Environ()
 	execwindow.Hide(cmd)
 	output := &catalogOutput{}
 	cmd.Stdout = output

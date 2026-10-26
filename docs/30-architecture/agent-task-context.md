@@ -57,3 +57,31 @@ representations carry no known chronology, and must not be treated as proof of
 the latest Yjs revision or new instructions. The latest user directive remains
 authoritative. These are interpretation rules, not a new read API, forced model
 retry or proof of semantic adherence.
+
+RIID-5900 capability-scoped context CLI
+
+After the daemon's launch hook issues a run capability, provider launches with
+a capability, daemon socket and task ID receive an additional CLI instruction
+section on their existing native/inline surfaces. Launches without this wiring
+keep their existing prompt and permission arguments. The broker, not these
+instructions or environment checks, authenticates the capability and scope.
+
+Read `riido context get --json --no-input` first, then use only needed
+`work get/tree/relations/comments` reads and returned pagination cursors.
+Responses are assignment-time snapshots; neither a successful read nor a source
+version proves live freshness. Respect unavailable/truncated/denied results,
+report sources actually read, and do not retry authorization failures, invent
+search/activity/changes support, or expose the capability or device credentials.
+
+Claude approval mode uses native `--allowedTools` rules for the five supported
+read leaves only. Exact and argument-bearing rules cover both default-task
+and explicit-ID calls. They do not authorize auth, writes, unsupported leaves,
+or arbitrary `riido`, `work` or `context` commands. In this mode caller-provided
+allowedTools aliases are filtered. Claude owns shell separator/substitution
+permission checks; the four-provider live approval/socket matrix is still QA.
+References: https://code.claude.com/docs/en/cli-reference and
+https://code.claude.com/docs/en/permissions.
+
+### Codex login-shell executable selection
+
+The daemon supplies its own absolute executable path through trusted runtime configuration when the context CLI is enabled. Codex instructions invoke that executable directly with shell-safe quoting, so a login shell cannot select an older `riido` from a different PATH. The path is never accepted from assignment environment values. Other provider instructions and Claude read allow rules retain their existing command forms. This changes executable selection only; it does not grant socket access or relax provider sandbox policy. A read-only Codex sandbox may still reject the daemon socket and must be reported as unsupported in that mode.

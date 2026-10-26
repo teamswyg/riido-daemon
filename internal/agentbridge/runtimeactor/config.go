@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/process"
 )
 
@@ -41,6 +42,13 @@ type Config struct {
 	// cached before Submit re-checks the adapter. Set a negative value to
 	// disable submit-time refresh.
 	CapabilityRefreshEvery time.Duration
+	// LaunchEnv, when set, may add entries to a run's provider launch
+	// environment before the adapter builds the start command. The map is
+	// owned by this submit. The daemon uses it to inject the work-context
+	// CLI wiring (run capability, socket, PATH) when that feature is on.
+	LaunchEnv func(req bridge.TaskRequest, runtimeID string, env map[string]string)
+	// ContextCLIExecutable is the daemon binary; never supplied by assignment Env.
+	ContextCLIExecutable string
 	// Now is injected for deterministic tests; defaults to time.Now.
 	Now func() time.Time
 }

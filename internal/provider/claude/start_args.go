@@ -8,13 +8,14 @@ import (
 
 func buildStartArgs(req agentbridge.StartRequest, opts StartOptions) ([]string, []string, []string) {
 	args := protocolArgs(opts.PermissionMode)
+	args = appendContextCLIReadArgs(args, opts.ContextCLIReads)
 	tempFiles := []string{}
 	args, tempFiles = appendMCPArgs(args, tempFiles, opts.MCPConfigPath)
 	if opts.PermissionMode != PermissionModeBypassDangerous || opts.PermissionPromptToolName != "" {
 		args = appendPermissionPromptTool(args, opts.PermissionPromptToolName)
 	}
 	args = appendRequestArgs(args, req)
-	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, BlockedArgs())
+	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, startBlockedArgs(opts.ContextCLIReads))
 	return append(args, kept...), dropped, tempFiles
 }
 

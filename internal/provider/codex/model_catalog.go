@@ -10,6 +10,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/detectutil"
+	"github.com/teamswyg/riido-daemon/internal/process/childenv"
 )
 
 type ModelInfo struct {
@@ -34,7 +35,7 @@ func ModelCatalog(ctx context.Context, env agentbridge.DetectEnv) ([]ModelInfo, 
 	cmd := exec.CommandContext(ctx, spawn.Executable, spawn.Args...)
 	cmd.WaitDelay = time.Second
 	// Preserve credential/config variables while using the discovered PATH.
-	cmd.Env = append(cmd.Environ(), spawn.Env...)
+	cmd.Env = append(childenv.Environ(), childenv.Scrub(spawn.Env)...)
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return nil, err

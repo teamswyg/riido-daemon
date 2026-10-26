@@ -14,6 +14,8 @@ func printJSON(value any) error {
 
 func printUsage() {
 	fmt.Fprintln(os.Stderr, "usage:")
+	printContextUsage(os.Stderr)
+	fmt.Fprintln(os.Stderr, "  # daemon and local runtime (used by Riido Desktop)")
 	fmt.Fprintln(os.Stderr, "  riido serve [--socket PATH] [--transport unix-socket|windows-named-pipe] [--task-db PATH]")
 	fmt.Fprintln(os.Stderr, "  riido api <status|tasks> [--socket PATH] [--transport unix-socket|windows-named-pipe]")
 	fmt.Fprintln(os.Stderr, "  riido api review-demo --channel CHANNEL --review-demo-consent-granted true|false [--socket PATH] [--transport unix-socket|windows-named-pipe]")

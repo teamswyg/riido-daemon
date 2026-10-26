@@ -14,6 +14,7 @@ type daemonBackgroundPaths struct {
 
 func newDaemonBackgroundPaths(t *testing.T) daemonBackgroundPaths {
 	t.Helper()
+	isolateDaemonLifecycleProviders(t)
 	tempDir := t.TempDir()
 	return daemonBackgroundPaths{
 		socket: daemonSocketPath(t),

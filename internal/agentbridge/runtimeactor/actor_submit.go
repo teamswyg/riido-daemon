@@ -36,7 +36,10 @@ func (a *Actor) handleSubmit(
 		return nil, UnavailablePreflight(capView)
 	}
 	launchEnv := submitLaunchEnv(msg)
-	startReq := submitStartRequest(msg, capView, a.cfg.RuntimeID, launchEnv, a.cfg.Models)
+	if a.cfg.LaunchEnv != nil {
+		a.cfg.LaunchEnv(msg.req, a.cfg.RuntimeID, launchEnv)
+	}
+	startReq := submitStartRequest(msg, capView, a.cfg.RuntimeID, launchEnv, a.cfg.Models, a.cfg.LaunchEnv != nil, a.cfg.ContextCLIExecutable)
 	spawn, err := adapter.BuildStart(startReq)
 	if err != nil {
 		return nil, submitBuildStartError(adapter, err)

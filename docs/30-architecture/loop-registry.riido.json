@@ -1101,7 +1101,7 @@
     },
     {
       "id": "claude_daemon_must_use_web_approval_mode",
-      "text": "Claude daemon runs must start in provider approval mode, not acceptEdits or bypassPermissions, so provider permission requests can be represented as SaaS/web tool approvals instead of leaking local desktop approval dialogs into AI thread text.",
+      "text": "Claude daemon runs must start in provider approval mode, not acceptEdits or bypassPermissions, so provider permission requests can be represented as SaaS/web tool approvals instead of leaking local desktop approval dialogs into AI thread text. When the context CLI launch capability is present, only the five supported snapshot-read command leaves may be auto-approved through native allowedTools rules; other tools retain the approval path.",
       "files": [
         "cmd/riido/bridge_adapter_claude.go",
         "cmd/riido/bridge_adapter_claude_mcp.go",
@@ -1118,14 +1118,18 @@
         "internal/provider/claude/provider_input.go",
         "internal/agentbridge/session/session_tool_approval_resolver.go",
         "internal/agentbridge/controlplane/saasplane/tool_approval_authorizer.go",
-        "internal/agentbridge/controlplane/saasplane/tool_approval.go"
+        "internal/agentbridge/controlplane/saasplane/tool_approval.go",
+        "internal/provider/claude/context_cli_args.go",
+        "cmd/riido/bridge_adapter_claude_context_cli_test.go"
       ],
       "docs": [
         "docs/30-architecture/local-acceptance-coverage.riido.json",
         "docs/30-architecture/local-qa-candidate-decision.riido.json",
         "docs/30-architecture/product-loop-evidence.riido.json",
         "docs/30-architecture/loop-registry.riido.json",
-        "docs/30-architecture/loop-registry.md"
+        "docs/30-architecture/loop-registry.md",
+        "docs/30-architecture/cli-surface.riido.json",
+        "docs/30-architecture/agent-task-context.riido.json"
       ],
       "evidence": [
         "staging.v3.thread_history.asn-000121-123.no_tool_approval_create",
@@ -1136,7 +1140,8 @@
         "daemon_tool_approval_authorizes_assignment_before_saas_resolution",
         "product_loop.provider_approval_round_trip",
         "provider_input_control_response",
-        "web_tool_approval_round_trip"
+        "web_tool_approval_round_trip",
+        "context_cli_supported_snapshot_read_leaves_only"
       ],
       "verifiers": [
         {
@@ -1210,6 +1215,14 @@
             "TestProductLoopManifestRequiresClaudeApprovalRoundTrip",
             "provider_approval_round_trip",
             "provider.claude.web_approval_round_trip"
+          ]
+        },
+        {
+          "name": "claude-context-cli-read-allowlist-test",
+          "file": "cmd/riido/bridge_adapter_claude_context_cli_test.go",
+          "contains": [
+            "TestClaudeContextCLIAllowsOnlySupportedReadLeaves",
+            "TestClaudeContextCLIIncompleteWiringKeepsPriorPermissionArgs"
           ]
         }
       ]

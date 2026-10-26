@@ -24,6 +24,13 @@ type daemonRequest struct {
 	TaskID        string              `json:"task_id,omitempty"`
 	RuntimeID     string              `json:"runtime_id,omitempty"`
 	Tool          agentbridge.ToolRef `json:"tool"`
+
+	// context_read fields (work-context CLI). RunCapability is never logged.
+	ContextSchemaVersion string            `json:"context_schema_version,omitempty"`
+	Command              string            `json:"command,omitempty"`
+	Args                 map[string]string `json:"args,omitempty"`
+	RunCapability        string            `json:"run_capability,omitempty"`
+	RequestID            string            `json:"request_id,omitempty"`
 }
 
 func readDaemonRequest(conn net.Conn) (daemonRequest, bool, error) {

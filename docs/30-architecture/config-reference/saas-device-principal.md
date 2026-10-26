@@ -15,3 +15,5 @@ If `RIIDO_DAEMON_ID` is unset on this path, daemon id defaults to `RIIDO_DEVICE_
 Desktop first enrolls the device through the logged-in webview session, then launches daemon with `RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET`. `saasplane` sends them as `X-Riido-Device-ID` and `X-Riido-Device-Secret`.
 
 Team IDs, Open API keys, task-context paths, and workspace API keys are not identity bridges.
+
+`RIIDO_DEVICE_SECRET` stays inside the daemon process. Every process the daemon starts — provider runtimes, provider version and model probes, validation commands, and repository preparation — gets its environment from `internal/process/childenv`, which removes `RIIDO_DEVICE_SECRET`, `RIIDO_SAAS_TOKEN`, and `RIIDO_TOKEN` (case-insensitive) even when the caller passes no overrides.

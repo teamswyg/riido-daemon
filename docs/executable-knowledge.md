@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 307 |
+| Generated reader docs | 308 |
 | Direct SSOT docs | 6 |
 | Registered manual docs | 0 |
-| Scanned docs | 313 |
+| Scanned docs | 314 |
 
 ## Generated Reader Origins
 
@@ -25,10 +25,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/workspaceinvariantsdocs -write-doc` | 10 | `docs/20-domain/workspace/invariants.md`<br>`docs/20-domain/workspace/invariants/core.md`<br>`docs/20-domain/workspace/invariants/directory-layout.md` |
 | `go run ./tools/providerruntimeboundarydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-actor-boundary.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/control-plane-port.md` |
 | `go run ./tools/providerruntimeresponsibilitydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-responsibility.md`<br>`docs/20-domain/provider-runtime/runtime-responsibility/agent-client-nonresponsibilities.md`<br>`docs/20-domain/provider-runtime/runtime-responsibility/c3-c4-boundary.md` |
+| `go run ./tools/clisurface -write-doc` | 8 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
 | `go run ./tools/contextmapdocs -write-doc` | 8 | `docs/20-domain/context-map.md`<br>`docs/20-domain/context-map/acl-locations.md`<br>`docs/20-domain/context-map/bounded-contexts.md` |
 | `go run ./tools/readmedocs -write-doc` | 8 | `AGENTS.md`<br>`NOTICE.md`<br>`README.md` |
 | `go run ./tools/securityredactiondocs -write-doc` | 8 | `docs/20-domain/security-redaction.md`<br>`docs/20-domain/security-redaction/audit-event.md`<br>`docs/20-domain/security-redaction/execution-responsibility.md` |
-| `go run ./tools/clisurface -write-doc` | 7 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
 | `go run ./tools/figmaboundarydocs -write-doc` | 7 | `docs/30-architecture/figma-ai-agent-daemon-boundary.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md` |
 | `go run ./tools/providermigrationdocs -write-doc` | 7 | `docs/20-domain/provider-runtime/public-migration-status.md`<br>`docs/20-domain/provider-runtime/public-migration-status/claude.md`<br>`docs/20-domain/provider-runtime/public-migration-status/codex.md` |
 | `go run ./tools/securityinvariantsdocs -write-doc` | 7 | `docs/20-domain/security/invariants.md`<br>`docs/20-domain/security/invariants/core.md`<br>`docs/20-domain/security/invariants/policy-bundle-example.md` |

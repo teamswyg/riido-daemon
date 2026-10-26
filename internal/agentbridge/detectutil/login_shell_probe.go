@@ -8,6 +8,8 @@ import (
 	"os/exec"
 	"runtime"
 	"strings"
+
+	"github.com/teamswyg/riido-daemon/internal/process/childenv"
 )
 
 func defaultLoginShellPATH() string {
@@ -22,6 +24,7 @@ func defaultLoginShellPATH() string {
 	defer cancel()
 	cmd := exec.CommandContext(ctx, shell, "-lc", loginShellPATHScript())
 	cmd.Stdin = nil
+	cmd.Env = childenv.Environ()
 	var buf bytes.Buffer
 	cmd.Stdout = &buf
 	cmd.Stderr = io.Discard

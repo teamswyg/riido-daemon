@@ -6,6 +6,12 @@
 
 | Command group | Backing owner | Boundary |
 | --- | --- | --- |
+| `riido work ...` | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener |
+| `riido context ...` | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work |
+| `riido auth ...` | cmd/riido, internal/contextcli | user-mode sign-in state; never accepts secrets as arguments and never prints credentials |
+| `riido whoami` | cmd/riido, internal/contextcli | reports the acting principal, workspace, and mode without printing secrets |
+| `riido doctor` | cmd/riido, internal/contextcli | local diagnosis of binary, PATH, mode, daemon IPC, and auth state; remote checks only with --check-api |
+| `riido capabilities` | cmd/riido, internal/contextcli | static description of CLI, envelope, and IPC schema versions plus command availability |
 | `riido serve` | internal/riidoapi | local IPC server over Unix socket or Windows named pipe |
 | `riido api ...` | internal/riidoapi | local IPC client for guarded task and status APIs |
 | `riido mwsd ...` | internal/mwsdbridge, internal/project, internal/taskdb | reads MWSD snapshots and promotes local workspace/task projections |

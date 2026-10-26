@@ -9,6 +9,54 @@
   "purpose": "Keeps the public cmd/riido command surface generated from a manifest and verified against black-box CLI output plus source boundaries.",
   "command_groups": [
     {
+      "name": "work",
+      "owner": "cmd/riido, internal/contextcli",
+      "boundary": "reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener",
+      "subcommands": ["get", "tree", "relations", "comments", "activity", "search"],
+      "usage_tokens": ["riido work <get|tree|relations|comments|activity|search>"],
+      "source_checks": ["main-command-work", "work-subcommand-vocabulary"]
+    },
+    {
+      "name": "context",
+      "owner": "cmd/riido, internal/contextcli",
+      "boundary": "returns the base work-context bundle and snapshot changes under the same mode rules as work",
+      "subcommands": ["get", "changes"],
+      "usage_tokens": ["riido context get", "riido context changes"],
+      "source_checks": ["main-command-context", "context-subcommand-vocabulary"]
+    },
+    {
+      "name": "auth",
+      "owner": "cmd/riido, internal/contextcli",
+      "boundary": "user-mode sign-in state; never accepts secrets as arguments and never prints credentials",
+      "subcommands": ["login", "logout", "status"],
+      "usage_tokens": ["riido auth <login|logout|status>"],
+      "source_checks": ["main-command-auth", "auth-subcommand-vocabulary"]
+    },
+    {
+      "name": "whoami",
+      "owner": "cmd/riido, internal/contextcli",
+      "boundary": "reports the acting principal, workspace, and mode without printing secrets",
+      "subcommands": [],
+      "usage_tokens": ["riido whoami"],
+      "source_checks": ["main-command-whoami"]
+    },
+    {
+      "name": "doctor",
+      "owner": "cmd/riido, internal/contextcli",
+      "boundary": "local diagnosis of binary, PATH, mode, daemon IPC, and auth state; remote checks only with --check-api",
+      "subcommands": [],
+      "usage_tokens": ["riido doctor"],
+      "source_checks": ["main-command-doctor"]
+    },
+    {
+      "name": "capabilities",
+      "owner": "cmd/riido, internal/contextcli",
+      "boundary": "static description of CLI, envelope, and IPC schema versions plus command availability",
+      "subcommands": [],
+      "usage_tokens": ["riido capabilities"],
+      "source_checks": ["main-command-capabilities"]
+    },
+    {
       "name": "serve",
       "owner": "internal/riidoapi",
       "boundary": "local IPC server over Unix socket or Windows named pipe",
@@ -67,6 +115,15 @@
   ],
   "providers": ["claude", "codex", "openclaw", "cursor"],
   "source_checks": [
+    {"name": "main-command-work", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandWork                mainCommand = \"work\""},
+    {"name": "main-command-context", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandContext             mainCommand = \"context\""},
+    {"name": "main-command-auth", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandAuth                mainCommand = \"auth\""},
+    {"name": "main-command-whoami", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandWhoami              mainCommand = \"whoami\""},
+    {"name": "main-command-doctor", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandDoctor              mainCommand = \"doctor\""},
+    {"name": "main-command-capabilities", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandCapabilities        mainCommand = \"capabilities\""},
+    {"name": "work-subcommand-vocabulary", "file": "cmd/riido/work_command.go", "contains": "workCommandSearch    workCommand = \"search\""},
+    {"name": "context-subcommand-vocabulary", "file": "cmd/riido/context_command.go", "contains": "contextCommandChanges contextCommand = \"changes\""},
+    {"name": "auth-subcommand-vocabulary", "file": "cmd/riido/auth_command.go", "contains": "authCommandStatus authCommand = \"status\""},
     {"name": "main-command-serve", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandServe               mainCommand = \"serve\""},
     {"name": "main-command-api", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandAPI                 mainCommand = \"api\""},
     {"name": "main-command-mwsd", "file": "cmd/riido/cli_commands.go", "contains": "mainCommandMwsd                mainCommand = \"mwsd\""},
@@ -93,7 +150,8 @@
     {"title": "Runtime settings mapping", "path": "cli-surface/runtime-settings.md"},
     {"title": "Local IPC rule", "path": "cli-surface/local-ipc-rule.md"},
     {"title": "Guarded mutation rule", "path": "cli-surface/guarded-mutation-rule.md"},
-    {"title": "Validation", "path": "cli-surface/validation.md"}
+    {"title": "Validation", "path": "cli-surface/validation.md"},
+    {"title": "Work context CLI", "path": "cli-surface/work-context.md"}
   ],
   "detail_docs": [
     {
@@ -106,7 +164,8 @@
           "call local daemon packages in this repository",
           "read/write local JSON state through guarded adapters",
           "open local IPC transports only",
-          "emit JSON for shell/operator automation"
+          "emit JSON for shell/operator automation",
+          "emit the versioned work-context JSON envelope (`riido work`, `riido context`, `riido auth`, `riido whoami`, `riido doctor`, `riido capabilities`)"
         ]},
         {"kind": "paragraph", "text": "The CLI must not:"},
         {"kind": "bullets", "items": [
@@ -148,7 +207,7 @@
       "title": "Local IPC Rule",
       "path": "docs/30-architecture/cli-surface/local-ipc-rule.md",
       "blocks": [
-        {"kind": "paragraph", "text": "`riido serve`, `riido api`, and `riido daemon` may use:"},
+        {"kind": "paragraph", "text": "`riido serve`, `riido api`, `riido daemon`, and the agent-mode work-context commands (`riido work`, `riido context`, `riido whoami`, `riido doctor`) may use:"},
         {"kind": "bullets", "items": ["Unix socket", "Windows named pipe"]},
         {"kind": "paragraph", "text": "They must not add TCP/HTTP listeners to the local CLI binary. SaaS HTTP routes belong to the public control-plane repository."}
       ]
@@ -169,15 +228,61 @@
           "go test ./...",
           "go build -o /tmp/riido ./cmd/riido",
           "go run ./cmd/riido --help",
-          "go run ./cmd/riido bridge providers"
+          "go run ./cmd/riido bridge providers",
+          "go run ./cmd/riido capabilities --json",
+          "go run ./cmd/riido doctor --json"
         ]},
         {"kind": "paragraph", "text": "Commands that require a running daemon, mwsd socket, provider CLI, or local app state should have explicit skip conditions in tests."}
+      ]
+    },
+    {
+      "title": "Work Context CLI",
+      "path": "docs/30-architecture/cli-surface/work-context.md",
+      "blocks": [
+        {"kind": "paragraph", "text": "The work-context commands let an agent running under the daemon, or a person in a terminal, read the Riido context of a work item on demand instead of receiving everything in the prompt. They extend this binary; there is no separate CLI engine."},
+        {"kind": "paragraph", "text": "Two modes share the same commands and output contract:"},
+        {"kind": "bullets", "items": [
+          "agent mode: selected when the daemon injected `RIIDO_RUN_TOKEN` into the runtime process. Calls go CLI → local IPC (daemon broker, `RIIDO_DAEMON_SOCKET` or the default agentd endpoint) → control-plane run grant → monolith. The agent never holds a user credential",
+          "user mode: selected otherwise. Calls go straight to Riido servers with the signed-in user's OAuth credential kept in the OS keychain behind a user-presence check. The daemon is not involved"
+        ]},
+        {"kind": "paragraph", "text": "Mode selection is not a security boundary. A shell-capable agent can unset environment variables; protection comes from server-side permission checks and from the OS refusing to release the user credential without user presence."},
+        {"kind": "paragraph", "text": "Current availability in this binary:"},
+        {"kind": "bullets", "items": [
+          "available: `riido capabilities`, `riido doctor`, `riido auth status`, `riido auth logout`, and argument validation for every work-context command",
+          "agent-mode reads (`work`, `context`, `whoami`) send the `context_read` IPC request. A daemon without the broker, or with `RIIDO_CONTEXT_CLI` off, answers `unknown method`, which maps to exit 8 `CONTEXT_READ_UNSUPPORTED`",
+          "with `RIIDO_CONTEXT_CLI=on`, the daemon issues a random per-run capability at provider launch (stored only as a SHA-256 hash, rotated on retry) and injects `RIIDO_RUN_TOKEN`, `RIIDO_DAEMON_SOCKET`, `RIIDO_TASK_ID`, `RIIDO_WORKSPACE_ID`, and its own bin directory first on `PATH`",
+          "the broker rejects missing, unknown, rotated, or ended-run capabilities with exit 4 `PERMISSION_DENIED`, and task or workspace mismatches with exit 4 `OUT_OF_RUN_SCOPE`. It answers `whoami` with run facts plus a `REQUESTER_UNRESOLVED` warning",
+          "on the SaaS control plane, Riido data reads come from the assignment context snapshot (control-plane ADR-001 option 4): the task context the server composed into the prompt at assign/reply time. The broker sends `POST /v1/agents/{agent_id}/assignment-context` with the device credential and the run's lease token, which never leave the daemon. `context get` (without `--work` it reads the assigned task), `work get` (the task or its project, milestone, or parent), `work tree`, `work relations` (links, files, and related work and meeting titles), and `work comments` (all comments stored at assignment time in priority order — the comment that started the run, the 20 most recent, then older — paged by `--cursor`) are served with an `ASSIGNMENT_SNAPSHOT` warning. `--budget CHARS` is enforced by the broker: the longest free-text fields (content, body, description, summary) are halved (marked `…`) while ids, keys and URLs are never shortened, until the JSON data fits, with a `BUDGET_TRUNCATED` warning and truncated sources, or `BUDGET_EXCEEDED` when the structure alone is larger. A run whose runtime cannot answer the activity check in time gets a retryable exit 6 and keeps its capability; the server records each served source as a read. Work outside the snapshot returns exit 4 `OUT_OF_RUN_SCOPE`, an ended run exit 10 `LEASE_LOST`, and a server without the feature exit 8 `CONTROL_PLANE_UNSUPPORTED`",
+          "`work activity`, `work search`, and `context changes` are not part of the snapshot and return exit 8 `CONTROL_PLANE_UNSUPPORTED`; file and task-DB control planes have no snapshot either",
+          "Capability-bearing provider launches add snapshot CLI instructions on the existing native/inline surfaces. Claude approval mode adds only the supported read leaves to --allowedTools: context get and work get/tree/relations/comments, with exact and argument-bearing rules. No broad riido/work/context wildcard, write, auth, unsupported read, or permission-bypass rule is added. Caller allowedTools aliases cannot override the daemon-owned list while enabled. Missing capability/socket/task keeps prior launch behavior. Native shell composition parsing remains Claude-owned and needs real-runtime QA. Codex uses a daemon-owned, shell-quoted absolute executable in its CLI instructions to avoid login-shell PATH replacement; this does not change native sandbox/socket permissions.",
+          "user-mode reads and `auth login` return exit 8 `USER_MODE_UNAVAILABLE` until the server auth contract (ADR) and keychain storage land"
+        ]},
+        {"kind": "paragraph", "text": "Output contract (envelope v1): with `--json`, stdout carries exactly one JSON object `{schema_version, request_id, data, sources, warnings, page, error}`; progress and diagnostics go to stderr. `error` is `{code, message, retryable, next_action, request_id}` and never contains tokens or response headers."},
+        {"kind": "paragraph", "text": "Exit codes:"},
+        {"kind": "bullets", "items": [
+          "0 success (including accepted queued work)",
+          "2 usage error, including secrets passed as arguments",
+          "3 authentication required or expired",
+          "4 permission denied",
+          "5 not found (including expired snapshots)",
+          "6 connection, timeout, or transient server failure",
+          "7 rate limited",
+          "8 unsupported version, connection, or format",
+          "9 incomplete result (partial data kept with warnings)",
+          "10 conflict (version mismatch, session in use, lease lost)"
+        ]},
+        {"kind": "paragraph", "text": "Secrets never travel in argv. `--token`, `--secret`, `--password`, `--api-key` and their `--flag=value` forms are rejected with exit 2 on every work-context command; `riido auth login --with-token` reads stdin only."},
+        {"kind": "paragraph", "text": "The envelope and exit codes are provisional in `internal/contextcli`. They must move to `riido-contracts` before Riido Desktop or control-plane consume them."},
+        {"kind": "paragraph", "text": "QA reproduction tools are preserved in `scripts/riido-cli-qa/` and require Python 3.9 or newer with only the standard library. From the repository root, run `PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s scripts/riido-cli-qa -p 'test_*.py' -v` for the offline fixtures, and `python3 scripts/riido-cli-qa/staging_probe.py` for the offline NOT_RUN report. Neither command contacts a daemon, server, or provider."},
+        {"kind": "paragraph", "text": "`staging_probe.py --execute` is only for an already approved staging Agent run with daemon-injected capability/socket/task environment. `--help` lists the required non-secret approval reference, approved daemon build and CLI SHA-256, assigned work, in-snapshot parent, outside-snapshot work, and comment fixture count. The operator must independently verify the running daemon endpoint/build: the probe checks only the CLI binary on PATH. Do not copy credentials into arguments, files, or logs. The probe does not install, authenticate, dispatch an Agent, deploy, or grant approval; successful reads add server audit records, stop at the first failed check, and are not retried."},
+        {"kind": "paragraph", "text": "Every probe report keeps `staging_acceptance=NOT_COMPLETE` and manual checks at `NOT_RUN`. Offline fixtures, local socket/provider checks, actual server authentication and lease checks, Desktop installation, SSE visibility, and retention acceptance remain separate evidence. Automated PASS alone is not staging or release approval."}
       ]
     }
   ],
   "assertions": [
     "cmd/riido remains local-only and must not open public TCP or HTTP listeners",
     "usage output must expose each declared command group",
-    "bridge providers output must expose the provider vocabulary without launching provider tasks"
+    "bridge providers output must expose the provider vocabulary without launching provider tasks",
+    "work-context commands must reject secrets passed as arguments and keep the envelope on stdout"
   ]
 }
