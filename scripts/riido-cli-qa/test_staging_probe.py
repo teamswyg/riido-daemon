@@ -54,6 +54,18 @@ def fixtures():
         page = {"limit": 20, "next_cursor": next_cursor, "truncated": bool(next_cursor)}
         args = ("work", "comments", "assigned") + (("--cursor", "1") if index else ())
         out[args] = (0, success(data, [source("comment", c["id"]) for c in comments], page))
+    live = {"code": "LIVE_STATUS", "message": SENSITIVE}
+    agents = [{"agent_id": "self", "name": SENSITIVE, "role_status": "described", "work_status": "running",
+               "runtime": {"connection": "online"}, "callable": False, "unavailable_reasons": ["self"],
+               "is_current_agent": True},
+              {"agent_id": "peer", "name": SENSITIVE, "role_status": "missing", "work_status": "idle",
+               "runtime": {"connection": "offline"}, "callable": False, "unavailable_reasons": ["runtime_offline"]}]
+    listing = success({"agents": agents, "policy_checked": False}, [source("agent", "peer")])
+    listing["warnings"] = [live]
+    out[("agents", "list")] = (0, listing)
+    shown = success({"agent": agents[1], "policy_checked": False}, [source("agent", "peer")])
+    shown["warnings"] = [live]
+    out[("agents", "show", "peer")] = (0, shown)
     out[("work", "get", "outside")] = (4, failure("OUT_OF_RUN_SCOPE"))
     for command in [("work", "activity", "assigned"), ("work", "search", "--query", "qa"),
                     ("context", "changes", "--since", "qa")]:
@@ -77,7 +89,7 @@ class ProbeTests(unittest.TestCase):
         self.assertEqual(report["automated_checks"], "PASS")
         self.assertEqual(report["staging_acceptance"], "NOT_COMPLETE")
         self.assertTrue(all(c["status"] == "NOT_RUN" for c in report["manual_checks"]))
-        self.assertEqual(len(self.calls), 11)
+        self.assertEqual(len(self.calls), 13)
         self.assertNotIn(SENSITIVE, json.dumps(report))
         self.assertNotIn("assigned", json.dumps(report))
 
@@ -125,7 +137,7 @@ class ProbeTests(unittest.TestCase):
     def test_expected_denial_is_specific(self):
         values = fixtures()
         values[("work", "get", "outside")] = (4, failure("PERMISSION_DENIED"))
-        self.assertEqual(self.run_fixtures(values)["checks"][6]["reason"], "ERROR_CODE_MISMATCH")
+        self.assertEqual(self.run_fixtures(values)["checks"][7]["reason"], "ERROR_CODE_MISMATCH")
 
     def test_non_json_failure_never_echoes_output(self):
         with self.assertRaisesRegex(probe.ProbeFailure, "^INVALID_JSON$"):
@@ -167,3 +179,28 @@ class ProbeTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class AgentDirectoryTests(unittest.TestCase):
+    def run_agents(self, mutate):
+        values = fixtures()
+        mutate(values)
+
+        def runner(args):
+            status, value = values[tuple(args[:-1])]
+            return status, json.dumps(value).encode()
+        report = probe.run_suite(runner, "assigned", "parent", "outside", 25)
+        return next(c for c in report["checks"] if c["name"] == "agents")
+
+    def test_private_fields_and_snapshot_warning_fail(self):
+        def leak(values):
+            values[("agents", "list")][1]["data"]["agents"][1]["instruction"] = SENSITIVE
+        self.assertEqual(self.run_agents(leak)["reason"], "AGENT_PRIVATE_FIELD_LEAK")
+
+        def stale(values):
+            values[("agents", "list")][1]["warnings"] = [{"code": "ASSIGNMENT_SNAPSHOT"}]
+        self.assertEqual(self.run_agents(stale)["reason"], "LIVE_WARNING_MISSING")
+
+        def inconsistent(values):
+            values[("agents", "list")][1]["data"]["agents"][1]["callable"] = True
+        self.assertEqual(self.run_agents(inconsistent)["reason"], "AGENT_CALLABLE_MISMATCH")

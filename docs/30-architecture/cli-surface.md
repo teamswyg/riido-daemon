@@ -14,6 +14,7 @@ Keeps the public cmd/riido command surface generated from a manifest and verifie
 | --- | --- | --- | --- | --- |
 | `work` | `get`, `tree`, `relations`, `comments`, `activity`, `search` | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener | `main-command-work`, `work-subcommand-vocabulary` |
 | `context` | `get`, `changes` | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work | `main-command-context`, `context-subcommand-vocabulary` |
+| `agents` | `list`, `show` | cmd/riido, internal/contextcli | lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent | `main-command-agents`, `agents-subcommand-vocabulary` |
 | `auth` | `login`, `logout`, `status` | cmd/riido, internal/contextcli | user-mode sign-in state; never accepts secrets as arguments and never prints credentials | `main-command-auth`, `auth-subcommand-vocabulary` |
 | `whoami` | _none_ | cmd/riido, internal/contextcli | reports the acting principal, workspace, and mode without printing secrets | `main-command-whoami` |
 | `doctor` | _none_ | cmd/riido, internal/contextcli | local diagnosis of binary, PATH, mode, daemon IPC, and auth state; remote checks only with --check-api | `main-command-doctor` |

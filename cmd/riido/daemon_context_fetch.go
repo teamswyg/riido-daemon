@@ -25,7 +25,7 @@ func (f saasContextFetcher) FetchAssignmentContext(ctx context.Context, q contex
 		}
 		return contextbroker.Result{}, err
 	}
-	result := contextbroker.Result{Data: out.Data, CapturedAt: out.CapturedAt, Truncated: out.Truncated}
+	result := contextbroker.Result{Data: out.Data, CapturedAt: out.CapturedAt, Truncated: out.Truncated, Live: out.Live}
 	for _, source := range out.Sources {
 		result.Sources = append(result.Sources, contextbroker.ResultSource{Kind: source.Kind, ID: source.ID, Part: source.Part, Version: source.Version})
 	}

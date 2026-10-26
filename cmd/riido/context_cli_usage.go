@@ -11,6 +11,7 @@ func printContextUsage(w io.Writer) {
 	fmt.Fprintln(w, "  # Riido work context (agents and people; add --json for the envelope)")
 	printWorkUsage(w)
 	printContextGroupUsage(w)
+	printAgentsUsage(w)
 	printAuthUsage(w)
 	fmt.Fprintln(w, "  riido whoami [--json]")
 	fmt.Fprintln(w, "  riido doctor [--check-api] [--json]")
@@ -27,6 +28,11 @@ func printWorkUsage(w io.Writer) {
 func printContextGroupUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido context get [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (agent runs default to the assigned task)")
 	fmt.Fprintln(w, "  riido context changes --since SNAPSHOT [--json]")
+}
+
+func printAgentsUsage(w io.Writer) {
+	fmt.Fprintln(w, "  riido agents list [--cursor C] [--json]   (live: agents the run's requester can see, with work status and connection)")
+	fmt.Fprintln(w, "  riido agents show <AGENT-ID> [--json]")
 }
 
 func printAuthUsage(w io.Writer) {
