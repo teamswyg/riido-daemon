@@ -44,8 +44,10 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	for _, source := range result.Sources {
 		env.Sources = append(env.Sources, contextcli.Source{ID: source.ID, Kind: source.Kind, Version: source.Version, FetchedAt: fetchedAt, Status: status, Truncated: result.Truncated})
 	}
-	env.Warnings = append(env.Warnings, contextcli.Warning{Code: "ASSIGNMENT_SNAPSHOT",
-		Message: "배정 시점(" + fetchedAt + ")에 저장된 맥락입니다. 이후 변경은 반영되지 않습니다"})
+	env.Warnings = append(env.Warnings, contextcli.Warning{
+		Code:    "ASSIGNMENT_SNAPSHOT",
+		Message: "배정 시점(" + fetchedAt + ")에 저장된 맥락입니다. 이후 변경은 반영되지 않습니다",
+	})
 	if result.Truncated {
 		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "SNAPSHOT_TRUNCATED", Message: "본문이 길어 일부만 저장됐습니다"})
 	}

@@ -27,8 +27,11 @@ func saasBinding() Binding {
 }
 
 func TestReadServesAssignmentSnapshot(t *testing.T) {
-	fetcher := &fakeFetcher{result: Result{Data: json.RawMessage(`{"component":{"keyNumber":"RIID-5900"}}`), CapturedAt: time.Date(2026, 10, 26, 9, 0, 0, 0, time.UTC),
-		Sources: []ResultSource{{Kind: "task", ID: "task-1", Part: "body", Version: "sha256:abc"}}}}
+	fetcher := &fakeFetcher{result: Result{
+		Data:       json.RawMessage(`{"component":{"keyNumber":"RIID-5900"}}`),
+		CapturedAt: time.Date(2026, 10, 26, 9, 0, 0, 0, time.UTC),
+		Sources:    []ResultSource{{Kind: "task", ID: "task-1", Part: "body", Version: "sha256:abc"}},
+	}}
 	b := New("", "")
 	b.Fetcher = fetcher
 	token := issueForTest(t, b, saasBinding())

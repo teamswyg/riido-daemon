@@ -2,6 +2,7 @@ package contextbroker
 
 import (
 	"os"
+	"slices"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
@@ -46,10 +47,8 @@ func prependPATH(env map[string]string, dir string) {
 		}
 	}
 	current := env[key]
-	for _, entry := range strings.Split(current, string(os.PathListSeparator)) {
-		if entry == dir {
-			return
-		}
+	if slices.Contains(strings.Split(current, string(os.PathListSeparator)), dir) {
+		return
 	}
 	if current == "" {
 		env[key] = dir

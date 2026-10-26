@@ -3,6 +3,7 @@ package contextbroker
 import (
 	"encoding/json"
 	"os"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -31,14 +32,7 @@ func request(token, command string) contextcli.ContextReadRequest {
 }
 
 func activeSet(keys ...string) RunActive {
-	return func(runKey string) bool {
-		for _, key := range keys {
-			if key == runKey {
-				return true
-			}
-		}
-		return false
-	}
+	return func(runKey string) bool { return slices.Contains(keys, runKey) }
 }
 
 func errorCode(t *testing.T, env contextcli.Envelope) contextcli.ErrorCode {
