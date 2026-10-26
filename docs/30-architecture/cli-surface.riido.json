@@ -268,6 +268,8 @@
           "user-mode reads and `auth login` return exit 8 `USER_MODE_UNAVAILABLE` until the server auth contract (ADR) and keychain storage land"
         ]},
         {"kind": "paragraph", "text": "Output contract (envelope v1): with `--json`, stdout carries exactly one JSON object `{schema_version, request_id, data, sources, warnings, page, error}`; progress and diagnostics go to stderr. `error` is `{code, message, retryable, next_action, request_id}` and never contains tokens or response headers."},
+
+        {"kind": "paragraph", "text": "Local context-read audit lines identify the requested target: `agents show` records its agent ID, work/context reads record an explicit work ID, and commands without a target record `-`. Command and target remain quoted on one line. Run capabilities, lease credentials and response bodies are never included."},
         {"kind": "paragraph", "text": "Exit codes:"},
         {"kind": "bullets", "items": [
           "0 success (including accepted queued work)",
