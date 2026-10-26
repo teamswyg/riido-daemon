@@ -11,6 +11,10 @@ func TestAuthStatusProbeClassifiesBoundedStates(t *testing.T) {
 		want    AuthProbeStatus
 	}{
 		{"exit 0", AuthProbeAuthenticated},
+		{"printf 'Not logged in'; exit 0", AuthProbeUnauthenticated},
+		{"printf 'Login required' >&2; exit 0", AuthProbeUnauthenticated},
+		{"printf 'Authentication required'; exit 0", AuthProbeUnauthenticated},
+		{"printf 'Not authenticated'; exit 0", AuthProbeUnauthenticated},
 		{"printf 'Not logged in'; exit 1", AuthProbeUnauthenticated},
 		{"printf 'unexpected provider output'; exit 1", AuthProbeUnknown},
 	}
