@@ -52,6 +52,8 @@ func run(args []string) error {
 		return runContext(defaultContextIO(), args[1:])
 	case mainCommandAgents:
 		return runAgents(defaultContextIO(), args[1:])
+	case mainCommandMeeting:
+		return runMeeting(defaultContextIO(), args[1:])
 	case mainCommandAuth:
 		return runAuth(defaultContextIO(), args[1:])
 	case mainCommandWhoami:

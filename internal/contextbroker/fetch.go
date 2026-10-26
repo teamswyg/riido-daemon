@@ -64,6 +64,8 @@ const (
 	viewComments  = "comments"
 	viewAgents    = "agents"
 	viewAgent     = "agent"
+	viewMeetings  = "meetings"
+	viewMeeting   = "meeting"
 )
 
 // viewForCommand maps CLI read commands onto control-plane views: snapshot
@@ -85,6 +87,10 @@ func viewForCommand(command string) (string, bool) {
 		return viewAgents, true
 	case "agents show":
 		return viewAgent, true
+	case "meeting list":
+		return viewMeetings, true
+	case "meeting get":
+		return viewMeeting, true
 	}
 	return "", false
 }

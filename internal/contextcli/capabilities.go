@@ -53,6 +53,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		commands = append(commands, agentRead("work "+sub))
 	}
 	commands = append(commands, agentRead("agents list"), agentRead("agents show"))
+	commands = append(commands, agentRead("meeting list"), agentRead("meeting get"))
 	return CapabilitiesData{
 		CLIVersion:            cliVersion,
 		EnvelopeSchemaVersion: EnvelopeSchemaVersion,
