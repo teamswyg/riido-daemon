@@ -32,6 +32,7 @@ func startForegroundDaemonForStatus(t *testing.T) foregroundDaemonRun {
 
 func configureForegroundStatusEnv(t *testing.T) {
 	t.Helper()
+	isolateDaemonLifecycleProviders(t)
 	t.Setenv(envDaemonID, "daemon-test-1")
 	t.Setenv(envDaemonVersion, "riido-agentd v1.2.3")
 	t.Setenv(envDaemonProfile, "desktop-api.riido.ai")
