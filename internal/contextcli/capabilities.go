@@ -27,7 +27,7 @@ type CapabilitiesData struct {
 }
 
 const (
-	noteDaemonBroker = "agent mode: Riido Desktop에 포함된 daemon이 context_read를 지원해야 합니다"
+	noteDaemonBroker = "agent mode: daemon의 context_read 브로커(RIIDO_CONTEXT_CLI=on)가 필요하고, Riido 데이터 조회는 control-plane 실행 grant 이후 가능합니다"
 	noteUserMode     = "user mode: 서버 인증 계약(ADR) 확정 전까지 사용할 수 없습니다"
 )
 

@@ -30,7 +30,7 @@ func TestErrorCodesMapToDocumentedExitCodes(t *testing.T) {
 		CodeUsage: 2, CodeSecretInArgv: 2, CodeAuthRequired: 3, CodePermissionDenied: 4,
 		CodeOutOfRunScope: 4, CodeNotFound: 5, CodeSnapshotExpired: 5, CodeUnavailable: 6,
 		CodeDaemonUnreachable: 6, CodeRateLimited: 7, CodeUnsupported: 8,
-		CodeContextReadUnsupported: 8, CodeUserModeUnavailable: 8, CodeIncomplete: 9,
+		CodeContextReadUnsupported: 8, CodeUserModeUnavailable: 8, CodeControlPlaneUnsupported: 8, CodeIncomplete: 9,
 		CodeConflict: 10, CodeLeaseLost: 10, ErrorCode("SOMETHING_NEW"): 8,
 	}
 	for code, exit := range want {

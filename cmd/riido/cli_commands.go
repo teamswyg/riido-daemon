@@ -43,6 +43,7 @@ const (
 	daemonMethodMetrics                daemonMethod = "metrics"
 	daemonMethodShutdown               daemonMethod = "shutdown"
 	daemonMethodToolApproval           daemonMethod = "tool_approval"
+	daemonMethodContextRead            daemonMethod = "context_read"
 )
 
 type taskCommand string

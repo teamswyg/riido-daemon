@@ -22,22 +22,23 @@ const (
 type ErrorCode string
 
 const (
-	CodeUsage                  ErrorCode = "USAGE"
-	CodeSecretInArgv           ErrorCode = "SECRET_IN_ARGV"
-	CodeAuthRequired           ErrorCode = "AUTH_REQUIRED"
-	CodePermissionDenied       ErrorCode = "PERMISSION_DENIED"
-	CodeOutOfRunScope          ErrorCode = "OUT_OF_RUN_SCOPE"
-	CodeNotFound               ErrorCode = "NOT_FOUND"
-	CodeSnapshotExpired        ErrorCode = "SNAPSHOT_EXPIRED"
-	CodeUnavailable            ErrorCode = "UNAVAILABLE"
-	CodeDaemonUnreachable      ErrorCode = "DAEMON_UNREACHABLE"
-	CodeRateLimited            ErrorCode = "RATE_LIMITED"
-	CodeUnsupported            ErrorCode = "UNSUPPORTED"
-	CodeContextReadUnsupported ErrorCode = "CONTEXT_READ_UNSUPPORTED"
-	CodeUserModeUnavailable    ErrorCode = "USER_MODE_UNAVAILABLE"
-	CodeIncomplete             ErrorCode = "INCOMPLETE"
-	CodeConflict               ErrorCode = "CONFLICT"
-	CodeLeaseLost              ErrorCode = "LEASE_LOST"
+	CodeUsage                   ErrorCode = "USAGE"
+	CodeSecretInArgv            ErrorCode = "SECRET_IN_ARGV"
+	CodeAuthRequired            ErrorCode = "AUTH_REQUIRED"
+	CodePermissionDenied        ErrorCode = "PERMISSION_DENIED"
+	CodeOutOfRunScope           ErrorCode = "OUT_OF_RUN_SCOPE"
+	CodeNotFound                ErrorCode = "NOT_FOUND"
+	CodeSnapshotExpired         ErrorCode = "SNAPSHOT_EXPIRED"
+	CodeUnavailable             ErrorCode = "UNAVAILABLE"
+	CodeDaemonUnreachable       ErrorCode = "DAEMON_UNREACHABLE"
+	CodeRateLimited             ErrorCode = "RATE_LIMITED"
+	CodeUnsupported             ErrorCode = "UNSUPPORTED"
+	CodeContextReadUnsupported  ErrorCode = "CONTEXT_READ_UNSUPPORTED"
+	CodeUserModeUnavailable     ErrorCode = "USER_MODE_UNAVAILABLE"
+	CodeControlPlaneUnsupported ErrorCode = "CONTROL_PLANE_UNSUPPORTED"
+	CodeIncomplete              ErrorCode = "INCOMPLETE"
+	CodeConflict                ErrorCode = "CONFLICT"
+	CodeLeaseLost               ErrorCode = "LEASE_LOST"
 )
 
 // ExitCode maps an error code to the documented process exit status.
@@ -55,7 +56,7 @@ func (c ErrorCode) ExitCode() ExitCode {
 		return ExitUnavailable
 	case CodeRateLimited:
 		return ExitRateLimited
-	case CodeUnsupported, CodeContextReadUnsupported, CodeUserModeUnavailable:
+	case CodeUnsupported, CodeContextReadUnsupported, CodeUserModeUnavailable, CodeControlPlaneUnsupported:
 		return ExitUnsupported
 	case CodeIncomplete:
 		return ExitIncomplete

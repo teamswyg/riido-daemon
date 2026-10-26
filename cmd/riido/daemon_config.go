@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"github.com/teamswyg/riido-daemon/internal/contextbroker"
 	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/policy"
 )
@@ -37,11 +38,14 @@ const (
 	envDaemonPprofAddr               = "RIIDO_DAEMON_PPROF_ADDR"
 	envRunHardTimeout                = "RIIDO_DAEMON_RUN_HARD_TIMEOUT_SECONDS"
 	envRunSemanticIdle               = "RIIDO_DAEMON_RUN_SEMANTIC_IDLE_SECONDS"
+	envContextCLI                    = "RIIDO_CONTEXT_CLI"
 )
 
 type daemonSettings struct {
 	executionObservations func() []execution.Observation
 	ExecutionBindingStore *execution.BindingStore
+	// contextBroker is set by serveAgentDaemon when ContextCLI is on.
+	contextBroker *contextbroker.Broker
 
 	ownedExecutions      func() map[string][]string
 	RunHardTimeout       time.Duration
@@ -69,6 +73,7 @@ type daemonSettings struct {
 	WorkdirRetention     time.Duration
 	WorkdirCleanupEvery  time.Duration
 	PprofAddr            string
+	ContextCLI           bool
 	WorkspaceCount       int
 	RuntimeMaxConcurrent int
 	RuntimeAgents        []runtimeactor.AgentStatus

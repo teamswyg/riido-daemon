@@ -35,6 +35,7 @@
     {"name": "RIIDO_RUNTIME_MAX_CONCURRENT", "consumer": "runtime actor slot pool", "default": "4", "meaning": "max concurrent sessions per provider"},
     {"name": "RIIDO_WORKDIR_ROOT", "consumer": "supervisor and workdir FS adapter", "default": "C11 app data root", "meaning": "isolated run workdir root"},
     {"name": "RIIDO_POLICY_BUNDLE_VERSION", "consumer": "config/runtime/workdir", "default": "policy-bundle.local.v0", "meaning": "active policy version"},
+    {"name": "RIIDO_CONTEXT_CLI", "consumer": "work-context CLI broker", "default": "off", "meaning": "on/off or boolean; on injects a per-run capability, socket, task/workspace ids, and PATH into provider runs and answers context_read IPC"},
     {"name": "RIIDO_POLICY_BUNDLE_PATH", "consumer": "policy loader", "default": "empty", "meaning": "optional riido-policy-bundle.v1 file"},
     {"name": "RIIDO_TASK_QUEUE_DIR", "consumer": "file queue source", "default": "empty", "meaning": "provider-neutral task JSON files"},
     {"name": "RIIDO_TASK_REPORT_DIR", "consumer": "file reporter", "default": "RIIDO_TASK_QUEUE_DIR/reports", "meaning": "JSONL report output"},
@@ -128,7 +129,8 @@
           "RIIDO_WORKDIR_CLEANUP_INTERVAL_SECONDS",
           "RIIDO_DAEMON_PPROF_ADDR",
           "RIIDO_POLICY_BUNDLE_PATH",
-          "RIIDO_POLICY_BUNDLE_VERSION"
+          "RIIDO_POLICY_BUNDLE_VERSION",
+          "RIIDO_CONTEXT_CLI"
         ]}
       ]
     },

@@ -249,7 +249,9 @@
         {"kind": "paragraph", "text": "Current availability in this binary:"},
         {"kind": "bullets", "items": [
           "available: `riido capabilities`, `riido doctor`, `riido auth status`, `riido auth logout`, and argument validation for every work-context command",
-          "agent-mode reads (`work`, `context`, `whoami`) send the `context_read` IPC request; a daemon that answers `unknown method` maps to exit 8 `CONTEXT_READ_UNSUPPORTED` until the daemon broker and the control-plane run grant land",
+          "agent-mode reads (`work`, `context`, `whoami`) send the `context_read` IPC request. A daemon without the broker, or with `RIIDO_CONTEXT_CLI` off, answers `unknown method`, which maps to exit 8 `CONTEXT_READ_UNSUPPORTED`",
+          "with `RIIDO_CONTEXT_CLI=on`, the daemon issues a random per-run capability at provider launch (stored only as a SHA-256 hash, rotated on retry) and injects `RIIDO_RUN_TOKEN`, `RIIDO_DAEMON_SOCKET`, `RIIDO_TASK_ID`, `RIIDO_WORKSPACE_ID`, and its own bin directory first on `PATH`",
+          "the broker rejects missing, unknown, rotated, or ended-run capabilities with exit 4 `PERMISSION_DENIED`, and task or workspace mismatches with exit 4 `OUT_OF_RUN_SCOPE`. It answers `whoami` with run facts plus a `REQUESTER_UNRESOLVED` warning; Riido data reads return exit 8 `CONTROL_PLANE_UNSUPPORTED` until the control-plane run grant lands",
           "user-mode reads and `auth login` return exit 8 `USER_MODE_UNAVAILABLE` until the server auth contract (ADR) and keychain storage land"
         ]},
         {"kind": "paragraph", "text": "Output contract (envelope v1): with `--json`, stdout carries exactly one JSON object `{schema_version, request_id, data, sources, warnings, page, error}`; progress and diagnostics go to stderr. `error` is `{code, message, retryable, next_action, request_id}` and never contains tokens or response headers."},

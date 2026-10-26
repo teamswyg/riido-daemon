@@ -51,5 +51,6 @@ func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter ag
 		ToolApprovalGate:     daemonToolApprovalGate(settings),
 		ToolApprovalResolver: resolver,
 		PolicyBundleVersion:  settings.PolicyBundle,
+		LaunchEnv:            daemonContextLaunchEnv(settings.contextBroker),
 	})
 }
