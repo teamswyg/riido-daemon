@@ -15,6 +15,7 @@ type Query struct {
 	LeaseToken   string
 	View         string
 	Target       string
+	Cursor       string
 	RequestID    string
 }
 
@@ -57,10 +58,11 @@ const (
 	viewTask      = "task"
 	viewTree      = "tree"
 	viewResources = "resources"
+	viewComments  = "comments"
 )
 
-// viewForCommand maps CLI read commands onto snapshot views. Comments,
-// activity, search and changes are not in the snapshot yet.
+// viewForCommand maps CLI read commands onto snapshot views. Activity,
+// search and changes are not in the snapshot.
 func viewForCommand(command string) (string, bool) {
 	switch command {
 	case "context get":
@@ -71,6 +73,8 @@ func viewForCommand(command string) (string, bool) {
 		return viewTree, true
 	case "work relations":
 		return viewResources, true
+	case "work comments":
+		return viewComments, true
 	}
 	return "", false
 }

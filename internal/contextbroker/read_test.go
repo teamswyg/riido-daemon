@@ -73,13 +73,29 @@ func TestReadWithoutSnapshotSupportStaysUnsupported(t *testing.T) {
 	b := New("", "")
 	b.Fetcher = &fakeFetcher{}
 	token := issueForTest(t, b, saasBinding())
-	if got := errorCode(t, b.Handle(request(token, "work comments"), activeSet("run-1"))); got != contextcli.CodeControlPlaneUnsupported {
-		t.Fatalf("comments are outside the snapshot, got %s", got)
+	if got := errorCode(t, b.Handle(request(token, "work activity"), activeSet("run-1"))); got != contextcli.CodeControlPlaneUnsupported {
+		t.Fatalf("activity is outside the snapshot, got %s", got)
 	}
 	local := New("", "")
 	local.Fetcher = &fakeFetcher{}
 	localToken := issueForTest(t, local, Binding{RunKey: "run-2"})
 	if got := errorCode(t, local.Handle(request(localToken, "work get"), activeSet("run-2"))); got != contextcli.CodeControlPlaneUnsupported {
 		t.Fatalf("non-SaaS runs have no lease, got %s", got)
+	}
+}
+
+func TestReadCommentsPagesThroughCursor(t *testing.T) {
+	fetcher := &fakeFetcher{result: Result{Data: json.RawMessage(`{"comments":[{"id":"c1"}],"total":25,"cursor":"0","next_cursor":"1"}`), Sources: []ResultSource{{Kind: "comment", ID: "c1", Part: "body"}}}}
+	b := New("", "")
+	b.Fetcher = fetcher
+	token := issueForTest(t, b, saasBinding())
+	req := request(token, "work comments")
+	req.Args = map[string]string{"work": "RIID-5900", "cursor": "0"}
+	env := b.Handle(req, activeSet("run-1"))
+	if env.Error != nil || env.Page == nil || env.Page.NextCursor != "1" || !env.Page.Truncated {
+		t.Fatalf("envelope=%+v page=%+v", env, env.Page)
+	}
+	if q := fetcher.queries[0]; q.View != viewComments || q.Cursor != "0" {
+		t.Fatalf("query=%+v", q)
 	}
 }

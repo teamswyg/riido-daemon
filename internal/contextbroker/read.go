@@ -27,12 +27,15 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	defer cancel()
 	result, err := b.Fetcher.FetchAssignmentContext(ctx, Query{
 		AgentID: binding.AgentID, AssignmentID: binding.AssignmentID, LeaseToken: binding.LeaseToken,
-		View: view, Target: strings.TrimSpace(req.Args["work"]), RequestID: requestID,
+		View: view, Target: strings.TrimSpace(req.Args["work"]), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
 	})
 	if err != nil {
 		return contextcli.FailureEnvelope(requestID, fetchFailure(err))
 	}
 	env := contextcli.NewEnvelope(requestID, result.Data)
+	if view == viewComments {
+		env.Page = commentPage(result.Data)
+	}
 	status := contextcli.SourceAvailable
 	if result.Truncated {
 		status = contextcli.SourcePartial
