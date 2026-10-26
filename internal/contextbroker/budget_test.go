@@ -39,3 +39,11 @@ func TestReadHonorsBudgetAndKeepsCapabilityOnInconclusiveActivity(t *testing.T) 
 		t.Fatalf("capability must survive an inconclusive check: %+v", got.Error)
 	}
 }
+
+func TestApplyBudgetNeverShortensIdentifiers(t *testing.T) {
+	data := json.RawMessage(`{"component":{"id":"550e8400-e29b-41d4-a716-446655440000","keyNumber":"RIID-5900","title":"짧은 제목"},"document":{"content":"` + strings.Repeat("본문", 300) + `"}}`)
+	out, _, fits := applyBudget(data, 90)
+	if fits || !strings.Contains(string(out), "550e8400-e29b-41d4-a716-446655440000") || !strings.Contains(string(out), "RIID-5900") {
+		t.Fatalf("identifiers must survive and an unreachable budget must be reported: fits=%v out=%s", fits, out)
+	}
+}

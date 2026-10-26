@@ -8,10 +8,13 @@ import (
 
 const budgetMinStringRunes = 16
 
-// applyBudget shrinks the longest string values in data (halving each pass,
-// marked with "…") until the JSON fits budget characters. It keeps the JSON
-// valid; if the structure alone is larger than budget it returns what it
-// reached and fits=false.
+// budgetShrinkableKeys: free text only; ids, keys and URLs stay intact for reuse.
+var budgetShrinkableKeys = map[string]bool{
+	"content": true, "alternate_content": true, "body": true, "html": true, "text": true, "description": true, "summary": true,
+}
+
+// applyBudget halves the longest free-text values (marked "…") until the JSON
+// fits budget characters, keeping it valid; fits=false when it cannot.
 func applyBudget(data json.RawMessage, budget int) (out json.RawMessage, cut, fits bool) {
 	if budget <= 0 || utf8.RuneCount(data) <= budget {
 		return data, false, true
@@ -45,27 +48,27 @@ func applyBudget(data json.RawMessage, budget int) (out json.RawMessage, cut, fi
 	return encoded, cut, utf8.RuneCount(encoded) <= budget
 }
 
-// longestString returns a setter for the longest string reachable from v.
+// longestString returns a setter for the longest free-text string in v.
 func longestString(v *any) (func(string), string) {
 	var bestSet func(string)
 	best := ""
-	var walk func(get func() any, set func(any))
-	walk = func(get func() any, set func(any)) {
+	var walk func(get func() any, set func(any), key string)
+	walk = func(get func() any, set func(any), key string) {
 		switch node := get().(type) {
 		case string:
-			if utf8.RuneCountInString(node) > utf8.RuneCountInString(best) {
+			if budgetShrinkableKeys[key] && utf8.RuneCountInString(node) > utf8.RuneCountInString(best) {
 				best, bestSet = node, func(s string) { set(s) }
 			}
 		case map[string]any:
-			for key := range node {
-				walk(func() any { return node[key] }, func(x any) { node[key] = x })
+			for k := range node {
+				walk(func() any { return node[k] }, func(x any) { node[k] = x }, k)
 			}
 		case []any:
 			for i := range node {
-				walk(func() any { return node[i] }, func(x any) { node[i] = x })
+				walk(func() any { return node[i] }, func(x any) { node[i] = x }, key)
 			}
 		}
 	}
-	walk(func() any { return *v }, func(x any) { *v = x })
+	walk(func() any { return *v }, func(x any) { *v = x }, "")
 	return bestSet, best
 }
