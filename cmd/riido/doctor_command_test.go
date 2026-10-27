@@ -26,10 +26,15 @@ func doctorChecks(t *testing.T, env contextcli.Envelope) map[string]string {
 func TestDoctorReportsOldDaemonWithoutContextRead(t *testing.T) {
 	h := newContextHarness(t, agentVars())
 	h.daemon.replies[string(daemonMethodStatus)] = `{"schema_version":"1","daemon_version":"riido-agentd test"}`
-	if err := runDoctor(h.io, []string{"--json"}); err != nil {
-		t.Fatalf("doctor: %v", err)
+	if got := exitCodeOf(t, runDoctor(h.io, []string{"--json"})); got != 8 {
+		t.Fatalf("agent-mode broker is unsupported: want exit 8, got %d", got)
 	}
-	checks := doctorChecks(t, decodeEnvelope(t, h.stdout.Bytes()))
+	env := decodeEnvelope(t, h.stdout.Bytes())
+	data := env.Data.(map[string]any)
+	if data["healthy"] != false || data["api_verified"] != false {
+		t.Fatalf("unsupported agent broker cannot be healthy: %+v", data)
+	}
+	checks := doctorChecks(t, env)
 	want := map[string]string{
 		"binary": "ok", "path": "warn", "mode": "ok", "daemon_ipc": "ok",
 		"context_read": "unsupported", "user_auth": "unsupported", "api": "skip",
@@ -38,6 +43,24 @@ func TestDoctorReportsOldDaemonWithoutContextRead(t *testing.T) {
 		if checks[name] != status {
 			t.Fatalf("%s: want %s, got %s (all=%v)", name, status, checks[name], checks)
 		}
+	}
+}
+
+func TestDoctorUserModeSkipsAgentBrokerWithoutFailingLocalDiagnosis(t *testing.T) {
+	h := newContextHarness(t, nil)
+	h.daemon.replies[string(daemonMethodStatus)] = `{"daemon_version":"test"}`
+	if err := runDoctor(h.io, []string{"--json"}); err != nil {
+		t.Fatalf("user mode does not need an agent capability: %v", err)
+	}
+	env := decodeEnvelope(t, h.stdout.Bytes())
+	if data := env.Data.(map[string]any); data["healthy"] != true || data["api_verified"] != false {
+		t.Fatalf("local-only user diagnosis: %+v", data)
+	}
+	if got := doctorChecks(t, env)["context_read"]; got != "skip" {
+		t.Fatalf("user broker check: want skip, got %s", got)
+	}
+	if len(h.daemon.requests) != 1 {
+		t.Fatal("user doctor must only request daemon status")
 	}
 }
 

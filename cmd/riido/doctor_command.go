@@ -54,18 +54,22 @@ func runDoctor(c contextIO, raw []string) error {
 		doctorCheck{Name: "user_auth", Status: doctorUnsupported, Detail: "사용자 모드 로그인은 아직 지원하지 않습니다"},
 		doctorAPI(args.Bool("--check-api")))
 	data := doctorData{Mode: env.Mode, Healthy: true, Checks: checks}
+	unsupported := args.Bool("--check-api")
 	for _, check := range checks {
 		if check.Status == doctorFail {
 			data.Healthy = false
 		}
+		if env.Mode == contextcli.ModeAgent && check.Name == "context_read" && check.Status == doctorUnsupported {
+			unsupported = true
+		}
 	}
-	if args.Bool("--check-api") {
+	if unsupported {
 		data.Healthy = false
 	}
 	if err := c.succeed(args.JSON, contextcli.NewEnvelope(requestID, data), renderDoctor); err != nil {
 		return err
 	}
-	if args.Bool("--check-api") {
+	if unsupported {
 		return reportedExit{code: contextcli.ExitUnsupported}
 	}
 	if !data.Healthy {
