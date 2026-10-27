@@ -21,7 +21,16 @@
     {"platform": "Windows amd64", "goos": "windows", "goarch": "amd64", "format": "zip"},
     {"platform": "Windows arm64", "goos": "windows", "goarch": "arm64", "format": "zip"}
   ],
-  "archive_contents": ["riido or riido.exe", "LICENSE", "NOTICE.md", "VERSION", "binary version command reports VERSION"],
+  "archive_contents": [
+    "riido or riido.exe",
+    "LICENSE",
+    "NOTICE.md",
+    "VERSION",
+    "binary version command reports VERSION",
+    "Optional macOS only: CLI_AUTH_HELPER.json (schema_version 1, exact release_version, fixed helper_bundle RiidoCLIAuthHelper.app) together with the adjacent signed RiidoCLIAuthHelper.app. Both absent is legacy; only one present is rejected.",
+    "Opt in with an absolute RIIDO_CLI_AUTH_HELPER_BUNDLE path on a macOS packaging host. The bundle must already be signed; packaging never signs or accesses signing credentials.",
+    "Info.plist RiidoCLIReleaseVersion must exactly match VERSION, including tag prefix and suffix; inject release metadata before signing."
+  ],
   "installer": {
     "command": "curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh",
     "supported_goos": ["darwin", "linux"],
@@ -77,7 +86,10 @@
     {"name": "install-dir-override", "file": "scripts/install-riido-daemon.sh", "contains": "RIIDO_DAEMON_INSTALL_DIR"},
     {"name": "build-package-binary-version-ldflags", "file": "scripts/build-release-package.sh", "contains": "-X main.binaryVersion=$version"},
     {"name": "binary-version-command", "file": "cmd/riido/version.go", "contains": "riido-daemon "},
-    {"name": "binary-version-command-test", "file": "cmd/riido/version_test.go", "contains": "TestVersionCommandPrintsBinaryVersion"}
+    {"name": "binary-version-command-test", "file": "cmd/riido/version_test.go", "contains": "TestVersionCommandPrintsBinaryVersion"},
+    {"name": "helper-opt-in-input", "file": "scripts/build-release-package.sh", "contains": "RIIDO_CLI_AUTH_HELPER_BUNDLE"},
+    {"name": "helper-archive-verification", "file": "scripts/publish-cdn-latest.sh", "contains": "tools/clihelperpackage"},
+    {"name": "helper-pre-sign-version", "file": "native/cli-auth-helper/build.sh", "contains": "RIIDO_CLI_RELEASE_VERSION"}
   ],
   "detail_docs": [
     {"title": "Decision and Asset Names", "path": "docs/30-architecture/release-artifacts/assets.md"},
@@ -91,6 +103,11 @@
     "GitHub Releases are the immutable daemon binary source; CDN latest is only a mutable mirror.",
     "CDN latest mirror is updated by CI/CD after release-artifacts succeeds, not by manual S3 copy.",
     "Installer behavior must stay derivable from the install script and release target manifest.",
-    "The executable must expose the same release tag through `riido version` and `riido --version`."
+    "The executable must expose the same release tag through `riido version` and `riido --version`.",
+    "Each build uses a fresh staging directory and atomically replaces its final archive only after validation; stale helper files and failed optional-helper builds never replace a prior asset.",
+    "Helper packaging checks fixed Apple anchor/team/identifier, hardened runtime, safe entitlements, embedded profile, executable architecture, regular paths, and exact version. Its copied archive is unpacked and verified again on macOS before publication.",
+    "The Ubuntu release matrix remains legacy until a separately reviewed macOS signing/packaging lane supplies verified helper artifacts. Local fixtures and unsigned Swift builds are not signed-helper acceptance.",
+    "CDN verification checks optional bundle pairing, paths and versions with a portable archive validator. Linux structural validation is not Apple signature, notarization, first-login presence, or installation-binding acceptance.",
+    "The standalone shell installer still installs the daemon binary only; optional helper packaging does not claim standalone auth installation support."
   ]
 }

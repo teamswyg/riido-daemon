@@ -32,3 +32,8 @@ Define how riido-daemon public release assets are built, published, installed, a
 - CDN latest mirror is updated by CI/CD after release-artifacts succeeds, not by manual S3 copy.
 - Installer behavior must stay derivable from the install script and release target manifest.
 - The executable must expose the same release tag through `riido version` and `riido --version`.
+- Each build uses a fresh staging directory and atomically replaces its final archive only after validation; stale helper files and failed optional-helper builds never replace a prior asset.
+- Helper packaging checks fixed Apple anchor/team/identifier, hardened runtime, safe entitlements, embedded profile, executable architecture, regular paths, and exact version. Its copied archive is unpacked and verified again on macOS before publication.
+- The Ubuntu release matrix remains legacy until a separately reviewed macOS signing/packaging lane supplies verified helper artifacts. Local fixtures and unsigned Swift builds are not signed-helper acceptance.
+- CDN verification checks optional bundle pairing, paths and versions with a portable archive validator. Linux structural validation is not Apple signature, notarization, first-login presence, or installation-binding acceptance.
+- The standalone shell installer still installs the daemon binary only; optional helper packaging does not claim standalone auth installation support.
