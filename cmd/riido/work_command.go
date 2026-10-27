@@ -38,8 +38,8 @@ func runWork(c contextIO, args []string) error {
 	}
 }
 
-// workRefCall builds a read that takes exactly one work reference. Paging
-// uses the common --cursor and --limit flags.
+// workRefCall builds a read that takes exactly one work reference. Comment
+// paging uses --cursor with the server's fixed page size.
 func workRefCall(sub workCommand) contextReadCall {
 	return contextReadCall{
 		command: "work " + string(sub),

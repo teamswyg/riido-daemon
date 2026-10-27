@@ -8,8 +8,6 @@ import (
 )
 
 const (
-	DefaultLimit   = 20
-	MaxLimit       = 100
 	DefaultTimeout = 30 * time.Second
 	maxTimeout     = 10 * time.Minute
 )
@@ -37,11 +35,8 @@ type Options struct {
 	Help      bool
 	NoInput   bool
 	NoColor   bool
-	Profile   string
 	Workspace string
-	Team      string
 	Cursor    string
-	Limit     int
 	Timeout   time.Duration
 }
 
@@ -67,7 +62,7 @@ func ParseArgs(args []string, spec ArgSpec) (Args, *CLIError) {
 		return Args{}, err
 	}
 	parsed := Args{
-		Options: Options{Limit: DefaultLimit, Timeout: DefaultTimeout},
+		Options: Options{Timeout: DefaultTimeout},
 		values:  map[string]string{},
 		bools:   map[string]bool{},
 	}
@@ -136,16 +131,12 @@ func (a *Args) setValue(name, value string) *CLIError {
 	switch name {
 	case "--format":
 		return a.setFormat(value)
-	case "--profile":
-		a.Profile = value
+	case "--profile", "--team", "--limit":
+		return Fail(CodeUnsupported, name+" 옵션은 아직 지원하지 않습니다", "이 옵션을 빼고 실행하세요. 목록은 서버의 고정 페이지 크기와 --cursor를 사용합니다")
 	case "--workspace":
 		a.Workspace = value
-	case "--team":
-		a.Team = value
 	case "--cursor":
 		a.Cursor = value
-	case "--limit":
-		return a.setLimit(value)
 	case "--timeout":
 		return a.setTimeout(value)
 	default:
@@ -163,15 +154,6 @@ func (a *Args) setFormat(value string) *CLIError {
 	default:
 		return Failf(CodeUsage, "--format은 json 또는 text만 받습니다: %s", value)
 	}
-	return nil
-}
-
-func (a *Args) setLimit(value string) *CLIError {
-	limit, err := strconv.Atoi(value)
-	if err != nil || limit < 1 || limit > MaxLimit {
-		return Failf(CodeUsage, "--limit은 1에서 %d 사이 정수여야 합니다: %s", MaxLimit, value)
-	}
-	a.Limit = limit
 	return nil
 }
 

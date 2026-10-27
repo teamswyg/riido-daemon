@@ -26,13 +26,13 @@ func TestNoSecretInArgv(t *testing.T) {
 
 func TestParseArgsCommonAndSpecificFlags(t *testing.T) {
 	args, err := ParseArgs(
-		[]string{"RIID-5839", "--json", "--limit=50", "--timeout", "5", "--budget", "4000", "--check-api"},
+		[]string{"RIID-5839", "--json", "--timeout", "5", "--budget", "4000", "--check-api"},
 		ArgSpec{Values: []string{"--budget"}, Bools: []string{"--check-api"}, MaxPositionals: 1},
 	)
 	if err != nil {
 		t.Fatalf("parse: %v", err)
 	}
-	if !args.JSON || args.Limit != 50 || args.Timeout != 5*time.Second {
+	if !args.JSON || args.Timeout != 5*time.Second {
 		t.Fatalf("common options not parsed: %+v", args.Options)
 	}
 	if args.Value("--budget") != "4000" || !args.Bool("--check-api") {
@@ -45,12 +45,10 @@ func TestParseArgsCommonAndSpecificFlags(t *testing.T) {
 
 func TestParseArgsDefaultsAndRejections(t *testing.T) {
 	args, err := ParseArgs(nil, ArgSpec{})
-	if err != nil || args.Limit != DefaultLimit || args.Timeout != DefaultTimeout || args.JSON {
+	if err != nil || args.Timeout != DefaultTimeout || args.JSON {
 		t.Fatalf("defaults: %+v err=%v", args.Options, err)
 	}
 	bad := [][]string{
-		{"--limit", "0"},
-		{"--limit", "101"},
 		{"--timeout", "0s"},
 		{"--format", "yaml"},
 		{"--unknown"},

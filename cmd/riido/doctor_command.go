@@ -29,13 +29,14 @@ type doctorCheck struct {
 }
 
 type doctorData struct {
-	Mode    contextcli.Mode `json:"mode"`
-	Healthy bool            `json:"healthy"`
-	Checks  []doctorCheck   `json:"checks"`
+	Mode        contextcli.Mode `json:"mode"`
+	Healthy     bool            `json:"healthy"`
+	APIVerified bool            `json:"api_verified"`
+	Checks      []doctorCheck   `json:"checks"`
 }
 
 // runDoctor diagnoses the local setup. A stored credential file alone never
-// counts as a working login; remote checks run only with --check-api.
+// counts as a working login; remote API verification is not implemented.
 func runDoctor(c contextIO, raw []string) error {
 	requestID := contextcli.NewRequestID()
 	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{Bools: []string{"--check-api"}})
@@ -43,7 +44,7 @@ func runDoctor(c contextIO, raw []string) error {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
 	if args.Help {
-		fmt.Fprintln(c.stderr, "  riido doctor [--check-api] [--json]")
+		fmt.Fprintln(c.stderr, "  riido doctor [--json]   (local checks only; --check-api is unsupported, exit 8)")
 		return nil
 	}
 	env := c.environment()
@@ -53,13 +54,23 @@ func runDoctor(c contextIO, raw []string) error {
 		doctorCheck{Name: "user_auth", Status: doctorUnsupported, Detail: "사용자 모드 로그인은 아직 지원하지 않습니다"},
 		doctorAPI(args.Bool("--check-api")))
 	data := doctorData{Mode: env.Mode, Healthy: true, Checks: checks}
+	unsupported := args.Bool("--check-api")
 	for _, check := range checks {
 		if check.Status == doctorFail {
 			data.Healthy = false
 		}
+		if env.Mode == contextcli.ModeAgent && check.Name == "context_read" && check.Status == doctorUnsupported {
+			unsupported = true
+		}
+	}
+	if unsupported {
+		data.Healthy = false
 	}
 	if err := c.succeed(args.JSON, contextcli.NewEnvelope(requestID, data), renderDoctor); err != nil {
 		return err
+	}
+	if unsupported {
+		return reportedExit{code: contextcli.ExitUnsupported}
 	}
 	if !data.Healthy {
 		return reportedExit{code: contextcli.ExitUnavailable}
@@ -118,29 +129,11 @@ func (c contextIO) doctorDaemon(env contextcli.Environment) (doctorCheck, bool) 
 	return doctorCheck{Name: "daemon_ipc", Status: doctorOK, Detail: status.DaemonVersion + " @ " + socket}, true
 }
 
-func (c contextIO) doctorContextRead(env contextcli.Environment, requestID string, reachable bool) doctorCheck {
-	if !reachable {
-		return doctorCheck{Name: "context_read", Status: doctorSkip, Detail: "daemon에 연결되지 않아 확인하지 않았습니다"}
-	}
-	socket, err := c.daemonSocket(env)
-	if err != nil {
-		return doctorCheck{Name: "context_read", Status: doctorSkip, Detail: "daemon 소켓 경로를 찾지 못했습니다"}
-	}
-	body, cliErr := c.daemonRoundTrip(socket, doctorProbeTimeout, contextcli.NewContextReadRequest(env, requestID, "capabilities", nil))
-	if cliErr != nil {
-		return doctorCheck{Name: "context_read", Status: doctorWarn, Detail: cliErr.Message}
-	}
-	if _, replyErr := contextcli.DecodeContextReadReply(body); replyErr != nil && replyErr.Code == contextcli.CodeContextReadUnsupported {
-		return doctorCheck{Name: "context_read", Status: doctorUnsupported, Detail: replyErr.Message}
-	}
-	return doctorCheck{Name: "context_read", Status: doctorOK, Detail: "daemon이 context_read를 지원합니다"}
-}
-
 func doctorAPI(requested bool) doctorCheck {
 	if requested {
-		return doctorCheck{Name: "api", Status: doctorSkip, Detail: "서버 인증 계약 확정 전이라 원격 점검을 하지 않습니다"}
+		return doctorCheck{Name: "api", Status: doctorUnsupported, Detail: "원격 API 진단은 아직 지원하지 않습니다. 원격 요청을 보내지 않았으며 API 연결·인증은 확인되지 않았습니다"}
 	}
-	return doctorCheck{Name: "api", Status: doctorSkip, Detail: "--check-api 를 주면 서버 도달을 점검합니다"}
+	return doctorCheck{Name: "api", Status: doctorSkip, Detail: "로컬 진단만 수행했습니다. 원격 API 연결·인증은 확인되지 않았습니다"}
 }
 
 func renderDoctor(w io.Writer, data any) {
