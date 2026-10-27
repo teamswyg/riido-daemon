@@ -47,45 +47,6 @@ func runAuth(c contextIO, args []string) error {
 	}
 }
 
-// runAuthLogin validates the login form but never reads stdin until the
-// keychain store with user-presence protection exists.
-func (c contextIO) runAuthLogin(raw []string) error {
-	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{Bools: []string{"--desktop", "--browser", "--with-token"}})
-	if cliErr != nil {
-		return c.fail(wantsJSON(raw), requestID, cliErr)
-	}
-	if args.Help {
-		printAuthUsage(c.stderr)
-		return nil
-	}
-	chosen := 0
-	for _, flag := range []string{"--desktop", "--browser", "--with-token"} {
-		if args.Bool(flag) {
-			chosen++
-		}
-	}
-	if chosen != 1 {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage,
-			"--desktop, --browser, --with-token 중 하나만 고르세요", "riido auth login --browser"))
-	}
-	if c.environment().Mode == contextcli.ModeAgent {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodePermissionDenied,
-			"에이전트 실행 안에서는 사용자 로그인을 할 수 없습니다", "에이전트는 실행 capability로만 조회합니다"))
-	}
-	return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUserModeUnavailable,
-		"사용자 모드 로그인은 아직 지원하지 않습니다 (서버 인증 계약과 키체인 보호 확정 전)",
-		"Riido에서 Agent를 실행하면 에이전트 모드로 조회할 수 있습니다"))
-}
-
-func (c contextIO) runAuthLogout(raw []string) error {
-	return c.runAuthLocal(raw, "이 버전은 사용자 자격을 저장하지 않으므로 지울 자격이 없습니다")
-}
-
-func (c contextIO) runAuthStatus(raw []string) error {
-	return c.runAuthLocal(raw, "사용자 모드 자격 저장은 아직 지원하지 않습니다")
-}
-
 func (c contextIO) runAuthLocal(raw []string, note string) error {
 	requestID := contextcli.NewRequestID()
 	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{})
@@ -119,6 +80,9 @@ func renderAuthStatus(w io.Writer, data any) {
 }
 
 func runWhoami(c contextIO, args []string) error {
+	if c.environment().Mode != contextcli.ModeAgent {
+		return c.runUserWhoami(args)
+	}
 	return c.runContextRead(contextReadCall{
 		command: "whoami",
 		spec:    contextcli.ArgSpec{},

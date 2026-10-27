@@ -51,7 +51,7 @@ func runDoctor(c contextIO, raw []string) error {
 	checks := []doctorCheck{c.doctorBinary(), c.doctorPath(), {Name: "mode", Status: doctorOK, Detail: string(env.Mode)}}
 	daemonCheck, reachable := c.doctorDaemon(env)
 	checks = append(checks, daemonCheck, c.doctorContextRead(env, requestID, reachable),
-		doctorCheck{Name: "user_auth", Status: doctorUnsupported, Detail: "사용자 모드 로그인은 아직 지원하지 않습니다"},
+		doctorCheck{Name: "user_auth", Status: doctorSkip, Detail: "이 로컬 진단은 사용자 인증을 검사하지 않습니다. 사용자 터미널에서 riido auth status로 보호 저장소, riido whoami로 API 인증을 확인하세요"},
 		doctorAPI(args.Bool("--check-api")))
 	data := doctorData{Mode: env.Mode, Healthy: true, Checks: checks}
 	unsupported := args.Bool("--check-api")

@@ -8,9 +8,9 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
 
-func TestContextCLIUserModeReadsAreExplicitlyUnavailable(t *testing.T) {
+func TestContextCLIUserModeUnimplementedReadsAreExplicitlyUnavailable(t *testing.T) {
 	h := newContextHarness(t, nil)
-	err := runWork(h.io, []string{"get", "RIID-5839", "--json"})
+	err := runWork(h.io, []string{"tree", "RIID-5839", "--json"})
 	if got := exitCodeOf(t, err); got != 8 {
 		t.Fatalf("want exit 8, got %d", got)
 	}

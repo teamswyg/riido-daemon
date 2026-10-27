@@ -37,7 +37,7 @@ func TestDoctorReportsOldDaemonWithoutContextRead(t *testing.T) {
 	checks := doctorChecks(t, env)
 	want := map[string]string{
 		"binary": "ok", "path": "warn", "mode": "ok", "daemon_ipc": "ok",
-		"context_read": "unsupported", "user_auth": "unsupported", "api": "skip",
+		"context_read": "unsupported", "user_auth": "skip", "api": "skip",
 	}
 	for name, status := range want {
 		if checks[name] != status {
