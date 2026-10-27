@@ -5,8 +5,8 @@ import (
 	"io"
 )
 
-// printContextUsage lists the work-context commands. printUsage includes it
-// so `riido --help` keeps every declared command group in one place.
+// printContextUsage lists the work-context commands shared by root and
+// direct internal-command help; internal dispatch is documented separately.
 func printContextUsage(w io.Writer) {
 	fmt.Fprintln(w, "  # Riido work context (agents and people; add --json for the envelope)")
 	printWorkUsage(w)

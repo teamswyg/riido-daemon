@@ -3,6 +3,7 @@ package main
 func checkBehaviors(repo string, manifest Manifest) []CheckResult {
 	return []CheckResult{
 		checkHelpOutput(repo, manifest),
+		checkInternalHelpOutput(repo, manifest),
 		checkBridgeProviders(repo, manifest),
 	}
 }
