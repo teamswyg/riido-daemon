@@ -59,6 +59,12 @@ func fetchFailure(err error) *contextcli.CLIError {
 		return contextcli.Fail(contextcli.CodeUnavailable, "Riido 서버에 연결하지 못했습니다", "잠시 후 다시 시도하세요")
 	}
 	switch {
+	case fetchErr.Status == http.StatusTooManyRequests:
+		return &contextcli.CLIError{
+			Code: contextcli.CodeRateLimited, NoRetry: true,
+			Message:    "이 실행에서 조회할 수 있는 횟수를 모두 사용했습니다",
+			NextAction: "같은 실행에서 재시도하지 말고, 사용자에게 새 요청으로 새 실행을 시작하도록 안내하세요",
+		}
 	case fetchErr.Status == http.StatusServiceUnavailable && strings.Contains(fetchErr.Message, "not configured"),
 		fetchErr.Status == http.StatusNotFound && fetchErr.Message == "not found":
 		return contextcli.Fail(contextcli.CodeControlPlaneUnsupported, "Riido 서버가 배정 맥락 조회를 아직 지원하지 않습니다", "프롬프트로 받은 맥락을 사용하세요")

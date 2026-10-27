@@ -50,6 +50,8 @@ type CLIError struct {
 	Code       ErrorCode
 	Message    string
 	NextAction string
+	// NoRetry prevents retries for limits that cannot recover in this execution.
+	NoRetry bool
 }
 
 // Fail builds a CLIError.
@@ -73,6 +75,9 @@ func (e *CLIError) ExitCode() ExitCode {
 
 // Retryable reports whether retrying the same request may succeed.
 func (e *CLIError) Retryable() bool {
+	if e.NoRetry {
+		return false
+	}
 	switch e.ExitCode() {
 	case ExitUnavailable, ExitRateLimited:
 		return true
