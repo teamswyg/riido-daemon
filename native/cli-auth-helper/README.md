@@ -67,3 +67,44 @@ The `.userPresence` access control protects later reads of stored credentials; f
 `RIIDO_CLI_RELEASE_VERSION=vX.Y.Z native/cli-auth-helper/build.sh <output-directory> <arm64|x86_64>` embeds the exact release string in `Info.plist` as `RiidoCLIReleaseVersion` **before signing**. Without the variable an unsigned development build uses `development`. Keep the plist in XML format for the portable archive validator. The Apple numeric bundle versions are separate from this exact release binding.
 
 The release packager accepts an already signed bundle through `RIIDO_CLI_AUTH_HELPER_BUNDLE` only on a macOS host targeting Darwin. It copies the complete bundle into a fresh package, checks pinned identity/hardening/entitlements for every Mach-O slice, generates `CLI_AUTH_HELPER.json`, and verifies the unpacked copy again. The current Ubuntu release workflow leaves the input unset and emits legacy archives. No signer, provisioning download, keychain access, notarization, or automatic authentication is added here. Actual signed/profiled acceptance and notarization remain separate held release gates.
+
+### Typed installation key and proof (source implementation)
+
+`installation-key` and `installation-proof` reuse the private version-1 pipe and
+dynamic process verification. Both require `interactive: true`. Their `value`
+is base64 flat JSON; the outer `key` is the SHA-256 hex of the length-prefixed
+domain `riido-cli-installation-key.v1`, canonical API resource and `riido-cli`.
+The key request has only `resource` and `client_id`. The proof request additionally
+has `installation_intent`, `challenge_hash`, `key_fingerprint`, `code`,
+`redirect_uri`, `code_challenge`, `state`, and integral Unix-second `expires_at`.
+All fields are mandatory; duplicate, extra, null, noncanonical and expired inputs
+are rejected. Constants fix the algorithm, S256 and read scope.
+
+Installation keys use a separate keychain key class/tag from stored OAuth grants.
+The helper reuses a permanent P-256 non-extractable key, protected by this-device
+user-presence access control. Logout touches only the credential item. The key
+operation confirms fresh OS presence before creation/public-key access. Proof
+uses a fresh keychain authentication context and verifies its own key fingerprint.
+Only public key material and typed proof signatures leave the helper. No generic
+signature, private-key export, key deletion or account-triggered rotation exists.
+Software keys do not use the Secure-Enclave-only privateKeyUsage flag.
+
+The proof format matches monolith `installation-proof-v1.json`: uint32 big-endian
+length prefix per field, domain/authorization_code/resource/client/intent/raw
+challenge SHA256/raw key fingerprint/SHA256(code)/redirect/PKCE/S256/SHA256(state)/
+read/Unix expiry. Signature is P-256 SHA256 ASN.1 DER, not raw ES256 R||S.
+Source fixtures never touch real Keychain or a user dialog. Actual signed helper
+acceptance and full CLI-to-server login are separate, unfinished gates.
+
+First-key creation is serialized inside the helper, including direct private-IPC
+callers. Keychain ApplicationTag is not a unique primary key: ApplicationLabel
+also participates and differs for each random public key. The helper holds an
+empty advisory lock under the OS account home (not HOME/TMPDIR), re-reads inside
+it, creates at most one key, and verifies the persisted match again. Match-all
+queries require exactly one key for reuse/signing; ambiguous state is unavailable
+and is never silently repaired or reduced to an arbitrary first match. The lock
+checks UID, mode, symlink/hardlink and inode identity, waits at most five seconds,
+and releases without deleting the lock file. This coordinates trusted helpers;
+same-UID denial of service is outside the user-presence credential boundary.
+Official key uniqueness: https://developer.apple.com/documentation/security/ksecclasskey
+https://developer.apple.com/documentation/security/ksecattrapplicationlabel
