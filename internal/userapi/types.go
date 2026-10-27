@@ -14,6 +14,7 @@ var (
 	ErrAuthentication  = errors.New("riido CLI authentication is required")
 	ErrNotFound        = errors.New("the requested resource was not found")
 	ErrPermission      = errors.New("the current user cannot read this resource")
+	ErrRateLimited     = errors.New("riido API read rate limit was exceeded")
 	ErrUnavailable     = errors.New("riido API is temporarily unavailable")
 	ErrGraphQL         = errors.New("riido could not complete this read")
 )

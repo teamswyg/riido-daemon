@@ -24,6 +24,8 @@ func userAuthError(err error) *contextcli.CLIError {
 		return contextcli.Fail(contextcli.CodePermissionDenied, "현재 사용자에게 이 자료의 열람 권한이 없습니다", "계정과 작업 권한을 확인하세요")
 	case errors.Is(err, userapi.ErrNotFound):
 		return contextcli.Fail(contextcli.CodeNotFound, "요청한 자료를 찾을 수 없습니다", "작업 ID와 팀 ID를 확인하세요")
+	case errors.Is(err, userapi.ErrRateLimited):
+		return contextcli.Fail(contextcli.CodeRateLimited, "요청 한도를 초과했습니다", "잠시 뒤 다시 시도하세요")
 	case errors.Is(err, userauth.ErrLoggedOut):
 		return contextcli.Fail(contextcli.CodeAuthRequired, "요청 중 CLI 인증이 변경되었습니다", "riido auth status 이후 다시 실행하세요")
 	case errors.Is(err, standalonecli.ErrLogoutRemoteIncomplete):
