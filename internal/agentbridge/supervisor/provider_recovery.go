@@ -11,6 +11,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/providerrecovery"
 )
@@ -28,7 +29,7 @@ func (e *recoveryFailure) Error() string {
 }
 func (e *recoveryFailure) Unwrap() error { return e.cause }
 
-func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest) {
+func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest, work *executionproof.HostWork) {
 	policy, err := req.RecoveryPolicy.Normalized()
 	circuits := a.recovery
 	if circuits == nil {
@@ -53,7 +54,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 			cause = ctx.Err()
 		}
 		copyObservation := observation.Sanitized()
-		a.forwardActivation(taskActivationMsg{claimContext: ctx, taskID: req.ID, prepared: prepared, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope, err: &recoveryFailure{cause: cause, blocked: blocked}})
+		a.forwardActivation(taskActivationMsg{hostWork: work, claimContext: ctx, taskID: req.ID, prepared: prepared, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope, err: &recoveryFailure{cause: cause, blocked: blocked}})
 	}
 	if err != nil {
 		observation.State = "user_action_required"
@@ -163,7 +164,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 				observation.Reason = "none"
 				observation.OutcomeCertainty = "started"
 				copyObservation := observation.Sanitized()
-				a.forwardActivation(taskActivationMsg{claimContext: ctx, taskID: req.ID, prepared: prepared, handle: handle, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope})
+				a.forwardActivation(taskActivationMsg{hostWork: work, claimContext: ctx, taskID: req.ID, prepared: prepared, handle: handle, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope})
 				return
 			}
 		}

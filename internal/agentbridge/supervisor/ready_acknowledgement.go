@@ -7,6 +7,7 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
@@ -25,17 +26,17 @@ func (e *readyAcknowledgementFailure) Error() string {
 }
 func (e *readyAcknowledgementFailure) Unwrap() error { return e.cause }
 
-func (a *Actor) prepareClaimedTask(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest, report controlplane.TaskReportContext) {
+func (a *Actor) prepareClaimedTask(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest, report controlplane.TaskReportContext, work *executionproof.HostWork) {
 	reportCtx := controlplane.ContextWithTaskReport(ctx, report)
 	if err := a.acknowledgeReady(reportCtx, req.ID); err != nil {
-		a.forwardActivation(taskActivationMsg{claimContext: ctx, taskID: req.ID, err: err})
+		a.forwardActivation(taskActivationMsg{hostWork: work, claimContext: ctx, taskID: req.ID, err: err})
 		return
 	}
 	if err := ctx.Err(); err != nil {
-		a.forwardActivation(taskActivationMsg{claimContext: ctx, taskID: req.ID, err: err})
+		a.forwardActivation(taskActivationMsg{hostWork: work, claimContext: ctx, taskID: req.ID, err: err})
 		return
 	}
-	a.prepareAndSubmit(ctx, status, rt, req)
+	a.prepareAndSubmit(ctx, status, rt, req, work)
 }
 
 func (a *Actor) acknowledgeReady(ctx context.Context, taskID string) error {

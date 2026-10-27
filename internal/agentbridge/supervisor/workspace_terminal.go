@@ -24,7 +24,13 @@ func (a *Actor) recordTerminalResult(ctx context.Context, running *runningTask, 
 		}
 	}
 	if res.Status == agentbridge.ResultCompleted && running.execution != nil && running.execution.Binding.HasChecks() && !running.executionVerified {
-		res, _ = verifyExecutionResult(ctx, running, res)
+		work, err := beginClaimHostWork(running.ctx)
+		if err != nil {
+			res.Status, res.Error = agentbridge.ResultCancelled, "Execution verification was not admitted"
+		} else {
+			res, _ = verifyExecutionResult(ctx, running, res)
+			work.Finished()
+		}
 	}
 	res.ExecutionContext = resultExecutionContext(running, res)
 	a.appendTaskTerminalResultEvent(ctx, running, res)

@@ -7,6 +7,7 @@ import (
 	"github.com/teamswyg/riido-contracts/assignment"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
@@ -23,7 +24,11 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 	}
 	report := reportContextFor(req)
 	pin := runtimePinForClaim(status, req)
-	taskCtx, cancel := context.WithCancel(ctx)
+	scope := req.LocalExecutionScope
+	if scope == nil {
+		scope = executionproof.NewScope(false, nil)
+	}
+	taskCtx, cancel := context.WithCancel(executionproof.ContextWithScope(ctx, scope))
 	inFlight[req.ID] = &runningTask{
 		timing:                responseMetrics{claimedAt: time.Now()},
 		taskID:                req.ID,
@@ -41,7 +46,12 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		return true
 	}
 	go a.forwardCancellation(taskCtx, req.ID, cancel)
-	go a.prepareClaimedTask(taskCtx, status, rt, req, report)
+	work, err := scope.Tracker().BeginHostWork()
+	if err != nil {
+		a.finishTaskWithResult(ctx, inFlight, inFlight[req.ID], resultForActivationError(err))
+		return true
+	}
+	go a.prepareClaimedTask(taskCtx, status, rt, req, report, work)
 	return true
 }
 

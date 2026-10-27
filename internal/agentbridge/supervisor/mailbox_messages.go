@@ -6,6 +6,7 @@ import (
 
 	"github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
@@ -19,6 +20,7 @@ type envelope struct {
 }
 
 type taskActivationMsg struct {
+	hostWork      *executionproof.HostWork
 	claimContext  context.Context
 	runtime       *runtimeactor.Actor
 	status        runtimeactor.Status

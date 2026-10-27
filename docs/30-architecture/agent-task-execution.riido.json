@@ -64,6 +64,16 @@
       "automatic_reexecution": "RIID-5822/5823 adds typed known-not-started recovery only; no dispatched/unknown outcome replay. See docs/30-architecture/provider-recovery.md.",
       "repository_only": "A repository-only binding runs without host verification; changed_files and checks must both be empty or both configured. Its instructions must not claim required host checks when none were configured.",
       "windows_ipc": "Each accepted connection owns a fresh pipe handle. Closing preserves buffered response for a delayed client read; do not force-disconnect or block on flushing an unread response."
+    },
+    "local_claim_termination": {
+      "task": "RIID-5900",
+      "coverage": "source-owned fresh PollStart only; missing/recovered Active/restart is unknown; no provider metadata provenance",
+      "aggregate": "all provider Start admissions plus preparation/verification worker reservations; same scope across fallback/correction and lost Submit replies",
+      "counter": "started_invocations counts successful provider Process.Start calls, excluding host command and descendant counts",
+      "terminal": "seal once; pending or earlier unknown never upgrades; deny new admission after seal; reserve worker before launch and release before completion notification",
+      "delivery": "actual terminal ACK then device-authenticated immutable local_invocations_quiescent receipt; Running/needs_user_input skips receipt; known-proof failure preserves original identity and stable terminal key for existing retry Exact receipt-route HTTP 404/405 means unsupported/unknown and preserves normal business cleanup after terminal ACK; other failures retain retry.",
+      "reassignment": "old completion uses its immutable source binding and cannot read/delete a newer scope partial body, assignment, runtime, or cancellation watcher",
+      "limits": "unknown completes existing business lifecycle without receipt/outbox; local invocation observation is not CP allowed, remote runtime completion, or OS descendant termination"
     }
   },
   "verification": {
