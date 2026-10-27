@@ -14,6 +14,10 @@ const (
 	trustedAccessGroup = trustedTeamID + "." + trustedIdentifier
 )
 
+// The trusted system codesign command evaluates this requirement against the
+// actual running code, not a helper-controlled self-report.
+const helperRequirement = `anchor apple generic and identifier "io.riido.cli-auth-helper" and certificate leaf[subject.OU] = "3PVV8DQPL6"`
+
 var (
 	codeFlags          = regexp.MustCompile(`(?:^| )flags=0x([0-9a-fA-F]+)(?:\(| |$)`)
 	unsafeEntitlements = []string{"get-task-allow", "com.apple.security.get-task-allow", "com.apple.security.cs.disable-library-validation", "com.apple.security.cs.allow-unsigned-executable-memory", "com.apple.security.cs.allow-dyld-environment-variables", "com.apple.security.cs.allow-jit", "com.apple.security.cs.disable-executable-page-protection"}

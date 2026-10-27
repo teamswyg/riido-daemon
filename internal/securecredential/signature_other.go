@@ -6,3 +6,5 @@ import "context"
 
 // No portable keychain/DPAPI fallback substitutes for OS user presence.
 func verifyHelper(context.Context, string) error { return ErrUnavailable }
+
+func verifyHelperProcess(context.Context, int) error { return ErrUnavailable }

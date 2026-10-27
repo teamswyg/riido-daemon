@@ -49,3 +49,12 @@ never read or write a real keychain. A compiled unsigned helper is also checked
 for a sanitized preflight refusal. Signed/profiled synthetic-item QA must still
 prove user confirmation, denial, locked state, no-UI refusal, rotation and
 removal before the production CLI can claim this storage capability.
+
+
+### Credential delivery and live process identity
+
+The CLI starts the helper with an empty stdin pipe, keeps the child unreaped, and uses the system `/usr/bin/codesign` to dynamically check that PID with an explicit Apple anchor, Team ID and helper identifier, plus hardened runtime and entitlement policy. Only then does it write any request bytes. Path inspection alone is not a trust boundary in the supported user-writable installation. Failed verification or cancellation closes stdin and terminates/reaps the child. The trusted helper must not exec another program after validation.
+
+A synthetic path-swap regression reproduces the pre-fix credential delivery and now refuses it before any credential bytes are written. This is a negative boundary test, not valid signed-helper acceptance. The current OS's Apple system-process probes did not provide a positive equivalent to a signed Riido helper. Real helper signature/profile/dynamic verification/user-presence QA remains held by the user.
+
+The `.userPresence` access control protects later reads of stored credentials; first `SecItemAdd` and metadata-only status are not proof of a user-presence check before a fresh OAuth exchange or first API call. The browser consent flow, explicit first-login presence and any server-verifiable installation binding must be evaluated separately. This slice does not claim those stronger guarantees.

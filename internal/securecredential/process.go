@@ -27,14 +27,47 @@ func (b *limitedOutput) Write(p []byte) (int, error) {
 }
 
 func runHelper(ctx context.Context, path string, input []byte) ([]byte, error) {
+	return runVerifiedHelper(ctx, path, input, verifyHelperProcess)
+}
+
+// Keep the child unreaped until authentication and request delivery finish so
+// the PID cannot be reused. A prior path check is not a process identity check.
+func runVerifiedHelper(ctx context.Context, path string, input []byte, verify func(context.Context, int) error) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
 	command := exec.CommandContext(ctx, path)
-	command.Stdin = bytes.NewReader(input)
+	command.WaitDelay = time.Second
+	stdin, err := command.StdinPipe()
+	if err != nil {
+		return nil, ErrUnavailable
+	}
 	var out limitedOutput
 	command.Stdout = &out
 	command.Stderr = io.Discard
-	if err := command.Run(); err != nil || out.overflow {
+	if err := command.Start(); err != nil {
+		_ = stdin.Close()
+		return nil, ErrUnavailable
+	}
+	reaped := false
+	defer func() {
+		_ = stdin.Close()
+		if !reaped {
+			_ = command.Process.Kill()
+			_ = command.Wait()
+		}
+	}()
+	if verify == nil || verify(ctx, command.Process.Pid) != nil || ctx.Err() != nil {
+		return nil, ErrUnavailable
+	}
+	if n, err := stdin.Write(input); err != nil || n != len(input) {
+		return nil, ErrUnavailable
+	}
+	if stdin.Close() != nil {
+		return nil, ErrUnavailable
+	}
+	err = command.Wait()
+	reaped = true
+	if err != nil || out.overflow {
 		return nil, ErrUnavailable
 	}
 	return out.Bytes(), nil
