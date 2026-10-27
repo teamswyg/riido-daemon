@@ -29,6 +29,9 @@ func runWork(c contextIO, args []string) error {
 	sub := workCommand(args[0])
 	switch sub {
 	case workCommandGet, workCommandTree, workCommandRelations, workCommandComments, workCommandActivity:
+		if sub == workCommandGet && c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserWork(args[1:])
+		}
 		return c.runContextRead(workRefCall(sub), args[1:])
 	case workCommandSearch:
 		return c.runContextRead(workSearchCall(), args[1:])

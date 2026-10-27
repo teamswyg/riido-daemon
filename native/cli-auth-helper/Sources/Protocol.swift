@@ -1,0 +1,38 @@
+import Foundation
+
+struct HelperRequest: Decodable {
+    let version: Int
+    let operation: String
+    let key: String
+    let interactive: Bool
+    let value: String?
+}
+
+struct HelperFailure: Error, Encodable {
+    let code: String
+    let message: String
+    static let invalid = Self(code: "INVALID_REQUEST", message: "Invalid helper request.")
+    static let unavailable = Self(code: "UNAVAILABLE", message: "Protected credential storage is unavailable.")
+    static let interactionRequired = Self(code: "INTERACTION_REQUIRED", message: "User verification is required.")
+    static let cancelled = Self(code: "CANCELLED", message: "User verification was cancelled.")
+    static let notFound = Self(code: "NOT_FOUND", message: "Credential not found.")
+}
+
+struct HelperData: Encodable {
+    let present: Bool
+    var value: String? = nil
+}
+
+struct HelperResponse: Encodable {
+    let version = 1
+    let ok: Bool
+    var data: HelperData? = nil
+    var error: HelperFailure? = nil
+}
+
+protocol CredentialStore {
+    func status(key: String, interactive: Bool) throws -> Bool
+    func load(key: String, interactive: Bool) throws -> Data
+    func save(key: String, value: Data, interactive: Bool) throws
+    func delete(key: String, interactive: Bool) throws
+}

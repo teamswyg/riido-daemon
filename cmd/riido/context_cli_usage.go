@@ -22,6 +22,7 @@ func printContextUsage(w io.Writer) {
 func printWorkUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido work <get|tree|relations|comments|activity|search> ...")
 	fmt.Fprintln(w, "    riido work get|tree|relations <RIID-1234|ID> [--json]")
+	fmt.Fprintln(w, "    riido work get <ID> --team-id <TEAM-ID> [--json]   (standalone user API)")
 	fmt.Fprintln(w, "    riido work comments <RIID-1234|ID> [--cursor C] [--json]   (fixed 20-item pages)")
 	fmt.Fprintln(w, "    riido work activity <RIID-1234|ID>   (unsupported, exit 8)")
 	fmt.Fprintln(w, "    riido work search --query TEXT   (unsupported, exit 8)")
@@ -39,7 +40,8 @@ func printAgentsUsage(w io.Writer) {
 
 func printAuthUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido auth <login|logout|status> [--json]")
-	fmt.Fprintln(w, "    riido auth login --desktop|--browser|--with-token   (--with-token reads stdin; secrets are never accepted as arguments)")
+	fmt.Fprintln(w, "    riido auth login [--browser]   (browser PKCE; signed credential helper required)")
+	fmt.Fprintln(w, "    --desktop and --with-token are unsupported (exit 8); secrets are never accepted as arguments")
 }
 
 func printMeetingUsage(w io.Writer) {

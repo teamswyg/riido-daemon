@@ -9,11 +9,13 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
+	"github.com/teamswyg/riido-daemon/internal/standalonecli"
 )
 
 // contextIO carries every side effect of the work-context commands so tests
 // can run them without a real daemon, terminal, or PATH.
 type contextIO struct {
+	userSession   func(contextcli.Args) (*standalonecli.Service, error)
 	stdout        io.Writer
 	stderr        io.Writer
 	getenv        func(string) string
