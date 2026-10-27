@@ -42,13 +42,13 @@ func (r Reader) Work(ctx context.Context, id, teamID string) (Work, error) {
 	return *data.Component, nil
 }
 
-func (r Reader) read(ctx context.Context, query string, variables map[string]string, data any) error {
+func (r Reader) read(ctx context.Context, query string, variables, data any) error {
 	if r.Client == nil {
 		return ErrUnavailable
 	}
 	body, err := json.Marshal(struct {
-		Query     string            `json:"query"`
-		Variables map[string]string `json:"variables,omitempty"`
+		Query     string `json:"query"`
+		Variables any    `json:"variables,omitempty"`
 	}{query, variables})
 	if err != nil {
 		return ErrInvalidResponse
@@ -71,6 +71,8 @@ func (r Reader) read(ctx context.Context, query string, variables map[string]str
 		return ErrAuthentication
 	case http.StatusForbidden:
 		return ErrPermission
+	case http.StatusTooManyRequests:
+		return ErrRateLimited
 	}
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
 		return ErrUnavailable

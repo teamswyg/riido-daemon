@@ -14,6 +14,7 @@ const (
 	workCommandTree      workCommand = "tree"
 	workCommandRelations workCommand = "relations"
 	workCommandComments  workCommand = "comments"
+	workCommandReplies   workCommand = "replies"
 	workCommandActivity  workCommand = "activity"
 	workCommandSearch    workCommand = "search"
 )
@@ -32,7 +33,12 @@ func runWork(c contextIO, args []string) error {
 		if sub == workCommandGet && c.environment().Mode != contextcli.ModeAgent {
 			return c.runUserWork(args[1:])
 		}
+		if sub == workCommandComments && c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserComments(sub, args[1:])
+		}
 		return c.runContextRead(workRefCall(sub), args[1:])
+	case workCommandReplies:
+		return c.runUserComments(sub, args[1:])
 	case workCommandSearch:
 		return c.runContextRead(workSearchCall(), args[1:])
 	default:

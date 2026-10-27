@@ -27,6 +27,7 @@ type ArgSpec struct {
 	Values         []string
 	Bools          []string
 	MaxPositionals int
+	AllowLimit     bool // Only the user comments command uses offset pagination.
 }
 
 // Options are the flags shared by every work-context command.
@@ -51,6 +52,9 @@ type Args struct {
 
 // Value returns the value of a command-specific value flag.
 func (a Args) Value(flag string) string { return a.values[flag] }
+
+// HasValue distinguishes an omitted value flag from an explicitly empty value.
+func (a Args) HasValue(flag string) bool { _, ok := a.values[flag]; return ok }
 
 // Bool reports whether a command-specific boolean flag was set.
 func (a Args) Bool(flag string) bool { return a.bools[flag] }
@@ -86,6 +90,10 @@ func ParseArgs(args []string, spec ArgSpec) (Args, *CLIError) {
 					return Args{}, Failf(CodeUsage, "%s 옵션에 값이 필요합니다", name)
 				}
 				value = args[i]
+			}
+			parsed.values[name] = value
+			if name == "--limit" && spec.AllowLimit {
+				continue
 			}
 			if err := parsed.setValue(name, value); err != nil {
 				return Args{}, err

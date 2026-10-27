@@ -20,10 +20,12 @@ func printContextUsage(w io.Writer) {
 }
 
 func printWorkUsage(w io.Writer) {
-	fmt.Fprintln(w, "  riido work <get|tree|relations|comments|activity|search> ...")
+	fmt.Fprintln(w, "  riido work <get|tree|relations|comments|replies|activity|search> ...")
 	fmt.Fprintln(w, "    riido work get|tree|relations <RIID-1234|ID> [--json]")
 	fmt.Fprintln(w, "    riido work get <ID> --team-id <TEAM-ID> [--json]   (standalone user API)")
-	fmt.Fprintln(w, "    riido work comments <RIID-1234|ID> [--cursor C] [--json]   (fixed 20-item pages)")
+	fmt.Fprintln(w, "    riido work comments <RIID-1234|ID> [--cursor C] [--json]   (agent snapshot; fixed 20-item pages)")
+	fmt.Fprintln(w, "    riido work comments <ID> --team-id <TEAM-ID> [--page N] [--limit N] [--json]   (user API; defaults 1/20, limit <= 100)")
+	fmt.Fprintln(w, "    riido work replies <ID> --team-id <TEAM-ID> --comment-id <COMMENT-ID> [--json]   (user API; no pagination; agent replies unsupported)")
 	fmt.Fprintln(w, "    riido work activity <RIID-1234|ID>   (unsupported, exit 8)")
 	fmt.Fprintln(w, "    riido work search --query TEXT   (unsupported, exit 8)")
 }
