@@ -117,6 +117,8 @@ func TestExplicitFallbackUsesApprovedModelAndNeutralInstructions(t *testing.T) {
 	if originalProcess.count() != 0 || request.Model != "chosen-model" || strings.Contains(request.Prompt, "ORIGINAL_PROVIDER_ONLY") || request.ResumeSessionID != "" {
 		t.Fatalf("unsafe handoff: %+v", request)
 	}
+	// Spawn can precede the supervisor claim-wave ownership publication.
+	expectTaskResultRunningEvent(t, reporter)
 	ownership := actor.OwnedExecutions()
 	if len(ownership["rt:claude"]) != 1 {
 		t.Fatalf("assignment lease moved from claim runtime: %+v", ownership)
