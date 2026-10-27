@@ -3,6 +3,7 @@ import Foundation
 struct RequestHandler {
     let preflight: () throws -> Void
     let store: CredentialStore
+    let confirm: () throws -> Void
     func handle(_ input: Data) -> HelperResponse {
         do {
             let request = try decode(input)
@@ -22,6 +23,10 @@ struct RequestHandler {
             case "delete":
                 try store.delete(key: request.key, interactive: request.interactive)
                 data = HelperData(present: false)
+            case "confirm":
+                guard request.interactive else { throw HelperFailure.interactionRequired }
+                try confirm()
+                data = HelperData(confirmed: true)
             default: throw HelperFailure.invalid
             }
             return HelperResponse(ok: true, data: data)
@@ -37,7 +42,7 @@ struct RequestHandler {
               Set(object.keys).isSubset(of: ["version", "operation", "key", "interactive", "value"]),
               let request = try? JSONDecoder().decode(HelperRequest.self, from: input),
               request.version == 1,
-              ["status", "load", "save", "delete"].contains(request.operation),
+              ["status", "load", "save", "delete", "confirm"].contains(request.operation),
               (16...128).contains(request.key.utf8.count),
               request.key.utf8.allSatisfy({ byte in
                   (65...90).contains(byte) || (97...122).contains(byte) || (48...57).contains(byte) || byte == 45 || byte == 95

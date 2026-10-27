@@ -18,7 +18,16 @@ type LoginResult struct {
 }
 
 func (s *Service) Login(ctx context.Context) (LoginResult, error) {
+	if err := ctx.Err(); err != nil {
+		return LoginResult{}, err
+	}
 	if _, err := s.store.Status(ctx); err != nil {
+		return LoginResult{}, err
+	}
+	if err := s.store.ConfirmUserPresence(ctx); err != nil {
+		return LoginResult{}, err
+	}
+	if err := ctx.Err(); err != nil {
 		return LoginResult{}, err
 	}
 	if s.openBrowser == nil {

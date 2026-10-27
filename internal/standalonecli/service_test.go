@@ -16,11 +16,15 @@ import (
 )
 
 type testStore struct {
-	mu         sync.Mutex
-	credential userauth.Credential
-	present    bool
-	statusErr  error
-	saves      int
+	mu          sync.Mutex
+	credential  userauth.Credential
+	present     bool
+	statusErr   error
+	saves       int
+	confirmErr  error
+	confirms    int
+	confirmHook func()
+	order       []string
 }
 
 func (s *testStore) Lock(context.Context) (func(), error) { s.mu.Lock(); return s.mu.Unlock, nil }
@@ -32,6 +36,7 @@ func (s *testStore) Load(context.Context) (userauth.Credential, error) {
 }
 
 func (s *testStore) Save(_ context.Context, v userauth.Credential) error {
+	s.order = append(s.order, "save")
 	s.credential = v
 	s.present = true
 	s.saves++
@@ -43,7 +48,20 @@ func (s *testStore) Delete(context.Context) error {
 	s.credential = userauth.Credential{}
 	return nil
 }
-func (s *testStore) Status(context.Context) (bool, error) { return s.present, s.statusErr }
+
+func (s *testStore) Status(context.Context) (bool, error) {
+	s.order = append(s.order, "status")
+	return s.present, s.statusErr
+}
+
+func (s *testStore) ConfirmUserPresence(context.Context) error {
+	s.order = append(s.order, "confirm")
+	s.confirms++
+	if s.confirmHook != nil {
+		s.confirmHook()
+	}
+	return s.confirmErr
+}
 
 func testLoginService(t *testing.T, store *testStore, handler http.HandlerFunc) (*Service, *int) {
 	t.Helper()

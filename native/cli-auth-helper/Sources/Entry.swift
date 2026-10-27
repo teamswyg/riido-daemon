@@ -4,7 +4,8 @@ import Foundation
 @main
 struct HelperMain {
     static func main() {
-        let handler = RequestHandler(preflight: verifySigningPreflight, store: ProtectedKeychainStore())
+        let handler = RequestHandler(preflight: verifySigningPreflight, store: ProtectedKeychainStore(),
+                                     confirm: { try UserPresenceVerifier().confirm() })
         let input: Data
         do { input = try readBoundedInput() }
         catch { write(HelperResponse(ok: false, error: .invalid)); return }

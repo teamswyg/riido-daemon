@@ -15,12 +15,14 @@ struct HelperFailure: Error, Encodable {
     static let unavailable = Self(code: "UNAVAILABLE", message: "Protected credential storage is unavailable.")
     static let interactionRequired = Self(code: "INTERACTION_REQUIRED", message: "User verification is required.")
     static let cancelled = Self(code: "CANCELLED", message: "User verification was cancelled.")
+    static let timedOut = Self(code: "TIMED_OUT", message: "User verification timed out.")
     static let notFound = Self(code: "NOT_FOUND", message: "Credential not found.")
 }
 
 struct HelperData: Encodable {
-    let present: Bool
+    var present: Bool? = nil
     var value: String? = nil
+    var confirmed: Bool? = nil
 }
 
 struct HelperResponse: Encodable {
