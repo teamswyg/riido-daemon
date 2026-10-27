@@ -22,5 +22,8 @@ Archives contain:
 - NOTICE.md
 - VERSION
 - binary version command reports VERSION
+- Optional macOS only: CLI_AUTH_HELPER.json (schema_version 1, exact release_version, fixed helper_bundle RiidoCLIAuthHelper.app) together with the adjacent signed RiidoCLIAuthHelper.app. Both absent is legacy; only one present is rejected.
+- Opt in with an absolute RIIDO_CLI_AUTH_HELPER_BUNDLE path on a macOS packaging host. The bundle must already be signed; packaging never signs or accesses signing credentials.
+- Info.plist RiidoCLIReleaseVersion must exactly match VERSION, including tag prefix and suffix; inject release metadata before signing.
 
 Checksums are published as `SHA256SUMS` by the release publish script.

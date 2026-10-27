@@ -34,22 +34,25 @@ func verifyHelperProcess(ctx context.Context, pid int) error {
 	return verifyCodeTarget(ctx, "+"+strconv.Itoa(pid))
 }
 
-func verifyCodeTarget(ctx context.Context, target string) error {
+func verifyCodeTarget(ctx context.Context, target string, architecture ...string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	verify := exec.CommandContext(ctx, "/usr/bin/codesign", "--verify", "--strict", "--verbose=1", "-R="+helperRequirement, target)
+	verifyArgs := append([]string{"--verify", "--strict", "--verbose=1", "-R=" + helperRequirement}, architecture...)
+	verify := exec.CommandContext(ctx, "/usr/bin/codesign", append(verifyArgs, target)...)
 	if verify.Run() != nil {
 		return ErrUnavailable
 	}
 	var metadata limitedOutput
-	inspect := exec.CommandContext(ctx, "/usr/bin/codesign", "--display", "--verbose=4", target)
+	displayArgs := append([]string{"--display", "--verbose=4"}, architecture...)
+	inspect := exec.CommandContext(ctx, "/usr/bin/codesign", append(displayArgs, target)...)
 	inspect.Stdout = &metadata
 	inspect.Stderr = &metadata
 	if inspect.Run() != nil || metadata.overflow {
 		return ErrUnavailable
 	}
 	var entitlements limitedOutput
-	inspectEntitlements := exec.CommandContext(ctx, "/usr/bin/codesign", "--display", "--entitlements", ":-", "--xml", target)
+	entitlementArgs := append([]string{"--display", "--entitlements", ":-", "--xml"}, architecture...)
+	inspectEntitlements := exec.CommandContext(ctx, "/usr/bin/codesign", append(entitlementArgs, target)...)
 	inspectEntitlements.Stdout = &entitlements
 	if inspectEntitlements.Run() != nil || entitlements.overflow {
 		return ErrUnavailable
