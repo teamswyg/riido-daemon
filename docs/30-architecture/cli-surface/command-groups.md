@@ -12,7 +12,7 @@
 | `riido agents ...` | cmd/riido, internal/contextcli | lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent |
 | `riido auth ...` | cmd/riido, internal/contextcli | user-mode sign-in state; never accepts secrets as arguments and never prints credentials |
 | `riido whoami` | cmd/riido, internal/contextcli | reports the acting principal, workspace, and mode without printing secrets |
-| `riido doctor` | cmd/riido, internal/contextcli | local diagnosis of binary, PATH, mode, daemon IPC, and auth state; remote checks only with --check-api |
+| `riido doctor` | cmd/riido, internal/contextcli | local diagnosis of binary, PATH, mode, daemon IPC, and auth state; remote API verification is unsupported and --check-api exits 8 without making a remote read |
 | `riido capabilities` | cmd/riido, internal/contextcli | static description of CLI, envelope, and IPC schema versions plus command availability |
 | `riido serve` | internal/riidoapi | local IPC server over Unix socket or Windows named pipe |
 | `riido api ...` | internal/riidoapi | local IPC client for guarded task and status APIs |

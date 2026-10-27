@@ -5,7 +5,6 @@ import (
 	"errors"
 	"io"
 	"net"
-	"strconv"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
@@ -40,6 +39,10 @@ func (c contextIO) runContextRead(call contextReadCall, raw []string) error {
 	payload, cliErr := call.payload(args)
 	if cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
+	}
+	if contextcli.ReadCommandUnavailable(call.command) {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeControlPlaneUnsupported,
+			call.command+" 명령은 아직 지원하지 않습니다", "riido context get 또는 riido work get을 사용하세요"))
 	}
 	env := c.environment()
 	if cliErr := checkRunScope(env, args); cliErr != nil {
@@ -77,12 +80,8 @@ func userModeUnavailable() *contextcli.CLIError {
 }
 
 func addListOptions(payload map[string]string, args contextcli.Args) {
-	payload["limit"] = strconv.Itoa(args.Limit)
 	if args.Cursor != "" {
 		payload["cursor"] = args.Cursor
-	}
-	if args.Team != "" {
-		payload["team"] = args.Team
 	}
 }
 

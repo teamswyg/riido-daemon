@@ -57,7 +57,7 @@ func TestContextCLIAgentModeV1ReplyIsPassedThrough(t *testing.T) {
 		t.Fatalf("unexpected envelope: %+v", env)
 	}
 	args, _ := h.daemon.lastRequest(t)["args"].(map[string]any)
-	if args["budget_chars"] != "4000" || args["limit"] != "20" {
+	if args["budget_chars"] != "4000" || args["limit"] != nil || args["team"] != nil {
 		t.Fatalf("payload not forwarded: %v", args)
 	}
 }
@@ -65,7 +65,7 @@ func TestContextCLIAgentModeV1ReplyIsPassedThrough(t *testing.T) {
 func TestContextCLIDaemonErrorReplyKeepsExitCode(t *testing.T) {
 	h := newContextHarness(t, agentVars())
 	h.daemon.replies[contextcli.IPCMethodContextRead] = `{"schema_version":"1","request_id":"daemon-1","data":null,"error":{"code":"SNAPSHOT_EXPIRED","message":"expired","next_action":"riido context get","retryable":false,"request_id":"daemon-1"}}`
-	err := runContext(h.io, []string{"changes", "--since", "snap-0"})
+	err := runContext(h.io, []string{"get"})
 	if got := exitCodeOf(t, err); got != 5 {
 		t.Fatalf("want exit 5, got %d", got)
 	}

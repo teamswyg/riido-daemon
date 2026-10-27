@@ -29,11 +29,25 @@ type CapabilitiesData struct {
 const (
 	noteDaemonBroker = "agent mode: daemon의 context_read 브로커(RIIDO_CONTEXT_CLI=on)가 필요하고, Riido 데이터 조회는 control-plane 실행 grant 이후 가능합니다"
 	noteUserMode     = "user mode: 서버 인증 계약(ADR) 확정 전까지 사용할 수 없습니다"
+	noteUnsupported  = "아직 구현되지 않은 명령입니다. 실행하면 원격 조회 없이 exit 8을 반환합니다"
 )
+
+// ReadCommandUnavailable keeps command execution and availability advertising aligned.
+func ReadCommandUnavailable(name string) bool {
+	switch name {
+	case "context changes", "work activity", "work search":
+		return true
+	default:
+		return false
+	}
+}
 
 // Capabilities returns the static capability table for cliVersion.
 func Capabilities(cliVersion string) CapabilitiesData {
 	agentRead := func(name string) CommandCapability {
+		if ReadCommandUnavailable(name) {
+			return CommandCapability{Name: name, Modes: []Mode{ModeAgent}, Status: CommandUnavailable, Note: noteUnsupported}
+		}
 		return CommandCapability{Name: name, Modes: []Mode{ModeAgent}, Status: CommandNeedsDaemon, Note: noteDaemonBroker}
 	}
 	local := func(name string) CommandCapability {
