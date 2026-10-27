@@ -13,6 +13,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/securecredential"
 	"github.com/teamswyg/riido-daemon/internal/standalonecli"
+	"github.com/teamswyg/riido-daemon/internal/userauth"
 )
 
 const (
@@ -24,11 +25,10 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 	if c.userSession != nil {
 		return c.userSession(args)
 	}
-	origin := strings.TrimSpace(c.getenv(cliAPIOriginEnv))
-	if origin == "" {
-		origin = cliDefaultAPIOrigin
+	origin, _, err := c.userAPIOrigin()
+	if err != nil {
+		return nil, err
 	}
-	origin = strings.TrimRight(origin, "/")
 	executable, err := c.executable()
 	if err != nil {
 		return nil, securecredential.ErrUnavailable
@@ -51,4 +51,21 @@ func openUserBrowser(ctx context.Context, address string) error {
 		return standalonecli.ErrBrowserUnavailable
 	}
 	return exec.CommandContext(ctx, "/usr/bin/open", address).Run()
+}
+
+// userAPIOrigin validates the same OAuth resource without opening storage or
+// contacting the network. Invalid input is never returned to diagnostics.
+func (c contextIO) userAPIOrigin() (string, string, error) {
+	origin := strings.TrimSpace(c.getenv(cliAPIOriginEnv))
+	source := "environment"
+	if origin == "" {
+		origin = cliDefaultAPIOrigin
+		source = "default"
+	}
+	origin = strings.TrimRight(origin, "/")
+	_, err := userauth.NewClient(userauth.Config{ClientID: "riido-cli", Resource: origin, Scopes: []string{"read"}, Endpoints: userauth.Endpoints{AuthorizeURL: origin + "/oauth/authorize", TokenURL: origin + "/oauth/token", RevokeURL: origin + "/oauth/revoke"}})
+	if err != nil {
+		return "", source, err
+	}
+	return origin, source, nil
 }

@@ -33,7 +33,7 @@ func prepareBundle(ctx context.Context, source, out, version, arch string, verif
 	if err := validateSignedBundle(ctx, destination, version, arch, verify); err != nil {
 		return err
 	}
-	data, err := json.Marshal(helperManifest{1, version, bundleName})
+	data, err := json.Marshal(helperManifest{SchemaVersion: 1, ReleaseVersion: version, HelperBundle: bundleName})
 	if err != nil {
 		return err
 	}
