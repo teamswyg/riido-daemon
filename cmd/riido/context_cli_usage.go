@@ -15,7 +15,7 @@ func printContextUsage(w io.Writer) {
 	printMeetingUsage(w)
 	printAuthUsage(w)
 	fmt.Fprintln(w, "  riido whoami [--json]")
-	fmt.Fprintln(w, "  riido doctor [--json]   (local checks only; --check-api is unsupported, exit 8)")
+	printDoctorUsage(w)
 	fmt.Fprintln(w, "  riido capabilities [--json]")
 }
 
@@ -47,4 +47,8 @@ func printAuthUsage(w io.Writer) {
 func printMeetingUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido meeting list [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (snapshot metadata; defaults to the assigned task)")
 	fmt.Fprintln(w, "  riido meeting get <MEETING-ID> [--budget CHARS] [--json]   (captured document body)")
+}
+
+func printDoctorUsage(w io.Writer) {
+	fmt.Fprintln(w, "  riido doctor [--check-api] [--no-input] [--timeout DURATION] [--json]   (--check-api verifies user Whoami; agent API check is unsupported)")
 }
