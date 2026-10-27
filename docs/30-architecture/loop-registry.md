@@ -169,7 +169,7 @@ When task context does not contain a concrete action, the daemon must instruct p
 - Files: `internal/agentbridge/assignment_interaction_contract.go`, `internal/agentbridge/telemetry_apply.go`, `internal/agentbridge/telemetry_runtime_instruction_apply_test.go`, `internal/agentbridge/controlplane/saasplane/saasplane_system_prompt_test.go`, `internal/agentbridge/controlplane/saasplane/task_completion.go`, `internal/agentbridge/controlplane/saasplane/terminal_result_metadata.go`, `internal/agentbridge/controlplane/saasplane/needs_input_markers.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit.go`, `internal/agentbridge/controlplane/saasplane/terminal_provider_limit_test.go`
 - Docs: `docs/30-architecture/loop-engineering/intent-clarification-result.riido.json`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `assignment_result_status=needs_input`, `assignment_failure_category=provider_limit`, `assignment interaction contract`, `intent-clarification-result`, `loop-engineering-evidence`
-- Verifiers: `interaction-contract-placement-test`, `needs-input-completion-test`, `provider-limit-category-test`
+- Verifiers: `interaction-contract-placement-test`, `needs-input-completion-test`, `provider-limit-category-test`, `needs-input-claim-termination-test`
 
 ### loop_registry_must_bind_claims_to_code_docs_tests
 
@@ -223,7 +223,7 @@ Native session resume preserves the original task-owned cwd and rejects foreign 
 - Files: `internal/workdir/fs_native_session.go`, `internal/workdir/native_session.go`, `internal/agentbridge/controlplane/metadata.go`, `internal/agentbridge/controlplane/saasplane/task_request_from_assignment.go`, `internal/agentbridge/supervisor/native_session_binding.go`, `internal/agentbridge/session/session_identity.go`, `internal/execution/binding.go`, `internal/agentbridge/supervisor/workspace_lifecycle.go`, `internal/agentbridge/supervisor/task_claiming.go`, `internal/agentbridge/session/session_runner_apply.go`, `internal/agentbridge/session/session_runner_result.go`, `internal/provider/claude/translate_result.go`, `internal/provider/cursor/translate_result.go`
 - Docs: `docs/30-architecture/agent-session-history.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
 - Evidence: `TestNativeSessionFollowupsRetainWorkspaceAcrossRestart`, `TestNativeSessionFollowupReopensCloneWithFreshVerification`, `TestNativeSessionIdentityGuardBeforePublication`, `TestNativeSessionBindingCannotBeReassigned`
-- Verifiers: `saas-native-session-owner-mapping-test`, `session-history-restart-and-isolation-tests`, `native-session-event-identity-guard-tests`, `native-session-durable-binding-tests`
+- Verifiers: `saas-native-session-owner-mapping-test`, `session-history-restart-and-isolation-tests`, `native-session-event-identity-guard-tests`, `native-session-durable-binding-tests`, `claim-termination-preserves-current-owner-test`
 
 ### task_execution_environment_keeps_local_authority
 
