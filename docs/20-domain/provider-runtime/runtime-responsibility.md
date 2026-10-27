@@ -12,6 +12,12 @@ This SSOT fixes the C4 Provider Runtime / Adapter responsibility boundary as gen
 
 The provider runtime owns process/session/raw provider event normalization. It does not own canonical IR persistence, task leasing, client profile presentation, policy interpretation, or Figma UI semantics.
 
+A Session privately observes only its own spawned child exit, supplied by core RunningProcess.Exited after cmd.Wait (or an already observed deferred exit). Provider result/status, successful cancellation or Kill, and a channel closed without an exit status are not child-exit evidence.
+
+Final cleanup shares one ProcessKillTimeout budget between Kill and child-exit observation while draining stdout and stderr without publishing late provider events. Cancellation does not cancel this bounded cleanup budget. Missing status, timeout before a status, or process-start failure remains unconfirmed; late exits after the final result cannot revise the observation.
+
+The observation is local invocation evidence only: it does not attest remote provider sessions or detached descendants, change the public Result/event/wire contract, or grant control-plane permission. There is no external consumer, persisted proof, claim release, or restart recovery in this source foundation.
+
 ## Generated Detail Surfaces
 
 - [Responsibility Statement](runtime-responsibility/responsibility-statement.md)
@@ -29,6 +35,7 @@ The provider runtime owns process/session/raw provider event normalization. It d
 
 ## Executable Assertions
 
+- Private local child-exit observation accepts only core process exit evidence and never grants control-plane permission.
 - C4 owns provider process/session/raw event normalization, not canonical IR persistence.
 - Agent client and Figma UI concepts are upstream inputs, not runtime adapter responsibilities.
 - ProviderCapability and CapabilityFingerprint stay in contracts/C3; C4 consumes them read-only.

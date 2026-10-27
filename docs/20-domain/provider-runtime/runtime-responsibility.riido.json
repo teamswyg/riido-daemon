@@ -14,7 +14,10 @@
   },
   "summary": [
     "This SSOT fixes the C4 Provider Runtime / Adapter responsibility boundary as generated documentation, source anchors, and CI evidence.",
-    "The provider runtime owns process/session/raw provider event normalization. It does not own canonical IR persistence, task leasing, client profile presentation, policy interpretation, or Figma UI semantics."
+    "The provider runtime owns process/session/raw provider event normalization. It does not own canonical IR persistence, task leasing, client profile presentation, policy interpretation, or Figma UI semantics.",
+    "A Session privately observes only its own spawned child exit, supplied by core RunningProcess.Exited after cmd.Wait (or an already observed deferred exit). Provider result/status, successful cancellation or Kill, and a channel closed without an exit status are not child-exit evidence.",
+    "Final cleanup shares one ProcessKillTimeout budget between Kill and child-exit observation while draining stdout and stderr without publishing late provider events. Cancellation does not cancel this bounded cleanup budget. Missing status, timeout before a status, or process-start failure remains unconfirmed; late exits after the final result cannot revise the observation.",
+    "The observation is local invocation evidence only: it does not attest remote provider sessions or detached descendants, change the public Result/event/wire contract, or grant control-plane permission. There is no external consumer, persisted proof, claim release, or restart recovery in this source foundation."
   ],
   "detail_pages": [
     {"id": "responsibility-statement", "title": "Responsibility Statement", "path": "runtime-responsibility/responsibility-statement.md"},
@@ -40,6 +43,9 @@
     "provider-adapter-port": "runtime-responsibility/provider-adapter-port.riido.json"
   },
   "source_checks": [
+    {"name": "private-child-exit-observation", "file": "internal/agentbridge/session/session_child_exit.go", "contains": "func observeChildExit"},
+    {"name": "child-exit-not-provider-result", "file": "internal/agentbridge/session/session_child_exit_test.go", "contains": "TestFinishWaitsForChildExitAfterProviderResult"},
+    {"name": "child-exit-shared-cleanup-budget", "file": "internal/agentbridge/session/session_child_exit_test.go", "contains": "TestFinishUsesOneKillAndObservationBudget"},
     {"name": "agentbridge-c4-ownership", "file": "internal/agentbridge/state.go", "contains": "Package agentbridge is the ACL between provider CLI processes"},
     {"name": "agentbridge-not-capability-owner", "file": "internal/agentbridge/state.go", "contains": "Provider capability model (ProviderCapability/Fingerprint)"},
     {"name": "provider-import-forbidden", "file": "internal/agentbridge/state.go", "contains": "MUST NOT import any provider/<name> package"},
@@ -56,6 +62,7 @@
     {"name": "assignment-execution-key", "file": "internal/agentbridge/runtimeactor/assignment_identity_test.go", "contains": "TestRuntimeActorUsesAssignmentIDAsExecutionKey"}
   ],
   "assertions": [
+    "Private local child-exit observation accepts only core process exit evidence and never grants control-plane permission.",
     "C4 owns provider process/session/raw event normalization, not canonical IR persistence.",
     "Agent client and Figma UI concepts are upstream inputs, not runtime adapter responsibilities.",
     "ProviderCapability and CapabilityFingerprint stay in contracts/C3; C4 consumes them read-only.",
