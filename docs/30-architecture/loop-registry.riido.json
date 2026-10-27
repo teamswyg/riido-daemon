@@ -1254,7 +1254,8 @@
         ".github/workflows/riidoapi.yml",
         "internal/riidoapi/local_transport_windows_conn.go",
         "cmd/riido/daemon_ipc_context_native_integration_test.go",
-        "cmd/riido/daemon_ipc_context_native_fixture_test.go"
+        "cmd/riido/daemon_ipc_context_native_fixture_test.go",
+        "cmd/riido/daemon_ipc_context_rate_limit_test.go"
       ],
       "docs": [
         "docs/30-architecture/loop-registry.riido.json",
@@ -1269,7 +1270,8 @@
         "daemon_local_ipc_transport_regression",
         "local_api_host_defaults_regression",
         "TestWindowsNamedPipeClosePreservesBufferedResponse",
-        "TestContextCLINativeIPCRoundTrip"
+        "TestContextCLINativeIPCRoundTrip",
+        "TestContextCLINativeIPCRoundTripRateLimit"
       ],
       "verifiers": [
         {
@@ -1340,6 +1342,15 @@
             "TestContextCLINativeIPCRoundTrip",
             "PERMISSION_DENIED",
             "OUT_OF_RUN_SCOPE"
+          ]
+        },
+        {
+          "name": "context-cli-native-rate-limit-round-trip",
+          "file": "cmd/riido/daemon_ipc_context_rate_limit_test.go",
+          "contains": [
+            "TestContextCLINativeIPCRoundTripRateLimit",
+            "CodeRateLimited",
+            "env.Error.Retryable"
           ]
         },
         {
