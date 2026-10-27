@@ -67,9 +67,14 @@ jobs:
           go test ./cmd/riido ./internal/taskdb ./internal/riidoapi ./internal/validation -count=1
           go build -o /tmp/riido-cli-check ./cmd/riido
           go run ./cmd/riido --help >/tmp/riido-help.txt 2>&1
-          grep -q 'riido bridge <providers|detect>' /tmp/riido-help.txt
-          grep -q 'riido mwsd <snapshot|projection|sync|orchestration|projects|status>' /tmp/riido-help.txt
-          grep -q 'riido daemon start' /tmp/riido-help.txt
+          if grep -Eq 'riido (daemon|bridge|mwsd|claude-permission-mcp)( |$)' /tmp/riido-help.txt; then
+            echo "root help must not expose internal runtime commands"
+            exit 1
+          fi
+          go run ./cmd/riido daemon --help >/tmp/riido-internal-help.txt 2>&1
+          grep -q 'riido bridge <providers|detect>' /tmp/riido-internal-help.txt
+          grep -q 'riido mwsd <snapshot|projection|sync|orchestration|projects|status>' /tmp/riido-internal-help.txt
+          grep -q 'riido daemon start' /tmp/riido-internal-help.txt
           go run ./cmd/riido bridge providers | grep -q '"name": "codex"'
       - name: Write package workflow evidence
         if: always()

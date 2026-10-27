@@ -46,6 +46,7 @@ Keeps the cmd/riido command surface and root-help visibility generated from a ma
 ## Assertions
 
 - root help contains only public command groups; internal command dispatch and direct daemon help remain compatible
+- cli, daemon-lifecycle and mwsd-project workflow checks use direct daemon help for internal usage tokens
 - cmd/riido remains local-only and must not open public TCP or HTTP listeners
 - direct internal-command help must expose each declared command group; root help must expose only groups marked public
 - bridge providers output must expose the provider vocabulary without launching provider tasks

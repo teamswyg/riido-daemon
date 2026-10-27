@@ -62,8 +62,8 @@ jobs:
         run: |
           go test ./internal/mwsdbridge ./internal/project ./cmd/riido -count=1
           go build -o /tmp/riido-mwsd-check ./cmd/riido
-          go run ./cmd/riido --help >/tmp/riido-help.txt 2>&1
-          grep -q 'riido mwsd <snapshot|projection|sync|orchestration|projects|status>' /tmp/riido-help.txt
+          go run ./cmd/riido daemon --help >/tmp/riido-internal-help.txt 2>&1
+          grep -q 'riido mwsd <snapshot|projection|sync|orchestration|projects|status>' /tmp/riido-internal-help.txt
       - name: Write package workflow evidence
         if: always()
         run: |
