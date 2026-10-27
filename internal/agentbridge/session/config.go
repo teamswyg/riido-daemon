@@ -14,7 +14,8 @@ const (
 	// DefaultResultBuffer stores the single terminal result for a session.
 	DefaultResultBuffer = 1
 	// DefaultProcessKillTimeout bounds provider process kill calls made during
-	// session teardown and reducer-driven cancellation.
+	// reducer-driven cancellation, and the combined kill/exit observation
+	// budget during final session teardown.
 	DefaultProcessKillTimeout = 5 * time.Second
 )
 
@@ -52,7 +53,8 @@ type Config struct {
 	// TempFiles are adapter-owned files removed after exit/cancel/timeout.
 	TempFiles []string
 
-	// ProcessKillTimeout bounds RunningProcess.Kill calls.
+	// ProcessKillTimeout bounds RunningProcess.Kill calls and the combined
+	// kill/exit observation budget during final teardown.
 	ProcessKillTimeout time.Duration
 
 	// now is injected for deterministic tests; defaults to time.Now.
