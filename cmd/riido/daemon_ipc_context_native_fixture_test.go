@@ -29,6 +29,7 @@ type nativeContextFixture struct {
 	binary, socket, token string
 	broker                *contextbroker.Broker
 	active, certain       atomic.Bool
+	failureStatus         atomic.Int32
 	mu                    sync.Mutex
 	queries               []contextbroker.Query
 	audit                 []string
@@ -109,6 +110,9 @@ func (f *nativeContextFixture) FetchAssignmentContext(_ context.Context, q conte
 	f.mu.Lock()
 	f.queries = append(f.queries, q)
 	f.mu.Unlock()
+	if status := int(f.failureStatus.Load()); status != 0 {
+		return contextbroker.Result{}, &contextbroker.FetchError{Status: status, Message: "assignment context read limit exceeded; start a new execution"}
+	}
 	data, _ := json.Marshal(map[string]any{"marker": "NATIVE_CONTEXT_FIXTURE", "view": q.View, "next_cursor": ""})
 	return contextbroker.Result{Data: data, CapturedAt: time.Date(2026, 10, 27, 0, 0, 0, 0, time.UTC), Sources: []contextbroker.ResultSource{{Kind: "task", ID: "RIID-5900", Part: "body", Version: "fixture-v1"}}, Live: q.View == "agents" || q.View == "agent"}, nil
 }

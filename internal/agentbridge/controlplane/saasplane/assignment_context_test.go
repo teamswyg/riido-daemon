@@ -19,6 +19,11 @@ func TestFetchAssignmentContextSendsDeviceCredentialOnce(t *testing.T) {
 		if r.URL.Path != "/v1/agents/agent-1/assignment-context" || r.Header.Get("X-Riido-Device-Secret") != "device-secret" || in.LeaseToken != "lease-1" {
 			t.Errorf("request path=%s lease=%q", r.URL.Path, in.LeaseToken)
 		}
+		if in.View == "agents" {
+			w.WriteHeader(http.StatusTooManyRequests)
+			_, _ = w.Write([]byte(`{"schema_version":"v1","error":"assignment context read limit exceeded; start a new execution"}`))
+			return
+		}
 		if in.View == "tree" {
 			w.WriteHeader(http.StatusServiceUnavailable)
 			_, _ = w.Write([]byte(`{"schema_version":"v1","error":"assignment context read record unavailable"}`))
@@ -40,7 +45,12 @@ func TestFetchAssignmentContextSendsDeviceCredentialOnce(t *testing.T) {
 	if !ok || status != http.StatusServiceUnavailable || message != "assignment context read record unavailable" {
 		t.Fatalf("status=%d message=%q ok=%v", status, message, ok)
 	}
-	if calls.Load() != 2 {
+	_, err = plane.FetchAssignmentContext(context.Background(), "agent-1", AssignmentContextRequest{AssignmentID: "asg-1", LeaseToken: "lease-1", View: "agents"})
+	status, _, ok = HTTPStatus(err)
+	if !ok || status != http.StatusTooManyRequests {
+		t.Fatalf("quota status lost: status=%d ok=%v", status, ok)
+	}
+	if calls.Load() != 3 {
 		t.Fatalf("a recorded read must not be retried blindly, calls=%d", calls.Load())
 	}
 }

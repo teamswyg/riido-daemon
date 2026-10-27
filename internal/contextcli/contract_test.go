@@ -107,3 +107,19 @@ func TestContextReadRequestCarriesCapabilityOnlyInIPCBody(t *testing.T) {
 		t.Fatalf("request: %+v", req)
 	}
 }
+
+func TestReplyErrorKeepsPermanentRunLimit(t *testing.T) {
+	for _, code := range []ErrorCode{CodeRateLimited, CodeUnavailable} {
+		for _, retryable := range []bool{true, false} {
+			env := NewEnvelope("request", nil)
+			env.Error = &Error{Code: code, Message: "limit", Retryable: retryable, NextAction: "new execution", RequestID: "request"}
+			reply := ReplyError(env)
+			if reply.Retryable() != retryable || FailureEnvelope("request", reply).Error.Retryable != retryable {
+				t.Fatalf("reply lost retry policy for %s: want %v", code, retryable)
+			}
+		}
+	}
+	if !Fail(CodeRateLimited, "temporary limit", "later").Retryable() || !Fail(CodeUnavailable, "temporary", "later").Retryable() {
+		t.Fatal("ordinary transient failures must keep their retry policy")
+	}
+}

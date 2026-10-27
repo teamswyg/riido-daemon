@@ -54,6 +54,8 @@ func TestReadMapsControlPlaneRefusals(t *testing.T) {
 		err  error
 		want contextcli.ErrorCode
 	}{
+		{&FetchError{Status: 401, Message: "unauthorized"}, contextcli.CodePermissionDenied},
+		{&FetchError{Status: 503, Message: "backend unavailable"}, contextcli.CodeUnavailable},
 		{&FetchError{Status: 503, Message: "assignment context is not configured"}, contextcli.CodeControlPlaneUnsupported},
 		{&FetchError{Status: 404, Message: "not found"}, contextcli.CodeControlPlaneUnsupported},
 		{&FetchError{Status: 404, Message: "assignment context snapshot unavailable"}, contextcli.CodeNotFound},
@@ -125,5 +127,26 @@ func TestReadAgentsDirectoryIsLiveAndPaged(t *testing.T) {
 	b.Handle(req, activeSet("run-1"))
 	if q := fetcher.queries[len(fetcher.queries)-1]; q.View != viewAgent || q.Target != "agent-b" {
 		t.Fatalf("query=%+v", q)
+	}
+}
+
+func TestReadLimitHasNoDataAndMustNotRetryCurrentRun(t *testing.T) {
+	fetcher := &fakeFetcher{err: &FetchError{Status: 429, Message: "assignment context read limit exceeded: private-upstream-value"}}
+	b := New("", "")
+	b.Fetcher = fetcher
+	token := issueForTest(t, b, saasBinding())
+	env := b.Handle(request(token, "context get"), activeSet("run-1"))
+	if env.Error == nil || env.Error.Code != contextcli.CodeRateLimited || env.Error.Code.ExitCode() != 7 || env.Error.Retryable {
+		t.Fatalf("run limit must return non-retryable exit 7: %+v", env.Error)
+	}
+	if env.Data != nil || len(env.Sources) != 0 || env.Error.RequestID != "cli_test" || !strings.Contains(env.Error.NextAction, "새 실행") {
+		t.Fatalf("run limit needs a new-run action without data/sources: %+v", env)
+	}
+	if len(fetcher.queries) != 1 {
+		t.Fatal("rate limited read was retried")
+	}
+	encoded, _ := json.Marshal(env)
+	if strings.Contains(string(encoded), "private-upstream-value") || strings.Contains(string(encoded), "lease-secret") {
+		t.Fatal("upstream details leaked into rate limit envelope")
 	}
 }

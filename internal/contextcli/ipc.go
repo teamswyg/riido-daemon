@@ -89,5 +89,5 @@ func ReplyError(env Envelope) *CLIError {
 	if env.Error == nil {
 		return nil
 	}
-	return &CLIError{Code: env.Error.Code, Message: env.Error.Message, NextAction: env.Error.NextAction}
+	return &CLIError{Code: env.Error.Code, Message: env.Error.Message, NextAction: env.Error.NextAction, NoRetry: !env.Error.Retryable}
 }
