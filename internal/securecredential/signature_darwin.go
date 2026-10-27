@@ -12,6 +12,10 @@ import (
 	"unicode"
 )
 
+// The trusted system codesign command evaluates this requirement against the
+// actual running code, not a helper-controlled self-report.
+const helperRequirement = `anchor apple generic and identifier "io.riido.cli-auth-helper" and certificate leaf[subject.OU] = "3PVV8DQPL6"`
+
 func verifyHelper(ctx context.Context, path string) error {
 	if !filepath.IsAbs(path) || containsControl(path) {
 		return ErrUnavailable
