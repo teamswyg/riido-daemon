@@ -8,11 +8,14 @@ swiftc -warnings-as-errors -D CLI_AUTH_HELPER_TESTING "$helper_dir"/Sources/*.sw
 bundle="$($helper_dir/build.sh "$fixture_dir")"
 request='{"version":1,"operation":"status","key":"fixture_account_key_5900","interactive":false}'
 response="$(printf '%s' "$request" | "$bundle/Contents/MacOS/riido-cli-auth-helper")"
-python3 - "$response" <<'PYTHON'
+confirm_request='{"version":1,"operation":"confirm","key":"fixture_account_key_5900","interactive":true}'
+confirm_response="$(printf '%s' "$confirm_request" | "$bundle/Contents/MacOS/riido-cli-auth-helper")"
+python3 - "$response" "$confirm_response" <<'PYTHON'
 import json,sys
-response=json.loads(sys.argv[1])
-assert response['version']==1 and response['ok'] is False
-assert response['error']['code']=='UNAVAILABLE'
-assert 'data' not in response
-print('PASS: unsigned helper refuses before keychain access')
+for body in sys.argv[1:]:
+    response=json.loads(body)
+    assert response['version']==1 and response['ok'] is False
+    assert response['error']['code']=='UNAVAILABLE'
+    assert 'data' not in response
+print('PASS: unsigned helper refuses before keychain or OS confirmation access')
 PYTHON

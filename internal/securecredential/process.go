@@ -8,6 +8,8 @@ import (
 	"time"
 )
 
+const helperTimeout = 2 * time.Minute
+
 // limitedOutput always reports a full write to the child while bounding memory.
 // Helper diagnostics and native error text are deliberately never returned.
 type limitedOutput struct {
@@ -33,7 +35,7 @@ func runHelper(ctx context.Context, path string, input []byte) ([]byte, error) {
 // Keep the child unreaped until authentication and request delivery finish so
 // the PID cannot be reused. A prior path check is not a process identity check.
 func runVerifiedHelper(ctx context.Context, path string, input []byte, verify func(context.Context, int) error) ([]byte, error) {
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, helperTimeout)
 	defer cancel()
 	command := exec.CommandContext(ctx, path)
 	command.WaitDelay = time.Second

@@ -9,11 +9,13 @@ The helper accepts exactly one bounded JSON document on stdin and returns one
 JSON document on stdout. Stdout is a private pipe that may contain credentials;
 the parent must never forward it to a terminal, logs, diagnostics, or evidence.
 Requests and responses have `version: 1`. Requests contain `operation`
-(`status`, `load`, `save`, `delete`), an opaque `key`, and `interactive`. Only
+(`status`, `load`, `save`, `delete`, `confirm`), an opaque `key`, and `interactive`. Only
 `save` accepts `value`, a base64-encoded opaque blob of at most 32 KiB. The whole
 request is at most 64 KiB. Keys are 16–128 URL-safe ASCII characters; the Go
 caller owns issuer/account/environment/grant binding and must use a digest.
-Successful responses contain `data.present` and, for load only, `data.value`.
+Storage responses contain `data.present` and, for load only, `data.value`.
+`confirm` returns only `data.confirmed: true`; presence metadata, credential
+values, false or missing confirmation are never accepted as verification.
 Errors contain only a fixed code and a fixed message; no raw OS error or input.
 
 Every operation performs signature/bundle preflight. The only accepted team is
@@ -57,7 +59,7 @@ The CLI starts the helper with an empty stdin pipe, keeps the child unreaped, an
 
 A synthetic path-swap regression reproduces the pre-fix credential delivery and now refuses it before any credential bytes are written. This is a negative boundary test, not valid signed-helper acceptance. The current OS's Apple system-process probes did not provide a positive equivalent to a signed Riido helper. Real helper signature/profile/dynamic verification/user-presence QA remains held by the user.
 
-The `.userPresence` access control protects later reads of stored credentials; first `SecItemAdd` and metadata-only status are not proof of a user-presence check before a fresh OAuth exchange or first API call. The browser consent flow, explicit first-login presence and any server-verifiable installation binding must be evaluated separately. This slice does not claim those stronger guarantees.
+The `.userPresence` access control protects later reads of stored credentials; first `SecItemAdd` and metadata-only status are not proof of a user-presence check before a fresh OAuth exchange or first API call. Every standalone login now requires `Status -> ConfirmUserPresence -> browser/PKCE -> token exchange -> Whoami -> save`, including account replacement. `confirm` does not access the keychain. It refuses noninteractive input before OS verification and uses a fresh `LAContext` with `.deviceOwnerAuthentication` and no authentication reuse for each request. The bounded wait invalidates the context on completion or timeout. Its fixed `TIMED_OUT` error preserves CLI timeout exit 6; user cancellation remains exit 3 and missing protection exit 8. The parent applies the same two-minute confirmation bound across signing and child execution. Denial, cancellation, timeout, missing support, or invalid response cannot open a browser or replace an existing credential. This explicit OS confirmation source contract still does not prove signed-helper acceptance or server-verifiable installation binding.
 
 
 ### Release bundle metadata

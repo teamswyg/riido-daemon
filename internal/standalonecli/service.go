@@ -19,6 +19,7 @@ var (
 type Store interface {
 	userauth.CredentialStore
 	Status(context.Context) (bool, error)
+	ConfirmUserPresence(context.Context) error
 }
 type Config struct {
 	APIOrigin   string

@@ -25,7 +25,7 @@ func TestDoctorExplicitUserAPIUsesWhoamiWithoutDaemonRequirement(t *testing.T) {
 		t.Fatal(err)
 	}
 	data := decodeEnvelope(t, h.stdout.Bytes()).Data.(map[string]any)
-	if data["api_verified"] != true || *calls != 1 || *opened != 0 {
+	if data["api_verified"] != true || *calls != 1 || *opened != 0 || store.confirmCalls != 0 {
 		t.Fatalf("doctor did not verify API: data=%v calls=%d browser=%d", data, *calls, *opened)
 	}
 	if strings.Contains(h.stdout.String(), "fake-access-secret") || strings.Contains(h.stdout.String(), "user-one") {

@@ -42,8 +42,9 @@ type response struct {
 	Version int  `json:"version"`
 	OK      bool `json:"ok"`
 	Data    *struct {
-		Present *bool   `json:"present"`
-		Value   *string `json:"value"`
+		Present   *bool   `json:"present"`
+		Value     *string `json:"value"`
+		Confirmed *bool   `json:"confirmed"`
 	} `json:"data"`
 	Error *struct {
 		Code string `json:"code"`
@@ -81,6 +82,24 @@ func (s *Store) Status(ctx context.Context) (bool, error) {
 	return *r.Data.Present, nil
 }
 
+// ConfirmUserPresence is an explicit, fresh OS check before a new OAuth grant.
+// Neither credential presence nor a successful storage operation is evidence.
+func (s *Store) ConfirmUserPresence(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if !s.Interactive {
+		return ErrInteractionRequired
+	}
+	ctx, cancel := context.WithTimeout(ctx, helperTimeout)
+	defer cancel()
+	_, err := s.call(ctx, "confirm", nil)
+	if canceled := ctx.Err(); canceled != nil {
+		return canceled
+	}
+	return err
+}
+
 func (s *Store) call(ctx context.Context, op string, value []byte) (response, error) {
 	var r response
 	if !validKey.MatchString(s.Key) {
@@ -109,7 +128,7 @@ func (s *Store) call(ctx context.Context, op string, value []byte) (response, er
 		return response{}, ErrUnavailable
 	}
 	if r.OK && r.Error == nil {
-		if !validResponse(op, r) {
+		if !validResponse(op, r) || op == "confirm" && !onlyConfirmationData(output) {
 			return response{}, ErrUnavailable
 		}
 		return r, nil
@@ -122,12 +141,26 @@ func (s *Store) call(ctx context.Context, op string, value []byte) (response, er
 			return r, ErrCancelled
 		case "NOT_FOUND":
 			return r, ErrNotFound
+		case "TIMED_OUT":
+			if op == "confirm" {
+				return r, context.DeadlineExceeded
+			}
 		}
 	}
 	return r, ErrUnavailable
 }
 
+func onlyConfirmationData(output []byte) bool {
+	var wire struct {
+		Data map[string]json.RawMessage `json:"data"`
+	}
+	return json.Unmarshal(output, &wire) == nil && len(wire.Data) == 1 && string(wire.Data["confirmed"]) == "true"
+}
+
 func validResponse(op string, r response) bool {
+	if op == "confirm" {
+		return r.Data != nil && r.Data.Confirmed != nil && *r.Data.Confirmed && r.Data.Present == nil && r.Data.Value == nil
+	}
 	if r.Data == nil || r.Data.Present == nil {
 		return false
 	}

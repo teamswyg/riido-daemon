@@ -18,10 +18,12 @@ import (
 )
 
 type cliMemoryStore struct {
-	mu          sync.Mutex
-	credential  userauth.Credential
-	present     bool
-	statusCalls int
+	mu           sync.Mutex
+	credential   userauth.Credential
+	present      bool
+	statusCalls  int
+	confirmCalls int
+	confirmErr   error
 }
 
 func (s *cliMemoryStore) Lock(context.Context) (func(), error) { s.mu.Lock(); return s.mu.Unlock, nil }
@@ -47,6 +49,11 @@ func (s *cliMemoryStore) Delete(context.Context) error {
 func (s *cliMemoryStore) Status(context.Context) (bool, error) {
 	s.statusCalls++
 	return s.present, nil
+}
+
+func (s *cliMemoryStore) ConfirmUserPresence(context.Context) error {
+	s.confirmCalls++
+	return s.confirmErr
 }
 
 func testUserService(t *testing.T, store *cliMemoryStore) (*standalonecli.Service, *int, *int) {
@@ -87,8 +94,8 @@ func testUserService(t *testing.T, store *cliMemoryStore) (*standalonecli.Servic
 	t.Cleanup(server.Close)
 	service, err := standalonecli.New(standalonecli.Config{APIOrigin: server.URL, Store: store, OpenBrowser: func(ctx context.Context, raw string) error {
 		opened++
-		if store.statusCalls == 0 {
-			t.Error("browser opened before protected storage check")
+		if store.statusCalls == 0 || store.confirmCalls == 0 {
+			t.Error("browser opened before protected storage and OS confirmation")
 		}
 		parsed, _ := url.Parse(raw)
 		q := parsed.Query()
@@ -115,7 +122,7 @@ func TestStandaloneCLILoginWhoamiWorkAndLogout(t *testing.T) {
 	if err := runAuth(h.io, []string{"login", "--json"}); err != nil {
 		t.Fatal(err)
 	}
-	if !store.present || *opened != 1 || *calls != 1 {
+	if !store.present || *opened != 1 || *calls != 1 || store.confirmCalls != 1 {
 		t.Fatal("login did not complete actual identity read")
 	}
 	h.stdout.Reset()
@@ -183,7 +190,7 @@ func TestUserAuthStatusDoesNotClaimAPIVerification(t *testing.T) {
 	if err := runAuth(h.io, []string{"status", "--json"}); err != nil {
 		t.Fatal(err)
 	}
-	if *calls != 0 || !strings.Contains(h.stdout.String(), "not_checked") || strings.Contains(h.stdout.String(), "fake-access-secret") {
+	if *calls != 0 || store.confirmCalls != 0 || !strings.Contains(h.stdout.String(), "not_checked") || strings.Contains(h.stdout.String(), "fake-access-secret") {
 		t.Fatal("status confused stored credential and verified API authentication")
 	}
 }

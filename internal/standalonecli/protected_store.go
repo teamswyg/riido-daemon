@@ -20,6 +20,10 @@ func (s *ProtectedStore) Status(ctx context.Context) (bool, error) {
 	return present, mapStorageError(err)
 }
 
+func (s *ProtectedStore) ConfirmUserPresence(ctx context.Context) error {
+	return mapStorageError(s.Native.ConfirmUserPresence(ctx))
+}
+
 func (s *ProtectedStore) Load(ctx context.Context) (userauth.Credential, error) {
 	var result userauth.Credential
 	raw, err := s.Native.Load(ctx)
