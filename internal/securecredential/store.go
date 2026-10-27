@@ -102,27 +102,9 @@ func (s *Store) ConfirmUserPresence(ctx context.Context) error {
 
 func (s *Store) call(ctx context.Context, op string, value []byte) (response, error) {
 	var r response
-	if !validKey.MatchString(s.Key) {
-		return r, ErrUnavailable
-	}
-	verify := s.verify
-	if verify == nil {
-		verify = verifyHelper
-	}
-	if err := verify(ctx, s.HelperPath); err != nil {
-		return r, ErrUnavailable
-	}
-	body, err := json.Marshal(request{Version: 1, Operation: op, Key: s.Key, Interactive: s.Interactive, Value: base64.StdEncoding.EncodeToString(value)})
+	output, err := s.invoke(ctx, op, value)
 	if err != nil {
-		return r, ErrUnavailable
-	}
-	run := s.run
-	if run == nil {
-		run = runHelper
-	}
-	output, err := run(ctx, s.HelperPath, body)
-	if err != nil || len(output) > maxMessageBytes {
-		return r, ErrUnavailable
+		return r, err
 	}
 	if json.Unmarshal(output, &r) != nil || r.Version != 1 {
 		return response{}, ErrUnavailable
@@ -148,6 +130,34 @@ func (s *Store) call(ctx context.Context, op string, value []byte) (response, er
 		}
 	}
 	return r, ErrUnavailable
+}
+
+// invoke preserves the same verified, unreaped helper-process boundary for
+// credential operations and typed installation proofs.
+func (s *Store) invoke(ctx context.Context, op string, value []byte) ([]byte, error) {
+	if !validKey.MatchString(s.Key) {
+		return nil, ErrUnavailable
+	}
+	verify := s.verify
+	if verify == nil {
+		verify = verifyHelper
+	}
+	if err := verify(ctx, s.HelperPath); err != nil {
+		return nil, ErrUnavailable
+	}
+	body, err := json.Marshal(request{Version: 1, Operation: op, Key: s.Key, Interactive: s.Interactive, Value: base64.StdEncoding.EncodeToString(value)})
+	if err != nil {
+		return nil, ErrUnavailable
+	}
+	run := s.run
+	if run == nil {
+		run = runHelper
+	}
+	output, err := run(ctx, s.HelperPath, body)
+	if err != nil || len(output) > maxMessageBytes {
+		return nil, ErrUnavailable
+	}
+	return output, nil
 }
 
 func onlyConfirmationData(output []byte) bool {

@@ -1,6 +1,8 @@
 import Foundation
 import LocalAuthentication
 
+if CommandLine.arguments.dropFirst().first == "--installation-lock-probe" { exit(installationLockProbe()) }
+
 var failures = 0
 func check(_ condition: @autoclosure () -> Bool, _ message: String) {
     if !condition() { failures += 1; fputs("FAIL: \(message)\n", stderr) }
@@ -153,5 +155,13 @@ catch { check(false, "timeout error escaped") }
 check(Date().timeIntervalSince(started) < 2 && timedOut.invalidations == 1, "bounded wait invalidates context")
 timedOut.callback?(true, nil)
 check(timedOut.invalidations == 1, "late success cannot reopen confirmation")
+let installationRequest = try! JSONSerialization.data(withJSONObject: [
+    "version": 1, "operation": "installation-key", "key": "08eba32e93e89b49cbed7c040f8de7dba724391c4015de3baaa78d9dad03957f", "interactive": true,
+    "value": Data("{\"resource\":\"https://api.example.test\",\"client_id\":\"riido-cli\"}".utf8).base64EncodedString()
+])
+check(blocked.handle(installationRequest).error?.code == "UNAVAILABLE", "typed installation key reaches signature preflight before key access")
+runInstallationTests()
+runInstallationRegistrationTests()
+runInstallationLockTests()
 if failures > 0 { exit(1) }
 print("PASS: helper protocol fixtures (no real keychain access)")

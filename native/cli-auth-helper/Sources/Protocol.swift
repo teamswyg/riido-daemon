@@ -23,6 +23,14 @@ struct HelperData: Encodable {
     var present: Bool? = nil
     var value: String? = nil
     var confirmed: Bool? = nil
+    var algorithm: String? = nil
+    var publicKey: String? = nil
+    var keyFingerprint: String? = nil
+    var signature: String? = nil
+    enum CodingKeys: String, CodingKey {
+        case present, value, confirmed, algorithm, signature
+        case publicKey = "public_key", keyFingerprint = "key_fingerprint"
+    }
 }
 
 struct HelperResponse: Encodable {
