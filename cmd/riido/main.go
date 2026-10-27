@@ -19,11 +19,11 @@ func main() {
 
 func run(args []string) error {
 	if len(args) < 1 {
-		printUsage()
+		printRootUsage()
 		return fmt.Errorf("missing command")
 	}
 	if args[0] == "--help" || args[0] == "-h" {
-		printUsage()
+		printRootUsage()
 		return nil
 	}
 	if args[0] == "--version" || args[0] == "-v" {
@@ -63,7 +63,7 @@ func run(args []string) error {
 	case mainCommandCapabilities:
 		return runCapabilities(defaultContextIO(), args[1:])
 	default:
-		printUsage()
+		printRootUsage()
 		return fmt.Errorf("unknown command: %s", args[0])
 	}
 }

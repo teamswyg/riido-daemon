@@ -28,6 +28,7 @@ type Manifest struct {
 
 type CommandGroup struct {
 	Name         string   `json:"name"`
+	RootHelp     string   `json:"root_help"`
 	Owner        string   `json:"owner"`
 	Boundary     string   `json:"boundary"`
 	Subcommands  []string `json:"subcommands"`

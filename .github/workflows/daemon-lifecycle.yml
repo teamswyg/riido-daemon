@@ -69,8 +69,8 @@ jobs:
           go test ./cmd/riido -run 'TestDaemon|TestLoadDaemon|TestBuildDaemon|TestForeground|TestDaemonBackground' -count=1
           go test ./cmd/riido ./internal/agentbridge/supervisor ./internal/agentbridge/controlplane/saasplane ./internal/agentbridge/controlplane/taskdbplane -count=1
           go build ./cmd/riido
-          go run ./cmd/riido --help >/tmp/riido-help.txt 2>&1
-          grep -q 'riido daemon start' /tmp/riido-help.txt
+          go run ./cmd/riido daemon --help >/tmp/riido-internal-help.txt 2>&1
+          grep -q 'riido daemon start' /tmp/riido-internal-help.txt
       - name: Write package workflow evidence
         if: always()
         run: |

@@ -6,10 +6,11 @@
   "workflow": ".github/workflows/cli-surface-evidence.yml",
   "evidence_artifact": "cli-surface-evidence",
   "loop": {"observation": "The CLI surface manifest already drove generated docs and black-box checks, but repository knowledge coverage still treated it as loop-less.", "hypothesis": "Declaring the existing CLI surface evidence loop makes command-boundary drift part of the executable knowledge budget.", "execute": "Generate the CLI surface docs, run source-boundary checks, black-box command checks, and public CI evidence upload.", "evaluate": "The verifier fails when usage output, source vocabulary, forbidden listener checks, generated docs, or workflow wiring drift.", "retrospective": "The human-readable CLI docs stay generated while the manifest remains the source of truth for local command boundaries."},
-  "purpose": "Keeps the public cmd/riido command surface generated from a manifest and verified against black-box CLI output plus source boundaries.",
+  "purpose": "Keeps the cmd/riido command surface and root-help visibility generated from a manifest and verified against black-box CLI output plus source boundaries. Internal daemon, bridge and mwsd commands remain callable with their existing arguments but are absent from root help; claude-permission-mcp also remains absent. Legacy serve, api and task groups remain public.",
   "command_groups": [
     {
       "name": "work",
+      "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
       "boundary": "reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener",
       "subcommands": ["get", "tree", "relations", "comments", "activity", "search"],
@@ -18,6 +19,7 @@
     },
     {
       "name": "context",
+      "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
       "boundary": "returns the base work-context bundle and snapshot changes under the same mode rules as work",
       "subcommands": ["get", "changes"],
@@ -26,6 +28,7 @@
     },
     {
       "name": "meeting",
+      "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
       "boundary": "lists connected meeting metadata or reads a captured meeting document within the assignment snapshot through the run-authorized daemon broker",
       "subcommands": ["list", "get"],
@@ -34,6 +37,7 @@
     },
     {
       "name": "agents",
+      "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
       "boundary": "lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent",
       "subcommands": ["list", "show"],
@@ -42,6 +46,7 @@
     },
     {
       "name": "auth",
+      "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
       "boundary": "user-mode sign-in state; never accepts secrets as arguments and never prints credentials",
       "subcommands": ["login", "logout", "status"],
@@ -50,6 +55,7 @@
     },
     {
       "name": "whoami",
+      "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
       "boundary": "reports the acting principal, workspace, and mode without printing secrets",
       "subcommands": [],
@@ -58,6 +64,7 @@
     },
     {
       "name": "doctor",
+      "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
       "boundary": "local diagnosis of binary, PATH, mode, daemon IPC, and auth state; remote API verification is unsupported and --check-api exits 8 without making a remote read",
       "subcommands": [],
@@ -66,6 +73,7 @@
     },
     {
       "name": "capabilities",
+      "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
       "boundary": "static description of CLI, envelope, and IPC schema versions plus command availability",
       "subcommands": [],
@@ -74,6 +82,7 @@
     },
     {
       "name": "serve",
+      "root_help": "public",
       "owner": "internal/riidoapi",
       "boundary": "local IPC server over Unix socket or Windows named pipe",
       "subcommands": [],
@@ -82,6 +91,7 @@
     },
     {
       "name": "api",
+      "root_help": "public",
       "owner": "internal/riidoapi",
       "boundary": "local IPC client for guarded task and status APIs",
       "subcommands": ["status", "tasks", "review-demo", "transition", "evidence", "validate"],
@@ -90,6 +100,7 @@
     },
     {
       "name": "mwsd",
+      "root_help": "internal",
       "owner": "internal/mwsdbridge, internal/project, internal/taskdb",
       "boundary": "reads MWSD snapshots and promotes local workspace/task projections",
       "subcommands": ["snapshot", "projection", "sync", "orchestration", "projects", "status"],
@@ -98,6 +109,7 @@
     },
     {
       "name": "task",
+      "root_help": "public",
       "owner": "internal/taskdb, internal/validation",
       "boundary": "local guarded task mutation, evidence, and validation over JSON task DB",
       "subcommands": ["list", "transition", "evidence", "validate"],
@@ -106,6 +118,7 @@
     },
     {
       "name": "bridge",
+      "root_help": "internal",
       "owner": "provider adapter packages",
       "boundary": "provider list/detect smoke surface without executing provider tasks",
       "subcommands": ["providers", "detect"],
@@ -114,6 +127,7 @@
     },
     {
       "name": "version",
+      "root_help": "public",
       "owner": "cmd/riido release artifact identity",
       "boundary": "binary release tag evidence without daemon IPC",
       "subcommands": [],
@@ -122,6 +136,7 @@
     },
     {
       "name": "daemon",
+      "root_help": "internal",
       "owner": "internal/agentbridge/runtimeactor, supervisor, control-plane adapters",
       "boundary": "local runtime lifecycle, health, readiness, metrics, stop, and logs",
       "subcommands": ["start", "status", "health", "ready", "metrics", "stop", "logs"],
@@ -308,8 +323,10 @@
     }
   ],
   "assertions": [
+    "root help contains only public command groups; internal command dispatch and direct daemon help remain compatible",
+    "cli, daemon-lifecycle and mwsd-project workflow checks use direct daemon help for internal usage tokens",
     "cmd/riido remains local-only and must not open public TCP or HTTP listeners",
-    "usage output must expose each declared command group",
+    "direct internal-command help must expose each declared command group; root help must expose only groups marked public",
     "bridge providers output must expose the provider vocabulary without launching provider tasks",
     "work-context commands must reject secrets passed as arguments and keep the envelope on stdout"
   ]
