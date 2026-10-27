@@ -969,6 +969,16 @@
             "AssignmentFailureCategory",
             "provider_limit"
           ]
+        },
+        {
+          "name": "needs-input-claim-termination-test",
+          "file": "internal/agentbridge/controlplane/saasplane/claim_termination_boundaries_test.go",
+          "contains": [
+            "TestTerminationNeedsUserInputDoesNotCloseClaim",
+            "AssignmentRunning",
+            "PollActive",
+            "resumed scope invented earlier coverage"
+          ]
         }
       ]
     },
@@ -1471,6 +1481,16 @@
             "TestNativeSessionBindingSurvivesAdapterRestart",
             "TestNativeSessionBindingCannotBeReassigned",
             "TestNativeSessionBindingRejectsCorruptionAndTraversal"
+          ]
+        },
+        {
+          "name": "claim-termination-preserves-current-owner-test",
+          "file": "internal/agentbridge/controlplane/saasplane/claim_termination_boundaries_test.go",
+          "contains": [
+            "TestTerminationOldEpochDoesNotClearNewClaim",
+            "TestTerminationBindingDoesNotKeepToolAuthorityAfterCleanup",
+            "TestTerminationReceiptRetryDoesNotDependOnCurrentEpoch",
+            "old completion changed current claim"
           ]
         }
       ]

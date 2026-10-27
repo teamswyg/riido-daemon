@@ -9,6 +9,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
@@ -44,6 +45,8 @@ type runningTask struct {
 	nativeSessionID           string
 	sessionBindingErr         error
 	terminalResult            *agentbridge.Result
+	terminationProof          executionproof.Proof
+	terminationKnown          bool
 	terminalDeliveryAttempted bool
 	pendingEvents             []agentbridge.Event
 	supersededEvents          []agentbridge.Event

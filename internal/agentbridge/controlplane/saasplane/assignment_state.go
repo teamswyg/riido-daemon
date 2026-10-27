@@ -22,10 +22,18 @@ func (p *Plane) saveAssignmentRuntime(ctx context.Context, assignment assignment
 }
 
 func (p *Plane) assignmentForExecution(ctx context.Context, executionID string) (assignmentcontract.Assignment, bool, error) {
+	binding, bindingErr := p.claimBinding(ctx, executionID)
+	if bindingErr != nil {
+		return assignmentcontract.Assignment{}, false, bindingErr
+	}
+
 	var assignment assignmentcontract.Assignment
 	var ok bool
 	err := p.withState(ctx, func(s *planeState) {
 		assignment, ok = s.assignmentsByExecution[executionID]
+		if binding != nil && !currentClaimScope(ctx, s, executionID) {
+			assignment, ok = assignmentcontract.Assignment{}, false
+		}
 	})
 	return assignment, ok, err
 }

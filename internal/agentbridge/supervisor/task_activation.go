@@ -8,14 +8,17 @@ import (
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
-func (a *Actor) prepareAndSubmit(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest) {
-	a.recoverAndSubmit(ctx, status, rt, req)
+func (a *Actor) prepareAndSubmit(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest, work *executionproof.HostWork) {
+	a.recoverAndSubmit(ctx, status, rt, req, work)
 }
 
 func (a *Actor) forwardActivation(msg taskActivationMsg) {
+	// Worker completion must precede mailbox visibility and possible terminal sealing.
+	msg.hostWork.Finished()
 	select {
 	case a.mailbox <- envelope{taskActivation: &msg}:
 	case <-a.stoppedCh:
