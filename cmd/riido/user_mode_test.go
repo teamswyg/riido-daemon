@@ -102,7 +102,7 @@ func testUserService(t *testing.T, store *cliMemoryStore) (*standalonecli.Servic
 				if request.Variables["componentId"] != "work-one" || request.Variables["teamId"] != "team-one" {
 					t.Error("wrong user work target")
 				}
-				fmt.Fprint(w, `{"data":{"getComponent":{"id":"work-one","title":"Example","keyNumber":"1","document":{"id":"doc-one","HTMLContent":"<p>body</p>"}}}}`)
+				fmt.Fprint(w, `{"data":{"getComponent":{"id":"work-one","title":"Example","keyNumber":"1","componentMembers":[],"componentLabels":[],"document":{"id":"doc-one","HTMLContent":"<p>body</p>"}}}}`)
 			}
 		default:
 			w.WriteHeader(http.StatusNotFound)
