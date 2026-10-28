@@ -30,6 +30,7 @@ type Authorization struct {
 	closeOnce             sync.Once
 	mu                    sync.Mutex
 	used, accepted        bool
+	installation          *installationAuthorization
 }
 
 func (c *Client) BeginAuthorization(ctx context.Context) (*Authorization, error) {

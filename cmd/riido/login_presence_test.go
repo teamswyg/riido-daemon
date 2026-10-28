@@ -28,7 +28,7 @@ func TestLoginConfirmationFailurePreservesCLIExitAndStopsOAuth(t *testing.T) {
 			if got := exitCodeOf(t, runAuth(h.io, []string{"login", "--json"})); got != scenario.exit {
 				t.Fatalf("exit=%d want=%d", got, scenario.exit)
 			}
-			if store.confirmCalls != 1 || *opened != 0 || *calls != 0 || store.present {
+			if store.confirmCalls != 1 || store.legacyConfirms != 0 || *opened != 0 || *calls != 0 || store.present {
 				t.Fatal("failed confirmation reached OAuth or storage")
 			}
 		})
