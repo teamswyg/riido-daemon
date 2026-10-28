@@ -98,7 +98,8 @@ func codexHistoryMessages(sessionID string, turns []any) ([]agentbridge.NativeHi
 			return nil, errors.New("codex: native turn is still running")
 		}
 		for _, item := range turn.Items {
-			role, text := "", item.Text
+			var role string
+			text := item.Text
 			switch item.Type {
 			case "userMessage":
 				role = "user"

@@ -8,7 +8,7 @@ import (
 
 func TestNativeHistoryRetainedBeyondOrdinaryProgressBuffer(t *testing.T) {
 	task := &runningTask{}
-	for i := 0; i < 2000; i++ {
+	for i := range 2000 {
 		retainReportEvent(task, agentbridge.Event{Kind: agentbridge.EventProgress, NativeHistory: &agentbridge.NativeHistoryMessage{Ordinal: i + 1}})
 	}
 	if len(task.pendingEvents) != 2000 {

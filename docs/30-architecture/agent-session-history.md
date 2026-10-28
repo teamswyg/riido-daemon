@@ -1,5 +1,9 @@
 # Agent session and history management
 
+Native history reporting fails explicitly when the assignment authority is
+missing or the message cannot be encoded. Neither condition acknowledges an
+import or permits the next turn to proceed as if history had been persisted.
+
 RIID-5819 owns daemon-side native session continuity. The server remains the
 source of the requested resume ID; the daemon never selects a most recent
 session or starts another session as an automatic recovery policy.
