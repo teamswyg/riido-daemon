@@ -16,8 +16,10 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/provider/history"
 )
 
-var historySessionID = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
-var historyPathCharacters = regexp.MustCompile(`[^a-zA-Z0-9]`)
+var (
+	historySessionID      = regexp.MustCompile(`^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$`)
+	historyPathCharacters = regexp.MustCompile(`[^a-zA-Z0-9]`)
+)
 
 type historyRow struct {
 	UUID           string    `json:"uuid"`
@@ -167,9 +169,10 @@ func claudeHistoryText(content json.RawMessage) string {
 	}
 	var parts []string
 	for _, block := range blocks {
-		if block.Type == "text" {
+		switch block.Type {
+		case "text":
 			parts = append(parts, block.Text)
-		} else if block.Type == "image" || block.Type == "document" {
+		case "image", "document":
 			parts = append(parts, "[Non-text user input; attachment not imported.]")
 		}
 	}

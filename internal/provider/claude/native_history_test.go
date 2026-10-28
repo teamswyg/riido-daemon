@@ -37,10 +37,10 @@ func claudeHistoryFixture(t *testing.T) (agentbridge.StartRequest, string) {
 func TestClaudeReadsExactBoundTranscriptAndPublishesAfterIdentity(t *testing.T) {
 	req, data := claudeHistoryFixture(t)
 	dir := filepath.Join(req.Env["CLAUDE_CONFIG_DIR"], "projects", historyPathCharacters.ReplaceAllString(req.Cwd, "-"))
-	if err := os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0o700); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(filepath.Join(dir, req.ResumeSessionID+".jsonl"), []byte(data), 0600); err != nil {
+	if err := os.WriteFile(filepath.Join(dir, req.ResumeSessionID+".jsonl"), []byte(data), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	d, err := NewProtocolDriver(req)
