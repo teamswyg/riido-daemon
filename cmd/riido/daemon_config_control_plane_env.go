@@ -3,25 +3,29 @@ package main
 import (
 	"path/filepath"
 	"strings"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/saasplane"
 )
 
 type daemonControlPlaneEnv struct {
-	taskQueueDir     string
-	taskReportDir    string
-	taskDBSourcePath string
-	saaSURL          string
-	deviceID         string
-	deviceSecret     string
+	taskQueueDir                string
+	taskReportDir               string
+	taskDBSourcePath            string
+	saaSURL                     string
+	deviceID                    string
+	deviceSecret                string
+	executionCoverageGeneration string
 }
 
 func loadDaemonControlPlaneEnv(getenv func(string) string) (daemonControlPlaneEnv, error) {
 	out := daemonControlPlaneEnv{
-		taskQueueDir:     strings.TrimSpace(getenv(envTaskQueueDir)),
-		taskReportDir:    strings.TrimSpace(getenv(envTaskReportDir)),
-		taskDBSourcePath: strings.TrimSpace(getenv(envTaskDBSourcePath)),
-		saaSURL:          strings.TrimSpace(getenv(envSaaSURL)),
-		deviceID:         strings.TrimSpace(getenv(envDeviceID)),
-		deviceSecret:     strings.TrimSpace(getenv(envDeviceSecret)),
+		taskQueueDir:                strings.TrimSpace(getenv(envTaskQueueDir)),
+		taskReportDir:               strings.TrimSpace(getenv(envTaskReportDir)),
+		taskDBSourcePath:            strings.TrimSpace(getenv(envTaskDBSourcePath)),
+		saaSURL:                     strings.TrimSpace(getenv(envSaaSURL)),
+		deviceID:                    strings.TrimSpace(getenv(envDeviceID)),
+		deviceSecret:                strings.TrimSpace(getenv(envDeviceSecret)),
+		executionCoverageGeneration: getenv(envExecutionCoverageGeneration),
 	}
 	if out.taskReportDir == "" && out.taskQueueDir != "" {
 		out.taskReportDir = filepath.Join(out.taskQueueDir, "reports")
@@ -63,6 +67,9 @@ func validateDaemonDeviceCredentials(env daemonControlPlaneEnv) error {
 	}
 	if env.deviceID != "" && env.deviceSecret == "" {
 		return daemonErrorf(ErrDaemonConfig, "settings.validate-device-credentials", "%s requires %s", envDeviceID, envDeviceSecret)
+	}
+	if err := saasplane.ValidateExecutionCoverage(env.deviceID, env.deviceSecret, env.executionCoverageGeneration); err != nil {
+		return daemonWrapf(ErrDaemonConfig, "settings.validate-device-credentials", err, "invalid execution coverage configuration")
 	}
 	return nil
 }

@@ -14,9 +14,9 @@ import (
 
 // daemonOnlySecretKeys are removed from every child environment. Matching is
 // case-insensitive because Windows environment names are.
-var daemonOnlySecretKeys = []string{"RIIDO_DEVICE_SECRET", "RIIDO_SAAS_TOKEN", "RIIDO_TOKEN"}
+var daemonOnlySecretKeys = []string{"RIIDO_DEVICE_SECRET", "RIIDO_SAAS_TOKEN", "RIIDO_TOKEN", "RIIDO_EXECUTION_COVERAGE_GENERATION"}
 
-// IsDaemonSecret reports whether key names a daemon-only credential.
+// IsDaemonSecret reports whether key names daemon-only authentication metadata.
 func IsDaemonSecret(key string) bool {
 	return slices.ContainsFunc(daemonOnlySecretKeys, func(secret string) bool {
 		return strings.EqualFold(key, secret)
