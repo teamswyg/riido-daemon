@@ -24,6 +24,22 @@ func (s *ProtectedStore) ConfirmUserPresence(ctx context.Context) error {
 	return mapStorageError(s.Native.ConfirmUserPresence(ctx))
 }
 
+func (s *ProtectedStore) EnsureInstallationKey(ctx context.Context, resource string) (userauth.InstallationKey, error) {
+	if s == nil || s.Native == nil {
+		return userauth.InstallationKey{}, securecredential.ErrUnavailable
+	}
+	key, err := s.Native.EnsureInstallationKey(ctx, resource)
+	return userauth.InstallationKey(key), mapStorageError(err)
+}
+
+func (s *ProtectedStore) SignInstallationProof(ctx context.Context, key userauth.InstallationKey, proof userauth.InstallationProof) (string, error) {
+	if s == nil || s.Native == nil {
+		return "", securecredential.ErrUnavailable
+	}
+	signature, err := s.Native.SignInstallationProof(ctx, securecredential.InstallationPublicKey(key), securecredential.InstallationProof(proof))
+	return signature, mapStorageError(err)
+}
+
 func (s *ProtectedStore) Load(ctx context.Context) (userauth.Credential, error) {
 	var result userauth.Credential
 	raw, err := s.Native.Load(ctx)

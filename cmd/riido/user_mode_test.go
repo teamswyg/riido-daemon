@@ -18,12 +18,13 @@ import (
 )
 
 type cliMemoryStore struct {
-	mu           sync.Mutex
-	credential   userauth.Credential
-	present      bool
-	statusCalls  int
-	confirmCalls int
-	confirmErr   error
+	mu             sync.Mutex
+	credential     userauth.Credential
+	present        bool
+	statusCalls    int
+	confirmCalls   int
+	confirmErr     error
+	legacyConfirms int
 }
 
 func (s *cliMemoryStore) Lock(context.Context) (func(), error) { s.mu.Lock(); return s.mu.Unlock, nil }
@@ -52,8 +53,21 @@ func (s *cliMemoryStore) Status(context.Context) (bool, error) {
 }
 
 func (s *cliMemoryStore) ConfirmUserPresence(context.Context) error {
-	s.confirmCalls++
+	s.legacyConfirms++
 	return s.confirmErr
+}
+
+func (s *cliMemoryStore) EnsureInstallationKey(context.Context, string) (userauth.InstallationKey, error) {
+	s.confirmCalls++
+	return cliInstallationKey(), s.confirmErr
+}
+
+func (*cliMemoryStore) SignInstallationProof(context.Context, userauth.InstallationKey, userauth.InstallationProof) (string, error) {
+	return "MAYCAQECAQE", nil
+}
+
+func cliInstallationKey() userauth.InstallationKey {
+	return userauth.InstallationKey{Algorithm: "p256-sha256-x962-der-v1", PublicKey: "BGsX0fLhLEJH-Lzm5WOkQPJ3A32BLeszoPShOUXYmMKWT-NC4v4af5uO5-tKfA-eFivOM1drMV7Oy7ZAaDe_UfU", KeyFingerprint: "698bea63dc44a344663ff1429aea10842df27b6b991ef25866b2c6c02cdcc5be"}
 }
 
 func testUserService(t *testing.T, store *cliMemoryStore) (*standalonecli.Service, *int, *int) {
@@ -61,6 +75,9 @@ func testUserService(t *testing.T, store *cliMemoryStore) (*standalonecli.Servic
 	apiCalls, opened := 0, 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
+		case "/oauth/cli/installation-intents":
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{"installation_intent": "ERERERERERERERERERERERERERERERERERERERERERE", "challenge": "IiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiI", "expires_at": time.Now().Add(10 * time.Minute).Unix(), "key_fingerprint": cliInstallationKey().KeyFingerprint})
 		case "/oauth/token":
 			fmt.Fprint(w, `{"access_token":"fake-access-secret","refresh_token":"fake-refresh-secret","token_type":"Bearer","expires_in":3600,"scope":"read"}`)
 		case "/oauth/revoke":
@@ -94,7 +111,7 @@ func testUserService(t *testing.T, store *cliMemoryStore) (*standalonecli.Servic
 	t.Cleanup(server.Close)
 	service, err := standalonecli.New(standalonecli.Config{APIOrigin: server.URL, Store: store, OpenBrowser: func(ctx context.Context, raw string) error {
 		opened++
-		if store.statusCalls == 0 || store.confirmCalls == 0 {
+		if store.statusCalls == 0 || store.confirmCalls == 0 || store.legacyConfirms != 0 {
 			t.Error("browser opened before protected storage and OS confirmation")
 		}
 		parsed, _ := url.Parse(raw)

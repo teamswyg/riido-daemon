@@ -22,7 +22,7 @@ func TestLoginConfirmationRefusalPreservesPreviousSession(t *testing.T) {
 				network := 0
 				service, opened := testLoginService(t, store, func(w http.ResponseWriter, _ *http.Request) { network++; w.WriteHeader(http.StatusServiceUnavailable) })
 				_, err := service.Login(context.Background())
-				if !errors.Is(err, refusal) || *opened != 0 || network != 0 || store.saves != 0 || store.confirms != 1 {
+				if !errors.Is(err, refusal) || *opened != 0 || network != 0 || store.saves != 0 || store.confirms != 1 || store.legacyConfirms != 0 {
 					t.Fatalf("confirmation bypassed: err=%v browser=%d network=%d saves=%d confirms=%d", err, *opened, network, store.saves, store.confirms)
 				}
 				if store.present != present || !reflect.DeepEqual(store.credential, previous) {
@@ -68,11 +68,11 @@ func TestNewAndReplacementLoginConfirmBeforeBrowserAndAPI(t *testing.T) {
 				return open(ctx, address)
 			}
 			result, err := service.Login(context.Background())
-			want := []string{"status", "confirm", "browser", "/oauth/token", "/graphql", "save"}
+			want := []string{"status", "installation-key", "/oauth/cli/installation-intents", "browser", "installation-proof", "/oauth/token", "/graphql", "save"}
 			if present {
 				want = append(want, "/oauth/revoke")
 			}
-			if err != nil || !result.Authenticated || store.confirms != 1 || !reflect.DeepEqual(store.order, want) {
+			if err != nil || !result.Authenticated || store.confirms != 1 || store.legacyConfirms != 0 || store.signs != 1 || !reflect.DeepEqual(store.order, want) {
 				t.Fatalf("login order=%v err=%v", store.order, err)
 			}
 		})

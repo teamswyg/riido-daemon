@@ -2,6 +2,7 @@ package standalonecli
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -16,15 +17,18 @@ import (
 )
 
 type testStore struct {
-	mu          sync.Mutex
-	credential  userauth.Credential
-	present     bool
-	statusErr   error
-	saves       int
-	confirmErr  error
-	confirms    int
-	confirmHook func()
-	order       []string
+	mu             sync.Mutex
+	credential     userauth.Credential
+	present        bool
+	statusErr      error
+	saves          int
+	confirmErr     error
+	confirms       int
+	confirmHook    func()
+	order          []string
+	legacyConfirms int
+	signErr        error
+	signs          int
 }
 
 func (s *testStore) Lock(context.Context) (func(), error) { s.mu.Lock(); return s.mu.Unlock, nil }
@@ -55,17 +59,40 @@ func (s *testStore) Status(context.Context) (bool, error) {
 }
 
 func (s *testStore) ConfirmUserPresence(context.Context) error {
-	s.order = append(s.order, "confirm")
+	s.legacyConfirms++
+	return s.confirmErr
+}
+
+func (s *testStore) EnsureInstallationKey(context.Context, string) (userauth.InstallationKey, error) {
+	s.order = append(s.order, "installation-key")
 	s.confirms++
 	if s.confirmHook != nil {
 		s.confirmHook()
 	}
-	return s.confirmErr
+	return testInstallationKey(), s.confirmErr
+}
+
+func (s *testStore) SignInstallationProof(context.Context, userauth.InstallationKey, userauth.InstallationProof) (string, error) {
+	s.order = append(s.order, "installation-proof")
+	s.signs++
+	return "MAYCAQECAQE", s.signErr
+}
+
+func testInstallationKey() userauth.InstallationKey {
+	return userauth.InstallationKey{Algorithm: "p256-sha256-x962-der-v1", PublicKey: "BGsX0fLhLEJH-Lzm5WOkQPJ3A32BLeszoPShOUXYmMKWT-NC4v4af5uO5-tKfA-eFivOM1drMV7Oy7ZAaDe_UfU", KeyFingerprint: "698bea63dc44a344663ff1429aea10842df27b6b991ef25866b2c6c02cdcc5be"}
 }
 
 func testLoginService(t *testing.T, store *testStore, handler http.HandlerFunc) (*Service, *int) {
 	t.Helper()
-	server := httptest.NewServer(handler)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/oauth/cli/installation-intents" {
+			store.order = append(store.order, r.URL.Path)
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{"installation_intent": "ERERERERERERERERERERERERERERERERERERERERERE", "challenge": "IiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiIiI", "expires_at": time.Now().Add(10 * time.Minute).Unix(), "key_fingerprint": testInstallationKey().KeyFingerprint})
+			return
+		}
+		handler(w, r)
+	}))
 	t.Cleanup(server.Close)
 	opened := 0
 	service, err := New(Config{APIOrigin: server.URL, Store: store, OpenBrowser: func(ctx context.Context, address string) error {

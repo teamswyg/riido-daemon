@@ -15,28 +15,30 @@ func (a *Authorization) Wait(ctx context.Context) (Credential, error) {
 	a.used = true
 	a.mu.Unlock()
 	defer a.Close()
+	authCtx, cancelAuth := a.waitContext()
+	defer cancelAuth()
 	if err := ctx.Err(); err != nil {
 		return Credential{}, err
 	}
-	if err := a.ctx.Err(); err != nil {
+	if err := authCtx.Err(); err != nil {
 		return Credential{}, err
 	}
 	select {
 	case <-ctx.Done():
 		return Credential{}, ctx.Err()
-	case <-a.ctx.Done():
-		return Credential{}, a.ctx.Err()
+	case <-authCtx.Done():
+		return Credential{}, authCtx.Err()
 	case result := <-a.result:
 		if result.err != nil {
 			return Credential{}, result.err
 		}
 		exchangeCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
-		stop := context.AfterFunc(a.ctx, cancel)
+		stop := context.AfterFunc(authCtx, cancel)
 		defer stop()
-		credential, err := a.client.exchange(exchangeCtx, result.code, a.verifier, a.RedirectURI)
-		if a.ctx.Err() != nil {
-			return Credential{}, a.ctx.Err()
+		credential, err := a.exchange(exchangeCtx, result.code)
+		if authCtx.Err() != nil {
+			return Credential{}, authCtx.Err()
 		}
 		return credential, err
 	}

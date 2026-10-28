@@ -24,7 +24,8 @@ func (s *Service) Login(ctx context.Context) (LoginResult, error) {
 	if _, err := s.store.Status(ctx); err != nil {
 		return LoginResult{}, err
 	}
-	if err := s.store.ConfirmUserPresence(ctx); err != nil {
+	key, err := s.store.EnsureInstallationKey(ctx, s.origin)
+	if err != nil {
 		return LoginResult{}, err
 	}
 	if err := ctx.Err(); err != nil {
@@ -33,7 +34,9 @@ func (s *Service) Login(ctx context.Context) (LoginResult, error) {
 	if s.openBrowser == nil {
 		return LoginResult{}, ErrBrowserUnavailable
 	}
-	flow, err := s.client.BeginAuthorization(ctx)
+	flow, err := s.client.BeginInstallationAuthorization(ctx, key, func(ctx context.Context, proof userauth.InstallationProof) (string, error) {
+		return s.store.SignInstallationProof(ctx, key, proof)
+	})
 	if err != nil {
 		return LoginResult{}, err
 	}

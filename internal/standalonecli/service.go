@@ -19,7 +19,8 @@ var (
 type Store interface {
 	userauth.CredentialStore
 	Status(context.Context) (bool, error)
-	ConfirmUserPresence(context.Context) error
+	EnsureInstallationKey(context.Context, string) (userauth.InstallationKey, error)
+	SignInstallationProof(context.Context, userauth.InstallationKey, userauth.InstallationProof) (string, error)
 }
 type Config struct {
 	APIOrigin   string
