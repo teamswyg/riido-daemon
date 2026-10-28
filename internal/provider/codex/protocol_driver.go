@@ -43,6 +43,8 @@ type protocolDriver struct {
 	turnStarted        bool
 	sawAssistantOutput bool
 	lastRuntimeError   string
+	historyTurns       []any
+	historyCursors     map[string]bool
 }
 
 type pendingRequest struct {

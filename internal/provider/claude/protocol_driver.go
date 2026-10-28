@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/provider/history"
 )
 
 // protocolDriver implements agentbridge.ProtocolDriver for Claude Code's
@@ -14,12 +15,21 @@ type protocolDriver struct {
 	written        bool
 	streamedBlocks map[int]bool
 	pendingInputs  map[string]any
+	historyEvents  []agentbridge.Event
 }
 
 // NewProtocolDriver writes one Claude user-message frame when the session
 // starts, then lets the existing stream-json translator handle raw output.
 func NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
-	return &protocolDriver{req: req}, nil
+	d := &protocolDriver{req: req}
+	if history.Enabled(req) {
+		var err error
+		d.historyEvents, err = claudeNativeHistory(req)
+		if err != nil {
+			return nil, err
+		}
+	}
+	return d, nil
 }
 
 func (d *protocolDriver) OnRaw(
@@ -65,7 +75,15 @@ func (d *protocolDriver) OnRaw(
 		raw.Payload = map[string]any{"message": map[string]any{"content": filtered}}
 		d.streamedBlocks = nil
 	}
-	return Translate(raw)
+	events, commands, err := Translate(raw)
+	for _, event := range events {
+		if event.Kind == agentbridge.EventSessionIdentified && event.SessionID == d.req.ResumeSessionID {
+			events = append(events, d.historyEvents...)
+			d.historyEvents = nil
+			break
+		}
+	}
+	return events, commands, err
 }
 
 func (d *protocolDriver) OnProcessExit(

@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/provider/history"
 )
 
 func (d *protocolDriver) handleThreadReadyResponse(ctx context.Context, raw agentbridge.RawEvent, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
@@ -14,6 +15,9 @@ func (d *protocolDriver) handleThreadReadyResponse(ctx context.Context, raw agen
 	}
 	if d.req.ResumeSessionID != "" && d.threadID != d.req.ResumeSessionID {
 		return d.failedEvents("codex: resumed thread identity mismatch"), nil, nil
+	}
+	if history.Enabled(d.req) {
+		return d.readNativeHistory(ctx, mapField(raw.Payload, "result"), io)
 	}
 	events := d.threadIdentifiedEvents()
 	if _, err := d.sendRequest(ctx, io, codexMethodTurnStart, d.turnStartParams()); err != nil {
