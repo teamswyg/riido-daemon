@@ -29,7 +29,7 @@
     "missing_history": "known missing or invalid history blocked before workspace creation",
     "approval_order": "validate the native session identity before evaluating auto approval or publishing a human confirmation event; stateful approval policy is evaluated once",
     "cancellation": "A cancellation watch retains its original claim context. Direct cancellation touches only that context; provider cancellation by execution ID occurs only after the supervisor verifies current claim ownership. A delayed old cancellation cannot stop or mutate a replacement claim with the same execution ID.",
-    "external_history": "On the next Riido request, import visible external user/Agent messages from the exact bound native session before the new turn; persist stable source identity and reject incomplete/foreign history."
+    "external_history": "On the next Riido request, import visible external user/Agent messages from the exact bound native session before the new turn; persist stable source identity and reject incomplete/foreign history. Missing assignment authority or unencodable messages fail reporting explicitly and never acknowledge import."
   },
   "verification": {
     "tests": [
@@ -45,7 +45,9 @@
       "TestCodexResumeImportsCompleteHistoryBeforeNewTurn",
       "TestClaudeReadsExactBoundTranscriptAndPublishesAfterIdentity",
       "TestNativeHistoryRetainedBeyondOrdinaryProgressBuffer",
-      "TestNativeHistoryIsBlockedBeforePublicationWhenSessionIsForeign"
+      "TestNativeHistoryIsBlockedBeforePublicationWhenSessionIsForeign",
+      "TestNativeHistoryMappingRejectsInvalidTimestamp",
+      "TestNativeHistoryReportRejectsMissingAuthorityAndInvalidPayload"
     ],
     "real_provider_calls": false
   },

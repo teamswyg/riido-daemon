@@ -9,7 +9,7 @@ type NativeHistoryMessage struct {
 	MessageID  string    `json:"message_id"`
 	Role       string    `json:"role"`
 	Body       string    `json:"body"`
-	ObservedAt time.Time `json:"observed_at,omitempty"`
+	ObservedAt time.Time `json:"observed_at,omitzero"`
 	Ordinal    int       `json:"ordinal"`
 }
 
