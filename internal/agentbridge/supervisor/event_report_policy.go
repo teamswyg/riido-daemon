@@ -5,6 +5,9 @@ import "github.com/teamswyg/riido-daemon/internal/agentbridge"
 const maxPendingReportEvents = 16
 
 func shouldRetainReportEvent(ev agentbridge.Event) bool {
+	if ev.NativeHistory != nil {
+		return true
+	}
 	switch ev.Kind {
 	case agentbridge.EventLifecycle,
 		agentbridge.EventSessionIdentified,

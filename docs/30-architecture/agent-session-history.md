@@ -74,3 +74,42 @@ and do not appear as one native turn. Timing summaries contain no session/task
 identifiers and never change native pin ownership, cwd/grant binding, resume
 selection or terminal acknowledgement identity. Native-session continuity and fresh
 host-verification regressions remain required alongside timing tests.
+
+## RIID-5891: Import visible native history on Riido continuation
+
+RIID-5891 imports Codex/Claude text when the next Riido request resumes the exact
+bound session. Session/workdir/runtime ownership remains governed by
+this document; this does not scan other projects or start watchers.
+
+The consumer/wire contract is owned by Control Plane in
+`docs/20-domain/ai-agent-client-api.riido.json` (`native-history-*` rules). Producer payload:
+`agentbridge.NativeHistoryMessage`, sent as `riido_log` metadata
+`native_history_message` with the assignment lease token. User/Agent text alone
+is eligible. Tool output, reasoning and subagent sidechains are excluded.
+The canonical task prompt anchors the history, and Riido prompt/response pairs
+are skipped because the server already projects them. Stable provider IDs allow
+the consumer to deduplicate replays. Identical text is not a deduplication key.
+
+Codex reads inline resumed turns or all `thread/turns/list` pages (`asc`, `full`)
+before `turn/start`. Claude opens only the exact session JSONL in its bound
+project directory before process start, checks file stability, follows the main
+parent chain and publishes only after the provider confirms the session ID.
+Native history messages are guarded again by the session actor and retained by
+the supervisor when reporting fails. Pending imports gate terminal delivery.
+
+Unreadable/compacted/incomplete or foreign history fails explicitly. Text limits:
+64 KiB/message, 2,000 imported messages, 4 MiB text; transcript limit 64 MiB and
+Codex turn limit 10,000. Attachments are not uploaded. Concurrent external turns
+must finish before a Riido continuation. No fallback to a latest/new session.
+
+Deploy the Control Plane consumer before this producer. Roll back producer first.
+Existing first runs and unrelated providers do not read local history. This is
+append-only projection, not a realtime mirror or source edit/delete replication.
+
+Primary protocol references:
+- https://learn.chatgpt.com/docs/app-server
+- https://code.claude.com/docs/en/agent-sdk/sessions
+- https://github.com/anthropics/claude-agent-sdk-python/blob/main/src/claude_agent_sdk/_internal/sessions.py
+
+Verification uses synthetic `native_history_test.go` fixtures for both providers,
+the shared selection tests and the session/supervisor delivery regression suites.
