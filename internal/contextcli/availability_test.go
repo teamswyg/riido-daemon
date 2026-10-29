@@ -3,7 +3,7 @@ package contextcli
 import "testing"
 
 func TestUnsupportedCommandsAreNotAdvertisedAsBrokerReads(t *testing.T) {
-	for _, name := range []string{"context changes", "work activity", "work search"} {
+	for _, name := range []string{"context changes", "work search"} {
 		found := false
 		for _, command := range Capabilities("test").Commands {
 			if command.Name == name {

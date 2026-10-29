@@ -32,7 +32,7 @@ const (
 	noteUnsupported  = "아직 구현되지 않은 명령입니다. 실행하면 원격 조회 없이 exit 8을 반환합니다"
 )
 
-// ReadCommandUnavailable keeps command execution and availability advertising aligned.
+// ReadCommandUnavailable guards the agent broker; user-only reads dispatch separately.
 func ReadCommandUnavailable(name string) bool {
 	switch name {
 	case "context changes", "work activity", "work search":
@@ -45,6 +45,9 @@ func ReadCommandUnavailable(name string) bool {
 // Capabilities returns the static capability table for cliVersion.
 func Capabilities(cliVersion string) CapabilitiesData {
 	agentRead := func(name string) CommandCapability {
+		if name == "work activity" {
+			return CommandCapability{Name: name, Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID와 --team-id, --page/--limit으로 live 활동을 조회합니다; 서버 활동 조회 권한 배포가 필요하며 agent mode는 exit 8입니다"}
+		}
 		if name == "whoami" || name == "work get" || name == "work comments" || name == "work relations" || name == "context get" || name == "meeting get" {
 			note := noteDaemonBroker + "; " + noteUserMode
 			if name == "work get" {
