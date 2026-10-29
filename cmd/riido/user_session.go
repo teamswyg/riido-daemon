@@ -43,7 +43,7 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 	}
 	digest := sha256.Sum256([]byte("riido-cli:" + origin))
 	native := &securecredential.Store{HelperPath: filepath.Join(filepath.Dir(executable), "RiidoCLIAuthHelper.app", "Contents", "MacOS", "riido-cli-auth-helper"), Key: hex.EncodeToString(digest[:]), Interactive: !args.NoInput, LockDir: filepath.Join(configDir, "riido-cli", "auth-locks")}
-	return standalonecli.New(standalonecli.Config{APIOrigin: origin, Store: &standalonecli.ProtectedStore{Native: native}, OpenBrowser: openUserBrowser})
+	return standalonecli.New(standalonecli.Config{APIOrigin: origin, Store: &standalonecli.ProtectedStore{Native: native, Resource: origin}, OpenBrowser: openUserBrowser})
 }
 
 func openUserBrowser(ctx context.Context, address string) error {
