@@ -36,6 +36,9 @@ func runWork(c contextIO, args []string) error {
 		if sub == workCommandComments && c.environment().Mode != contextcli.ModeAgent {
 			return c.runUserComments(sub, args[1:])
 		}
+		if sub == workCommandRelations && c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserRelations(args[1:])
+		}
 		return c.runContextRead(workRefCall(sub), args[1:])
 	case workCommandReplies:
 		return c.runUserComments(sub, args[1:])

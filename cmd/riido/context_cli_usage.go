@@ -23,6 +23,7 @@ func printWorkUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido work <get|tree|relations|comments|replies|activity|search> ...")
 	fmt.Fprintln(w, "    riido work get|tree|relations <RIID-1234|ID> [--json]")
 	fmt.Fprintln(w, "    riido work get <ID> --team-id <TEAM-ID> [--json]   (standalone user API)")
+	fmt.Fprintln(w, "    riido work relations <ID> --team-id <TEAM-ID> [--json]   (user live direct relations; no pagination; agent keeps snapshot reads)")
 	fmt.Fprintln(w, "    riido work comments <RIID-1234|ID> [--cursor C] [--json]   (agent snapshot; fixed 20-item pages)")
 	fmt.Fprintln(w, "    riido work comments <ID> --team-id <TEAM-ID> [--page N] [--limit N] [--json]   (user API; defaults 1/20, limit <= 100)")
 	fmt.Fprintln(w, "    riido work replies <ID> --team-id <TEAM-ID> --comment-id <COMMENT-ID> [--json]   (user API; no pagination; agent replies unsupported)")

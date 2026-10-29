@@ -45,13 +45,16 @@ func ReadCommandUnavailable(name string) bool {
 // Capabilities returns the static capability table for cliVersion.
 func Capabilities(cliVersion string) CapabilitiesData {
 	agentRead := func(name string) CommandCapability {
-		if name == "whoami" || name == "work get" || name == "work comments" {
+		if name == "whoami" || name == "work get" || name == "work comments" || name == "work relations" {
 			note := noteDaemonBroker + "; " + noteUserMode
 			if name == "work get" {
 				note += "; user mode는 작업 ID와 --team-id만 지원합니다"
 			}
 			if name == "work comments" {
 				note += "; user mode는 작업 ID와 --team-id, --page/--limit을 사용하고 agent mode는 고정 20개 --cursor를 유지합니다"
+			}
+			if name == "work relations" {
+				note += "; user mode는 작업 ID와 --team-id로 직접 관계를 실시간 조회하며 페이지 옵션은 없습니다; agent mode는 기존 snapshot을 사용합니다; 서버 관계 조회 권한 배포가 필요합니다"
 			}
 			return CommandCapability{Name: name, Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable, Note: note}
 		}
