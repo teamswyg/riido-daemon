@@ -1,11 +1,13 @@
 package main
 
 import (
+	"errors"
 	"net"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/logging"
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
@@ -17,7 +19,12 @@ func handleDaemonConn(conn net.Conn, flags startFlags, settings daemonSettings, 
 	req, ok, err := readDaemonRequest(conn)
 	if err != nil {
 		log.Printf("decode request: %v", err)
-		_ = writeDaemonDecodeError(conn, err)
+		var linkErr *contextcli.CLIInstallationLinkError
+		if errors.As(err, &linkErr) {
+			_ = writeDaemonJSON(conn, contextcli.CLIInstallationLinkReply{SchemaVersion: contextcli.CLIInstallationLinkIPCSchema, Error: linkErr})
+		} else {
+			_ = writeDaemonDecodeError(conn, err)
+		}
 	}
 	if !ok {
 		return
@@ -52,6 +59,11 @@ func dispatchDaemonRequest(conn net.Conn, req daemonRequest, flags startFlags, s
 		// 5s connection deadline would drop a slower successful answer.
 		_ = conn.SetDeadline(time.Now().Add(contextReadConnDeadline))
 		writeContextRead(conn, req, settings, runtimes, log)
+	case daemonMethodCLIInstallationLinkInfo, daemonMethodCLIInstallationLinkConfirm:
+		_ = conn.SetDeadline(time.Now().Add(12 * time.Second))
+		ctx, cancel := daemonConnClosedContext(conn)
+		defer cancel()
+		writeCLIInstallationLink(ctx, conn, req.linkRequest, settings)
 	case daemonMethodToolApproval:
 		_ = conn.SetDeadline(time.Time{})
 		ctx, cancel := daemonConnClosedContext(conn)
