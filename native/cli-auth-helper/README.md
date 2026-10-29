@@ -108,3 +108,25 @@ and releases without deleting the lock file. This coordinates trusted helpers;
 same-UID denial of service is outside the user-presence credential boundary.
 Official key uniqueness: https://developer.apple.com/documentation/security/ksecclasskey
 https://developer.apple.com/documentation/security/ksecattrapplicationlabel
+
+
+### Typed device link proof
+
+`installation-device-link-proof` uses the same verified private pipe and the
+existing protected installation key. Its closed payload is `resource`, `client_id`,
+`installation_id`, `intent_id`, `challenge_hash`, `key_fingerprint`,
+`expected_device_id`, `approved_principal_id`, and `expires_at`. The resource
+must be HTTPS and the client must be `riido-cli`. Expiry is the exact canonical
+UTC RFC3339Nano string from the server; fractional digits are never rounded.
+Unlike the OAuth proof, both digests are framed lowercase hex text. The domain
+is `riido-cli-device-link.v1` and the operation is `link`, matching control-plane.
+
+This operation requires interactive OS authentication, loads exactly one existing
+protected key, and checks key identity and expiry before signing and expiry again
+after authentication. It never creates or rotates a missing key or touches OAuth
+credentials. The Go caller independently verifies the returned DER signature.
+The intent must originate in the authenticated installation-link flow. A local
+signature is not evidence of server approval or permission: the server checks
+device owner, immutable binding, consumption and current execution policy.
+The public link/daemon IPC consumers, actual signed-helper QA and deployment
+remain separate work; synthetic fixtures do not replace those acceptance gates.

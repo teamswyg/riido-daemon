@@ -39,21 +39,32 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
 
     func signProof(_ proof: InstallationProof) throws -> Data {
         try proof.validate(now: Date())
+        return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0, now: Date()) },
+                        validate: { try proof.validate(now: Date()) })
+    }
+
+    func signDeviceLinkProof(_ proof: DeviceLinkProof) throws -> Data {
+        try proof.validate(now: Date())
+        return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0, now: Date()) },
+                        validate: { try proof.validate(now: Date()) })
+    }
+
+    private func sign(scope: InstallationScope, message makeMessage: (Data) throws -> Data,
+                      validate: () throws -> Void) throws -> Data {
         let context = installationContext()
         defer { context.invalidate() }
-        let matches = try find(scope: proof.scope, context: context)
+        let matches = try find(scope: scope, context: context)
         if matches.isEmpty { throw HelperFailure.notFound }
         guard matches.count == 1 else { throw HelperFailure.unavailable }
         let key = matches[0]
         let publicKey = try publicBytes(key)
-        let message = try proof.message(publicKey: publicKey, now: Date())
+        let message = try makeMessage(publicKey)
         guard SecKeyIsAlgorithmSupported(key, .sign, .ecdsaSignatureMessageX962SHA256) else { throw HelperFailure.unavailable }
         var error: Unmanaged<CFError>?
         guard let signature = SecKeyCreateSignature(key, .ecdsaSignatureMessageX962SHA256, message as CFData, &error) as Data? else {
             throw securityFailure(error?.takeRetainedValue())
         }
-        // Authentication can outlive the intent. Never return a stale proof.
-        try proof.validate(now: Date())
+        try validate()
         guard signature.count <= 72,
               let der = try? P256.Signing.ECDSASignature(derRepresentation: signature),
               try installationPublicKey(publicKey).isValidSignature(der, for: message) else { throw HelperFailure.unavailable }

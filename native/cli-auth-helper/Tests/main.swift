@@ -161,6 +161,8 @@ let installationRequest = try! JSONSerialization.data(withJSONObject: [
 ])
 check(blocked.handle(installationRequest).error?.code == "UNAVAILABLE", "typed installation key reaches signature preflight before key access")
 runInstallationTests()
+runDeviceLinkTests()
+runDeviceLinkSigningTests()
 runInstallationRegistrationTests()
 runInstallationLockTests()
 if failures > 0 { exit(1) }
