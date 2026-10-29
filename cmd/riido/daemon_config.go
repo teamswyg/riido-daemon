@@ -1,6 +1,7 @@
 package main
 
 import (
+	"net/http"
 	"os"
 	"time"
 
@@ -15,6 +16,7 @@ const (
 	envDaemonVersion                 = "RIIDO_DAEMON_VERSION"
 	envDaemonProfile                 = "RIIDO_DAEMON_PROFILE"
 	envServerURL                     = "RIIDO_SERVER_URL"
+	envCLIAPIURL                     = "RIIDO_CLI_API_URL"
 	envDeviceID                      = "RIIDO_DEVICE_ID"
 	envDeviceSecret                  = "RIIDO_DEVICE_SECRET"
 	envExecutionCoverageGeneration   = "RIIDO_EXECUTION_COVERAGE_GENERATION"
@@ -46,7 +48,8 @@ type daemonSettings struct {
 	executionObservations func() []execution.Observation
 	ExecutionBindingStore *execution.BindingStore
 	// contextBroker is set by serveAgentDaemon when ContextCLI is on.
-	contextBroker *contextbroker.Broker
+	contextBroker     *contextbroker.Broker
+	cliLinkHTTPClient *http.Client
 
 	ownedExecutions             func() map[string][]string
 	RunHardTimeout              time.Duration
@@ -56,6 +59,7 @@ type daemonSettings struct {
 	DaemonVersion               string
 	Profile                     string
 	ServerURL                   string
+	CLIAPIResource              string
 	DeviceID                    string
 	DeviceSecret                string
 	ExecutionCoverageGeneration string

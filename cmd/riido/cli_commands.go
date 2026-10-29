@@ -36,16 +36,18 @@ const (
 type daemonMethod string
 
 const (
-	daemonMethodDefault                daemonMethod = ""
-	daemonMethodExecutionBindingUpdate daemonMethod = "execution_binding_update"
-	daemonMethodExecutionBindingRemove daemonMethod = "execution_binding_remove"
-	daemonMethodStatus                 daemonMethod = "status"
-	daemonMethodHealth                 daemonMethod = "health"
-	daemonMethodReady                  daemonMethod = "ready"
-	daemonMethodMetrics                daemonMethod = "metrics"
-	daemonMethodShutdown               daemonMethod = "shutdown"
-	daemonMethodToolApproval           daemonMethod = "tool_approval"
-	daemonMethodContextRead            daemonMethod = "context_read"
+	daemonMethodDefault                    daemonMethod = ""
+	daemonMethodExecutionBindingUpdate     daemonMethod = "execution_binding_update"
+	daemonMethodExecutionBindingRemove     daemonMethod = "execution_binding_remove"
+	daemonMethodStatus                     daemonMethod = "status"
+	daemonMethodHealth                     daemonMethod = "health"
+	daemonMethodReady                      daemonMethod = "ready"
+	daemonMethodMetrics                    daemonMethod = "metrics"
+	daemonMethodShutdown                   daemonMethod = "shutdown"
+	daemonMethodToolApproval               daemonMethod = "tool_approval"
+	daemonMethodContextRead                daemonMethod = "context_read"
+	daemonMethodCLIInstallationLinkInfo    daemonMethod = "cli_installation_link_info"
+	daemonMethodCLIInstallationLinkConfirm daemonMethod = "cli_installation_link_confirm"
 )
 
 type taskCommand string
