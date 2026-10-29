@@ -2,18 +2,19 @@ package agentbridge
 
 // StartRequest is the provider-neutral input to BuildStart.
 type StartRequest struct {
-	TaskID          string
-	Prompt          string
-	Cwd             string
-	Executable      string
-	Model           string
-	SystemPrompt    string
-	MaxTurns        int
-	ResumeSessionID string
-	Env             map[string]string
-	CustomArgs      []string
-	MCPConfig       []byte
-	Metadata        map[string]string
+	ReferenceDirectories []string
+	TaskID               string
+	Prompt               string
+	Cwd                  string
+	Executable           string
+	Model                string
+	SystemPrompt         string
+	MaxTurns             int
+	ResumeSessionID      string
+	Env                  map[string]string
+	CustomArgs           []string
+	MCPConfig            []byte
+	Metadata             map[string]string
 	// ContextCLIEnabled is set by the daemon launch hook, never by run Env.
 	ContextCLIEnabled bool
 	// ContextCLIExecutable is the daemon-owned absolute binary, not assignment input.

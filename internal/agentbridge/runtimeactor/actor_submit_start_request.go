@@ -12,9 +12,14 @@ func submitLaunchEnv(msg *submitMsg) map[string]string {
 }
 
 func submitStartRequest(msg *submitMsg, capView Capability, runtimeID string, launchEnv map[string]string, models []RuntimeModel, contextCLIEnabled bool, contextCLIExecutable string) agentbridge.StartRequest {
+	var referenceDirectories []string
+	if msg.req.ReferenceFolders != nil {
+		referenceDirectories = append([]string(nil), msg.req.ReferenceFolders.Paths...)
+	}
 	metadata := cloneSubmitMetadata(msg.req.Metadata)
 	metadata[agentbridge.MetadataRuntimeID] = runtimeID
 	req := agentbridge.StartRequest{
+		ReferenceDirectories: referenceDirectories,
 		TaskID:               msg.req.ID,
 		Prompt:               msg.req.Prompt,
 		Cwd:                  msg.req.Cwd,

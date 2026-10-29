@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/session"
 )
 
@@ -17,6 +19,9 @@ func (c *Client) Run(ctx context.Context, req TaskRequest) (*Session, error) {
 	}
 
 	startReq, launchEnv := newStartRequest(req, runtime.detect.Executable)
+	if err := agentbridge.CheckReferenceDirectories(startReq.ReferenceDirectories); err != nil {
+		return nil, err
+	}
 	spawnCmd, err := runtime.adapter.BuildStart(startReq)
 	if err != nil {
 		return nil, fmt.Errorf("bridge: BuildStart %s: %w", req.Provider, err)

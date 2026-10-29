@@ -11,6 +11,7 @@ import (
 
 // TaskRequest is the provider-neutral input to Run.
 type TaskRequest struct {
+	ReferenceFolders *assignmentcontract.ReferenceFolders
 	// LocalExecutionScope is source-created, never decoded from task/provider input.
 	LocalExecutionScope *executionproof.Scope `json:"-"`
 

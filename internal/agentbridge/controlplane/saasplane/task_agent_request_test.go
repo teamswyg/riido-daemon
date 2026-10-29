@@ -33,3 +33,20 @@ func TestTaskAgentRequestsKeepExecutionIdentityAndUserInstruction(t *testing.T) 
 		t.Fatal("legacy fallback changed")
 	}
 }
+
+func TestReferenceFoldersReachBothProvidersWithoutChangingCwd(t *testing.T) {
+	for _, provider := range []string{"codex", "claude"} {
+		assignment := assignmentcontract.Assignment{ID: "assignment", RuntimeProvider: provider, Prompt: "Read relevant material.", AgentInstruction: "Keep my rules", ReferenceFolders: &assignmentcontract.ReferenceFolders{DeviceID: "device", RuntimeID: "runtime", Paths: []string{"/자료 with spaces"}}}
+		req := taskRequestFromAssignment(assignment)
+		if req.Cwd != "" || req.ReferenceFolders.Paths[0] != "/자료 with spaces" {
+			t.Fatalf("%s: bad reference propagation", provider)
+		}
+		if !strings.Contains(req.Prompt+req.SystemPrompt, "Keep my rules") {
+			t.Fatalf("%s: dropped user rules", provider)
+		}
+		assignment.ReferenceFolders.Paths[0] = "/changed"
+		if req.ReferenceFolders.Paths[0] != "/자료 with spaces" {
+			t.Fatal("assignment aliased")
+		}
+	}
+}

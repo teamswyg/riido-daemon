@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/teamswyg/riido-contracts/ir"
@@ -12,6 +13,9 @@ import (
 )
 
 func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status, req *bridge.TaskRequest) (*preparedWorkspace, error) {
+	if req.ReferenceFolders != nil && !req.ReferenceFolders.Matches(req.Metadata["execution_device_id"], status.RuntimeID) {
+		return nil, errors.New("reference folders belong to a different device or runtime; select the folders again")
+	}
 	if a.cfg.Workdir == nil {
 		return nil, nil
 	}

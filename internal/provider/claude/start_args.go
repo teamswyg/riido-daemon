@@ -1,6 +1,7 @@
 package claude
 
 import (
+	"encoding/json"
 	"fmt"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -9,13 +10,21 @@ import (
 func buildStartArgs(req agentbridge.StartRequest, opts StartOptions) ([]string, []string, []string) {
 	args := protocolArgs(opts.PermissionMode)
 	args = appendContextCLIReadArgs(args, opts.ContextCLIReads)
+	if len(req.ReferenceDirectories) > 0 {
+		settings, _ := json.Marshal(map[string]any{"permissions": map[string]any{"additionalDirectories": req.ReferenceDirectories}})
+		args = append(args, "--settings", string(settings))
+	}
 	tempFiles := []string{}
 	args, tempFiles = appendMCPArgs(args, tempFiles, opts.MCPConfigPath)
 	if opts.PermissionMode != PermissionModeBypassDangerous || opts.PermissionPromptToolName != "" {
 		args = appendPermissionPromptTool(args, opts.PermissionPromptToolName)
 	}
 	args = appendRequestArgs(args, req)
-	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, startBlockedArgs(opts.ContextCLIReads))
+	blocked := startBlockedArgs(opts.ContextCLIReads)
+	if len(req.ReferenceDirectories) > 0 {
+		blocked = append(blocked, "--settings", "--add-dir")
+	}
+	kept, dropped := agentbridge.FilterBlockedArgs(req.CustomArgs, blocked)
 	return append(args, kept...), dropped, tempFiles
 }
 

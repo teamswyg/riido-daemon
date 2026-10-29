@@ -12,6 +12,8 @@ The root remains a compatibility surface for existing CI anchors while the sourc
 
 RIID-5829: human approval and answer requests emit assignment_waiting_for_user with approval_required or answer_required. Automatically approved tool requests do not notify; the session evaluates its policy once per request. Explicit running and text resumption clear the reason. Logs and recoverable errors never emit terminal-failure notifications.
 
+RIID-5893: assignments may carry device/runtime-bound reference folders. Validate the actual execution binding and host directory listing access before provider startup. Preserve cwd. Claude receives additionalDirectories for that run; Codex retains its configured full-access sandbox. Never rewrite global CLI settings, bypass OS or managed restrictions, or equate a host check with proof that the model read files.
+
 ## Compatibility Markers
 
 - `figma-ai-agent-daemon-boundary`

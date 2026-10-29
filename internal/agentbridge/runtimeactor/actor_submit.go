@@ -40,6 +40,12 @@ func (a *Actor) handleSubmit(
 		a.cfg.LaunchEnv(msg.req, a.cfg.RuntimeID, launchEnv)
 	}
 	startReq := submitStartRequest(msg, capView, a.cfg.RuntimeID, launchEnv, a.cfg.Models, a.cfg.LaunchEnv != nil, a.cfg.ContextCLIExecutable)
+	if msg.req.ReferenceFolders != nil && !msg.req.ReferenceFolders.Matches(msg.req.Metadata["execution_device_id"], a.cfg.RuntimeID) {
+		return nil, errors.New("reference folders belong to a different device or runtime; select the folders again")
+	}
+	if err := agentbridge.CheckReferenceDirectories(startReq.ReferenceDirectories); err != nil {
+		return nil, err
+	}
 	spawn, err := adapter.BuildStart(startReq)
 	if err != nil {
 		return nil, submitBuildStartError(adapter, err)

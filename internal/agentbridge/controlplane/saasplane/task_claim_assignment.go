@@ -25,6 +25,7 @@ func (p *Plane) claimStartOrActiveAssignment(
 		return nil, err
 	}
 	req := taskRequestFromAssignment(assignment)
+	req.Metadata["execution_device_id"] = p.cfg.DeviceID
 	req.LocalExecutionScope = scope
 	return req, nil
 }
