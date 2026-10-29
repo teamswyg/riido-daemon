@@ -42,6 +42,7 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		DiagnosticCode:    hostintegration.ProviderDiagnosticNone,
 	}
 	switch claudeAuthProbe(ctx, exe) {
+	case detectutil.AuthProbeAuthenticated:
 	case detectutil.AuthProbeUnauthenticated:
 		res.Available = false
 		res.HealthStatus = hostintegration.ProviderHealthUnavailable

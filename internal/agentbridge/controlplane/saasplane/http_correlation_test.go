@@ -11,8 +11,8 @@ import (
 func TestHTTPFailurePreservesSafeRequestID(t *testing.T) {
 	id := "0123456789abcdef0123456789abcdef"
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("X-Riido-Request-ID", id)
-		w.WriteHeader(401)
+		w.Header().Set("X-Riido-Request-Id", id)
+		w.WriteHeader(http.StatusUnauthorized)
 	}))
 	defer server.Close()
 	plane := newTestPlane(t, server.URL, []AgentBinding{{AgentID: "fixture", RuntimeProvider: "codex"}})

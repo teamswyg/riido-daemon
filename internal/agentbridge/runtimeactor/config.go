@@ -16,7 +16,7 @@ type Config struct {
 	DeviceName string
 	Agents     []AgentStatus
 	Models     []RuntimeModel
-	// RefreshModels runs in the capability probe worker; empty results keep the last catalogue.
+	// RefreshModels runs in the capability probe worker; empty results keep the last catalog.
 	RefreshModels  func(context.Context, Capability) []RuntimeModel
 	Adapters       []agentbridge.Adapter
 	Process        process.Process
