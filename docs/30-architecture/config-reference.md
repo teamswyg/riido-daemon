@@ -30,6 +30,7 @@ Keeps the public riido-daemon env and flag catalog generated from a manifest and
 | `RIIDO_DAEMON_VERSION` | daemon config and supervisor events | riido-agentd <binary build version> | daemon binary version label |
 | `RIIDO_DAEMON_PROFILE` | daemon status and diagnostics | local | user-facing daemon profile; dev/development enables loopback pprof by default |
 | `RIIDO_SERVER_URL` | daemon status | empty | display-only server URL unless SaaS source is configured |
+| `RIIDO_CLI_API_URL` | explicit CLI device-link IPC | empty in daemon; linking unsupported | explicit canonical HTTPS OAuth resource for local info/confirm only; no ServerURL or standalone-default authority fallback |
 | `RIIDO_DEVICE_ID` | saasplane | empty | device principal id |
 | `RIIDO_DEVICE_SECRET` | saasplane | empty | sent only as X-Riido-Device-Secret |
 | `RIIDO_EXECUTION_COVERAGE_GENERATION` | saasplane | empty for legacy devices | server-issued enrollment generation; required with dcov_ device credentials and sent unchanged as X-Riido-Execution-Coverage |
