@@ -17,6 +17,7 @@ import (
 func linkFixtureRequest() DeviceLinkRequest {
 	return DeviceLinkRequest{RequestID: base64.RawURLEncoding.EncodeToString(make([]byte, 32)), RecoverySecret: base64.RawURLEncoding.EncodeToString([]byte(strings.Repeat("s", 32))), ExpectedDeviceID: "original-device"}
 }
+
 func linkFixtureClient(t *testing.T, server *httptest.Server) *Client {
 	t.Helper()
 	cfg := configFor(server)
@@ -33,14 +34,17 @@ func linkFixtureClient(t *testing.T, server *httptest.Server) *Client {
 	}
 	return client
 }
+
 func linkFixtureStore() *fakeStore {
 	credential := validCredential()
 	credential.Scope = "read"
 	return newFakeStore(credential)
 }
+
 func linkRecoveryInput(r DeviceLinkRequest) DeviceLinkRecoveryRequest {
 	return DeviceLinkRecoveryRequest{RequestID: r.RequestID, RecoverySecret: r.RecoverySecret, ExpectedDeviceID: r.ExpectedDeviceID, KeyFingerprint: strings.Repeat("a", 64)}
 }
+
 func linkReply(w http.ResponseWriter, status int, value any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
@@ -52,7 +56,7 @@ func TestDeviceLinkCreateUsesFixedAuthenticatedPOSTAndPreservesOriginalExpiry(t 
 	calls := 0
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls++
-		if r.Method != "POST" || r.URL.Path != "/oauth/cli/installation-links" || r.URL.RawQuery != "" || r.Header.Get("Authorization") != "Bearer old-access" || r.Header.Get("Cookie") != "" || r.Header.Get("Origin") != "" {
+		if r.Method != http.MethodPost || r.URL.Path != "/oauth/cli/installation-links" || r.URL.RawQuery != "" || r.Header.Get("Authorization") != "Bearer old-access" || r.Header.Get("Cookie") != "" || r.Header.Get("Origin") != "" {
 			t.Error("wrong create boundary")
 		}
 		var fields map[string]string
@@ -78,7 +82,7 @@ func TestDeviceLinkRecoveryUsesOnlyOriginalSecretWithoutOAuth(t *testing.T) {
 	calls := 0
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls++
-		if r.Method != "POST" || r.URL.Path != "/oauth/cli/installation-links/recover" || r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" || r.Header.Get("Origin") != "" {
+		if r.Method != http.MethodPost || r.URL.Path != "/oauth/cli/installation-links/recover" || r.Header.Get("Authorization") != "" || r.Header.Get("Cookie") != "" || r.Header.Get("Origin") != "" {
 			t.Error("recovery acquired ambient authority")
 		}
 		var fields map[string]string

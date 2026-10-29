@@ -47,15 +47,17 @@ func TestDeviceLinkRecoveryValidatesEveryProofBinding(t *testing.T) {
 
 func TestDeviceLinkTransportRejectsRedirectWithoutLeakingSecret(t *testing.T) {
 	targetCalls := 0
-	target := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { targetCalls++; w.WriteHeader(200) }))
+	target := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { targetCalls++; w.WriteHeader(http.StatusOK) }))
 	defer target.Close()
-	origin := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, target.URL+"/unexpected", 307) }))
+	origin := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, target.URL+"/unexpected", http.StatusTemporaryRedirect)
+	}))
 	defer origin.Close()
 	client := linkFixtureClient(t, origin)
 	input := linkRecoveryInput(linkFixtureRequest())
 	_, err := client.RecoverDeviceLink(context.Background(), input)
 	var linkErr *DeviceLinkError
-	if !errors.As(err, &linkErr) || linkErr.StatusCode != 307 || targetCalls != 0 || strings.Contains(err.Error(), input.RecoverySecret) {
+	if !errors.As(err, &linkErr) || linkErr.StatusCode != http.StatusTemporaryRedirect || targetCalls != 0 || strings.Contains(err.Error(), input.RecoverySecret) {
 		t.Fatal("redirect was followed or exposed secret", err)
 	}
 	if client.http.Jar == nil {

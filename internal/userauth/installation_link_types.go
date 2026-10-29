@@ -2,13 +2,16 @@ package userauth
 
 // These DTOs are caller inputs/results for fixed endpoints, not arbitrary HTTP
 // requests. The caller must persist the original request/secret before create.
-type DeviceLinkRequest struct{ RequestID, RecoverySecret, ExpectedDeviceID string }
-type DeviceLinkRecoveryRequest struct{ RequestID, RecoverySecret, ExpectedDeviceID, KeyFingerprint string }
-type DeviceLinkApproval struct {
-	RequestID string `json:"request_id"`
-	State     string `json:"state"`
-	ExpiresAt int64  `json:"expires_at"`
-}
+type (
+	DeviceLinkRequest         struct{ RequestID, RecoverySecret, ExpectedDeviceID string }
+	DeviceLinkRecoveryRequest struct{ RequestID, RecoverySecret, ExpectedDeviceID, KeyFingerprint string }
+	DeviceLinkApproval        struct {
+		RequestID string `json:"request_id"`
+		State     string `json:"state"`
+		ExpiresAt int64  `json:"expires_at"`
+	}
+)
+
 type DeviceLinkProof struct {
 	Resource            string `json:"resource"`
 	ClientID            string `json:"client_id"`

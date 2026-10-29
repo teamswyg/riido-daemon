@@ -20,17 +20,21 @@ func validDeviceLinkClient(c *Client) bool {
 	u, err := url.Parse(c.config.Resource)
 	return err == nil && u.Scheme == "https" && u.Hostname() != "" && u.User == nil && u.Path == "" && u.RawPath == "" && u.RawQuery == "" && !u.ForceQuery && u.Fragment == "" && u.Opaque == "" && c.config.Resource == "https://"+u.Host
 }
+
 func deviceLinkID(value string) bool {
 	return value != "" && len(value) <= 512 && utf8.ValidString(value) && strings.TrimSpace(value) == value && !strings.ContainsAny(value, "/\\\x00\r\n\t")
 }
+
 func deviceLinkRandom(value string) bool {
 	raw, err := base64.RawURLEncoding.DecodeString(value)
 	return err == nil && len(raw) == 32 && base64.RawURLEncoding.EncodeToString(raw) == value
 }
+
 func deviceLinkDigest(value string) bool {
 	raw, err := hex.DecodeString(value)
 	return err == nil && len(raw) == 32 && hex.EncodeToString(raw) == value
 }
+
 func validDeviceLinkRequest(r DeviceLinkRequest) bool {
 	return deviceLinkRandom(r.RequestID) && deviceLinkRandom(r.RecoverySecret) && deviceLinkID(r.ExpectedDeviceID)
 }
@@ -63,6 +67,7 @@ func deviceLinkObject(raw []byte, keys ...string) (map[string]json.RawMessage, e
 	}
 	return fields, nil
 }
+
 func decodeDeviceLink(fields map[string]json.RawMessage, result any) error {
 	raw, err := json.Marshal(fields)
 	if err != nil {
