@@ -14,6 +14,7 @@ type RuntimeModelRecord struct {
 }
 
 type RuntimeSnapshotRecord struct {
+	ProviderVersionObservedAt string                                 `json:"provider_version_observed_at,omitempty"`
 	RuntimeID                 string                                 `json:"runtime_id"`
 	Kind                      string                                 `json:"kind"`
 	Availability              string                                 `json:"availability,omitempty"`

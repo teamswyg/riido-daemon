@@ -18,6 +18,7 @@ func runtimeRegistrationState(status runtimeactor.Status) string {
 		out.WriteString(string(code))
 		out.WriteByte('|')
 		out.WriteString(capability.Version)
+		out.WriteString(capability.VersionObservedAt.String())
 		out.WriteByte(';')
 	}
 	for _, model := range status.Models {

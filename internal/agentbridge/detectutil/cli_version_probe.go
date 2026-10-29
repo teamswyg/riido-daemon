@@ -6,8 +6,10 @@ import (
 	"strings"
 )
 
-var cliVersionLine = regexp.MustCompile(`^(?:(?:codex-cli|claude|claude-code|cursor-agent)\s+)?v?[0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.-]+)?(?:\s+\(Claude Code\))?$`)
-var versionANSI = regexp.MustCompile("\x1b\\[[0-9;]*[mK]")
+var (
+	cliVersionLine = regexp.MustCompile(`^(?:(?:codex-cli|claude|claude-code|cursor-agent)\s+)?v?[0-9]+\.[0-9]+\.[0-9]+(?:[-+][A-Za-z0-9.-]+)?(?:\s+\(Claude Code\))?$`)
+	versionANSI    = regexp.MustCompile("\x1b\\[[0-9;]*[mK]")
+)
 
 // CLIVersionProbe accepts only a successful version line, never arbitrary CLI
 // output. Diagnostics are finite codes; stderr stays local to this probe.

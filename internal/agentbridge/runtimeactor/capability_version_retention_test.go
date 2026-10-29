@@ -1,8 +1,9 @@
 package runtimeactor
 
 import (
-	"github.com/teamswyg/riido-contracts/hostintegration"
 	"testing"
+
+	"github.com/teamswyg/riido-contracts/hostintegration"
 )
 
 func TestFailedVersionProbeRetainsOnlyVerifiedBinaryIdentity(t *testing.T) {

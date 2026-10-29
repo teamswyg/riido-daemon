@@ -10,8 +10,8 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/process/execwindow"
 )
 
-// The embedded catalogue keeps startup responsive. Live discovery replaces it
-// from the actor's background probe, preserving the prior catalogue on failure.
+// The embedded catalog keeps startup responsive. Live discovery replaces it
+// from the actor's background probe, preserving the prior catalog on failure.
 func refreshDaemonRuntimeModels(ctx context.Context, capability runtimeactor.Capability) []runtimeactor.RuntimeModel {
 	var args []string
 	switch capability.Provider {

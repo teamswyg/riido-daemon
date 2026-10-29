@@ -23,7 +23,7 @@ func TestCLIVersionProbeRejectsErrorsAndSeparatesWarnings(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			path := filepath.Join(t.TempDir(), "cli")
-			if err := os.WriteFile(path, []byte("#!/bin/sh\n"+tc.body+"\n"), 0700); err != nil {
+			if err := os.WriteFile(path, []byte("#!/bin/sh\n"+tc.body+"\n"), 0o700); err != nil {
 				t.Fatal(err)
 			}
 			version, reason := CLIVersionProbe(context.Background(), path)

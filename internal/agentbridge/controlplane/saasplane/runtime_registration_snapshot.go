@@ -32,6 +32,7 @@ func runtimeSnapshotFromRegistration(rt controlplane.RuntimeRegistration) (Runti
 		Availability:              availability,
 		DetectionState:            detectionState,
 		ProviderVersion:           runtimeProviderVersion(rt, provider),
+		ProviderVersionObservedAt: rt.CapabilityAttributes["provider."+provider+".provider_version_observed_at"],
 		HealthStatus:              runtimeProviderHealthStatus(rt, provider),
 		DiagnosticCode:            runtimeProviderDiagnosticCode(rt, provider),
 		DiagnosticSummary:         runtimeProviderDiagnosticSummary(rt, provider),
