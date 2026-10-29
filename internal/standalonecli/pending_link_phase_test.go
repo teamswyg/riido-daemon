@@ -218,3 +218,33 @@ func TestProtectedLinkPhaseRefreshPreservesCreatedAndReplacementDropsIt(t *testi
 		t.Fatal("new login inherited original phase", err)
 	}
 }
+
+func TestProtectedLinkPhaseACKAdvanceDoesNotBlockSameRequestCleanup(t *testing.T) {
+	for _, storedAdvanced := range []bool{true, false} {
+		t.Run(fmt.Sprint(storedAdvanced), func(t *testing.T) {
+			store, native, _, binding := newProtectedFixture(t)
+			original, err := store.BeginPendingLink(t.Context(), binding)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if storedAdvanced {
+				// Another process records the ACK while this caller awaits the original
+				// linked receipt. Phase advancement does not replace the request.
+				if _, err = store.MarkPendingLinkCreated(t.Context(), original); err != nil {
+					t.Fatal(err)
+				}
+			} else {
+				// A caller's ACK marker is not authority either. Cleanup of the exact same
+				// receipt/pair must not depend on which mutable phase is locally persisted.
+				original.Phase = LinkCreated
+			}
+			if err = store.ClearPendingLink(t.Context(), original); err != nil {
+				t.Fatal("same request could not clear across ACK phase", err)
+			}
+			pending, err := store.LoadPendingLink(t.Context(), binding.SessionID)
+			if err != nil || pending != nil || native.deletes != 0 {
+				t.Fatal("cleanup did not preserve credential", err)
+			}
+		})
+	}
+}

@@ -26,8 +26,7 @@ type LinkBinding struct {
 func (LinkBinding) String() string   { return "[redacted device link binding]" }
 func (LinkBinding) GoString() string { return "[redacted device link binding]" }
 
-// PendingLink is secret material. It only becomes usable after the complete
-// credential and pending record have been saved in the OS protected store.
+// LinkPhase records progress, not request identity or server authority.
 type LinkPhase string
 
 const (
@@ -35,6 +34,8 @@ const (
 	LinkCreated  LinkPhase = "created"
 )
 
+// PendingLink is secret material. It only becomes usable after the complete
+// credential and pending record have been saved in the OS protected store.
 type PendingLink struct {
 	LinkBinding
 	Phase          LinkPhase `json:"phase,omitempty"`
@@ -44,6 +45,10 @@ type PendingLink struct {
 
 func (PendingLink) String() string   { return "[redacted pending device link]" }
 func (PendingLink) GoString() string { return "[redacted pending device link]" }
+
+func (p PendingLink) sameRequest(other PendingLink) bool {
+	return p.LinkBinding == other.LinkBinding && p.RequestID == other.RequestID && p.RecoverySecret == other.RecoverySecret
+}
 
 func (b LinkBinding) valid() bool {
 	hash, hashErr := hex.DecodeString(b.KeyFingerprint)
@@ -109,7 +114,8 @@ func (s *ProtectedStore) LoadPendingLink(ctx context.Context, expectedSessionID 
 }
 
 // ClearPendingLink cannot clear a newer request or save an old credential after
-// logout or account replacement. The caller supplies the exact saved request.
+// logout or account replacement. The exact immutable request must match; phase
+// progress does not replace request identity or establish server authority.
 func (s *ProtectedStore) ClearPendingLink(ctx context.Context, pending PendingLink) error {
 	if !pending.valid() {
 		return securecredential.ErrUnavailable
@@ -122,7 +128,7 @@ func (s *ProtectedStore) ClearPendingLink(ctx context.Context, pending PendingLi
 	if record.PendingLink == nil {
 		return nil
 	}
-	if *record.PendingLink != pending {
+	if !record.PendingLink.sameRequest(pending) {
 		return securecredential.ErrUnavailable
 	}
 	record.PendingLink = nil

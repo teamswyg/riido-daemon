@@ -19,7 +19,7 @@ func (s *ProtectedStore) MarkPendingLinkCreated(ctx context.Context, pending Pen
 	}
 	defer unlock()
 	current := record.PendingLink
-	if current == nil || current.RequestID != pending.RequestID || current.RecoverySecret != pending.RecoverySecret {
+	if current == nil || !current.sameRequest(pending) {
 		return PendingLink{}, securecredential.ErrUnavailable
 	}
 	if current.Phase == LinkCreated {
