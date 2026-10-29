@@ -43,7 +43,7 @@ func TestWorkUsesVariablesAndReturnsBody(t *testing.T) {
 		if body.Variables["componentId"] != "work-1" || body.Variables["teamId"] != "team-1" || !strings.Contains(body.Query, `getDocument:"true"`) {
 			t.Fatal("wrong read scope")
 		}
-		return response(200, `{"data":{"getComponent":{"id":"work-1","title":"Fixture","document":{"HTMLContent":"<p>fixture body</p>"}}}}`), nil
+		return response(200, `{"data":{"getComponent":{"id":"work-1","title":"Fixture","componentMembers":[],"componentLabels":[],"document":{"HTMLContent":"<p>fixture body</p>"}}}}`), nil
 	})}
 	work, err := reader.Work(context.Background(), "work-1", "team-1")
 	if err != nil || work.Document == nil || work.Document.HTMLContent != "<p>fixture body</p>" {

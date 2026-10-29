@@ -17,6 +17,7 @@ const (
 	envServerURL                     = "RIIDO_SERVER_URL"
 	envDeviceID                      = "RIIDO_DEVICE_ID"
 	envDeviceSecret                  = "RIIDO_DEVICE_SECRET"
+	envExecutionCoverageGeneration   = "RIIDO_EXECUTION_COVERAGE_GENERATION"
 	envDeviceName                    = "RIIDO_DEVICE_NAME"
 	envRuntimeOwner                  = "RIIDO_RUNTIME_OWNER"
 	envRuntimeAgents                 = "RIIDO_RUNTIME_AGENTS"
@@ -47,36 +48,37 @@ type daemonSettings struct {
 	// contextBroker is set by serveAgentDaemon when ContextCLI is on.
 	contextBroker *contextbroker.Broker
 
-	ownedExecutions      func() map[string][]string
-	RunHardTimeout       time.Duration
-	RunSemanticIdle      time.Duration
-	ExecutionBindings    []execution.Binding
-	DaemonID             string
-	DaemonVersion        string
-	Profile              string
-	ServerURL            string
-	DeviceID             string
-	DeviceSecret         string
-	DeviceName           string
-	RuntimeOwner         string
-	WorkdirRoot          string
-	PolicyBundle         string
-	PolicyBundlePath     string
-	PolicyBundleDoc      policy.PolicyBundle
-	TaskQueueDir         string
-	TaskReportDir        string
-	TaskDBSourcePath     string
-	SaaSURL              string
-	PollEvery            time.Duration
-	IdlePollEvery        time.Duration
-	HeartbeatEvery       time.Duration
-	WorkdirRetention     time.Duration
-	WorkdirCleanupEvery  time.Duration
-	PprofAddr            string
-	ContextCLI           bool
-	WorkspaceCount       int
-	RuntimeMaxConcurrent int
-	RuntimeAgents        []runtimeactor.AgentStatus
+	ownedExecutions             func() map[string][]string
+	RunHardTimeout              time.Duration
+	RunSemanticIdle             time.Duration
+	ExecutionBindings           []execution.Binding
+	DaemonID                    string
+	DaemonVersion               string
+	Profile                     string
+	ServerURL                   string
+	DeviceID                    string
+	DeviceSecret                string
+	ExecutionCoverageGeneration string
+	DeviceName                  string
+	RuntimeOwner                string
+	WorkdirRoot                 string
+	PolicyBundle                string
+	PolicyBundlePath            string
+	PolicyBundleDoc             policy.PolicyBundle
+	TaskQueueDir                string
+	TaskReportDir               string
+	TaskDBSourcePath            string
+	SaaSURL                     string
+	PollEvery                   time.Duration
+	IdlePollEvery               time.Duration
+	HeartbeatEvery              time.Duration
+	WorkdirRetention            time.Duration
+	WorkdirCleanupEvery         time.Duration
+	PprofAddr                   string
+	ContextCLI                  bool
+	WorkspaceCount              int
+	RuntimeMaxConcurrent        int
+	RuntimeAgents               []runtimeactor.AgentStatus
 }
 
 func loadDaemonSettings() (daemonSettings, error) {

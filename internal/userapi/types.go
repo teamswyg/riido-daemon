@@ -36,14 +36,23 @@ type Identity struct {
 	LastViewedWorkspaceID string `json:"lastViewedWorkspaceId,omitempty"`
 }
 type Work struct {
-	ID            string    `json:"id"`
-	Title         string    `json:"title"`
-	ComponentType string    `json:"componentType,omitempty"`
-	KeyNumber     string    `json:"keyNumber,omitempty"`
-	Description   string    `json:"description,omitempty"`
-	CreatedAt     string    `json:"createdAt,omitempty"`
-	UpdatedAt     string    `json:"updatedAt,omitempty"`
-	Document      *Document `json:"document,omitempty"`
+	ID                 string       `json:"id"`
+	Title              string       `json:"title"`
+	ComponentType      string       `json:"componentType,omitempty"`
+	KeyNumber          string       `json:"keyNumber,omitempty"`
+	Description        string       `json:"description,omitempty"`
+	CreatedAt          string       `json:"createdAt,omitempty"`
+	UpdatedAt          string       `json:"updatedAt,omitempty"`
+	Document           *Document    `json:"document,omitempty"`
+	StartDate          *string      `json:"startDate"`
+	EndDate            *string      `json:"endDate"`
+	Estimate           *int         `json:"estimate"`
+	TotalPriorityScore *int         `json:"totalPriorityScore"`
+	IsDone             bool         `json:"isDone"`
+	IsArchived         bool         `json:"isArchived"`
+	Status             *WorkStatus  `json:"status"`
+	ComponentMembers   []WorkMember `json:"componentMembers"`
+	ComponentLabels    []WorkLabel  `json:"componentLabels"`
 }
 type Document struct {
 	ID               string `json:"id"`

@@ -22,5 +22,5 @@ func validateConfig(cfg Config) error {
 	if len(cfg.Agents) == 0 && cfg.DeviceSecret == "" {
 		return errors.New("saasplane: at least one static agent binding or a device credential is required")
 	}
-	return nil
+	return ValidateExecutionCoverage(cfg.DeviceID, cfg.DeviceSecret, cfg.ExecutionCoverageGeneration)
 }

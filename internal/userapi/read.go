@@ -10,7 +10,7 @@ import (
 
 const (
 	whoamiQuery = `query RiidoCLIWhoami { getMyAccountInfo { id email username loginType lastViewedWorkspaceId } }`
-	workQuery   = `query RiidoCLIWork($componentId:String!,$teamId:String!){getComponent(componentId:$componentId,teamId:$teamId,getComponentDto:{getDocument:"true"}){id componentType title keyNumber description createdAt updatedAt document{id HTMLContent tiptapDocumentId}}}`
+	workQuery   = `query RiidoCLIWork($componentId:String!,$teamId:String!){getComponent(componentId:$componentId,teamId:$teamId,getComponentDto:{getDocument:"true"}){id componentType title keyNumber description createdAt updatedAt document{id HTMLContent tiptapDocumentId} startDate endDate estimate totalPriorityScore isDone isArchived status{id statusName statusType} componentMembers{id memberOrder teamMember{id status workspaceProfile{nickname status}}} componentLabels{id labelOrder label{id labelName}}}}`
 )
 
 func (r Reader) Whoami(ctx context.Context) (Identity, error) {
@@ -37,6 +37,9 @@ func (r Reader) Work(ctx context.Context, id, teamID string) (Work, error) {
 		return Work{}, err
 	}
 	if data.Component == nil || data.Component.ID != id {
+		return Work{}, ErrInvalidResponse
+	}
+	if data.Component.ComponentMembers == nil || data.Component.ComponentLabels == nil {
 		return Work{}, ErrInvalidResponse
 	}
 	return *data.Component, nil
