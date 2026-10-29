@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	protectedSessionVersion = "riido-cli-protected-session.v1"
+	protectedSessionVersion = "riido-cli-protected-session.v2"
+	protectedSessionV1      = "riido-cli-protected-session.v1"
 	protectedSessionLimit   = 32 << 10
 )
 
@@ -53,13 +54,21 @@ func decodeProtectedSession(raw []byte) (protectedSession, error) {
 		}
 		record.SchemaVersion = protectedSessionVersion
 	} else {
+		var version string
+		if json.Unmarshal(fields["schema_version"], &version) != nil || (version != protectedSessionV1 && version != protectedSessionVersion) {
+			return protectedSession{}, securecredential.ErrUnavailable
+		}
 		credentialFields, credentialErr := protectedObject(fields["credential"])
 		if !protectedFields(fields, "schema_version", "credential", "pending_link") || len(fields) != 3 || credentialErr != nil || !protectedFields(credentialFields, "session_id", "access_token", "refresh_token", "expires_at", "token_type", "scope") {
 			return protectedSession{}, securecredential.ErrUnavailable
 		}
 		if !bytes.Equal(bytes.TrimSpace(fields["pending_link"]), []byte("null")) {
 			pendingFields, pendingErr := protectedObject(fields["pending_link"])
-			if pendingErr != nil || !protectedFields(pendingFields, "resource", "client_id", "session_id", "key_fingerprint", "expected_device_id", "request_id", "recovery_secret") {
+			allowed := []string{"resource", "client_id", "session_id", "key_fingerprint", "expected_device_id", "request_id", "recovery_secret"}
+			if version == protectedSessionVersion {
+				allowed = append(allowed, "phase")
+			}
+			if pendingErr != nil || !protectedFields(pendingFields, allowed...) {
 				return protectedSession{}, securecredential.ErrUnavailable
 			}
 		}
@@ -68,6 +77,10 @@ func decodeProtectedSession(raw []byte) (protectedSession, error) {
 		if decoder.Decode(&record) != nil || decoder.Decode(new(any)) != io.EOF {
 			return protectedSession{}, securecredential.ErrUnavailable
 		}
+		if version == protectedSessionV1 && record.PendingLink != nil {
+			record.PendingLink.Phase = LinkPrepared
+		}
+		record.SchemaVersion = protectedSessionVersion
 	}
 	if !validProtectedSession(record) {
 		return protectedSession{}, securecredential.ErrUnavailable

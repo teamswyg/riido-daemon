@@ -15,6 +15,16 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
         return try registration.ensure()
     }
 
+    func existingKey(scope: InstallationScope) throws -> Data {
+        try scope.validate()
+        let context = installationContext()
+        defer { context.invalidate() }
+        let matches = try find(scope: scope, context: context)
+        if matches.isEmpty { throw HelperFailure.notFound }
+        guard matches.count == 1 else { throw HelperFailure.unavailable }
+        return try publicBytes(matches[0])
+    }
+
     private func create(scope: InstallationScope, context: LAContext) throws -> SecKey {
         var privateAttributes: [String: Any] = [
             kSecAttrIsPermanent as String: true,
