@@ -130,3 +130,15 @@ signature is not evidence of server approval or permission: the server checks
 device owner, immutable binding, consumption and current execution policy.
 The public link/daemon IPC consumers, actual signed-helper QA and deployment
 remain separate work; synthetic fixtures do not replace those acceptance gates.
+
+
+### Existing installation key lookup
+
+`installation-existing-key` accepts the same exact resource/client scope as `installation-key`,
+with interactive OS confirmation and live helper verification. It only queries an existing key
+and returns its public key/fingerprint. Missing or ambiguous keys fail closed; the operation never
+calls registration/ensure/create and has no credential read, signing, delete or replacement path.
+Older helpers reject the new operation and must not be retried through `installation-key`.
+This additive private opcode does not change existing response shapes or enable unsupported platforms.
+Explicit link preparation and proof-required signing can use it, while original receipt recovery
+must proceed without requiring a key lookup or a running daemon.

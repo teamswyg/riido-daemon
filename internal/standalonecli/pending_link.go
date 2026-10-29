@@ -28,10 +28,18 @@ func (LinkBinding) GoString() string { return "[redacted device link binding]" }
 
 // PendingLink is secret material. It only becomes usable after the complete
 // credential and pending record have been saved in the OS protected store.
+type LinkPhase string
+
+const (
+	LinkPrepared LinkPhase = "prepared"
+	LinkCreated  LinkPhase = "created"
+)
+
 type PendingLink struct {
 	LinkBinding
-	RequestID      string `json:"request_id"`
-	RecoverySecret string `json:"recovery_secret"`
+	Phase          LinkPhase `json:"phase,omitempty"`
+	RequestID      string    `json:"request_id"`
+	RecoverySecret string    `json:"recovery_secret"`
 }
 
 func (PendingLink) String() string   { return "[redacted pending device link]" }
@@ -53,7 +61,7 @@ func linkBindingID(value string) bool {
 }
 
 func (p PendingLink) valid() bool {
-	return p.LinkBinding.valid() && linkRandom(p.RequestID) && linkRandom(p.RecoverySecret)
+	return p.LinkBinding.valid() && linkRandom(p.RequestID) && linkRandom(p.RecoverySecret) && (p.Phase == LinkPrepared || p.Phase == LinkCreated)
 }
 
 func linkRandom(value string) bool {
@@ -80,7 +88,7 @@ func (s *ProtectedStore) BeginPendingLink(ctx context.Context, binding LinkBindi
 	if _, err = rand.Read(secret); err != nil {
 		return PendingLink{}, securecredential.ErrUnavailable
 	}
-	pending := PendingLink{LinkBinding: binding, RequestID: base64.RawURLEncoding.EncodeToString(requestID), RecoverySecret: base64.RawURLEncoding.EncodeToString(secret)}
+	pending := PendingLink{LinkBinding: binding, Phase: LinkPrepared, RequestID: base64.RawURLEncoding.EncodeToString(requestID), RecoverySecret: base64.RawURLEncoding.EncodeToString(secret)}
 	record.PendingLink = &pending
 	if err = s.saveRecord(ctx, record); err != nil {
 		return PendingLink{}, err
