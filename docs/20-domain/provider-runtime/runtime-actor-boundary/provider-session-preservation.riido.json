@@ -14,7 +14,11 @@
       "Adapters do not keep session id as hidden private memory; they emit it as a draft for ingest.",
       "Crash resume is recovered from the IR log plus provider session table.",
       "The minimal session table key is `(ProviderSessionID, RuntimeID)`.",
-      "Runtime eligibility, lease expiry, stale fingerprint, and task handoff are still owned by C5/C9."
+      "Runtime eligibility, lease expiry, stale fingerprint, and task handoff are still owned by C5/C9.",
+      "When Codex thread/resume reports an active writer for the requested native ID, the adapter validates that thread, imports completed external history, and uses the official thread/queue API. The supervisor-validated task working directory is carried explicitly in the queued prompt because the desktop may select a different cwd when opening a saved chat. The Codex desktop app remains the execution owner; Riido never forks, rewrites locks, or replaces its permissions or tools.",
+      "A stable clientUserMessageId identifies the Riido request. Queue recovery and result polling match this ID, never the latest turn or prompt text. Polling runs on the session actor through an optional provider protocol port; no driver goroutine mutates protocol state.",
+      "Disk-backed Codex reads can label a running turn interrupted. Shared-writer results require a completedAt timestamp as well as a terminal status. Only the matching request supplies live output and a terminal result; other completed messages enter the existing native-history import path.",
+      "Cancellation removes only this request's pending queue entry and waits for its acknowledgement within a bounded cleanup deadline. An already consumed request remains owned by the Codex app: Riido reports that execution must be stopped there and stops observing it. Unsupported queue APIs fail explicitly without creating another thread or retrying submission blindly."
     ]}
   ]
 }
