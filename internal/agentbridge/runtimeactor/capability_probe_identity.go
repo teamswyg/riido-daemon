@@ -7,7 +7,7 @@ import "github.com/teamswyg/riido-contracts/hostintegration"
 // executable, binary fingerprint, or version change.
 func retainCapabilityProbeIdentity(previous, observed Capability) Capability {
 	if observed.HealthStatus != hostintegration.ProviderHealthUnknown ||
-		(observed.DiagnosticCode != hostintegration.ProviderDiagnosticAuthProbeFailed && observed.DiagnosticCode != hostintegration.ProviderDiagnosticProbeFailed) ||
+		(observed.DiagnosticCode != hostintegration.ProviderDiagnosticAuthProbeFailed && observed.DiagnosticCode != hostintegration.ProviderDiagnosticProbeFailed && observed.DiagnosticCode != hostintegration.ProviderDiagnosticVersionProbeFailed) ||
 		previous.Provider != observed.Provider || previous.Executable != observed.Executable ||
 		previous.DetectedFingerprint != observed.DetectedFingerprint ||
 		(observed.Version != "" && previous.Version != observed.Version) || previous.CapabilityFingerprint == "" {

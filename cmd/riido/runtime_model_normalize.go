@@ -41,13 +41,15 @@ func markRuntimeModelDefault(models []runtimeactor.RuntimeModel, defaultID strin
 	if len(models) == 0 {
 		return nil
 	}
-	index := 0
+	index := -1
 	for i := range models {
 		models[i].IsDefault = false
 		if defaultID != "" && models[i].ModelID == defaultID {
 			index = i
 		}
 	}
-	models[index].IsDefault = true
+	if index >= 0 {
+		models[index].IsDefault = true
+	}
 	return models
 }

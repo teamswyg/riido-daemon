@@ -1,6 +1,7 @@
 package runtimeactor
 
 import (
+	"context"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -9,11 +10,13 @@ import (
 
 // Config configures a new Actor.
 type Config struct {
-	RuntimeID      string
-	Owner          string
-	DeviceName     string
-	Agents         []AgentStatus
-	Models         []RuntimeModel
+	RuntimeID  string
+	Owner      string
+	DeviceName string
+	Agents     []AgentStatus
+	Models     []RuntimeModel
+	// RefreshModels runs in the capability probe worker; empty results keep the last catalogue.
+	RefreshModels  func(context.Context, Capability) []RuntimeModel
 	Adapters       []agentbridge.Adapter
 	Process        process.Process
 	MaxConcurrent  int

@@ -20,6 +20,7 @@ type capabilityProbeResult struct {
 	generation  uint64
 	fingerprint string
 	capability  Capability
+	models      []RuntimeModel
 	err         error
 }
 
@@ -49,6 +50,9 @@ func (r *capabilityRefresh) start(a *Actor, adapter agentbridge.Adapter, capView
 		defer cancel()
 		capability, err := a.detectCapabilityAt(ctx, adapter, observedAt)
 		result := capabilityProbeResult{provider: capView.Provider, generation: probe.generation, fingerprint: probe.fingerprint, capability: capability, err: err}
+		if err == nil && capability.Available && a.cfg.RefreshModels != nil {
+			result.models = a.cfg.RefreshModels(ctx, capability)
+		}
 		select {
 		case r.results <- result:
 		case <-a.stoppedCh:
@@ -98,6 +102,9 @@ func (r *capabilityRefresh) finish(a *Actor, result capabilityProbeResult, caps 
 		}
 		blockRuntimeDriftedTasks(context.Background(), inFlight, observed)
 		caps[idx] = observed
+		if result.err == nil && len(result.models) > 0 {
+			a.cfg.Models = append([]RuntimeModel(nil), result.models...)
+		}
 		detectedAt[result.provider] = a.cfg.Now()
 	} else {
 		for _, reply := range probe.waiters {

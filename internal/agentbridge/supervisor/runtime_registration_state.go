@@ -1,6 +1,7 @@
 package supervisor
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
@@ -18,6 +19,9 @@ func runtimeRegistrationState(status runtimeactor.Status) string {
 		out.WriteByte('|')
 		out.WriteString(capability.Version)
 		out.WriteByte(';')
+	}
+	for _, model := range status.Models {
+		fmt.Fprintf(&out, "%q:%q:%t;", model.ModelID, model.Label, model.IsDefault)
 	}
 	return out.String()
 }

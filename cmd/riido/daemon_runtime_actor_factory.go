@@ -43,6 +43,7 @@ func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter ag
 		DeviceName:           settings.DeviceName,
 		Agents:               agents,
 		Models:               daemonRuntimeModels(adapter.Name()),
+		RefreshModels:        refreshDaemonRuntimeModels,
 		Adapters:             []agentbridge.Adapter{adapter},
 		Process:              processexec.New(),
 		MaxConcurrent:        settings.RuntimeMaxConcurrent,

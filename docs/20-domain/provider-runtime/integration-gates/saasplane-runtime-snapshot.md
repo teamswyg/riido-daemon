@@ -11,4 +11,6 @@ SaaS runtime snapshot reporting is a device-level full set, not a single-runtime
 - Provider capability changes are re-registered without a daemon restart and carry typed health plus bounded diagnostic codes that distinguish authentication, version, and capability probe failures.
 - A non-healthy provider never reports diagnostic_code=none; incomplete legacy observations are normalized to probe-failed before upload.
 - Raw provider stderr, executable paths, credentials, and environment values never enter runtime snapshot diagnostics.
+- CLI versions come from successful bounded version lines, with stdout/stderr separated. Failed probes carry finite diagnostics and may retain a prior version only when the executable fingerprint is unchanged. Heartbeat failures log only finite classification and HTTP status, never raw response bodies.
+- Model discovery refreshes in background probes and retains the previous catalogue on failure. Model changes are re-registered; only an explicitly observed provider default is marked as default.
 - The control-plane device projection response shape is still owned by `riido-control-plane`.

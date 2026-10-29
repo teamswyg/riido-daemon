@@ -45,9 +45,16 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		res.DiagnosticCode = hostintegration.ProviderDiagnosticAuthProbeFailed
 		res.Reason = "provider authentication probe did not complete"
 	}
-	if v, ok := detectutil.VersionProbe(ctx, exe, "--version"); ok {
+	if v, reason := detectutil.CLIVersionProbe(ctx, exe); reason == "" {
 		res.Version = v
 		res.Metadata["raw_version"] = v
+	} else {
+		res.Metadata["version_probe"] = reason
+		if res.HealthStatus == hostintegration.ProviderHealthHealthy {
+			res.HealthStatus = hostintegration.ProviderHealthUnknown
+			res.DiagnosticCode = hostintegration.ProviderDiagnosticVersionProbeFailed
+			res.Reason = reason
+		}
 	}
 	return res, nil
 }
