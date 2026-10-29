@@ -9,7 +9,7 @@
     {"kind": "bullets", "items": [
       "The local daemon exposes status, health, ready, and metrics JSON on the local IPC endpoint.",
       "It owns lifecycle wiring, runtime actor startup, and local socket readiness.",
-      "Foreground startup and singleton-lock tests pin provider executables to missing fixture paths, keeping lifecycle assertions independent of installed external CLI authentication and discovery. Provider connectivity remains separately tested.",
+      "Foreground startup, background start/logging, status/health/ready/metrics and singleton-lock tests pin provider executables to missing fixture paths, keeping lifecycle assertions independent of installed external CLI authentication and discovery. Existing readiness deadlines remain unchanged. Provider connectivity remains separately tested.",
       "Provider CLI bundling, server HTTP/SSE, Terraform/AWS/deploy evidence, and private machine state remain outside this context."
     ]}
   ]

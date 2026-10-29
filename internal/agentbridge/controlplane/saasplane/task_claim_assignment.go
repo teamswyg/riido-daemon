@@ -20,8 +20,11 @@ func (p *Plane) claimStartOrActiveAssignment(
 	if poll.Action == assignmentcontract.PollActive && assignmentResumeSessionID(assignment) == "" {
 		return nil, nil
 	}
-	if err := p.saveAssignmentRuntime(ctx, assignment, runtimeID); err != nil {
+	scope, err := p.saveClaimRuntime(ctx, assignment, runtimeID, poll.Action == assignmentcontract.PollStart)
+	if err != nil {
 		return nil, err
 	}
-	return taskRequestFromAssignment(assignment), nil
+	req := taskRequestFromAssignment(assignment)
+	req.LocalExecutionScope = scope
+	return req, nil
 }

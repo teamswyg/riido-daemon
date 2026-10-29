@@ -27,8 +27,15 @@ func (a *Actor) beginExecutionVerification(task *runningTask, res agentbridge.Re
 	// Verification owns only immutable workspace references and its cancellation
 	// context. The supervisor remains the sole owner of task lifecycle state.
 	snapshot := &runningTask{ctx: task.ctx, execution: task.execution, workspace: task.workspace}
+	work, admissionErr := beginClaimHostWork(task.ctx)
 	go func() {
-		result, evidence := verifyExecutionResult(task.ctx, snapshot, res)
+		result, evidence := res, execution.Evidence{}
+		if admissionErr != nil {
+			result.Status, result.Error = agentbridge.ResultCancelled, "Execution verification was not admitted"
+		} else {
+			result, evidence = verifyExecutionResult(task.ctx, snapshot, res)
+		}
+		work.Finished()
 		select {
 		case a.mailbox <- envelope{taskVerification: &taskVerificationMsg{task: task, result: result, evidence: evidence}}:
 		case <-a.stoppedCh:

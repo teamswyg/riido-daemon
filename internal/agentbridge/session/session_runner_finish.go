@@ -1,9 +1,8 @@
 package session
 
 func (r *sessionRunner) finish() {
-	_ = killProcess(r.ctx, r.proc, r.cfg.ProcessKillTimeout)
-	drain(r.stdoutCh)
-	drain(r.stderrCh)
+	r.sess.childExitObserved = r.finishProcess()
+	r.sess.claimAttempt.Exited(r.sess.childExitObserved)
 	for _, ev := range cleanupTempFiles(r.cfg.TempFiles) {
 		r.emit(ev)
 	}

@@ -4,14 +4,22 @@
 
 [Back to CLI Surface SSOT](../cli-surface.md)
 
-| Command group | Backing owner | Boundary |
-| --- | --- | --- |
-| `riido serve` | internal/riidoapi | local IPC server over Unix socket or Windows named pipe |
-| `riido api ...` | internal/riidoapi | local IPC client for guarded task and status APIs |
-| `riido mwsd ...` | internal/mwsdbridge, internal/project, internal/taskdb | reads MWSD snapshots and promotes local workspace/task projections |
-| `riido task ...` | internal/taskdb, internal/validation | local guarded task mutation, evidence, and validation over JSON task DB |
-| `riido bridge ...` | provider adapter packages | provider list/detect smoke surface without executing provider tasks |
-| `riido version` | cmd/riido release artifact identity | binary release tag evidence without daemon IPC |
-| `riido daemon ...` | internal/agentbridge/runtimeactor, supervisor, control-plane adapters | local runtime lifecycle, health, readiness, metrics, stop, and logs |
+| Command group | Root help | Backing owner | Boundary |
+| --- | --- | --- | --- |
+| `riido work ...` | public | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener |
+| `riido context ...` | public | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work |
+| `riido meeting ...` | public | cmd/riido, internal/contextcli | lists connected meeting metadata or reads a captured meeting document within the assignment snapshot through the run-authorized daemon broker |
+| `riido agents ...` | public | cmd/riido, internal/contextcli | lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent |
+| `riido auth ...` | public | cmd/riido, internal/contextcli | user-mode sign-in state; never accepts secrets as arguments and never prints credentials |
+| `riido whoami` | public | cmd/riido, internal/contextcli | reports the acting principal, workspace, and mode without printing secrets |
+| `riido doctor` | public | cmd/riido, internal/contextcli | local installation, PATH, helper and API-origin diagnosis without protected-storage access; user --check-api explicitly verifies Whoami, while agent mode preserves IPC diagnosis and returns unsupported exit 8 for --check-api |
+| `riido capabilities` | public | cmd/riido, internal/contextcli | static description of CLI, envelope, and IPC schema versions plus command availability |
+| `riido serve` | public | internal/riidoapi | local IPC server over Unix socket or Windows named pipe |
+| `riido api ...` | public | internal/riidoapi | local IPC client for guarded task and status APIs |
+| `riido mwsd ...` | internal | internal/mwsdbridge, internal/project, internal/taskdb | reads MWSD snapshots and promotes local workspace/task projections |
+| `riido task ...` | public | internal/taskdb, internal/validation | local guarded task mutation, evidence, and validation over JSON task DB |
+| `riido bridge ...` | internal | provider adapter packages | provider list/detect smoke surface without executing provider tasks |
+| `riido version` | public | cmd/riido release artifact identity | binary release tag evidence without daemon IPC |
+| `riido daemon ...` | internal | internal/agentbridge/runtimeactor, supervisor, control-plane adapters | local runtime lifecycle, health, readiness, metrics, stop, and logs |
 
 `printUsage()` in `cmd/riido/main.go` is the executable usage matrix. This document describes command ownership; it does not replace usage text.

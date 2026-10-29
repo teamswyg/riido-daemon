@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/process"
 )
 
@@ -17,13 +18,24 @@ func Start(ctx context.Context, cfg Config) (*Session, error) {
 		return nil, err
 	}
 	cfg = defaultSessionConfig(cfg)
+	var attempt *executionproof.Attempt
+	if scope := executionproof.ScopeFromContext(ctx); scope != nil {
+		var err error
+		attempt, err = scope.Tracker().BeginInvocation()
+		if err != nil {
+			return nil, fmt.Errorf("session: claim admission: %w", err)
+		}
+	}
 	runCtx, stop := context.WithCancelCause(ctx)
 	running, err := cfg.Process.Start(runCtx, cfg.Spawn)
 	if err != nil {
+		attempt.StartUnknown()
 		stop(err)
 		return nil, fmt.Errorf("session: process start: %w", err)
 	}
+	attempt.Started()
 	sess := newSessionHandle(cfg, running)
+	sess.claimAttempt = attempt
 	sess.stop = stop
 	var deadline *time.Timer
 	if cfg.HardTimeout > 0 {

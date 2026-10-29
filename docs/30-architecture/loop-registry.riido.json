@@ -969,6 +969,16 @@
             "AssignmentFailureCategory",
             "provider_limit"
           ]
+        },
+        {
+          "name": "needs-input-claim-termination-test",
+          "file": "internal/agentbridge/controlplane/saasplane/claim_termination_boundaries_test.go",
+          "contains": [
+            "TestTerminationNeedsUserInputDoesNotCloseClaim",
+            "AssignmentRunning",
+            "PollActive",
+            "resumed scope invented earlier coverage"
+          ]
         }
       ]
     },
@@ -1101,7 +1111,7 @@
     },
     {
       "id": "claude_daemon_must_use_web_approval_mode",
-      "text": "Claude daemon runs must start in provider approval mode, not acceptEdits or bypassPermissions, so provider permission requests can be represented as SaaS/web tool approvals instead of leaking local desktop approval dialogs into AI thread text.",
+      "text": "Claude daemon runs must start in provider approval mode, not acceptEdits or bypassPermissions, so provider permission requests can be represented as SaaS/web tool approvals instead of leaking local desktop approval dialogs into AI thread text. When the context CLI launch capability is present, only the five supported snapshot-read command leaves may be auto-approved through native allowedTools rules; other tools retain the approval path.",
       "files": [
         "cmd/riido/bridge_adapter_claude.go",
         "cmd/riido/bridge_adapter_claude_mcp.go",
@@ -1118,14 +1128,18 @@
         "internal/provider/claude/provider_input.go",
         "internal/agentbridge/session/session_tool_approval_resolver.go",
         "internal/agentbridge/controlplane/saasplane/tool_approval_authorizer.go",
-        "internal/agentbridge/controlplane/saasplane/tool_approval.go"
+        "internal/agentbridge/controlplane/saasplane/tool_approval.go",
+        "internal/provider/claude/context_cli_args.go",
+        "cmd/riido/bridge_adapter_claude_context_cli_test.go"
       ],
       "docs": [
         "docs/30-architecture/local-acceptance-coverage.riido.json",
         "docs/30-architecture/local-qa-candidate-decision.riido.json",
         "docs/30-architecture/product-loop-evidence.riido.json",
         "docs/30-architecture/loop-registry.riido.json",
-        "docs/30-architecture/loop-registry.md"
+        "docs/30-architecture/loop-registry.md",
+        "docs/30-architecture/cli-surface.riido.json",
+        "docs/30-architecture/agent-task-context.riido.json"
       ],
       "evidence": [
         "staging.v3.thread_history.asn-000121-123.no_tool_approval_create",
@@ -1136,7 +1150,8 @@
         "daemon_tool_approval_authorizes_assignment_before_saas_resolution",
         "product_loop.provider_approval_round_trip",
         "provider_input_control_response",
-        "web_tool_approval_round_trip"
+        "web_tool_approval_round_trip",
+        "context_cli_supported_snapshot_read_leaves_only"
       ],
       "verifiers": [
         {
@@ -1211,12 +1226,20 @@
             "provider_approval_round_trip",
             "provider.claude.web_approval_round_trip"
           ]
+        },
+        {
+          "name": "claude-context-cli-read-allowlist-test",
+          "file": "cmd/riido/bridge_adapter_claude_context_cli_test.go",
+          "contains": [
+            "TestClaudeContextCLIAllowsOnlySupportedReadLeaves",
+            "TestClaudeContextCLIIncompleteWiringKeepsPriorPermissionArgs"
+          ]
         }
       ]
     },
     {
       "id": "daemon_local_ipc_must_match_host_transport",
-      "text": "Daemon lifecycle, status, shutdown, tool-approval IPC, local API, and default local paths must match the host: Unix sockets and Application Support roots on Darwin/Linux, and local-only named pipes plus LocalAppData workdirs on Windows. Windows clients must retry the pre-Accept file-not-found startup window, named-pipe closure conditions must surface as EOF after a complete response, and a native Windows daemon status round trip must pass, so desktop health checks and direct CLI recovery cannot create a daemon restart loop, reject a valid response, or select an unsupported transport.",
+      "text": "Daemon lifecycle, status, shutdown, tool-approval IPC, local API, and default local paths must match the host: Unix sockets and Application Support roots on Darwin/Linux, and local-only named pipes plus LocalAppData workdirs on Windows. Windows clients must retry the pre-Accept file-not-found startup window, named-pipe closure conditions must surface as EOF after a complete response, and a native Windows daemon status round trip must pass, so desktop health checks and direct CLI recovery cannot create a daemon restart loop, reject a valid response, or select an unsupported transport. The compiled context CLI child must round-trip all supported read leaves through native IPC and the real broker with synthetic fixtures, rejecting mismatched, uncertain and ended runs without leaking capabilities; this is separate from provider or Desktop acceptance.",
       "files": [
         "cmd/riido/api_connection_config.go",
         "cmd/riido/api_connection_config_test.go",
@@ -1239,11 +1262,16 @@
         "internal/riidoapi/local_transport_windows_dial.go",
         "internal/riidoapi/local_transport_windows_native.go",
         ".github/workflows/riidoapi.yml",
-        "internal/riidoapi/local_transport_windows_conn.go"
+        "internal/riidoapi/local_transport_windows_conn.go",
+        "cmd/riido/daemon_ipc_context_native_integration_test.go",
+        "cmd/riido/daemon_ipc_context_native_fixture_test.go",
+        "cmd/riido/daemon_ipc_context_rate_limit_test.go"
       ],
       "docs": [
         "docs/30-architecture/loop-registry.riido.json",
-        "docs/30-architecture/loop-registry.md"
+        "docs/30-architecture/loop-registry.md",
+        "docs/20-domain/distribution-host-integration/local-ipc/windows-msix-strategy.riido.json",
+        "docs/20-domain/distribution-host-integration/local-ipc/windows-msix-strategy.md"
       ],
       "evidence": [
         "production.windows_daemon.restart_loop_47_pids_29m",
@@ -1251,7 +1279,9 @@
         "windows_native.named_pipe.daemon_status_round_trip",
         "daemon_local_ipc_transport_regression",
         "local_api_host_defaults_regression",
-        "TestWindowsNamedPipeClosePreservesBufferedResponse"
+        "TestWindowsNamedPipeClosePreservesBufferedResponse",
+        "TestContextCLINativeIPCRoundTrip",
+        "TestContextCLINativeIPCRoundTripRateLimit"
       ],
       "verifiers": [
         {
@@ -1313,6 +1343,34 @@
           "contains": [
             "TestWindowsNamedPipeClosePreservesBufferedResponse",
             "io.ReadAll"
+          ]
+        },
+        {
+          "name": "context-cli-native-broker-round-trip",
+          "file": "cmd/riido/daemon_ipc_context_native_integration_test.go",
+          "contains": [
+            "TestContextCLINativeIPCRoundTrip",
+            "PERMISSION_DENIED",
+            "OUT_OF_RUN_SCOPE"
+          ]
+        },
+        {
+          "name": "context-cli-native-rate-limit-round-trip",
+          "file": "cmd/riido/daemon_ipc_context_rate_limit_test.go",
+          "contains": [
+            "TestContextCLINativeIPCRoundTripRateLimit",
+            "CodeRateLimited",
+            "env.Error.Retryable"
+          ]
+        },
+        {
+          "name": "windows-context-cli-native-workflow",
+          "file": ".github/workflows/riidoapi.yml",
+          "contains": [
+            "TestContextCLINativeIPCRoundTrip",
+            "internal/contextcli/**",
+            "internal/contextbroker/**",
+            "cmd/riido/**"
           ]
         }
       ]
@@ -1423,6 +1481,16 @@
             "TestNativeSessionBindingSurvivesAdapterRestart",
             "TestNativeSessionBindingCannotBeReassigned",
             "TestNativeSessionBindingRejectsCorruptionAndTraversal"
+          ]
+        },
+        {
+          "name": "claim-termination-preserves-current-owner-test",
+          "file": "internal/agentbridge/controlplane/saasplane/claim_termination_boundaries_test.go",
+          "contains": [
+            "TestTerminationOldEpochDoesNotClearNewClaim",
+            "TestTerminationBindingDoesNotKeepToolAuthorityAfterCleanup",
+            "TestTerminationReceiptRetryDoesNotDependOnCurrentEpoch",
+            "old completion changed current claim"
           ]
         }
       ]

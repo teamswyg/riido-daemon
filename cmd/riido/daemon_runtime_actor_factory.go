@@ -1,6 +1,7 @@
 package main
 
 import (
+	"os"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -36,6 +37,14 @@ func newDaemonRuntimeActorForAdapter(settings daemonSettings, adapter agentbridg
 }
 
 func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter agentbridge.Adapter, agents []runtimeactor.AgentStatus, resolver agentbridge.ToolApprovalResolver) (*runtimeactor.Actor, error) {
+	cliExecutable := ""
+	if settings.contextBroker != nil {
+		var err error
+		cliExecutable, err = os.Executable()
+		if err != nil {
+			return nil, daemonWrapf(ErrDaemonRuntime, "runtime.context-cli-executable", err, "resolve daemon executable")
+		}
+	}
 	return runtimeactor.New(runtimeactor.Config{
 		RuntimeID:   runtimeID,
 		HardTimeout: settings.RunHardTimeout, SemanticIdle: settings.RunSemanticIdle,
@@ -52,5 +61,7 @@ func newDaemonRuntimeActor(settings daemonSettings, runtimeID string, adapter ag
 		ToolApprovalGate:     daemonToolApprovalGate(settings),
 		ToolApprovalResolver: resolver,
 		PolicyBundleVersion:  settings.PolicyBundle,
+		LaunchEnv:            daemonContextLaunchEnv(settings.contextBroker),
+		ContextCLIExecutable: cliExecutable,
 	})
 }

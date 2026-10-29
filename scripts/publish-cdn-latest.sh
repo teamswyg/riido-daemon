@@ -23,7 +23,7 @@ sha256_value() {
 
 check_asset() {
   asset="$1"
-  path="$dist/$asset"
+  path="$(cd "$dist" && pwd)/$asset"
   [ -f "$path" ] || fail "missing CDN asset: $path"
   [ "$asset" = "SHA256SUMS" ] && return
   expected="$(awk -v a="$asset" '$2 == a {print $1}' "$dist/SHA256SUMS")"
@@ -45,6 +45,14 @@ check_asset() {
   if [ -n "${RIIDO_RELEASE_TAG:-}" ] && [ "$version" != "$RIIDO_RELEASE_TAG" ]; then
     fail "$asset VERSION=$version does not match RIIDO_RELEASE_TAG=$RIIDO_RELEASE_TAG"
   fi
+  case "$asset" in
+    riido-daemon_darwin_*.tar.gz)
+      arch="${asset#riido-daemon_darwin_}"
+      arch="${arch%.tar.gz}"
+      repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+      (cd "$repo_root" && go run ./tools/clihelperpackage -archive "$path" -version "$version" -arch "$arch")
+      ;;
+  esac
 }
 
 verify_assets() {

@@ -21,9 +21,9 @@ func renderCommandFence(b *strings.Builder, items []string) {
 }
 
 func renderSimpleCommandGroups(b *strings.Builder, groups []CommandGroup) {
-	b.WriteString("| Command group | Backing owner | Boundary |\n| --- | --- | --- |\n")
+	b.WriteString("| Command group | Root help | Backing owner | Boundary |\n| --- | --- | --- | --- |\n")
 	for _, group := range groups {
-		fmt.Fprintf(b, "| `riido %s%s` | %s | %s |\n", group.Name, subcommandEllipsis(group), group.Owner, group.Boundary)
+		fmt.Fprintf(b, "| `riido %s%s` | %s | %s | %s |\n", group.Name, subcommandEllipsis(group), group.RootHelp, group.Owner, group.Boundary)
 	}
 	b.WriteByte('\n')
 }

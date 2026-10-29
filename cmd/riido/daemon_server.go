@@ -31,6 +31,11 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	toolApprovalResolver := daemonToolApprovalResolver(taskReporter)
 	toolApprovalAuthorizer := daemonToolApprovalAuthorizer(taskReporter)
 
+	if settings.ContextCLI {
+		settings.contextBroker = newDaemonContextBroker(flags.socket)
+		settings.contextBroker.Fetcher = daemonContextFetcher(taskReporter)
+		log.Printf("context CLI broker enabled assignment_snapshot=%t", settings.contextBroker.Fetcher != nil)
+	}
 	rtActors, err := startDaemonRuntimeActors(ctx, settings, taskReporter, flags.socket, log)
 	if err != nil {
 		return err

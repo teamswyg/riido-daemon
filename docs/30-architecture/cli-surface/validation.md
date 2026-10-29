@@ -11,6 +11,8 @@ go test ./...
 go build -o /tmp/riido ./cmd/riido
 go run ./cmd/riido --help
 go run ./cmd/riido bridge providers
+go run ./cmd/riido capabilities --json
+go run ./cmd/riido doctor --json
 ```
 
 Commands that require a running daemon, mwsd socket, provider CLI, or local app state should have explicit skip conditions in tests.

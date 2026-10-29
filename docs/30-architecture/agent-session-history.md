@@ -13,6 +13,8 @@ and host execution binding. The SaaS source copies its stable Agent ID into
 the provider-neutral `controlplane.MetadataAgentID`; SaaS report-routing keys
 remain separate. Prompts, replies, credentials and environment values
 are not stored in this index. Existing run IR remains the execution history.
+Resumed sessions and the repository preparation they reuse start from the scrubbed
+child environment (RIID-5900), so the device credential never reaches a native session.
 
 A known resumed session reuses its original working directory (and therefore its
 native CLI project history/config home), while each new run keeps its own event,

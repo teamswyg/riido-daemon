@@ -39,6 +39,7 @@ Keeps the public riido-daemon env and flag catalog generated from a manifest and
 | `RIIDO_RUNTIME_MAX_CONCURRENT` | runtime actor slot pool | 4 | max concurrent sessions per provider |
 | `RIIDO_WORKDIR_ROOT` | supervisor and workdir FS adapter | C11 app data root | isolated run workdir root |
 | `RIIDO_POLICY_BUNDLE_VERSION` | config/runtime/workdir | policy-bundle.local.v0 | active policy version |
+| `RIIDO_CONTEXT_CLI` | work-context CLI broker | off | on/off or boolean; on injects a per-run capability, socket, task/workspace ids, and PATH into provider runs and answers context_read IPC |
 | `RIIDO_POLICY_BUNDLE_PATH` | policy loader | empty | optional riido-policy-bundle.v1 file |
 | `RIIDO_TASK_QUEUE_DIR` | file queue source | empty | provider-neutral task JSON files |
 | `RIIDO_TASK_REPORT_DIR` | file reporter | RIIDO_TASK_QUEUE_DIR/reports | JSONL report output |

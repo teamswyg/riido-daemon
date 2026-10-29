@@ -11,6 +11,14 @@ const (
 	mainCommandClaudePermissionMCP mainCommand = "claude-permission-mcp"
 	mainCommandDaemon              mainCommand = "daemon"
 	mainCommandVersion             mainCommand = "version"
+	mainCommandWork                mainCommand = "work"
+	mainCommandContext             mainCommand = "context"
+	mainCommandAgents              mainCommand = "agents"
+	mainCommandMeeting             mainCommand = "meeting"
+	mainCommandAuth                mainCommand = "auth"
+	mainCommandWhoami              mainCommand = "whoami"
+	mainCommandDoctor              mainCommand = "doctor"
+	mainCommandCapabilities        mainCommand = "capabilities"
 )
 
 type daemonCommand string
@@ -37,6 +45,7 @@ const (
 	daemonMethodMetrics                daemonMethod = "metrics"
 	daemonMethodShutdown               daemonMethod = "shutdown"
 	daemonMethodToolApproval           daemonMethod = "tool_approval"
+	daemonMethodContextRead            daemonMethod = "context_read"
 )
 
 type taskCommand string

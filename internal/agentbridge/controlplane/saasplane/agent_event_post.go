@@ -19,6 +19,14 @@ func (p *Plane) postAgentEvent(
 	if err != nil {
 		return out, err
 	}
+	binding, err := p.claimBinding(ctx, assignmentExecutionID(assignment))
+	if err != nil {
+		return out, err
+	}
+	if binding != nil {
+		req.DeviceID, req.DaemonID = binding.deviceID, binding.daemonID
+		runtimeID = binding.runtimeID
+	}
 	req.RuntimeID = runtimeID
 	req.Metadata, err = p.assignmentEventMetadata(ctx, assignment, req.Metadata)
 	if err != nil {
@@ -28,7 +36,7 @@ func (p *Plane) postAgentEvent(
 	if err == nil {
 		err = p.withState(ctx, func(s *planeState) {
 			current, ok := s.assignmentsByExecution[assignmentExecutionID(assignment)]
-			if !ok {
+			if !ok || current.ID != assignment.ID || current.LeaseToken != assignment.LeaseToken || !currentClaimScope(ctx, s, assignmentExecutionID(assignment)) {
 				return
 			}
 			if req.EventType == assignmentcontract.EventAssignmentWaitingForUser {

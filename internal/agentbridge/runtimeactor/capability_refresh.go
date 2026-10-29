@@ -30,6 +30,7 @@ func (a *Actor) detectCapabilityAt(ctx context.Context, adapter agentbridge.Adap
 }
 
 func capabilityWithProbeFailure(capability Capability) Capability {
+	capability.Available = false
 	capability.Reason = capabilityProbeFailedReason
 	capability.HealthStatus = hostintegration.ProviderHealthUnknown
 	capability.DiagnosticCode = hostintegration.ProviderDiagnosticProbeFailed

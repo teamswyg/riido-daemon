@@ -16,7 +16,12 @@ func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignment
 		return nil
 	}
 	var body string
+	accepted := false
 	if err := p.withState(ctx, func(s *planeState) {
+		if !currentClaimScope(ctx, s, executionID) {
+			return
+		}
+		accepted = true
 		st := s.partialBodies[executionID]
 		if st == nil {
 			st = &partialBodyState{}
@@ -31,6 +36,9 @@ func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignment
 	}); err != nil {
 		return err
 	}
+	if !accepted {
+		return nil
+	}
 	// A confirmation transition can fail too. Keep the text so the next
 	// snapshot or terminal result still contains this first fragment.
 	if assignment.ConfirmationReason != "" {
@@ -42,6 +50,9 @@ func (p *Plane) accumulatePartialBody(ctx context.Context, assignment assignment
 		return err
 	}
 	return p.withState(ctx, func(s *planeState) {
+		if !currentClaimScope(ctx, s, executionID) {
+			return
+		}
 		st := s.partialBodies[executionID]
 		if st != nil && st.firstDeliveredAt.IsZero() && strings.TrimSpace(body) != "" {
 			st.firstDeliveredAt = time.Now()

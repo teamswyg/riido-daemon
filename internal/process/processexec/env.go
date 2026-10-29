@@ -1,15 +1,16 @@
 package processexec
 
 import (
-	"os"
 	"strings"
+
+	"github.com/teamswyg/riido-daemon/internal/process/childenv"
 )
 
+// mergeEnv returns the child environment: the daemon environment without
+// daemon-only secrets, with caller overrides applied. It always returns an
+// explicit list so a nil result can never fall back to full inheritance.
 func mergeEnv(overrides []string) []string {
-	if len(overrides) == 0 {
-		return nil
-	}
-	env := os.Environ()
+	env := childenv.Environ()
 	indexByKey := make(map[string]int, len(env)+len(overrides))
 	for i, entry := range env {
 		key, _, ok := strings.Cut(entry, "=")
@@ -17,7 +18,7 @@ func mergeEnv(overrides []string) []string {
 			indexByKey[key] = i
 		}
 	}
-	for _, entry := range overrides {
+	for _, entry := range childenv.Scrub(overrides) {
 		key, _, ok := strings.Cut(entry, "=")
 		if !ok {
 			continue

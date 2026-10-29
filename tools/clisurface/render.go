@@ -21,10 +21,10 @@ func renderMarkdown(manifest Manifest) string {
 
 func renderCommandGroups(b *strings.Builder, groups []CommandGroup) {
 	b.WriteString("## Command Groups\n\n")
-	b.WriteString("| Group | Subcommands | Owner | Boundary | Evidence |\n| --- | --- | --- | --- | --- |\n")
+	b.WriteString("| Group | Root help | Subcommands | Owner | Boundary | Evidence |\n| --- | --- | --- | --- | --- | --- |\n")
 	for _, group := range groups {
-		fmt.Fprintf(b, "| `%s` | %s | %s | %s | %s |\n",
-			group.Name, codeList(group.Subcommands), group.Owner, group.Boundary, codeList(group.SourceChecks))
+		fmt.Fprintf(b, "| `%s` | %s | %s | %s | %s | %s |\n",
+			group.Name, group.RootHelp, codeList(group.Subcommands), group.Owner, group.Boundary, codeList(group.SourceChecks))
 	}
 	b.WriteByte('\n')
 }

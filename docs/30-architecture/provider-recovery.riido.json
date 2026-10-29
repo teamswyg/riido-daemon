@@ -58,5 +58,5 @@
     "evaluate": "Require bounded attempts/deadline/scope count, unchanged workspace and original lease; reject any replay after dispatch.",
     "retrospective": "Only the tested pre-dispatch subset is implemented. Real account/model behavior and post-dispatch repair remain independent evidence."
   },
-  "verification_fixture_synchronization": "Recovery cancellation acceptance waits for cancellation-watch registration and holds the first backoff journal boundary until cancellation is observed. Buffered progress is not a current-state barrier. The timer wait cancellation is tested separately; production recovery timing and retry limits are unchanged."
+  "verification_fixture_synchronization": "Recovery cancellation acceptance waits for cancellation-watch registration and holds the first backoff journal boundary until cancellation is observed. Buffered progress is not a current-state barrier. The timer wait cancellation is tested separately; production recovery timing and retry limits are unchanged. Fallback ownership assertions wait for the supervisor Running lifecycle event: a child spawn notification may arrive before the claim wave returns and publishes its ownership snapshot. The Running event is emitted only after that publication; the original runtime ownership assertion remains unchanged."
 }

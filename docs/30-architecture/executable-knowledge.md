@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 86 |
+| Generated reader docs | 87 |
 | Direct SSOT docs | 6 |
 | Registered manual docs | 0 |
-| Scanned docs | 92 |
+| Scanned docs | 93 |
 
 ## Generated Reader Origins
 
@@ -20,7 +20,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/storedistributiondocs -write-doc` | 15 | `docs/30-architecture/store-distribution.md`<br>`docs/30-architecture/store-distribution/architecture.md`<br>`docs/30-architecture/store-distribution/architecture/decisions.md` |
 | `go run ./tools/agentexecutiondesign -write-doc` | 14 | `docs/30-architecture/agent-execution-unresolved-design.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md` |
 | `go run ./tools/configreference -write-doc` | 11 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
-| `go run ./tools/clisurface -write-doc` | 7 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
+| `go run ./tools/clisurface -write-doc` | 8 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
 | `go run ./tools/figmaboundarydocs -write-doc` | 7 | `docs/30-architecture/figma-ai-agent-daemon-boundary.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md` |
 | `go run ./tools/integrationmatrix -write-doc` | 6 | `docs/30-architecture/integration-matrix.md`<br>`docs/30-architecture/integration-matrix/assertions.md`<br>`docs/30-architecture/integration-matrix/change-procedure.md` |
 | `go run ./tools/moduledecomposition -write-doc` | 6 | `docs/30-architecture/module-decomposition.md`<br>`docs/30-architecture/module-decomposition/12-factor-boundary.md`<br>`docs/30-architecture/module-decomposition/change-procedure.md` |

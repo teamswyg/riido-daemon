@@ -92,6 +92,36 @@ verification and provider outage self-recovery is not claimed.
 
 The contracts [Provider recovery design](https://github.com/teamswyg/riido-contracts/blob/main/docs/20-domain/provider-recovery.md) defines the target recovery hierarchy; RIID-5820 did not implement provider failover. The subsequent [RIID-5822/5823 runtime](provider-recovery.md) implements only explicitly authorized pre-dispatch handoff and finite known-not-started retry; blind replay remains prohibited. Host-only execution binding configuration owns exact workspace/task repository paths and verification argv. Atomic local updates affect subsequent executions; each preparation captures an immutable binding and resumed sessions retain their scope checks. Local IPC observations expose the actual execution directory to the host. SaaS receives only bounded workspace kind, verification status, diagnostic code and next action. Absolute paths, commands and credentials are not shared diagnostics. A provider-reported completion without a host check stays `not_configured`, not `passed`. Stop/cancel, timeout, preparation, native-session and verification failures carry distinct codes rather than inferred authentication failures.
 
+Repository preparation (`git clone`, remote removal) and verification checks run with `childenv.Environ()` (RIID-5900): the daemon's device credential (`RIIDO_DEVICE_SECRET`, `RIIDO_SAAS_TOKEN`, `RIIDO_TOKEN`) is removed from every child environment, so a correction or resumed run cannot read it either.
+
 원본 저장소만 선택한 binding은 검증 없이 clone에서 실행한다. changed_files와 checks는 둘 다 비우거나 둘 다 설정해야 한다. 폴더만 설정한 완료는 not_configured이며 호스트 검사 통과가 아니다.
 
 Windows 로컬 IPC는 연결마다 새 named-pipe handle을 사용한다. 응답 후 CloseHandle만 수행해 client가 buffered response를 끝까지 읽게 하고, 재사용하지 않는 handle에 DisconnectNamedPipe를 먼저 호출해 unread data를 버리지 않는다. flush로 미읽기 client를 무한 대기하지 않는다. 근거: [DisconnectNamedPipe](https://learn.microsoft.com/en-us/windows/win32/api/namedpipeapi/nf-namedpipeapi-disconnectnamedpipe), [FILE_PIPE_CLOSING_STATE](https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-fscc/6b6c8b8b-c5ac-4fa5-9182-619459fce7c7).
+
+## Local claim termination observation (RIID-5900)
+
+Fresh device-authenticated `PollStart` owns a private, process-local scope. Repeated
+polls of the same epoch retain that scope; recovered `PollActive` and restart do
+not recreate missing coverage. Each provider `Process.Start` reserves admission
+before it runs, including starts whose Submit reply is lost. The core's direct
+child Wait observation completes that admission before publishing Result.
+Preparation, host verification, and correction workers reserve work before launch
+and release it before their completion notification. Only successful provider
+starts contribute to `started_invocations`.
+
+Terminal sealing rejects new work and freezes unknown when any observation or
+worker is missing. Neither a later successful Session nor a late worker can
+upgrade it. The supervisor carries the source binding and aggregate in private
+context; public Result/event metadata cannot supply proof. Unknown observations
+complete ordinary business processing without a new outbox.
+
+The original claim binding freezes the terminal payload and event key. Until its
+ACK is confirmed, retries send that exact terminal event. After a confirmed ACK,
+only the device-authenticated termination receipt is retried, with the original
+assignment and lease even if a new epoch is now running. Cleanup and text fallback
+must not touch that new epoch. `needs_user_input` remains Running and sends no
+receipt; its resumed Active scope can execute but stays uncovered. An older
+control plane's exact receipt-route 404/405 is unsupported/unknown and does not
+block an already acknowledged business terminal. Other transport/status/ACK
+failures retain the existing retry. This observation proves neither remote
+provider completion nor OS descendant termination, and grants no CLI permission.

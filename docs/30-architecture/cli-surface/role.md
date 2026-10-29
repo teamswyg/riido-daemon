@@ -11,6 +11,7 @@ The CLI may:
 - read/write local JSON state through guarded adapters
 - open local IPC transports only
 - emit JSON for shell/operator automation
+- emit the versioned work-context JSON envelope (`riido work`, `riido context`, `riido agents`, `riido auth`, `riido whoami`, `riido doctor`, `riido capabilities`)
 
 The CLI must not:
 

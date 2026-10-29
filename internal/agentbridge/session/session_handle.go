@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/process"
 	"github.com/teamswyg/riido-daemon/pkg/lifecycle"
 )
@@ -18,6 +19,11 @@ type Session struct {
 
 	running process.RunningProcess
 	stop    context.CancelCauseFunc
+
+	// Only the runner writes this before publishing Result. Read only after
+	// Result or Done; provider events cannot supply this local observation.
+	childExitObserved bool
+	claimAttempt      *executionproof.Attempt
 }
 
 type cancelRequest struct {

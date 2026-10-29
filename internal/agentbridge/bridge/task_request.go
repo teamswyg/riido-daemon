@@ -3,6 +3,7 @@ package bridge
 import (
 	"time"
 
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
 	"github.com/teamswyg/riido-daemon/internal/execution"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
@@ -10,6 +11,9 @@ import (
 
 // TaskRequest is the provider-neutral input to Run.
 type TaskRequest struct {
+	// LocalExecutionScope is source-created, never decoded from task/provider input.
+	LocalExecutionScope *executionproof.Scope `json:"-"`
+
 	ExpectedCapabilityFingerprint string `json:"-"`
 	RequireHealthyCapability      bool   `json:"-"`
 

@@ -101,6 +101,7 @@ func (r *capabilityRefresh) finish(a *Actor, result capabilityProbeResult, caps 
 			observed = retainCapabilityProbeIdentity(caps[idx], observed)
 		}
 		blockRuntimeDriftedTasks(context.Background(), inFlight, observed)
+		blockUnauthenticatedTasks(context.Background(), inFlight, observed)
 		caps[idx] = observed
 		if result.err == nil && len(result.models) > 0 {
 			a.cfg.Models = append([]RuntimeModel(nil), result.models...)

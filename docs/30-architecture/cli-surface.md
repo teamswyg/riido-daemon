@@ -6,19 +6,27 @@ Executable SSOT: [`cli-surface.riido.json`](cli-surface.riido.json).
 
 Evidence artifact: `cli-surface-evidence`.
 
-Keeps the public cmd/riido command surface generated from a manifest and verified against black-box CLI output plus source boundaries.
+Keeps the cmd/riido command surface and root-help visibility generated from a manifest and verified against black-box CLI output plus source boundaries. Internal daemon, bridge and mwsd commands remain callable with their existing arguments but are absent from root help; claude-permission-mcp also remains absent. Legacy serve, api and task groups remain public.
 
 ## Command Groups
 
-| Group | Subcommands | Owner | Boundary | Evidence |
-| --- | --- | --- | --- | --- |
-| `serve` | _none_ | internal/riidoapi | local IPC server over Unix socket or Windows named pipe | `main-command-serve`, `run-serve-dispatch` |
-| `api` | `status`, `tasks`, `review-demo`, `transition`, `evidence`, `validate` | internal/riidoapi | local IPC client for guarded task and status APIs | `main-command-api`, `api-subcommand-vocabulary` |
-| `mwsd` | `snapshot`, `projection`, `sync`, `orchestration`, `projects`, `status` | internal/mwsdbridge, internal/project, internal/taskdb | reads MWSD snapshots and promotes local workspace/task projections | `main-command-mwsd`, `mwsd-subcommand-vocabulary` |
-| `task` | `list`, `transition`, `evidence`, `validate` | internal/taskdb, internal/validation | local guarded task mutation, evidence, and validation over JSON task DB | `main-command-task`, `task-subcommand-vocabulary` |
-| `bridge` | `providers`, `detect` | provider adapter packages | provider list/detect smoke surface without executing provider tasks | `main-command-bridge`, `bridge-subcommand-vocabulary` |
-| `version` | _none_ | cmd/riido release artifact identity | binary release tag evidence without daemon IPC | `main-command-version`, `run-version-dispatch` |
-| `daemon` | `start`, `status`, `health`, `ready`, `metrics`, `stop`, `logs` | internal/agentbridge/runtimeactor, supervisor, control-plane adapters | local runtime lifecycle, health, readiness, metrics, stop, and logs | `main-command-daemon`, `daemon-subcommand-vocabulary` |
+| Group | Root help | Subcommands | Owner | Boundary | Evidence |
+| --- | --- | --- | --- | --- | --- |
+| `work` | public | `get`, `tree`, `relations`, `comments`, `replies`, `activity`, `search` | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener | `main-command-work`, `work-subcommand-vocabulary` |
+| `context` | public | `get`, `changes` | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work | `main-command-context`, `context-subcommand-vocabulary` |
+| `meeting` | public | `list`, `get` | cmd/riido, internal/contextcli | lists connected meeting metadata or reads a captured meeting document within the assignment snapshot through the run-authorized daemon broker | `main-command-meeting`, `meeting-subcommand-vocabulary` |
+| `agents` | public | `list`, `show` | cmd/riido, internal/contextcli | lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent | `main-command-agents`, `agents-subcommand-vocabulary` |
+| `auth` | public | `login`, `logout`, `status` | cmd/riido, internal/contextcli | user-mode sign-in state; never accepts secrets as arguments and never prints credentials | `main-command-auth`, `auth-subcommand-vocabulary` |
+| `whoami` | public | _none_ | cmd/riido, internal/contextcli | reports the acting principal, workspace, and mode without printing secrets | `main-command-whoami` |
+| `doctor` | public | _none_ | cmd/riido, internal/contextcli | local installation, PATH, helper and API-origin diagnosis without protected-storage access; user --check-api explicitly verifies Whoami, while agent mode preserves IPC diagnosis and returns unsupported exit 8 for --check-api | `main-command-doctor` |
+| `capabilities` | public | _none_ | cmd/riido, internal/contextcli | static description of CLI, envelope, and IPC schema versions plus command availability | `main-command-capabilities` |
+| `serve` | public | _none_ | internal/riidoapi | local IPC server over Unix socket or Windows named pipe | `main-command-serve`, `run-serve-dispatch` |
+| `api` | public | `status`, `tasks`, `review-demo`, `transition`, `evidence`, `validate` | internal/riidoapi | local IPC client for guarded task and status APIs | `main-command-api`, `api-subcommand-vocabulary` |
+| `mwsd` | internal | `snapshot`, `projection`, `sync`, `orchestration`, `projects`, `status` | internal/mwsdbridge, internal/project, internal/taskdb | reads MWSD snapshots and promotes local workspace/task projections | `main-command-mwsd`, `mwsd-subcommand-vocabulary` |
+| `task` | public | `list`, `transition`, `evidence`, `validate` | internal/taskdb, internal/validation | local guarded task mutation, evidence, and validation over JSON task DB | `main-command-task`, `task-subcommand-vocabulary` |
+| `bridge` | internal | `providers`, `detect` | provider adapter packages | provider list/detect smoke surface without executing provider tasks | `main-command-bridge`, `bridge-subcommand-vocabulary` |
+| `version` | public | _none_ | cmd/riido release artifact identity | binary release tag evidence without daemon IPC | `main-command-version`, `run-version-dispatch` |
+| `daemon` | internal | `start`, `status`, `health`, `ready`, `metrics`, `stop`, `logs` | internal/agentbridge/runtimeactor, supervisor, control-plane adapters | local runtime lifecycle, health, readiness, metrics, stop, and logs | `main-command-daemon`, `daemon-subcommand-vocabulary` |
 
 ## Provider Smoke Surface
 
@@ -33,9 +41,13 @@ Keeps the public cmd/riido command surface generated from a manifest and verifie
 - [Local IPC rule](cli-surface/local-ipc-rule.md)
 - [Guarded mutation rule](cli-surface/guarded-mutation-rule.md)
 - [Validation](cli-surface/validation.md)
+- [Work context CLI](cli-surface/work-context.md)
 
 ## Assertions
 
+- root help contains only public command groups; internal command dispatch and direct daemon help remain compatible
+- cli, daemon-lifecycle and mwsd-project workflow checks use direct daemon help for internal usage tokens
 - cmd/riido remains local-only and must not open public TCP or HTTP listeners
-- usage output must expose each declared command group
+- direct internal-command help must expose each declared command group; root help must expose only groups marked public
 - bridge providers output must expose the provider vocabulary without launching provider tasks
+- work-context commands must reject secrets passed as arguments and keep the envelope on stdout

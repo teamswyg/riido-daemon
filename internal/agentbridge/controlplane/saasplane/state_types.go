@@ -3,10 +3,13 @@ package saasplane
 import (
 	"time"
 
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/executionproof"
+
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
 
 type planeState struct {
+	executionScopes         map[string]*executionproof.Scope
 	assignmentsByExecution  map[string]assignmentcontract.Assignment
 	runtimeIDsByExecution   map[string]string
 	cancelWatchers          map[string]chan error
@@ -41,6 +44,7 @@ type stateOp struct {
 
 func newPlaneState() planeState {
 	return planeState{
+		executionScopes:        map[string]*executionproof.Scope{},
 		assignmentsByExecution: map[string]assignmentcontract.Assignment{},
 		runtimeIDsByExecution:  map[string]string{},
 		cancelWatchers:         map[string]chan error{},

@@ -40,10 +40,15 @@ func (a *Actor) continueExecution(ctx context.Context, task *runningTask, res ag
 	prepared := &preparedWorkspace{workspace: task.workspace, execution: task.execution, events: task.events, request: task.request, canResume: task.canResume}
 	previous := task.handle
 	claimCtx, runtime, taskID := task.ctx, task.runtime, task.taskID
+	work, err := beginClaimHostWork(claimCtx)
+	if err != nil {
+		go a.forwardActivation(taskActivationMsg{claimContext: claimCtx, taskID: taskID, err: err})
+		return
+	}
 	// Submission and session cleanup waits never hold the supervisor mailbox.
 	go func() {
 		handle, err := submitExecutionCorrection(claimCtx, runtime, previous, req)
-		a.forwardActivation(taskActivationMsg{claimContext: claimCtx, taskID: taskID, prepared: prepared, handle: handle, err: err})
+		a.forwardActivation(taskActivationMsg{hostWork: work, claimContext: claimCtx, taskID: taskID, prepared: prepared, handle: handle, err: err})
 	}()
 }
 
