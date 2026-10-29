@@ -61,6 +61,7 @@ func loadDaemonSettingsFromEnvWithHome(getenv func(string) string, hostname, use
 		DaemonVersion:               textutil.Default(getenv(envDaemonVersion), agentDaemonVersionLabel()),
 		Profile:                     identity.profile,
 		ServerURL:                   strings.TrimSpace(getenv(envServerURL)),
+		CLIAPIResource:              strings.TrimSpace(getenv(envCLIAPIURL)),
 		DeviceID:                    controlPlane.deviceID,
 		DeviceSecret:                controlPlane.deviceSecret,
 		ExecutionCoverageGeneration: controlPlane.executionCoverageGeneration,
