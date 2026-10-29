@@ -93,7 +93,10 @@ func validReadPartSelector(page *ReadBodyPage, q ReadBodyRequest) bool {
 	if !ok {
 		return false
 	}
-	a, _ := json.Marshal(want)
-	b, _ := json.Marshal(got)
-	return string(a) == string(b)
+	a, err := json.Marshal(want)
+	if err != nil {
+		return false
+	}
+	b, err := json.Marshal(got)
+	return err == nil && string(a) == string(b)
 }

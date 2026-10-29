@@ -59,7 +59,8 @@ func TestRelationsPreserveDirectionsTypesNullableFieldsAndOrder(t *testing.T) {
 
 func TestRelationsRejectMalformedContractWithoutPartialOutput(t *testing.T) {
 	for _, tc := range []struct{ name, body string }{
-		{"missing", `{"data":{}}`}, {"null", `{"data":{"getComponentRelatedIssues":null}}`},
+		{"missing", `{"data":{}}`},
+		{"null", `{"data":{"getComponentRelatedIssues":null}}`},
 		{"null-item", `{"data":{"getComponentRelatedIssues":[null]}}`},
 		{"category", strings.ReplaceAll(relatedComponentFixture, `"blockedBy"`, `"private-unknown"`)},
 		{"type", strings.ReplaceAll(relatedComponentFixture, `"issueType":"component"`, `"issueType":"unknown"`)},

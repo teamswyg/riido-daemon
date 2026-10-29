@@ -30,10 +30,7 @@ func TestUserBodyReconstructsLargeTypedPageAcrossCLIInvocations(t *testing.T) {
 			t.Fatal("wrong source or version")
 		}
 		offset := int(req.Variables["offset"].(float64))
-		end := offset + int(req.Variables["limit"].(float64))
-		if end > len(original) {
-			end = len(original)
-		}
+		end := min(offset+int(req.Variables["limit"].(float64)), len(original))
 		for end < len(original) && !utf8.RuneStart(original[end]) {
 			end--
 		}
@@ -48,7 +45,7 @@ func TestUserBodyReconstructsLargeTypedPageAcrossCLIInvocations(t *testing.T) {
 	var reconstructed strings.Builder
 	offset := 0
 	done := false
-	for attempt := 0; attempt < 32; attempt++ {
+	for range 32 {
 		h := newContextHarness(t, nil)
 		h.io.userSession = func(contextcli.Args) (*standalonecli.Service, error) { return service, nil }
 		args := []string{"body", "work-one", "--kind", "intake", "--team-id", "team-one", "--part", "comments_page", "--version", version, "--page", "2", "--comments-limit", "3", "--comment-id", "parent-one", "--offset", strconv.Itoa(offset), "--limit", "16384", "--json"}

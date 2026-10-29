@@ -50,10 +50,6 @@ func (c contextIO) runUserResourceBody(raw []string, kind string) error {
 	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "live": true, "body": page}), nil)
 }
 
-func userBodyArguments(args contextcli.Args) (userapi.ReadBodyRequest, *contextcli.CLIError) {
-	return userResourceBodyArguments(args, "component")
-}
-
 func userResourceBodyArguments(args contextcli.Args, kind string) (userapi.ReadBodyRequest, *contextcli.CLIError) {
 	q := userapi.ReadBodyRequest{Part: "document", Version: args.Value("--version"), Limit: userapi.DefaultReadBodyLimit}
 	if kind == "meeting" {

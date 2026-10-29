@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/teamswyg/riido-daemon/internal/contextcli"
-	"github.com/teamswyg/riido-daemon/internal/standalonecli"
 	"slices"
 	"strings"
 	"testing"
+
+	"github.com/teamswyg/riido-daemon/internal/contextcli"
+	"github.com/teamswyg/riido-daemon/internal/standalonecli"
 )
 
 func TestUserRelationsArgumentsFailBeforeStorage(t *testing.T) {

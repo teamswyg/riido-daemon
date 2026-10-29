@@ -20,6 +20,7 @@ func deviceLinkFixture(t *testing.T) (InstallationPublicKey, DeviceLinkProof, *e
 	key, oauth, privateKey := installationLiveFixture(t)
 	return key, DeviceLinkProof{Resource: oauth.Resource, ClientID: "riido-cli", InstallationID: "installation", IntentID: "intent", ChallengeHash: strings.Repeat("a", 64), KeyFingerprint: key.KeyFingerprint, ExpectedDeviceID: "device", ApprovedPrincipalID: "approved-human", ExpiresAt: time.Now().Add(5 * time.Minute).UTC().Format(time.RFC3339Nano)}, privateKey
 }
+
 func TestDeviceLinkProofMatchesIndependentCPGolden(t *testing.T) {
 	p := DeviceLinkProof{Resource: "https://cli.fixture.invalid", ClientID: "riido-cli", InstallationID: "installation", IntentID: "intent", ChallengeHash: strings.Repeat("a", 64), KeyFingerprint: strings.Repeat("b", 64), ExpectedDeviceID: "device", ApprovedPrincipalID: "approved-human", ExpiresAt: "2026-10-28T01:02:03.123Z"}
 	digest := sha256.Sum256(p.framedMessage())
@@ -30,6 +31,7 @@ func TestDeviceLinkProofMatchesIndependentCPGolden(t *testing.T) {
 		t.Fatal("proof logging exposes binding")
 	}
 }
+
 func TestDeviceLinkTypedHelperWithoutDaemonOrCredentials(t *testing.T) {
 	key, proof, privateKey := deviceLinkFixture(t)
 	calls := 0
@@ -63,6 +65,7 @@ func TestDeviceLinkTypedHelperWithoutDaemonOrCredentials(t *testing.T) {
 		t.Fatal("typed proof failed or credential scope changed")
 	}
 }
+
 func TestDeviceLinkRejectsMalformedProofBeforeHelper(t *testing.T) {
 	key, proof, _ := deviceLinkFixture(t)
 	changes := map[string]func(*DeviceLinkProof){
@@ -87,6 +90,7 @@ func TestDeviceLinkRejectsMalformedProofBeforeHelper(t *testing.T) {
 		})
 	}
 }
+
 func TestDeviceLinkRejectsUnverifiedHelperAndCrossBindingSignature(t *testing.T) {
 	for _, mode := range []string{"noninteractive", "signature-preflight", "cross-device", "cross-intent", "unknown-response", "duplicate-response", "cancelled"} {
 		t.Run(mode, func(t *testing.T) {

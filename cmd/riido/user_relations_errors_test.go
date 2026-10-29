@@ -25,8 +25,13 @@ func TestUserRelationsFailuresDoNotLeakPartialDataOrRetry(t *testing.T) {
 		name, code   string
 		status, exit int
 	}{
-		{"forbidden", "", 403, 4}, {"rate-limit", "", 429, 7}, {"server", "", 500, 6},
-		{"permission", "permission_denied", 200, 4}, {"missing", "not_found", 200, 5}, {"auth", "authentication_required", 200, 3}, {"unknown", "private-code", 200, 6},
+		{"forbidden", "", 403, 4},
+		{"rate-limit", "", 429, 7},
+		{"server", "", 500, 6},
+		{"permission", "permission_denied", 200, 4},
+		{"missing", "not_found", 200, 5},
+		{"auth", "authentication_required", 200, 3},
+		{"unknown", "private-code", 200, 6},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			calls := 0
@@ -92,7 +97,10 @@ func TestUserRelationsProtectedStoreFailuresPrecedeAPI(t *testing.T) {
 		err  error
 		exit int
 	}{
-		{"logged-out", userauth.ErrNotAuthenticated, 3}, {"no-input", userauth.ErrStoreLocked, 3}, {"helper-unavailable", securecredential.ErrUnavailable, 8}, {"cancelled", context.Canceled, 6},
+		{"logged-out", userauth.ErrNotAuthenticated, 3},
+		{"no-input", userauth.ErrStoreLocked, 3},
+		{"helper-unavailable", securecredential.ErrUnavailable, 8},
+		{"cancelled", context.Canceled, 6},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			calls := 0
