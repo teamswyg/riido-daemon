@@ -51,6 +51,11 @@ func (d *protocolDriver) handleHistoryPage(ctx context.Context, raw agentbridge.
 		d.historyCursors[cursor] = true
 		return nil, nil, d.requestHistoryPage(ctx, cursor, io)
 	}
+	if d.shared != nil {
+		turns := d.historyTurns
+		d.historyTurns, d.historyCursors = nil, nil
+		return d.finishSharedHistory(ctx, turns, io)
+	}
 	return d.finishNativeHistory(ctx, d.historyTurns, io)
 }
 
