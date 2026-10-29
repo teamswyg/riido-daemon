@@ -21,10 +21,10 @@ func TestClaudeContextCLIAllowsOnlySupportedReadLeaves(t *testing.T) {
 		t.Fatal("missing native read allowlist")
 	}
 	rules := strings.Split(cmd.Args[idx+1], ",")
-	if len(rules) != 18 {
+	if len(rules) != 20 {
 		t.Fatalf("read rules = %v", rules)
 	}
-	for _, leaf := range []string{"context get", "work get", "work tree", "work relations", "work comments", "agents list", "agents show", "meeting list", "meeting get"} {
+	for _, leaf := range []string{"context get", "context part", "work get", "work tree", "work relations", "work comments", "agents list", "agents show", "meeting list", "meeting get"} {
 		for _, suffix := range []string{"", " *"} {
 			if !slices.Contains(rules, "Bash(riido "+leaf+suffix+")") {
 				t.Errorf("missing read rule %s%s", leaf, suffix)
@@ -32,7 +32,7 @@ func TestClaudeContextCLIAllowsOnlySupportedReadLeaves(t *testing.T) {
 		}
 	}
 	args := strings.Join(cmd.Args, " ")
-	for _, forbidden := range []string{"cap-secret", "Bash(*)", "Bash(riido *)", "Bash(riido meeting *)", "Bash(riido meeting update *)", "bypassPermissions"} {
+	for _, forbidden := range []string{"cap-secret", "Bash(*)", "Bash(riido *)", "Bash(riido context *)", "Bash(riido work body *)", "Bash(riido auth login *)", "Bash(riido meeting *)", "Bash(riido meeting update *)", "bypassPermissions"} {
 		if strings.Contains(args, forbidden) {
 			t.Fatalf("unexpected argument %q", forbidden)
 		}

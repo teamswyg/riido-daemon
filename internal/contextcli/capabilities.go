@@ -45,13 +45,22 @@ func ReadCommandUnavailable(name string) bool {
 // Capabilities returns the static capability table for cliVersion.
 func Capabilities(cliVersion string) CapabilitiesData {
 	agentRead := func(name string) CommandCapability {
-		if name == "whoami" || name == "work get" || name == "work comments" {
+		if name == "whoami" || name == "work get" || name == "work comments" || name == "work relations" || name == "context get" || name == "meeting get" {
 			note := noteDaemonBroker + "; " + noteUserMode
 			if name == "work get" {
 				note += "; user mode는 작업 ID와 --team-id만 지원합니다"
 			}
 			if name == "work comments" {
-				note += "; user mode는 작업 ID와 --team-id, --page/--limit을 사용하고 agent mode는 고정 20개 --cursor를 유지합니다"
+				note += "; user mode는 작업 ID와 --team-id, --page/--limit을 사용하고 --kind 선택 시 source version으로 이어 읽습니다; agent mode의 구형 스냅샷은 고정 20개 --cursor, 새 맥락은 parts의 context part 명령으로 이어 읽습니다"
+			}
+			if name == "context get" {
+				note += "; user mode는 --work ID와 --team-id로 직접 연결된 맥락을 조회하며 서버 read-scope 계약 배포가 필요합니다"
+			}
+			if name == "meeting get" {
+				note += "; user mode는 미팅 ID와 --team-id, --cursor/--limit으로 보드를 이어 읽으며 서버 read-scope 계약 배포가 필요합니다"
+			}
+			if name == "work relations" {
+				note += "; user mode는 작업 ID와 --team-id로 직접 관계를 실시간 조회하며 페이지 옵션은 없습니다; agent mode는 기존 snapshot을 사용합니다; 서버 관계 조회 권한 배포가 필요합니다"
 			}
 			return CommandCapability{Name: name, Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable, Note: note}
 		}
@@ -71,14 +80,17 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		{Name: "auth login", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 기본/--browser PKCE만 지원합니다; --desktop/--with-token은 exit 8입니다"},
 		agentRead("whoami"),
 		agentRead("context get"),
+		agentRead("context part"),
 		agentRead("context changes"),
 	}
 	for _, sub := range []string{"get", "tree", "relations", "comments", "activity", "search"} {
 		commands = append(commands, agentRead("work "+sub))
 	}
-	commands = append(commands, CommandCapability{Name: "work replies", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID, --team-id, --comment-id가 필요하며 페이지 옵션은 없습니다; 서버 댓글 조회 계약 배포가 필요합니다"})
+	commands = append(commands, CommandCapability{Name: "work replies", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID, --team-id, --comment-id가 필요합니다; 기존 component 조회에는 페이지가 없고 --kind 선택 시 --page/--limit과 원 --version을 사용합니다; 서버 댓글 조회 계약 배포가 필요합니다"})
+	commands = append(commands, CommandCapability{Name: "work body", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID, --team-id, 원 version·byte offset으로 본문과 큰 typed 자료를 읽습니다; contentPage.selector는 work body의 --comment-id/--page/--comments-limit 또는 meeting body의 --board-cursor/--board-limit으로 보존하세요; 서버 read-scope 계약 배포가 필요합니다"})
 	commands = append(commands, agentRead("agents list"), agentRead("agents show"))
 	commands = append(commands, agentRead("meeting list"), agentRead("meeting get"))
+	commands = append(commands, CommandCapability{Name: "meeting body", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 미팅 ID, --team-id, 원 version·byte offset으로 본문과 큰 typed 자료를 읽습니다; contentPage.selector는 work body의 --comment-id/--page/--comments-limit 또는 meeting body의 --board-cursor/--board-limit으로 보존하세요; 서버 read-scope 계약 배포가 필요합니다"})
 	return CapabilitiesData{
 		CLIVersion:            cliVersion,
 		EnvelopeSchemaVersion: EnvelopeSchemaVersion,

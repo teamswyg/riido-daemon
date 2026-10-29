@@ -26,6 +26,10 @@ func classifyGraphQLErrors(rawErrors []json.RawMessage) error {
 			current = ErrPermission
 		case "not_found":
 			current = ErrNotFound
+		case "conflict":
+			current = ErrConflict
+		case "invalid_request":
+			current = ErrInvalidRequest
 		default:
 			return ErrGraphQL
 		}

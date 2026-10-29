@@ -12,6 +12,7 @@ type meetingCommand string
 const (
 	meetingCommandList meetingCommand = "list"
 	meetingCommandGet  meetingCommand = "get"
+	meetingCommandBody meetingCommand = "body"
 )
 
 func runMeeting(c contextIO, args []string) error {
@@ -29,7 +30,12 @@ func runMeeting(c contextIO, args []string) error {
 		call.command, call.usage = "meeting list", printMeetingUsage
 		return c.runContextRead(call, args[1:])
 	case meetingCommandGet:
+		if c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserMeeting(args[1:])
+		}
 		return c.runContextRead(meetingGetCall(), args[1:])
+	case meetingCommandBody:
+		return c.runUserResourceBody(args[1:], "meeting")
 	default:
 		return c.fail(wantsJSON(args), contextcli.NewRequestID(), contextcli.Failf(contextcli.CodeUsage, "알 수 없는 meeting 하위 명령: %s", args[0]))
 	}

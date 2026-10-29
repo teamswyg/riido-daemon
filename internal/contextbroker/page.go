@@ -21,8 +21,11 @@ func cursorPage(view string, data json.RawMessage) *contextcli.Page {
 	}
 	_ = json.Unmarshal(data, &page)
 	limit := commentPageSize
-	if view == viewAgents {
+	switch view {
+	case viewAgents:
 		limit = agentPageSize
+	case viewContent:
+		limit = 1
 	}
 	return &contextcli.Page{Limit: limit, NextCursor: page.NextCursor, Truncated: page.NextCursor != ""}
 }

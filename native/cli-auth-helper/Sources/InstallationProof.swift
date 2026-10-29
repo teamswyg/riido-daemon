@@ -138,6 +138,7 @@ func installationPublicKey(_ value: Data) throws -> P256.Signing.PublicKey {
 protocol InstallationKeyStore {
     func ensureKey(scope: InstallationScope) throws -> Data
     func signProof(_ proof: InstallationProof) throws -> Data
+    func signDeviceLinkProof(_ proof: DeviceLinkProof) throws -> Data
 }
 
 struct UnavailableInstallationKeyStore: InstallationKeyStore {

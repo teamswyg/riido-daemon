@@ -49,7 +49,10 @@ func TestMeetingCommandRejectsInvalidOrUnavailableUse(t *testing.T) {
 		}
 	}
 	h := newContextHarness(t, nil)
-	if got := exitCodeOf(t, runMeeting(h.io, []string{"get", "m1", "--json"})); got != 8 {
-		t.Fatalf("user mode should stay unavailable, exit %d", got)
+	if got := exitCodeOf(t, runMeeting(h.io, []string{"get", "m1", "--json"})); got != 2 {
+		t.Fatalf("user meeting get requires explicit team before authentication, exit %d", got)
+	}
+	if got := exitCodeOf(t, runMeeting(h.io, []string{"list", "--json"})); got != 8 || len(h.daemon.requests) != 0 {
+		t.Fatalf("user meeting list remains unavailable without daemon fallback, exit %d", got)
 	}
 }

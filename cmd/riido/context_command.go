@@ -11,6 +11,7 @@ type contextCommand string
 
 const (
 	contextCommandGet     contextCommand = "get"
+	contextCommandPart    contextCommand = "part"
 	contextCommandChanges contextCommand = "changes"
 )
 
@@ -24,7 +25,12 @@ func runContext(c contextIO, args []string) error {
 	}
 	switch contextCommand(args[0]) {
 	case contextCommandGet:
+		if c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserContext(args[1:])
+		}
 		return c.runContextRead(contextGetCall(), args[1:])
+	case contextCommandPart:
+		return c.runContextRead(contextPartCall(), args[1:])
 	case contextCommandChanges:
 		return c.runContextRead(contextChangesCall(), args[1:])
 	default:

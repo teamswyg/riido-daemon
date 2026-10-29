@@ -20,7 +20,7 @@
     "history_reads": "Compact list/search first; up to3 initial threads/concurrent calls; outputs=false/3turns/1500chars when supported; same-request exact-page reuse; returned cursors for older pages; fresh after mutations or account/session changes",
     "freshness": "Unversioned provider JSON/HTML and component snapshots are not proof of current Yjs; conflicting alternate representations have unknown chronology and remain references.",
     "context_cli_executable": "Codex uses the daemon-owned absolute executable from runtime configuration, shell-quoted per host; assignment environment cannot override it. PATH changes in login shells must not select another riido. Existing sandbox policy remains unchanged.",
-    "context_cli": "RIID-5900: only capability/socket/task-bearing launches get snapshot CLI rules. Read context get once, expand supported work leaves only as needed, page by returned cursor, retain snapshot/truncation/status evidence, never claim live/freely searchable context or expose credentials."
+    "context_cli": "RIID-5900: only capability/socket/task-bearing launches get snapshot CLI rules. Read context get once; follow only explicit mentions and the selected direct relations/hierarchy/children, never a second relation hop. Read captured details/meeting board parts only when present and page through context part using manifest-issued source ID/cursor. Preserve older-snapshot unavailable and storage-budget incomplete states, source versions and status evidence; never switch to live OAuth or expose credentials."
   },
   "verification": {
     "tests": [

@@ -14,6 +14,10 @@ If `RIIDO_DAEMON_ID` is unset on this path, daemon id defaults to `RIIDO_DEVICE_
 
 Desktop first enrolls the device through the logged-in webview session, then launches daemon with `RIIDO_DEVICE_ID` and `RIIDO_DEVICE_SECRET`. `saasplane` sends them as `X-Riido-Device-ID` and `X-Riido-Device-Secret`.
 
+For a server-enrolled `dcov_` device, the launcher must also preserve `execution_coverage_generation` as `RIIDO_EXECUTION_COVERAGE_GENERATION`. The daemon forwards that exact value once in `X-Riido-Execution-Coverage` on common JSON transport requests, including poll and events. Missing, malformed, or legacy-device coverage configuration fails before any HTTP call; it never invents a generation, trims it, or retries without it. A credential rotation keeps the server coverage generation. This only consumes enrollment metadata: requesting the new enrollment protocol, activating server coverage, and linking the CLI installation remain separate changes.
+
+The coverage generation is private daemon configuration rather than an API key. It is removed with daemon credentials from every provider/probe child environment; user CLI OAuth and per-run capabilities do not consume it.
+
 Team IDs, Open API keys, task-context paths, and workspace API keys are not identity bridges.
 
 `RIIDO_DEVICE_SECRET` stays inside the daemon process. Every process the daemon starts — provider runtimes, provider version and model probes, validation commands, and repository preparation — gets its environment from `internal/process/childenv`, which removes `RIIDO_DEVICE_SECRET`, `RIIDO_SAAS_TOKEN`, and `RIIDO_TOKEN` (case-insensitive) even when the caller passes no overrides.
