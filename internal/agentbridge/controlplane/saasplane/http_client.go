@@ -53,6 +53,7 @@ func (p *Plane) doJSON(ctx context.Context, method, path string, body []byte, ou
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 4096))
 		_ = resp.Body.Close()
 		lastErr = httpStatusError{
+			RequestID:  resp.Header.Get("X-Riido-Request-ID"),
 			Path:       path,
 			Status:     resp.Status,
 			StatusCode: resp.StatusCode,
