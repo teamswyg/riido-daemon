@@ -30,7 +30,7 @@ func printWorkUsage(w io.Writer) {
 	fmt.Fprintln(w, "    riido work comments <ID> --team-id <TEAM-ID> [--page N] [--limit N] [--json]   (user API; defaults 1/20, limit <= 100)")
 	fmt.Fprintln(w, "    riido work replies <ID> --team-id <TEAM-ID> --comment-id <COMMENT-ID> [--json]   (user API; no pagination; agent replies unsupported)")
 	fmt.Fprintln(w, "    riido work comments|replies <ID> --kind component|backlog|intake --team-id <TEAM-ID> [--comment-id <PARENT-ID>] [--page N] [--limit N] [--version <VERSION>] [--json]   (user read-scope API; replies need parent ID, page > 1 needs original version)")
-	fmt.Fprintln(w, "    riido work activity <RIID-1234|ID>   (unsupported, exit 8)")
+	fmt.Fprintln(w, "    riido work activity <ID> --team-id <TEAM-ID> [--page N] [--limit N] [--json]   (user live activity; defaults 1/20, limit <= 100; agent unsupported, exit 8)")
 	fmt.Fprintln(w, "    riido work search --query TEXT   (unsupported, exit 8)")
 }
 

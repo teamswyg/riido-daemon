@@ -13,7 +13,6 @@ func TestContextCLIUnsupportedReadsNeverReachDaemon(t *testing.T) {
 		run  func(contextIO) error
 	}{
 		{"changes", func(c contextIO) error { return runContext(c, []string{"changes", "--since", "snapshot", "--json"}) }},
-		{"activity", func(c contextIO) error { return runWork(c, []string{"activity", "RIID-1", "--json"}) }},
 		{"search", func(c contextIO) error { return runWork(c, []string{"search", "--query", "planning", "--json"}) }},
 	} {
 		t.Run(test.name, func(t *testing.T) {

@@ -27,7 +27,7 @@ type ArgSpec struct {
 	Values         []string
 	Bools          []string
 	MaxPositionals int
-	AllowLimit     bool // Only the user comments command uses offset pagination.
+	AllowLimit     bool // The command validates its own typed page limit.
 }
 
 // Options are the flags shared by every work-context command.
