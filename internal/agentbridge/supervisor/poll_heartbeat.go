@@ -25,7 +25,7 @@ func (a *Actor) refreshRuntimeRegistrations(
 		state := runtimeRegistrationState(status)
 		if state != a.registeredRuntimeStates[status.RuntimeID] {
 			if err := a.register(ctx, status); err != nil {
-				logRuntimeSyncFailure("provider_health_sync_failed", status.RuntimeID, err)
+				a.logRuntimeSyncFailure("provider_health_sync_failed", status.RuntimeID, err)
 			} else {
 				a.registeredRuntimeStates[status.RuntimeID] = state
 			}
@@ -41,7 +41,9 @@ func (a *Actor) reportLiveness(ctx context.Context, runtimes []*runtimeactor.Act
 			err = a.cfg.Source.Heartbeat(requestCtx, controlplane.RuntimeHeartbeat{RuntimeID: status.RuntimeID, UptimeSeconds: status.UptimeSeconds, DeviceName: status.DeviceName, SlotLimit: status.MaxConcurrent, SlotsInUse: status.RunningSessions, RunningTaskIDs: a.heartbeatTaskIDs(status.RuntimeID, runtimeTaskIDs(status.RunningTasks))})
 		}
 		if err != nil {
-			logRuntimeSyncFailure("heartbeat_sync_failed", status.RuntimeID, err)
+			a.logRuntimeSyncFailure("heartbeat_sync_failed", status.RuntimeID, err)
+		} else {
+			a.runtimeSyncSuccess.Store(status.RuntimeID, time.Now().UTC())
 		}
 		cancel()
 	}
@@ -60,9 +62,18 @@ func (a *Actor) heartbeatLoop(ctx context.Context, runtimes []*runtimeactor.Acto
 	}
 }
 
-func logRuntimeSyncFailure(event, runtimeID string, err error) {
+func (a *Actor) logRuntimeSyncFailure(event, runtimeID string, err error) {
 	kind, status := runtimeSyncFailure(err)
-	log.Printf("riido_daemon event=%s runtime_id=%q failure_kind=%s http_status=%d", event, runtimeID, kind, status)
+	lastSuccess := "never"
+	if observed, ok := a.runtimeSyncSuccess.Load(runtimeID); ok {
+		lastSuccess = observed.(time.Time).Format(time.RFC3339Nano)
+	}
+	requestID := ""
+	var correlated interface{ RequestCorrelationID() string }
+	if errors.As(err, &correlated) {
+		requestID = correlated.RequestCorrelationID()
+	}
+	log.Printf("riido_daemon event=%s runtime_id=%q failure_kind=%s http_status=%d request_id=%q last_sync_success_at=%q", event, runtimeID, kind, status, requestID, lastSuccess)
 }
 
 func runtimeSyncFailure(err error) (string, int) {

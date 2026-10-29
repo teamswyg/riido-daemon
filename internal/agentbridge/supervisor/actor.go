@@ -22,6 +22,7 @@ type Actor struct {
 	claimMu                 sync.Mutex
 	claimCancel             context.CancelFunc
 	registeredRuntimeStates map[string]string
+	runtimeSyncSuccess      sync.Map // runtime ID -> time.Time; registration and heartbeat run concurrently
 	heartbeatMu             sync.RWMutex
 	heartbeatExecutions     map[string][]string
 	executionObservations   []execution.Observation

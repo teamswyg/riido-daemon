@@ -14,6 +14,9 @@ func retainCapabilityProbeIdentity(previous, observed Capability) Capability {
 		return observed
 	}
 	retained := previous
+	if observed.Version != "" {
+		retained.VersionObservedAt = observed.VersionObservedAt
+	}
 	retained.Available = observed.Available
 	retained.HealthStatus = observed.HealthStatus
 	retained.DiagnosticCode = observed.DiagnosticCode

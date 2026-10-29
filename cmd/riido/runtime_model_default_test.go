@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"testing"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 )
 
 func TestRuntimeModelUnknownDefaultDoesNotPickFirst(t *testing.T) {
