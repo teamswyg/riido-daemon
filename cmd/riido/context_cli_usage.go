@@ -23,6 +23,7 @@ func printWorkUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido work <get|body|tree|relations|comments|replies|activity|search> ...")
 	fmt.Fprintln(w, "    riido work get|tree|relations <RIID-1234|ID> [--json]")
 	fmt.Fprintln(w, "    riido work get <ID> --team-id <TEAM-ID> [--json]   (standalone user API)")
+	fmt.Fprintln(w, "    riido work relations <ID> --team-id <TEAM-ID> [--json]   (user live direct relations; no pagination; agent keeps snapshot reads)")
 	fmt.Fprintln(w, "    riido work body <ID> --team-id <TEAM-ID> --version <VERSION> [--kind component|backlog|intake] [--part document|description|document_alternate|metadata|comments_page] [--offset N] [--limit BYTES] [--json]")
 	fmt.Fprintln(w, "      comments_page: copy contentPage.selector with [--comment-id ID] [--page N] [--comments-limit N]; keep it unchanged while reading byte pages")
 	fmt.Fprintln(w, "    riido work comments <RIID-1234|ID> [--cursor C] [--json]   (agent snapshot; --cursor is for legacy 20-item pages; new captured parts use riido context part)")
