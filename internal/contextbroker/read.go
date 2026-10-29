@@ -32,10 +32,15 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	if err != nil {
 		return contextcli.FailureEnvelope(requestID, fetchFailure(err))
 	}
-	data, budgetCut, budgetFits := applyBudget(result.Data, budgetChars(req.Args))
+	budget := budgetChars(req.Args)
+	preservePage := capturedReadBudget(view, result.Data, budget)
+	data, budgetCut, budgetFits := result.Data, false, true
+	if !preservePage {
+		data, budgetCut, budgetFits = applyBudget(result.Data, budget)
+	}
 	truncated := result.Truncated || budgetCut
 	env := contextcli.NewEnvelope(requestID, data)
-	if view == viewComments || view == viewAgents {
+	if (view == viewComments && !capturedReadResponse(view, result.Data)) || view == viewAgents || view == viewContent {
 		env.Page = cursorPage(view, result.Data)
 	}
 	status := contextcli.SourceAvailable
@@ -48,7 +53,10 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	}
 	env.Warnings = append(env.Warnings, freshnessWarning(result.Live, fetchedAt))
 	if result.Truncated {
-		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "SNAPSHOT_TRUNCATED", Message: "본문이 길어 일부만 저장됐습니다"})
+		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "SNAPSHOT_TRUNCATED", Message: "일부 자료가 완전히 저장되지 않았습니다. 각 내용의 상태와 저장된 다음 페이지를 확인하세요"})
+	}
+	if preservePage {
+		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "BUDGET_PRESERVED_PAGE", Message: "저장된 페이지의 버전과 다음 위치를 보존하기 위해 --budget을 초과한 원문을 그대로 반환했습니다. 더 좁은 조회에는 응답의 부분 자료 커서를 사용하세요"})
 	}
 	return withBudgetWarnings(env, budgetCut, budgetFits)
 }
@@ -59,6 +67,8 @@ func fetchFailure(err error) *contextcli.CLIError {
 		return contextcli.Fail(contextcli.CodeUnavailable, "Riido 서버에 연결하지 못했습니다", "잠시 후 다시 시도하세요")
 	}
 	switch {
+	case fetchErr.Status == http.StatusBadRequest:
+		return contextcli.Fail(contextcli.CodeUsage, "조회 입력 또는 페이지 커서가 유효하지 않습니다", "새 맥락의 부분 자료는 riido context part <SOURCE-ID> --cursor <CURSOR>로 이어 읽으세요")
 	case fetchErr.Status == http.StatusTooManyRequests:
 		return &contextcli.CLIError{
 			Code: contextcli.CodeRateLimited, NoRetry: true,

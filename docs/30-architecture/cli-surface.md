@@ -12,9 +12,9 @@ Keeps the cmd/riido command surface and root-help visibility generated from a ma
 
 | Group | Root help | Subcommands | Owner | Boundary | Evidence |
 | --- | --- | --- | --- | --- | --- |
-| `work` | public | `get`, `tree`, `relations`, `comments`, `replies`, `activity`, `search` | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener | `main-command-work`, `work-subcommand-vocabulary` |
-| `context` | public | `get`, `changes` | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work | `main-command-context`, `context-subcommand-vocabulary` |
-| `meeting` | public | `list`, `get` | cmd/riido, internal/contextcli | lists connected meeting metadata or reads a captured meeting document within the assignment snapshot through the run-authorized daemon broker | `main-command-meeting`, `meeting-subcommand-vocabulary` |
+| `work` | public | `get`, `body`, `tree`, `relations`, `comments`, `replies`, `activity`, `search` | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener | `main-command-work`, `work-subcommand-vocabulary` |
+| `context` | public | `get`, `part`, `changes` | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work | `main-command-context`, `context-subcommand-vocabulary` |
+| `meeting` | public | `list`, `get`, `body` | cmd/riido, internal/contextcli | lists connected meeting metadata or reads captured parts through the run-authorized daemon broker; user get/body use fixed typed APIs for details, editor and structured board pages | `main-command-meeting`, `meeting-subcommand-vocabulary` |
 | `agents` | public | `list`, `show` | cmd/riido, internal/contextcli | lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent | `main-command-agents`, `agents-subcommand-vocabulary` |
 | `auth` | public | `login`, `logout`, `status` | cmd/riido, internal/contextcli | user-mode sign-in state; never accepts secrets as arguments and never prints credentials | `main-command-auth`, `auth-subcommand-vocabulary` |
 | `whoami` | public | _none_ | cmd/riido, internal/contextcli | reports the acting principal, workspace, and mode without printing secrets | `main-command-whoami` |

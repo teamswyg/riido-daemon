@@ -11,6 +11,7 @@ type workCommand string
 
 const (
 	workCommandGet       workCommand = "get"
+	workCommandBody      workCommand = "body"
 	workCommandTree      workCommand = "tree"
 	workCommandRelations workCommand = "relations"
 	workCommandComments  workCommand = "comments"
@@ -39,6 +40,8 @@ func runWork(c contextIO, args []string) error {
 		return c.runContextRead(workRefCall(sub), args[1:])
 	case workCommandReplies:
 		return c.runUserComments(sub, args[1:])
+	case workCommandBody:
+		return c.runUserBody(args[1:])
 	case workCommandSearch:
 		return c.runContextRead(workSearchCall(), args[1:])
 	default:

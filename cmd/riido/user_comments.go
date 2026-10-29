@@ -9,6 +9,9 @@ import (
 )
 
 func (c contextIO) runUserComments(sub workCommand, raw []string) error {
+	if hasScopeCommentOptions(raw) {
+		return c.runUserScopeComments(sub, raw)
+	}
 	requestID := contextcli.NewRequestID()
 	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--comment-id", "--page"}, AllowLimit: sub == workCommandComments})
 	if cliErr != nil {

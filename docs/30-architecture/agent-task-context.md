@@ -85,3 +85,28 @@ https://code.claude.com/docs/en/permissions.
 ### Codex login-shell executable selection
 
 The daemon supplies its own absolute executable path through trusted runtime configuration when the context CLI is enabled. Codex instructions invoke that executable directly with shell-safe quoting, so a login shell cannot select an older `riido` from a different PATH. The path is never accepted from assignment environment values. Other provider instructions and Claude read allow rules retain their existing command forms. This changes executable selection only; it does not grant socket access or relax provider sandbox policy. A read-only Codex sandbox may still reject the daemon socket and must be reported as unsupported in that mode.
+
+RIID-5900 read-scope expansion keeps direct selection separate from detail reads. New snapshots include work inspector and integration metadata plus meeting participants, board groups/labels and cards. Never traverse a selected target's own relations. Continue captured parts with `riido context part <SOURCE-ID> --cursor <CURSOR> --json --no-input`; only manifest-issued cursors are valid. Older snapshots or an exhausted capture budget retain unavailable/incomplete status and are not an empty board. User OAuth and live body pagination remain separate from the agent path.
+
+Captured pages and their inline forms must retain exact content with their
+version, byte offset and continuation. `--budget` is best effort: if a captured
+response exceeds it, return the original data with `BUDGET_PRESERVED_PAGE` and
+use the returned part cursors for narrower reads. Do not shorten content while
+keeping a cursor that skips the removed bytes or a `complete` flag that claims
+the shortened content is whole. Legacy unversioned response budgeting stays
+unchanged.
+
+New read-scope `work comments` responses use the parts manifest and
+`context part` continuation. Do not advertise them as a completed legacy
+20-comment envelope page. A legacy cursor submitted to a new inline view is
+invalid input; surface a usage error with safe continuation guidance. Older
+snapshots retain `work comments --cursor` pagination.
+
+Large stored metadata, comment pages and board pages may be returned as a
+`contentPage` with a fixed selector. User commands expose this deferred part
+explicitly; empty inline placeholders are not empty product data. Continue with
+`work body` or `meeting body`, preserving `--part metadata|comments_page|board_page`,
+version and byte offset. Comment selectors use `--comment-id`, `--page` and
+`--comments-limit`; board selectors use `--board-cursor` and `--board-limit`.
+`--limit` remains the byte page size. The agent path still reads only captured
+parts and never uses the user's live body endpoint.

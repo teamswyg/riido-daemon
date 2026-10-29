@@ -1,21 +1,32 @@
 package contextcli
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 func TestMeetingCapabilitiesRequireAgentBroker(t *testing.T) {
-	for _, name := range []string{"meeting list", "meeting get"} {
+	for _, tc := range []struct {
+		name   string
+		status CommandStatus
+		modes  []Mode
+	}{
+		{"meeting list", CommandNeedsDaemon, []Mode{ModeAgent}},
+		{"meeting get", CommandAvailable, []Mode{ModeAgent, ModeUser}},
+		{"meeting body", CommandAvailable, []Mode{ModeUser}},
+	} {
 		found := false
 		for _, command := range Capabilities("test").Commands {
-			if command.Name != name {
+			if command.Name != tc.name {
 				continue
 			}
 			found = true
-			if command.Status != CommandNeedsDaemon || len(command.Modes) != 1 || command.Modes[0] != ModeAgent {
+			if command.Status != tc.status || !slices.Equal(command.Modes, tc.modes) {
 				t.Fatalf("meeting read advertised unavailable mode: %+v", command)
 			}
 		}
 		if !found {
-			t.Fatalf("missing capability %s", name)
+			t.Fatalf("missing capability %s", tc.name)
 		}
 	}
 }

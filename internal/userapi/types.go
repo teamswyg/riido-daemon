@@ -17,6 +17,8 @@ var (
 	ErrRateLimited     = errors.New("riido API read rate limit was exceeded")
 	ErrUnavailable     = errors.New("riido API is temporarily unavailable")
 	ErrGraphQL         = errors.New("riido could not complete this read")
+	ErrConflict        = errors.New("the requested resource version has changed")
+	ErrInvalidRequest  = errors.New("the read request parameters are invalid")
 )
 
 type ReadClient interface {
