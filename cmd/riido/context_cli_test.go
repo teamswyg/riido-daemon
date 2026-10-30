@@ -195,7 +195,7 @@ func TestContextCommandHelpHasNoSideEffects(t *testing.T) {
 func TestRootHelpKeepsLegacyAndWorkContextGroups(t *testing.T) {
 	var buf bytes.Buffer
 	printContextUsage(&buf)
-	for _, token := range []string{"riido work <get|body|tree|relations|comments|replies|activity|search>", "riido context get", "riido context changes", "riido auth <login|logout|status>", "riido whoami", "riido doctor", "riido capabilities"} {
+	for _, token := range []string{"riido work <get|body|tree|relations|comments|replies|activity|search>", "riido context get", "riido context changes", "riido auth <login|link|logout|status>", "riido whoami", "riido doctor", "riido capabilities"} {
 		if !strings.Contains(buf.String(), token) {
 			t.Fatalf("usage missing %q", token)
 		}

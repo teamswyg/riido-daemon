@@ -11,6 +11,7 @@ type authCommand string
 
 const (
 	authCommandLogin  authCommand = "login"
+	authCommandLink   authCommand = "link"
 	authCommandLogout authCommand = "logout"
 	authCommandStatus authCommand = "status"
 )
@@ -37,6 +38,8 @@ func runAuth(c contextIO, args []string) error {
 	switch authCommand(args[0]) {
 	case authCommandLogin:
 		return c.runAuthLogin(args[1:])
+	case authCommandLink:
+		return c.runAuthLink(args[1:])
 	case authCommandLogout:
 		return c.runAuthLogout(args[1:])
 	case authCommandStatus:
