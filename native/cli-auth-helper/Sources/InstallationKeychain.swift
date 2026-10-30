@@ -59,6 +59,12 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
                         validate: { try proof.validate(now: Date()) })
     }
 
+    func signRepairProof(_ proof: InstallationRepairProof) throws -> Data {
+        try proof.validate()
+        return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0) },
+                        validate: { try proof.validate() })
+    }
+
     private func sign(scope: InstallationScope, message makeMessage: (Data) throws -> Data,
                       validate: () throws -> Void) throws -> Data {
         let context = installationContext()

@@ -164,6 +164,7 @@ runInstallationTests()
 runExistingInstallationKeyTests()
 runDeviceLinkTests()
 runDeviceLinkSigningTests()
+runInstallationRepairTests()
 runInstallationRegistrationTests()
 runInstallationLockTests()
 if failures > 0 { exit(1) }

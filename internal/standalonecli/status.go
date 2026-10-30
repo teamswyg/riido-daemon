@@ -1,6 +1,11 @@
 package standalonecli
 
-import "context"
+import (
+	"context"
+	"errors"
+
+	"github.com/teamswyg/riido-daemon/internal/userauth"
+)
 
 type Status struct {
 	Mode              string `json:"mode"`
@@ -26,6 +31,9 @@ func (s *Service) Logout(ctx context.Context) error {
 	err := s.manager.Logout(ctx)
 	if err == nil {
 		return nil
+	}
+	if errors.Is(err, userauth.ErrLocalRequestCleanupFailed) {
+		return err
 	}
 	check, cancel := cleanupContext(ctx)
 	defer cancel()

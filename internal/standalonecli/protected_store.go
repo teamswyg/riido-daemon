@@ -22,8 +22,9 @@ type protectedNativeStore interface {
 }
 
 type ProtectedStore struct {
-	Native   protectedNativeStore
-	Resource string
+	Native       protectedNativeStore
+	RepairNative protectedRepairNativeStore
+	Resource     string
 }
 
 func (s *ProtectedStore) Lock(ctx context.Context) (func(), error) {
