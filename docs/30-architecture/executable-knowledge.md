@@ -10,8 +10,8 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | --- | ---: |
 | Generated reader docs | 87 |
 | Direct SSOT docs | 6 |
-| Registered manual docs | 0 |
-| Scanned docs | 93 |
+| Registered manual docs | 1 |
+| Scanned docs | 94 |
 
 ## Generated Reader Origins
 
@@ -75,15 +75,21 @@ _None missing._
 | `local-qa-daily-evidence-sweep` | `24h` | local-qa-schedule.json trigger<br>local-qa-coverage.json local.qa.daily_freshness row<br>dashboard stale rows after expires_at | refreshes_expired_evidence<br>daily-evidence-sweep trigger identity<br>semantic peer binding for freshness changes | .riido-local/evidence/local-qa-schedule.json<br>.riido-local/evidence/local-qa-coverage.json<br>executable-knowledge-coverage/local-qa-schedule-binding.json | evidence_missing<br>expires_at_missing<br>freshness_row_missing<br>semantic_drift |
 ## Registered Manual Surfaces
 
-_None._
+| Group | Owner | Next artifact | Matched docs |
+| --- | --- | --- | ---: |
+| `device-assignment-delivery` | RIID-5827 | device-assignment-notifications.riido.json generated protocol/rollout evidence | 1 |
 
 ## Manual Hotspots
 
-_None._
+| Directory | Matched docs |
+| --- | ---: |
+| `docs/30-architecture` | 1 |
 
 ## Manual Samples
 
-_None._
+| Group | Path |
+| --- | --- |
+| `device-assignment-delivery` | `docs/30-architecture/device-assignment-notifications.md` |
 
 ## Evidence Loop
 
