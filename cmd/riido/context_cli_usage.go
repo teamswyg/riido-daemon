@@ -10,6 +10,7 @@ import (
 func printContextUsage(w io.Writer) {
 	fmt.Fprintln(w, "  # Riido work context (agents and people; add --json for the envelope)")
 	printWorkUsage(w)
+	printResourceUsage(w)
 	printContextGroupUsage(w)
 	printAgentsUsage(w)
 	printMeetingUsage(w)

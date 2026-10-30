@@ -12,6 +12,7 @@ const (
 	mainCommandDaemon              mainCommand = "daemon"
 	mainCommandVersion             mainCommand = "version"
 	mainCommandWork                mainCommand = "work"
+	mainCommandResource            mainCommand = "resource"
 	mainCommandContext             mainCommand = "context"
 	mainCommandAgents              mainCommand = "agents"
 	mainCommandMeeting             mainCommand = "meeting"

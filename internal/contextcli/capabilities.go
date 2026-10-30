@@ -79,6 +79,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		return CommandCapability{Name: name, Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable}
 	}
 	commands := []CommandCapability{
+		{Name: "resource list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; --work ID와 --team-id로 링크·첨부·Figma 참조를 조회합니다; 큰 메타데이터 자동 이어 읽기 한도 16 MiB, 초과 시 work body 사용; agent mode는 exit 8입니다"},
 		local("capabilities"),
 		local("doctor"),
 		{Name: "auth status", Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable, Note: "user mode는 서명된 보호 도우미의 저장 여부만 확인합니다; API 인증 확인은 whoami를 사용하세요"},
