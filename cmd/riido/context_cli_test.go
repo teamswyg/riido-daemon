@@ -10,7 +10,7 @@ import (
 
 func TestContextCLIUserModeUnimplementedReadsAreExplicitlyUnavailable(t *testing.T) {
 	h := newContextHarness(t, nil)
-	err := runWork(h.io, []string{"search", "--query", "fixture", "--json"})
+	err := runContext(h.io, []string{"changes", "--since", "fixture", "--json"})
 	if got := exitCodeOf(t, err); got != 8 {
 		t.Fatalf("want exit 8, got %d", got)
 	}

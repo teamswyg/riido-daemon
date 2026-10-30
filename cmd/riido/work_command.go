@@ -51,6 +51,9 @@ func runWork(c contextIO, args []string) error {
 	case workCommandBody:
 		return c.runUserBody(args[1:])
 	case workCommandSearch:
+		if c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserSearch(args[1:])
+		}
 		return c.runContextRead(workSearchCall(), args[1:])
 	default:
 		return c.fail(wantsJSON(args), contextcli.NewRequestID(),
