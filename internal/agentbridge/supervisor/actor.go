@@ -11,8 +11,9 @@ import (
 )
 
 type Actor struct {
-	cfg      Config
-	recovery *providerrecovery.Circuits
+	idleStops chan idleStopRequest
+	cfg       Config
+	recovery  *providerrecovery.Circuits
 
 	mailbox   chan envelope
 	stopReqCh chan lifecycle.ShutdownLevel

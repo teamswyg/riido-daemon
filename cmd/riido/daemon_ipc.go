@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net"
 	"time"
 
@@ -38,6 +39,18 @@ func dispatchDaemonRequest(conn net.Conn, req daemonRequest, flags startFlags, s
 		writeReady(conn, runtimes)
 	case daemonMethodMetrics:
 		writeMetrics(conn, runtimes)
+	case "shutdown-if-idle":
+		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
+		defer cancel()
+		if settings.prepareIdleUpdate == nil || !settings.prepareIdleUpdate(ctx) {
+			_ = writeDaemonJSON(conn, map[string]string{"shutdown": "deferred", "reason": "execution_or_delivery_pending"})
+			return
+		}
+		writeShutdownAck(conn, lifecycle.ShutdownGraceful)
+		select {
+		case shutdownCh <- lifecycle.ShutdownGraceful:
+		default:
+		}
 	case daemonMethodShutdown:
 		level := req.lifecycleShutdownLevel()
 		writeShutdownAck(conn, level)

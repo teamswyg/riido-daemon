@@ -33,7 +33,7 @@ jobs:
       AWS_DEFAULT_REGION: ap-northeast-2
       GH_TOKEN: ${{ github.token }}
       RIIDO_CDN_BUCKET: ${{ secrets.RIIDO_CDN_BUCKET }}
-      RIIDO_CDN_PREFIX: releases/latest/ai-agent
+      RIIDO_CDN_PREFIX: releases/safe/ai-agent
       RIIDO_CLOUDFRONT_DISTRIBUTION_ID: ${{ secrets.RIIDO_CLOUDFRONT_DISTRIBUTION_ID }}
     steps:
       - uses: actions/checkout@v6.0.3
@@ -53,6 +53,11 @@ jobs:
           echo "RIIDO_RELEASE_TAG=$tag" >> "$GITHUB_ENV"
           echo "RIIDO_CDN_BUCKET=${RIIDO_CDN_BUCKET:-riido-production}" >> "$GITHUB_ENV"
           echo "RIIDO_CLOUDFRONT_DISTRIBUTION_ID=${RIIDO_CLOUDFRONT_DISTRIBUTION_ID:-EWFLNFS69DNTL}" >> "$GITHUB_ENV"
+      # Match payload verification to the released packaging contract, even
+      # when production is released from a stabilization branch.
+      - uses: actions/checkout@v6.0.3
+        with:
+          ref: ${{ env.RIIDO_RELEASE_TAG }}
       - name: Download release assets
         run: |
           mkdir -p dist

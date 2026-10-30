@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"time"
 
@@ -40,6 +41,7 @@ const (
 )
 
 type daemonSettings struct {
+	prepareIdleUpdate     func(context.Context) bool
 	executionObservations func() []execution.Observation
 	ExecutionBindingStore *execution.BindingStore
 

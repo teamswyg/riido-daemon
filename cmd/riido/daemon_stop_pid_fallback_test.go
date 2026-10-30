@@ -19,7 +19,7 @@ func TestDaemonStopSocketFallsBackToPID(t *testing.T) {
 
 	wrongSocket := filepath.Join(t.TempDir(), "wrong.sock")
 	if err := run([]string{
-		"daemon", "stop",
+		"daemon", "stop", "--force",
 		"--socket", wrongSocket,
 		"--pid-file", paths.pid,
 		"--timeout-seconds", "3",
