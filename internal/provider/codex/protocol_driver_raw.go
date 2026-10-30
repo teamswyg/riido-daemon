@@ -18,6 +18,9 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		id, _ := rpcID(raw.Payload)
 		if pr, known := d.pending[id]; known {
 			delete(d.pending, id)
+			if pr.method == codexMethodThreadResume && d.req.ResumeSessionID != "" && codexRPCErrorMessage(raw.Payload) == "thread "+d.req.ResumeSessionID+" already has an active writer" {
+				return d.attachSharedWriter(ctx, io)
+			}
 			if pr.method == codexMethodThreadNameSet {
 				return []agentbridge.Event{{Kind: agentbridge.EventWarning, Err: "Codex thread name unavailable: " + codexRPCErrorMessage(raw.Payload)}}, nil, nil
 			}
@@ -27,6 +30,11 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		events, cmds, err := Translate(raw)
 		d.observeEvents(events)
 		return events, cmds, err
+	}
+	if d.shared != nil {
+		// The child does not own the native turn. Only correlated read replies
+		// may publish its output or completion.
+		return nil, nil, nil
 	}
 	if after, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok {
 		if events, handled := d.handleNotification(codexMethod(after), raw); handled {
