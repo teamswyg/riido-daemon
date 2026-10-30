@@ -8,11 +8,12 @@ import (
 )
 
 type tokenResponse struct {
-	AccessToken  string `json:"access_token"`
-	RefreshToken string `json:"refresh_token"`
-	TokenType    string `json:"token_type"`
-	ExpiresIn    int64  `json:"expires_in"`
-	Scope        string `json:"scope"`
+	AccessToken     string `json:"access_token"`
+	RefreshToken    string `json:"refresh_token"`
+	TokenType       string `json:"token_type"`
+	ExpiresIn       int64  `json:"expires_in"`
+	Scope           string `json:"scope"`
+	RefreshRecovery string `json:"refresh_recovery"`
 }
 
 func (c *Client) exchange(ctx context.Context, code, verifier, redirect string) (Credential, error) {
@@ -35,6 +36,10 @@ func (c *Client) token(ctx context.Context, form url.Values) (Credential, error)
 	if err := c.formRequest(ctx, c.config.Endpoints.TokenURL, form, &result); err != nil {
 		return Credential{}, err
 	}
+	return credentialFromToken(result)
+}
+
+func credentialFromToken(result tokenResponse) (Credential, error) {
 	if result.AccessToken == "" || !strings.EqualFold(result.TokenType, "Bearer") || result.ExpiresIn <= 0 || result.ExpiresIn > 31*24*60*60 {
 		return Credential{}, failure("INVALID_RESPONSE")
 	}

@@ -65,7 +65,7 @@ func TestNativeStorageCodecMigratesLegacyOnlyOnSave(t *testing.T) {
 		SchemaVersion string              `json:"schema_version"`
 		Credential    userauth.Credential `json:"credential"`
 	}
-	if err != nil || json.Unmarshal(saved, &envelope) != nil || envelope.SchemaVersion != "riido-cli-protected-session.v2" || !reflect.DeepEqual(envelope.Credential, credential) {
+	if err != nil || json.Unmarshal(saved, &envelope) != nil || envelope.SchemaVersion != protectedSessionVersion || !reflect.DeepEqual(envelope.Credential, credential) {
 		t.Fatal("next credential save did not migrate the original credential")
 	}
 }

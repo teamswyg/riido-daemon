@@ -121,7 +121,7 @@ func TestDoctorUserAPIRefreshAndHTTPFailures(t *testing.T) {
 					if err := r.ParseForm(); err != nil {
 						t.Error(err)
 					}
-					if r.Form.Get("grant_type") != "refresh_token" {
+					if r.Form.Get("grant_type") != "urn:riido:params:oauth:grant-type:refresh-recovery" || len(r.Form.Get("recovery_secret")) != 43 {
 						t.Error("wrong token grant")
 					}
 					if scenario == "revoked" {
@@ -129,7 +129,7 @@ func TestDoctorUserAPIRefreshAndHTTPFailures(t *testing.T) {
 						fmt.Fprint(w, `{"error":"invalid_grant","error_description":"private-revocation-reason"}`)
 						return
 					}
-					fmt.Fprint(w, `{"access_token":"new-fixture-access","refresh_token":"new-fixture-refresh","token_type":"Bearer","expires_in":3600,"scope":"read"}`)
+					fmt.Fprint(w, `{"access_token":"new-fixture-access","refresh_token":"new-fixture-refresh","token_type":"Bearer","expires_in":3600,"scope":"read","refresh_recovery":"v1"}`)
 				case "/graphql":
 					calls++
 					if scenario == "forbidden" {

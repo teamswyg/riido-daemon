@@ -60,7 +60,7 @@ func TestManagersShareOneRefreshTransaction(t *testing.T) {
 	var refreshes atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		refreshes.Add(1)
-		fmt.Fprint(w, `{"access_token":"new-access","refresh_token":"new-refresh","token_type":"Bearer","expires_in":3600}`)
+		fmt.Fprint(w, `{"access_token":"new-access","refresh_token":"new-refresh","token_type":"Bearer","expires_in":3600,"refresh_recovery":"v1"}`)
 	}))
 	defer server.Close()
 	client, _ := NewClient(configFor(server))
@@ -99,7 +99,7 @@ func TestLogoutWinsInFlightRefresh(t *testing.T) {
 		}
 		close(entered)
 		<-release
-		fmt.Fprint(w, `{"access_token":"new-access","refresh_token":"new-refresh","token_type":"Bearer","expires_in":3600}`)
+		fmt.Fprint(w, `{"access_token":"new-access","refresh_token":"new-refresh","token_type":"Bearer","expires_in":3600,"refresh_recovery":"v1"}`)
 	}))
 	defer server.Close()
 	client, _ := NewClient(configFor(server))
@@ -138,7 +138,7 @@ func TestAPIRetries401OnceButNot403(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				if r.URL.Path == "/oauth/token" {
 					refreshes.Add(1)
-					fmt.Fprint(w, `{"access_token":"new-access","token_type":"Bearer","expires_in":3600}`)
+					fmt.Fprint(w, `{"access_token":"new-access","refresh_token":"new-refresh","token_type":"Bearer","expires_in":3600,"refresh_recovery":"v1"}`)
 					return
 				}
 				n := calls.Add(1)
