@@ -17,7 +17,8 @@ const (
 // agents continue with `--cursor <next>` (work comments, agents list).
 func cursorPage(view string, data json.RawMessage) *contextcli.Page {
 	var page struct {
-		NextCursor string `json:"next_cursor"`
+		NextCursor string            `json:"next_cursor"`
+		Pages      []json.RawMessage `json:"pages"`
 	}
 	_ = json.Unmarshal(data, &page)
 	limit := commentPageSize
@@ -25,7 +26,7 @@ func cursorPage(view string, data json.RawMessage) *contextcli.Page {
 	case viewAgents:
 		limit = agentPageSize
 	case viewContent:
-		limit = 1
+		limit = max(1, len(page.Pages))
 	}
 	return &contextcli.Page{Limit: limit, NextCursor: page.NextCursor, Truncated: page.NextCursor != ""}
 }

@@ -37,7 +37,7 @@ func printWorkUsage(w io.Writer) {
 func printContextGroupUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido context get [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (agent runs default to the assigned task)")
 	fmt.Fprintln(w, "  riido context get --work <ID> --team-id <TEAM-ID> [--json]   (user API; direct context within one relation hop)")
-	fmt.Fprintln(w, "  riido context part <SOURCE-ID> --cursor <CURSOR> [--json]   (agent snapshot; use a cursor from the captured manifest)")
+	fmt.Fprintln(w, "  riido context part <SOURCE-ID> --cursor <CURSOR> [--budget CHARS] [--json]   (agent snapshot; one call returns consecutive captured pages of the part, about 48 KiB by default; continue with next_cursor)")
 	fmt.Fprintln(w, "  riido context changes --since SNAPSHOT [--json]   (unsupported, exit 8)")
 }
 

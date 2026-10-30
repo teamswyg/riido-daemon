@@ -1,6 +1,7 @@
 package main
 
 import (
+	"strconv"
 	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
@@ -11,7 +12,7 @@ import (
 func contextPartCall() contextReadCall {
 	return contextReadCall{
 		command: "context part",
-		spec:    contextcli.ArgSpec{MaxPositionals: 1},
+		spec:    contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--budget"}},
 		usage:   printContextGroupUsage,
 		payload: func(args contextcli.Args) (map[string]string, *contextcli.CLIError) {
 			if len(args.Positionals) != 1 || strings.TrimSpace(args.Cursor) == "" {
@@ -24,7 +25,16 @@ func contextPartCall() contextReadCall {
 			if ref.Kind != contextcli.WorkRefID {
 				return nil, contextcli.Fail(contextcli.CodeUsage, "페이지에 표시된 실제 자료 ID를 사용하세요", "표시 key 대신 원 응답의 source ID를 지정하세요")
 			}
-			return map[string]string{"work": ref.Value}, nil
+			payload := map[string]string{"work": ref.Value}
+			// --budget sizes how many consecutive captured pages one call returns.
+			if budget := args.Value("--budget"); budget != "" {
+				chars, err := strconv.Atoi(budget)
+				if err != nil || chars < 1 {
+					return nil, contextcli.Failf(contextcli.CodeUsage, "--budget 은 1 이상의 문자 수여야 합니다: %s", budget)
+				}
+				payload["budget_chars"] = strconv.Itoa(chars)
+			}
+			return payload, nil
 		},
 	}
 }

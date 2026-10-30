@@ -25,10 +25,14 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), fetchTimeout)
 	defer cancel()
-	result, err := b.Fetcher.FetchAssignmentContext(ctx, Query{
+	query := Query{
 		AgentID: binding.AgentID, AssignmentID: binding.AssignmentID, LeaseToken: binding.LeaseToken,
 		View: view, Target: queryTarget(req.Args), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
-	})
+	}
+	if view == viewContent {
+		query.MaxBytes = contentBatchBytes(req.Args)
+	}
+	result, err := fetchContent(ctx, b.Fetcher, query)
 	if err != nil {
 		return contextcli.FailureEnvelope(requestID, fetchFailure(err))
 	}
