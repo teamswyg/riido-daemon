@@ -7,6 +7,7 @@
 | Command group | Root help | Backing owner | Boundary |
 | --- | --- | --- | --- |
 | `riido work ...` | public | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener |
+| `riido resource ...` | public | cmd/riido, internal/userapi | user OAuth fixed read-scope projection of links, attachments and Figma references on the named work; does not fetch external URLs or follow related works; agent mode is explicitly unsupported |
 | `riido context ...` | public | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work |
 | `riido meeting ...` | public | cmd/riido, internal/contextcli | lists connected meeting metadata or reads captured parts through the run-authorized daemon broker; user get/body use fixed typed APIs for details, editor and structured board pages |
 | `riido agents ...` | public | cmd/riido, internal/contextcli | lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent |

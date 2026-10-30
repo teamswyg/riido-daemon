@@ -39,6 +39,21 @@
       ]
     },
     {
+      "name": "resource",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/userapi",
+      "boundary": "user OAuth fixed read-scope projection of links, attachments and Figma references on the named work; does not fetch external URLs or follow related works; agent mode is explicitly unsupported",
+      "subcommands": [
+        "list"
+      ],
+      "usage_tokens": [
+        "riido resource list --work <ID> --team-id <TEAM-ID>"
+      ],
+      "source_checks": [
+        "main-command-resource"
+      ]
+    },
+    {
       "name": "context",
       "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
@@ -438,6 +453,11 @@
       "name": "run-version-dispatch",
       "file": "cmd/riido/main.go",
       "contains": "return runVersion(args[1:])"
+    },
+    {
+      "name": "main-command-resource",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandResource            mainCommand = \"resource\""
     }
   ],
   "forbidden_source_tokens": [
@@ -639,6 +659,10 @@
         {
           "kind": "paragraph",
           "text": "The work-context commands let an agent running under the daemon, or a person in a terminal, read the Riido context of a work item on demand instead of receiving everything in the prompt. They extend this binary; there is no separate CLI engine."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Standalone user `riido resource list --work <ID> --team-id <TEAM-ID>` returns the named work's authorized stored links (nullable title/URL), attachments (fileName/fileLocation), and nullable Figma reference. It does not download external URLs, emit unrelated metadata fields, include adjacent works' resources in its result, or infer local repository authorization. The initial getComponentReadScope call still collects the existing authorized one-hop scope; the CLI projects only the unique component root matching the requested team and root reason. It preserves resource statuses and warns when a part is unavailable instead of treating it as an empty successful list. Deferred metadata is read with the original version and contiguous byte offsets through getComponentReadScopeBody; every request retains user authorization, then the complete JSON and SHA-256 are validated before selected fields are emitted. Auto-assembly is bounded at 16 MiB; larger metadata returns explicit incomplete with a directly executable `work body --part metadata` command containing the original work/team/version/offset. The typed limit error preserves that authorized version; it does not depend on repeating context or related-meeting queries and never returns a truncated list. A changed version, revoked permission, malformed page or cancellation emits no partial list. Stored nullable/empty values and order remain intact; missing, duplicated or contradictory part metadata fails closed. JSON uses the existing envelope and text quotes all remote strings. User resource IDs/team IDs are required; pagination/budget/workspace overrides are unsupported. Agent resource list is exit 8 without opening user credentials or issuing IPC. No new server endpoint or API allowlist is introduced; actual signed user-authenticated acceptance remains separate from synthetic HTTP tests."
         },
         {
           "kind": "paragraph",
