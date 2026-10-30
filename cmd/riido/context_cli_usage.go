@@ -20,6 +20,7 @@ func printContextUsage(w io.Writer) {
 }
 
 func printWorkUsage(w io.Writer) {
+	fmt.Fprintln(w, "  riido work tree <ID> --team-id <TEAM-ID> [--json]   (user live one-hop hierarchy; up to 10 selected children; no pagination)")
 	fmt.Fprintln(w, "  riido work <get|body|tree|relations|comments|replies|activity|search> ...")
 	fmt.Fprintln(w, "    riido work get|tree|relations <RIID-1234|ID> [--json]")
 	fmt.Fprintln(w, "    riido work get <ID> --team-id <TEAM-ID> [--json]   (standalone user API)")
