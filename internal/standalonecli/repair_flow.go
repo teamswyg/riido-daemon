@@ -56,7 +56,7 @@ func (f *repairFlow) run(ctx context.Context, restart bool) error {
 	if restart && result.State != "linked" {
 		// A generic 400 can mean a temporarily inactive client or principal.
 		// Only positive terminal evidence permits discarding the original pair.
-		terminal := err == nil && (result.State == "approval_expired" || result.State == "repair_expired")
+		terminal := err == nil && (result.State == "approval_expired" || result.State == "repair_expired" || result.State == "consent_rejected" || result.State == "recovery_expired")
 		if !terminal {
 			if err != nil {
 				return err
@@ -139,6 +139,10 @@ func (f *repairFlow) advance(ctx context.Context, result userauth.DeviceLinkReco
 		return repairLocalError("REPAIR_APPROVAL_EXPIRED")
 	case "repair_expired":
 		return repairLocalError("REPAIR_EXPIRED")
+	case "consent_rejected":
+		return repairLocalError("REPAIR_CONSENT_REJECTED")
+	case "recovery_expired":
+		return repairLocalError("REPAIR_RECOVERY_EXPIRED")
 	case "awaiting_approval":
 		if f.opened {
 			return nil

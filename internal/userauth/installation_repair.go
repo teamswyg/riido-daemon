@@ -104,7 +104,7 @@ func (c *Client) decodeInstallationRepairRecovery(raw []byte, input Installation
 		return result, repairFailure("REPAIR_INVALID_RESPONSE")
 	}
 	switch result.State {
-	case "awaiting_approval", "preparing", "approval_expired", "repair_expired", "linked":
+	case "awaiting_approval", "preparing", "approval_expired", "repair_expired", "consent_rejected", "recovery_expired", "linked":
 		return result, nil
 	}
 	return DeviceLinkRecoveryResult{}, repairFailure("REPAIR_INVALID_RESPONSE")

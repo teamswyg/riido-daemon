@@ -11,7 +11,7 @@ import (
 )
 
 func TestRepairExplicitRestartRequiresTerminalState(t *testing.T) {
-	for _, state := range []string{"approval_expired", "repair_expired", "awaiting_approval", "preparing", "linked"} {
+	for _, state := range []string{"approval_expired", "repair_expired", "consent_rejected", "recovery_expired", "awaiting_approval", "preparing", "linked"} {
 		t.Run(state, func(t *testing.T) {
 			var original string
 			creates := 0
@@ -39,7 +39,7 @@ func TestRepairExplicitRestartRequiresTerminalState(t *testing.T) {
 				t.Fatal(loadErr)
 			}
 			switch state {
-			case "approval_expired", "repair_expired":
+			case "approval_expired", "repair_expired", "consent_rejected", "recovery_expired":
 				if err == nil || after == nil || after.sameRequest(p) || creates != 1 || n.repairSigns != 1 {
 					t.Fatal("terminal restart lost new durable pair", err)
 				}
