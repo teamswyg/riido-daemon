@@ -11,6 +11,7 @@ var (
 	ErrReauthRequired                = errors.New("CLI authentication must be renewed")
 	ErrStoreLocked                   = errors.New("credential storage requires user confirmation")
 	ErrLoggedOut                     = errors.New("CLI authentication changed during the request")
+	ErrLocalRequestCleanupFailed     = errors.New("protected local authentication requests could not be cleared")
 )
 
 // Error intentionally excludes provider messages, URLs, bodies and tokens.

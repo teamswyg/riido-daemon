@@ -24,11 +24,18 @@ func (m *Manager) Logout(ctx context.Context) error {
 	}
 	defer unlock()
 	credential, err := m.store.Load(ctx)
+	if err != nil && !errors.Is(err, ErrNotAuthenticated) {
+		return storageError(err)
+	}
+	// Optional protected request custody is not an OAuth credential. Logout
+	// cancels it under the same lock even after the old grant was removed.
+	if auxiliary, ok := m.store.(interface{ ClearLocalRequestsOnLogout(context.Context) error }); ok {
+		if clearErr := auxiliary.ClearLocalRequestsOnLogout(ctx); clearErr != nil {
+			return errors.Join(ErrLocalRequestCleanupFailed, storageError(clearErr))
+		}
+	}
 	if errors.Is(err, ErrNotAuthenticated) {
 		return nil
-	}
-	if err != nil {
-		return storageError(err)
 	}
 	if err := m.store.Delete(ctx); err != nil {
 		return storageError(err)

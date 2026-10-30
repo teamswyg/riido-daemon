@@ -47,10 +47,13 @@ func printAgentsUsage(w io.Writer) {
 }
 
 func printAuthUsage(w io.Writer) {
-	fmt.Fprintln(w, "  riido auth <login|link|logout|status> [--json]")
+	fmt.Fprintln(w, "  riido auth <login|link|repair|logout|status> [--json]")
 	fmt.Fprintln(w, "    riido auth login [--browser]   (browser PKCE; signed credential helper required)")
 	fmt.Fprintln(w, "    riido auth link               (explicit device approval; resumes the original protected request)")
 	fmt.Fprintln(w, "    riido auth link --no-input    (receipt recovery only; fails if protected storage requires OS confirmation)")
+	fmt.Fprintln(w, "    riido auth repair            (existing key + fresh browser consent; no OAuth login or grant restoration)")
+	fmt.Fprintln(w, "    riido auth repair --restart  (explicit new consent after a terminal request; active requests are preserved)")
+	fmt.Fprintln(w, "    riido auth repair --no-input (existing receipt recovery only; OS protection still applies)")
 	fmt.Fprintln(w, "    --desktop and --with-token are unsupported (exit 8); secrets are never accepted as arguments")
 }
 
