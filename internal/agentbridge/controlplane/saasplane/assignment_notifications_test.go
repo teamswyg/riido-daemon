@@ -26,7 +26,7 @@ func TestAssignmentNotificationsOneStreamNoIdleFanout(t *testing.T) {
 		streams.Add(1)
 		if r.Header.Get("X-Riido-Device-Secret") != "secret" {
 			t.Error("stream missing device auth")
-			http.Error(w, "auth", 401)
+			http.Error(w, "auth", http.StatusUnauthorized)
 			return
 		}
 		w.Header().Set("Content-Type", "text/event-stream")
@@ -103,7 +103,9 @@ func TestAssignmentNotificationsRetryAndNewHintDuringClaim(t *testing.T) {
 		if polls.Load() == 2 {
 			plane.acceptAssignmentNotification(ctx, assignmentNotification{Bindings: []assignmentcontract.AgentRuntimeBinding{codexRuntimeBinding("a")}, AgentIDs: []string{"a"}})
 		}
-		json.NewEncoder(w).Encode(assignmentcontract.PollResponse{Action: assignmentcontract.PollNone})
+		if err := json.NewEncoder(w).Encode(assignmentcontract.PollResponse{Action: assignmentcontract.PollNone}); err != nil {
+			t.Error(err)
+		}
 	}))
 	defer server.Close()
 	plane, _ = New(Config{BaseURL: server.URL, DaemonID: "daemon-1", DeviceSecret: "secret"})
@@ -133,7 +135,10 @@ func TestAssignmentNotificationsRetryAndNewHintDuringClaim(t *testing.T) {
 func TestAssignmentNotificationsAuthFailureRetainsRetryWithoutBurst(t *testing.T) {
 	ctx := context.Background()
 	var polls atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { polls.Add(1); http.Error(w, "forbidden", 403) }))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		polls.Add(1)
+		http.Error(w, "forbidden", http.StatusForbidden)
+	}))
 	defer server.Close()
 	p, _ := New(Config{BaseURL: server.URL, DaemonID: "daemon-1", DeviceSecret: "secret"})
 	defer p.Close()

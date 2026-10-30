@@ -5,9 +5,25 @@
   "generated_doc": "docs/executable-knowledge.md",
   "workflow": ".github/workflows/repo-executable-knowledge-coverage.yml",
   "evidence_artifact": "repo-executable-knowledge-coverage",
-  "scan_roots": ["docs"],
-  "scan_files": ["README.md", "AGENTS.md", "NOTICE.md"],
-  "manual_groups": [],
+  "scan_roots": [
+    "docs"
+  ],
+  "scan_files": [
+    "README.md",
+    "AGENTS.md",
+    "NOTICE.md"
+  ],
+  "manual_groups": [
+    {
+      "id": "device-assignment-delivery",
+      "owner": "RIID-5827",
+      "reason": "Cross-repository rollout and compatibility contract; behavior is covered by focused HTTP, stream, retry and idle shutdown tests.",
+      "next_artifact": "device-assignment-notifications.riido.json generated protocol/rollout evidence",
+      "paths": [
+        "docs/30-architecture/device-assignment-notifications.md"
+      ]
+    }
+  ],
   "manifest_loop_budget": {
     "max_missing": 0,
     "max_missing_by_group": {

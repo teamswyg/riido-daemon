@@ -2,11 +2,12 @@ package supervisor
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/process"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
-	"testing"
-	"time"
 )
 
 func TestIdleUpdateIncludesPreparationAndUndeliveredReports(t *testing.T) {

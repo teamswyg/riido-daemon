@@ -23,11 +23,16 @@ func TestIdleShutdownLegacyAndBusyNeverFallsBackToPID(t *testing.T) {
 			}
 			defer conn.Close()
 			var req daemonRequest
-			json.NewDecoder(conn).Decode(&req)
+			if err := json.NewDecoder(conn).Decode(&req); err != nil {
+				t.Error(err)
+				return
+			}
 			if req.Method != "shutdown-if-idle" {
 				t.Errorf("unsafe method %s", req.Method)
 			}
-			json.NewEncoder(conn).Encode(response)
+			if err := json.NewEncoder(conn).Encode(response); err != nil {
+				t.Error(err)
+			}
 		}()
 		// A bogus PID file would produce a different error if fallback were attempted.
 		err = stopDaemonWithFlags(daemonStopFlags{socket: sock, pidFile: "/does-not-exist", timeoutSeconds: 1})
