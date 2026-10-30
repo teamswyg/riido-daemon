@@ -11,7 +11,7 @@ func renderDesktopMSIX(m manifest) string {
 		writeBullets(b, desktopFlow(m))
 		fmt.Fprintf(b, "The launcher passes %s when starting the daemon.\n\n", codeList(m.DesktopMSIX.RequiredEnv))
 		b.WriteString("## CDN latest mirror\n\n")
-		fmt.Fprintf(b, "GitHub Releases remain immutable. `%s` is a mutable development/test mirror only.\n\n", m.DesktopMSIX.CDNLatestBaseURL)
+		fmt.Fprintf(b, "GitHub Releases remain immutable. `%s` is the mutable production mirror for desktop clients that implement atomic idle shutdown. Legacy latest/staging paths stay frozen; staging uses releases/staging-safe/ai-agent.\n\n", m.DesktopMSIX.CDNLatestBaseURL)
 		fmt.Fprintf(b, "The mirror is published by `%s` using `%s` when a GitHub Release is published, with manual resync available through workflow dispatch.\n\n", m.CDNPublishWorkflow, m.CDNPublishScript)
 		b.WriteString("Mirror paths:\n\n")
 		writeBullets(b, m.DesktopMSIX.CDNLatestPaths)

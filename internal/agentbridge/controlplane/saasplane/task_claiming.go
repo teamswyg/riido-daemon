@@ -9,6 +9,9 @@ import (
 )
 
 func (p *Plane) ClaimTask(ctx context.Context, runtimeID string) (*bridge.TaskRequest, error) {
+	if req, handled, err := p.claimNotifiedTask(ctx, runtimeID); handled {
+		return req, err
+	}
 	provider := providerFromRuntimeID(runtimeID)
 	if p.dynamicBindingsEnabled() {
 		return p.claimDynamicBindingTask(ctx, runtimeID, provider)

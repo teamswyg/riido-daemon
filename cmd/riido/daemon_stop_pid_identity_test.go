@@ -18,7 +18,7 @@ func TestDaemonStopRejectsNonDaemonPidFile(t *testing.T) {
 		t.Fatalf("write pid: %v", err)
 	}
 
-	err := run([]string{"daemon", "stop", "--pid-file", pidPath, "--timeout-seconds", "1"})
+	err := run([]string{"daemon", "stop", "--force", "--pid-file", pidPath, "--timeout-seconds", "1"})
 	if err == nil || !strings.Contains(err.Error(), "pid identity") {
 		t.Fatalf("expected non-daemon pid rejection, got %v", err)
 	}

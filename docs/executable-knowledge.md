@@ -10,8 +10,8 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | --- | ---: |
 | Generated reader docs | 308 |
 | Direct SSOT docs | 6 |
-| Registered manual docs | 0 |
-| Scanned docs | 314 |
+| Registered manual docs | 1 |
+| Scanned docs | 315 |
 
 ## Generated Reader Origins
 
@@ -118,15 +118,21 @@ _None missing._
 _None._
 ## Registered Manual Surfaces
 
-_None._
+| Group | Owner | Next artifact | Matched docs |
+| --- | --- | --- | ---: |
+| `device-assignment-delivery` | RIID-5827 | device-assignment-notifications.riido.json generated protocol/rollout evidence | 1 |
 
 ## Manual Hotspots
 
-_None._
+| Directory | Matched docs |
+| --- | ---: |
+| `docs/30-architecture` | 1 |
 
 ## Manual Samples
 
-_None._
+| Group | Path |
+| --- | --- |
+| `device-assignment-delivery` | `docs/30-architecture/device-assignment-notifications.md` |
 
 ## Evidence Loop
 

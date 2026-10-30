@@ -28,6 +28,13 @@ func (a *Actor) claimAvailable(
 		// this wave began. Do not block their delivery on another idle wait.
 		longPoll := idx == len(runtimes)-1 && len(inFlight) == 0 && len(a.mailbox) == 0
 		runtimeClaimCtx := controlplane.ContextWithClaimLongPoll(claimCtx, longPoll)
+		owned := 0
+		for _, task := range inFlight {
+			if task.runtimeID == status.RuntimeID {
+				owned++
+			}
+		}
+		runtimeClaimCtx = controlplane.ContextWithClaimCapacity(runtimeClaimCtx, status.MaxConcurrent <= 0 || max(owned, status.RunningSessions) < status.MaxConcurrent)
 		if a.claimOne(ctx, runtimeClaimCtx, rt, status, inFlight) {
 			claimed = true
 		}

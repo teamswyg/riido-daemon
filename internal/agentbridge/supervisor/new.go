@@ -11,6 +11,7 @@ func New(cfg Config) (*Actor, error) {
 		return nil, err
 	}
 	return &Actor{
+		idleStops:               make(chan idleStopRequest),
 		cfg:                     cfg,
 		recovery:                providerrecovery.NewCircuits(),
 		mailbox:                 make(chan envelope, cfg.MailboxSize),

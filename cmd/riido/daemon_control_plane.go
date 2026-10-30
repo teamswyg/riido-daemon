@@ -13,6 +13,7 @@ import (
 func buildDaemonControlPlane(settings daemonSettings, startedAt time.Time) (controlplane.TaskSourcePort, controlplane.TaskReporterPort, string, error) {
 	if settings.SaaSURL != "" {
 		plane, err := saasplane.New(saasplane.Config{
+			AssignmentEvents:            true,
 			BaseURL:                     settings.SaaSURL,
 			DaemonID:                    settings.DaemonID,
 			DeviceID:                    settings.DeviceID,
