@@ -11,7 +11,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | Generated reader docs | 86 |
 | Direct SSOT docs | 6 |
 | Registered manual docs | 0 |
-| Scanned docs | 92 |
+| Scanned docs | 93 |
 
 ## Generated Reader Origins
 
