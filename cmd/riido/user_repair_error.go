@@ -16,6 +16,10 @@ func userRepairError(err error) *contextcli.CLIError {
 			return contextcli.Fail(contextcli.CodeAuthRequired, "연결 복구에는 브라우저 승인과 OS 사용자 확인이 필요합니다", "기존 요청은 유지됩니다. --no-input 없이 riido auth repair 를 실행하세요")
 		case "REPAIR_APPROVAL_EXPIRED", "REPAIR_EXPIRED":
 			return contextcli.Fail(contextcli.CodeConflict, "기존 복구 요청에 새 승인이 필요합니다", "새 요청을 승인하려면 riido auth repair --restart 를 실행하세요")
+		case "REPAIR_CONSENT_REJECTED":
+			return contextcli.Fail(contextcli.CodeConflict, "연결 복구 승인이 거절됐습니다", "기존 요청은 유지됩니다. 다시 승인하려면 riido auth repair --restart 를 실행하세요")
+		case "REPAIR_RECOVERY_EXPIRED":
+			return contextcli.Fail(contextcli.CodeConflict, "기존 복구 요청의 유효기간이 끝났습니다", "이미 연결을 완료했다면 riido auth login 으로 로그인하세요. 연결 복구가 계속 필요하면 riido auth repair --restart 로 새 승인을 요청하세요")
 		case "REPAIR_IN_PROGRESS":
 			return contextcli.Fail(contextcli.CodeConflict, "기존 복구 요청이 진행 중입니다", "기존 요청을 이어가려면 --restart 없이 riido auth repair 를 실행하세요")
 		case "REPAIR_BINDING_MISMATCH", "REPAIR_REQUEST_CHANGED":

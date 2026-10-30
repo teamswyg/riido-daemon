@@ -69,7 +69,7 @@ func TestInstallationRepairTransportUsesOnlyTypedAuthority(t *testing.T) {
 
 func TestInstallationRepairRecoveryStrictStatesAndErrors(t *testing.T) {
 	input := repairFixtureRecovery()
-	for _, state := range []string{"awaiting_approval", "preparing", "approval_expired", "repair_expired", "linked"} {
+	for _, state := range []string{"awaiting_approval", "preparing", "approval_expired", "repair_expired", "consent_rejected", "recovery_expired", "linked"} {
 		t.Run(state, func(t *testing.T) {
 			server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				linkReply(w, 200, map[string]string{"request_id": input.RequestID, "state": state})
