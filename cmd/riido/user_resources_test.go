@@ -23,6 +23,11 @@ func resourceHTTPFixture(t *testing.T, deferred bool, continuationStatus int) (*
 func resourceHTTPFixtureWithPadding(t *testing.T, deferred bool, continuationStatus int, padding string) (*standalonecli.Service, *[]string, string) {
 	t.Helper()
 	metadata := map[string]any{"details": map[string]any{"id": "work-one"}, "links": []any{map[string]any{"id": "link-one", "title": "제목\x1b[31m\n가짜 줄", "url": "https://external.example/private"}}, "attachments": []any{}, "figma": nil, "unselected": padding}
+	return metadataHTTPFixture(t, "resources", []string{"links", "attachments", "figma"}, metadata, deferred, continuationStatus)
+}
+
+func metadataHTTPFixture(t *testing.T, operation string, names []string, metadata map[string]any, deferred bool, continuationStatus int) (*standalonecli.Service, *[]string, string) {
+	t.Helper()
 	raw, _ := json.Marshal(metadata)
 	canonical, _ := json.Marshal([]string{"riido-read-part.v1", "component", "work-one", "team-one", "metadata", "{}", "riido_metadata", "json", string(raw)})
 	version := fmt.Sprintf("sha256:%x", sha256.Sum256(canonical))
@@ -69,13 +74,26 @@ func resourceHTTPFixtureWithPadding(t *testing.T, deferred bool, continuationSta
 			_ = json.NewEncoder(w).Encode(map[string]any{"data": map[string]any{"getComponentReadScopeBody": page(offset, limit)}})
 			return
 		}
-		calls = append(calls, "resources")
-		if !strings.Contains(body.Query, "query RiidoCLIResources") || strings.Contains(body.Query, "meetings") || strings.Contains(body.Query, "github") {
+		calls = append(calls, operation)
+		queryName := "query RiidoCLIResources"
+		if operation == "repositories" {
+			queryName = "query RiidoCLIRepositories"
+		}
+		if !strings.Contains(body.Query, queryName) || strings.Contains(body.Query, "meetings") || strings.Contains(body.Query, "mutation") {
 			t.Error("unexpected selection")
 		}
-		work := map[string]any{"id": "work-one", "kind": "component", "teamId": "team-one", "reasons": []any{map[string]any{"kind": "root"}}, "links": metadata["links"], "attachments": metadata["attachments"], "figma": nil}
+		if operation == "repositories" && (strings.Contains(body.Query, "links{") || strings.Contains(body.Query, "attachments{") || strings.Contains(body.Query, "figma{") || strings.Contains(body.Query, "comments{") || strings.Contains(body.Query, "aiSummary")) {
+			t.Error("unexpected repository content selection")
+		}
+		if operation == "resources" && strings.Contains(body.Query, "github{") {
+			t.Error("unexpected resource content selection")
+		}
+		work := map[string]any{"id": "work-one", "kind": "component", "teamId": "team-one", "reasons": []any{map[string]any{"kind": "root"}}}
+		for _, name := range names {
+			work[name] = metadata[name]
+		}
 		parts := []any{}
-		for _, name := range []string{"links", "attachments", "figma"} {
+		for _, name := range names {
 			status := "available"
 			if deferred {
 				status = "deferred"
@@ -85,7 +103,12 @@ func resourceHTTPFixtureWithPadding(t *testing.T, deferred bool, continuationSta
 		work["partsStatus"] = parts
 		if deferred {
 			work["contentPage"] = page(0, 1024)
-			work["links"] = []any{}
+			for _, name := range names {
+				work[name] = []any{}
+			}
+			if operation == "resources" {
+				work["figma"] = nil
+			}
 		}
 		_ = json.NewEncoder(w).Encode(map[string]any{"data": map[string]any{"getComponentReadScope": map[string]any{"schemaVersion": "riido-read-scope.v1", "rootId": "work-one", "teamId": "team-one", "status": "available", "works": []any{work}}}})
 	})
