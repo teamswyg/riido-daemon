@@ -13,6 +13,7 @@ const (
 	mainCommandVersion             mainCommand = "version"
 	mainCommandWork                mainCommand = "work"
 	mainCommandResource            mainCommand = "resource"
+	mainCommandRepo                mainCommand = "repo"
 	mainCommandContext             mainCommand = "context"
 	mainCommandAgents              mainCommand = "agents"
 	mainCommandMeeting             mainCommand = "meeting"

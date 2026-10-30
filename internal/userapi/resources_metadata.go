@@ -22,8 +22,8 @@ type ResourceMetadataLimitError struct {
 func (e *ResourceMetadataLimitError) Error() string { return ErrResourceMetadataTooLarge.Error() }
 func (e *ResourceMetadataLimitError) Unwrap() error { return ErrResourceMetadataTooLarge }
 
-func (r Reader) resourceMetadata(ctx context.Context, id, team string, first *ReadBodyPage) (resourceMetadata, error) {
-	var metadata resourceMetadata
+func (r Reader) workMetadata(ctx context.Context, id, team string, first *ReadBodyPage) (workMetadata, error) {
+	var metadata workMetadata
 	if !validDeferredPart(first, id, "component", "metadata", nil) {
 		return metadata, ErrInvalidResponse
 	}
@@ -56,7 +56,7 @@ func (r Reader) resourceMetadata(ctx context.Context, id, team string, first *Re
 		return metadata, ErrInvalidResponse
 	}
 	if fmt.Sprintf("sha256:%x", sha256.Sum256(canonical)) != first.Version || json.Unmarshal([]byte(raw.String()), &metadata) != nil || metadata.Details == nil || metadata.Details.ID != id {
-		return resourceMetadata{}, ErrInvalidResponse
+		return workMetadata{}, ErrInvalidResponse
 	}
 	return metadata, nil
 }

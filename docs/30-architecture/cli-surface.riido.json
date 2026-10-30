@@ -54,6 +54,21 @@
       ]
     },
     {
+      "name": "repo",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/userapi",
+      "boundary": "user OAuth lists Riido-stored repository and pull-request metadata for the named component; local Git/GitHub/SSH credentials are neither used nor probed; agent mode unsupported",
+      "subcommands": [
+        "list"
+      ],
+      "usage_tokens": [
+        "riido repo list --work <ID> --team-id <TEAM-ID>"
+      ],
+      "source_checks": [
+        "main-command-repo"
+      ]
+    },
+    {
       "name": "context",
       "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
@@ -458,6 +473,11 @@
       "name": "main-command-resource",
       "file": "cmd/riido/cli_commands.go",
       "contains": "mainCommandResource            mainCommand = \"resource\""
+    },
+    {
+      "name": "main-command-repo",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandRepo                mainCommand = \"repo\""
     }
   ],
   "forbidden_source_tokens": [
@@ -659,6 +679,10 @@
         {
           "kind": "paragraph",
           "text": "The work-context commands let an agent running under the daemon, or a person in a terminal, read the Riido context of a work item on demand instead of receiving everything in the prompt. They extend this binary; there is no separate CLI engine."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Standalone user `riido repo list --work <ID> --team-id <TEAM-ID>` reads Riido-stored linked repository metadata (id/fullName/isPrivate/repositoryUrl/source) and linked PR summaries (id/title/number/state/htmlUrl/updatedAt/commentsCount/aiShortSummary) with a fixed getComponentReadScope selection. The existing server collects its authorized one-hop scope; the CLI includes only the uniquely identified component root and does not infer links between the separate repository and PR arrays. It does not contact GitHub, clone/fetch a repository, read external PR content, probe local Git/GitHub/SSH credentials, or grant private-repository access. data.local_repository_authentication is always {used:false,availability:\"not_checked\"}; Riido metadata visibility is not evidence of external repository authorization. Agent mode fails with exit8 before opening user credentials or IPC. Empty/null values, private=false, source labels, ordering and nullable timestamps are preserved; missing required fields, duplicate IDs or contradictory availability fail closed. Missing/unavailable parts are not silently treated as complete empty results. JSON uses data.repo with workId/teamId/repositories/pullRequests/partsStatus/complete/metadataVersion. Text quotes remote values. The command shares the root/status/deferred-metadata reader with resource list: exact original version/team/selector/offset, complete canonical SHA-256 verification, 16MiB automatic assembly bound, no partial output on denial/conflict/cancellation, and a directly executable work body continuation with the original version on overflow. resource list behavior is preserved by its existing regressions. No new API allowlist, server schema or authentication scope is introduced. Actual deployed OAuth/native-helper acceptance remains separate from synthetic HTTP receipt tests."
         },
         {
           "kind": "paragraph",
