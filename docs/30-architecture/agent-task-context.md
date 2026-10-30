@@ -110,3 +110,13 @@ version and byte offset. Comment selectors use `--comment-id`, `--page` and
 `--comments-limit`; board selectors use `--board-cursor` and `--board-limit`.
 `--limit` remains the byte page size. The agent path still reads only captured
 parts and never uses the user's live body endpoint.
+
+### Codex shell environment for assignment CLI
+
+For daemon-owned Codex start/resume requests with an enabled context CLI, set only
+the four run-scoped Riido variables through the native request's
+`shell_environment_policy.set.<variable>` overrides, preserving existing user-set entries. This lets `inherit=core` retain the
+assignment capability, socket, task and workspace without inheriting unrelated
+process credentials. Do not alter the user's config file, inheritance, filters,
+sandbox or approval policy. Do not place values in instructions, files or logs.
+Desktop-owned writer queue requests still cannot receive these overrides.
