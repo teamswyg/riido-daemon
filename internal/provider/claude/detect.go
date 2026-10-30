@@ -27,23 +27,6 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 			Reason:         "claude executable not found on PATH and " + EnvOverride + " is not set",
 		}, nil
 	}
-	switch claudeAuthProbe(ctx, exe) {
-	case detectutil.AuthProbeAuthenticated:
-	case detectutil.AuthProbeUnauthenticated:
-		return agentbridge.DetectResult{
-			Executable:     exe,
-			HealthStatus:   hostintegration.ProviderHealthUnavailable,
-			DiagnosticCode: hostintegration.ProviderDiagnosticLoginRequired,
-			Reason:         claudeAuthRecoveryMessage,
-		}, nil
-	case detectutil.AuthProbeUnknown:
-		return agentbridge.DetectResult{
-			Executable:     exe,
-			HealthStatus:   hostintegration.ProviderHealthUnknown,
-			DiagnosticCode: hostintegration.ProviderDiagnosticAuthProbeFailed,
-			Reason:         "provider authentication probe did not complete",
-		}, nil
-	}
 	res := agentbridge.DetectResult{
 		Available:         true,
 		Executable:        exe,
@@ -58,9 +41,29 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 		HealthStatus:      hostintegration.ProviderHealthHealthy,
 		DiagnosticCode:    hostintegration.ProviderDiagnosticNone,
 	}
-	if v, ok := detectutil.VersionProbe(ctx, exe, "--version"); ok {
+	switch claudeAuthProbe(ctx, exe) {
+	case detectutil.AuthProbeAuthenticated:
+	case detectutil.AuthProbeUnauthenticated:
+		res.Available = false
+		res.HealthStatus = hostintegration.ProviderHealthUnavailable
+		res.DiagnosticCode = hostintegration.ProviderDiagnosticLoginRequired
+		res.Reason = claudeAuthRecoveryMessage
+	case detectutil.AuthProbeUnknown:
+		res.Available = false
+		res.HealthStatus = hostintegration.ProviderHealthUnknown
+		res.DiagnosticCode = hostintegration.ProviderDiagnosticAuthProbeFailed
+		res.Reason = "provider authentication probe did not complete"
+	}
+	if v, reason := detectutil.CLIVersionProbe(ctx, exe); reason == "" {
 		res.Version = v
 		res.Metadata["raw_version"] = v
+	} else {
+		res.Metadata["version_probe"] = reason
+		if res.HealthStatus == hostintegration.ProviderHealthHealthy {
+			res.HealthStatus = hostintegration.ProviderHealthUnknown
+			res.DiagnosticCode = hostintegration.ProviderDiagnosticVersionProbeFailed
+			res.Reason = reason
+		}
 	}
 	return res, nil
 }

@@ -8,7 +8,7 @@ import (
 )
 
 func claudeRuntimeModels() []runtimeactor.RuntimeModel {
-	if models := generatedProviderRuntimeModels(claudeprovider.Name, "sonnet"); len(models) > 0 {
+	if models := generatedProviderRuntimeModels(claudeprovider.Name, ""); len(models) > 0 {
 		return models
 	}
 	body := runtimeModelCommandOutput(claudeprovider.DefaultExecutable, "--help")
@@ -24,7 +24,7 @@ func parseClaudeRuntimeModelHelp(body []byte) []runtimeactor.RuntimeModel {
 			models = append(models, model)
 		}
 	}
-	return normalizeRuntimeModels(models, "sonnet")
+	return normalizeRuntimeModels(models, "")
 }
 
 func claudeModelHelpSection(help string) string {
