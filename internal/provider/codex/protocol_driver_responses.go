@@ -21,6 +21,10 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 	delete(d.pending, id)
 
 	switch pr.method {
+	case codexMethodThreadRead, codexMethodQueueList, codexMethodQueueAdd, codexMethodQueueDelete:
+		return d.handleSharedResponse(ctx, pr.method, mapField(raw.Payload, "result"), io)
+	case codexMethodThreadTurnsList:
+		return d.handleHistoryPage(ctx, raw, io)
 	case codexMethodInitialize:
 		return d.handleInitializeResponse(ctx, io)
 	case codexMethodThreadStart, codexMethodThreadResume:

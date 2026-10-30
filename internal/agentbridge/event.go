@@ -9,6 +9,7 @@ import (
 // Event is the run-scope envelope passed to the reducer. Fields not
 // applicable to a given Kind are simply zero-valued.
 type Event struct {
+	NativeHistory   *NativeHistoryMessage
 	RecoveryContext *assignment.RecoveryContext
 
 	ExecutionContext *assignment.ExecutionContext

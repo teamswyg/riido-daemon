@@ -25,7 +25,20 @@ func (a *Actor) reportTaskEvent(ctx context.Context, task *runningTask, ev agent
 }
 
 func retainReportEvent(task *runningTask, ev agentbridge.Event) {
-	if task == nil || !shouldRetainReportEvent(ev) || len(task.pendingEvents) >= maxPendingReportEvents {
+	if task == nil || !shouldRetainReportEvent(ev) {
+		return
+	}
+	limit := maxPendingReportEvents
+	if ev.NativeHistory != nil {
+		limit = 2000
+	}
+	count := 0
+	for _, pending := range task.pendingEvents {
+		if (pending.NativeHistory != nil) == (ev.NativeHistory != nil) {
+			count++
+		}
+	}
+	if count >= limit {
 		return
 	}
 	task.pendingEvents = append(task.pendingEvents, ev)
