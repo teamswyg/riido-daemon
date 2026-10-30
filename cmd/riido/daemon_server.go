@@ -49,6 +49,7 @@ func serveAgentDaemon(ctx lifecycle.Context, flags startFlags, settings daemonSe
 	if err != nil {
 		return err
 	}
+	settings.prepareIdleUpdate = supActor.PrepareIdleUpdate
 	settings.ownedExecutions = supActor.OwnedExecutions
 	settings.executionObservations = supActor.ExecutionObservations
 	defer func() {

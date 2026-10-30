@@ -43,12 +43,12 @@
     "download_source": "GitHub Release asset",
     "storage_root": "user-writable app data",
     "required_env": ["RIIDO_DEVICE_ID", "RIIDO_DEVICE_SECRET", "RIIDO_SAAS_URL"],
-    "cdn_latest_base_url": "https://cdn.riido.io/releases/latest/ai-agent/",
+    "cdn_latest_base_url": "https://cdn.riido.io/releases/safe/ai-agent/",
     "cdn_latest_paths": [
-      "releases/latest/ai-agent/riido-daemon_darwin_arm64.tar.gz",
-      "releases/latest/ai-agent/riido-daemon_darwin_amd64.tar.gz",
-      "releases/latest/ai-agent/riido-daemon_windows_amd64.zip",
-      "releases/latest/ai-agent/riido-daemon_windows_arm64.zip"
+      "releases/safe/ai-agent/riido-daemon_darwin_arm64.tar.gz",
+      "releases/safe/ai-agent/riido-daemon_darwin_amd64.tar.gz",
+      "releases/safe/ai-agent/riido-daemon_windows_amd64.zip",
+      "releases/safe/ai-agent/riido-daemon_windows_arm64.zip"
     ]
   },
   "forbidden_archive_items": [
