@@ -17,6 +17,9 @@ type AssignmentContextRequest struct {
 	Target       string `json:"target,omitempty"`
 	Cursor       string `json:"cursor,omitempty"`
 	RequestID    string `json:"request_id,omitempty"`
+	// MaxBytes asks a content read for consecutive pages of one part up to
+	// this encoded size. Zero keeps the single-page response.
+	MaxBytes int `json:"max_bytes,omitempty"`
 }
 
 // AssignmentContextSource is one source the control-plane recorded as read.

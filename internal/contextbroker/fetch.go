@@ -17,6 +17,8 @@ type Query struct {
 	Target       string
 	Cursor       string
 	RequestID    string
+	// MaxBytes batches consecutive captured pages of one part (content view).
+	MaxBytes int
 }
 
 // ResultSource is one source the control-plane recorded as read.

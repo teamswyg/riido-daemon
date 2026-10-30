@@ -17,7 +17,7 @@ type saasContextFetcher struct {
 
 func (f saasContextFetcher) FetchAssignmentContext(ctx context.Context, q contextbroker.Query) (contextbroker.Result, error) {
 	out, err := f.plane.FetchAssignmentContext(ctx, q.AgentID, saasplane.AssignmentContextRequest{
-		AssignmentID: q.AssignmentID, LeaseToken: q.LeaseToken, View: q.View, Target: q.Target, Cursor: q.Cursor, RequestID: q.RequestID,
+		AssignmentID: q.AssignmentID, LeaseToken: q.LeaseToken, View: q.View, Target: q.Target, Cursor: q.Cursor, RequestID: q.RequestID, MaxBytes: q.MaxBytes,
 	})
 	if err != nil {
 		if status, message, ok := saasplane.HTTPStatus(err); ok {
