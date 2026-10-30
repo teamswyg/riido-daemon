@@ -39,14 +39,31 @@ func (m *Manager) accessCredential(ctx context.Context, rejected, expectedSessio
 	if credential.AccessToken == "" {
 		return Credential{}, ErrNotAuthenticated
 	}
-	mustRefresh := !credential.ExpiresAt.After(time.Now().Add(15 * time.Second))
+	mustRefresh := credential.RefreshRecoverySecret != "" || !credential.ExpiresAt.After(time.Now().Add(15*time.Second))
 	if rejected != "" && rejected == credential.AccessToken {
 		mustRefresh = true
 	}
 	if !mustRefresh {
 		return credential, nil
 	}
-	fresh, err := m.client.Refresh(ctx, credential.RefreshToken)
+	if credential.RefreshToken == "" {
+		if err := m.store.Delete(ctx); err != nil {
+			return Credential{}, storageError(err)
+		}
+		return Credential{}, ErrReauthRequired
+	}
+	if credential.RefreshRecoverySecret == "" {
+		secret, err := newRefreshRecoverySecret()
+		if err != nil {
+			return Credential{}, err
+		}
+		credential.RefreshRecoverySecret = secret
+		// A failed/ambiguous preparation save must never send a rotation.
+		if err := m.store.Save(ctx, credential); err != nil {
+			return Credential{}, storageError(err)
+		}
+	}
+	fresh, err := m.client.RefreshRecover(ctx, credential.RefreshToken, credential.RefreshRecoverySecret)
 	if err != nil {
 		if errors.Is(err, ErrReauthRequired) {
 			if deleteErr := m.store.Delete(ctx); deleteErr != nil {
@@ -65,7 +82,8 @@ func (m *Manager) accessCredential(ctx context.Context, rejected, expectedSessio
 		fresh.Scope = credential.Scope
 	}
 	if err := m.store.Save(ctx, fresh); err != nil {
-		_ = m.client.Revoke(ctx, revocationToken(fresh))
+		// The atomic store contains either the old pending pair or the fresh
+		// credential. Both can recover; revoking here would destroy both.
 		return Credential{}, storageError(err)
 	}
 	return fresh, nil

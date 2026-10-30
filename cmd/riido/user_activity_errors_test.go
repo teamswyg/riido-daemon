@@ -53,7 +53,7 @@ func TestUserActivityRefreshRepeatsIdenticalRead(t *testing.T) {
 	service := commentService(t, func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/oauth/token" {
 			refreshes++
-			fmt.Fprint(w, `{"access_token":"refreshed-access","refresh_token":"refreshed-refresh","token_type":"Bearer","expires_in":3600,"scope":"read"}`)
+			fmt.Fprint(w, `{"access_token":"refreshed-access","refresh_token":"refreshed-refresh","token_type":"Bearer","expires_in":3600,"scope":"read","refresh_recovery":"v1"}`)
 			return
 		}
 		reads++

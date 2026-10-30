@@ -17,6 +17,7 @@ func (m *Manager) Login(ctx context.Context, credential Credential) error {
 	generation := m.generation.Add(1)
 	// A deliberate login creates a new identity even if a provider reuses tokens.
 	credential.SessionID = rand.Text()
+	credential.RefreshRecoverySecret = ""
 	unlock, err := m.lock(ctx)
 	if err != nil {
 		return err

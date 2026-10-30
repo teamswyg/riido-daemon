@@ -59,8 +59,8 @@ func TestProtectedLinkPhaseReadsV1WithoutRewritingAndMigratesOnSave(t *testing.T
 		SchemaVersion string         `json:"schema_version"`
 		Pending       map[string]any `json:"pending_link"`
 	}
-	if json.Unmarshal(n.raw, &envelope) != nil || envelope.SchemaVersion != "riido-cli-protected-session.v2" || envelope.Pending["phase"] != "prepared" {
-		t.Fatal("next successful save did not preserve phase in v2")
+	if json.Unmarshal(n.raw, &envelope) != nil || envelope.SchemaVersion != protectedSessionVersion || envelope.Pending["phase"] != "prepared" {
+		t.Fatal("next successful save did not preserve phase in current version")
 	}
 }
 
@@ -95,7 +95,7 @@ func TestProtectedLinkPhaseBeginPersistsPreparedV2(t *testing.T) {
 	var envelope struct {
 		SchemaVersion string `json:"schema_version"`
 	}
-	if json.Unmarshal(n.raw, &envelope) != nil || envelope.SchemaVersion != "riido-cli-protected-session.v2" {
+	if json.Unmarshal(n.raw, &envelope) != nil || envelope.SchemaVersion != protectedSessionVersion {
 		t.Fatal("new pending does not use phase-bearing version")
 	}
 }

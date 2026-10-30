@@ -19,12 +19,13 @@ type Config struct {
 }
 
 type Credential struct {
-	SessionID    string    `json:"session_id"`
-	AccessToken  string    `json:"access_token"`
-	RefreshToken string    `json:"refresh_token"`
-	ExpiresAt    time.Time `json:"expires_at"`
-	TokenType    string    `json:"token_type"`
-	Scope        string    `json:"scope,omitempty"`
+	SessionID             string    `json:"session_id"`
+	AccessToken           string    `json:"access_token"`
+	RefreshToken          string    `json:"refresh_token"`
+	RefreshRecoverySecret string    `json:"refresh_recovery_secret,omitempty"`
+	ExpiresAt             time.Time `json:"expires_at"`
+	TokenType             string    `json:"token_type"`
+	Scope                 string    `json:"scope,omitempty"`
 }
 
 func (Credential) String() string   { return "[redacted OAuth credential]" }
