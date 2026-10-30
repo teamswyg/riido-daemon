@@ -10,13 +10,13 @@ import (
 
 func TestContextCLIUserModeUnimplementedReadsAreExplicitlyUnavailable(t *testing.T) {
 	h := newContextHarness(t, nil)
-	err := runWork(h.io, []string{"tree", "RIID-5839", "--json"})
+	err := runWork(h.io, []string{"search", "--query", "fixture", "--json"})
 	if got := exitCodeOf(t, err); got != 8 {
 		t.Fatalf("want exit 8, got %d", got)
 	}
 	env := decodeEnvelope(t, h.stdout.Bytes())
-	if env.Error == nil || env.Error.Code != contextcli.CodeUserModeUnavailable || env.Error.NextAction == "" {
-		t.Fatalf("want USER_MODE_UNAVAILABLE with next action, got %+v", env.Error)
+	if env.Error == nil || env.Error.Code != contextcli.CodeControlPlaneUnsupported || env.Error.NextAction == "" {
+		t.Fatalf("want CONTROL_PLANE_UNSUPPORTED with next action, got %+v", env.Error)
 	}
 	if len(h.daemon.requests) != 0 {
 		t.Fatal("user mode must not call the daemon broker")

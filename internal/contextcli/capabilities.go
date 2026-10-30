@@ -48,7 +48,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		if name == "work activity" {
 			return CommandCapability{Name: name, Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID와 --team-id, --page/--limit으로 live 활동을 조회합니다; 서버 활동 조회 권한 배포가 필요하며 agent mode는 exit 8입니다"}
 		}
-		if name == "whoami" || name == "work get" || name == "work comments" || name == "work relations" || name == "context get" || name == "meeting get" {
+		if name == "whoami" || name == "work get" || name == "work tree" || name == "work comments" || name == "work relations" || name == "context get" || name == "meeting get" {
 			note := noteDaemonBroker + "; " + noteUserMode
 			if name == "work get" {
 				note += "; user mode는 작업 ID와 --team-id만 지원합니다"
@@ -61,6 +61,9 @@ func Capabilities(cliVersion string) CapabilitiesData {
 			}
 			if name == "meeting get" {
 				note += "; user mode는 미팅 ID와 --team-id, --cursor/--limit으로 보드를 이어 읽으며 서버 read-scope 계약 배포가 필요합니다"
+			}
+			if name == "work tree" {
+				note += "; user mode는 작업 ID와 --team-id로 프로젝트·목표·상위 작업과 하위 최대 10개를 한 단계 조회합니다; 서버 read-scope 계약 배포가 필요합니다"
 			}
 			if name == "work relations" {
 				note += "; user mode는 작업 ID와 --team-id로 직접 관계를 실시간 조회하며 페이지 옵션은 없습니다; agent mode는 기존 snapshot을 사용합니다; 서버 관계 조회 권한 배포가 필요합니다"
