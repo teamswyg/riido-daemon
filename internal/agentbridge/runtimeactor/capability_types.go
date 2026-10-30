@@ -1,10 +1,15 @@
 package runtimeactor
 
-import "github.com/teamswyg/riido-contracts/hostintegration"
+import (
+	"time"
+
+	"github.com/teamswyg/riido-contracts/hostintegration"
+)
 
 // Capability is the daemon-side view of a single provider's runtime
 // readiness. Built from Adapter.Detect.
 type Capability struct {
+	VersionObservedAt         time.Time                              `json:"version_observed_at,omitzero"`
 	Provider                  string                                 `json:"provider"`
 	Available                 bool                                   `json:"available"`
 	Version                   string                                 `json:"version,omitempty"`

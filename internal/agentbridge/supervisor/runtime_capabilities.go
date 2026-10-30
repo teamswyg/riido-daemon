@@ -1,6 +1,10 @@
 package supervisor
 
-import "github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+import (
+	"time"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
+)
 
 func runtimeCapabilityMaps(caps []runtimeactor.Capability) (map[string]bool, map[string]string) {
 	boolCaps := map[string]bool{}
@@ -40,6 +44,9 @@ func runtimeCapabilityAttrs(out map[string]string, capability runtimeactor.Capab
 	out[prefix+"adapter_id"] = capability.AdapterID
 	out[prefix+"adapter_version"] = capability.AdapterVersion
 	out[prefix+"provider_version"] = capability.Version
+	if !capability.VersionObservedAt.IsZero() {
+		out[prefix+"provider_version_observed_at"] = capability.VersionObservedAt.Format(time.RFC3339Nano)
+	}
 }
 
 func runtimeCapabilityPrefix(capability runtimeactor.Capability) string {
