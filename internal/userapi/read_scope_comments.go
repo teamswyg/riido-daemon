@@ -16,7 +16,7 @@ type ReadScopeCommentsRequest struct {
 }
 
 func (q ReadScopeCommentsRequest) Valid() bool {
-	kind := q.ResourceKind == "component" || q.ResourceKind == "backlog" || q.ResourceKind == "intake"
+	kind := q.ResourceKind == "component" || q.ResourceKind == "backlog" || q.ResourceKind == "intake" || q.ResourceKind == "meeting"
 	return kind && q.ResourceID != "" && q.TeamID != "" && q.Page > 0 && q.Page <= math.MaxInt32 && q.Limit > 0 && q.Limit <= 100 &&
 		int64(q.Page-1)*int64(q.Limit) <= math.MaxInt32 && (q.Version != "" || q.Page == 1) &&
 		(q.Version == "" || readBodyVersionPattern.MatchString(q.Version))

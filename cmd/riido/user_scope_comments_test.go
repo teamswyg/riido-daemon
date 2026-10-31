@@ -74,3 +74,20 @@ func TestUserScopeCommentsRejectsUnversionedContinuationAndSanitizesConflict(t *
 		t.Fatalf("conflict was not sanitized: exit=%d", code)
 	}
 }
+
+func TestUserWorkCommentsRejectMeetingKind(t *testing.T) {
+	for _, sub := range []string{"comments", "replies"} {
+		h := newContextHarness(t, nil)
+		h.io.userSession = func(contextcli.Args) (*standalonecli.Service, error) {
+			t.Fatal("work command accepted a meeting kind")
+			return nil, nil
+		}
+		args := []string{sub, "meeting-one", "--kind", "meeting", "--team-id", "team-one", "--json"}
+		if sub == "replies" {
+			args = append(args, "--comment-id", "parent-one")
+		}
+		if code := exitCodeOf(t, runWork(h.io, args)); code != 2 {
+			t.Fatalf("meeting kind accepted by work: exit=%d", code)
+		}
+	}
+}

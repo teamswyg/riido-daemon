@@ -11,7 +11,7 @@
 | `riido repo ...` | public | cmd/riido, internal/userapi | user OAuth lists Riido-stored repository and pull-request metadata for the named component; local Git/GitHub/SSH credentials are neither used nor probed; agent mode unsupported |
 | `riido thread ...` | public | cmd/riido, internal/userauth, internal/userapi | User-only retained thread projection. Original OAuth stays at fixed monolith; a fresh task-scoped ticket goes to fixed CP GET. No pagination or redirect, never an all-time completeness claim. |
 | `riido context ...` | public | cmd/riido, internal/contextcli | returns the base work-context bundle and snapshot changes under the same mode rules as work |
-| `riido meeting ...` | public | cmd/riido, internal/contextcli | lists connected meeting metadata or reads captured parts through the run-authorized daemon broker; user get/body use fixed typed APIs for details, editor and structured board pages |
+| `riido meeting ...` | public | cmd/riido, internal/contextcli | lists connected meeting metadata or reads captured parts through the run-authorized daemon broker; user get/body/comments use fixed typed APIs for details, editor, structured board and comment/reply pages |
 | `riido agents ...` | public | cmd/riido, internal/contextcli | lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent |
 | `riido auth ...` | public | cmd/riido, internal/contextcli | user-mode sign-in state; never accepts secrets as arguments and never prints credentials |
 | `riido whoami` | public | cmd/riido, internal/contextcli | reports the acting principal, workspace, and mode without printing secrets |
