@@ -70,6 +70,23 @@
       ]
     },
     {
+      "name": "thread",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/userauth, internal/userapi",
+      "boundary": "User-only retained thread projection. Original OAuth stays at fixed monolith; a fresh task-scoped ticket goes to fixed CP GET. No pagination or redirect, never an all-time completeness claim.",
+      "subcommands": [
+        "list",
+        "show"
+      ],
+      "usage_tokens": [
+        "riido thread list --work <ID> --workspace <WORKSPACE-ID>",
+        "riido thread show <THREAD-ID> --work <ID> --workspace <WORKSPACE-ID>"
+      ],
+      "source_checks": [
+        "main-command-thread"
+      ]
+    },
+    {
       "name": "context",
       "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
@@ -479,6 +496,11 @@
       "name": "main-command-repo",
       "file": "cmd/riido/cli_commands.go",
       "contains": "mainCommandRepo                mainCommand = \"repo\""
+    },
+    {
+      "name": "main-command-thread",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandThread              mainCommand = \"thread\""
     }
   ],
   "forbidden_source_tokens": [
@@ -842,7 +864,7 @@
         },
         {
           "kind": "paragraph",
-          "text": "Secrets never travel in argv. `--token`, `--secret`, `--password`, `--api-key` and their `--flag=value` forms are rejected with exit 2 on every work-context command; `riido auth login --with-token` is unsupported and does not read stdin. No command prints stored tokens. Set `RIIDO_CLI_API_URL` to select the API origin (default https://monolith.riido.io); origin-specific credentials are not shared across environments. User reads use only fixed GraphQL queries, retry a read once after a 401 refresh and never retry a 403. HTTP 429 from any standalone read (including existing whoami and work get) returns RATE_LIMITED/exit 7 using the existing retryable contract, without an automatic retry or sleep; Retry-After does not trigger hidden polling. Logout deletes local credentials first and reports remote revocation failure separately."
+          "text": "Secrets never travel in argv. `--token`, `--secret`, `--password`, `--api-key` and their `--flag=value` forms are rejected with exit 2 on every work-context command; `riido auth login --with-token` is unsupported and does not read stdin. No command prints stored tokens. Set `RIIDO_CLI_API_URL` to select the API origin (default https://monolith.riido.io); origin-specific credentials are not shared across environments. User GraphQL reads use only fixed queries, retry a read once after a 401 refresh and never retry a 403. Thread reads use the dedicated fixed monolith ticket and CP history endpoints below, without an automatic retry. HTTP 429 from any standalone read (including existing whoami and work get) returns RATE_LIMITED/exit 7 using the existing retryable contract, without an automatic retry or sleep; Retry-After does not trigger hidden polling. Logout deletes local credentials first and reports remote revocation failure separately."
         },
         {
           "kind": "paragraph",
@@ -867,6 +889,14 @@
         {
           "kind": "paragraph",
           "text": "The observer first proves the capability works with `whoami` and matches the exact active execution. It then observes both execution ownership and the native slot absent twice on the same daemon PID/start time/version before invoking `whoami` and `context get` once each with that same capability. The local-only `whoami` rejection rules out a server-side permission denial masquerading as broker revocation. Both calls must return CLI exit 4, PERMISSION_DENIED and no data/sources; a daemon restart, inconclusive status, timeout, reappearing execution or another error is a failure. Socket reads and the overall watcher have absolute time limits, so partial byte trickles cannot extend the budget. This proves local ended-run rejection, not the separate control-plane stale-lease path (exit 10), server terminal persistence, or release acceptance. It never dispatches, cancels, restarts or replaces a daemon; use the external watcher so provider process cleanup cannot terminate the observer."
+        },
+        {
+          "text": "RIID-5972 user thread list/show reads the existing server-retained v3 task history through a fixed two-hop authentication flow. The original OAuth stays on the configured monolith origin; a task-bound opaque ticket is exchanged at POST /oauth/cli/thread-read-tickets and sent only to the pinned corresponding CP origin (production monolith.riido.io -> ai-api.riido.io; staging monolith.api.riido.io -> staging.ai-api.riido.io). Unknown/custom origins are unsupported before protected storage access. Both hops reject redirects and cookies; no credential or response-selected target is accepted from arguments. Protected-session locking and generation checks span exchange and bounded history consumption so account changes do not publish another session response. Each command exchanges a fresh ticket; no ticket cache, stream, write or daemon authority is added.",
+          "kind": "paragraph"
+        },
+        {
+          "text": "thread list --work ID --workspace WORKSPACE-ID returns summaries of the full retained response; thread show THREAD-ID --work ID --workspace WORKSPACE-ID returns the named retained record and its agent snapshot only after validating the full response. It is not an all-time archive: complete=false and projection_complete=true describe the known retention boundary, with an explicit retained-history warning. Missing named records are not found within this retained view, not proof of all-time absence. No page/cursor/limit/budget or external URL option is supported. More than 16 MiB, malformed/missing identity, duplicate or case-aliased DTO fields, or null required scalar/array JSON (including assigned_agent_ids and messages; empty arrays must be []) fails without partial data. Names, identifiers and message text are escaped in terminal output. Actual server activation, real OAuth acceptance and native signing remain independent gates.",
+          "kind": "paragraph"
         }
       ]
     }

@@ -12,6 +12,7 @@ func printContextUsage(w io.Writer) {
 	printWorkUsage(w)
 	printResourceUsage(w)
 	printRepoUsage(w)
+	printThreadUsage(w)
 	printContextGroupUsage(w)
 	printAgentsUsage(w)
 	printMeetingUsage(w)
