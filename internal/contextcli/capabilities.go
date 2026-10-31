@@ -45,6 +45,9 @@ func ReadCommandUnavailable(name string) bool {
 // Capabilities returns the static capability table for cliVersion.
 func Capabilities(cliVersion string) CapabilitiesData {
 	agentRead := func(name string) CommandCapability {
+		if name == "work search" {
+			return CommandCapability{Name: name, Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; --workspace ID와 --query, --cursor/--limit으로 현재 권한의 제목·키·본문을 검색합니다; 새 서버 검색 API 배포가 필요하며 agent mode는 exit 8입니다"}
+		}
 		if name == "work activity" {
 			return CommandCapability{Name: name, Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID와 --team-id, --page/--limit으로 live 활동을 조회합니다; 서버 활동 조회 권한 배포가 필요하며 agent mode는 exit 8입니다"}
 		}

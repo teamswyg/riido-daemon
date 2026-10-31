@@ -31,7 +31,8 @@
       ],
       "usage_tokens": [
         "riido work <get|body|tree|relations|comments|replies|activity|search>",
-        "riido work activity <ID> --team-id <TEAM-ID>"
+        "riido work activity <ID> --team-id <TEAM-ID>",
+        "riido work search --workspace <WORKSPACE-ID> --query <TEXT>"
       ],
       "source_checks": [
         "main-command-work",
@@ -679,6 +680,10 @@
         {
           "kind": "paragraph",
           "text": "The work-context commands let an agent running under the daemon, or a person in a terminal, read the Riido context of a work item on demand instead of receiving everything in the prompt. They extend this binary; there is no separate CLI engine."
+        },
+        {
+          "kind": "paragraph",
+          "text": "User `work search --workspace ID --query TEXT [--cursor CURSOR] [--limit 1..100]` uses protected OAuth and fixed RiidoCLIWorkSearch / searchWorkspaceWork. The additive component API searches accessible component (including hierarchy kinds), backlog and intake titles, stored/display keys and visible description/current document text; completed/archived work is included, deleted/permanently deleted work and templates excluded. It requires original active workspace/team membership before paging, with no demo/admin substitution or M1 candidate cap. Provider JSON text nodes/HTML text are selected from the current stored projection (explicit empty stays empty); external content, comment and meeting search are separate. Query uses literal normalized case/whitespace substring semantics, 1..200 Unicode runes. Default20/max100, live updatedAt DESC/kind/id order, workspace/query-bound opaque cursor and per-request authorization; no stable cross-request snapshot, relevance ranking or hidden totals. Server selects current sources and bounds work/batch source bytes at 4MiB/8MiB before serialization; known Riido mention display labels are searchable and arbitrary attributes are excluded. Server scans bounded candidate batches and fails whole request on unreadable body/timeout instead of partial success. JSON data.search validates schema, workspace/query, limit, required/nullable fields, matchedFields, order/duplicates and complete/nextCursor. Text quotes remote values; continuation names the unchanged options and returns only a canonical base64url cursor, never an executable command interpolating the search query. Agent work search remains exit8 before user credentials/IPC. Server query/allowlist deployment and actual OAuth/OS acceptance remain distinct from synthetic HTTP proof."
         },
         {
           "kind": "paragraph",
