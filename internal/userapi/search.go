@@ -3,6 +3,7 @@ package userapi
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"slices"
 	"strings"
 	"time"
@@ -57,19 +58,20 @@ func (r Reader) Search(ctx context.Context, q WorkSearchRequest) (*WorkSearchPag
 		cursor = &q.Cursor
 	}
 	var data struct {
-		Page *struct {
-			WorkSearchPage
-			Complete *bool `json:"complete"`
-		} `json:"searchWorkspaceWork"`
+		Page json.RawMessage `json:"searchWorkspaceWork"`
 	}
 	if err := r.read(ctx, workSearchQuery, map[string]any{"workspaceId": q.WorkspaceID, "query": q.NormalizedQuery(), "cursor": cursor, "limit": q.Limit}, &data); err != nil {
 		return nil, err
 	}
-	if data.Page == nil || data.Page.Complete == nil {
+	var page struct {
+		WorkSearchPage
+		Complete *bool `json:"complete"`
+	}
+	if json.Unmarshal(data.Page, &page) != nil || page.Complete == nil || !workSearchNullableFieldsPresent(data.Page) {
 		return nil, ErrInvalidResponse
 	}
-	p := &data.Page.WorkSearchPage
-	p.Complete = *data.Page.Complete
+	p := &page.WorkSearchPage
+	p.Complete = *page.Complete
 	if p.SchemaVersion != "riido-work-search.v1" || p.WorkspaceID != q.WorkspaceID || p.Query != q.NormalizedQuery() || p.Limit != q.Limit || p.Items == nil || len(p.Items) > q.Limit {
 		return nil, ErrInvalidResponse
 	}
@@ -118,4 +120,24 @@ func (r Reader) Search(ctx context.Context, q WorkSearchRequest) (*WorkSearchPag
 		priorTime, priorKind, priorID = stamp, item.Kind, item.ID
 	}
 	return p, nil
+}
+
+// GraphQL nullable selections must be present with an explicit null. Missing
+// fields indicate an incomplete response, not a completed empty page.
+func workSearchNullableFieldsPresent(raw json.RawMessage) bool {
+	var fields struct {
+		NextCursor json.RawMessage              `json:"nextCursor"`
+		Items      []map[string]json.RawMessage `json:"items"`
+	}
+	if json.Unmarshal(raw, &fields) != nil || len(fields.NextCursor) == 0 {
+		return false
+	}
+	for _, item := range fields.Items {
+		for _, name := range []string{"componentType", "key", "keyNumber"} {
+			if len(item[name]) == 0 {
+				return false
+			}
+		}
+	}
+	return true
 }

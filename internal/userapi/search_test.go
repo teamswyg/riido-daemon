@@ -45,9 +45,13 @@ func TestWorkSearchFixedReadAndCursor(t *testing.T) {
 
 func TestWorkSearchRejectsMalformedOrPartialResults(t *testing.T) {
 	for name, change := range map[string]func(map[string]any){
-		"shell-next":   func(f map[string]any) { f["nextCursor"] = "$(echo unsafe)" },
-		"newline-next": func(f map[string]any) { f["nextCursor"] = "cGFnZS10d28\n" },
-		"workspace":    func(f map[string]any) { f["workspaceId"] = "other" }, "query": func(f map[string]any) { f["query"] = "other" }, "schema": func(f map[string]any) { f["schemaVersion"] = "future" }, "limit": func(f map[string]any) { f["limit"] = 20 }, "missing-items": func(f map[string]any) { delete(f, "items") }, "missing-complete": func(f map[string]any) { delete(f, "complete") }, "missing-next": func(f map[string]any) { f["nextCursor"] = nil }, "terminal-next": func(f map[string]any) { f["complete"] = true }, "short-incomplete": func(f map[string]any) { f["items"] = f["items"].([]any)[:1] }, "duplicate": func(f map[string]any) { f["items"].([]any)[1] = f["items"].([]any)[0] }, "invalid-kind": func(f map[string]any) { f["items"].([]any)[0].(map[string]any)["kind"] = "meeting" }, "missing-title": func(f map[string]any) { delete(f["items"].([]any)[0].(map[string]any), "title") }, "unknown-match": func(f map[string]any) { f["items"].([]any)[0].(map[string]any)["matchedFields"] = []any{"private"} }, "reordered": func(f map[string]any) { items := f["items"].([]any); items[0], items[1] = items[1], items[0] },
+		"missing-terminal-next":   func(f map[string]any) { f["complete"] = true; delete(f, "nextCursor") },
+		"missing-leaf-type":       func(f map[string]any) { delete(f["items"].([]any)[1].(map[string]any), "componentType") },
+		"missing-leaf-key":        func(f map[string]any) { delete(f["items"].([]any)[1].(map[string]any), "key") },
+		"missing-leaf-key-number": func(f map[string]any) { delete(f["items"].([]any)[1].(map[string]any), "keyNumber") },
+		"shell-next":              func(f map[string]any) { f["nextCursor"] = "$(echo unsafe)" },
+		"newline-next":            func(f map[string]any) { f["nextCursor"] = "cGFnZS10d28\n" },
+		"workspace":               func(f map[string]any) { f["workspaceId"] = "other" }, "query": func(f map[string]any) { f["query"] = "other" }, "schema": func(f map[string]any) { f["schemaVersion"] = "future" }, "limit": func(f map[string]any) { f["limit"] = 20 }, "missing-items": func(f map[string]any) { delete(f, "items") }, "missing-complete": func(f map[string]any) { delete(f, "complete") }, "missing-next": func(f map[string]any) { f["nextCursor"] = nil }, "terminal-next": func(f map[string]any) { f["complete"] = true }, "short-incomplete": func(f map[string]any) { f["items"] = f["items"].([]any)[:1] }, "duplicate": func(f map[string]any) { f["items"].([]any)[1] = f["items"].([]any)[0] }, "invalid-kind": func(f map[string]any) { f["items"].([]any)[0].(map[string]any)["kind"] = "meeting" }, "missing-title": func(f map[string]any) { delete(f["items"].([]any)[0].(map[string]any), "title") }, "unknown-match": func(f map[string]any) { f["items"].([]any)[0].(map[string]any)["matchedFields"] = []any{"private"} }, "reordered": func(f map[string]any) { items := f["items"].([]any); items[0], items[1] = items[1], items[0] },
 	} {
 		t.Run(name, func(t *testing.T) {
 			f := searchPageFixture()
