@@ -26,6 +26,9 @@ func runMeeting(c contextIO, args []string) error {
 	}
 	switch meetingCommand(args[0]) {
 	case meetingCommandList:
+		if c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserMeetingList(args[1:])
+		}
 		// List selects work and budget with the same defaults as context get.
 		call := contextGetCall()
 		call.command, call.usage = "meeting list", printMeetingUsage

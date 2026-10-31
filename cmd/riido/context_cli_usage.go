@@ -64,6 +64,7 @@ func printAuthUsage(w io.Writer) {
 
 func printMeetingUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido meeting list [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (snapshot metadata; defaults to the assigned task)")
+	fmt.Fprintln(w, "  riido meeting list --work <ID> --team-id <TEAM-ID> [--json]   (user API; selected direct meetings, maximum 5; summaries only)")
 	fmt.Fprintln(w, "  riido meeting get <MEETING-ID> [--budget CHARS] [--json]   (captured document body)")
 	fmt.Fprintln(w, "  riido meeting get <MEETING-ID> --team-id <TEAM-ID> [--cursor C] [--limit N] [--json]   (user API; details, body and board; default 100 cards, maximum 200)")
 	fmt.Fprintln(w, "  riido meeting comments <MEETING-ID> --team-id <TEAM-ID> [--comment-id PARENT-ID] [--page N] [--limit N] [--version VERSION] [--json]   (user API; default 20, maximum 100; page > 1 requires original version)")

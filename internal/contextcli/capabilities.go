@@ -51,7 +51,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		if name == "work activity" {
 			return CommandCapability{Name: name, Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID와 --team-id, --page/--limit으로 live 활동을 조회합니다; 서버 활동 조회 권한 배포가 필요하며 agent mode는 exit 8입니다"}
 		}
-		if name == "whoami" || name == "work get" || name == "work tree" || name == "work comments" || name == "work relations" || name == "context get" || name == "meeting get" {
+		if name == "whoami" || name == "work get" || name == "work tree" || name == "work comments" || name == "work relations" || name == "context get" || name == "meeting get" || name == "meeting list" {
 			note := noteDaemonBroker + "; " + noteUserMode
 			if name == "work get" {
 				note += "; user mode는 작업 ID와 --team-id만 지원합니다"
@@ -64,6 +64,9 @@ func Capabilities(cliVersion string) CapabilitiesData {
 			}
 			if name == "meeting get" {
 				note += "; user mode는 미팅 ID와 --team-id, --cursor/--limit으로 보드를 이어 읽으며 서버 read-scope 계약 배포가 필요합니다"
+			}
+			if name == "meeting list" {
+				note += "; user mode는 --work ID와 --team-id로 직접 연결된 미팅 최대 5개의 현재 요약을 조회합니다; 서버 read-scope 및 활성 멤버십 검사 배포가 필요하며 전체 목록이나 본문 완독은 아닙니다"
 			}
 			if name == "work tree" {
 				note += "; user mode는 작업 ID와 --team-id로 프로젝트·목표·상위 작업과 하위 최대 10개를 한 단계 조회합니다; 서버 read-scope 계약 배포가 필요합니다"
