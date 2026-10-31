@@ -14,6 +14,7 @@ const (
 	mainCommandWork                mainCommand = "work"
 	mainCommandResource            mainCommand = "resource"
 	mainCommandRepo                mainCommand = "repo"
+	mainCommandThread              mainCommand = "thread"
 	mainCommandContext             mainCommand = "context"
 	mainCommandAgents              mainCommand = "agents"
 	mainCommandMeeting             mainCommand = "meeting"

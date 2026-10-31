@@ -82,6 +82,8 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		return CommandCapability{Name: name, Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable}
 	}
 	commands := []CommandCapability{
+		{Name: "thread list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업·워크스페이스 ID로 현재 서버 보관 대화 요약을 조회합니다; 별도 monolith ticket/CP authorizer 활성화 필요, 전체 과거 기록 보장 없음; agent mode exit 8"},
+		{Name: "thread show", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 대화 ID와 작업·워크스페이스 ID로 현재 서버 보관 메시지를 조회합니다; 매번 같은 권한을 재확인하며 16 MiB 초과 exit 9, 페이지 없음; agent mode exit 8"},
 		{Name: "repo list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; --work ID와 --team-id로 저장된 저장소·PR 메타데이터를 조회합니다; 로컬 Git/GitHub/SSH 인증은 사용·확인하지 않습니다; 큰 메타데이터 자동 이어 읽기 한도 16 MiB, 초과 시 work body 사용; agent mode는 exit 8입니다"},
 		{Name: "resource list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; --work ID와 --team-id로 링크·첨부·Figma 참조를 조회합니다; 큰 메타데이터 자동 이어 읽기 한도 16 MiB, 초과 시 work body 사용; agent mode는 exit 8입니다"},
 		local("capabilities"),

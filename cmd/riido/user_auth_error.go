@@ -14,6 +14,12 @@ import (
 
 func userAuthError(err error) *contextcli.CLIError {
 	switch {
+	case errors.Is(err, userauth.ErrThreadReadUnsupported):
+		return contextcli.Fail(contextcli.CodeUnsupported, "이 API 환경에서는 대화 조회를 지원하지 않습니다", "Riido production 또는 staging API origin을 사용하세요")
+	case errors.Is(err, userauth.ErrThreadReadIncomplete):
+		return contextcli.Fail(contextcli.CodeIncomplete, "대화 응답이 16 MiB 한도를 초과해 조회를 완료하지 못했습니다", "현재 API는 대화 페이지 조회를 지원하지 않습니다. Riido 화면에서 확인하세요")
+	case errors.Is(err, userapi.ErrThreadNotRetained):
+		return contextcli.Fail(contextcli.CodeNotFound, "현재 권한으로 볼 수 있는 서버 보관분에 해당 대화가 없습니다", "작업·대화 ID를 확인하세요. 과거에 대화가 없었다는 의미는 아닙니다")
 	case errors.Is(err, userauth.ErrNotAuthenticated), errors.Is(err, userauth.ErrReauthRequired), errors.Is(err, userapi.ErrAuthentication):
 		return contextcli.Fail(contextcli.CodeAuthRequired, "Riido CLI 로그인이 필요하거나 만료되었습니다", "riido auth login")
 	case errors.Is(err, userauth.ErrStoreLocked):
