@@ -10,9 +10,10 @@ import (
 type meetingCommand string
 
 const (
-	meetingCommandList meetingCommand = "list"
-	meetingCommandGet  meetingCommand = "get"
-	meetingCommandBody meetingCommand = "body"
+	meetingCommandList     meetingCommand = "list"
+	meetingCommandGet      meetingCommand = "get"
+	meetingCommandBody     meetingCommand = "body"
+	meetingCommandComments meetingCommand = "comments"
 )
 
 func runMeeting(c contextIO, args []string) error {
@@ -36,6 +37,8 @@ func runMeeting(c contextIO, args []string) error {
 		return c.runContextRead(meetingGetCall(), args[1:])
 	case meetingCommandBody:
 		return c.runUserResourceBody(args[1:], "meeting")
+	case meetingCommandComments:
+		return c.runUserMeetingComments(args[1:])
 	default:
 		return c.fail(wantsJSON(args), contextcli.NewRequestID(), contextcli.Failf(contextcli.CodeUsage, "알 수 없는 meeting 하위 명령: %s", args[0]))
 	}

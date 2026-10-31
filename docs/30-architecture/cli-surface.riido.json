@@ -110,16 +110,18 @@
       "name": "meeting",
       "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
-      "boundary": "lists connected meeting metadata or reads captured parts through the run-authorized daemon broker; user get/body use fixed typed APIs for details, editor and structured board pages",
+      "boundary": "lists connected meeting metadata or reads captured parts through the run-authorized daemon broker; user get/body/comments use fixed typed APIs for details, editor, structured board and comment/reply pages",
       "subcommands": [
         "list",
         "get",
-        "body"
+        "body",
+        "comments"
       ],
       "usage_tokens": [
         "riido meeting list",
         "riido meeting get",
-        "riido meeting body"
+        "riido meeting body",
+        "riido meeting comments"
       ],
       "source_checks": [
         "main-command-meeting",
@@ -405,7 +407,7 @@
     {
       "name": "meeting-subcommand-vocabulary",
       "file": "cmd/riido/meeting_command.go",
-      "contains": "meetingCommandGet  meetingCommand = \"get\""
+      "contains": "meetingCommandGet      meetingCommand = \"get\""
     },
     {
       "name": "agents-subcommand-vocabulary",
@@ -813,7 +815,7 @@
         },
         {
           "kind": "paragraph",
-          "text": "User-mode `work activity`, `work comments`, `work body`, `meeting get` and `meeting body` accept `--limit`; other commands retain exit 8 unless their typed page contract explicitly supports it. `--team` and `--profile` remain unsupported. Agent comments keep a fixed 20-item page and agent lists a fixed 50-item page; continue with their next cursor. Agent `work replies` is unsupported and never opens user storage or daemon IPC. CLI requests do not forward an ineffective default limit or team filter."
+          "text": "User-mode `work activity`, `work comments`, `work body`, `meeting get`, `meeting comments` and `meeting body` accept `--limit`; other commands retain exit 8 unless their typed page contract explicitly supports it. `--team` and `--profile` remain unsupported. Agent comments keep a fixed 20-item page and agent lists a fixed 50-item page; continue with their next cursor. Agent `work replies` is unsupported and never opens user storage or daemon IPC. CLI requests do not forward an ineffective default limit or team filter."
         },
         {
           "kind": "paragraph",
@@ -837,11 +839,11 @@
         },
         {
           "kind": "paragraph",
-          "text": "Read-scope comment continuation is a fixed getReadScopeComments query for component/backlog/intake only. User work comments or work replies selects this surface with --kind (or --version, default component); --comment-id is required only for replies. Both support positive int32-safe page/limit (default 1/20, max100) and page>1 requires the original SHA256 version. A changed comment set returns sanitized conflict/exit10. Source ID/kind/team, reply parent, page/limit, exact version and next-page progress are checked; no arbitrary query, meeting comment access or Agent-to-user fallback is introduced. Initial context comments carry the same identity/version/continuation fields. Existing component-only commands without those flags retain their earlier live offset/unpaginated API contracts."
+          "text": "Read-scope comment continuation is a fixed getReadScopeComments query for component/backlog/intake and meeting. User work comments or work replies selects this surface with --kind (or --version, default component); --comment-id is required only for replies. Both support positive int32-safe page/limit (default 1/20, max100) and page>1 requires the original SHA256 version. A changed comment set returns sanitized conflict/exit10. Source ID/kind/team, reply parent, page/limit, exact version and next-page progress are checked; no arbitrary query or Agent-to-user fallback is introduced. Initial context comments carry the same identity/version/continuation fields. Existing component-only commands without those flags retain their earlier live offset/unpaginated API contracts."
         },
         {
           "kind": "paragraph",
-          "text": "Large typed metadata, comment pages and board pages expose contentPage with the original resource, version and normalized selector. Deferred items/cards are placeholders, never evidence of an empty page. User work body supports metadata and comments_page; meeting body supports metadata and board_page. Copy the returned part/version/offset and selector using --comment-id, --page, --comments-limit or --board-cursor, --board-limit. --limit always bounds UTF-8 bytes, separate from logical item counts. Selectors for another part/kind, incompatible or unknown flags, malformed values and mismatched response selectors fail before emitting data. Keep the same selector and version until complete, concatenate content in offset order, then parse the reconstructed JSON and follow its original logical continuation. Deferred results carry CONTENT_DEFERRED guidance. No automatic unbounded hydration, live external fetch, credential fallback or daemon connection is introduced."
+          "text": "Large typed metadata, comment pages and board pages expose contentPage with the original resource, version and normalized selector. Deferred items/cards are placeholders, never evidence of an empty page. User work body supports metadata and comments_page; meeting body supports metadata, comments_page and board_page. Copy the returned part/version/offset and selector using --comment-id, --page, --comments-limit or --board-cursor, --board-limit. --limit always bounds UTF-8 bytes, separate from logical item counts. Selectors for another part/kind, incompatible or unknown flags, malformed values and mismatched response selectors fail before emitting data. Keep the same selector and version until complete, concatenate content in offset order, then parse the reconstructed JSON and follow its original logical continuation. Deferred results carry CONTENT_DEFERRED guidance. No automatic unbounded hydration, live external fetch, credential fallback or daemon connection is introduced."
         },
         {
           "kind": "paragraph",
@@ -897,6 +899,10 @@
         {
           "text": "thread list --work ID --workspace WORKSPACE-ID returns summaries of the full retained response; thread show THREAD-ID --work ID --workspace WORKSPACE-ID returns the named retained record and its agent snapshot only after validating the full response. It is not an all-time archive: complete=false and projection_complete=true describe the known retention boundary, with an explicit retained-history warning. Missing named records are not found within this retained view, not proof of all-time absence. No page/cursor/limit/budget or external URL option is supported. More than 16 MiB, malformed/missing identity, duplicate or case-aliased DTO fields, or null required scalar/array JSON (including assigned_agent_ids and messages; empty arrays must be []) fails without partial data. Names, identifiers and message text are escaped in terminal output. Actual server activation, real OAuth acceptance and native signing remain independent gates.",
           "kind": "paragraph"
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 user meeting comments MEETING-ID --team-id TEAM-ID [--comment-id PARENT-ID] [--page N] [--limit N] [--version VERSION] reads authorized live meeting comments or replies through getReadScopeComments(resourceKind=meeting). Defaults are page 1 and limit 20, maximum100; page>1 requires the original comment-set version. The requested meeting/team and original user are reauthorized on every page, including after membership changes. Large pages preserve contentPage and CONTENT_DEFERRED; use meeting body --part comments_page with the original body version and selector (--comment-id/--page/--comments-limit), then reconstruct JSON before advancing its logical nextPage. Agent mode is unsupported before user storage or daemon IPC. Work commands retain their component/backlog/intake-only kind contract. Legacy meeting comments and getComponentRelatedMeetings are not opened as a CLI fallback. Server read-scope meeting-comment support must be deployed separately."
         }
       ]
     }

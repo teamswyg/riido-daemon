@@ -100,10 +100,11 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		commands = append(commands, agentRead("work "+sub))
 	}
 	commands = append(commands, CommandCapability{Name: "work replies", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID, --team-id, --comment-id가 필요합니다; 기존 component 조회에는 페이지가 없고 --kind 선택 시 --page/--limit과 원 --version을 사용합니다; 서버 댓글 조회 계약 배포가 필요합니다"})
-	commands = append(commands, CommandCapability{Name: "work body", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID, --team-id, 원 version·byte offset으로 본문과 큰 typed 자료를 읽습니다; contentPage.selector는 work body의 --comment-id/--page/--comments-limit 또는 meeting body의 --board-cursor/--board-limit으로 보존하세요; 서버 read-scope 계약 배포가 필요합니다"})
+	commands = append(commands, CommandCapability{Name: "work body", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID, --team-id, 원 version·byte offset으로 본문과 큰 typed 자료를 읽습니다; contentPage.selector는 댓글의 --comment-id/--page/--comments-limit 또는 미팅 보드의 --board-cursor/--board-limit으로 보존하세요; 서버 read-scope 계약 배포가 필요합니다"})
 	commands = append(commands, agentRead("agents list"), agentRead("agents show"))
 	commands = append(commands, agentRead("meeting list"), agentRead("meeting get"))
-	commands = append(commands, CommandCapability{Name: "meeting body", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 미팅 ID, --team-id, 원 version·byte offset으로 본문과 큰 typed 자료를 읽습니다; contentPage.selector는 work body의 --comment-id/--page/--comments-limit 또는 meeting body의 --board-cursor/--board-limit으로 보존하세요; 서버 read-scope 계약 배포가 필요합니다"})
+	commands = append(commands, CommandCapability{Name: "meeting comments", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 미팅 ID, --team-id, 답글의 --comment-id와 --page/--limit을 사용합니다; 다음 페이지에는 원 --version이 필요합니다; 서버 meeting 댓글 read-scope 계약 배포가 필요합니다"})
+	commands = append(commands, CommandCapability{Name: "meeting body", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 미팅 ID, --team-id, 원 version·byte offset으로 본문과 큰 typed 자료를 읽습니다; contentPage.selector는 댓글의 --comment-id/--page/--comments-limit 또는 미팅 보드의 --board-cursor/--board-limit으로 보존하세요; 서버 read-scope 계약 배포가 필요합니다"})
 	return CapabilitiesData{
 		CLIVersion:            cliVersion,
 		EnvelopeSchemaVersion: EnvelopeSchemaVersion,

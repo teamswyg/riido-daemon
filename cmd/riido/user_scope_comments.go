@@ -35,6 +35,10 @@ func (c contextIO) runUserScopeComments(sub workCommand, raw []string) error {
 	if cliErr != nil {
 		return c.fail(args.JSON, id, cliErr)
 	}
+	return c.readUserScopeComments(id, args, q)
+}
+
+func (c contextIO) readUserScopeComments(id string, args contextcli.Args, q userapi.ReadScopeCommentsRequest) error {
 	session, err := c.openUserSession(args)
 	if err != nil {
 		return c.fail(args.JSON, id, userAuthError(err))
@@ -92,7 +96,7 @@ func scopeCommentArguments(sub workCommand, args contextcli.Args) (userapi.ReadS
 	if args.HasValue("--version") && q.Version == "" {
 		return bad()
 	}
-	if !q.Valid() {
+	if (q.ResourceKind != "component" && q.ResourceKind != "backlog" && q.ResourceKind != "intake") || !q.Valid() {
 		return bad()
 	}
 	return q, nil

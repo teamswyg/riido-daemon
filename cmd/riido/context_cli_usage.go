@@ -66,7 +66,9 @@ func printMeetingUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido meeting list [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (snapshot metadata; defaults to the assigned task)")
 	fmt.Fprintln(w, "  riido meeting get <MEETING-ID> [--budget CHARS] [--json]   (captured document body)")
 	fmt.Fprintln(w, "  riido meeting get <MEETING-ID> --team-id <TEAM-ID> [--cursor C] [--limit N] [--json]   (user API; details, body and board; default 100 cards, maximum 200)")
-	fmt.Fprintln(w, "  riido meeting body <MEETING-ID> --team-id <TEAM-ID> --version <VERSION> [--part document|description|document_alternate|metadata|board_page] [--offset N] [--limit BYTES] [--json]")
+	fmt.Fprintln(w, "  riido meeting comments <MEETING-ID> --team-id <TEAM-ID> [--comment-id PARENT-ID] [--page N] [--limit N] [--version VERSION] [--json]   (user API; default 20, maximum 100; page > 1 requires original version)")
+	fmt.Fprintln(w, "  riido meeting body <MEETING-ID> --team-id <TEAM-ID> --version <VERSION> [--part document|description|document_alternate|metadata|comments_page|board_page] [--offset N] [--limit BYTES] [--json]")
+	fmt.Fprintln(w, "    comments_page: copy contentPage.selector with [--comment-id PARENT-ID] [--page N] [--comments-limit N]; keep it unchanged while reading byte pages")
 	fmt.Fprintln(w, "    board_page: copy contentPage.selector with [--board-cursor CURSOR] [--board-limit N]; keep it unchanged while reading byte pages")
 }
 
