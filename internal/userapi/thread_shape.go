@@ -37,6 +37,11 @@ func threadJSONShape(raw []byte, kind reflect.Type) bool {
 			}
 		}
 	case reflect.Slice:
+		// CP emits [] for empty required collections, never null. A missing
+		// projection must not become a successful zero-message result.
+		if isNull {
+			return false
+		}
 		var values []json.RawMessage
 		if json.Unmarshal(raw, &values) != nil {
 			return false
