@@ -2,19 +2,19 @@ package contextcli
 
 import "testing"
 
-func TestUnsupportedCommandsAreNotAdvertisedAsBrokerReads(t *testing.T) {
+func TestChangesAdvertisesOnlyAgentBrokerMode(t *testing.T) {
 	for _, name := range []string{"context changes"} {
 		found := false
 		for _, command := range Capabilities("test").Commands {
 			if command.Name == name {
 				found = true
-				if command.Status != CommandUnavailable || command.Note == "" {
-					t.Fatalf("unsupported command advertised as supported: %+v", command)
+				if command.Status != CommandNeedsDaemon || command.Note == "" || len(command.Modes) != 1 || command.Modes[0] != ModeAgent {
+					t.Fatalf("changes must be Agent-only and require daemon: %+v", command)
 				}
 			}
 		}
 		if !found {
-			t.Fatalf("missing explicit unavailable capability %s", name)
+			t.Fatalf("missing comparison capability %s", name)
 		}
 	}
 }
