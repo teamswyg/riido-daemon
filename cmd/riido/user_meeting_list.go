@@ -12,7 +12,7 @@ import (
 
 func (c contextIO) runUserMeetingList(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{Values: []string{"--work", "--team-id", "--page", "--budget"}})
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{Values: []string{"--work", "--team-id", "--page", "--budget"}}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -20,17 +20,13 @@ func (c contextIO) runUserMeetingList(raw []string) error {
 		printMeetingUsage(c.stderr)
 		return nil
 	}
-	if !args.HasValue("--work") || !args.HasValue("--team-id") {
+	if !args.HasValue("--work") {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "--work와 --team-id가 필요합니다", "riido meeting list --work <ID> --team-id <TEAM-ID>"))
 	}
-	if slices.ContainsFunc([]string{"--workspace", "--cursor", "--page", "--budget"}, args.HasValue) {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "미팅 목록은 범위·페이지 옵션을 지원하지 않습니다", "작업 ID와 팀 ID만 지정하세요. 직접 연결된 미팅을 서버가 최대 5개 선택합니다"))
+	if slices.ContainsFunc([]string{"--cursor", "--page", "--budget"}, args.HasValue) {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "미팅 목록은 범위·페이지 옵션을 지원하지 않습니다", "작업 ID와 팀 ID 또는 표시 키와 워크스페이스/팀 범위를 지정하세요. 직접 연결된 미팅을 서버가 최대 5개 선택합니다"))
 	}
-	work, cliErr := userRelationID(args.Value("--work"))
-	if cliErr != nil {
-		return c.fail(args.JSON, requestID, cliErr)
-	}
-	team, cliErr := userRelationID(args.Value("--team-id"))
+	work, team, cliErr := userWorkTarget(args, args.Value("--work"))
 	if cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
@@ -40,7 +36,7 @@ func (c contextIO) runUserMeetingList(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	list, err := session.Meetings(ctx, work, team)
+	list, err := session.Meetings(ctx, work, team, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}

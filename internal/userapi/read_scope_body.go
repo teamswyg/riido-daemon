@@ -25,8 +25,13 @@ type ReadBodyRequest struct {
 }
 
 func (q ReadBodyRequest) Valid() bool {
+	return q.ComponentID != "" && q.TeamID != "" && q.ValidContent()
+}
+
+// ValidContent validates the continuation before resolving a work key.
+func (q ReadBodyRequest) ValidContent() bool {
 	_, selectorOK := normalizedReadPartSelector(q.Kind, q.Part, q.Selector)
-	return selectorOK && validBodyResourceKind(q.Kind) && q.ComponentID != "" && q.TeamID != "" &&
+	return selectorOK && validBodyResourceKind(q.Kind) &&
 		readBodyVersionPattern.MatchString(q.Version) && q.Offset >= 0 && q.Offset <= 2147483647 &&
 		q.Limit > 0 && q.Limit <= MaxReadBodyLimit
 }

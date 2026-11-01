@@ -51,6 +51,6 @@ func New(config Config) (*Service, error) {
 }
 
 func (s *Service) Whoami(ctx context.Context) (userapi.Identity, error) { return s.reader.Whoami(ctx) }
-func (s *Service) Work(ctx context.Context, id, teamID string) (userapi.Work, error) {
-	return s.reader.Work(ctx, id, teamID)
+func (s *Service) Work(ctx context.Context, id, teamID string, workspace ...string) (userapi.Work, error) {
+	return readWorkReference(ctx, s, id, teamID, workspace, false, func(r userapi.Reader, id, team string) (userapi.Work, error) { return r.Work(ctx, id, team) })
 }

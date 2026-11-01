@@ -190,7 +190,7 @@ func TestUserResourcesModeAndArgumentsBeforeCredentials(t *testing.T) {
 	}{
 		{"agent", agentVars(), []string{"list", "--work", "RIID-1"}, 8},
 		{"missing", nil, []string{"list"}, 2},
-		{"key", nil, []string{"list", "--work", "RIID-1", "--team-id", "team-one"}, 8},
+		{"unscoped-key", nil, []string{"list", "--work", "RIID-1"}, 2},
 		{"cursor", nil, []string{"list", "--work", "work-one", "--team-id", "team-one", "--cursor", "x"}, 8},
 		{"unknown", nil, []string{"get"}, 2},
 	} {

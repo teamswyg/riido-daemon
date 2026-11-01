@@ -12,7 +12,7 @@ import (
 
 func (c contextIO) runUserTree(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--page", "--budget"}})
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--page", "--budget"}}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -20,17 +20,13 @@ func (c contextIO) runUserTree(raw []string) error {
 		printWorkUsage(c.stderr)
 		return nil
 	}
-	if len(args.Positionals) != 1 || !args.HasValue("--team-id") {
+	if len(args.Positionals) != 1 {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "작업 ID와 --team-id가 필요합니다", "riido work tree <ID> --team-id <TEAM-ID>"))
 	}
-	if slices.ContainsFunc([]string{"--workspace", "--cursor", "--page", "--budget"}, args.HasValue) {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "작업 계층 조회는 범위·페이지 옵션을 지원하지 않습니다", "작업 ID와 --team-id만 지정하세요. 하위 작업은 서버가 최대 10개 선택합니다"))
+	if slices.ContainsFunc([]string{"--cursor", "--page", "--budget"}, args.HasValue) {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "작업 계층 조회는 범위·페이지 옵션을 지원하지 않습니다", "작업 ID와 팀 ID 또는 표시 키와 워크스페이스/팀 범위를 지정하세요. 하위 작업은 서버가 최대 10개 선택합니다"))
 	}
-	work, cliErr := userRelationID(args.Positionals[0])
-	if cliErr != nil {
-		return c.fail(args.JSON, requestID, cliErr)
-	}
-	team, cliErr := userRelationID(args.Value("--team-id"))
+	work, team, cliErr := userWorkTarget(args, args.Positionals[0])
 	if cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
@@ -40,7 +36,7 @@ func (c contextIO) runUserTree(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	tree, err := session.Tree(ctx, work, team)
+	tree, err := session.Tree(ctx, work, team, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}

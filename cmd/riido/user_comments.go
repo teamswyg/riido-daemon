@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/userapi"
@@ -13,7 +12,7 @@ func (c contextIO) runUserComments(sub workCommand, raw []string) error {
 		return c.runUserScopeComments(sub, raw)
 	}
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--comment-id", "--page"}, AllowLimit: sub == workCommandComments})
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--comment-id", "--page"}, AllowLimit: sub == workCommandComments}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -36,13 +35,13 @@ func (c contextIO) runUserComments(sub workCommand, raw []string) error {
 	defer cancel()
 	data := map[string]any{"mode": "user"}
 	if sub == workCommandComments {
-		page, err := session.Comments(ctx, work, team, pagination)
+		page, err := session.Comments(ctx, work, team, pagination, args.Workspace)
 		if err != nil {
 			return c.fail(args.JSON, requestID, userAuthError(err))
 		}
 		data["comments"], data["meta"] = page.Comments, page.Meta
 	} else {
-		replies, err := session.Replies(ctx, work, team, parent)
+		replies, err := session.Replies(ctx, work, team, parent, args.Workspace)
 		if err != nil {
 			return c.fail(args.JSON, requestID, userAuthError(err))
 		}
@@ -52,18 +51,16 @@ func (c contextIO) runUserComments(sub workCommand, raw []string) error {
 }
 
 func userCommentArguments(sub workCommand, args contextcli.Args) (work, team, parent string, pagination userapi.CommentPagination, cliErr *contextcli.CLIError) {
-	if len(args.Positionals) != 1 || strings.TrimSpace(args.Value("--team-id")) == "" {
+	if len(args.Positionals) != 1 {
 		cliErr = contextcli.Fail(contextcli.CodeUsage, "작업 ID와 --team-id가 필요합니다", "riido work "+string(sub)+" --help")
 		return work, team, parent, pagination, cliErr
 	}
-	if args.HasValue("--workspace") || args.HasValue("--cursor") || (sub == workCommandReplies && args.HasValue("--page")) || (sub == workCommandComments && args.HasValue("--comment-id")) {
+	if args.HasValue("--cursor") || (sub == workCommandReplies && args.HasValue("--page")) || (sub == workCommandComments && args.HasValue("--comment-id")) {
 		cliErr = contextcli.Fail(contextcli.CodeUnsupported, "이 사용자 조회에서 지원하지 않는 옵션입니다", "댓글 목록은 --page와 --limit, 답글은 --comment-id를 사용하세요")
 		return work, team, parent, pagination, cliErr
 	}
-	if work, cliErr = userCommentID(args.Positionals[0]); cliErr != nil {
-		return work, team, parent, pagination, cliErr
-	}
-	if team, cliErr = userCommentID(args.Value("--team-id")); cliErr != nil {
+	work, team, cliErr = userWorkTarget(args, args.Positionals[0])
+	if cliErr != nil {
 		return work, team, parent, pagination, cliErr
 	}
 	if sub == workCommandReplies {

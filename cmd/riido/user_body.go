@@ -18,7 +18,7 @@ func (c contextIO) runUserResourceBody(raw []string, kind string) error {
 	if kind == "component" {
 		values = append(values, "--kind")
 	}
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: values, AllowLimit: true})
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: values, AllowLimit: true}, kind != "meeting")
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -43,7 +43,7 @@ func (c contextIO) runUserResourceBody(raw []string, kind string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	page, err := session.Body(ctx, q)
+	page, err := session.Body(ctx, q, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
@@ -67,15 +67,21 @@ func userResourceBodyArguments(args contextcli.Args, kind string) (userapi.ReadB
 	if len(args.Positionals) != 1 {
 		return bad()
 	}
-	if args.HasValue("--cursor") || args.HasValue("--workspace") {
+	if args.HasValue("--cursor") {
 		return userapi.ReadBodyRequest{}, contextcli.Fail(contextcli.CodeUnsupported, "사용자 본문 조회는 --offset과 --limit을 사용합니다", "Agent의 snapshot cursor는 사용자 조회에 사용할 수 없습니다")
 	}
 	var err *contextcli.CLIError
-	q.ComponentID, err = userCommentID(args.Positionals[0])
-	if err != nil {
-		return userapi.ReadBodyRequest{}, err
+	if q.Kind == "" || q.Kind == "component" {
+		q.ComponentID, q.TeamID, err = userWorkTarget(args, args.Positionals[0])
+	} else {
+		if args.HasValue("--workspace") {
+			return userapi.ReadBodyRequest{}, contextcli.Fail(contextcli.CodeUnsupported, "이 자료에는 --workspace를 사용할 수 없습니다", "자료 ID와 팀 ID를 지정하세요")
+		}
+		q.ComponentID, err = userCommentID(args.Positionals[0])
+		if err == nil {
+			q.TeamID, err = userCommentID(args.Value("--team-id"))
+		}
 	}
-	q.TeamID, err = userCommentID(args.Value("--team-id"))
 	if err != nil {
 		return userapi.ReadBodyRequest{}, err
 	}
@@ -95,7 +101,7 @@ func userResourceBodyArguments(args contextcli.Args, kind string) (userapi.ReadB
 	if err != nil {
 		return userapi.ReadBodyRequest{}, err
 	}
-	if !q.Valid() {
+	if !q.ValidContent() {
 		return bad()
 	}
 	return q, nil

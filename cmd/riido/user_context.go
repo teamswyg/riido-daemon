@@ -2,14 +2,13 @@ package main
 
 import (
 	"context"
-	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
 
 func (c contextIO) runUserContext(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{Values: []string{"--work", "--team-id"}})
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{Values: []string{"--work", "--team-id"}}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -27,7 +26,7 @@ func (c contextIO) runUserContext(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	scope, err := session.Context(ctx, work, team)
+	scope, err := session.Context(ctx, work, team, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
@@ -42,16 +41,8 @@ func (c contextIO) runUserContext(raw []string) error {
 }
 
 func userContextArguments(args contextcli.Args) (string, string, *contextcli.CLIError) {
-	if strings.TrimSpace(args.Value("--work")) == "" || strings.TrimSpace(args.Value("--team-id")) == "" {
-		return "", "", contextcli.Fail(contextcli.CodeUsage, "작업 ID와 --team-id가 필요합니다", "riido context get --work <ID> --team-id <TEAM-ID>")
+	if args.HasValue("--cursor") {
+		return "", "", contextcli.Fail(contextcli.CodeUnsupported, "사용자 맥락 조회에 스냅샷 cursor를 사용할 수 없습니다", "작업 키나 ID를 지정하세요")
 	}
-	if args.HasValue("--cursor") || args.HasValue("--workspace") {
-		return "", "", contextcli.Fail(contextcli.CodeUnsupported, "사용자 맥락 조회에 실행 스냅샷 커서나 다른 workspace를 지정할 수 없습니다", "작업 ID와 실제 팀 ID를 지정하세요")
-	}
-	work, err := userCommentID(args.Value("--work"))
-	if err != nil {
-		return "", "", err
-	}
-	team, err := userCommentID(args.Value("--team-id"))
-	return work, team, err
+	return userWorkTarget(args, args.Value("--work"))
 }

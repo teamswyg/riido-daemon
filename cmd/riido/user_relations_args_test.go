@@ -18,7 +18,7 @@ func TestUserRelationsArgumentsFailBeforeStorage(t *testing.T) {
 	}{
 		{"missing-work", []string{"relations", "--team-id", "team-one"}, 2},
 		{"missing-team", []string{"relations", "work-one"}, 2},
-		{"key", []string{"relations", "RIID-5900", "--team-id", "team-one"}, 8},
+		{"unscoped-key", []string{"relations", "RIID-5900"}, 2},
 		{"team-key", []string{"relations", "work-one", "--team-id", "RIID-5900"}, 8},
 		{"empty-team", []string{"relations", "work-one", "--team-id="}, 2},
 		{"empty-cursor", append(slices.Clone(base), "--cursor="), 8},
