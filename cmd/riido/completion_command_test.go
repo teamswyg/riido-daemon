@@ -86,8 +86,8 @@ func TestCompletionDoesNotRecommendUnsupportedUserOptions(t *testing.T) {
 		absent []string
 	}{
 		{[]string{"auth", "login", "--"}, []string{"--desktop", "--with-token", "--workspace", "--team", "--token"}},
-		{[]string{"work", "tree", "--"}, []string{"--page", "--limit", "--cursor", "--workspace", "--budget"}},
-		{[]string{"meeting", "list", "--"}, []string{"--page", "--limit", "--cursor", "--workspace", "--budget"}},
+		{[]string{"work", "tree", "--"}, []string{"--page", "--limit", "--cursor", "--budget"}},
+		{[]string{"meeting", "list", "--"}, []string{"--page", "--limit", "--cursor", "--budget"}},
 		{[]string{"thread", "list", "--"}, []string{"--cursor", "--page", "--budget", "--team"}},
 		{[]string{"work", "comments", "--"}, []string{"--comment-id"}},
 		{[]string{"work", "body", "--"}, []string{"--board-cursor", "--board-limit"}},

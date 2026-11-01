@@ -39,6 +39,8 @@ func userAuthError(err error) *contextcli.CLIError {
 		return contextcli.Fail(contextcli.CodeNotFound, "요청한 자료를 찾을 수 없습니다", "작업 ID와 팀 ID를 확인하세요")
 	case errors.Is(err, userapi.ErrRateLimited):
 		return contextcli.Fail(contextcli.CodeRateLimited, "요청 한도를 초과했습니다", "잠시 뒤 다시 시도하세요")
+	case errors.Is(err, userapi.ErrAmbiguousWorkReference):
+		return contextcli.Fail(contextcli.CodeConflict, "표시 키에 해당하는 작업이 여러 개입니다", "작업의 실제 ID와 --team-id를 지정하세요")
 	case errors.Is(err, userapi.ErrConflict):
 		return contextcli.Fail(contextcli.CodeConflict, "자료가 변경되어 기존 페이지를 이어 읽을 수 없습니다", "맥락을 다시 조회해 새 version의 첫 페이지부터 읽으세요")
 	case errors.Is(err, userapi.ErrInvalidRequest):

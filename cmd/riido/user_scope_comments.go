@@ -20,7 +20,7 @@ func hasScopeCommentOptions(raw []string) bool {
 
 func (c contextIO) runUserScopeComments(sub workCommand, raw []string) error {
 	id := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--kind", "--comment-id", "--page", "--version"}, AllowLimit: true})
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--kind", "--comment-id", "--page", "--version"}, AllowLimit: true}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), id, cliErr)
 	}
@@ -45,7 +45,7 @@ func (c contextIO) readUserScopeComments(id string, args contextcli.Args, q user
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	page, err := session.ScopeComments(ctx, q)
+	page, err := session.ScopeComments(ctx, q, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, id, userAuthError(err))
 	}
@@ -64,18 +64,26 @@ func scopeCommentArguments(sub workCommand, args contextcli.Args) (userapi.ReadS
 	if len(args.Positionals) != 1 {
 		return bad()
 	}
-	if args.HasValue("--cursor") || args.HasValue("--workspace") {
+	if args.HasValue("--cursor") {
 		return userapi.ReadScopeCommentsRequest{}, contextcli.Fail(contextcli.CodeUnsupported, "사용자 댓글 조회는 팀 ID와 version·page를 사용합니다", "실행 스냅샷 cursor는 사용할 수 없습니다")
 	}
 	var cliErr *contextcli.CLIError
-	if q.ResourceID, cliErr = userCommentID(args.Positionals[0]); cliErr != nil {
-		return q, cliErr
-	}
-	if q.TeamID, cliErr = userCommentID(args.Value("--team-id")); cliErr != nil {
-		return q, cliErr
-	}
 	if args.HasValue("--kind") {
 		q.ResourceKind = args.Value("--kind")
+	}
+	if q.ResourceKind == "component" {
+		q.ResourceID, q.TeamID, cliErr = userWorkTarget(args, args.Positionals[0])
+	} else {
+		if args.HasValue("--workspace") {
+			return q, contextcli.Fail(contextcli.CodeUnsupported, "이 자료에는 --workspace를 사용할 수 없습니다", "자료 ID와 팀 ID를 지정하세요")
+		}
+		q.ResourceID, cliErr = userCommentID(args.Positionals[0])
+		if cliErr == nil {
+			q.TeamID, cliErr = userCommentID(args.Value("--team-id"))
+		}
+	}
+	if cliErr != nil {
+		return q, cliErr
 	}
 	if sub == workCommandReplies {
 		if q.ParentCommentID, cliErr = userCommentID(args.Value("--comment-id")); cliErr != nil {
@@ -96,7 +104,7 @@ func scopeCommentArguments(sub workCommand, args contextcli.Args) (userapi.ReadS
 	if args.HasValue("--version") && q.Version == "" {
 		return bad()
 	}
-	if (q.ResourceKind != "component" && q.ResourceKind != "backlog" && q.ResourceKind != "intake") || !q.Valid() {
+	if (q.ResourceKind != "component" && q.ResourceKind != "backlog" && q.ResourceKind != "intake") || !q.ValidPage() {
 		return bad()
 	}
 	return q, nil

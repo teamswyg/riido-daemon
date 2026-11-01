@@ -4,22 +4,13 @@ import (
 	"context"
 
 	"github.com/teamswyg/riido-daemon/internal/userapi"
-	"github.com/teamswyg/riido-daemon/internal/userauth"
 )
 
-func (s *Service) Repositories(ctx context.Context, id, teamID string) (*userapi.RepositoryList, error) {
-	if id == "" || teamID == "" {
+func (s *Service) Repositories(ctx context.Context, id, teamID string, workspace ...string) (*userapi.RepositoryList, error) {
+	if id == "" || (teamID == "" && len(workspace) == 0) {
 		return nil, userapi.ErrInvalidResponse
 	}
-	var result *userapi.RepositoryList
-	err := s.manager.WithReadSession(ctx, func(client userauth.SessionReadClient) error {
-		reader := userapi.Reader{Endpoint: s.reader.Endpoint, Client: client}
-		var err error
-		result, err = reader.Repositories(ctx, id, teamID)
-		return err
+	return readWorkReference(ctx, s, id, teamID, workspace, true, func(r userapi.Reader, id, team string) (*userapi.RepositoryList, error) {
+		return r.Repositories(ctx, id, team)
 	})
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
 }

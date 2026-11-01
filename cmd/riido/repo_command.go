@@ -23,7 +23,7 @@ func runRepo(c contextIO, raw []string) error {
 	if raw[0] != "list" {
 		return c.fail(wantsJSON(raw), requestID, contextcli.Fail(contextcli.CodeUsage, "지원하지 않는 repo 하위 명령입니다", "riido repo list --help"))
 	}
-	args, cliErr := c.parseArgs(raw[1:], contextcli.ArgSpec{Values: []string{"--work", "--team-id", "--page", "--budget"}})
+	args, cliErr := c.parseUserWorkArgs(raw[1:], contextcli.ArgSpec{Values: []string{"--work", "--team-id", "--page", "--budget"}}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -34,17 +34,13 @@ func runRepo(c contextIO, raw []string) error {
 	if c.environment().Mode == contextcli.ModeAgent {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "repo list는 아직 사용자 모드에서만 지원합니다", "에이전트는 riido context get으로 허용된 자료를 조회하세요"))
 	}
-	if !args.HasValue("--work") || !args.HasValue("--team-id") {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "--work와 --team-id가 필요합니다", "riido repo list --work <ID> --team-id <TEAM-ID>"))
+	if !args.HasValue("--work") {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "--work가 필요합니다", "riido repo list --work <ID> --team-id <TEAM-ID>"))
 	}
-	if slices.ContainsFunc([]string{"--workspace", "--cursor", "--page", "--budget"}, args.HasValue) {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "저장소 목록은 범위·페이지 옵션을 지원하지 않습니다", "작업 ID와 팀 ID만 지정하세요. 큰 메타데이터는 같은 버전으로 자동 이어 읽습니다"))
+	if slices.ContainsFunc([]string{"--cursor", "--page", "--budget"}, args.HasValue) {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "저장소 목록은 범위·페이지 옵션을 지원하지 않습니다", "작업 ID와 팀 ID 또는 표시 키와 워크스페이스/팀 범위를 지정하세요. 큰 메타데이터는 같은 버전으로 자동 이어 읽습니다"))
 	}
-	work, cliErr := userRelationID(args.Value("--work"))
-	if cliErr != nil {
-		return c.fail(args.JSON, requestID, cliErr)
-	}
-	team, cliErr := userRelationID(args.Value("--team-id"))
+	work, team, cliErr := userWorkTarget(args, args.Value("--work"))
 	if cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
@@ -54,10 +50,10 @@ func runRepo(c contextIO, raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	repos, err := session.Repositories(ctx, work, team)
+	repos, err := session.Repositories(ctx, work, team, args.Workspace)
 	var limitErr *userapi.ResourceMetadataLimitError
 	if errors.As(err, &limitErr) {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeIncomplete, "메타데이터가 자동 목록 조립 한도(16 MiB)를 넘었습니다", fmt.Sprintf("riido work body %q --team-id %q --part metadata --version %q --offset 0 --limit 65536 --json", work, team, limitErr.Version)))
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeIncomplete, "메타데이터가 자동 목록 조립 한도(16 MiB)를 넘었습니다", userWorkBodyHint(work, team, args.Workspace, limitErr.Version)))
 	}
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
@@ -71,6 +67,7 @@ func runRepo(c contextIO, raw []string) error {
 
 func printRepoUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido repo list --work <ID> --team-id <TEAM-ID> [--json]   (user stored repositories and PRs; local Git/GitHub/SSH authentication is not used or checked)")
+	fmt.Fprintln(w, "  riido repo list --work <RIID-1234> --workspace <WORKSPACE-ID> [--team-id <TEAM-ID>] [--json]   (configured scope defaults supported; both scopes intersect)")
 	fmt.Fprintln(w, "    User mode only; original-version metadata paging is automatic up to 16 MiB, then use work body --part metadata. Agent mode: unsupported, exit 8.")
 }
 

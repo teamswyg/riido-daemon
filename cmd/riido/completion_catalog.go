@@ -42,21 +42,21 @@ func completionCatalog() []clicompletion.Command {
 	user(string(mainCommandWorkspace)+" list", "--limit --cursor")
 	user(string(mainCommandWorkspace)+" use", "")
 	for _, sub := range []workCommand{workCommandGet, workCommandTree, workCommandRelations} {
-		user(string(mainCommandWork)+" "+string(sub), "--team-id --team")
+		user(string(mainCommandWork)+" "+string(sub), "--team-id --team --workspace")
 	}
-	user(string(mainCommandWork)+" "+string(workCommandComments), "--team-id --team --page --limit --kind --version")
-	user(string(mainCommandWork)+" "+string(workCommandReplies), "--team-id --team --comment-id --page --limit --kind --version")
-	user(string(mainCommandWork)+" "+string(workCommandActivity), "--team-id --team --page --limit")
+	user(string(mainCommandWork)+" "+string(workCommandComments), "--team-id --team --workspace --page --limit --kind --version")
+	user(string(mainCommandWork)+" "+string(workCommandReplies), "--team-id --team --workspace --comment-id --page --limit --kind --version")
+	user(string(mainCommandWork)+" "+string(workCommandActivity), "--team-id --team --workspace --page --limit")
 	user(string(mainCommandWork)+" "+string(workCommandSearch), "--workspace --query --limit --cursor")
 	body := "--team-id --team --part --version --offset --limit --comment-id --page --comments-limit"
-	user(string(mainCommandWork)+" "+string(workCommandBody), body+" --kind")
+	user(string(mainCommandWork)+" "+string(workCommandBody), body+" --kind --workspace")
 	user(string(mainCommandMeeting)+" body", body+" --board-cursor --board-limit")
 	user(string(mainCommandMeeting)+" get", "--team-id --team --cursor --limit")
-	user(string(mainCommandMeeting)+" list", "--work --team-id --team")
+	user(string(mainCommandMeeting)+" list", "--work --team-id --team --workspace")
 	user(string(mainCommandMeeting)+" comments", "--team-id --team --comment-id --page --limit --version")
-	user(string(mainCommandContext)+" get", "--work --team-id --team")
+	user(string(mainCommandContext)+" get", "--work --team-id --team --workspace")
 	for _, root := range []mainCommand{mainCommandResource, mainCommandRepo} {
-		user(string(root)+" list", "--work --team-id --team")
+		user(string(root)+" list", "--work --team-id --team --workspace")
 	}
 	for _, sub := range []string{"list", "show"} {
 		user(string(mainCommandThread)+" "+sub, "--work --workspace")
