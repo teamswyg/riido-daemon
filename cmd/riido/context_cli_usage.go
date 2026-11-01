@@ -46,6 +46,7 @@ func printWorkUsage(w io.Writer) {
 
 func printContextGroupUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido context get [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (agent runs default to the assigned task)")
+	fmt.Fprintln(w, "    Agent data.snapshot_id and captured_at identify the server's assignment snapshot; they are not credentials or live refresh evidence")
 	fmt.Fprintln(w, "  riido context get --work <ID> --team-id <TEAM-ID> [--json]   (user API; direct context within one relation hop)")
 	fmt.Fprintln(w, "  riido context get --work <RIID-1234> --workspace <WORKSPACE-ID> [--team-id <TEAM-ID>] [--json]   (user key lookup; configured scope defaults supported)")
 	fmt.Fprintln(w, "  riido context part <SOURCE-ID> --cursor <CURSOR> [--budget CHARS] [--json]   (agent snapshot; one call returns consecutive captured pages of the part, about 48 KiB by default; continue with next_cursor)")

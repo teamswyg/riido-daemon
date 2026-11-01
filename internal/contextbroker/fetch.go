@@ -12,11 +12,13 @@ import (
 type Query struct {
 	AgentID      string
 	AssignmentID string
-	LeaseToken   string
-	View         string
-	Target       string
-	Cursor       string
-	RequestID    string
+	// TaskID binds response provenance to the assigned root, not a related target.
+	TaskID     string
+	LeaseToken string
+	View       string
+	Target     string
+	Cursor     string
+	RequestID  string
 	// MaxBytes batches consecutive captured pages of one part (content view).
 	MaxBytes int
 }
@@ -31,6 +33,8 @@ type ResultSource struct {
 
 // Result is the control-plane answer for one view of the assignment snapshot.
 type Result struct {
+	// SnapshotID is verified by the fetcher for assignment base context only.
+	SnapshotID string          `json:"snapshot_id,omitempty"`
 	Data       json.RawMessage `json:"data"`
 	Sources    []ResultSource  `json:"sources"`
 	CapturedAt time.Time       `json:"captured_at"`
