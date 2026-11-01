@@ -4,10 +4,24 @@ import (
 	"context"
 
 	"github.com/teamswyg/riido-daemon/internal/userapi"
+	"github.com/teamswyg/riido-daemon/internal/userauth"
 )
 
 func (s *Service) Context(ctx context.Context, id, teamID string) (userapi.ReadScope, error) {
-	return s.reader.Context(ctx, id, teamID)
+	if id == "" || teamID == "" {
+		return userapi.ReadScope{}, userapi.ErrInvalidResponse
+	}
+	var result userapi.ReadScope
+	err := s.manager.WithReadSession(ctx, func(client userauth.SessionReadClient) error {
+		reader := userapi.Reader{Endpoint: s.reader.Endpoint, Client: client}
+		var err error
+		result, err = reader.Context(ctx, id, teamID)
+		return err
+	})
+	if err != nil {
+		return userapi.ReadScope{}, err
+	}
+	return result, nil
 }
 
 func (s *Service) Body(ctx context.Context, q userapi.ReadBodyRequest) (userapi.ReadBodyPage, error) {
