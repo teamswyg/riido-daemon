@@ -13,8 +13,8 @@ const (
 	agentsCommandShow agentsCommand = "show"
 )
 
-// runAgents serves `riido agents list|show`: a live view of the agents the
-// run's requester can see, used to choose whom to mention (RIID-5892).
+// runAgents serves current visible agents through the run broker or a dedicated
+// user reader. Only the run path participates in RIID-5892 mention prechecks.
 func runAgents(c contextIO, args []string) error {
 	if len(args) == 0 || isHelpArg(args[0]) {
 		printAgentsUsage(c.stderr)
@@ -25,12 +25,18 @@ func runAgents(c contextIO, args []string) error {
 	}
 	switch agentsCommand(args[0]) {
 	case agentsCommandList:
+		if c.environment().Mode == contextcli.ModeUser {
+			return c.runUserAgents(agentsCommandList, args[1:])
+		}
 		return c.runContextRead(contextReadCall{
 			command: "agents list",
 			usage:   printAgentsUsage,
 			payload: func(contextcli.Args) (map[string]string, *contextcli.CLIError) { return map[string]string{}, nil },
 		}, args[1:])
 	case agentsCommandShow:
+		if c.environment().Mode == contextcli.ModeUser {
+			return c.runUserAgents(agentsCommandShow, args[1:])
+		}
 		return c.runContextRead(agentsShowCall(), args[1:])
 	default:
 		return c.fail(wantsJSON(args), contextcli.NewRequestID(),

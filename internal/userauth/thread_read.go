@@ -19,7 +19,7 @@ var (
 
 const threadReadBodyLimit = 16 << 20
 
-// ReadTaskThreads is the only cross-origin user read. The original OAuth token
+// ReadTaskThreads reads task history with its dedicated purpose. The OAuth token
 // stays at monolith; CP receives a freshly exchanged, task-scoped opaque ticket.
 // No caller URL, response URL, cookie, redirect or retry can choose its target.
 // The protected lock covers both hops and the bounded response read, so another

@@ -131,19 +131,26 @@
     {
       "name": "agents",
       "root_help": "public",
-      "owner": "cmd/riido, internal/contextcli",
-      "boundary": "lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent",
+      "owner": "cmd/riido, internal/contextcli, internal/userauth, internal/userapi, internal/standalonecli",
+      "boundary": "lists or shows current visible public agents through the run broker (agent mode) or dedicated task-bound user ticket (user mode); never invokes an agent or fabricates mention permission",
       "subcommands": [
         "list",
         "show"
       ],
       "usage_tokens": [
         "riido agents list",
-        "riido agents show"
+        "riido agents show",
+        "riido agents list --work <ID> --workspace <WORKSPACE-ID>",
+        "riido agents show <AGENT-ID> --work <ID> --workspace <WORKSPACE-ID>"
       ],
       "source_checks": [
         "main-command-agents",
-        "agents-subcommand-vocabulary"
+        "agents-subcommand-vocabulary",
+        "user-agents-command",
+        "user-agents-protected-read",
+        "user-agents-fixed-purpose",
+        "user-agents-public-shape",
+        "user-agents-cli-http-regression"
       ]
     },
     {
@@ -503,6 +510,31 @@
       "name": "main-command-thread",
       "file": "cmd/riido/cli_commands.go",
       "contains": "mainCommandThread              mainCommand = \"thread\""
+    },
+    {
+      "name": "user-agents-command",
+      "file": "cmd/riido/user_agents.go",
+      "contains": "func (c contextIO) runUserAgents"
+    },
+    {
+      "name": "user-agents-protected-read",
+      "file": "internal/userauth/agent_read.go",
+      "contains": "return m.WithReadSession(ctx,"
+    },
+    {
+      "name": "user-agents-fixed-purpose",
+      "file": "internal/userauth/agent_read_ticket.go",
+      "contains": "ticket.Purpose != \"task_agents_read\""
+    },
+    {
+      "name": "user-agents-public-shape",
+      "file": "internal/userapi/agents_validate.go",
+      "contains": "func validPublicAgent"
+    },
+    {
+      "name": "user-agents-cli-http-regression",
+      "file": "cmd/riido/user_agents_test.go",
+      "contains": "TestUserAgentsCLIHTTPListAndShow"
     }
   ],
   "forbidden_source_tokens": [
@@ -907,6 +939,14 @@
         {
           "kind": "paragraph",
           "text": "RIID-5972 user meeting comments MEETING-ID --team-id TEAM-ID [--comment-id PARENT-ID] [--page N] [--limit N] [--version VERSION] reads authorized live meeting comments or replies through getReadScopeComments(resourceKind=meeting). Defaults are page 1 and limit 20, maximum100; page>1 requires the original comment-set version. The requested meeting/team and original user are reauthorized on every page, including after membership changes. Large pages preserve contentPage and CONTENT_DEFERRED; use meeting body --part comments_page with the original body version and selector (--comment-id/--page/--comments-limit), then reconstruct JSON before advancing its logical nextPage. Agent mode is unsupported before user storage or daemon IPC. Work commands retain their component/backlog/intake-only kind contract. Legacy meeting comments and getComponentRelatedMeetings are not opened as a CLI fallback. Server read-scope meeting-comment support must be deployed separately."
+        },
+        {
+          "text": "RIID-5972 user agents list/show require explicit --work ID and --workspace WORKSPACE-ID. List accepts an omitted cursor or canonical nonnegative decimal page; show rejects cursor. Both reject page/budget/limit, display work keys, secret argv and caller-selected targets before protected storage or network. Existing Agent-mode broker and run permissions remain unchanged. The original user OAuth is sent only to monolith POST /oauth/cli/agent-read-tickets; the fixed schema riido-cli-agent-read.v1, purpose task_agents_read and riido_cli_agent_v1_ ticket are consumed only at the pinned corresponding CP /v1/cli/workspaces/{workspace_id}/tasks/{task_id}/agents route. Thread tickets, redirects, cookies and unknown origins are rejected. Each request exchanges a fresh ticket without caching or pagination auto-follow.",
+          "kind": "paragraph"
+        },
+        {
+          "text": "The protected login SessionID and generation remain fixed from ticket exchange through CP body read, strict public response parsing and final return. Cancellation, account replacement or store failure discards the entire result. List pages contain at most50 current visible public entries and the current visible total; opaque secrets, private instructions, owners and devices are never part of the response. Missing/duplicate/unknown fields, null required values, invalid enums, oversized16MiB bodies, inconsistent pagination and hidden/absent detail fail closed. Text output quotes remote values. policy_checked=false and is_current_agent=false are required for user mode; runtime callable is not a RIID-5892 mention verdict or permission to start a run. No synthetic assignment, run quota or run read record is created. Actual server activation and real OAuth/signed-helper acceptance remain separate gates.",
+          "kind": "paragraph"
         }
       ]
     }

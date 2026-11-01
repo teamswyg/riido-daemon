@@ -14,6 +14,10 @@ import (
 
 func userAuthError(err error) *contextcli.CLIError {
 	switch {
+	case errors.Is(err, userauth.ErrAgentReadUnsupported):
+		return contextcli.Fail(contextcli.CodeUnsupported, "이 API 환경에서는 Agent 조회를 지원하지 않습니다", "Riido production 또는 staging API origin을 사용하세요")
+	case errors.Is(err, userauth.ErrAgentReadIncomplete):
+		return contextcli.Fail(contextcli.CodeIncomplete, "Agent 응답이 16 MiB 한도를 초과해 조회를 완료하지 못했습니다", "일부 결과는 반환하지 않았습니다. Riido 화면에서 확인하세요")
 	case errors.Is(err, userauth.ErrThreadReadUnsupported):
 		return contextcli.Fail(contextcli.CodeUnsupported, "이 API 환경에서는 대화 조회를 지원하지 않습니다", "Riido production 또는 staging API origin을 사용하세요")
 	case errors.Is(err, userauth.ErrThreadReadIncomplete):
