@@ -28,17 +28,24 @@ type ArgSpec struct {
 	Bools          []string
 	MaxPositionals int
 	AllowLimit     bool // The command validates its own typed page limit.
+	AllowProfile   bool // Enabled only by the user-mode settings resolver.
+	AllowTeam      bool // Alias for a command's existing --team-id.
+	UseWorkspace   bool // This command accepts a default workspace.
 }
 
 // Options are the flags shared by every work-context command.
 type Options struct {
-	JSON      bool
-	Help      bool
-	NoInput   bool
-	NoColor   bool
-	Workspace string
-	Cursor    string
-	Timeout   time.Duration
+	JSON             bool
+	Help             bool
+	NoInput          bool
+	NoColor          bool
+	Workspace        string
+	Cursor           string
+	Timeout          time.Duration
+	SettingsResolved bool
+	Profile          string
+	APIOrigin        string
+	APIOriginSource  string
 }
 
 // Args is the parsed command line.
@@ -92,6 +99,9 @@ func ParseArgs(args []string, spec ArgSpec) (Args, *CLIError) {
 				value = args[i]
 			}
 			parsed.values[name] = value
+			if name == "--profile" && spec.AllowProfile || name == "--team" && spec.AllowTeam {
+				continue
+			}
 			if name == "--limit" && spec.AllowLimit {
 				continue
 			}
@@ -121,6 +131,7 @@ func rejectSecretArgs(args []string) *CLIError {
 }
 
 func (a *Args) setBool(name string) {
+	a.bools[name] = true
 	switch name {
 	case "--json":
 		a.JSON = true
@@ -133,6 +144,15 @@ func (a *Args) setBool(name string) {
 	default:
 		a.bools[name] = true
 	}
+}
+
+// ApplyDefault only fills an omitted flag. Explicit empty values remain explicit.
+func (a *Args) ApplyDefault(name, value string) *CLIError {
+	if value == "" || a.HasValue(name) {
+		return nil
+	}
+	a.values[name] = value
+	return a.setValue(name, value)
 }
 
 func (a *Args) setValue(name, value string) *CLIError {

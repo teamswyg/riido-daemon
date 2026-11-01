@@ -122,7 +122,11 @@ func TestUserMeetingListRejectsScopeOverridesBeforeCredentials(t *testing.T) {
 			opened := 0
 			h.io.userSession = func(contextcli.Args) (*standalonecli.Service, error) { opened++; return nil, userapi.ErrAuthentication }
 			args := append([]string{"list", "--work", "work-one", "--team-id", "team-one", "--json"}, flags...)
-			if exitCodeOf(t, runMeeting(h.io, args)) != 8 || opened != 0 || len(h.daemon.requests) != 0 {
+			want := 8
+			if flags[0] == "--profile" || flags[0] == "--team" {
+				want = 2
+			}
+			if exitCodeOf(t, runMeeting(h.io, args)) != want || opened != 0 || len(h.daemon.requests) != 0 {
 				t.Fatal("unsupported input accessed credentials or daemon")
 			}
 		})

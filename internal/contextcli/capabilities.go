@@ -88,6 +88,10 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		return CommandCapability{Name: name, Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable}
 	}
 	commands := []CommandCapability{
+		{Name: "config list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: "비밀값 없는 프로필 설정·환경변수와 출처를 표시합니다"},
+		{Name: "config get", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: "프로필 설정·환경변수에서 한 값을 표시합니다"},
+		{Name: "config set", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: "local/staging/production 프로필의 비밀값 없는 설정; 자격·권한은 저장하지 않습니다"},
+		{Name: "workspace use", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 현재 멤버십과 로그인 세션 확인 후 프로필 기본 워크스페이스를 저장합니다; 권한을 부여하지 않습니다"},
 		{Name: "workspace list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 현재 활성 멤버인 워크스페이스 ID·이름·demo만 조회합니다; 기본 50/최대 100, --cursor로 같은 limit 이어 읽기; getCLIWorkspaces 배포 필요"},
 		{Name: "thread list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업·워크스페이스 ID로 현재 서버 보관 대화 요약을 조회합니다; 별도 monolith ticket/CP authorizer 활성화 필요, 전체 과거 기록 보장 없음; agent mode exit 8"},
 		{Name: "thread show", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 대화 ID와 작업·워크스페이스 ID로 현재 서버 보관 메시지를 조회합니다; 매번 같은 권한을 재확인하며 16 MiB 초과 exit 9, 페이지 없음; agent mode exit 8"},

@@ -12,7 +12,7 @@ import (
 
 func (c contextIO) runUserMeetingList(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{Values: []string{"--work", "--team-id", "--page", "--budget"}})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{Values: []string{"--work", "--team-id", "--page", "--budget"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

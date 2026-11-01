@@ -23,7 +23,7 @@ func runResource(c contextIO, raw []string) error {
 	if raw[0] != "list" {
 		return c.fail(wantsJSON(raw), requestID, contextcli.Fail(contextcli.CodeUsage, "지원하지 않는 resource 하위 명령입니다", "riido resource list --help"))
 	}
-	args, cliErr := contextcli.ParseArgs(raw[1:], contextcli.ArgSpec{Values: []string{"--work", "--team-id", "--page", "--budget"}})
+	args, cliErr := c.parseArgs(raw[1:], contextcli.ArgSpec{Values: []string{"--work", "--team-id", "--page", "--budget"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 308 |
+| Generated reader docs | 309 |
 | Direct SSOT docs | 6 |
 | Registered manual docs | 0 |
-| Scanned docs | 314 |
+| Scanned docs | 315 |
 
 ## Generated Reader Origins
 
@@ -20,7 +20,7 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/migrationdocs -write-doc` | 62 | `docs/migration/cli.md`<br>`docs/migration/cli/cli-daemon-split.md`<br>`docs/migration/cli/current-slices.md` |
 | `go run ./tools/storedistributiondocs -write-doc` | 15 | `docs/30-architecture/store-distribution.md`<br>`docs/30-architecture/store-distribution/architecture.md`<br>`docs/30-architecture/store-distribution/architecture/decisions.md` |
 | `go run ./tools/agentexecutiondesign -write-doc` | 14 | `docs/30-architecture/agent-execution-unresolved-design.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md` |
-| `go run ./tools/configreference -write-doc` | 11 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
+| `go run ./tools/configreference -write-doc` | 12 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
 | `go run ./tools/providerintegrationgatedocs -write-doc` | 10 | `docs/20-domain/provider-runtime/integration-gates.md`<br>`docs/20-domain/provider-runtime/integration-gates/cursor-real-cli.md`<br>`docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.md` |
 | `go run ./tools/workspaceinvariantsdocs -write-doc` | 10 | `docs/20-domain/workspace/invariants.md`<br>`docs/20-domain/workspace/invariants/core.md`<br>`docs/20-domain/workspace/invariants/directory-layout.md` |
 | `go run ./tools/providerruntimeboundarydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-actor-boundary.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/control-plane-port.md` |

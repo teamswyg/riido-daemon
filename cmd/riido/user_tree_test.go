@@ -117,7 +117,11 @@ func TestUserTreeRejectsUnsupportedScopeBeforeCredentials(t *testing.T) {
 			opened := 0
 			h.io.userSession = func(contextcli.Args) (*standalonecli.Service, error) { opened++; return nil, userapi.ErrAuthentication }
 			err := runWork(h.io, append([]string{"tree", "work-one", "--team-id", "team-one", "--json"}, flags...))
-			if exitCodeOf(t, err) != 8 || opened != 0 || len(h.daemon.requests) != 0 {
+			want := 8
+			if flags[0] == "--profile" {
+				want = 2
+			}
+			if exitCodeOf(t, err) != want || opened != 0 || len(h.daemon.requests) != 0 {
 				t.Fatal("unsupported option opened credential or daemon")
 			}
 		})

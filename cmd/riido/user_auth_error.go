@@ -5,6 +5,7 @@ import (
 	"errors"
 	"net/http"
 
+	"github.com/teamswyg/riido-daemon/internal/cliconfig"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/securecredential"
 	"github.com/teamswyg/riido-daemon/internal/standalonecli"
@@ -14,6 +15,8 @@ import (
 
 func userAuthError(err error) *contextcli.CLIError {
 	switch {
+	case errors.Is(err, cliconfig.ErrInvalid), errors.Is(err, cliconfig.ErrUnavailable), errors.Is(err, cliconfig.ErrConflict):
+		return settingsError(err)
 	case errors.Is(err, userauth.ErrAgentReadUnsupported):
 		return contextcli.Fail(contextcli.CodeUnsupported, "이 API 환경에서는 Agent 조회를 지원하지 않습니다", "Riido production 또는 staging API origin을 사용하세요")
 	case errors.Is(err, userauth.ErrAgentReadIncomplete):

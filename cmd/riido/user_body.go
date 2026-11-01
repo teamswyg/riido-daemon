@@ -18,7 +18,7 @@ func (c contextIO) runUserResourceBody(raw []string, kind string) error {
 	if kind == "component" {
 		values = append(values, "--kind")
 	}
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: values, AllowLimit: true})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: values, AllowLimit: true})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

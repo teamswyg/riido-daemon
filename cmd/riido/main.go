@@ -48,6 +48,8 @@ func run(args []string) error {
 		return runVersion(args[1:])
 	case mainCommandWorkspace:
 		return runWorkspace(defaultContextIO(), args[1:])
+	case mainCommandConfig:
+		return runConfig(defaultContextIO(), args[1:])
 	case mainCommandWork:
 		return runWork(defaultContextIO(), args[1:])
 	case mainCommandThread:

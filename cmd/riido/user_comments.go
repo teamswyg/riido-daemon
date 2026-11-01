@@ -13,7 +13,7 @@ func (c contextIO) runUserComments(sub workCommand, raw []string) error {
 		return c.runUserScopeComments(sub, raw)
 	}
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--comment-id", "--page"}, AllowLimit: sub == workCommandComments})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--comment-id", "--page"}, AllowLimit: sub == workCommandComments})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

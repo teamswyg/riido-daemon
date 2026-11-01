@@ -78,7 +78,7 @@ func TestWorkspaceCLIRejectsBeforeCredentials(t *testing.T) {
 		{[]string{"list", "--cursor", "bad="}, 2},
 		{[]string{"list", "unexpected"}, 2},
 		{[]string{"list", "--workspace", "ws"}, 8},
-		{[]string{"list", "--profile", "staging"}, 8},
+		{[]string{"list", "--profile", "unknown"}, 2},
 		{[]string{"list", "--team", "t"}, 8},
 		{[]string{"list", "--token", "synthetic-secret"}, 2},
 		{[]string{"list", "--api-url", "https://attacker.invalid"}, 2},

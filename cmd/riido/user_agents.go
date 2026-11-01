@@ -15,7 +15,7 @@ func (c contextIO) runUserAgents(command agentsCommand, raw []string) error {
 	if command == agentsCommandShow {
 		arity = 1
 	}
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{MaxPositionals: arity, Values: []string{"--work"}})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{UseWorkspace: true, MaxPositionals: arity, Values: []string{"--work"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
