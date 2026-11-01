@@ -14,8 +14,9 @@ import (
 )
 
 type callbackResult struct {
-	code string
-	err  error
+	code         string
+	err          error
+	installation *installationAuthorization
 }
 
 type Authorization struct {
@@ -31,9 +32,14 @@ type Authorization struct {
 	mu                    sync.Mutex
 	used, accepted        bool
 	installation          *installationAuthorization
+	desktop               *desktopAuthorization
 }
 
 func (c *Client) BeginAuthorization(ctx context.Context) (*Authorization, error) {
+	return c.beginAuthorization(ctx, nil)
+}
+
+func (c *Client) beginAuthorization(ctx context.Context, desktop *desktopAuthorization) (*Authorization, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
@@ -50,7 +56,7 @@ func (c *Client) BeginAuthorization(ctx context.Context) (*Authorization, error)
 		return nil, failure("AUTH_CALLBACK")
 	}
 	authCtx, cancel := context.WithTimeout(ctx, c.config.AuthTimeout)
-	a := &Authorization{client: c, state: state, verifier: verifier, host: listener.Addr().String(), result: make(chan callbackResult, 1), ctx: authCtx, cancel: cancel}
+	a := &Authorization{client: c, state: state, verifier: verifier, host: listener.Addr().String(), result: make(chan callbackResult, 1), ctx: authCtx, cancel: cancel, desktop: desktop}
 	a.RedirectURI = "http://" + a.host + "/callback"
 	u, _ := url.Parse(c.config.Endpoints.AuthorizeURL)
 	q := u.Query()
@@ -60,7 +66,7 @@ func (c *Client) BeginAuthorization(ctx context.Context) (*Authorization, error)
 	}
 	u.RawQuery = q.Encode()
 	a.URL = u.String()
-	a.server = &http.Server{Handler: http.HandlerFunc(a.callback), ReadHeaderTimeout: 5 * time.Second, IdleTimeout: 5 * time.Second, MaxHeaderBytes: 16 << 10}
+	a.server = &http.Server{Handler: http.HandlerFunc(a.callback), ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 5 * time.Second, IdleTimeout: 5 * time.Second, MaxHeaderBytes: 16 << 10}
 	go func() { _ = a.server.Serve(listener) }()
 	go func() { <-authCtx.Done(); a.Close() }()
 	return a, nil

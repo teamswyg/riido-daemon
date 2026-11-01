@@ -15,6 +15,8 @@ import (
 
 func userAuthError(err error) *contextcli.CLIError {
 	switch {
+	case errors.Is(err, standalonecli.ErrDesktopUnavailable):
+		return contextcli.Fail(contextcli.CodeUnavailable, "이 환경의 Riido Desktop 인증을 열 수 없습니다", "호환되는 Riido 앱 설치·로그인을 확인하거나 riido auth login --browser 를 실행하세요")
 	case errors.Is(err, cliconfig.ErrInvalid), errors.Is(err, cliconfig.ErrUnavailable), errors.Is(err, cliconfig.ErrConflict):
 		return settingsError(err)
 	case errors.Is(err, userauth.ErrAgentReadUnsupported):
@@ -54,6 +56,15 @@ func userAuthError(err error) *contextcli.CLIError {
 	}
 	var authErr *userauth.Error
 	if errors.As(err, &authErr) {
+		if authErr.Code == "DESKTOP_UNAVAILABLE" {
+			return userAuthError(standalonecli.ErrDesktopUnavailable)
+		}
+		if authErr.Code == "DESKTOP_LOGIN_REQUIRED" {
+			return contextcli.Fail(contextcli.CodeAuthRequired, "Riido Desktop에 로그인이 필요합니다", "앱에서 로그인하거나 riido auth login --browser 를 실행하세요")
+		}
+		if authErr.Code == "AUTH_ORIGIN_MISMATCH" {
+			return contextcli.Fail(contextcli.CodeAuthRequired, "서버에서 Desktop 로그인 기원을 확인하지 못했습니다", "서버·앱 버전을 확인하거나 riido auth login --browser 를 실행하세요")
+		}
 		if authErr.Code == "STORAGE_ERROR" {
 			return userAuthError(securecredential.ErrUnavailable)
 		}
@@ -64,7 +75,7 @@ func userAuthError(err error) *contextcli.CLIError {
 			return contextcli.Fail(contextcli.CodeRateLimited, "요청 한도를 초과했습니다", "잠시 뒤 다시 시도하세요")
 		}
 		if authErr.Code == "AUTH_DENIED" {
-			return contextcli.Fail(contextcli.CodeAuthRequired, "브라우저에서 CLI 인증이 승인되지 않았습니다", "riido auth login")
+			return contextcli.Fail(contextcli.CodeAuthRequired, "CLI 인증이 승인되지 않았습니다", "riido auth login")
 		}
 	}
 	return contextcli.Fail(contextcli.CodeUnavailable, "CLI 인증 또는 사용자 API 요청을 완료하지 못했습니다", "계정·연결 상태를 확인한 뒤 다시 실행하세요")
