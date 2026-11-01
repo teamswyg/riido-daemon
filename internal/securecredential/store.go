@@ -21,6 +21,7 @@ var (
 	ErrInteractionRequired = errors.New("OS user confirmation is required")
 	ErrCancelled           = errors.New("credential access was cancelled")
 	ErrNotFound            = errors.New("no protected credential is stored")
+	ErrBusy                = errors.New("protected credential operation is in progress")
 )
 
 type Store struct {

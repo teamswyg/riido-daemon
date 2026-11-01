@@ -15,6 +15,7 @@ import (
 const protectedRepairVersion = "riido-cli-protected-repair.v1"
 
 type protectedRepairNativeStore interface {
+	TryLock(context.Context) (func(), error)
 	Load(context.Context) ([]byte, error)
 	Save(context.Context, []byte) error
 	Delete(context.Context) error

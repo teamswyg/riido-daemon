@@ -10,6 +10,7 @@ import (
 )
 
 type repairStore interface {
+	LockRepairOperation(context.Context) (func(), error)
 	BeginPendingRepair(context.Context, string) (PendingRepair, error)
 	LoadPendingRepair(context.Context) (*PendingRepair, error)
 	MarkPendingRepairCreated(context.Context, PendingRepair) (PendingRepair, error)
@@ -30,6 +31,14 @@ func (s *Service) Repair(ctx context.Context, daemon LinkDaemon, interactive, re
 	if restart && !interactive {
 		return LinkResult{}, repairLocalError("REPAIR_APPROVAL_REQUIRED")
 	}
+	unlock, err := store.LockRepairOperation(ctx)
+	if err != nil {
+		return LinkResult{}, err
+	}
+	if unlock == nil {
+		return LinkResult{}, securecredential.ErrUnavailable
+	}
+	defer unlock()
 	p, err := store.LoadPendingRepair(ctx)
 	if err != nil {
 		return LinkResult{}, err
