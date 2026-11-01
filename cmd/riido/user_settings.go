@@ -22,6 +22,10 @@ func (c contextIO) parseArgs(raw []string, spec contextcli.ArgSpec) (contextcli.
 // Capture preferences and origin once, before opening credentials. Agent calls
 // retain the original parser and never read user preferences.
 func (c contextIO) parseSettings(raw []string, spec contextcli.ArgSpec) (contextcli.Args, *commandSettings, *contextcli.CLIError) {
+	return c.parseSettingsWithTeamDefault(raw, spec, true)
+}
+
+func (c contextIO) parseSettingsWithTeamDefault(raw []string, spec contextcli.ArgSpec, defaultTeam bool) (contextcli.Args, *commandSettings, *contextcli.CLIError) {
 	userMode := c.environment().Mode != contextcli.ModeAgent
 	spec.AllowProfile = userMode
 	spec.AllowTeam = userMode && slices.Contains(spec.Values, "--team-id")
@@ -67,7 +71,10 @@ func (c contextIO) parseSettings(raw []string, spec contextcli.ArgSpec) (context
 		defaults["--workspace"] = resolved.Workspace
 	}
 	if spec.AllowTeam {
-		team := resolved.Team
+		team := ""
+		if defaultTeam {
+			team = resolved.Team
+		}
 		if args.HasValue("--team") {
 			team = args.Value("--team")
 		}

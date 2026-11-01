@@ -88,7 +88,7 @@ func TestCompletionDoesNotRecommendUnsupportedUserOptions(t *testing.T) {
 		{[]string{"auth", "login", "--"}, []string{"--desktop", "--with-token", "--workspace", "--team", "--token"}},
 		{[]string{"work", "tree", "--"}, []string{"--page", "--limit", "--cursor", "--budget"}},
 		{[]string{"meeting", "list", "--"}, []string{"--page", "--limit", "--cursor", "--budget"}},
-		{[]string{"thread", "list", "--"}, []string{"--cursor", "--page", "--budget", "--team"}},
+		{[]string{"thread", "list", "--"}, []string{"--cursor", "--page", "--budget"}},
 		{[]string{"work", "comments", "--"}, []string{"--comment-id"}},
 		{[]string{"work", "body", "--"}, []string{"--board-cursor", "--board-limit"}},
 		{[]string{"serve", "--"}, []string{"--profile", "--json", "--workspace"}},
@@ -97,6 +97,19 @@ func TestCompletionDoesNotRecommendUnsupportedUserOptions(t *testing.T) {
 		for _, bad := range tc.absent {
 			if slices.Contains(choices, bad) {
 				t.Fatal(tc.words, bad)
+			}
+		}
+	}
+}
+
+func TestCompletionOffersCPWorkKeyScope(t *testing.T) {
+	for _, root := range []string{"thread", "agents"} {
+		for _, sub := range []string{"list", "show"} {
+			choices := clicompletion.Candidates(completionCatalog(), []string{root, sub, "--"})
+			for _, flag := range []string{"--work", "--workspace", "--team", "--team-id"} {
+				if !slices.Contains(choices, flag) {
+					t.Fatal("key scope missing", root, sub, flag)
+				}
 			}
 		}
 	}

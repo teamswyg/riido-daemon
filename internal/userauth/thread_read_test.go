@@ -50,7 +50,7 @@ func threadReadTicketFixture() map[string]any {
 
 func TestThreadReadSeparatesOAuthAndTicketOverActualHTTP(t *testing.T) {
 	var exchanges, reads atomic.Int32
-	m, store := threadReadTestManager(t, func(w http.ResponseWriter, r *http.Request) {
+	m, _ := threadReadTestManager(t, func(w http.ResponseWriter, r *http.Request) {
 		exchanges.Add(1)
 		var request map[string]string
 		if r.Method != http.MethodPost || r.URL.Path != "/oauth/cli/thread-read-tickets" || r.Header.Get("Authorization") != "Bearer old-access" || r.Header.Get("Cookie") != "" || json.NewDecoder(r.Body).Decode(&request) != nil || len(request) != 2 || request["workspace_id"] != "workspace-one" || request["task_id"] != "task-one" {
@@ -72,7 +72,7 @@ func TestThreadReadSeparatesOAuthAndTicketOverActualHTTP(t *testing.T) {
 			t.Fatal("two-hop read failed", status, err)
 		}
 	}
-	if exchanges.Load() != 2 || reads.Load() != 2 || store.loads != 2 {
-		t.Fatal("ticket cached or protected access repeated", exchanges.Load(), reads.Load(), store.loads)
+	if exchanges.Load() != 2 || reads.Load() != 2 {
+		t.Fatal("ticket cached or extra HTTP request", exchanges.Load(), reads.Load())
 	}
 }

@@ -25,22 +25,51 @@ const threadReadBodyLimit = 16 << 20
 // The protected lock covers both hops and the bounded response read, so another
 // process cannot replace the account between minting and consuming the ticket.
 func (m *Manager) ReadTaskThreads(ctx context.Context, workspace, task string) ([]byte, int, error) {
-	origin := threadReadOrigin(m.client)
-	if origin == "" {
-		return nil, 0, ErrThreadReadUnsupported
-	}
-	if !threadReadID(workspace) || !threadReadID(task) {
-		return nil, 0, failure("UNSAFE_REQUEST")
+	if _, err := m.threadReadPreflight(workspace, task); err != nil {
+		return nil, 0, err
 	}
 	ctx, cancel := context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
-	generation := m.generation.Load()
-	unlock, err := m.lock(ctx)
+	var raw []byte
+	var status int
+	err := m.WithReadSession(ctx, func(session SessionReadClient) error {
+		var err error
+		raw, status, err = session.ReadTaskThreads(ctx, workspace, task)
+		return err
+	})
 	if err != nil {
 		return nil, 0, err
 	}
-	defer unlock()
-	credential, err := m.accessCredentialLocked(ctx, "", "", generation)
+	return raw, status, nil
+}
+
+// SupportsTaskReads performs no credential access. Compound callers must check
+// the closed origin mapping before opening their protected read session.
+func (m *Manager) SupportsTaskReads() bool { return threadReadOrigin(m.client) != "" }
+
+func (m *Manager) threadReadPreflight(workspace, task string) (string, error) {
+	origin := threadReadOrigin(m.client)
+	if origin == "" {
+		return "", ErrThreadReadUnsupported
+	}
+	if !threadReadID(workspace) || !threadReadID(task) {
+		return "", failure("UNSAFE_REQUEST")
+	}
+	return origin, nil
+}
+
+func (s *sessionReadClient) ReadTaskThreads(ctx context.Context, workspace, task string) ([]byte, int, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	m := s.manager
+	if !s.active || m.generation.Load() != s.generation {
+		return nil, 0, ErrLoggedOut
+	}
+	origin, err := m.threadReadPreflight(workspace, task)
+	if err != nil {
+		return nil, 0, err
+	}
+	credential, err := m.accessCredentialLocked(ctx, "", s.sessionID, s.generation)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -56,12 +85,15 @@ func (m *Manager) ReadTaskThreads(ctx context.Context, workspace, task string) (
 	if err != nil {
 		return nil, 0, err
 	}
-	if m.generation.Load() != generation {
-		return nil, 0, ErrLoggedOut
+	if err := s.checkLogin(ctx); err != nil {
+		return nil, 0, err
 	}
 	raw, status, err = m.threadReadRequest(ctx, http.MethodGet, origin+"/v3/client/workspaces/"+workspace+"/ai-agent/tasks/"+task+"/threads", ticket, nil, threadReadBodyLimit)
-	if m.generation.Load() != generation {
+	if m.generation.Load() != s.generation {
 		return nil, 0, ErrLoggedOut
+	}
+	if err == nil {
+		err = ctx.Err()
 	}
 	return raw, status, err
 }

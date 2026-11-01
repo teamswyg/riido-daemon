@@ -26,7 +26,7 @@ func runThread(c contextIO, raw []string) error {
 	if raw[0] == "show" {
 		maxPositionals = 1
 	}
-	args, cliErr := c.parseArgs(raw[1:], contextcli.ArgSpec{UseWorkspace: true, MaxPositionals: maxPositionals, Values: []string{"--work", "--page", "--budget"}})
+	args, cliErr := c.parseCPWorkArgs(raw[1:], contextcli.ArgSpec{UseWorkspace: true, MaxPositionals: maxPositionals, Values: []string{"--work", "--page", "--budget"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -40,10 +40,10 @@ func runThread(c contextIO, raw []string) error {
 	if slices.ContainsFunc([]string{"--cursor", "--page", "--budget"}, args.HasValue) {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "대화 조회는 페이지·budget 옵션을 지원하지 않습니다", "현재 서버에 보관된 대화만 한 번에 조회합니다"))
 	}
-	if len(args.Positionals) != maxPositionals || !args.HasValue("--work") || !args.HasValue("--workspace") || !userapi.ValidThreadReadID(args.Value("--work")) || !userapi.ValidThreadReadID(args.Workspace) || (maxPositionals == 1 && !userapi.ValidThreadReadID(args.Positionals[0])) {
+	if len(args.Positionals) != maxPositionals || (maxPositionals == 1 && !userapi.ValidThreadReadID(args.Positionals[0])) {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "워크스페이스·작업 ID와 show의 대화 ID가 필요합니다", "riido thread --help"))
 	}
-	work, cliErr := userRelationID(args.Value("--work"))
+	work, team, cliErr := userCPWorkTarget(args)
 	if cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
@@ -55,12 +55,12 @@ func runThread(c contextIO, raw []string) error {
 	defer cancel()
 	var result any
 	if raw[0] == "list" {
-		result, err = session.Threads(ctx, args.Workspace, work)
+		result, err = session.Threads(ctx, args.Workspace, work, team)
 	} else {
-		result, err = session.Thread(ctx, args.Workspace, work, args.Positionals[0])
+		result, err = session.Thread(ctx, args.Workspace, work, args.Positionals[0], team)
 	}
 	if err != nil {
-		return c.fail(args.JSON, requestID, userAuthError(err))
+		return c.fail(args.JSON, requestID, userCPReadError(err))
 	}
 	env := contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "live": true, "history": result})
 	env.Warnings = append(env.Warnings, contextcli.Warning{Code: "RETAINED_HISTORY", Message: "현재 권한으로 볼 수 있는 서버 보관분입니다. 전체 과거 대화·메시지의 완전성은 보장하지 않습니다"})
@@ -70,6 +70,7 @@ func runThread(c contextIO, raw []string) error {
 func printThreadUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido thread list --work <ID> --workspace <WORKSPACE-ID> [--json]")
 	fmt.Fprintln(w, "  riido thread show <THREAD-ID> --work <ID> --workspace <WORKSPACE-ID> [--json]")
+	fmt.Fprintln(w, "    User work keys: --work <RIID-1234> with --workspace <WORKSPACE-ID> and/or --team-id <TEAM-ID>; configured scope defaults supported. Both scopes intersect. ID calls require workspace and ignore configured team.")
 	fmt.Fprintln(w, "    User mode only; fresh task-scoped ticket, current visible server-retained history, not all-time history. No pagination. 16 MiB response limit; agent mode: exit 8.")
 }
 

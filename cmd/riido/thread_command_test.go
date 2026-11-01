@@ -106,7 +106,7 @@ func TestThreadCLIFailsBeforeOpeningCredentials(t *testing.T) {
 		{"show", "--work", "task-one", "--workspace", "workspace-one"},
 		{"list", "extra", "--work", "task-one", "--workspace", "workspace-one"},
 		{"list", "--work", "../task", "--workspace", "workspace-one"},
-		{"list", "--work", "RIID-5972", "--workspace", "workspace-one"},
+		{"list", "--work", "RIID-5972"},
 		{"list", "--work", "task-one", "--workspace", "workspace-one", "--cursor", "x"},
 		{"list", "--work", "task-one", "--workspace", "workspace-one", "--limit", "5"},
 		{"list", "--work", "task-one", "--workspace", "workspace-one", "--page", "1"},

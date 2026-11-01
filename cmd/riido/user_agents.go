@@ -15,7 +15,7 @@ func (c contextIO) runUserAgents(command agentsCommand, raw []string) error {
 	if command == agentsCommandShow {
 		arity = 1
 	}
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{UseWorkspace: true, MaxPositionals: arity, Values: []string{"--work"}})
+	args, cliErr := c.parseCPWorkArgs(raw, contextcli.ArgSpec{UseWorkspace: true, MaxPositionals: arity, Values: []string{"--work"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -23,10 +23,10 @@ func (c contextIO) runUserAgents(command agentsCommand, raw []string) error {
 		printAgentsUsage(c.stderr)
 		return nil
 	}
-	if len(args.Positionals) != arity || !userapi.ValidThreadReadID(args.Workspace) || !userapi.ValidThreadReadID(args.Value("--work")) || (arity == 1 && !userapi.ValidThreadReadID(args.Positionals[0])) || (args.HasValue("--cursor") && (arity == 1 || args.Cursor == "" || !userapi.ValidAgentCursor(args.Cursor))) {
+	if len(args.Positionals) != arity || (arity == 1 && !userapi.ValidThreadReadID(args.Positionals[0])) || (args.HasValue("--cursor") && (arity == 1 || args.Cursor == "" || !userapi.ValidAgentCursor(args.Cursor))) {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "워크스페이스·작업 ID와 올바른 목록 cursor 또는 Agent ID가 필요합니다", "riido agents --help"))
 	}
-	work, cliErr := userRelationID(args.Value("--work"))
+	work, team, cliErr := userCPWorkTarget(args)
 	if cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
@@ -38,12 +38,12 @@ func (c contextIO) runUserAgents(command agentsCommand, raw []string) error {
 	defer cancel()
 	var result any
 	if command == agentsCommandList {
-		result, err = session.Agents(ctx, args.Workspace, work, args.Cursor)
+		result, err = session.Agents(ctx, args.Workspace, work, args.Cursor, team)
 	} else {
-		result, err = session.Agent(ctx, args.Workspace, work, args.Positionals[0])
+		result, err = session.Agent(ctx, args.Workspace, work, args.Positionals[0], team)
 	}
 	if err != nil {
-		return c.fail(args.JSON, requestID, userAuthError(err))
+		return c.fail(args.JSON, requestID, userCPReadError(err))
 	}
 	env := contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "live": true, "directory": result})
 	env.Warnings = append(env.Warnings, contextcli.Warning{Code: "EXECUTION_POLICY_NOT_CHECKED", Message: "현재 연결 상태만 조회했습니다. 멘션·실행 허용 여부는 실행 시 서버가 판정합니다"})

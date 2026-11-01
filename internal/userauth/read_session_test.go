@@ -2,6 +2,7 @@ package userauth
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -235,6 +236,53 @@ func TestReadSessionCancellationDuringAndAfterParsing(t *testing.T) {
 			}
 			if _, err := manager.AccessToken(context.Background()); err != nil {
 				t.Fatal("cancellation failed to release the lock", err)
+			}
+		})
+	}
+}
+
+func TestReadSessionTaskReadersExpireAndPreserveLogin(t *testing.T) {
+	for _, kind := range []string{"thread", "agent"} {
+		t.Run(kind, func(t *testing.T) {
+			var calls atomic.Int32
+			m, store := threadReadTestManager(t, func(w http.ResponseWriter, _ *http.Request) {
+				calls.Add(1)
+				w.Header().Set("Content-Type", "application/json")
+				ticket := threadReadTicketFixture()
+				if kind == "agent" {
+					ticket["schema_version"] = "riido-cli-agent-read.v1"
+					ticket["purpose"] = "task_agents_read"
+					ticket["access_token"] = "riido_cli_agent_v1_" + strings.Repeat("A", 43)
+				}
+				_ = json.NewEncoder(w).Encode(ticket)
+			}, func(w http.ResponseWriter, _ *http.Request) {
+				calls.Add(1)
+				w.Header().Set("Content-Type", "application/json")
+				fmt.Fprint(w, `{}`)
+			})
+			read := func(session SessionReadClient) error {
+				if kind == "thread" {
+					_, _, err := session.ReadTaskThreads(t.Context(), "workspace-one", "task-one")
+					return err
+				}
+				return session.ReadTaskAgents(t.Context(), "workspace-one", "task-one", "", "", func([]byte, int) error { return nil })
+			}
+			var retained SessionReadClient
+			if err := m.WithReadSession(t.Context(), func(session SessionReadClient) error {
+				retained = session
+				return read(session)
+			}); err != nil {
+				t.Fatal(err)
+			}
+			if err := read(retained); !errors.Is(err, ErrLoggedOut) || calls.Load() != 2 {
+				t.Fatal("expired client issued a ticket", err, calls.Load())
+			}
+			err := m.WithReadSession(t.Context(), func(session SessionReadClient) error {
+				store.credential.SessionID = "replacement"
+				return read(session)
+			})
+			if !errors.Is(err, ErrLoggedOut) || calls.Load() != 2 {
+				t.Fatal("task reader accepted another login", err, calls.Load())
 			}
 		})
 	}
