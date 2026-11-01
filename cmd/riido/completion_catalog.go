@@ -14,7 +14,7 @@ var completionShells = []string{"bash", "zsh", "fish", "powershell"}
 func completionCatalog() []clicompletion.Command {
 	var result []clicompletion.Command
 	user := func(path, values string, bools ...string) {
-		cmd := clicompletion.Command{Path: path, Flags: append([]string{"--help", "-h", "--json", "--no-input", "--no-color"}, bools...), Values: map[string][]string{"--profile": {"local", "staging", "production"}, "--format": {"text", "json"}, "--timeout": nil}}
+		cmd := clicompletion.Command{Path: path, Flags: append([]string{"--help", "-h", "--json", "--no-input", "--no-color"}, bools...), Values: map[string][]string{"--profile": {"local", "staging", "production"}, "--auth-origin": {"browser", "desktop"}, "--format": {"text", "json"}, "--timeout": nil}}
 		for name := range strings.FieldsSeq(values) {
 			cmd.Values[name] = nil
 		}
@@ -31,6 +31,8 @@ func completionCatalog() []clicompletion.Command {
 					switch previous[0] {
 					case "profile":
 						return []string{"local", "staging", "production"}
+					case "auth_origin":
+						return []string{"browser", "desktop"}
 					case "format":
 						return []string{"json", "text"}
 					}
@@ -64,6 +66,7 @@ func completionCatalog() []clicompletion.Command {
 	user(string(mainCommandAgents)+" list", "--work --workspace --team-id --team --cursor")
 	user(string(mainCommandAgents)+" show", "--work --workspace --team-id --team")
 	user(string(mainCommandAuth)+" login", "", "--browser")
+	delete(result[len(result)-1].Values, "--auth-origin")
 	user(string(mainCommandAuth)+" repair", "", "--restart")
 	for _, sub := range []string{"link", "status", "logout"} {
 		user(string(mainCommandAuth)+" "+sub, "")

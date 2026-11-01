@@ -13,11 +13,17 @@ type LoginResult struct {
 	Mode          string           `json:"mode"`
 	Authenticated bool             `json:"authenticated"`
 	APIOrigin     string           `json:"api_origin"`
+	AuthOrigin    string           `json:"auth_origin"`
+	Profile       string           `json:"profile,omitempty"`
 	Identity      userapi.Identity `json:"identity"`
 	Warnings      []string         `json:"warnings,omitempty"`
+	NextAction    string           `json:"next_action,omitempty"`
 }
 
 func (s *Service) Login(ctx context.Context) (LoginResult, error) {
+	if s.authOrigin != userauth.AuthOriginBrowser {
+		return LoginResult{}, &userauth.Error{Code: "INVALID_CONFIG"}
+	}
 	if err := ctx.Err(); err != nil {
 		return LoginResult{}, err
 	}
@@ -68,7 +74,7 @@ func (s *Service) Login(ctx context.Context) (LoginResult, error) {
 		s.cleanupNewGrant(ctx, credential)
 		return LoginResult{}, loginErr
 	}
-	result := LoginResult{Mode: "user", Authenticated: true, APIOrigin: s.origin, Identity: identity}
+	result := LoginResult{Mode: "user", Authenticated: true, APIOrigin: s.origin, AuthOrigin: s.authOrigin, Identity: identity}
 	if partial {
 		result.Warnings = []string{"previous_grant_revocation_failed"}
 	}

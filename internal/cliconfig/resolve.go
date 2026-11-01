@@ -6,6 +6,7 @@ type Resolved struct {
 	Profile       string
 	ActiveProfile string
 	Stored        Profile
+	AuthOrigin    string
 	APIOrigin     string
 	Workspace     string
 	Team          string
@@ -31,6 +32,10 @@ func Resolve(c Config, profile string, explicit bool, getenv func(string) string
 		return Resolved{}, ErrInvalid
 	}
 	r.Stored = c.Profiles[r.Profile]
+	r.AuthOrigin, r.Sources["auth_origin"] = r.Stored.AuthOrigin, "profile"
+	if r.AuthOrigin == "" {
+		r.AuthOrigin, r.Sources["auth_origin"] = "browser", "default"
+	}
 	r.APIOrigin, r.Sources["api_origin"] = r.Stored.APIOrigin, "profile"
 	if r.APIOrigin == "" {
 		r.Sources["api_origin"] = "default"

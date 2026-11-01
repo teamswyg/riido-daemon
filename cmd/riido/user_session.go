@@ -24,6 +24,13 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 	if args.SettingsResolved && args.APIOrigin == "" {
 		return nil, cliconfig.ErrInvalid
 	}
+	authOrigin := args.AuthOrigin
+	if authOrigin == "" && !args.SettingsResolved {
+		authOrigin = userauth.AuthOriginBrowser
+	}
+	if !cliconfig.ValidAuthOrigin(authOrigin) {
+		return nil, cliconfig.ErrInvalid
+	}
 	if c.userSession != nil {
 		return c.userSession(args)
 	}
@@ -44,11 +51,11 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 		return nil, securecredential.ErrUnavailable
 	}
 	native := securecredential.Store{HelperPath: filepath.Join(filepath.Dir(executable), "RiidoCLIAuthHelper.app", "Contents", "MacOS", "riido-cli-auth-helper"), Interactive: !args.NoInput, LockDir: filepath.Join(configDir, "riido-cli", "auth-locks")}
-	store, err := standalonecli.NewProtectedStore(native, origin, userauth.AuthOriginBrowser)
+	store, err := standalonecli.NewProtectedStore(native, origin, authOrigin)
 	if err != nil {
 		return nil, err
 	}
-	return standalonecli.New(standalonecli.Config{APIOrigin: origin, Store: store, OpenBrowser: openUserBrowser})
+	return standalonecli.New(standalonecli.Config{APIOrigin: origin, AuthOrigin: authOrigin, Store: store, OpenBrowser: openUserBrowser})
 }
 
 func openUserBrowser(ctx context.Context, address string) error {

@@ -43,7 +43,7 @@ func (c contextIO) runUserAuthLocal(raw []string, logout bool) error {
 		if err := session.Logout(ctx); err != nil {
 			return c.fail(args.JSON, requestID, userAuthError(err))
 		}
-		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "user_credential": "absent", "logged_out": true}), nil)
+		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "user_credential": "absent", "logged_out": true, "auth_origin": args.AuthOrigin}), nil)
 	}
 	status, err := session.Status(ctx)
 	if err != nil {

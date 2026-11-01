@@ -28,6 +28,7 @@ func (c contextIO) parseSettings(raw []string, spec contextcli.ArgSpec) (context
 func (c contextIO) parseSettingsWithTeamDefault(raw []string, spec contextcli.ArgSpec, defaultTeam bool) (contextcli.Args, *commandSettings, *contextcli.CLIError) {
 	userMode := c.environment().Mode != contextcli.ModeAgent
 	spec.AllowProfile = userMode
+	spec.AllowAuthOrigin = userMode
 	spec.AllowTeam = userMode && slices.Contains(spec.Values, "--team-id")
 	args, cliErr := contextcli.ParseArgs(raw, spec)
 	if cliErr != nil || args.Help || !userMode {
@@ -58,7 +59,22 @@ func (c contextIO) parseSettingsWithTeamDefault(raw []string, spec contextcli.Ar
 	if err != nil {
 		return args, settings, settingsError(err)
 	}
+	if args.HasValue("--auth-origin") {
+		if !cliconfig.ValidAuthOrigin(args.Value("--auth-origin")) {
+			return args, settings, settingsError(cliconfig.ErrInvalid)
+		}
+		if args.Value("--auth-origin") != resolved.AuthOrigin {
+			if resolved.Sources["workspace"] == "profile" {
+				resolved.Workspace, resolved.Sources["workspace"] = "", "default"
+			}
+			if resolved.Sources["team"] == "profile" {
+				resolved.Team, resolved.Sources["team"] = "", "default"
+			}
+		}
+		resolved.AuthOrigin, resolved.Sources["auth_origin"] = args.Value("--auth-origin"), "flag"
+	}
 	settings.resolved = resolved
+	args.AuthOrigin, args.AuthOriginSource = resolved.AuthOrigin, resolved.Sources["auth_origin"]
 	args.SettingsResolved, args.Profile, args.APIOrigin, args.APIOriginSource = true, resolved.Profile, resolved.APIOrigin, resolved.Sources["api_origin"]
 	if args.HasValue("--team") && args.HasValue("--team-id") && args.Value("--team") != args.Value("--team-id") {
 		return args, settings, contextcli.Fail(contextcli.CodeUsage, "--team과 --team-id가 서로 다릅니다", "한 가지 팀 ID를 사용하세요")

@@ -29,6 +29,10 @@ func runWorkspaceUse(c contextIO, raw []string) error {
 }
 
 func (c contextIO) selectWorkspace(requestID string, args contextcli.Args, settings *commandSettings, id string) error {
+	if settings.resolved.AuthOrigin != settings.resolved.Stored.AuthenticationOrigin() {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeConflict, "일회용 로그인 선택으로 기본 워크스페이스를 저장할 수 없습니다", "먼저 riido config set auth_origin 으로 사용할 로그인 방식을 선택하세요"))
+	}
+
 	if !cliconfig.ValidID(id) {
 		return c.fail(args.JSON, requestID, settingsError(cliconfig.ErrInvalid))
 	}
