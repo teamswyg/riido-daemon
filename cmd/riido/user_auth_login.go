@@ -5,11 +5,12 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
+	"github.com/teamswyg/riido-daemon/internal/userauth"
 )
 
 func (c contextIO) runAuthLogin(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{Bools: []string{"--desktop", "--browser", "--with-token"}})
+	args, settings, cliErr := c.parseSettings(raw, contextcli.ArgSpec{Bools: []string{"--desktop", "--browser", "--with-token"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -32,6 +33,9 @@ func (c contextIO) runAuthLogin(raw []string) error {
 	if args.Bool("--desktop") || args.Bool("--with-token") {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "이 로그인 방법은 아직 지원하지 않습니다", "riido auth login --browser"))
 	}
+	if args.HasValue("--auth-origin") {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "로그인은 로그인 방법으로 선택하세요", "riido auth login --browser"))
+	}
 	if args.NoInput {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeAuthRequired, "로그인에는 브라우저와 OS 사용자 확인이 필요합니다", "대화형 터미널에서 riido auth login 을 실행하세요"))
 	}
@@ -41,6 +45,7 @@ func (c contextIO) runAuthLogin(raw []string) error {
 	if !args.HasValue("--timeout") {
 		args.Timeout = 5 * time.Minute
 	}
+	args.AuthOrigin, args.AuthOriginSource = userauth.AuthOriginBrowser, "login_method"
 	session, err := c.openUserSession(args)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
@@ -50,6 +55,11 @@ func (c contextIO) runAuthLogin(raw []string) error {
 	result, err := session.Login(ctx)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
+	}
+	result.Profile = args.Profile
+	if err := settings.store.ActivateAuthOrigin(ctx, settings.resolved, userauth.AuthOriginBrowser); err != nil {
+		result.Warnings = append(result.Warnings, "auth_origin_selection_not_saved")
+		result.NextAction = "RIIDO_CLI_API_URL을 이 응답의 api_origin으로 지정한 후 riido whoami --profile " + args.Profile + " --auth-origin browser 를 실행하세요"
 	}
 	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, result), nil)
 }

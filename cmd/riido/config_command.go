@@ -10,7 +10,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
 
-var configKeys = []string{"profile", "api_origin", "workspace", "team", "format", "timeout"}
+var configKeys = []string{"profile", "api_origin", "auth_origin", "workspace", "team", "format", "timeout"}
 
 func runConfig(c contextIO, raw []string) error {
 	requestID := contextcli.NewRequestID()
@@ -66,7 +66,7 @@ func runConfig(c contextIO, raw []string) error {
 		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"saved": true, "profile": profile, "key": key}), func(w io.Writer, _ any) { fmt.Fprintf(w, "설정을 저장했습니다: %s\n", key) })
 	}
 	r := settings.resolved
-	values := map[string]string{"profile": r.Profile, "api_origin": r.APIOrigin, "workspace": r.Workspace, "team": r.Team, "format": r.Format, "timeout": r.Timeout}
+	values := map[string]string{"profile": r.Profile, "api_origin": r.APIOrigin, "auth_origin": r.AuthOrigin, "workspace": r.Workspace, "team": r.Team, "format": r.Format, "timeout": r.Timeout}
 	if key != "" {
 		values = map[string]string{key: values[key]}
 	}
@@ -87,6 +87,6 @@ func printConfigUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido config list [--profile PROFILE] [--json]")
 	fmt.Fprintln(w, "  riido config get <KEY> [--profile PROFILE] [--json]")
 	fmt.Fprintln(w, "  riido config set <KEY> <VALUE> [--profile PROFILE] [--json]")
-	fmt.Fprintln(w, "    Keys: profile, api_origin, workspace, team, format, timeout. Profiles: local, staging, production.")
+	fmt.Fprintln(w, "    Keys: profile, api_origin, auth_origin, workspace, team, format, timeout. Profiles: local, staging, production.")
 	fmt.Fprintln(w, "    User mode only; nonsecret preferences. Empty VALUE clears a profile setting. workspace is verified through the current login. local requires a literal loopback api_origin.")
 }

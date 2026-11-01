@@ -64,6 +64,7 @@ func printAgentsUsage(w io.Writer) {
 
 func printAuthUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido auth <login|link|repair|logout|status> [--json]")
+	fmt.Fprintln(w, "    User commands except login: --auth-origin browser|desktop overrides config auth_origin once. Default browser; no credential fallback.")
 	fmt.Fprintln(w, "    riido auth login [--browser]   (browser PKCE; signed credential helper required)")
 	fmt.Fprintln(w, "    riido auth link               (explicit device approval; resumes the original protected request)")
 	fmt.Fprintln(w, "    riido auth link --no-input    (receipt recovery only; fails if protected storage requires OS confirmation)")

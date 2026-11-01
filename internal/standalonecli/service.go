@@ -24,6 +24,7 @@ type Store interface {
 }
 type Config struct {
 	APIOrigin   string
+	AuthOrigin  string
 	Store       Store
 	OpenBrowser func(context.Context, string) error
 	HTTPClient  *http.Client
@@ -34,11 +35,18 @@ type Service struct {
 	reader      userapi.Reader
 	store       Store
 	origin      string
+	authOrigin  string
 	openBrowser func(context.Context, string) error
 }
 
 func New(config Config) (*Service, error) {
 	origin := strings.TrimRight(config.APIOrigin, "/")
+	if config.AuthOrigin == "" {
+		config.AuthOrigin = userauth.AuthOriginBrowser
+	}
+	if config.AuthOrigin != userauth.AuthOriginBrowser && config.AuthOrigin != userauth.AuthOriginDesktop {
+		return nil, &userauth.Error{Code: "INVALID_CONFIG"}
+	}
 	client, err := userauth.NewClient(userauth.Config{ClientID: "riido-cli", Resource: origin, Scopes: []string{"read"}, HTTPClient: config.HTTPClient, Endpoints: userauth.Endpoints{AuthorizeURL: origin + "/oauth/authorize", TokenURL: origin + "/oauth/token", RevokeURL: origin + "/oauth/revoke"}})
 	if err != nil {
 		return nil, err
@@ -47,7 +55,7 @@ func New(config Config) (*Service, error) {
 		return nil, userauth.ErrStoreLocked
 	}
 	manager := userauth.NewManager(client, config.Store)
-	return &Service{client: client, manager: manager, reader: userapi.Reader{Endpoint: origin + "/graphql", Client: manager}, store: config.Store, origin: origin, openBrowser: config.OpenBrowser}, nil
+	return &Service{client: client, manager: manager, reader: userapi.Reader{Endpoint: origin + "/graphql", Client: manager}, store: config.Store, origin: origin, authOrigin: config.AuthOrigin, openBrowser: config.OpenBrowser}, nil
 }
 
 func (s *Service) Whoami(ctx context.Context) (userapi.Identity, error) { return s.reader.Whoami(ctx) }

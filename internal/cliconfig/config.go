@@ -27,11 +27,19 @@ type Config struct {
 
 type Profile struct {
 	APIOrigin       string `json:"apiOrigin,omitempty"`
+	AuthOrigin      string `json:"authOrigin,omitempty"`
 	SelectionOrigin string `json:"selectionOrigin,omitempty"`
 	Workspace       string `json:"workspace,omitempty"`
 	Team            string `json:"team,omitempty"`
 	Format          string `json:"format,omitempty"`
 	Timeout         string `json:"timeout,omitempty"`
+}
+
+func (p Profile) AuthenticationOrigin() string {
+	if p.AuthOrigin == "" {
+		return userauth.AuthOriginBrowser
+	}
+	return p.AuthOrigin
 }
 
 func Default() Config {
@@ -42,6 +50,9 @@ func ValidProfile(name string) bool {
 	return name == "production" || name == "staging" || name == "local"
 }
 func ValidID(value string) bool { return idPattern.MatchString(value) }
+func ValidAuthOrigin(value string) bool {
+	return value == userauth.AuthOriginBrowser || value == userauth.AuthOriginDesktop
+}
 
 func Origin(raw string, localOnly bool) (string, error) {
 	origin := strings.TrimRight(strings.TrimSpace(raw), "/")
@@ -69,7 +80,7 @@ func (c Config) Valid() bool {
 		return false
 	}
 	for name, p := range c.Profiles {
-		if !ValidProfile(name) {
+		if !ValidProfile(name) || p.AuthOrigin != "" && !ValidAuthOrigin(p.AuthOrigin) {
 			return false
 		}
 		if p.APIOrigin != "" {

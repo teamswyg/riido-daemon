@@ -18,19 +18,20 @@ var secretFlags = []string{
 }
 
 var (
-	commonValueFlags = []string{"--format", "--profile", "--workspace", "--team", "--limit", "--cursor", "--timeout"}
+	commonValueFlags = []string{"--format", "--profile", "--auth-origin", "--workspace", "--team", "--limit", "--cursor", "--timeout"}
 	commonBoolFlags  = []string{"--json", "--no-input", "--no-color", "--help", "-h"}
 )
 
 // ArgSpec declares the command-specific flags and positional arity.
 type ArgSpec struct {
-	Values         []string
-	Bools          []string
-	MaxPositionals int
-	AllowLimit     bool // The command validates its own typed page limit.
-	AllowProfile   bool // Enabled only by the user-mode settings resolver.
-	AllowTeam      bool // Alias for a command's existing --team-id.
-	UseWorkspace   bool // This command accepts a default workspace.
+	Values          []string
+	Bools           []string
+	MaxPositionals  int
+	AllowLimit      bool // The command validates its own typed page limit.
+	AllowAuthOrigin bool // User-only credential selection, never authority.
+	AllowProfile    bool // Enabled only by the user-mode settings resolver.
+	AllowTeam       bool // Alias for a command's existing --team-id.
+	UseWorkspace    bool // This command accepts a default workspace.
 }
 
 // Options are the flags shared by every work-context command.
@@ -46,6 +47,8 @@ type Options struct {
 	Profile          string
 	APIOrigin        string
 	APIOriginSource  string
+	AuthOrigin       string
+	AuthOriginSource string
 }
 
 // Args is the parsed command line.
@@ -99,7 +102,7 @@ func ParseArgs(args []string, spec ArgSpec) (Args, *CLIError) {
 				value = args[i]
 			}
 			parsed.values[name] = value
-			if name == "--profile" && spec.AllowProfile || name == "--team" && spec.AllowTeam {
+			if name == "--auth-origin" && spec.AllowAuthOrigin || name == "--profile" && spec.AllowProfile || name == "--team" && spec.AllowTeam {
 				continue
 			}
 			if name == "--limit" && spec.AllowLimit {
@@ -166,7 +169,7 @@ func (a *Args) setValue(name, value string) *CLIError {
 	switch name {
 	case "--format":
 		return a.setFormat(value)
-	case "--profile", "--team", "--limit":
+	case "--profile", "--auth-origin", "--team", "--limit":
 		return Fail(CodeUnsupported, name+" 옵션은 아직 지원하지 않습니다", "이 옵션을 빼고 실행하세요. 목록은 서버의 고정 페이지 크기와 --cursor를 사용합니다")
 	case "--workspace":
 		a.Workspace = value
