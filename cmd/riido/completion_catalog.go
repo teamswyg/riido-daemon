@@ -59,10 +59,10 @@ func completionCatalog() []clicompletion.Command {
 		user(string(root)+" list", "--work --team-id --team --workspace")
 	}
 	for _, sub := range []string{"list", "show"} {
-		user(string(mainCommandThread)+" "+sub, "--work --workspace")
+		user(string(mainCommandThread)+" "+sub, "--work --workspace --team-id --team")
 	}
-	user(string(mainCommandAgents)+" list", "--work --workspace --cursor")
-	user(string(mainCommandAgents)+" show", "--work --workspace")
+	user(string(mainCommandAgents)+" list", "--work --workspace --team-id --team --cursor")
+	user(string(mainCommandAgents)+" show", "--work --workspace --team-id --team")
 	user(string(mainCommandAuth)+" login", "", "--browser")
 	user(string(mainCommandAuth)+" repair", "", "--restart")
 	for _, sub := range []string{"link", "status", "logout"} {

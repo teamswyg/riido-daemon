@@ -14,7 +14,7 @@ func TestUserAgentsRejectInvalidArgumentsBeforeCredentials(t *testing.T) {
 		{"show", "a"},
 		{"list", "extra", "--work", "t", "--workspace", "w"},
 		{"list", "--work", "../t", "--workspace", "w"},
-		{"list", "--work", "RIID-5972", "--workspace", "w"},
+		{"list", "--work", "RIID-5972"},
 		{"show", "a/b", "--work", "t", "--workspace", "w"},
 		{"show", "a", "--work", "t", "--workspace", "w", "--cursor", "0"},
 		{"list", "--work", "t", "--workspace", "w", "--cursor", ""},

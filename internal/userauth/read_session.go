@@ -12,6 +12,8 @@ import (
 // read-only operations and consume/close each response before returning.
 type SessionReadClient interface {
 	DoRead(context.Context, *http.Request) (*http.Response, error)
+	ReadTaskThreads(context.Context, string, string) ([]byte, int, error)
+	ReadTaskAgents(context.Context, string, string, string, string, func([]byte, int) error) error
 }
 
 // WithReadSession binds a compound read to one protected login.
@@ -37,20 +39,7 @@ func (m *Manager) WithReadSession(ctx context.Context, read func(SessionReadClie
 	if err := read(session); err != nil {
 		return err
 	}
-	if err := ctx.Err(); err != nil {
-		return err
-	}
-	if m.generation.Load() != generation {
-		return ErrLoggedOut
-	}
-	current, err := m.store.Load(ctx)
-	if err != nil {
-		return storageError(err)
-	}
-	if current.SessionID != session.sessionID || m.generation.Load() != generation {
-		return ErrLoggedOut
-	}
-	return nil
+	return session.checkLogin(ctx)
 }
 
 type sessionReadClient struct {
@@ -59,6 +48,25 @@ type sessionReadClient struct {
 	sessionID  string
 	generation uint64
 	active     bool
+}
+
+// The caller holds the cross-process store lock for this session.
+func (s *sessionReadClient) checkLogin(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	m := s.manager
+	if !s.active || m.generation.Load() != s.generation {
+		return ErrLoggedOut
+	}
+	current, err := m.store.Load(ctx)
+	if err != nil {
+		return storageError(err)
+	}
+	if current.SessionID != s.sessionID || m.generation.Load() != s.generation {
+		return ErrLoggedOut
+	}
+	return nil
 }
 
 func (s *sessionReadClient) close() {
