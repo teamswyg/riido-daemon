@@ -18,6 +18,7 @@ type Query struct {
 	View       string
 	Target     string
 	Cursor     string
+	Since      string
 	RequestID  string
 	// MaxBytes batches consecutive captured pages of one part (content view).
 	MaxBytes int
@@ -73,17 +74,20 @@ const (
 	viewMeetings  = "meetings"
 	viewMeeting   = "meeting"
 	viewContent   = "content"
+	viewChanges   = "changes"
 )
 
 // viewForCommand maps CLI read commands onto control-plane views: snapshot
 // views for work context, live views for the agent directory. Activity,
-// search and changes are not served.
+// and search are not served.
 func viewForCommand(command string) (string, bool) {
 	switch command {
 	case "context get":
 		return viewBase, true
 	case "context part":
 		return viewContent, true
+	case "context changes":
+		return viewChanges, true
 	case "work get":
 		return viewTask, true
 	case "work tree":

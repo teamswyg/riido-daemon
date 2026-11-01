@@ -16,6 +16,7 @@ type AssignmentContextRequest struct {
 	View         string `json:"view"`
 	Target       string `json:"target,omitempty"`
 	Cursor       string `json:"cursor,omitempty"`
+	Since        string `json:"since,omitempty"`
 	RequestID    string `json:"request_id,omitempty"`
 	// MaxBytes asks a content read for consecutive pages of one part up to
 	// this encoded size. Zero keeps the single-page response.

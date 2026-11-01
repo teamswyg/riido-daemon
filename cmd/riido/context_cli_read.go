@@ -49,6 +49,9 @@ func (c contextIO) runContextRead(call contextReadCall, raw []string) error {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
 	if env.Mode != contextcli.ModeAgent {
+		if call.command == "context changes" {
+			return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUserModeUnavailable, "context changes는 에이전트 실행의 캡처 비교만 지원합니다", "사용자 맥락은 riido context get --work 로 조회하세요"))
+		}
 		return c.fail(args.JSON, requestID, userModeUnavailable())
 	}
 	addListOptions(payload, args)

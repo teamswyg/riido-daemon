@@ -2,7 +2,6 @@ package main
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
@@ -69,14 +68,25 @@ func contextGetCall() contextReadCall {
 func contextChangesCall() contextReadCall {
 	return contextReadCall{
 		command: "context changes",
-		spec:    contextcli.ArgSpec{Values: []string{"--since"}},
+		spec:    contextcli.ArgSpec{Values: []string{"--since", "--budget"}},
 		usage:   printContextGroupUsage,
 		payload: func(args contextcli.Args) (map[string]string, *contextcli.CLIError) {
-			since := strings.TrimSpace(args.Value("--since"))
-			if since == "" {
-				return nil, contextcli.Fail(contextcli.CodeUsage, "--since 가 필요합니다", "riido context get 이 돌려준 snapshot ID를 넘기세요")
+			since, cliErr := contextcli.SnapshotRef(args.Value("--since"))
+			if cliErr != nil {
+				return nil, cliErr
 			}
-			return map[string]string{"since": since}, nil
+			if args.HasValue("--cursor") {
+				return nil, contextcli.Fail(contextcli.CodeUsage, "context changes에는 --cursor를 사용할 수 없습니다", "riido context changes --since SNAPSHOT")
+			}
+			payload := map[string]string{"since": since}
+			if args.HasValue("--budget") {
+				n, err := strconv.Atoi(args.Value("--budget"))
+				if err != nil || n < 1 {
+					return nil, contextcli.Fail(contextcli.CodeUsage, "--budget 은 1 이상의 문자 수여야 합니다", "riido context changes --help")
+				}
+				payload["budget_chars"] = strconv.Itoa(n)
+			}
+			return payload, nil
 		},
 	}
 }

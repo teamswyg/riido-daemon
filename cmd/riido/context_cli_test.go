@@ -15,8 +15,8 @@ func TestContextCLIUserModeUnimplementedReadsAreExplicitlyUnavailable(t *testing
 		t.Fatalf("want exit 8, got %d", got)
 	}
 	env := decodeEnvelope(t, h.stdout.Bytes())
-	if env.Error == nil || env.Error.Code != contextcli.CodeControlPlaneUnsupported || env.Error.NextAction == "" {
-		t.Fatalf("want CONTROL_PLANE_UNSUPPORTED with next action, got %+v", env.Error)
+	if env.Error == nil || env.Error.Code != contextcli.CodeUserModeUnavailable || env.Error.NextAction == "" {
+		t.Fatalf("want USER_MODE_UNAVAILABLE with next action, got %+v", env.Error)
 	}
 	if len(h.daemon.requests) != 0 {
 		t.Fatal("user mode must not call the daemon broker")

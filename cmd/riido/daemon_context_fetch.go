@@ -18,7 +18,7 @@ type saasContextFetcher struct {
 
 func (f saasContextFetcher) FetchAssignmentContext(ctx context.Context, q contextbroker.Query) (contextbroker.Result, error) {
 	out, err := f.plane.FetchAssignmentContext(ctx, q.AgentID, saasplane.AssignmentContextRequest{
-		AssignmentID: q.AssignmentID, LeaseToken: q.LeaseToken, View: q.View, Target: q.Target, Cursor: q.Cursor, RequestID: q.RequestID, MaxBytes: q.MaxBytes,
+		AssignmentID: q.AssignmentID, LeaseToken: q.LeaseToken, View: q.View, Target: q.Target, Cursor: q.Cursor, Since: q.Since, RequestID: q.RequestID, MaxBytes: q.MaxBytes,
 	})
 	if err != nil {
 		if status, message, ok := saasplane.HTTPStatus(err); ok {
@@ -28,7 +28,7 @@ func (f saasContextFetcher) FetchAssignmentContext(ctx context.Context, q contex
 	}
 	if q.AssignmentID == "" || q.TaskID == "" || out.AssignmentID != q.AssignmentID ||
 		out.TaskID != q.TaskID || out.View != q.View || out.CapturedAt.IsZero() ||
-		(q.View == "base" && out.Live) {
+		((q.View == "base" || q.View == "changes") && out.Live) {
 		return contextbroker.Result{}, errors.New("assignment context response provenance mismatch")
 	}
 	result := contextbroker.Result{Data: out.Data, CapturedAt: out.CapturedAt, Truncated: out.Truncated, Live: out.Live}

@@ -35,7 +35,7 @@ const (
 // ReadCommandUnavailable guards the agent broker; user-only reads dispatch separately.
 func ReadCommandUnavailable(name string) bool {
 	switch name {
-	case "context changes", "work activity", "work search":
+	case "work activity", "work search":
 		return true
 	default:
 		return false
@@ -45,6 +45,9 @@ func ReadCommandUnavailable(name string) bool {
 // Capabilities returns the static capability table for cliVersion.
 func Capabilities(cliVersion string) CapabilitiesData {
 	agentRead := func(name string) CommandCapability {
+		if name == "context changes" {
+			return CommandCapability{Name: name, Modes: []Mode{ModeAgent}, Status: CommandNeedsDaemon, Note: noteDaemonBroker + "; --since SNAPSHOT으로 같은 대화의 캡처를 비교합니다; 서버 changes API 필요, 사용자 mode/캐시/자동 delta는 미지원"}
+		}
 		if name == "work search" {
 			return CommandCapability{Name: name, Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; --workspace ID와 --query, --cursor/--limit으로 현재 권한의 제목·키·본문을 검색합니다; 새 서버 검색 API 배포가 필요하며 agent mode는 exit 8입니다"}
 		}
@@ -63,7 +66,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 				note += "; user mode는 작업 ID와 --team-id, --page/--limit을 사용하고 --kind 선택 시 source version으로 이어 읽습니다; agent mode의 구형 스냅샷은 고정 20개 --cursor, 새 맥락은 parts의 context part 명령으로 이어 읽습니다"
 			}
 			if name == "context get" {
-				note += "; agent mode는 data.snapshot_id/captured_at으로 서버 스냅샷을 식별합니다; 새로 조회한 자료 시각이나 권한을 뜻하지 않으며 context changes는 아직 exit 8입니다"
+				note += "; agent mode는 data.snapshot_id/captured_at으로 서버 스냅샷을 식별합니다; 새로 조회한 자료 시각이나 권한을 뜻하지 않으며 changes 비교에는 새 서버 API가 필요합니다"
 				note += "; user mode는 --work ID와 --team-id로 직접 연결된 맥락을 조회하며 서버 read-scope 계약 배포가 필요합니다"
 			}
 			if name == "meeting get" {
