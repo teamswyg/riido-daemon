@@ -21,7 +21,7 @@ func userRepairError(err error) *contextcli.CLIError {
 		case "REPAIR_RECOVERY_EXPIRED":
 			return contextcli.Fail(contextcli.CodeConflict, "기존 복구 요청의 유효기간이 끝났습니다", "이미 연결을 완료했다면 riido auth login 으로 로그인하세요. 연결 복구가 계속 필요하면 riido auth repair --restart 로 새 승인을 요청하세요")
 		case "REPAIR_IN_PROGRESS":
-			return contextcli.Fail(contextcli.CodeConflict, "기존 복구 요청이 진행 중입니다", "기존 요청을 이어가려면 --restart 없이 riido auth repair 를 실행하세요")
+			return contextcli.Fail(contextcli.CodeConflict, "기존 복구 요청이 진행 중입니다", "다른 터미널에서 복구 중이면 먼저 마치거나 종료한 뒤, --restart 없이 riido auth repair 를 실행하세요")
 		case "REPAIR_BINDING_MISMATCH", "REPAIR_REQUEST_CHANGED":
 			return contextcli.Fail(contextcli.CodeConflict, "기존 복구 요청의 계정·키·기기가 현재 상태와 다릅니다", "기존 요청은 유지됩니다. 원래 OS 계정과 Riido 기기를 확인하세요")
 		case "REPAIR_DAEMON_UNAVAILABLE":

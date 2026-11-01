@@ -23,6 +23,7 @@ const protectedTestResource = "https://api.example.test"
 type protectedNativeFixture struct {
 	lock         chan struct{}
 	mu           sync.Mutex
+	operation    sync.Mutex
 	raw          []byte
 	loadErr      error
 	saveErr      error
