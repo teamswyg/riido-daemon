@@ -46,6 +46,8 @@ func run(args []string) error {
 		return runDaemon(args[1:])
 	case mainCommandVersion:
 		return runVersion(args[1:])
+	case mainCommandWorkspace:
+		return runWorkspace(defaultContextIO(), args[1:])
 	case mainCommandWork:
 		return runWork(defaultContextIO(), args[1:])
 	case mainCommandThread:

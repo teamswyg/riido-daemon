@@ -15,6 +15,21 @@
   "purpose": "Keeps the cmd/riido command surface and root-help visibility generated from a manifest and verified against black-box CLI output plus source boundaries. Internal daemon, bridge and mwsd commands remain callable with their existing arguments but are absent from root help; claude-permission-mcp also remains absent. Legacy serve, api and task groups remain public.",
   "command_groups": [
     {
+      "name": "workspace",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/standalonecli, internal/userapi",
+      "boundary": "User OAuth active workspace memberships only; fixed getCLIWorkspaces query, one page, no default write or daemon; agent mode unsupported.",
+      "subcommands": [
+        "list"
+      ],
+      "usage_tokens": [
+        "riido workspace list [--limit N] [--cursor CURSOR] [--json]"
+      ],
+      "source_checks": [
+        "main-command-workspace"
+      ]
+    },
+    {
       "name": "work",
       "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
@@ -535,6 +550,11 @@
       "name": "user-agents-cli-http-regression",
       "file": "cmd/riido/user_agents_test.go",
       "contains": "TestUserAgentsCLIHTTPListAndShow"
+    },
+    {
+      "name": "main-command-workspace",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandWorkspace           mainCommand = \"workspace\""
     }
   ],
   "forbidden_source_tokens": [
@@ -947,6 +967,10 @@
         {
           "text": "The protected login SessionID and generation remain fixed from ticket exchange through CP body read, strict public response parsing and final return. Cancellation, account replacement or store failure discards the entire result. List pages contain at most50 current visible public entries and the current visible total; opaque secrets, private instructions, owners and devices are never part of the response. Missing/duplicate/unknown fields, null required values, invalid enums, oversized16MiB bodies, inconsistent pagination and hidden/absent detail fail closed. Text output quotes remote values. policy_checked=false and is_current_agent=false are required for user mode; runtime callable is not a RIID-5892 mention verdict or permission to start a run. No synthetic assignment, run quota or run read record is created. Actual server activation and real OAuth/signed-helper acceptance remain separate gates.",
           "kind": "paragraph"
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 user workspace list reads exactly one page from getCLIWorkspaces(cursor, limit) with the protected original login held through final parsing. Only current active memberships and undeleted workspaces appear, including for administrators; a workspace-bound credential remains limited by the server. The fixed projection returns schemaVersion riido-cli-workspaces.v1, userId, limit, items(id/name/isDemo), nextCursor and complete. Default limit 50, maximum 100. Cursor binds user, optional grant workspace and limit and is never authority. Separate invocations recheck current membership and do not share a DB snapshot. Validate required fields, item identity/order, page bounds and continuation consistency before output; errors or login changes discard the result. Text quotes remote values, JSON keeps empty names and false demo flags. Agent mode, scope/profile/team overrides and invalid input fail before user credentials or IPC. No legacy/admin API, external URL, mutation, default workspace change, automatic pagination or OAuth activation is introduced. workspace use/config are separate work; synthetic HTTP/DB receipt is not signed-helper or live-account acceptance."
         }
       ]
     }

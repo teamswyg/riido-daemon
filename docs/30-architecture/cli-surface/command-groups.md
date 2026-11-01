@@ -6,6 +6,7 @@
 
 | Command group | Root help | Backing owner | Boundary |
 | --- | --- | --- | --- |
+| `riido workspace ...` | public | cmd/riido, internal/standalonecli, internal/userapi | User OAuth active workspace memberships only; fixed getCLIWorkspaces query, one page, no default write or daemon; agent mode unsupported. |
 | `riido work ...` | public | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener |
 | `riido resource ...` | public | cmd/riido, internal/userapi | user OAuth fixed read-scope projection of links, attachments and Figma references on the named work; does not fetch external URLs or follow related works; agent mode is explicitly unsupported |
 | `riido repo ...` | public | cmd/riido, internal/userapi | user OAuth lists Riido-stored repository and pull-request metadata for the named component; local Git/GitHub/SSH credentials are neither used nor probed; agent mode unsupported |
