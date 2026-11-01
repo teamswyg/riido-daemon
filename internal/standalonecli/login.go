@@ -57,6 +57,11 @@ func (s *Service) Login(ctx context.Context) (LoginResult, error) {
 		return LoginResult{}, err
 	}
 	credential = verified
+	credential.Binding = &userauth.CredentialBinding{Resource: s.origin, ClientID: "riido-cli", AccountID: identity.ID, KeyFingerprint: key.KeyFingerprint, AuthOrigin: userauth.AuthOriginBrowser}
+	if !credential.Binding.Valid() {
+		s.cleanupNewGrant(ctx, credential)
+		return LoginResult{}, userauth.ErrReauthRequired
+	}
 	loginErr := s.manager.Login(ctx, credential)
 	partial := errors.Is(loginErr, userauth.ErrPreviousGrantRevocationFailed)
 	if loginErr != nil && !partial {

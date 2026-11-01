@@ -2,8 +2,6 @@ package main
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -45,12 +43,12 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 	if err != nil {
 		return nil, securecredential.ErrUnavailable
 	}
-	digest := sha256.Sum256([]byte("riido-cli:" + origin))
-	native := &securecredential.Store{HelperPath: filepath.Join(filepath.Dir(executable), "RiidoCLIAuthHelper.app", "Contents", "MacOS", "riido-cli-auth-helper"), Key: hex.EncodeToString(digest[:]), Interactive: !args.NoInput, LockDir: filepath.Join(configDir, "riido-cli", "auth-locks")}
-	repairDigest := sha256.Sum256([]byte("riido-cli-repair:" + origin))
-	repairNative := *native
-	repairNative.Key = hex.EncodeToString(repairDigest[:])
-	return standalonecli.New(standalonecli.Config{APIOrigin: origin, Store: &standalonecli.ProtectedStore{Native: native, RepairNative: &repairNative, Resource: origin}, OpenBrowser: openUserBrowser})
+	native := securecredential.Store{HelperPath: filepath.Join(filepath.Dir(executable), "RiidoCLIAuthHelper.app", "Contents", "MacOS", "riido-cli-auth-helper"), Interactive: !args.NoInput, LockDir: filepath.Join(configDir, "riido-cli", "auth-locks")}
+	store, err := standalonecli.NewProtectedStore(native, origin, userauth.AuthOriginBrowser)
+	if err != nil {
+		return nil, err
+	}
+	return standalonecli.New(standalonecli.Config{APIOrigin: origin, Store: store, OpenBrowser: openUserBrowser})
 }
 
 func openUserBrowser(ctx context.Context, address string) error {

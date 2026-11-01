@@ -11,7 +11,7 @@ import (
 // Login commits the new session before retiring the old grant. A partial
 // cleanup error means the new session remains valid and must not be revoked.
 func (m *Manager) Login(ctx context.Context, credential Credential) error {
-	if credential.AccessToken == "" || !strings.EqualFold(credential.TokenType, "Bearer") || !credential.ExpiresAt.After(time.Now()) {
+	if credential.AccessToken == "" || !strings.EqualFold(credential.TokenType, "Bearer") || !credential.ExpiresAt.After(time.Now()) || !m.acceptsBinding(credential) {
 		return failure("INVALID_RESPONSE")
 	}
 	generation := m.generation.Add(1)
@@ -26,6 +26,9 @@ func (m *Manager) Login(ctx context.Context, credential Credential) error {
 	previous, loadErr := m.store.Load(ctx)
 	if loadErr != nil && !errors.Is(loadErr, ErrNotAuthenticated) {
 		return storageError(loadErr)
+	}
+	if loadErr == nil && !m.acceptsBinding(previous) {
+		return failure("STORAGE_ERROR")
 	}
 	if m.generation.Load() != generation {
 		return ErrLoggedOut
