@@ -13,7 +13,14 @@ func (s *ProtectedStore) LockRepairOperation(ctx context.Context) (func(), error
 	if s == nil || s.RepairNative == nil || !validLinkResource(s.Resource) {
 		return nil, securecredential.ErrUnavailable
 	}
-	unlock, err := s.RepairNative.TryLock(ctx)
+	locker := s.RepairLock
+	if locker == nil {
+		if s.authOrigin() != "browser" {
+			return nil, securecredential.ErrUnavailable
+		}
+		locker = s.RepairNative
+	}
+	unlock, err := locker.TryLock(ctx)
 	if errors.Is(err, securecredential.ErrBusy) {
 		return nil, repairLocalError("REPAIR_IN_PROGRESS")
 	}

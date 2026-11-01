@@ -27,6 +27,9 @@ func (m *Manager) Logout(ctx context.Context) error {
 	if err != nil && !errors.Is(err, ErrNotAuthenticated) {
 		return storageError(err)
 	}
+	if err == nil && !m.acceptsBinding(credential) {
+		return failure("STORAGE_ERROR")
+	}
 	// Optional protected request custody is not an OAuth credential. Logout
 	// cancels it under the same lock even after the old grant was removed.
 	if auxiliary, ok := m.store.(interface{ ClearLocalRequestsOnLogout(context.Context) error }); ok {

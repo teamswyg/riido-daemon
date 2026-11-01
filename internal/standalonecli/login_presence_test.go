@@ -75,6 +75,10 @@ func TestNewAndReplacementLoginConfirmBeforeBrowserAndAPI(t *testing.T) {
 			if err != nil || !result.Authenticated || store.confirms != 1 || store.legacyConfirms != 0 || store.signs != 1 || !reflect.DeepEqual(store.order, want) {
 				t.Fatalf("login order=%v err=%v", store.order, err)
 			}
+			bound := store.credential.Binding
+			if bound == nil || !bound.Valid() || bound.AccountID != "fixture-user" || bound.KeyFingerprint != testInstallationKey().KeyFingerprint || bound.Resource != service.origin || bound.AuthOrigin != userauth.AuthOriginBrowser {
+				t.Fatal("login did not bind the verified account and proof key")
+			}
 		})
 	}
 }

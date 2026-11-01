@@ -22,6 +22,13 @@ type protectedNativeStore interface {
 }
 
 type ProtectedStore struct {
+	AuthOrigin  string
+	CustodyLock interface {
+		Lock(context.Context) (func(), error)
+	}
+	RepairLock interface {
+		TryLock(context.Context) (func(), error)
+	}
 	Native       protectedNativeStore
 	RepairNative protectedRepairNativeStore
 	Resource     string
@@ -31,7 +38,14 @@ func (s *ProtectedStore) Lock(ctx context.Context) (func(), error) {
 	if s == nil || s.Native == nil {
 		return nil, securecredential.ErrUnavailable
 	}
-	unlock, err := s.Native.Lock(ctx)
+	locker := s.CustodyLock
+	if locker == nil {
+		if s.authOrigin() != userauth.AuthOriginBrowser {
+			return nil, securecredential.ErrUnavailable
+		}
+		locker = s.Native
+	}
+	unlock, err := locker.Lock(ctx)
 	if err == nil && unlock == nil {
 		return nil, securecredential.ErrUnavailable
 	}
@@ -71,9 +85,15 @@ func (s *ProtectedStore) Load(ctx context.Context) (userauth.Credential, error) 
 // Save is called under CredentialStore.Lock by the authentication manager.
 // Reloading under that same lock preserves pending state across token rotation.
 func (s *ProtectedStore) Save(ctx context.Context, credential userauth.Credential) error {
+	if !s.acceptsCredential(credential) {
+		return securecredential.ErrUnavailable
+	}
 	record, err := s.loadRecord(ctx)
 	if err != nil && !errors.Is(err, userauth.ErrNotAuthenticated) {
 		return err
+	}
+	if err == nil && record.Credential.SessionID == credential.SessionID && !userauth.SameCredentialBinding(record.Credential.Binding, credential.Binding) {
+		return securecredential.ErrUnavailable
 	}
 	if err != nil || record.Credential.SessionID != credential.SessionID {
 		record = protectedSession{SchemaVersion: protectedSessionVersion}
@@ -91,10 +111,29 @@ func (s *ProtectedStore) loadRecord(ctx context.Context) (protectedSession, erro
 		return protectedSession{}, mapStorageError(err)
 	}
 	record, err := decodeProtectedSession(raw)
-	if err == nil && record.PendingLink != nil && record.PendingLink.Resource != s.Resource {
+	if err == nil && (!s.acceptsCredential(record.Credential) || record.PendingLink != nil && record.PendingLink.Resource != s.Resource) {
 		return protectedSession{}, securecredential.ErrUnavailable
 	}
 	return record, err
+}
+
+func (s *ProtectedStore) authOrigin() string {
+	if s != nil && s.AuthOrigin == "" {
+		return userauth.AuthOriginBrowser
+	}
+	if s == nil {
+		return ""
+	}
+	return s.AuthOrigin
+}
+
+func (s *ProtectedStore) acceptsCredential(credential userauth.Credential) bool {
+	origin := s.authOrigin()
+	if credential.Binding == nil {
+		return origin == userauth.AuthOriginBrowser
+	}
+	b := credential.Binding
+	return b.Valid() && b.Resource == s.Resource && b.AuthOrigin == origin
 }
 
 func (s *ProtectedStore) saveRecord(ctx context.Context, record protectedSession) error {
