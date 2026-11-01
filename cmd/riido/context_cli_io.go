@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
@@ -16,6 +17,7 @@ import (
 // contextIO carries every side effect of the work-context commands so tests
 // can run them without a real daemon, terminal, or PATH.
 type contextIO struct {
+	configDir             func() (string, error)
 	userSession           func(contextcli.Args) (*standalonecli.Service, error)
 	verifyHelperSignature func(context.Context, string, []string) error
 	stdout                io.Writer
@@ -30,6 +32,13 @@ type contextIO struct {
 
 func defaultContextIO() contextIO {
 	return contextIO{
+		configDir: func() (string, error) {
+			dir, err := os.UserConfigDir()
+			if err != nil {
+				return "", err
+			}
+			return filepath.Join(dir, "riido-cli"), nil
+		},
 		stdout:        os.Stdout,
 		stderr:        os.Stderr,
 		getenv:        os.Getenv,

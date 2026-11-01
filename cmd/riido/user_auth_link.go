@@ -12,7 +12,7 @@ import (
 
 func (c contextIO) runAuthLink(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -26,7 +26,7 @@ func (c contextIO) runAuthLink(raw []string) error {
 	if cliErr := checkUserOptions(args); cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
-	if !hasTimeout(raw) {
+	if !args.HasValue("--timeout") {
 		args.Timeout = 5 * time.Minute
 	}
 	session, err := c.openUserSession(args)

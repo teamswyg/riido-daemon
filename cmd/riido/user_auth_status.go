@@ -22,7 +22,7 @@ func (c contextIO) runAuthLogout(raw []string) error {
 
 func (c contextIO) runUserAuthLocal(raw []string, logout bool) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

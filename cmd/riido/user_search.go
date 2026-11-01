@@ -12,7 +12,7 @@ import (
 
 func (c contextIO) runUserSearch(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{Values: []string{"--query", "--page", "--budget"}, AllowLimit: true})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{UseWorkspace: true, Values: []string{"--query", "--page", "--budget"}, AllowLimit: true})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

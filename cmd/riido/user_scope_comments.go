@@ -20,7 +20,7 @@ func hasScopeCommentOptions(raw []string) bool {
 
 func (c contextIO) runUserScopeComments(sub workCommand, raw []string) error {
 	id := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--kind", "--comment-id", "--page", "--version"}, AllowLimit: true})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--kind", "--comment-id", "--page", "--version"}, AllowLimit: true})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), id, cliErr)
 	}

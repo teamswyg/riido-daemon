@@ -9,7 +9,7 @@ import (
 
 func (c contextIO) runUserContext(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{Values: []string{"--work", "--team-id"}})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{Values: []string{"--work", "--team-id"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

@@ -19,10 +19,13 @@ func runWorkspace(c contextIO, raw []string) error {
 		}
 		return nil
 	}
+	if raw[0] == "use" {
+		return runWorkspaceUse(c, raw[1:])
+	}
 	if raw[0] != "list" {
 		return c.fail(wantsJSON(raw), requestID, contextcli.Fail(contextcli.CodeUsage, "지원하지 않는 workspace 하위 명령입니다", "riido workspace list --help"))
 	}
-	args, cliErr := contextcli.ParseArgs(raw[1:], contextcli.ArgSpec{AllowLimit: true})
+	args, cliErr := c.parseArgs(raw[1:], contextcli.ArgSpec{AllowLimit: true})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -65,6 +68,8 @@ func runWorkspace(c contextIO, raw []string) error {
 }
 
 func printWorkspaceUsage(w io.Writer) {
+	fmt.Fprintln(w, "  riido workspace use <WORKSPACE-ID> [--profile PROFILE] [--json]")
+	fmt.Fprintln(w, "    Verify current membership, then save a profile default. API permissions are checked again on every read.")
 	fmt.Fprintln(w, "  riido workspace list [--limit N] [--cursor CURSOR] [--json]")
 	fmt.Fprintln(w, "    User mode only; current active memberships, one page (default 50, max 100). Continue with nextCursor and the same limit. No default workspace change.")
 }

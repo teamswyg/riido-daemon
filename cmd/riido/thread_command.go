@@ -26,7 +26,7 @@ func runThread(c contextIO, raw []string) error {
 	if raw[0] == "show" {
 		maxPositionals = 1
 	}
-	args, cliErr := contextcli.ParseArgs(raw[1:], contextcli.ArgSpec{MaxPositionals: maxPositionals, Values: []string{"--work", "--page", "--budget"}})
+	args, cliErr := c.parseArgs(raw[1:], contextcli.ArgSpec{UseWorkspace: true, MaxPositionals: maxPositionals, Values: []string{"--work", "--page", "--budget"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

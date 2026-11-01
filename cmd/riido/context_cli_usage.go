@@ -8,6 +8,7 @@ import (
 // printContextUsage lists the work-context commands shared by root and
 // direct internal-command help; internal dispatch is documented separately.
 func printContextUsage(w io.Writer) {
+	printConfigUsage(w)
 	printWorkspaceUsage(w)
 	fmt.Fprintln(w, "  # Riido work context (agents and people; add --json for the envelope)")
 	printWorkUsage(w)

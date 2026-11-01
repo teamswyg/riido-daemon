@@ -11,7 +11,7 @@ import (
 
 func (c contextIO) runAuthRepair(raw []string) error {
 	id := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{Bools: []string{"--restart"}})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{Bools: []string{"--restart"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), id, cliErr)
 	}
@@ -28,7 +28,7 @@ func (c contextIO) runAuthRepair(raw []string) error {
 	if args.NoInput && args.Bool("--restart") {
 		return c.fail(args.JSON, id, contextcli.Fail(contextcli.CodeUsage, "새 복구 요청은 사용자 확인이 필요합니다", "--no-input 없이 다시 실행하세요"))
 	}
-	if !hasTimeout(raw) {
+	if !args.HasValue("--timeout") {
 		args.Timeout = 5 * time.Minute
 	}
 	session, err := c.openUserSession(args)

@@ -10,6 +10,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/teamswyg/riido-daemon/internal/cliconfig"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/securecredential"
 	"github.com/teamswyg/riido-daemon/internal/standalonecli"
@@ -22,10 +23,13 @@ const (
 )
 
 func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service, error) {
+	if args.SettingsResolved && args.APIOrigin == "" {
+		return nil, cliconfig.ErrInvalid
+	}
 	if c.userSession != nil {
 		return c.userSession(args)
 	}
-	origin, _, err := c.userAPIOrigin()
+	origin, _, err := c.userAPIOrigin(args)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +62,13 @@ func openUserBrowser(ctx context.Context, address string) error {
 
 // userAPIOrigin validates the same OAuth resource without opening storage or
 // contacting the network. Invalid input is never returned to diagnostics.
-func (c contextIO) userAPIOrigin() (string, string, error) {
+func (c contextIO) userAPIOrigin(args ...contextcli.Args) (string, string, error) {
+	if len(args) > 0 && args[0].SettingsResolved {
+		if args[0].APIOrigin == "" {
+			return "", args[0].APIOriginSource, cliconfig.ErrInvalid
+		}
+		return args[0].APIOrigin, args[0].APIOriginSource, nil
+	}
 	origin := strings.TrimSpace(c.getenv(cliAPIOriginEnv))
 	source := "environment"
 	if origin == "" {

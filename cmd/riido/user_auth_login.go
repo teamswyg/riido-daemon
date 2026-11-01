@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"strings"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
@@ -10,7 +9,7 @@ import (
 
 func (c contextIO) runAuthLogin(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{Bools: []string{"--desktop", "--browser", "--with-token"}})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{Bools: []string{"--desktop", "--browser", "--with-token"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -39,7 +38,7 @@ func (c contextIO) runAuthLogin(raw []string) error {
 	if cliErr := checkUserOptions(args); cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
-	if !hasTimeout(raw) {
+	if !args.HasValue("--timeout") {
 		args.Timeout = 5 * time.Minute
 	}
 	session, err := c.openUserSession(args)
@@ -53,15 +52,6 @@ func (c contextIO) runAuthLogin(raw []string) error {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
 	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, result), nil)
-}
-
-func hasTimeout(raw []string) bool {
-	for _, arg := range raw {
-		if arg == "--timeout" || strings.HasPrefix(arg, "--timeout=") {
-			return true
-		}
-	}
-	return false
 }
 
 func checkUserOptions(args contextcli.Args) *contextcli.CLIError {

@@ -10,7 +10,7 @@ import (
 
 func (c contextIO) runUserWhoami(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -36,7 +36,7 @@ func (c contextIO) runUserWhoami(raw []string) error {
 
 func (c contextIO) runUserWork(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id"}})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
