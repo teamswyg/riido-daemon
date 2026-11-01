@@ -14,7 +14,8 @@ type SessionReadClient interface {
 	DoRead(context.Context, *http.Request) (*http.Response, error)
 }
 
-// WithReadSession binds a compound same-origin read to one protected login.
+// WithReadSession binds a compound read to one protected login.
+// DoRead stays same-origin; dedicated readers own their fixed cross-origin hops.
 // The cross-process store lock covers all network calls and response parsing.
 // Callers must discard their result whenever this method returns an error.
 func (m *Manager) WithReadSession(ctx context.Context, read func(SessionReadClient) error) error {

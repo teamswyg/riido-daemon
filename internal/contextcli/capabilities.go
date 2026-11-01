@@ -51,8 +51,11 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		if name == "work activity" {
 			return CommandCapability{Name: name, Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 작업 ID와 --team-id, --page/--limit으로 live 활동을 조회합니다; 서버 활동 조회 권한 배포가 필요하며 agent mode는 exit 8입니다"}
 		}
-		if name == "whoami" || name == "work get" || name == "work tree" || name == "work comments" || name == "work relations" || name == "context get" || name == "meeting get" || name == "meeting list" {
+		if name == "agents list" || name == "agents show" || name == "whoami" || name == "work get" || name == "work tree" || name == "work comments" || name == "work relations" || name == "context get" || name == "meeting get" || name == "meeting list" {
 			note := noteDaemonBroker + "; " + noteUserMode
+			if name == "agents list" || name == "agents show" {
+				note += "; user mode는 --work ID와 --workspace ID로 현재 공개 Agent를 조회합니다; 목록은 50개/--cursor, 멘션·실행 허가 판정 없음; 전용 monolith/CP reader 활성화 필요"
+			}
 			if name == "work get" {
 				note += "; user mode는 작업 ID와 --team-id만 지원합니다"
 			}

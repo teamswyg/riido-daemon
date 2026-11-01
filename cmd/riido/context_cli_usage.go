@@ -47,6 +47,9 @@ func printContextGroupUsage(w io.Writer) {
 }
 
 func printAgentsUsage(w io.Writer) {
+	fmt.Fprintln(w, "  riido agents list --work <ID> --workspace <WORKSPACE-ID> [--cursor C] [--json]   (user mode)")
+	fmt.Fprintln(w, "  riido agents show <AGENT-ID> --work <ID> --workspace <WORKSPACE-ID> [--json]   (user mode)")
+	fmt.Fprintln(w, "    Current visible public agents; 50 per page. Runtime availability is not permission to mention or execute. Requires dedicated server reader activation.")
 	fmt.Fprintln(w, "  riido agents list [--cursor C] [--json]   (live: agents the run's requester can see, with work status and connection)")
 	fmt.Fprintln(w, "  riido agents show <AGENT-ID> [--json]")
 }
