@@ -37,7 +37,11 @@ func (a *Authorization) exchange(ctx context.Context, code string) (Credential, 
 	if !validInstallationSignature(signature) {
 		return Credential{}, failure("STORAGE_ERROR")
 	}
-	return a.client.token(ctx, url.Values{"grant_type": {"authorization_code"}, "code": {code}, "code_verifier": {a.verifier}, "redirect_uri": {a.RedirectURI}, "installation_signature": {signature}})
+	form := url.Values{"grant_type": {"authorization_code"}, "code": {code}, "code_verifier": {a.verifier}, "redirect_uri": {a.RedirectURI}, "installation_signature": {signature}}
+	if a.desktop != nil {
+		return a.client.desktopToken(ctx, form)
+	}
+	return a.client.token(ctx, form)
 }
 
 func validInstallationSignature(value string) bool {

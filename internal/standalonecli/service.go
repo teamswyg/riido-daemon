@@ -13,6 +13,7 @@ import (
 
 var (
 	ErrBrowserUnavailable     = errors.New("could not open the authorization browser")
+	ErrDesktopUnavailable     = errors.New("could not open the Riido Desktop authorization handoff")
 	ErrLogoutRemoteIncomplete = errors.New("local credentials were removed but server revocation was not confirmed")
 )
 
@@ -27,6 +28,7 @@ type Config struct {
 	AuthOrigin  string
 	Store       Store
 	OpenBrowser func(context.Context, string) error
+	OpenDesktop func(context.Context, userauth.DesktopAuthorizationRequest) error
 	HTTPClient  *http.Client
 }
 type Service struct {
@@ -37,6 +39,7 @@ type Service struct {
 	origin      string
 	authOrigin  string
 	openBrowser func(context.Context, string) error
+	openDesktop func(context.Context, userauth.DesktopAuthorizationRequest) error
 }
 
 func New(config Config) (*Service, error) {
@@ -55,7 +58,7 @@ func New(config Config) (*Service, error) {
 		return nil, userauth.ErrStoreLocked
 	}
 	manager := userauth.NewManager(client, config.Store)
-	return &Service{client: client, manager: manager, reader: userapi.Reader{Endpoint: origin + "/graphql", Client: manager}, store: config.Store, origin: origin, authOrigin: config.AuthOrigin, openBrowser: config.OpenBrowser}, nil
+	return &Service{client: client, manager: manager, reader: userapi.Reader{Endpoint: origin + "/graphql", Client: manager}, store: config.Store, origin: origin, authOrigin: config.AuthOrigin, openBrowser: config.OpenBrowser, openDesktop: config.OpenDesktop}, nil
 }
 
 func (s *Service) Whoami(ctx context.Context) (userapi.Identity, error) { return s.reader.Whoami(ctx) }

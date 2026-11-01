@@ -55,7 +55,18 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 	if err != nil {
 		return nil, err
 	}
-	return standalonecli.New(standalonecli.Config{APIOrigin: origin, AuthOrigin: authOrigin, Store: store, OpenBrowser: openUserBrowser})
+	return standalonecli.New(standalonecli.Config{APIOrigin: origin, AuthOrigin: authOrigin, Store: store, OpenBrowser: openUserBrowser, OpenDesktop: openUserDesktop})
+}
+
+func openUserDesktop(ctx context.Context, request userauth.DesktopAuthorizationRequest) error {
+	address, err := request.LaunchURL()
+	if err != nil {
+		return standalonecli.ErrDesktopUnavailable
+	}
+	if err := openUserBrowser(ctx, address); err != nil {
+		return standalonecli.ErrDesktopUnavailable
+	}
+	return nil
 }
 
 func openUserBrowser(ctx context.Context, address string) error {

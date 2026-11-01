@@ -21,9 +21,6 @@ type LoginResult struct {
 }
 
 func (s *Service) Login(ctx context.Context) (LoginResult, error) {
-	if s.authOrigin != userauth.AuthOriginBrowser {
-		return LoginResult{}, &userauth.Error{Code: "INVALID_CONFIG"}
-	}
 	if err := ctx.Err(); err != nil {
 		return LoginResult{}, err
 	}
@@ -37,22 +34,11 @@ func (s *Service) Login(ctx context.Context) (LoginResult, error) {
 	if err := ctx.Err(); err != nil {
 		return LoginResult{}, err
 	}
-	if s.openBrowser == nil {
-		return LoginResult{}, ErrBrowserUnavailable
-	}
-	flow, err := s.client.BeginInstallationAuthorization(ctx, key, func(ctx context.Context, proof userauth.InstallationProof) (string, error) {
-		return s.store.SignInstallationProof(ctx, key, proof)
-	})
+	flow, err := s.beginLogin(ctx, key)
 	if err != nil {
 		return LoginResult{}, err
 	}
 	defer flow.Close()
-	if err := s.openBrowser(ctx, flow.URL); err != nil {
-		if ctx.Err() != nil {
-			return LoginResult{}, ctx.Err()
-		}
-		return LoginResult{}, ErrBrowserUnavailable
-	}
 	credential, err := flow.Wait(ctx)
 	if err != nil {
 		return LoginResult{}, err
@@ -63,7 +49,7 @@ func (s *Service) Login(ctx context.Context) (LoginResult, error) {
 		return LoginResult{}, err
 	}
 	credential = verified
-	credential.Binding = &userauth.CredentialBinding{Resource: s.origin, ClientID: "riido-cli", AccountID: identity.ID, KeyFingerprint: key.KeyFingerprint, AuthOrigin: userauth.AuthOriginBrowser}
+	credential.Binding = &userauth.CredentialBinding{Resource: s.origin, ClientID: "riido-cli", AccountID: identity.ID, KeyFingerprint: key.KeyFingerprint, AuthOrigin: s.authOrigin}
 	if !credential.Binding.Valid() {
 		s.cleanupNewGrant(ctx, credential)
 		return LoginResult{}, userauth.ErrReauthRequired
