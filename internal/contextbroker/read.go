@@ -27,7 +27,8 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	defer cancel()
 	query := Query{
 		AgentID: binding.AgentID, AssignmentID: binding.AssignmentID, LeaseToken: binding.LeaseToken,
-		View: view, Target: queryTarget(req.Args), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
+		TaskID: binding.TaskID,
+		View:   view, Target: queryTarget(req.Args), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
 	}
 	if view == viewContent {
 		query.MaxBytes = contentBatchBytes(req.Args)
@@ -36,11 +37,15 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	if err != nil {
 		return contextcli.FailureEnvelope(requestID, fetchFailure(err))
 	}
+	data, err := snapshotProvenance(result.Data, result, query)
+	if err != nil {
+		return contextcli.FailureEnvelope(requestID, fetchFailure(err))
+	}
 	budget := budgetChars(req.Args)
-	preservePage := capturedReadBudget(view, result.Data, budget)
-	data, budgetCut, budgetFits := result.Data, false, true
+	preservePage := capturedReadBudget(view, data, budget)
+	budgetCut, budgetFits := false, true
 	if !preservePage {
-		data, budgetCut, budgetFits = applyBudget(result.Data, budget)
+		data, budgetCut, budgetFits = applyBudget(data, budget)
 	}
 	truncated := result.Truncated || budgetCut
 	env := contextcli.NewEnvelope(requestID, data)

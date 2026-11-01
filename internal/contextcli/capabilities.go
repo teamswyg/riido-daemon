@@ -63,6 +63,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 				note += "; user mode는 작업 ID와 --team-id, --page/--limit을 사용하고 --kind 선택 시 source version으로 이어 읽습니다; agent mode의 구형 스냅샷은 고정 20개 --cursor, 새 맥락은 parts의 context part 명령으로 이어 읽습니다"
 			}
 			if name == "context get" {
+				note += "; agent mode는 data.snapshot_id/captured_at으로 서버 스냅샷을 식별합니다; 새로 조회한 자료 시각이나 권한을 뜻하지 않으며 context changes는 아직 exit 8입니다"
 				note += "; user mode는 --work ID와 --team-id로 직접 연결된 맥락을 조회하며 서버 read-scope 계약 배포가 필요합니다"
 			}
 			if name == "meeting get" {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/saasplane"
 	"github.com/teamswyg/riido-daemon/internal/contextbroker"
@@ -25,7 +26,15 @@ func (f saasContextFetcher) FetchAssignmentContext(ctx context.Context, q contex
 		}
 		return contextbroker.Result{}, err
 	}
+	if q.AssignmentID == "" || q.TaskID == "" || out.AssignmentID != q.AssignmentID ||
+		out.TaskID != q.TaskID || out.View != q.View || out.CapturedAt.IsZero() ||
+		(q.View == "base" && out.Live) {
+		return contextbroker.Result{}, errors.New("assignment context response provenance mismatch")
+	}
 	result := contextbroker.Result{Data: out.Data, CapturedAt: out.CapturedAt, Truncated: out.Truncated, Live: out.Live}
+	if q.View == "base" {
+		result.SnapshotID = out.AssignmentID
+	}
 	for _, source := range out.Sources {
 		result.Sources = append(result.Sources, contextbroker.ResultSource{Kind: source.Kind, ID: source.ID, Part: source.Part, Version: source.Version})
 	}
