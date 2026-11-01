@@ -1,0 +1,10 @@
+#compdef riido
+# Source after compinit, or place this file on fpath before compinit.
+_riido() {
+    local -a before candidates
+    if (( CURRENT > 2 )); then before=("${words[@]:1:$((CURRENT-2))}"); fi
+    candidates=("${(@f)$(printf '%s\0' words "${before[@]}" "$PREFIX" | command riido completion __complete 2>/dev/null)}")
+    if (( ${#candidates} )); then compadd -- "${candidates[@]}"; fi
+    return 0
+}
+if (( $+functions[compdef] )); then compdef _riido riido; fi

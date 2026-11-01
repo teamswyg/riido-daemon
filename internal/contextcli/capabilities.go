@@ -88,6 +88,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		return CommandCapability{Name: name, Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable}
 	}
 	commands := []CommandCapability{
+		{Name: "completion", Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable, Note: "bash/zsh/fish/PowerShell 사용자 터미널용 정적 자동완성 스크립트; 자격·설정·API 접근 없음"},
 		{Name: "config list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: "비밀값 없는 프로필 설정·환경변수와 출처를 표시합니다"},
 		{Name: "config get", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: "프로필 설정·환경변수에서 한 값을 표시합니다"},
 		{Name: "config set", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: "local/staging/production 프로필의 비밀값 없는 설정; 자격·권한은 저장하지 않습니다"},
