@@ -12,6 +12,7 @@ Keeps the cmd/riido command surface and root-help visibility generated from a ma
 
 | Group | Root help | Subcommands | Owner | Boundary | Evidence |
 | --- | --- | --- | --- | --- | --- |
+| `completion` | public | `bash`, `zsh`, `fish`, `powershell` | cmd/riido, internal/clicompletion | Static human-terminal command/flag/enum completion for bash/zsh/fish/PowerShell. Generator and stdin-framed private query do not open settings, credentials, daemon or API. No dynamic object IDs or path fallback. Internal runtime commands and currently unavailable user leaves are excluded. | `main-command-completion` |
 | `config` | public | `list`, `get`, `set` | cmd/riido, internal/cliconfig | Nonsecret per-OS-user settings for local/staging/production; active profile, API origin, defaults. Does not read OAuth credentials. Workspace writes verify membership through workspace use. Agent mode cannot read or mutate user profiles. | `main-command-config` |
 | `workspace` | public | `list`, `use` | cmd/riido, internal/standalonecli, internal/userapi | User OAuth current workspace membership lookup only; use saves a nonsecret origin-bound local preference after lookup, never a server mutation or grant. Agent mode unsupported. | `main-command-workspace` |
 | `work` | public | `get`, `body`, `tree`, `relations`, `comments`, `replies`, `activity`, `search` | cmd/riido, internal/contextcli | reads Riido work items through the local daemon broker (agent mode) or the signed-in user credential (user mode); opens no listener | `main-command-work`, `work-subcommand-vocabulary` |

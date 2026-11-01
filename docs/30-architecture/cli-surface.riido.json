@@ -15,6 +15,24 @@
   "purpose": "Keeps the cmd/riido command surface and root-help visibility generated from a manifest and verified against black-box CLI output plus source boundaries. Internal daemon, bridge and mwsd commands remain callable with their existing arguments but are absent from root help; claude-permission-mcp also remains absent. Legacy serve, api and task groups remain public.",
   "command_groups": [
     {
+      "name": "completion",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/clicompletion",
+      "boundary": "Static human-terminal command/flag/enum completion for bash/zsh/fish/PowerShell. Generator and stdin-framed private query do not open settings, credentials, daemon or API. No dynamic object IDs or path fallback. Internal runtime commands and currently unavailable user leaves are excluded.",
+      "subcommands": [
+        "bash",
+        "zsh",
+        "fish",
+        "powershell"
+      ],
+      "usage_tokens": [
+        "riido completion <bash|zsh|fish|powershell> [--json]"
+      ],
+      "source_checks": [
+        "main-command-completion"
+      ]
+    },
+    {
       "name": "config",
       "root_help": "public",
       "owner": "cmd/riido, internal/cliconfig",
@@ -581,6 +599,11 @@
       "name": "main-command-config",
       "file": "cmd/riido/cli_commands.go",
       "contains": "mainCommandConfig              mainCommand = \"config\""
+    },
+    {
+      "name": "main-command-completion",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandCompletion          mainCommand = \"completion\""
     }
   ],
   "forbidden_source_tokens": [
@@ -1004,7 +1027,11 @@
         },
         {
           "kind": "paragraph",
-          "text": "User command defaults are applied once per invocation before credentials: explicit flags, allowlisted RIIDO_CLI_WORKSPACE/TEAM/FORMAT/TIMEOUT environment values, origin-bound profile preferences, then current command defaults. --team is an alias only on commands supporting --team-id; conflicting explicit aliases fail. Workspace defaults are consumed only by commands requiring a workspace (work search, thread and agents). Auth and diagnostics use the same resolved profile origin; user team/profile overrides remain unavailable to Agent execution before file/credential/IPC access, and stored defaults cannot expand its fixed grant. config list/get expose only validated nonsecret effective values and their sources; config set accepts profile/api_origin/workspace/team/format/timeout, with workspace delegated to verified workspace use. Empty team/workspace values clear local defaults. workspace use scans membership pages within one protected login and bounded command timeout, matches an actual opaque ID, persists only the verified ID and origin after success, and never changes the server default workspace. A lookup failure does not write config. A later permission/account change is reauthorized by the server; a saved preference is not ongoing access evidence. CLI completion and human display-key resolution remain separate work."
+          "text": "User command defaults are applied once per invocation before credentials: explicit flags, allowlisted RIIDO_CLI_WORKSPACE/TEAM/FORMAT/TIMEOUT environment values, origin-bound profile preferences, then current command defaults. --team is an alias only on commands supporting --team-id; conflicting explicit aliases fail. Workspace defaults are consumed only by commands requiring a workspace (work search, thread and agents). Auth and diagnostics use the same resolved profile origin; user team/profile overrides remain unavailable to Agent execution before file/credential/IPC access, and stored defaults cannot expand its fixed grant. config list/get expose only validated nonsecret effective values and their sources; config set accepts profile/api_origin/workspace/team/format/timeout, with workspace delegated to verified workspace use. Empty team/workspace values clear local defaults. workspace use scans membership pages within one protected login and bounded command timeout, matches an actual opaque ID, persists only the verified ID and origin after success, and never changes the server default workspace. A lookup failure does not write config. A later permission/account change is reauthorized by the server; a saved preference is not ongoing access evidence. Human display-key resolution remains separate work."
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 completion emits bash, zsh, fish or PowerShell scripts without loading config or credentials. The wrappers invoke only a bounded internal completion query; typed words travel over NUL-framed UTF-8 stdin, never extra argv. Candidates are static public user commands, their supported flags and fixed profile/format/config-key/shell enums. Internal daemon/bridge/mwsd/MCP surfaces, unavailable user context part/changes, unsupported auth login methods, secrets, remote IDs and local paths are not suggested. Invalid, oversized or unknown input produces no candidates and no diagnostic containing typed values. Bash/zsh/fish disable shell file fallback; PowerShell native completion falls back to its own local filenames on no match because its public native API has no handled-empty result. Riido does not supply those filenames; no private reflection, global TabExpansion2/key-binding override, fake candidate or exception sentinel is used. Cursor suffixes are excluded, quotes are not evaluated, and unquoted Bash/fish substitution/control expressions conservatively produce no candidates. Quoted contents are treated as literals without evaluation; mixed quoting inside Bash option names is left uncompleted. This is discoverability only: execution parsers, authenticated API permissions, settings and installation files remain authoritative and unchanged. Scripts are output only; shell startup files are not edited."
         }
       ]
     }

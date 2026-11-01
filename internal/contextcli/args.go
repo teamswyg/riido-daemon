@@ -118,10 +118,17 @@ func ParseArgs(args []string, spec ArgSpec) (Args, *CLIError) {
 	return parsed, nil
 }
 
+// IsSecretArg identifies forbidden flags, including inline values, without
+// returning diagnostics or copying the supplied value into output.
+func IsSecretArg(arg string) bool {
+	name, _, _ := strings.Cut(arg, "=")
+	return slices.Contains(secretFlags, name)
+}
+
 func rejectSecretArgs(args []string) *CLIError {
 	for _, arg := range args {
 		name, _, _ := strings.Cut(arg, "=")
-		if slices.Contains(secretFlags, name) {
+		if IsSecretArg(arg) {
 			return Fail(CodeSecretInArgv,
 				name+" 옵션은 지원하지 않습니다. 비밀값은 명령 인자로 받지 않습니다",
 				"헤드리스 로그인은 riido auth login --with-token 으로 stdin에 입력하세요")

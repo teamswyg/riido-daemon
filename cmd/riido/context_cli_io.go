@@ -17,6 +17,7 @@ import (
 // contextIO carries every side effect of the work-context commands so tests
 // can run them without a real daemon, terminal, or PATH.
 type contextIO struct {
+	stdin                 io.Reader
 	configDir             func() (string, error)
 	userSession           func(contextcli.Args) (*standalonecli.Service, error)
 	verifyHelperSignature func(context.Context, string, []string) error
@@ -32,6 +33,7 @@ type contextIO struct {
 
 func defaultContextIO() contextIO {
 	return contextIO{
+		stdin: os.Stdin,
 		configDir: func() (string, error) {
 			dir, err := os.UserConfigDir()
 			if err != nil {
