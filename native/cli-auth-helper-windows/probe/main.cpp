@@ -64,12 +64,11 @@ bool validProbeName(const std::wstring& name) {
     return name.find_first_not_of(L"0123456789abcdef", prefix.size()) == std::wstring::npos;
 }
 
-void createKey(NCRYPT_PROV_HANDLE provider, Key& key, bool protectedKey) {
+void createKey(NCRYPT_PROV_HANDLE provider, Key& key, bool protectedKey, DWORD exportPolicy) {
     key.name = freshName();
     require(NCryptCreatePersistedKey(provider, &key.handle, NCRYPT_ECDSA_P256_ALGORITHM,
                                     key.name.c_str(), 0, 0) == ERROR_SUCCESS);
     key.owned = true;
-    DWORD exportPolicy = 0;
     DWORD usage = NCRYPT_ALLOW_SIGNING_FLAG;
     require(NCryptSetProperty(key.handle, NCRYPT_EXPORT_POLICY_PROPERTY,
                              reinterpret_cast<PBYTE>(&exportPolicy), sizeof(exportPolicy), NCRYPT_SILENT_FLAG) == ERROR_SUCCESS);
@@ -119,10 +118,22 @@ SECURITY_STATUS privateExport(NCRYPT_KEY_HANDLE key) {
     std::array<BYTE, 4096> bytes{};
     DWORD size = 0;
     // A size-only query is not evidence that private material cannot be exported.
-    const auto status = NCryptExportKey(key, 0, BCRYPT_ECCPRIVATE_BLOB, nullptr,
+    auto status = NCryptExportKey(key, 0, BCRYPT_ECCPRIVATE_BLOB, nullptr,
         bytes.data(), static_cast<DWORD>(bytes.size()), &size, NCRYPT_SILENT_FLAG);
+    if (status == ERROR_SUCCESS) {
+        BCRYPT_ECCKEY_BLOB header{};
+        std::memcpy(&header, bytes.data(), sizeof(header));
+        if (size != sizeof(header) + 96 || header.dwMagic != BCRYPT_ECDSA_PRIVATE_P256_MAGIC ||
+            header.cbKey != 32) status = NTE_BAD_DATA;
+    }
     SecureZeroMemory(bytes.data(), bytes.size());
     return status;
+}
+
+bool privateExportDenied(SECURITY_STATUS status) {
+    // NTE_NOT_SUPPORTED is observed for nonexportable Software KSP keys. This
+    // denial is meaningful only after an identical export succeeds for a control.
+    return status == NTE_PERM || status == NTE_NOT_SUPPORTED;
 }
 
 SECURITY_STATUS sign(NCRYPT_KEY_HANDLE key) {
@@ -187,11 +198,12 @@ bool cleanup(NCRYPT_PROV_HANDLE provider, Key& key) {
     return status == NTE_BAD_KEYSET;
 }
 
-void measure(NCRYPT_PROV_HANDLE provider, Key& key, bool protectedKey, Measurement& result) {
-    createKey(provider, key, protectedKey);
+void measure(NCRYPT_PROV_HANDLE provider, Key& key, bool protectedKey, Measurement& result,
+             DWORD exportPolicy = 0) {
+    createKey(provider, key, protectedKey, exportPolicy);
     result.finalize = NCryptFinalizeKey(key.handle, NCRYPT_SILENT_FLAG);
     if (result.finalize != ERROR_SUCCESS) return;
-    result.properties = propertyEquals(key.handle, NCRYPT_EXPORT_POLICY_PROPERTY, 0) &&
+    result.properties = propertyEquals(key.handle, NCRYPT_EXPORT_POLICY_PROPERTY, exportPolicy) &&
         propertyEquals(key.handle, NCRYPT_KEY_USAGE_PROPERTY, NCRYPT_ALLOW_SIGNING_FLAG) &&
         propertyEquals(key.handle, NCRYPT_LENGTH_PROPERTY, 256) &&
         (!protectedKey || protectedPolicy(key.handle));
@@ -210,6 +222,7 @@ const char* candidateState(const Measurement& result) {
     if (result.privateExport == ERROR_SUCCESS) return "private_export_allowed";
     if (result.originalSign == ERROR_SUCCESS || result.reopenedSign == ERROR_SUCCESS ||
         result.childSign == ERROR_SUCCESS) return "silent_use_allowed";
+    if (!privateExportDenied(result.privateExport)) return "inconclusive_provider_error";
     if (result.originalSign == NTE_SILENT_CONTEXT && result.reopenedSign == NTE_SILENT_CONTEXT &&
         result.childSign == NTE_SILENT_CONTEXT) return "silent_use_denied_only";
     return "inconclusive_provider_error";
@@ -242,28 +255,37 @@ int wmain(int argc, wchar_t** argv) {
         NCryptFreeObject(provider);
         return static_cast<int>(status);
     }
-    Key baselineKey, candidateKey;
-    Measurement baseline, candidate;
+    Key exportControlKey, baselineKey, candidateKey;
+    Measurement exportControl, baseline, candidate;
     bool complete = false;
     try {
+        measure(provider, exportControlKey, false, exportControl,
+                NCRYPT_ALLOW_EXPORT_FLAG | NCRYPT_ALLOW_PLAINTEXT_EXPORT_FLAG);
+        require(exportControl.finalize == ERROR_SUCCESS && exportControl.properties &&
+                exportControl.publicShape && exportControl.privateExport == ERROR_SUCCESS &&
+                exportControl.originalSign == ERROR_SUCCESS && exportControl.reopenedSign == ERROR_SUCCESS &&
+                exportControl.childSign == ERROR_SUCCESS);
         measure(provider, baselineKey, false, baseline);
         require(baseline.finalize == ERROR_SUCCESS && baseline.properties && baseline.publicShape &&
-                baseline.privateExport == NTE_PERM && baseline.originalSign == ERROR_SUCCESS &&
+                privateExportDenied(baseline.privateExport) && baseline.originalSign == ERROR_SUCCESS &&
                 baseline.reopenedSign == ERROR_SUCCESS && baseline.childSign == ERROR_SUCCESS);
         measure(provider, candidateKey, true, candidate);
         complete = true;
     } catch (const std::exception&) {
         // Native diagnostics can contain provider or user context. Emit status metadata only.
     }
+    const bool exportControlClean = cleanup(provider, exportControlKey);
     const bool baselineClean = cleanup(provider, baselineKey);
     const bool candidateClean = cleanup(provider, candidateKey);
     NCryptFreeObject(provider);
     std::cout << "{\"version\":1,\"production_supported\":false,\"packaging\":\"unpackaged\","
                  "\"measurement_complete\":" << (complete ? "true" : "false")
-              << ",\"cleanup_complete\":" << (baselineClean && candidateClean ? "true" : "false")
-              << ",\"candidate_state\":\"" << candidateState(candidate) << "\",\"baseline\":";
+              << ",\"cleanup_complete\":" << (exportControlClean && baselineClean && candidateClean ? "true" : "false")
+              << ",\"candidate_state\":\"" << candidateState(candidate) << "\",\"export_control\":";
+    printMeasurement(exportControl);
+    std::cout << ",\"baseline\":";
     printMeasurement(baseline);
     std::cout << ",\"candidate\":"; printMeasurement(candidate);
     std::cout << "}\n";
-    return complete && baselineClean && candidateClean ? 0 : 1;
+    return complete && exportControlClean && baselineClean && candidateClean ? 0 : 1;
 }

@@ -7,20 +7,25 @@ authoritative. Windows user authentication is still unavailable.
 ## What it measures
 
 The probe uses the built-in Microsoft Software Key Storage Provider. It creates
-two random, current-user test keys without overwrite, machine scope, existing-key
+three random, current-user test keys without overwrite, machine scope, existing-key
 enumeration or production credentials. All operations that could require UI use
 `NCRYPT_SILENT_FLAG`. There is no interactive fallback.
 
-1. The baseline requests nonexportable, signing-only P-256. It checks property
+1. An exportable positive control first performs the identical private export,
+   validates the P-256 private blob shape and zeroes the temporary buffer. Without
+   this success, the probe cannot treat an unsupported export as a policy refusal.
+2. The baseline requests nonexportable, signing-only P-256. It checks property
    readback, a real private-export attempt, public-key shape and a real signature.
    Signing is repeated after reopening and in a separate process. Successful
    silent use demonstrates why nonexportability alone is not user presence.
-2. The candidate additionally requests strong/high UI protection before
+   Export denial accepts only `NTE_PERM` or the Software KSP result observed in CI,
+   `NTE_NOT_SUPPORTED`, after the positive control succeeds.
+3. The candidate additionally requests strong/high UI protection before
    finalization. A silent finalization refusal is recorded as an interactive
    setup requirement, not proof of protection on later use. If finalization
    succeeds, the probe reads policy back and attempts silent signing through
    the original handle, a reopened handle and a separate process.
-3. Only the keys created by this invocation are deleted. Their absence is
+4. Only the keys created by this invocation are deleted. Their absence is
    checked before reporting successful measurement. Cleanup failure fails the
    run. No private/public keys, signatures, key names or credentials are printed.
 

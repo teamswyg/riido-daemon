@@ -49,9 +49,16 @@ try {
         $receipt.cleanup_complete -cne $true -or $receipt.packaging -cne 'unpackaged') {
         throw 'Native measurement or owned-key cleanup did not complete.'
     }
+    $control = $receipt.export_control
+    if ($control.finalize_status -ne 0 -or $control.properties_match -cne $true -or
+        $control.public_shape_valid -cne $true -or $control.private_export_status -ne 0 -or
+        $control.original_sign_status -ne 0 -or $control.reopened_sign_status -ne 0 -or
+        $control.child_sign_status -ne 0) {
+        throw 'The identical private-export positive control was not established.'
+    }
     $baseline = $receipt.baseline
     if ($baseline.finalize_status -ne 0 -or $baseline.properties_match -cne $true -or
-        $baseline.public_shape_valid -cne $true -or $baseline.private_export_status -ne 2148073488 -or
+        $baseline.public_shape_valid -cne $true -or $baseline.private_export_status -notin @(2148073488, 2148073513) -or
         $baseline.original_sign_status -ne 0 -or $baseline.reopened_sign_status -ne 0 -or
         $baseline.child_sign_status -ne 0) {
         throw 'The nonexportable baseline was not established.'
