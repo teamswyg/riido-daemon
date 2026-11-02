@@ -14,10 +14,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/userauth"
 )
 
-const (
-	cliDefaultAPIOrigin = "https://monolith.riido.io"
-	cliAPIOriginEnv     = "RIIDO_CLI_API_URL"
-)
+const cliAPIOriginEnv = "RIIDO_CLI_API_URL"
 
 func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service, error) {
 	if args.SettingsResolved && args.APIOrigin == "" {
@@ -89,7 +86,7 @@ func (c contextIO) userAPIOrigin(args ...contextcli.Args) (string, string, error
 	origin := strings.TrimSpace(c.getenv(cliAPIOriginEnv))
 	source := "environment"
 	if origin == "" {
-		origin = cliDefaultAPIOrigin
+		origin = cliconfig.DefaultAPIOrigin(cliconfig.DefaultProfile())
 		source = "default"
 	}
 	origin = strings.TrimRight(origin, "/")

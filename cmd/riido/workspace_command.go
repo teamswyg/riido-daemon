@@ -75,6 +75,10 @@ func printWorkspaceUsage(w io.Writer) {
 }
 
 func renderWorkspaces(w io.Writer, page *userapi.WorkspaceList) {
+	if term := humanTerminal(w); term.Interactive {
+		renderWorkspacesTerminal(w, term, page)
+		return
+	}
 	fmt.Fprintf(w, "현재 참여 중인 워크스페이스: 이번 페이지 %d개\n", len(page.Items))
 	for _, item := range page.Items {
 		fmt.Fprintf(w, "  - %q (id=%q, demo=%t)\n", item.Name, item.ID, item.IsDemo)

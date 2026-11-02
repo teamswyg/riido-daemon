@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/teamswyg/riido-daemon/internal/cliui"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
 
@@ -29,6 +30,12 @@ func (c contextIO) fail(jsonOut bool, requestID string, cliErr *contextcli.CLIEr
 		if err := writeEnvelope(c.stdout, contextcli.FailureEnvelope(requestID, cliErr)); err != nil {
 			return err
 		}
+	} else if term := humanTerminal(c.stderr); term.Interactive {
+		fmt.Fprintf(c.stderr, "%s %s\n", term.Symbol("fail"), cliui.Safe(cliErr.Message))
+		if cliErr.NextAction != "" {
+			fmt.Fprintf(c.stderr, "  %s %s\n", term.Accent("→"), cliui.Safe(cliErr.NextAction))
+		}
+		fmt.Fprintf(c.stderr, "  %s\n", term.Dim(fmt.Sprintf("code=%s · request_id=%s", cliErr.Code, requestID)))
 	} else {
 		fmt.Fprintf(c.stderr, "riido: %s\n", cliErr.Message)
 		if cliErr.NextAction != "" {
@@ -46,7 +53,12 @@ func (c contextIO) succeed(jsonOut bool, env contextcli.Envelope, render textRen
 	if jsonOut {
 		return writeEnvelope(c.stdout, env)
 	}
+	warnTerm := humanTerminal(c.stderr)
 	for _, warning := range env.Warnings {
+		if warnTerm.Interactive {
+			fmt.Fprintf(c.stderr, "%s %s %s\n", warnTerm.Symbol("warn"), cliui.Safe(warning.Message), warnTerm.Dim("("+warning.Code+")"))
+			continue
+		}
 		fmt.Fprintf(c.stderr, "riido: 경고 %s: %s\n", warning.Code, warning.Message)
 	}
 	if render != nil {

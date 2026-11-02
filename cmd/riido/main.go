@@ -18,13 +18,25 @@ func main() {
 }
 
 func run(args []string) error {
+	noteNoColor(args)
 	if len(args) < 1 {
+		// A person typing just `riido` gets the home screen; scripts keep usage+exit 1.
+		if term := humanTerminal(os.Stdout); term.Interactive {
+			return runHome(os.Stdout, term, homeServer(defaultContextIO()))
+		}
 		printRootUsage()
 		return fmt.Errorf("missing command")
 	}
 	if args[0] == "--help" || args[0] == "-h" {
+		if term := humanTerminal(os.Stdout); term.Interactive && len(args) == 1 {
+			printFriendlyHelp(os.Stdout, term)
+			return nil
+		}
 		printRootUsage()
 		return nil
+	}
+	if args[0] == "help" {
+		return runHelp(os.Stdout, args[1:])
 	}
 	if args[0] == "--version" || args[0] == "-v" {
 		return runVersion(nil)
