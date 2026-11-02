@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -46,11 +45,23 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 	if err != nil {
 		return nil, securecredential.ErrUnavailable
 	}
-	configDir, err := os.UserConfigDir()
+	var configDir, cacheDir string
+	switch runtime.GOOS {
+	case "darwin":
+		configDir, err = os.UserConfigDir()
+	case "windows":
+		cacheDir, err = os.UserCacheDir()
+	default:
+		return nil, securecredential.ErrUnavailable
+	}
 	if err != nil {
 		return nil, securecredential.ErrUnavailable
 	}
-	native := securecredential.Store{HelperPath: filepath.Join(filepath.Dir(executable), "RiidoCLIAuthHelper.app", "Contents", "MacOS", "riido-cli-auth-helper"), Interactive: !args.NoInput, LockDir: filepath.Join(configDir, "riido-cli", "auth-locks")}
+	helper, locks, err := userSessionPathsForOS(runtime.GOOS, executable, configDir, cacheDir)
+	if err != nil {
+		return nil, err
+	}
+	native := securecredential.Store{HelperPath: helper, Interactive: !args.NoInput, LockDir: locks}
 	store, err := standalonecli.NewProtectedStore(native, origin, authOrigin)
 	if err != nil {
 		return nil, err
@@ -59,21 +70,11 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 }
 
 func openUserDesktop(ctx context.Context, request userauth.DesktopAuthorizationRequest) error {
-	address, err := request.LaunchURL()
-	if err != nil {
-		return standalonecli.ErrDesktopUnavailable
-	}
-	if err := openUserBrowser(ctx, address); err != nil {
-		return standalonecli.ErrDesktopUnavailable
-	}
-	return nil
+	return openUserDesktopWith(ctx, request, openUserAuthorizationURI)
 }
 
 func openUserBrowser(ctx context.Context, address string) error {
-	if runtime.GOOS != "darwin" {
-		return standalonecli.ErrBrowserUnavailable
-	}
-	return exec.CommandContext(ctx, "/usr/bin/open", address).Run()
+	return openUserBrowserWith(ctx, address, openUserAuthorizationURI)
 }
 
 // userAPIOrigin validates the same OAuth resource without opening storage or
