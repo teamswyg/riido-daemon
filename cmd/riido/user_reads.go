@@ -30,7 +30,7 @@ func (c contextIO) runUserWhoami(raw []string) error {
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "identity": identity}), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "identity": identity}), whoamiView(c.stdout, identity))
 }
 
 func (c contextIO) runUserWork(raw []string) error {
@@ -63,5 +63,5 @@ func (c contextIO) runUserWork(raw []string) error {
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "work": result}), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "work": result}), workView(c.stdout, result))
 }

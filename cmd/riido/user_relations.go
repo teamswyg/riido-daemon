@@ -36,7 +36,7 @@ func (c contextIO) runUserRelations(raw []string) error {
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "relations": relations}), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "relations": relations}), relationsView(c.stdout, relations))
 }
 
 func userRelationID(raw string) (string, *contextcli.CLIError) {
