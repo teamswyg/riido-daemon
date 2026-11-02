@@ -30,15 +30,16 @@ const logoGap = 3
 func LogoWidth() int { return SymbolWidth() + logoGap + len(wordmarkPattern[0]) }
 
 // LogoLines renders the round symbol with the pixel "Riido" wordmark beside
-// it, one string per terminal row. The wordmark uses the accent purple chosen
-// for the terminal background. It is nil without color or when the terminal
+// it, one string per terminal row. The wordmark is part of the logo artwork,
+// so it keeps the brand purple of the signature on every background; only
+// text uses the lighter accent tint. It is nil without color or when the terminal
 // is narrower than the logo, so callers fall back to the symbol alone.
 func (t Terminal) LogoLines() []string {
 	symbol := t.SymbolLines()
 	if symbol == nil || t.Width < LogoWidth()+2 || len(wordmarkPattern) != 2*len(symbol) {
 		return nil
 	}
-	color := t.accentRGB() | 1<<24
+	color := uint32(brandRGB) | 1<<24
 	lines := make([]string, len(symbol))
 	for row := range symbol {
 		var b strings.Builder

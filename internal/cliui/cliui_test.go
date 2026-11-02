@@ -136,3 +136,14 @@ func TestLogoAddsPixelWordmarkOnWideTerminals(t *testing.T) {
 		}
 	}
 }
+
+// The pixel wordmark is logo artwork: brand purple even where text is tinted.
+func TestWordmarkUsesBrandColor(t *testing.T) {
+	for _, background := range []string{"dark", "light", ""} {
+		lines := Terminal{Interactive: true, Color: true, TrueColor: true, Width: 120, Background: background}.LogoLines()
+		joined := strings.Join(lines, "")
+		if !strings.Contains(joined, "38;2;93;79;249m█") || strings.Contains(joined, "154;140;255") {
+			t.Fatalf("%q background wordmark not in brand color", background)
+		}
+	}
+}
