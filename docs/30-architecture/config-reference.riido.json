@@ -93,7 +93,7 @@
               [
                 "RIIDO_CLI_PROFILE",
                 "User profile selector; --profile wins",
-                "Active profile, otherwise production"
+                "Active profile, otherwise the build default (production; staging for packages built with RIIDO_CLI_DEFAULT_PROFILE=staging)"
               ],
               [
                 "RIIDO_CLI_API_URL",

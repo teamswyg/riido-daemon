@@ -8,7 +8,7 @@ User-mode local/staging/production preferences live in the OS UserConfigDir/riid
 
 | Variable | Meaning | Default |
 | --- | --- | --- |
-| RIIDO_CLI_PROFILE | User profile selector; --profile wins | Active profile, otherwise production |
+| RIIDO_CLI_PROFILE | User profile selector; --profile wins | Active profile, otherwise the build default (production; staging for packages built with RIIDO_CLI_DEFAULT_PROFILE=staging) |
 | RIIDO_CLI_API_URL | Validated OAuth/API origin for the selected profile; separate from daemon device-link configuration | Profile api_origin, otherwise production=https://monolith.riido.io or staging=https://monolith.api.riido.io; local requires explicit literal loopback origin |
 | RIIDO_CLI_WORKSPACE | Default for commands accepting workspace scope | Origin-matched profile workspace, otherwise empty |
 | RIIDO_CLI_TEAM | Default for commands supporting --team-id; --team is an alias | Origin-matched profile team, otherwise empty |

@@ -12,7 +12,7 @@ import (
 
 // Terminal describes what one output stream can show.
 type Terminal struct {
-	// Interactive is a character device with a usable TERM.
+	// Interactive is a real terminal with a usable TERM.
 	Interactive bool
 	// Color allows ANSI styling (Interactive and NO_COLOR unset).
 	Color bool
@@ -36,8 +36,9 @@ func Detect(w io.Writer, getenv func(string) string) Terminal {
 	if !ok || file == nil || getenv("RIIDO_CLI_PLAIN") == "1" || strings.EqualFold(getenv("TERM"), "dumb") {
 		return Plain
 	}
-	info, err := file.Stat()
-	if err != nil || info.Mode()&os.ModeCharDevice == 0 {
+	// A character device is not enough: /dev/null is one too, and a redirect
+	// there must keep the non-interactive exit behavior.
+	if !isTerminal(file) {
 		return Plain
 	}
 	term := Terminal{Interactive: true, Width: 80}
