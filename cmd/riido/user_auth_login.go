@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"io"
 	"time"
+
+	"github.com/teamswyg/riido-daemon/internal/cliui"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/userauth"
@@ -55,6 +58,7 @@ func (c contextIO) runAuthLogin(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
+	c.loginNotice(args.JSON, "이 기기 확인 창(Touch ID 또는 암호)이 뜨면 승인해 주세요")
 	result, err := session.Login(ctx)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
@@ -64,7 +68,8 @@ func (c contextIO) runAuthLogin(raw []string) error {
 		result.Warnings = append(result.Warnings, "auth_origin_selection_not_saved")
 		result.NextAction = "RIIDO_CLI_API_URL을 이 응답의 api_origin으로 지정한 후 riido whoami --profile " + args.Profile + " --auth-origin " + args.AuthOrigin + " 를 실행하세요"
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, result), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, result),
+		terminalOrJSON(func(w io.Writer, term cliui.Terminal) { renderLoginResult(w, term, result) }))
 }
 
 func checkUserOptions(args contextcli.Args) *contextcli.CLIError {
