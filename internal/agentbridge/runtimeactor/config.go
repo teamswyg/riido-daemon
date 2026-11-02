@@ -47,6 +47,9 @@ type Config struct {
 	// owned by this submit. The daemon uses it to inject the work-context
 	// CLI wiring (run capability, socket, PATH) when that feature is on.
 	LaunchEnv func(req bridge.TaskRequest, runtimeID string, env map[string]string)
+	// ReleaseContextCapability retires only the issued capability when launch
+	// fails, the session finishes, or the actor stops.
+	ReleaseContextCapability func(string)
 	// ContextCLIExecutable is the daemon binary; never supplied by assignment Env.
 	ContextCLIExecutable string
 	// Now is injected for deterministic tests; defaults to time.Now.

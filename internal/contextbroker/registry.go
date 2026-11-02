@@ -42,10 +42,13 @@ type tokenHash [sha256.Size]byte
 // Registry keeps only token hashes, so a status dump or memory read of the
 // map does not reveal live capabilities.
 type Registry struct {
-	mu        sync.Mutex
-	byHash    map[tokenHash]Binding
-	hashByRun map[string]tokenHash
-	now       func() time.Time
+	mu            sync.Mutex
+	byHash        map[tokenHash]Binding
+	hashByRun     map[string]tokenHash
+	now           func() time.Time
+	cache         map[tokenHash]map[tokenHash]contentCacheEntry
+	cacheBytes    int
+	cacheSequence uint64
 }
 
 // NewRegistry returns an empty registry.
@@ -96,6 +99,17 @@ func (r *Registry) Revoke(runKey string) {
 	r.revokeLocked(runKey)
 }
 
+// RevokeCapability retires exactly the issued token, preserving a replacement
+// for the same run when an earlier runtime or activity query completes late.
+func (r *Registry) RevokeCapability(token string) {
+	hash := sha256.Sum256([]byte(token))
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if binding, ok := r.byHash[hash]; ok && r.hashByRun[binding.RunKey] == hash {
+		r.revokeLocked(binding.RunKey)
+	}
+}
+
 // Len reports how many capabilities are live.
 func (r *Registry) Len() int {
 	r.mu.Lock()
@@ -110,6 +124,7 @@ func (r *Registry) revokeLocked(runKey string) {
 	}
 	delete(r.byHash, hash)
 	delete(r.hashByRun, runKey)
+	r.dropContentCacheLocked(hash)
 }
 
 func (r *Registry) evictOldestLocked() {

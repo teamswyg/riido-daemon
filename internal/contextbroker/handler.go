@@ -70,7 +70,13 @@ func (b *Broker) Handle(req contextcli.ContextReadRequest, active RunActive) con
 		})
 		return env
 	default:
-		return b.read(req, requestID, binding)
+		result := b.read(req, requestID, binding)
+		// A response obtained while a capability was replaced or a run ended
+		// must not publish data, including a body copied from the cache.
+		if _, cliErr := b.authorize(req, active); cliErr != nil {
+			return contextcli.FailureEnvelope(requestID, cliErr)
+		}
+		return result
 	}
 }
 
@@ -95,8 +101,11 @@ func (b *Broker) authorize(req contextcli.ContextReadRequest, active RunActive) 
 		return Binding{}, contextcli.Fail(contextcli.CodeUnavailable, "실행 상태를 확인하지 못했습니다", "잠시 후 다시 시도하세요")
 	}
 	if !running {
-		b.Registry.Revoke(binding.RunKey)
+		b.Registry.RevokeCapability(req.RunCapability)
 		return Binding{}, contextcli.Fail(contextcli.CodePermissionDenied, "이미 끝난 실행의 capability입니다", "")
+	}
+	if _, ok := b.Registry.Lookup(req.RunCapability); !ok {
+		return Binding{}, contextcli.Fail(contextcli.CodePermissionDenied, "알 수 없거나 만료된 실행 capability입니다", "")
 	}
 	if outOfScope(req.WorkspaceID, binding.WorkspaceID) || outOfScope(req.TaskID, binding.TaskID) {
 		return Binding{}, contextcli.Fail(contextcli.CodeOutOfRunScope, "요청 범위가 이 실행과 다릅니다", "")
