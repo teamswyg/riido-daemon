@@ -27,6 +27,19 @@ func protectedAccessControl() throws -> SecAccessControl {
     return control
 }
 
+// The Secure Enclave installation key needs private-key usage on top of the
+// same user presence and this-device-only accessibility as stored credentials.
+func installationAccessControl() throws -> SecAccessControl {
+    var error: Unmanaged<CFError>?
+    guard let control = SecAccessControlCreateWithFlags(nil,
+        kSecAttrAccessibleWhenUnlockedThisDeviceOnly, [.privateKeyUsage, .userPresence], &error)
+    else {
+        if let error { _ = error.takeRetainedValue() }
+        throw HelperFailure.unavailable
+    }
+    return control
+}
+
 func keychainFailure(_ status: OSStatus) -> HelperFailure {
     switch status {
     case errSecItemNotFound: return .notFound
