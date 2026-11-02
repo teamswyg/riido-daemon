@@ -13,18 +13,22 @@ const helperTimeout = 2 * time.Minute
 // limitedOutput always reports a full write to the child while bounding memory.
 // Helper diagnostics and native error text are deliberately never returned.
 type limitedOutput struct {
-	bytes.Buffer
+	// Embedding Buffer promotes ReadFrom, letting io.Copy bypass Write's limit.
+	buffer   bytes.Buffer
 	overflow bool
 }
 
+func (b *limitedOutput) Bytes() []byte  { return b.buffer.Bytes() }
+func (b *limitedOutput) String() string { return b.buffer.String() }
+
 func (b *limitedOutput) Write(p []byte) (int, error) {
 	size := len(p)
-	remaining := maxMessageBytes - b.Len()
+	remaining := maxMessageBytes - b.buffer.Len()
 	if len(p) > remaining {
 		b.overflow = true
 		p = p[:remaining]
 	}
-	_, _ = b.Buffer.Write(p)
+	_, _ = b.buffer.Write(p)
 	return size, nil
 }
 
