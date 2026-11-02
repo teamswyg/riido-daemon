@@ -113,6 +113,32 @@ func TestBodyPageHintRestartsAtShownOffset(t *testing.T) {
 	}
 }
 
+func TestMeetingContinuationsStartAtUnshownBytes(t *testing.T) {
+	zero, next, limit := 0, 300, 100
+	meeting := userapi.ReadMeeting{
+		ID: "m2", TeamID: "t2", Status: "partial",
+		Body: &userapi.ReadBodyPage{Part: "document", Format: "json", Version: "v6", Offset: &zero, NextOffset: &next, Content: `{"type":"doc"}`},
+		Board: &userapi.ReadMeetingBoard{ContentPage: &userapi.ReadBodyPage{
+			Part: "board_page", Version: "v7", Offset: &zero, Selector: &userapi.ReadPartSelector{Limit: &limit},
+		}},
+	}
+	var buf bytes.Buffer
+	renderMeetingView(&buf, cliui.Terminal{Interactive: true, Width: 200}, meeting)
+	out := buf.String()
+	for _, want := range []string{
+		"이어 읽기: riido meeting body m2 --team-id t2 --part document --version v6\n",
+		"보드 내용이 커서 나눠 읽어야 해요.",
+		"이어 읽기: riido meeting body m2 --team-id t2 --part board_page --version v7 --board-limit 100\n",
+	} {
+		if !strings.Contains(out, want) {
+			t.Fatalf("missing %q in:\n%s", want, out)
+		}
+	}
+	if strings.Contains(out, "--offset") || strings.Contains(out, "보드 카드 0개") || strings.Contains(out, `"type"`) {
+		t.Fatalf("unshown bytes were skipped or a deferred board looked empty:\n%s", out)
+	}
+}
+
 func TestWhoamiAndWorkViews(t *testing.T) {
 	start, end, estimate := "2026-10-01T03:00:00.000Z", "2026-10-31T03:00:00.000Z", 3
 	member := userapi.WorkMember{TeamMember: &userapi.WorkTeamMember{WorkspaceProfile: &userapi.WorkWorkspaceProfile{Nickname: "리도"}}}
@@ -235,7 +261,7 @@ func TestBodyContextAndMeetingViews(t *testing.T) {
 			ID: "intake-1", Kind: "intake", Reasons: []*userapi.ReadScopeReason{{Kind: "relation", Relation: &relation}}, Details: json.RawMessage("null"), IntakeDetails: json.RawMessage(`{"title":"요청 \u001b[2J","status":"open"}`),
 			PartsStatus: []*userapi.ReadPartStatus{{Name: "comments", Complete: &complete}},
 		},
-		{ID: "work-9", Kind: "component", Summary: &userapi.ReadResourceSummary{Title: "요약 제목", KeyNumber: &keyNumber}, ContentPage: &userapi.ReadBodyPage{}},
+		{ID: "work-9", TeamID: "team-1", Kind: "component", Summary: &userapi.ReadResourceSummary{Title: "요약 제목", KeyNumber: &keyNumber}, ContentPage: &userapi.ReadBodyPage{Part: "metadata", Version: "v8"}},
 		nil,
 	}, Meetings: []*userapi.ReadMeetingReference{{ID: "meeting-1", Reasons: []*userapi.ReadScopeReason{{Kind: "linked"}}, Snapshot: &userapi.ReadMeeting{Summary: &userapi.ReadResourceSummary{Title: "주간 회의"}}}}}
 	cursor := "next-cursor"
@@ -244,7 +270,7 @@ func TestBodyContextAndMeetingViews(t *testing.T) {
 		Details: json.RawMessage(`{"title":"주간 회의 \u001b[2J","startTime":"2026-11-02T01:00:00.000Z","endTime":"2026-11-02T02:00:00.000Z","isAllDay":false,"meetingLocation":"회의실",
 			"meetingAttendees":[{"teamMember":{"workspaceProfile":{"nickname":"리도"}}}],"createdBy":{"workspaceProfile":{"nickname":"코덱스"}}}`),
 		Labels: []json.RawMessage{json.RawMessage(`{"labelName":"정기"}`)},
-		Body:   &userapi.ReadBodyPage{Format: "html", Version: "v5", Content: "<h1>안건</h1><p>첫 안건</p>", NextOffset: &next},
+		Body:   &userapi.ReadBodyPage{Format: "html", Part: "document", Version: "v5", Content: "<h1>안건</h1><p>첫 안건</p>", NextOffset: &next},
 		Board: &userapi.ReadMeetingBoard{
 			NextCursor: &cursor,
 			Groups:     []json.RawMessage{json.RawMessage(`{"id":"link-1","meetingBoardGroup":{"id":"group-1","groupName":"할 일"}}`)},
@@ -262,13 +288,13 @@ func TestBodyContextAndMeetingViews(t *testing.T) {
 		}, []string{"설명", "비어 있음", "(내용 없음)", "끝까지 읽었어요."}},
 		{
 			"context", func(w io.Writer, term cliui.Terminal) { renderContextView(w, term, scope) },
-			[]string{"작업 맥락 work-1", "작업 4개 · 미팅 1개", "루트 작업 RIID-1", "● 완료", "root", `요청 \x1b[2J`, "○ open", "relation(blocking)", "일부 1개 미완료", "요약 제목 RIID-9", "나눠 읽기", "주간 회의", "id meeting-1", "--json"},
+			[]string{"작업 맥락 work-1", "작업 4개 · 미팅 1개", "루트 작업 RIID-1", "● 완료", "root", `요청 \x1b[2J`, "○ open", "relation(blocking)", "일부 1개 미완료", "요약 제목 RIID-9", "나눠 읽기", "이어 읽기: riido work body work-9 --team-id team-1 --part metadata --version v8", "주간 회의", "id meeting-1", "--json"},
 		},
 		{
 			"meeting", func(w io.Writer, term cliui.Terminal) { renderMeetingView(w, term, meeting) },
 			[]string{
 				`주간 회의 \x1b[2J`, "● 전체", "→", "회의실", "참석자", "리도", "정기", "코덱스", "team-1", "안건", "첫 안건",
-				"riido meeting body meeting-1 --team-id team-1 --version v5 --offset 400", "보드 카드 2개", "[할 일] 리도 카드 내용 (RIID-3 연결 작업)", "--cursor next-cursor",
+				"이어 읽기: riido meeting body meeting-1 --team-id team-1 --part document --version v5 --offset 400", "보드 카드 2개", "[할 일] 리도 카드 내용 (RIID-3 연결 작업)", "--cursor next-cursor",
 			},
 		},
 		{"deferred meeting", func(w io.Writer, term cliui.Terminal) {

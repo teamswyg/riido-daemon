@@ -167,6 +167,9 @@ func renderContextView(w io.Writer, term cliui.Terminal, scope userapi.ReadScope
 		}
 		fmt.Fprintln(w, "  "+joinMeta(term, meta))
 		fmt.Fprintln(w, "  "+term.Dim("id "+oneLine(work.ID)))
+		if work.ContentPage != nil {
+			writeBodyPageHint(w, term, workBodyCommand(work.ID, work.TeamID, work.Kind), work.ContentPage)
+		}
 	}
 	if len(scope.Meetings) > 0 {
 		fmt.Fprintln(w)

@@ -118,12 +118,17 @@ func renderScopeCommentsView(w io.Writer, term cliui.Terminal, page userapi.Read
 // scopeBodyCommand names the body read for a comment page. The page does not
 // carry the team, so it stays a placeholder.
 func scopeBodyCommand(page userapi.ReadScopeCommentPage) string {
-	id := oneLine(page.ResourceID)
-	switch page.ResourceKind {
-	case "meeting":
-		return "riido meeting body " + id + " --team-id <TEAM-ID>"
-	case "component", "":
-		return "riido work body " + id + " --team-id <TEAM-ID>"
+	if page.ResourceKind == "meeting" {
+		return "riido meeting body " + oneLine(page.ResourceID) + " --team-id <TEAM-ID>"
 	}
-	return "riido work body " + id + " --team-id <TEAM-ID> --kind " + oneLine(page.ResourceKind)
+	return workBodyCommand(page.ResourceID, "<TEAM-ID>", page.ResourceKind)
+}
+
+// workBodyCommand names riido work body for a component, backlog or intake.
+func workBodyCommand(id, team, kind string) string {
+	command := "riido work body " + oneLine(id) + " --team-id " + oneLine(team)
+	if kind != "" && kind != "component" {
+		command += " --kind " + oneLine(kind)
+	}
+	return command
 }

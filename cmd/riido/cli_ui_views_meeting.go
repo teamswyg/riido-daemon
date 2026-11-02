@@ -79,11 +79,11 @@ func renderMeetingView(w io.Writer, term cliui.Terminal, meeting userapi.ReadMee
 	if meeting.ContentPage != nil {
 		fmt.Fprintln(w)
 		writeViewHint(w, term, "미팅 내용이 커서 나눠 읽어야 해요.")
-		writeBodyPageHint(w, term, "riido meeting body "+oneLine(meeting.ID)+" --team-id "+oneLine(meeting.TeamID), meeting.ContentPage)
+		writeBodyPageHint(w, term, meetingBodyCommand(meeting), meeting.ContentPage)
 		return
 	}
 	writeMeetingBody(w, term, meeting)
-	writeMeetingBoard(w, term, meeting.Board)
+	writeMeetingBoard(w, term, meeting)
 	fmt.Fprintln(w)
 	writeViewHint(w, term, "전체 내용은 --json으로 볼 수 있어요.")
 }
@@ -125,7 +125,12 @@ func meetingLabels(labels []json.RawMessage) string {
 	return strings.Join(names, ", ")
 }
 
-// writeMeetingBody shows the first body page; HTML is reflowed as text.
+func meetingBodyCommand(meeting userapi.ReadMeeting) string {
+	return "riido meeting body " + oneLine(meeting.ID) + " --team-id " + oneLine(meeting.TeamID)
+}
+
+// writeMeetingBody shows the first body page; HTML is reflowed as text. A page
+// that is not rendered here is continued from its own offset, not NextOffset.
 func writeMeetingBody(w io.Writer, term cliui.Terminal, meeting userapi.ReadMeeting) {
 	body := meeting.Body
 	if body == nil || body.Content == "" {
@@ -136,22 +141,31 @@ func writeMeetingBody(w io.Writer, term cliui.Terminal, meeting userapi.ReadMeet
 		writeViewSection(w, term, "본문", cliui.HTMLText(body.Content))
 	case "json":
 		fmt.Fprintln(w)
-		writeViewHint(w, term, fmt.Sprintf("본문은 %s 형식이라 riido meeting body 또는 --json으로 확인하세요.", oneLine(body.Format)))
+		writeViewHint(w, term, "본문은 json 형식이라 아래 명령이나 --json으로 확인하세요.")
+		writeBodyPageHint(w, term, meetingBodyCommand(meeting), body)
+		return
 	default:
 		writeViewSection(w, term, "본문", body.Content)
 	}
 	if body.NextOffset != nil {
-		writeViewHint(w, term, fmt.Sprintf("  이어 읽기: riido meeting body %s --team-id %s --version %s --offset %d",
-			oneLine(meeting.ID), oneLine(meeting.TeamID), oneLine(body.Version), *body.NextOffset))
+		writeViewHint(w, term, fmt.Sprintf("이어 읽기: %s --part %s --version %s --offset %d",
+			meetingBodyCommand(meeting), oneLine(body.Part), oneLine(body.Version), *body.NextOffset))
 	}
 }
 
-func writeMeetingBoard(w io.Writer, term cliui.Terminal, board *userapi.ReadMeetingBoard) {
+func writeMeetingBoard(w io.Writer, term cliui.Terminal, meeting userapi.ReadMeeting) {
+	board := meeting.Board
 	if board == nil {
 		return
 	}
-	groups := meetingGroups(board.Groups)
 	fmt.Fprintln(w)
+	if board.ContentPage != nil {
+		fmt.Fprintln(w, term.Dim("보드"))
+		writeViewHint(w, term, "보드 내용이 커서 나눠 읽어야 해요.")
+		writeBodyPageHint(w, term, meetingBodyCommand(meeting), board.ContentPage)
+		return
+	}
+	groups := meetingGroups(board.Groups)
 	fmt.Fprintln(w, term.Dim(fmt.Sprintf("보드 카드 %d개", len(board.Cards))))
 	for _, raw := range board.Cards {
 		var card meetingCard
