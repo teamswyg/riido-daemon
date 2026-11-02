@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"io"
+
+	"github.com/teamswyg/riido-daemon/internal/cliui"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
@@ -43,11 +46,13 @@ func (c contextIO) runUserAuthLocal(raw []string, logout bool) error {
 		if err := session.Logout(ctx); err != nil {
 			return c.fail(args.JSON, requestID, userAuthError(err))
 		}
-		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "user_credential": "absent", "logged_out": true, "auth_origin": args.AuthOrigin}), nil)
+		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "user_credential": "absent", "logged_out": true, "auth_origin": args.AuthOrigin}),
+			terminalOrJSON(func(w io.Writer, term cliui.Terminal) { renderLogout(w, term, args.AuthOrigin) }))
 	}
 	status, err := session.Status(ctx)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, status), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, status),
+		terminalOrJSON(func(w io.Writer, term cliui.Terminal) { renderUserAuthStatus(w, term, status) }))
 }

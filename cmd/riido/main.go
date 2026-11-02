@@ -41,6 +41,9 @@ func run(args []string) error {
 	if args[0] == "--version" || args[0] == "-v" {
 		return runVersion(nil)
 	}
+	if handled, err := runFriendlyCommandHelp(args); handled {
+		return err
+	}
 	switch mainCommand(args[0]) {
 	case mainCommandMwsd:
 		return runMwsd(args[1:])
@@ -87,6 +90,9 @@ func run(args []string) error {
 	case mainCommandCapabilities:
 		return runCapabilities(defaultContextIO(), args[1:])
 	default:
+		if handled, err := friendlyUnknownCommand(args[0]); handled {
+			return err
+		}
 		printRootUsage()
 		return fmt.Errorf("unknown command: %s", args[0])
 	}

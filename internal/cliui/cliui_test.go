@@ -23,53 +23,50 @@ func TestDetectKeepsPipesAndFilesPlain(t *testing.T) {
 }
 
 func TestPlainTerminalWritesNoEscapes(t *testing.T) {
-	for _, s := range []string{Plain.Bold("a"), Plain.Accent("b"), Plain.Error("c"), Plain.Logo(), Plain.Mark(), Plain.Symbol("ok")} {
+	for _, s := range []string{Plain.Bold("a"), Plain.Accent("b"), Plain.Error("c"), Plain.Mark(), Plain.Symbol("ok")} {
 		if strings.Contains(s, "\x1b") || strings.ContainsAny(s, "✓▀▄") {
 			t.Fatalf("plain output styled: %q", s)
 		}
 	}
-	if Plain.Symbol("warn") != "[warn]" || Plain.Logo() != "" {
+	if Plain.Symbol("warn") != "[warn]" || Plain.SymbolLines() != nil {
 		t.Fatal("plain fallbacks changed")
 	}
 }
 
-func TestLogoNeedsColorAndWidth(t *testing.T) {
-	wide := Terminal{Interactive: true, Color: true, TrueColor: true, Width: 120}
-	logo := wide.Logo()
-	if strings.Count(logo, "\n") != len(logoRows) || !strings.Contains(logo, "38;2;") {
-		t.Fatalf("truecolor logo missing: %d lines", strings.Count(logo, "\n"))
+func TestSymbolNeedsColorAndWidth(t *testing.T) {
+	lines := Terminal{Interactive: true, Color: true, TrueColor: true, Width: 120}.SymbolLines()
+	if len(lines) != len(symbolRows) || !strings.Contains(strings.Join(lines, ""), "38;2;") {
+		t.Fatalf("truecolor symbol missing: %d lines", len(lines))
 	}
-	for i, line := range strings.Split(strings.TrimSuffix(logo, "\n"), "\n") {
-		if DisplayWidth(line) > LogoWidth() {
-			t.Fatalf("line %d is %d cells", i, DisplayWidth(line))
+	for i, line := range lines {
+		if DisplayWidth(line) != SymbolWidth() {
+			t.Fatalf("line %d is %d cells, want %d", i, DisplayWidth(line), SymbolWidth())
 		}
 	}
-	palette := Terminal{Interactive: true, Color: true, Width: 120}.Logo()
+	palette := strings.Join(Terminal{Interactive: true, Color: true, Width: 120}.SymbolLines(), "")
 	if strings.Contains(palette, "38;2;") || !strings.Contains(palette, "38;5;") {
 		t.Fatal("256-color fallback not used")
 	}
+	if got := (Terminal{Interactive: true, Color: true, Width: SymbolWidth() + 2}).SymbolLines(); len(got) != len(symbolRows) {
+		t.Fatal("symbol missing at its minimum width")
+	}
 	for _, term := range []Terminal{{Interactive: true, Color: true, Width: SymbolWidth() + 1}, {Interactive: true, Width: 200}} {
-		if term.Logo() != "" {
-			t.Fatalf("logo shown on %+v", term)
+		if term.SymbolLines() != nil {
+			t.Fatalf("symbol shown on %+v", term)
 		}
 	}
 }
 
-// A terminal narrower than the signature shows only the round symbol.
-func TestNarrowTerminalShowsOnlySymbol(t *testing.T) {
-	for _, width := range []int{SymbolWidth() + 2, LogoWidth() + 1} {
-		logo := Terminal{Interactive: true, Color: true, TrueColor: true, Width: width}.Logo()
-		if strings.Count(logo, "\n") != len(symbolRows) {
-			t.Fatalf("width %d: %d lines, want the %d-row symbol", width, strings.Count(logo, "\n"), len(symbolRows))
-		}
-		for i, line := range strings.Split(strings.TrimSuffix(logo, "\n"), "\n") {
-			if DisplayWidth(line) > SymbolWidth() {
-				t.Fatalf("width %d line %d is %d cells", width, i, DisplayWidth(line))
-			}
-		}
+func TestSideBySideCentersShorterBlock(t *testing.T) {
+	left := []string{"aa", "bb", "cc", "dd", "ee"}
+	got := SideBySide(left, 2, 1, []string{"x", "", "y"})
+	want := []string{"aa", "bb x", "cc", "dd y", "ee"}
+	if strings.Join(got, "|") != strings.Join(want, "|") {
+		t.Fatalf("got %q", got)
 	}
-	if SymbolWidth() >= LogoWidth() {
-		t.Fatalf("symbol %d cells is not narrower than the signature %d", SymbolWidth(), LogoWidth())
+	got = SideBySide([]string{"aa"}, 2, 2, []string{"x", "y"})
+	if strings.Join(got, "|") != "aa  x|    y" {
+		t.Fatalf("taller right block: %q", got)
 	}
 }
 

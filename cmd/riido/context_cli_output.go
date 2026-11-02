@@ -35,7 +35,10 @@ func (c contextIO) fail(jsonOut bool, requestID string, cliErr *contextcli.CLIEr
 		if cliErr.NextAction != "" {
 			fmt.Fprintf(c.stderr, "  %s %s\n", term.Accent("→"), cliui.Safe(cliErr.NextAction))
 		}
-		fmt.Fprintf(c.stderr, "  %s\n", term.Dim(fmt.Sprintf("code=%s · request_id=%s", cliErr.Code, requestID)))
+		// A local usage mistake needs no support identifiers; server errors keep them.
+		if cliErr.Code != contextcli.CodeUsage {
+			fmt.Fprintf(c.stderr, "  %s\n", term.Dim(fmt.Sprintf("code=%s · request_id=%s", cliErr.Code, requestID)))
+		}
 	} else {
 		fmt.Fprintf(c.stderr, "riido: %s\n", cliErr.Message)
 		if cliErr.NextAction != "" {

@@ -7,6 +7,7 @@ import (
 	"slices"
 
 	"github.com/teamswyg/riido-daemon/internal/cliconfig"
+	"github.com/teamswyg/riido-daemon/internal/cliui"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
 
@@ -63,7 +64,13 @@ func runConfig(c contextIO, raw []string) error {
 		if key == "profile" {
 			profile = value
 		}
-		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"saved": true, "profile": profile, "key": key}), func(w io.Writer, _ any) { fmt.Fprintf(w, "설정을 저장했습니다: %s\n", key) })
+		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"saved": true, "profile": profile, "key": key}), func(w io.Writer, _ any) {
+			if term := humanTerminal(w); term.Interactive {
+				fmt.Fprintf(w, "%s %s 설정을 저장했어요 %s\n", term.Symbol("ok"), key, term.Dim("(프로필 "+cliui.Safe(profile)+")"))
+				return
+			}
+			fmt.Fprintf(w, "설정을 저장했습니다: %s\n", key)
+		})
 	}
 	r := settings.resolved
 	values := map[string]string{"profile": r.Profile, "api_origin": r.APIOrigin, "auth_origin": r.AuthOrigin, "workspace": r.Workspace, "team": r.Team, "format": r.Format, "timeout": r.Timeout}
@@ -75,6 +82,10 @@ func runConfig(c contextIO, raw []string) error {
 		sources[name] = r.Sources[name]
 	}
 	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"profile": r.Profile, "values": values, "sources": sources}), func(w io.Writer, _ any) {
+		if term := humanTerminal(w); term.Interactive {
+			renderConfigTerminal(w, term, r.Profile, configKeys, values, sources)
+			return
+		}
 		for _, name := range configKeys {
 			if value, ok := values[name]; ok {
 				fmt.Fprintf(w, "%s=%q (%s)\n", name, value, sources[name])
