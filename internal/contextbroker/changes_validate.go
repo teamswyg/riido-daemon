@@ -14,8 +14,15 @@ func validChangedPart(change changedPart) bool {
 	}
 	current := change.Current
 	if current == nil {
-		return change.Status == "unavailable" && change.Reason == "not_in_current_capture" &&
-			change.Title == "" && change.TeamID == "" && change.KeyNumber == "" && len(change.Reasons) == 0
+		// Omitted sources never carry metadata. deleted and unselected are
+		// explained by the server; anything else must stay an unknown omission.
+		if change.Title != "" || change.TeamID != "" || change.KeyNumber != "" || len(change.Reasons) != 0 {
+			return false
+		}
+		if change.Status == "deleted" || change.Status == "unselected" {
+			return change.Reason == ""
+		}
+		return change.Status == "unavailable" && change.Reason == "not_in_current_capture"
 	}
 	if current.ResourceKind != change.ResourceKind || current.SourceID != change.SourceID || current.Part != change.Part ||
 		current.Complete == nil || !validChangeCursors(current) {
