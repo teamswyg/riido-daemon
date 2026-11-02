@@ -105,6 +105,17 @@ jobs:
         run: go test ./cmd/riido -run TestContextCLINativeIPCRoundTrip -count=1 -timeout=5m
       - name: Verify protected helper private-pipe boundaries without OS credentials
         run: go test ./internal/securecredential -run TestPortableHelper -count=1 -timeout=3m
+      - name: Verify Windows credential lock and authorization launcher boundaries
+        run: |
+          go test ./internal/securecredential -run TestWindowsCredentialLock -count=1 -timeout=3m
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go test ./cmd/riido -run 'TestUserSessionPlatformPaths|TestUserAuthorizationLauncher|TestUserDesktopLauncher|TestWindowsAuthorization' -count=1 -timeout=3m
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:GOARCH = '386'
+          go test ./internal/securecredential -run TestWindowsCredentialLock -count=1 -timeout=3m
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go test ./cmd/riido -run 'TestUserSessionPlatformPaths|TestUserAuthorizationLauncher|TestUserDesktopLauncher|TestWindowsAuthorization' -count=1 -timeout=3m
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Measure Windows CNG protection without UI or product credentials
         shell: cmd
         run: |
