@@ -21,19 +21,24 @@ type Query struct {
 	Since      string
 	RequestID  string
 	// MaxBytes batches consecutive captured pages of one part (content view).
-	MaxBytes int
+	MaxBytes     int
+	CacheEnabled bool
+	KnownDigest  string
 }
 
 // ResultSource is one source the control-plane recorded as read.
 type ResultSource struct {
-	Kind    string `json:"kind"`
-	ID      string `json:"id"`
-	Part    string `json:"part"`
-	Version string `json:"version,omitempty"`
+	Kind      string `json:"kind"`
+	ID        string `json:"id"`
+	Part      string `json:"part"`
+	Version   string `json:"version,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
 // Result is the control-plane answer for one view of the assignment snapshot.
 type Result struct {
+	ContentDigest string `json:"-"`
+	NotModified   bool   `json:"-"`
 	// SnapshotID is verified by the fetcher for assignment base context only.
 	SnapshotID string          `json:"snapshot_id,omitempty"`
 	Data       json.RawMessage `json:"data"`

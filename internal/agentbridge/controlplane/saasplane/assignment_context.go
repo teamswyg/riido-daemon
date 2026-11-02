@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"net/http"
 	"net/url"
 	"time"
 )
@@ -20,28 +21,33 @@ type AssignmentContextRequest struct {
 	RequestID    string `json:"request_id,omitempty"`
 	// MaxBytes asks a content read for consecutive pages of one part up to
 	// this encoded size. Zero keeps the single-page response.
-	MaxBytes int `json:"max_bytes,omitempty"`
+	MaxBytes     int    `json:"max_bytes,omitempty"`
+	CacheEnabled bool   `json:"-"`
+	KnownDigest  string `json:"-"`
 }
 
 // AssignmentContextSource is one source the control-plane recorded as read.
 type AssignmentContextSource struct {
-	Kind    string `json:"kind"`
-	ID      string `json:"id,omitempty"`
-	Part    string `json:"part"`
-	Version string `json:"version,omitempty"`
+	Kind      string `json:"kind"`
+	ID        string `json:"id,omitempty"`
+	Part      string `json:"part"`
+	Version   string `json:"version,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
 // AssignmentContextResponse is the snapshot (or live, for the agent
 // directory) view returned to the lease holder.
 type AssignmentContextResponse struct {
-	AssignmentID string                    `json:"assignment_id"`
-	TaskID       string                    `json:"task_id"`
-	View         string                    `json:"view"`
-	CapturedAt   time.Time                 `json:"captured_at"`
-	Truncated    bool                      `json:"truncated,omitempty"`
-	Live         bool                      `json:"live,omitempty"`
-	Data         json.RawMessage           `json:"data"`
-	Sources      []AssignmentContextSource `json:"sources"`
+	ContentDigest string                    `json:"content_digest,omitempty"`
+	NotModified   bool                      `json:"not_modified,omitempty"`
+	AssignmentID  string                    `json:"assignment_id"`
+	TaskID        string                    `json:"task_id"`
+	View          string                    `json:"view"`
+	CapturedAt    time.Time                 `json:"captured_at"`
+	Truncated     bool                      `json:"truncated,omitempty"`
+	Live          bool                      `json:"live,omitempty"`
+	Data          json.RawMessage           `json:"data"`
+	Sources       []AssignmentContextSource `json:"sources"`
 }
 
 // FetchAssignmentContext reads the assignment's context snapshot with the
@@ -49,7 +55,19 @@ type AssignmentContextResponse struct {
 // read, so a blind retry would record the read twice.
 func (p *Plane) FetchAssignmentContext(ctx context.Context, agentID string, in AssignmentContextRequest) (AssignmentContextResponse, error) {
 	var out AssignmentContextResponse
-	err := p.postJSON(ctx, "/v1/agents/"+url.PathEscape(agentID)+"/assignment-context", in, &out)
+	body, err := json.Marshal(in)
+	if err != nil {
+		return out, err
+	}
+	var headers http.Header
+	if in.CacheEnabled && in.View == "content" {
+		headers = make(http.Header)
+		headers.Set("X-Riido-Context-Cache-Version", "1")
+		if in.KnownDigest != "" {
+			headers.Set("X-Riido-Context-Known-Digest", in.KnownDigest)
+		}
+	}
+	err = p.doJSONHeaders(ctx, http.MethodPost, "/v1/agents/"+url.PathEscape(agentID)+"/assignment-context", body, &out, headers)
 	return out, err
 }
 

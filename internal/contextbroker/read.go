@@ -41,7 +41,7 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 		}
 		query.Since = since
 	}
-	result, err := fetchContent(ctx, b.Fetcher, query)
+	result, err := b.fetchContent(ctx, req.RunCapability, query)
 	if err != nil {
 		return contextcli.FailureEnvelope(requestID, changesFetchFailure(query, err))
 	}
