@@ -114,15 +114,27 @@ func printFriendlyHelp(w io.Writer, term cliui.Terminal) {
 }
 
 func printEntries(w io.Writer, term cliui.Terminal, entries []helpEntry, commands bool, width int) {
+	summaryWidth := 0
 	for _, entry := range entries {
 		width = max(width, cliui.DisplayWidth(entry.name))
+		summaryWidth = max(summaryWidth, cliui.DisplayWidth(entry.summary))
 	}
+	// A narrow terminal would wrap the two columns, so put each summary under
+	// its command instead.
+	stacked := term.Interactive && term.Width < 2+width+2+summaryWidth
 	for _, entry := range entries {
-		name := cliui.PadRight(entry.name, width)
+		name := entry.name
+		if !stacked {
+			name = cliui.PadRight(name, width)
+		}
 		if commands {
 			name = term.Accent(name)
 		} else {
 			name = term.Bold(name)
+		}
+		if stacked {
+			fmt.Fprintf(w, "  %s\n    %s\n", name, term.Dim(entry.summary))
+			continue
 		}
 		fmt.Fprintf(w, "  %s  %s\n", name, entry.summary)
 	}
