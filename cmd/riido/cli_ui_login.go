@@ -64,9 +64,24 @@ func renderLoginResult(w io.Writer, term cliui.Terminal, result standalonecli.Lo
 	}
 	fmt.Fprintf(w, "  - 서버: %s\n", cliui.Safe(server))
 	fmt.Fprintf(w, "  - 로그인 방식: %s\n", authOriginLabel(result.AuthOrigin))
+	for _, warning := range result.Warnings {
+		fmt.Fprintf(w, "%s %s\n", term.Symbol("warn"), loginWarningText(warning))
+	}
 	if result.NextAction != "" {
 		fmt.Fprintf(w, "%s %s\n", term.Symbol("warn"), cliui.Safe(result.NextAction))
 		return
 	}
 	fmt.Fprintf(w, "\n%s 다음: riido workspace list 로 워크스페이스를 확인하세요\n", term.Accent("→"))
+}
+
+// loginWarningText explains the warnings Service.Login can return; unknown
+// codes are shown as they are so none is hidden.
+func loginWarningText(code string) string {
+	switch code {
+	case "previous_grant_revocation_failed":
+		return "이전 로그인을 서버에서 철회하지 못했어요. 이전 로그인이 아직 유효할 수 있어요 (previous_grant_revocation_failed)"
+	case "auth_origin_selection_not_saved":
+		return "로그인 방식 선택을 설정에 저장하지 못했어요 (auth_origin_selection_not_saved)"
+	}
+	return cliui.Safe(code)
 }

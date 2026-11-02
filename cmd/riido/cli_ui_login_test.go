@@ -44,3 +44,15 @@ func TestLoginNoticesStayOffPipes(t *testing.T) {
 		t.Fatal("--json must stay plain")
 	}
 }
+
+// Warnings from a successful login stay visible on the terminal view.
+func TestLoginResultShowsWarnings(t *testing.T) {
+	var buf bytes.Buffer
+	renderLoginResult(&buf, cliui.Terminal{Interactive: true, Width: 100}, standalonecli.LoginResult{
+		Identity: userapi.Identity{ID: "u1"}, Warnings: []string{"previous_grant_revocation_failed", "other"},
+	})
+	out := buf.String()
+	if !strings.Contains(out, "previous_grant_revocation_failed") || !strings.Contains(out, "이전 로그인") || !strings.Contains(out, "! other") {
+		t.Fatalf("warnings missing:\n%s", out)
+	}
+}
