@@ -39,12 +39,7 @@ func Resolve(c Config, profile string, explicit bool, getenv func(string) string
 	r.APIOrigin, r.Sources["api_origin"] = r.Stored.APIOrigin, "profile"
 	if r.APIOrigin == "" {
 		r.Sources["api_origin"] = "default"
-		switch r.Profile {
-		case "production":
-			r.APIOrigin = "https://monolith.riido.io"
-		case "staging":
-			r.APIOrigin = "https://monolith.api.riido.io"
-		}
+		r.APIOrigin = DefaultAPIOrigin(r.Profile)
 	}
 	if value := strings.TrimSpace(getenv("RIIDO_CLI_API_URL")); value != "" {
 		r.APIOrigin, r.Sources["api_origin"] = value, "environment"

@@ -43,7 +43,7 @@ func (p Profile) AuthenticationOrigin() string {
 }
 
 func Default() Config {
-	return Config{Version: 1, ActiveProfile: "production", Profiles: map[string]Profile{}}
+	return Config{Version: 1, ActiveProfile: DefaultProfile(), Profiles: map[string]Profile{}}
 }
 
 func ValidProfile(name string) bool {

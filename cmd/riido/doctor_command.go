@@ -166,6 +166,10 @@ func renderDoctor(w io.Writer, data any) {
 	if !ok {
 		return
 	}
+	if term := humanTerminal(w); term.Interactive {
+		renderDoctorTerminal(w, term, report)
+		return
+	}
 	for _, check := range report.Checks {
 		fmt.Fprintf(w, "[%s] %s: %s\n", check.Status, check.Name, check.Detail)
 	}

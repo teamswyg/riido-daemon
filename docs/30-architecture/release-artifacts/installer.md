@@ -17,10 +17,18 @@ The installer script:
 - downloads the matching release asset and `SHA256SUMS`
 - verifies the checksum before installation
 - installs `riido` to `$HOME/.riido/bin` unless `RIIDO_DAEMON_INSTALL_DIR` is set
+- installs the adjacent `VERSION`, and on macOS the signed `RiidoCLIAuthHelper.app` with `CLI_AUTH_HELPER.json`; a package without the helper removes an older helper, and a package with only one of the pair is rejected before the existing binary is touched
+- prints the PATH line for the current shell, or warns when another `riido` is found first on PATH
 
 Use a specific version with:
 
 ```bash
 RIIDO_DAEMON_VERSION=v0.0.1 \
 curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | sh
+```
+
+Install the package the desktop app uses for a channel (`staging`, `latest`) from the CDN with:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | RIIDO_DAEMON_CHANNEL=staging sh
 ```

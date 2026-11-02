@@ -51,6 +51,10 @@ func (c contextIO) runUserAgents(command agentsCommand, raw []string) error {
 }
 
 func renderUserAgents(w io.Writer, result any) {
+	if term := humanTerminal(w); term.Interactive {
+		renderUserAgentsTerminal(w, term, result)
+		return
+	}
 	fmt.Fprintln(w, "현재 볼 수 있는 Agent입니다. 연결 상태는 멘션·실행 허가를 뜻하지 않습니다.")
 	printAgent := func(agent userapi.PublicAgent) {
 		fmt.Fprintf(w, "  %q (%q) 역할=%q 작업=%q 연결=%q 런타임=%q 설명=%q\n", agent.Name, agent.AgentID, agent.RoleStatus, agent.WorkStatus, agent.Runtime.Connection, agent.Runtime.Kind, agent.Description)

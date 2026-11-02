@@ -33,6 +33,7 @@ while [ "$#" -gt 0 ]; do
   shift || true
 done
 [ -n "$out" ] || exit 2
+echo "$url" >> "$INSTALL_FIXTURE_DIR/curl.log"
 base="${url##*/}"
 cp "$INSTALL_FIXTURE_DIR/$base" "$out"
 `
