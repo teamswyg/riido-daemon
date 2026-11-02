@@ -20,7 +20,7 @@ func runFriendlyCommandHelp(args []string) (handled bool, err error) {
 		return false, nil
 	}
 	term := humanTerminal(os.Stdout)
-	if !term.Interactive {
+	if !friendlyHelpApplies(term, args) {
 		return false, nil
 	}
 	rest := args[1:]
@@ -53,6 +53,12 @@ func runFriendlyCommandHelp(args []string) (handled bool, err error) {
 		return false, nil
 	}
 	return true, nil
+}
+
+// friendlyHelpApplies limits curated help to a person's terminal. A JSON
+// request keeps the command's own JSON-aware failure envelope.
+func friendlyHelpApplies(term cliui.Terminal, args []string) bool {
+	return term.Interactive && !wantsJSON(args)
 }
 
 func unknownSubcommandExit() contextcli.ExitCode {

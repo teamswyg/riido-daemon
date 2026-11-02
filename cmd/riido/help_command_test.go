@@ -88,3 +88,16 @@ func TestRootHelpShowsExamplesAndLearnMore(t *testing.T) {
 		}
 	}
 }
+
+// JSON requests keep their machine-readable failure envelope on a terminal too.
+func TestFriendlyHelpSkipsJSONRequests(t *testing.T) {
+	term := cliui.Terminal{Interactive: true, Width: 100}
+	for _, args := range [][]string{{"work", "gte", "--json"}, {"work", "gte", "--format=json"}, {"work", "gte", "--format", "json"}} {
+		if friendlyHelpApplies(term, args) {
+			t.Fatalf("%v intercepted", args)
+		}
+	}
+	if !friendlyHelpApplies(term, []string{"work", "gte"}) || friendlyHelpApplies(cliui.Plain, []string{"work"}) {
+		t.Fatal("terminal gating changed")
+	}
+}
