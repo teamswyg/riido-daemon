@@ -34,20 +34,23 @@ func (c contextIO) runUserComments(sub workCommand, raw []string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
 	data := map[string]any{"mode": "user"}
+	var render textRenderer
 	if sub == workCommandComments {
 		page, err := session.Comments(ctx, work, team, pagination, args.Workspace)
 		if err != nil {
 			return c.fail(args.JSON, requestID, userAuthError(err))
 		}
 		data["comments"], data["meta"] = page.Comments, page.Meta
+		render = commentsView(c.stdout, page)
 	} else {
 		replies, err := session.Replies(ctx, work, team, parent, args.Workspace)
 		if err != nil {
 			return c.fail(args.JSON, requestID, userAuthError(err))
 		}
 		data["replies"] = replies
+		render = repliesView(c.stdout, replies)
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, data), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, data), render)
 }
 
 func userCommentArguments(sub workCommand, args contextcli.Args) (work, team, parent string, pagination userapi.CommentPagination, cliErr *contextcli.CLIError) {

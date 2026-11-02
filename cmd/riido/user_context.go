@@ -37,7 +37,7 @@ func (c contextIO) runUserContext(raw []string) error {
 	if scopeHasDeferredContent(scope) {
 		env.Warnings = append(env.Warnings, deferredContentWarning())
 	}
-	return c.succeed(args.JSON, env, nil)
+	return c.succeed(args.JSON, env, contextView(c.stdout, scope))
 }
 
 func userContextArguments(args contextcli.Args) (string, string, *contextcli.CLIError) {

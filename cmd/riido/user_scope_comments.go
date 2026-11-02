@@ -53,7 +53,7 @@ func (c contextIO) readUserScopeComments(id string, args contextcli.Args, q user
 	if page.ContentPage != nil {
 		env.Warnings = append(env.Warnings, deferredContentWarning())
 	}
-	return c.succeed(args.JSON, env, nil)
+	return c.succeed(args.JSON, env, scopeCommentsView(c.stdout, page))
 }
 
 func scopeCommentArguments(sub workCommand, args contextcli.Args) (userapi.ReadScopeCommentsRequest, *contextcli.CLIError) {

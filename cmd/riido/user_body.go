@@ -47,7 +47,7 @@ func (c contextIO) runUserResourceBody(raw []string, kind string) error {
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "live": true, "body": page}), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "live": true, "body": page}), bodyPageView(c.stdout, page))
 }
 
 func userResourceBodyArguments(args contextcli.Args, kind string) (userapi.ReadBodyRequest, *contextcli.CLIError) {

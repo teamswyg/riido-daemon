@@ -40,7 +40,7 @@ func (c contextIO) runUserMeeting(raw []string) error {
 	if meetingHasDeferredContent(meeting) {
 		env.Warnings = append(env.Warnings, deferredContentWarning())
 	}
-	return c.succeed(args.JSON, env, nil)
+	return c.succeed(args.JSON, env, meetingView(c.stdout, meeting))
 }
 
 func userMeetingArguments(args contextcli.Args) (userapi.MeetingReadRequest, *contextcli.CLIError) {

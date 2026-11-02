@@ -50,5 +50,5 @@ func (c contextIO) runUserActivity(raw []string) error {
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "activityLogs": page.ActivityLogs, "meta": page.Meta}), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "activityLogs": page.ActivityLogs, "meta": page.Meta}), activityView(c.stdout, page))
 }
