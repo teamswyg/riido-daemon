@@ -13,7 +13,7 @@ func renderDoctorTerminal(w io.Writer, term cliui.Terminal, report doctorData) {
 	fmt.Fprintln(w, term.Bold("Riido CLI 진단"))
 	width := 0
 	for _, check := range report.Checks {
-		width = max(width, cliui.DisplayWidth(cliui.Safe(check.Name)))
+		width = max(width, cliui.DisplayWidth(doctorLabel(check.Name)))
 	}
 	for _, check := range report.Checks {
 		status := string(check.Status)
@@ -22,7 +22,7 @@ func renderDoctorTerminal(w io.Writer, term cliui.Terminal, report doctorData) {
 		if status == "skip" {
 			detail = term.Dim(detail)
 		}
-		fmt.Fprintf(w, "  %s %s  %s\n", symbol, cliui.PadRight(cliui.Safe(check.Name), width), detail)
+		fmt.Fprintf(w, "  %s %s  %s\n", symbol, cliui.PadRight(doctorLabel(check.Name), width), detail)
 	}
 	warnings := 0
 	for _, check := range report.Checks {
@@ -39,6 +39,34 @@ func renderDoctorTerminal(w io.Writer, term cliui.Terminal, report doctorData) {
 	default:
 		fmt.Fprintf(w, "%s %s\n", term.Symbol("ok"), "사용할 준비가 됐어요")
 	}
+	for _, check := range report.Checks {
+		if check.Name == "api" && check.Status == doctorSkip {
+			fmt.Fprintln(w, term.Dim("  로그인·API까지 확인하려면 riido doctor --check-api"))
+		}
+	}
+}
+
+// doctorLabels names checks for people; --json keeps the stable check names.
+var doctorLabels = map[string]string{
+	"binary":           "실행 파일",
+	"path":             "PATH",
+	"mode":             "실행 모드",
+	"binary_target":    "실제 경로",
+	"package_version":  "패키지 버전",
+	"helper_bundle":    "인증 도우미",
+	"helper_signature": "도우미 서명",
+	"daemon_ipc":       "Riido 앱 연결",
+	"context_read":     "맥락 조회",
+	"api_origin":       "서버",
+	"user_auth":        "로그인",
+	"api":              "API 확인",
+}
+
+func doctorLabel(name string) string {
+	if label, ok := doctorLabels[name]; ok {
+		return label
+	}
+	return cliui.Safe(name)
 }
 
 func renderWorkspacesTerminal(w io.Writer, term cliui.Terminal, page *userapi.WorkspaceList) {

@@ -45,7 +45,7 @@ func userWorkTarget(args contextcli.Args, raw string) (string, string, *contextc
 	}
 	if ref.Kind == contextcli.WorkRefKey {
 		if !(userapi.WorkReferenceRequest{Reference: ref.Value, WorkspaceID: args.Workspace, TeamID: team}).Valid() || (args.HasValue("--workspace") && args.Workspace == "") || (team == "" && args.Workspace == "") {
-			return "", "", contextcli.Fail(contextcli.CodeUsage, "표시 키에는 워크스페이스 또는 팀이 필요합니다", "--workspace <WORKSPACE-ID> 또는 --team-id <TEAM-ID>를 지정하세요")
+			return "", "", contextcli.Fail(contextcli.CodeUsage, "표시 키에는 워크스페이스 또는 팀이 필요합니다", "--workspace <WORKSPACE-ID> 또는 --team-id <TEAM-ID>를 지정하세요 (riido workspace use <WORKSPACE-ID>로 기본값을 저장할 수 있어요)")
 		}
 	} else {
 		if team == "" {
