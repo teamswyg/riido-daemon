@@ -113,3 +113,26 @@ func TestAccentFollowsTerminalBackground(t *testing.T) {
 		}
 	}
 }
+
+func TestLogoAddsPixelWordmarkOnWideTerminals(t *testing.T) {
+	for _, row := range wordmarkPattern {
+		if len(row) != len(wordmarkPattern[0]) || strings.Trim(row, "#.") != "" {
+			t.Fatalf("wordmark row %q", row)
+		}
+	}
+	wide := Terminal{Interactive: true, Color: true, TrueColor: true, Width: LogoWidth() + 2}
+	lines := wide.LogoLines()
+	if len(lines) != len(symbolRows) || !strings.Contains(strings.Join(lines, ""), "█") {
+		t.Fatalf("logo lines = %d", len(lines))
+	}
+	for i, line := range lines {
+		if DisplayWidth(line) > LogoWidth() {
+			t.Fatalf("line %d is %d cells", i, DisplayWidth(line))
+		}
+	}
+	for _, term := range []Terminal{{Interactive: true, Color: true, Width: LogoWidth() + 1}, {Interactive: true, Width: 200}, Plain} {
+		if term.LogoLines() != nil {
+			t.Fatalf("logo shown on %+v", term)
+		}
+	}
+}
