@@ -92,7 +92,7 @@ func renderScopeCommentsView(w io.Writer, term cliui.Terminal, page userapi.Read
 	if page.ContentPage != nil {
 		fmt.Fprintln(w)
 		writeViewHint(w, term, "댓글이 커서 나눠 읽어야 해요.")
-		writeBodyPageHint(w, term, page.ContentPage)
+		writeBodyPageHint(w, term, scopeBodyCommand(page), page.ContentPage)
 		return
 	}
 	comments := make([]*userapi.Comment, 0, len(page.Items))
@@ -113,4 +113,17 @@ func renderScopeCommentsView(w io.Writer, term cliui.Terminal, page userapi.Read
 		fmt.Fprintln(w)
 		writeViewHint(w, term, fmt.Sprintf("다음 페이지: 같은 옵션에 --page %d --version %s", *page.NextPage, oneLine(page.Version)))
 	}
+}
+
+// scopeBodyCommand names the body read for a comment page. The page does not
+// carry the team, so it stays a placeholder.
+func scopeBodyCommand(page userapi.ReadScopeCommentPage) string {
+	id := oneLine(page.ResourceID)
+	switch page.ResourceKind {
+	case "meeting":
+		return "riido meeting body " + id + " --team-id <TEAM-ID>"
+	case "component", "":
+		return "riido work body " + id + " --team-id <TEAM-ID>"
+	}
+	return "riido work body " + id + " --team-id <TEAM-ID> --kind " + oneLine(page.ResourceKind)
 }

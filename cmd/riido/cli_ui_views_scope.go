@@ -57,12 +57,40 @@ func renderBodyPageView(w io.Writer, term cliui.Terminal, page userapi.ReadBodyP
 }
 
 // writeBodyPageHint points at a part that was too large to return inline.
-func writeBodyPageHint(w io.Writer, term cliui.Terminal, page *userapi.ReadBodyPage) {
-	hint := fmt.Sprintf("나머지: --part %s --version %s", oneLine(page.Part), oneLine(page.Version))
-	if page.NextOffset != nil {
-		hint += fmt.Sprintf(" --offset %d", *page.NextOffset)
+// Its content is not shown, so the read restarts at the page's own offset and
+// repeats its selector; otherwise the body read would resolve another page.
+func writeBodyPageHint(w io.Writer, term cliui.Terminal, command string, page *userapi.ReadBodyPage) {
+	hint := fmt.Sprintf("이어 읽기: %s --part %s --version %s", command, oneLine(page.Part), oneLine(page.Version))
+	if offset := deref(page.Offset); offset > 0 {
+		hint += fmt.Sprintf(" --offset %d", offset)
 	}
-	writeViewHint(w, term, hint)
+	writeViewHint(w, term, hint+bodySelectorFlags(page.Part, page.Selector))
+}
+
+func bodySelectorFlags(part string, selector *userapi.ReadPartSelector) string {
+	if selector == nil {
+		return ""
+	}
+	flags := ""
+	if part == "board_page" {
+		if selector.BoardCursor != nil {
+			flags += " --board-cursor " + oneLine(*selector.BoardCursor)
+		}
+		if selector.Limit != nil {
+			flags += fmt.Sprintf(" --board-limit %d", *selector.Limit)
+		}
+		return flags
+	}
+	if selector.ParentCommentID != nil {
+		flags += " --comment-id " + oneLine(*selector.ParentCommentID)
+	}
+	if selector.Page != nil {
+		flags += fmt.Sprintf(" --page %d", *selector.Page)
+	}
+	if selector.Limit != nil {
+		flags += fmt.Sprintf(" --comments-limit %d", *selector.Limit)
+	}
+	return flags
 }
 
 // scopeHeadline reads only the display fields every detail kind selects.

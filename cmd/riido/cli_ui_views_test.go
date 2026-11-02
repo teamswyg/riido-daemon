@@ -55,7 +55,8 @@ func checkViews(t *testing.T, cases []viewCase) {
 				}
 			}
 			for line := range strings.SplitSeq(strings.TrimRight(out, "\n"), "\n") {
-				if cliui.DisplayWidth(line) > term.Width {
+				// Command hints stay whole so they can be copied; the terminal wraps them.
+				if cliui.DisplayWidth(line) > term.Width && !strings.Contains(line, " --") {
 					t.Fatalf("%s line is %d cells: %q", tc.name, cliui.DisplayWidth(line), cliui.StripANSI(line))
 				}
 			}
@@ -93,6 +94,22 @@ func TestViewKeepsCopyableValuesWhole(t *testing.T) {
 	}
 	if !strings.Contains(out, "…") {
 		t.Fatalf("prose was not shortened:\n%s", out)
+	}
+}
+
+func TestBodyPageHintRestartsAtShownOffset(t *testing.T) {
+	offset, next, limit, cursor := 4096, 8192, 30, "board-next"
+	var buf bytes.Buffer
+	term := cliui.Terminal{Interactive: true, Width: 200}
+	writeBodyPageHint(&buf, term, "riido meeting body m --team-id t", &userapi.ReadBodyPage{Part: "metadata", Version: "v1", Offset: new(int), NextOffset: &next})
+	writeBodyPageHint(&buf, term, "riido meeting body m --team-id t", &userapi.ReadBodyPage{
+		Part: "board_page", Version: "v2", Offset: &offset, NextOffset: &next,
+		Selector: &userapi.ReadPartSelector{BoardCursor: &cursor, Limit: &limit},
+	})
+	want := "이어 읽기: riido meeting body m --team-id t --part metadata --version v1\n" +
+		"이어 읽기: riido meeting body m --team-id t --part board_page --version v2 --offset 4096 --board-cursor board-next --board-limit 30\n"
+	if buf.String() != want {
+		t.Fatalf("hint = %q, want %q", buf.String(), want)
 	}
 }
 
@@ -177,7 +194,14 @@ func TestCommentViews(t *testing.T) {
 	}
 	replies := scope
 	replies.ParentCommentID, replies.NextPage = &parent, nil
-	deferred := userapi.ReadScopeCommentPage{Version: "v1", Status: "deferred", Page: 1, ContentPage: &userapi.ReadBodyPage{Part: "comments_page", Version: "v2"}}
+	deferredPage, deferredLimit, deferredNext, zero := 2, 50, 100, 0
+	deferred := userapi.ReadScopeCommentPage{
+		ResourceID: "work-1", ResourceKind: "backlog", Version: "v1", Status: "deferred", Page: 1,
+		ContentPage: &userapi.ReadBodyPage{
+			Part: "comments_page", Version: "v2", Offset: &zero, NextOffset: &deferredNext,
+			Selector: &userapi.ReadPartSelector{ParentCommentID: &parent, Page: &deferredPage, Limit: &deferredLimit},
+		},
+	}
 	checkViews(t, []viewCase{
 		{"comments", func(w io.Writer, term cliui.Terminal) {
 			meta := &userapi.OffsetMeta{Total: &total, CurrentPage: &current, LastPage: &last, NextPage: json.RawMessage("null")}
@@ -193,7 +217,7 @@ func TestCommentViews(t *testing.T) {
 		{"scope replies", func(w io.Writer, term cliui.Terminal) { renderScopeCommentsView(w, term, replies) }, []string{"답글 2건"}},
 		{
 			"deferred comments", func(w io.Writer, term cliui.Terminal) { renderScopeCommentsView(w, term, deferred) },
-			[]string{"나눠 읽기", "나눠 읽어야", "--part comments_page --version v2"},
+			[]string{"나눠 읽기", "나눠 읽어야", "riido work body work-1 --team-id <TEAM-ID> --kind backlog --part comments_page --version v2 --comment-id comment-1 --page 2 --comments-limit 50"},
 		},
 	})
 }

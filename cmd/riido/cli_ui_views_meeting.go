@@ -79,7 +79,7 @@ func renderMeetingView(w io.Writer, term cliui.Terminal, meeting userapi.ReadMee
 	if meeting.ContentPage != nil {
 		fmt.Fprintln(w)
 		writeViewHint(w, term, "미팅 내용이 커서 나눠 읽어야 해요.")
-		writeBodyPageHint(w, term, meeting.ContentPage)
+		writeBodyPageHint(w, term, "riido meeting body "+oneLine(meeting.ID)+" --team-id "+oneLine(meeting.TeamID), meeting.ContentPage)
 		return
 	}
 	writeMeetingBody(w, term, meeting)
