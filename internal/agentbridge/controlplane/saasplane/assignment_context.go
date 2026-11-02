@@ -59,9 +59,12 @@ func (p *Plane) FetchAssignmentContext(ctx context.Context, agentID string, in A
 	if err != nil {
 		return out, err
 	}
-	var headers http.Header
+	headers := make(http.Header)
+	if in.View == "changes" {
+		// Opt in to deleted/unselected omissions; older servers ignore it.
+		headers.Set("X-Riido-Context-Changes-Version", "2")
+	}
 	if in.CacheEnabled && in.View == "content" {
-		headers = make(http.Header)
 		headers.Set("X-Riido-Context-Cache-Version", "1")
 		if in.KnownDigest != "" {
 			headers.Set("X-Riido-Context-Known-Digest", in.KnownDigest)
