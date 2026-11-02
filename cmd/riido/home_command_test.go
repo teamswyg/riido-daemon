@@ -61,3 +61,19 @@ func TestHelpAllKeepsCompleteLegacyUsage(t *testing.T) {
 		t.Fatal("unknown help argument accepted")
 	}
 }
+
+// A narrow terminal stacks each summary under its command instead of wrapping.
+func TestHomeStacksQuickStartOnNarrowTerminal(t *testing.T) {
+	var buf bytes.Buffer
+	if err := runHome(&buf, cliui.Terminal{Interactive: true, Width: 30}, ""); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "  riido auth login\n    브라우저로 로그인\n") {
+		t.Fatalf("narrow quick start not stacked:\n%s", buf.String())
+	}
+	buf.Reset()
+	_ = runHome(&buf, cliui.Terminal{Interactive: true, Width: 120}, "")
+	if !strings.Contains(buf.String(), "riido auth login") || strings.Contains(buf.String(), "riido auth login\n") {
+		t.Fatalf("wide quick start should keep two columns:\n%s", buf.String())
+	}
+}

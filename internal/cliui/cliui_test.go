@@ -48,10 +48,28 @@ func TestLogoNeedsColorAndWidth(t *testing.T) {
 	if strings.Contains(palette, "38;2;") || !strings.Contains(palette, "38;5;") {
 		t.Fatal("256-color fallback not used")
 	}
-	for _, term := range []Terminal{{Interactive: true, Color: true, Width: LogoWidth()}, {Interactive: true, Width: 200}} {
+	for _, term := range []Terminal{{Interactive: true, Color: true, Width: SymbolWidth() + 1}, {Interactive: true, Width: 200}} {
 		if term.Logo() != "" {
 			t.Fatalf("logo shown on %+v", term)
 		}
+	}
+}
+
+// A terminal narrower than the signature shows only the round symbol.
+func TestNarrowTerminalShowsOnlySymbol(t *testing.T) {
+	for _, width := range []int{SymbolWidth() + 2, LogoWidth() + 1} {
+		logo := Terminal{Interactive: true, Color: true, TrueColor: true, Width: width}.Logo()
+		if strings.Count(logo, "\n") != len(symbolRows) {
+			t.Fatalf("width %d: %d lines, want the %d-row symbol", width, strings.Count(logo, "\n"), len(symbolRows))
+		}
+		for i, line := range strings.Split(strings.TrimSuffix(logo, "\n"), "\n") {
+			if DisplayWidth(line) > SymbolWidth() {
+				t.Fatalf("width %d line %d is %d cells", width, i, DisplayWidth(line))
+			}
+		}
+	}
+	if SymbolWidth() >= LogoWidth() {
+		t.Fatalf("symbol %d cells is not narrower than the signature %d", SymbolWidth(), LogoWidth())
 	}
 }
 
