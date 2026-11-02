@@ -41,6 +41,9 @@ func (t Terminal) SymbolLines() []string {
 
 func (t Terminal) writeCell(b *strings.Builder, top, bottom uint32) {
 	switch {
+	case top != 0 && top == bottom:
+		// A full block avoids the seam some terminals draw between fg and bg.
+		fmt.Fprintf(b, "\x1b[38;%sm█\x1b[0m", t.rgb(top&0xffffff))
 	case top != 0 && bottom != 0:
 		fmt.Fprintf(b, "\x1b[38;%s;48;%sm▀\x1b[0m", t.rgb(top&0xffffff), t.rgb(bottom&0xffffff))
 	case top != 0:

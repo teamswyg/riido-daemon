@@ -89,3 +89,23 @@ func TestHomeHasBlankLinesAroundIt(t *testing.T) {
 		t.Fatalf("home spacing:\n%q", out)
 	}
 }
+
+// A wide color terminal shows the symbol with the pixel wordmark, then the
+// name and server as text; a medium one keeps the text beside the symbol.
+func TestHomePicksLogoByWidth(t *testing.T) {
+	logoWidth := func(width int) int {
+		var buf bytes.Buffer
+		_ = runHome(&buf, cliui.Terminal{Interactive: true, Color: true, TrueColor: true, Width: width}, "")
+		widest := 0
+		for _, line := range strings.Split(buf.String(), "\n")[1:8] {
+			widest = max(widest, cliui.DisplayWidth(line))
+		}
+		return widest
+	}
+	if got := logoWidth(120); got <= cliui.SymbolWidth()+3 {
+		t.Fatalf("wordmark missing on a wide terminal: %d cells", got)
+	}
+	if got := logoWidth(cliui.LogoWidth() - 1); got != cliui.SymbolWidth() {
+		t.Fatalf("medium terminal should show only the symbol rows: %d cells", got)
+	}
+}

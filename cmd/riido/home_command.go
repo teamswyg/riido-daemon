@@ -98,6 +98,10 @@ func runHome(w io.Writer, term cliui.Terminal, server string) error {
 	// Breathing room between the prompt and the logo, like other CLI welcomes.
 	fmt.Fprintln(w)
 	switch {
+	case term.LogoLines() != nil:
+		writeLines(w, term.LogoLines())
+		fmt.Fprintln(w)
+		writeLines(w, intro)
 	case symbol != nil && term.Width >= cliui.SymbolWidth()+3+introWidth:
 		intro = append([]string{""}, intro...)
 		for _, line := range cliui.SideBySide(symbol, cliui.SymbolWidth(), 3, intro) {
