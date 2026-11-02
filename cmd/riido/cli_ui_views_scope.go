@@ -180,8 +180,8 @@ func renderContextView(w io.Writer, term cliui.Terminal, scope userapi.ReadScope
 			continue
 		}
 		title := ""
-		if meeting.Snapshot != nil && meeting.Snapshot.Summary != nil {
-			title = meeting.Snapshot.Summary.Title
+		if meeting.Snapshot != nil {
+			title = meetingTitle(meeting.Snapshot)
 		}
 		fmt.Fprintln(w, "  "+joinMeta(term, []string{oneLine(title), term.Accent(reasonText(meeting.Reasons)), term.Dim("id " + oneLine(meeting.ID))}))
 	}

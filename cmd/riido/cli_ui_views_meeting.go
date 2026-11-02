@@ -33,7 +33,6 @@ func (m viewMember) name() string {
 
 // meetingHeadline reads the display fields selected by the meeting query.
 type meetingHeadline struct {
-	Title           *string      `json:"title"`
 	StartTime       *string      `json:"startTime"`
 	EndTime         *string      `json:"endTime"`
 	IsAllDay        *bool        `json:"isAllDay"`
@@ -57,11 +56,7 @@ func renderMeetingView(w io.Writer, term cliui.Terminal, meeting userapi.ReadMee
 	if len(meeting.Details) > 0 {
 		_ = json.Unmarshal(meeting.Details, &head)
 	}
-	title := deref(head.Title)
-	if meeting.Summary != nil {
-		title = orText(title, meeting.Summary.Title)
-	}
-	writeViewHeader(w, term, title, "", readStatusBadge(term, meeting.Status))
+	writeViewHeader(w, term, meetingTitle(&meeting), "", readStatusBadge(term, meeting.Status))
 	fmt.Fprintln(w)
 	creator := ""
 	if head.CreatedBy != nil {
@@ -86,6 +81,22 @@ func renderMeetingView(w io.Writer, term cliui.Terminal, meeting userapi.ReadMee
 	writeMeetingBoard(w, term, meeting)
 	fmt.Fprintln(w)
 	writeViewHint(w, term, "전체 내용은 --json으로 볼 수 있어요.")
+}
+
+// meetingTitle prefers the inline details title and falls back to the
+// summary, which is only required when the details are deferred.
+func meetingTitle(meeting *userapi.ReadMeeting) string {
+	var head struct {
+		Title *string `json:"title"`
+	}
+	if len(meeting.Details) > 0 {
+		_ = json.Unmarshal(meeting.Details, &head)
+	}
+	title := deref(head.Title)
+	if title == "" && meeting.Summary != nil {
+		title = meeting.Summary.Title
+	}
+	return title
 }
 
 func meetingTime(head meetingHeadline) string {

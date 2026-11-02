@@ -263,7 +263,7 @@ func TestBodyContextAndMeetingViews(t *testing.T) {
 		},
 		{ID: "work-9", TeamID: "team-1", Kind: "component", Summary: &userapi.ReadResourceSummary{Title: "요약 제목", KeyNumber: &keyNumber}, ContentPage: &userapi.ReadBodyPage{Part: "metadata", Version: "v8"}},
 		nil,
-	}, Meetings: []*userapi.ReadMeetingReference{{ID: "meeting-1", Reasons: []*userapi.ReadScopeReason{{Kind: "linked"}}, Snapshot: &userapi.ReadMeeting{Summary: &userapi.ReadResourceSummary{Title: "주간 회의"}}}}}
+	}, Meetings: []*userapi.ReadMeetingReference{{ID: "meeting-1", Reasons: []*userapi.ReadScopeReason{{Kind: "linked"}}, Snapshot: &userapi.ReadMeeting{Summary: &userapi.ReadResourceSummary{Title: "주간 회의"}}}, {ID: "meeting-2", Reasons: []*userapi.ReadScopeReason{{Kind: "linked"}}, Snapshot: &userapi.ReadMeeting{Details: json.RawMessage(`{"title":"상세 회의"}`)}}}}
 	cursor := "next-cursor"
 	meeting := userapi.ReadMeeting{
 		ID: "meeting-1", TeamID: "team-1", Status: "available",
@@ -288,7 +288,7 @@ func TestBodyContextAndMeetingViews(t *testing.T) {
 		}, []string{"설명", "비어 있음", "(내용 없음)", "끝까지 읽었어요."}},
 		{
 			"context", func(w io.Writer, term cliui.Terminal) { renderContextView(w, term, scope) },
-			[]string{"작업 맥락 work-1", "작업 4개 · 미팅 1개", "루트 작업 RIID-1", "● 완료", "root", `요청 \x1b[2J`, "○ open", "relation(blocking)", "일부 1개 미완료", "요약 제목 RIID-9", "나눠 읽기", "이어 읽기: riido work body work-9 --team-id team-1 --part metadata --version v8", "주간 회의", "id meeting-1", "--json"},
+			[]string{"작업 맥락 work-1", "작업 4개 · 미팅 2개", "루트 작업 RIID-1", "● 완료", "root", `요청 \x1b[2J`, "○ open", "relation(blocking)", "일부 1개 미완료", "요약 제목 RIID-9", "나눠 읽기", "이어 읽기: riido work body work-9 --team-id team-1 --part metadata --version v8", "주간 회의", "id meeting-1", "상세 회의", "id meeting-2", "--json"},
 		},
 		{
 			"meeting", func(w io.Writer, term cliui.Terminal) { renderMeetingView(w, term, meeting) },
