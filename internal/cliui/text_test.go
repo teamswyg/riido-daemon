@@ -40,3 +40,23 @@ func TestWrapRespectsCellWidth(t *testing.T) {
 		}
 	}
 }
+
+func TestLargeUnbrokenTextStaysLinear(t *testing.T) {
+	body := strings.Repeat("가", 1<<19) + " " + strings.Repeat("x", 1<<19)
+	lines := Wrap(body, 78)
+	total := 0
+	for _, line := range lines {
+		if DisplayWidth(line) > 78 {
+			t.Fatalf("line is %d cells", DisplayWidth(line))
+		}
+		total += len(line)
+	}
+	if total != len(body)-1 {
+		t.Fatalf("wrapped %d bytes, want %d", total, len(body)-1)
+	}
+	for _, in := range []string{strings.Repeat("a <b ", 1<<17), strings.Repeat("a < b ", 1<<17)} {
+		if got := HTMLText(in); got != strings.TrimRight(in, " ") {
+			t.Fatalf("text without closing '>' changed: %.40q", got)
+		}
+	}
+}

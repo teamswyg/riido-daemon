@@ -26,12 +26,17 @@ func HTMLText(s string) string {
 		}
 		b.WriteString(html.UnescapeString(s[:open]))
 		s = s[open:]
-		end := strings.IndexByte(s, '>')
 		name, closing, ok := tagName(s)
-		if end < 0 || !ok {
+		if !ok {
 			b.WriteByte('<')
 			s = s[1:]
 			continue
+		}
+		end := strings.IndexByte(s, '>')
+		if end < 0 {
+			// No later '>' means no later tag: the rest is plain text.
+			b.WriteString(html.UnescapeString(s))
+			break
 		}
 		switch {
 		case name == "li" && !closing:
@@ -81,47 +86,52 @@ func tidyLines(s string) string {
 }
 
 // Wrap breaks one line of plain (already escaped) text into lines of at most
-// width cells, preferring spaces and splitting long words by cell width.
+// width cells, preferring spaces and splitting long words by cell width. It
+// reads the text once, so large unbroken bodies stay linear.
 func Wrap(s string, width int) []string {
 	if width < 1 || DisplayWidth(s) <= width {
 		return []string{s}
 	}
 	var lines []string
-	line, used := "", 0
-	flush := func() {
-		lines = append(lines, strings.TrimRight(line, " "))
-		line, used = "", 0
+	var line strings.Builder
+	used, breakAt, breakUsed := 0, -1, 0
+	flush := func(keep string, keepUsed int) {
+		lines = append(lines, strings.TrimRight(strings.TrimSuffix(line.String(), keep), " "))
+		line.Reset()
+		line.WriteString(keep)
+		used, breakAt = keepUsed, -1
 	}
-	for _, word := range strings.SplitAfter(s, " ") {
-		if used == 0 && len(lines) > 0 && strings.TrimSpace(word) == "" {
+	for _, r := range s {
+		cells := runeCells(r)
+		for used > 0 && used+cells > width {
+			if text := line.String(); breakAt > 0 && breakAt < len(text) && r != ' ' {
+				flush(text[breakAt:], used-breakUsed)
+				continue
+			}
+			flush("", 0)
+		}
+		if r == ' ' && used == 0 && len(lines) > 0 {
 			continue
 		}
-		if used > 0 && used+DisplayWidth(strings.TrimRight(word, " ")) > width {
-			flush()
+		line.WriteRune(r)
+		used += cells
+		if r == ' ' {
+			breakAt, breakUsed = line.Len(), used
 		}
-		for used == 0 && DisplayWidth(strings.TrimRight(word, " ")) > width {
-			head, rest := splitCells(word, width)
-			lines = append(lines, head)
-			word = rest
-		}
-		line += word
-		used += DisplayWidth(word)
 	}
-	if strings.TrimSpace(line) != "" {
-		flush()
+	if strings.TrimSpace(line.String()) != "" {
+		flush("", 0)
 	}
 	return lines
 }
 
-// splitCells cuts s after at most width cells, always keeping one rune.
-func splitCells(s string, width int) (string, string) {
-	used := 0
-	for i, r := range s {
-		w := DisplayWidth(string(r))
-		if i > 0 && used+w > width {
-			return s[:i], s[i:]
-		}
-		used += w
+// runeCells is DisplayWidth for one rune without allocating.
+func runeCells(r rune) int {
+	switch {
+	case r < 0x20 || (r >= 0x7f && r < 0xa0) || (r >= 0x300 && r <= 0x36f) || r == 0x200b:
+		return 0
+	case wide(r):
+		return 2
 	}
-	return s, ""
+	return 1
 }
