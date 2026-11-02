@@ -76,7 +76,7 @@ func versionNumber() string {
 // homeIntro is the name block shown beside the symbol on the home screen.
 func homeIntro(term cliui.Terminal, server string) []string {
 	lines := []string{
-		term.Bold("Riido CLI") + " " + term.Dim(versionNumber()),
+		term.Brand("Riido CLI") + " " + term.Dim(versionNumber()),
 		term.Dim("작업·미팅·Agent 맥락을 터미널에서 조회합니다."),
 	}
 	if server != "" {
@@ -95,6 +95,8 @@ func runHome(w io.Writer, term cliui.Terminal, server string) error {
 		introWidth = max(introWidth, cliui.DisplayWidth(line))
 	}
 	symbol := term.SymbolLines()
+	// Breathing room between the prompt and the logo, like other CLI welcomes.
+	fmt.Fprintln(w)
 	switch {
 	case symbol != nil && term.Width >= cliui.SymbolWidth()+3+introWidth:
 		intro = append([]string{""}, intro...)
@@ -115,6 +117,7 @@ func runHome(w io.Writer, term cliui.Terminal, server string) error {
 	printEntries(w, term, quickStart, true, 0)
 	fmt.Fprintln(w)
 	fmt.Fprintln(w, term.Dim("도움말 riido --help · riido <명령> --help"))
+	fmt.Fprintln(w)
 	return nil
 }
 

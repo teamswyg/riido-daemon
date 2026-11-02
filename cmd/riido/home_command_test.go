@@ -77,3 +77,15 @@ func TestHomeStacksQuickStartOnNarrowTerminal(t *testing.T) {
 		t.Fatalf("wide quick start should keep two columns:\n%s", buf.String())
 	}
 }
+
+// The home screen leaves a blank line after the prompt and before the next one.
+func TestHomeHasBlankLinesAroundIt(t *testing.T) {
+	var buf bytes.Buffer
+	if err := runHome(&buf, cliui.Terminal{Interactive: true, Color: true, TrueColor: true, Width: 120}, "https://monolith.api.riido.io (staging)"); err != nil {
+		t.Fatal(err)
+	}
+	out := buf.String()
+	if !strings.HasPrefix(out, "\n") || !strings.HasSuffix(out, "\n\n") || !strings.Contains(out, "▀") {
+		t.Fatalf("home spacing:\n%q", out)
+	}
+}

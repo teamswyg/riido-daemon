@@ -99,3 +99,17 @@ func TestTableAlignsMixedWidthCells(t *testing.T) {
 		}
 	}
 }
+
+func TestAccentFollowsTerminalBackground(t *testing.T) {
+	for value, want := range map[string]string{"15;0": "dark", "0;15": "light", "0;default;7": "light", "": "", "x": ""} {
+		if got := backgroundFromColorFGBG(value); got != want {
+			t.Fatalf("COLORFGBG %q = %q, want %q", value, got, want)
+		}
+	}
+	for background, rgb := range map[string]string{"dark": "154;140;255", "light": "93;79;249", "": "133;119;255"} {
+		term := Terminal{Interactive: true, Color: true, TrueColor: true, Background: background}
+		if !strings.Contains(term.Accent("a"), rgb) || !strings.Contains(term.Brand("a"), "1;38;2;"+rgb) {
+			t.Fatalf("%q background accent = %q", background, term.Accent("a"))
+		}
+	}
+}

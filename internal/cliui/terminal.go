@@ -20,6 +20,9 @@ type Terminal struct {
 	TrueColor bool
 	// Width is the terminal width in cells (80 when unknown).
 	Width int
+	// Background is "dark" or "light" when the terminal reports it through
+	// COLORFGBG, otherwise "" (unknown).
+	Background string
 }
 
 // Plain is the zero-styling terminal used for pipes and files.
@@ -50,5 +53,24 @@ func Detect(w io.Writer, getenv func(string) string) Terminal {
 	term.Color = getenv("NO_COLOR") == ""
 	colorterm := strings.ToLower(getenv("COLORTERM"))
 	term.TrueColor = term.Color && (colorterm == "truecolor" || colorterm == "24bit")
+	term.Background = backgroundFromColorFGBG(getenv("COLORFGBG"))
 	return term
+}
+
+// backgroundFromColorFGBG reads the "fg;bg" (or "fg;default;bg") palette
+// index terminals such as iTerm2, rxvt and Konsole export: 7 and 15 are light.
+func backgroundFromColorFGBG(value string) string {
+	if value == "" {
+		return ""
+	}
+	parts := strings.Split(value, ";")
+	bg, err := strconv.Atoi(parts[len(parts)-1])
+	switch {
+	case err != nil:
+		return ""
+	case bg == 7 || bg == 15:
+		return "light"
+	default:
+		return "dark"
+	}
 }
