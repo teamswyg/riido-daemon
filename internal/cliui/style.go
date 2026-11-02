@@ -5,11 +5,25 @@ import (
 	"strings"
 )
 
-// Brand colors from the Riido signature gradient.
+// Brand colors from the Riido signature gradient. The core brand purple is
+// too dark to read on dark terminals (contrast 2.6:1), so text uses a lighter
+// tint there and the core color only on light backgrounds.
 const (
-	brandRGB  = 0x5d4ff9
-	brandDark = 0x3e00bf
+	brandRGB      = 0x5d4ff9 // 5.3:1 on white
+	brandLightRGB = 0x9a8cff // 5.0:1 on a dark terminal
+	brandMidRGB   = 0x8577ff // about 4:1 on both when the background is unknown
+	brandDark     = 0x3e00bf
 )
+
+func (t Terminal) accentRGB() uint32 {
+	switch t.Background {
+	case "light":
+		return brandRGB
+	case "dark":
+		return brandLightRGB
+	}
+	return brandMidRGB
+}
 
 func (t Terminal) wrap(codes, s string) string {
 	if !t.Color || s == "" {
@@ -41,9 +55,12 @@ func xterm256(r, g, b uint32) int {
 	return 16 + 36*level(r) + 6*level(g) + level(b)
 }
 
-func (t Terminal) Bold(s string) string    { return t.wrap("1", s) }
-func (t Terminal) Dim(s string) string     { return t.wrap("2", s) }
-func (t Terminal) Accent(s string) string  { return t.wrap("38;"+t.rgb(brandRGB), s) }
+func (t Terminal) Bold(s string) string   { return t.wrap("1", s) }
+func (t Terminal) Dim(s string) string    { return t.wrap("2", s) }
+func (t Terminal) Accent(s string) string { return t.wrap("38;"+t.rgb(t.accentRGB()), s) }
+
+// Brand is bold accent text for the product name.
+func (t Terminal) Brand(s string) string   { return t.wrap("1;38;"+t.rgb(t.accentRGB()), s) }
 func (t Terminal) Success(s string) string { return t.wrap("32", s) }
 func (t Terminal) Warn(s string) string    { return t.wrap("33", s) }
 func (t Terminal) Error(s string) string   { return t.wrap("31", s) }
