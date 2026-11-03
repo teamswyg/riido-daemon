@@ -40,6 +40,21 @@ struct HelperResponse: Encodable {
     var error: HelperFailure? = nil
 }
 
+// RIID-6014: the access grant item has no user-presence requirement, so a
+// command whose access token is still valid reads it without OS confirmation.
+// Refresh tokens and installation keys stay in the protected items.
+protocol AccessCacheStore {
+    func load(key: String) throws -> Data
+    func save(key: String, value: Data) throws
+    func delete(key: String) throws
+}
+
+struct UnavailableAccessCacheStore: AccessCacheStore {
+    func load(key: String) throws -> Data { throw HelperFailure.unavailable }
+    func save(key: String, value: Data) throws { throw HelperFailure.unavailable }
+    func delete(key: String) throws { throw HelperFailure.unavailable }
+}
+
 protocol CredentialStore {
     func status(key: String, interactive: Bool) throws -> Bool
     func load(key: String, interactive: Bool) throws -> Data
