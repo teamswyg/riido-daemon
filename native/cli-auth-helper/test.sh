@@ -6,6 +6,21 @@ trap 'rm -rf "$fixture_dir"' EXIT
 swiftc -warnings-as-errors -D CLI_AUTH_HELPER_TESTING "$helper_dir"/Sources/*.swift "$helper_dir"/Tests/*.swift -o "$fixture_dir/fixtures"
 "$fixture_dir/fixtures" "$helper_dir/Tests/testdata/installation-proof-v1.json" ${RIIDO_INSTALLATION_PROOF_FIXTURE_OUTPUT:+"$RIIDO_INSTALLATION_PROOF_FIXTURE_OUTPUT"}
 bundle="$($helper_dir/build.sh "$fixture_dir")"
+# Session framing: each request line gets its own response while stdin stays open.
+python3 - "$bundle/Contents/MacOS/riido-cli-auth-helper" <<'SESSION'
+import json, subprocess, sys, select
+helper = subprocess.Popen([sys.argv[1], '--session'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+request = json.dumps({'version': 1, 'operation': 'status', 'key': 'fixture_account_key_5900', 'interactive': True}) + '\n'
+for attempt in range(2):
+    helper.stdin.write(request.encode()); helper.stdin.flush()
+    ready, _, _ = select.select([helper.stdout], [], [], 10)
+    assert ready, 'session response did not arrive while stdin stayed open'
+    response = json.loads(helper.stdout.readline())
+    assert response['ok'] is False and response['error']['code'] == 'UNAVAILABLE', response
+helper.stdin.close()
+assert helper.wait(timeout=10) == 0
+print('PASS: unsigned helper answers each session line without waiting for EOF and exits on EOF')
+SESSION
 request='{"version":1,"operation":"status","key":"fixture_account_key_5900","interactive":false}'
 response="$(printf '%s' "$request" | "$bundle/Contents/MacOS/riido-cli-auth-helper")"
 confirm_request='{"version":1,"operation":"confirm","key":"fixture_account_key_5900","interactive":true}'

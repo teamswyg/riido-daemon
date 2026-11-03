@@ -1,8 +1,21 @@
 import Foundation
+import Darwin
 
-// Reads newline-delimited requests from stdin, each at most 64 KiB.
+// Reads newline-delimited requests from stdin, each at most 64 KiB. It uses
+// read(2), which returns as soon as a request line is available; FileHandle's
+// read(upToCount:) waits for the full count or EOF and would stall a session.
 struct SessionLineReader {
-    var read: (Int) throws -> Data? = { try FileHandle.standardInput.read(upToCount: $0) }
+    var read: (Int) throws -> Data? = SessionLineReader.readStandardInput
+
+    static func readStandardInput(_ count: Int) throws -> Data? {
+        var buffer = [UInt8](repeating: 0, count: count)
+        while true {
+            let n = Darwin.read(STDIN_FILENO, &buffer, count)
+            if n > 0 { return Data(buffer[0..<n]) }
+            if n == 0 { return nil }
+            if errno != EINTR { throw HelperFailure.invalid }
+        }
+    }
     private var buffer = Data()
     private var finished = false
 
