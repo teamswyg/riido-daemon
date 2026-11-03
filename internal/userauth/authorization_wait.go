@@ -1,6 +1,9 @@
 package userauth
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 func (*Authorization) String() string   { return "[redacted OAuth authorization]" }
 func (*Authorization) GoString() string { return "[redacted OAuth authorization]" }
@@ -34,6 +37,13 @@ func (a *Authorization) Wait(ctx context.Context) (Credential, error) {
 		}
 		exchangeCtx, cancel := context.WithCancel(ctx)
 		defer cancel()
+		if result.installation != nil {
+			// Only Wait owns this mutable proof; callback handlers send values.
+			a.installation = result.installation
+			var deadlineCancel context.CancelFunc
+			exchangeCtx, deadlineCancel = context.WithDeadline(exchangeCtx, time.Unix(a.installation.proof.ExpiresAt, 0))
+			defer deadlineCancel()
+		}
 		stop := context.AfterFunc(authCtx, cancel)
 		defer stop()
 		credential, err := a.exchange(exchangeCtx, result.code)

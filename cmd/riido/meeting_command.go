@@ -10,9 +10,10 @@ import (
 type meetingCommand string
 
 const (
-	meetingCommandList meetingCommand = "list"
-	meetingCommandGet  meetingCommand = "get"
-	meetingCommandBody meetingCommand = "body"
+	meetingCommandList     meetingCommand = "list"
+	meetingCommandGet      meetingCommand = "get"
+	meetingCommandBody     meetingCommand = "body"
+	meetingCommandComments meetingCommand = "comments"
 )
 
 func runMeeting(c contextIO, args []string) error {
@@ -25,6 +26,9 @@ func runMeeting(c contextIO, args []string) error {
 	}
 	switch meetingCommand(args[0]) {
 	case meetingCommandList:
+		if c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserMeetingList(args[1:])
+		}
 		// List selects work and budget with the same defaults as context get.
 		call := contextGetCall()
 		call.command, call.usage = "meeting list", printMeetingUsage
@@ -36,6 +40,8 @@ func runMeeting(c contextIO, args []string) error {
 		return c.runContextRead(meetingGetCall(), args[1:])
 	case meetingCommandBody:
 		return c.runUserResourceBody(args[1:], "meeting")
+	case meetingCommandComments:
+		return c.runUserMeetingComments(args[1:])
 	default:
 		return c.fail(wantsJSON(args), contextcli.NewRequestID(), contextcli.Failf(contextcli.CodeUsage, "알 수 없는 meeting 하위 명령: %s", args[0]))
 	}

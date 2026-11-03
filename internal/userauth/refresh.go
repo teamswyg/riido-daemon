@@ -20,12 +20,20 @@ func (m *Manager) accessCredential(ctx context.Context, rejected, expectedSessio
 		return Credential{}, err
 	}
 	defer unlock()
+	return m.accessCredentialLocked(ctx, rejected, expectedSession, generation)
+}
+
+// Caller owns the protected store lock for the entire credential operation.
+func (m *Manager) accessCredentialLocked(ctx context.Context, rejected, expectedSession string, generation uint64) (Credential, error) {
 	if m.generation.Load() != generation {
 		return Credential{}, ErrLoggedOut
 	}
 	credential, err := m.store.Load(ctx)
 	if err != nil {
 		return Credential{}, storageError(err)
+	}
+	if !m.acceptsBinding(credential) {
+		return Credential{}, failure("STORAGE_ERROR")
 	}
 	if m.generation.Load() != generation {
 		return Credential{}, ErrLoggedOut
@@ -39,14 +47,31 @@ func (m *Manager) accessCredential(ctx context.Context, rejected, expectedSessio
 	if credential.AccessToken == "" {
 		return Credential{}, ErrNotAuthenticated
 	}
-	mustRefresh := !credential.ExpiresAt.After(time.Now().Add(15 * time.Second))
+	mustRefresh := credential.RefreshRecoverySecret != "" || !credential.ExpiresAt.After(time.Now().Add(15*time.Second))
 	if rejected != "" && rejected == credential.AccessToken {
 		mustRefresh = true
 	}
 	if !mustRefresh {
 		return credential, nil
 	}
-	fresh, err := m.client.Refresh(ctx, credential.RefreshToken)
+	if credential.RefreshToken == "" {
+		if err := m.store.Delete(ctx); err != nil {
+			return Credential{}, storageError(err)
+		}
+		return Credential{}, ErrReauthRequired
+	}
+	if credential.RefreshRecoverySecret == "" {
+		secret, err := newRefreshRecoverySecret()
+		if err != nil {
+			return Credential{}, err
+		}
+		credential.RefreshRecoverySecret = secret
+		// A failed/ambiguous preparation save must never send a rotation.
+		if err := m.store.Save(ctx, credential); err != nil {
+			return Credential{}, storageError(err)
+		}
+	}
+	fresh, err := m.client.RefreshRecover(ctx, credential.RefreshToken, credential.RefreshRecoverySecret)
 	if err != nil {
 		if errors.Is(err, ErrReauthRequired) {
 			if deleteErr := m.store.Delete(ctx); deleteErr != nil {
@@ -61,11 +86,16 @@ func (m *Manager) accessCredential(ctx context.Context, rejected, expectedSessio
 		return Credential{}, ErrLoggedOut
 	}
 	fresh.SessionID = credential.SessionID
+	if credential.Binding != nil {
+		binding := *credential.Binding
+		fresh.Binding = &binding
+	}
 	if fresh.Scope == "" {
 		fresh.Scope = credential.Scope
 	}
 	if err := m.store.Save(ctx, fresh); err != nil {
-		_ = m.client.Revoke(ctx, revocationToken(fresh))
+		// The atomic store contains either the old pending pair or the fresh
+		// credential. Both can recover; revoking here would destroy both.
 		return Credential{}, storageError(err)
 	}
 	return fresh, nil

@@ -39,6 +39,13 @@ func (a *Actor) handleSubmit(
 	if a.cfg.LaunchEnv != nil {
 		a.cfg.LaunchEnv(msg.req, a.cfg.RuntimeID, launchEnv)
 	}
+	release := a.contextCapabilityRelease(launchEnv)
+	watching := false
+	defer func() {
+		if !watching {
+			release()
+		}
+	}()
 	startReq := submitStartRequest(msg, capView, a.cfg.RuntimeID, launchEnv, a.cfg.Models, a.cfg.LaunchEnv != nil, a.cfg.ContextCLIExecutable)
 	spawn, err := adapter.BuildStart(startReq)
 	if err != nil {
@@ -53,6 +60,7 @@ func (a *Actor) handleSubmit(
 		return nil, err
 	}
 	handle := registerRunningSubmit(inFlight, msg.req.ID, string(msg.req.Provider), capView.CapabilityFingerprint, sess)
-	watchSubmitCompletion(msg.req.ID, sess.Done(), a.stoppedCh, completeCh)
+	watchSubmitCompletion(msg.req.ID, sess.Done(), a.stoppedCh, completeCh, release)
+	watching = true
 	return handle, nil
 }

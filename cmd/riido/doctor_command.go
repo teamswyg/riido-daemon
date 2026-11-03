@@ -43,8 +43,8 @@ type doctorData struct {
 // authenticated user API read. Agent diagnosis never opens user storage.
 func runDoctor(c contextIO, raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{Bools: []string{"--check-api"}})
-	if cliErr != nil {
+	args, settings, cliErr := c.parseSettings(raw, contextcli.ArgSpec{Bools: []string{"--check-api"}})
+	if cliErr != nil && settings == nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
 	if args.Help {
@@ -62,9 +62,11 @@ func runDoctor(c contextIO, raw []string) error {
 	daemonCheck, reachable := c.doctorDaemon(env)
 	checks = append(checks, daemonCheck, c.doctorContextRead(env, requestID, reachable))
 	data := doctorData{Mode: env.Mode, Healthy: true}
-	var apiErr *contextcli.CLIError
-	if env.Mode == contextcli.ModeUser {
-		origin, source, originErr := c.userAPIOrigin()
+	apiErr := cliErr
+	if env.Mode == contextcli.ModeUser && apiErr != nil {
+		checks = append(checks, doctorErrorCheck("api_origin", apiErr))
+	} else if env.Mode == contextcli.ModeUser {
+		origin, source, originErr := c.userAPIOrigin(args)
 		if originErr != nil {
 			apiErr = userAuthError(originErr)
 			checks = append(checks, doctorErrorCheck("api_origin", apiErr))
@@ -162,6 +164,10 @@ func (c contextIO) doctorDaemon(env contextcli.Environment) (doctorCheck, bool) 
 func renderDoctor(w io.Writer, data any) {
 	report, ok := data.(doctorData)
 	if !ok {
+		return
+	}
+	if term := humanTerminal(w); term.Interactive {
+		renderDoctorTerminal(w, term, report)
 		return
 	}
 	for _, check := range report.Checks {

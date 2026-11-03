@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane/saasplane"
 	"github.com/teamswyg/riido-daemon/internal/contextbroker"
@@ -17,7 +18,8 @@ type saasContextFetcher struct {
 
 func (f saasContextFetcher) FetchAssignmentContext(ctx context.Context, q contextbroker.Query) (contextbroker.Result, error) {
 	out, err := f.plane.FetchAssignmentContext(ctx, q.AgentID, saasplane.AssignmentContextRequest{
-		AssignmentID: q.AssignmentID, LeaseToken: q.LeaseToken, View: q.View, Target: q.Target, Cursor: q.Cursor, RequestID: q.RequestID, MaxBytes: q.MaxBytes,
+		AssignmentID: q.AssignmentID, LeaseToken: q.LeaseToken, View: q.View, Target: q.Target, Cursor: q.Cursor, Since: q.Since, RequestID: q.RequestID, MaxBytes: q.MaxBytes,
+		CacheEnabled: q.CacheEnabled, KnownDigest: q.KnownDigest,
 	})
 	if err != nil {
 		if status, message, ok := saasplane.HTTPStatus(err); ok {
@@ -25,9 +27,18 @@ func (f saasContextFetcher) FetchAssignmentContext(ctx context.Context, q contex
 		}
 		return contextbroker.Result{}, err
 	}
+	if q.AssignmentID == "" || q.TaskID == "" || out.AssignmentID != q.AssignmentID ||
+		out.TaskID != q.TaskID || out.View != q.View || out.CapturedAt.IsZero() ||
+		((q.View == "base" || q.View == "changes") && out.Live) {
+		return contextbroker.Result{}, errors.New("assignment context response provenance mismatch")
+	}
 	result := contextbroker.Result{Data: out.Data, CapturedAt: out.CapturedAt, Truncated: out.Truncated, Live: out.Live}
+	result.ContentDigest, result.NotModified = out.ContentDigest, out.NotModified
+	if q.View == "base" {
+		result.SnapshotID = out.AssignmentID
+	}
 	for _, source := range out.Sources {
-		result.Sources = append(result.Sources, contextbroker.ResultSource{Kind: source.Kind, ID: source.ID, Part: source.Part, Version: source.Version})
+		result.Sources = append(result.Sources, contextbroker.ResultSource{Kind: source.Kind, ID: source.ID, Part: source.Part, Version: source.Version, UpdatedAt: source.UpdatedAt})
 	}
 	return result, nil
 }

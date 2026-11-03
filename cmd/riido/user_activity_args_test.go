@@ -16,11 +16,11 @@ func TestUserActivityRejectsArgumentsBeforeStorage(t *testing.T) {
 	}{
 		{"missing-work", []string{"activity", "--team-id", "team-one"}, 2},
 		{"missing-team", []string{"activity", "work-one"}, 2},
-		{"key", []string{"activity", "RIID-5900", "--team-id", "team-one"}, 8},
+		{"unscoped-key", []string{"activity", "RIID-5900"}, 2},
 		{"team-key", []string{"activity", "work-one", "--team-id", "RIID-5900"}, 8},
 		{"empty-team", []string{"activity", "work-one", "--team-id="}, 2},
 	}
-	for _, flag := range []string{"--cursor=", "--workspace=", "--profile=default", "--team=team-one"} {
+	for _, flag := range []string{"--cursor=", "--workspace="} {
 		cases = append(cases, struct {
 			name string
 			args []string

@@ -16,6 +16,19 @@ import (
 // The file contains no token. It coordinates trusted CLI calls; it does not
 // substitute for OS user-presence protection against a malicious OS peer.
 func (s *Store) Lock(ctx context.Context) (func(), error) {
+	return s.lock(ctx, true)
+}
+
+// TryLock admits one live operation without queuing another operation after it.
+// Like Lock, the OS releases this lock when the holding process exits.
+func (s *Store) TryLock(ctx context.Context) (func(), error) {
+	return s.lock(ctx, false)
+}
+
+func (s *Store) lock(ctx context.Context, wait bool) (func(), error) {
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	if !validKey.MatchString(s.Key) || !filepath.IsAbs(s.LockDir) {
 		return nil, ErrUnavailable
 	}
@@ -50,6 +63,10 @@ func (s *Store) Lock(ctx context.Context) (func(), error) {
 		if !errors.Is(err, syscall.EWOULDBLOCK) && !errors.Is(err, syscall.EAGAIN) {
 			_ = file.Close()
 			return nil, ErrUnavailable
+		}
+		if !wait {
+			_ = file.Close()
+			return nil, ErrBusy
 		}
 		select {
 		case <-ctx.Done():

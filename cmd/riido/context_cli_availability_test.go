@@ -12,11 +12,14 @@ func TestContextCLIUnsupportedReadsNeverReachDaemon(t *testing.T) {
 		name string
 		run  func(contextIO) error
 	}{
-		{"changes", func(c contextIO) error { return runContext(c, []string{"changes", "--since", "snapshot", "--json"}) }},
 		{"search", func(c contextIO) error { return runWork(c, []string{"search", "--query", "planning", "--json"}) }},
 	} {
 		t.Run(test.name, func(t *testing.T) {
-			for _, vars := range []map[string]string{nil, agentVars()} {
+			modes := []map[string]string{nil, agentVars()}
+			if test.name == "search" {
+				modes = []map[string]string{agentVars()}
+			}
+			for _, vars := range modes {
 				h := newContextHarness(t, vars)
 				if got := exitCodeOf(t, test.run(h.io)); got != 8 {
 					t.Fatalf("unsupported read exit=%d", got)

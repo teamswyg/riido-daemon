@@ -21,7 +21,8 @@ proof = dict(scope, installation_intent=vector['IntentID'], challenge_hash=vecto
 link_proof = dict(scope, installation_id='fixture-installation', intent_id='fixture-intent', challenge_hash='a'*64,
                   key_fingerprint=vector['KeyFingerprint'], expected_device_id='fixture-device', approved_principal_id='fixture-owner',
                   expires_at=datetime.datetime.fromtimestamp(time.time()+300,datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'))
-for operation, payload in [('installation-key',scope),('installation-existing-key',scope),('installation-proof',proof),('installation-device-link-proof',link_proof)]:
+repair_proof = dict(scope, request_id='A'*43, key_fingerprint=vector['KeyFingerprint'], recovery_hash='a'*64)
+for operation, payload in [('installation-repair-proof',repair_proof),('installation-key',scope),('installation-existing-key',scope),('installation-proof',proof),('installation-device-link-proof',link_proof)]:
     request = {'version':1,'operation':operation,'key':'08eba32e93e89b49cbed7c040f8de7dba724391c4015de3baaa78d9dad03957f',
                'interactive':True,'value':base64.b64encode(json.dumps(payload).encode()).decode()}
     responses.append(subprocess.run([sys.argv[4]], input=json.dumps(request),text=True,capture_output=True,check=True,timeout=10).stdout)
@@ -30,5 +31,5 @@ for body in responses:
     assert response['version']==1 and response['ok'] is False
     assert response['error']['code']=='UNAVAILABLE'
     assert 'data' not in response
-print('PASS: unsigned helper refuses credential/confirmation/installation key/existing key/OAuth proof/device-link proof before keychain or OS access')
+print('PASS: unsigned helper refuses credential/confirmation/installation key/existing key/OAuth proof/device-link proof/repair proof before keychain or OS access')
 PYTHON

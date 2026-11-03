@@ -31,12 +31,16 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
             kSecAttrIsExtractable as String: false,
             kSecAttrApplicationTag as String: tag(scope),
             kSecAttrAccessGroup as String: SigningPolicy.accessGroup,
-            kSecAttrAccessControl as String: try protectedAccessControl()
+            kSecAttrAccessControl as String: try installationAccessControl()
         ]
         privateAttributes[kSecAttrCanSign as String] = true
         let attributes: [String: Any] = [
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrKeySizeInBits as String: 256,
+            // Software keys in the Data Protection Keychain always report
+            // themselves extractable; only the Secure Enclave keeps the private
+            // key in hardware. Macs without one fail closed here.
+            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
             kSecUseDataProtectionKeychain as String: true,
             kSecAttrSynchronizable as String: false,
             kSecUseAuthenticationContext as String: context,
@@ -57,6 +61,12 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
         try proof.validate(now: Date())
         return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0, now: Date()) },
                         validate: { try proof.validate(now: Date()) })
+    }
+
+    func signRepairProof(_ proof: InstallationRepairProof) throws -> Data {
+        try proof.validate()
+        return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0) },
+                        validate: { try proof.validate() })
     }
 
     private func sign(scope: InstallationScope, message makeMessage: (Data) throws -> Data,
@@ -82,7 +92,9 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
     }
 
     private func tag(_ scope: InstallationScope) -> Data {
-        Data(("io.riido.cli.installation.v1." + scope.storageKey).utf8)
+        // v2: Secure Enclave keys. A v1 software key from an earlier build is
+        // never matched, reused or deleted.
+        Data(("io.riido.cli.installation.v2." + scope.storageKey).utf8)
     }
     private func installationContext() -> LAContext {
         let context = LAContext()
@@ -97,6 +109,7 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrApplicationTag as String: tag(scope),
             kSecAttrAccessGroup as String: SigningPolicy.accessGroup,
+            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
             kSecAttrSynchronizable as String: false,
             kSecUseDataProtectionKeychain as String: true,
             kSecUseAuthenticationContext as String: context,
@@ -116,7 +129,7 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
               attributes[kSecAttrKeyClass as String] as? String == kSecAttrKeyClassPrivate as String,
               attributes[kSecAttrKeyType as String] as? String == kSecAttrKeyTypeECSECPrimeRandom as String,
               attributes[kSecAttrKeySizeInBits as String] as? Int == 256,
-              attributes[kSecAttrIsExtractable as String] as? Bool == false,
+              attributes[kSecAttrTokenID as String] as? String == kSecAttrTokenIDSecureEnclave as String,
               let key = SecKeyCopyPublicKey(privateKey) else { throw HelperFailure.unavailable }
         var error: Unmanaged<CFError>?
         // Only the public key has an external representation; the private key

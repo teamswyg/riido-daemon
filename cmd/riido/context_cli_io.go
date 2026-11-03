@@ -7,6 +7,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
@@ -16,6 +17,8 @@ import (
 // contextIO carries every side effect of the work-context commands so tests
 // can run them without a real daemon, terminal, or PATH.
 type contextIO struct {
+	stdin                 io.Reader
+	configDir             func() (string, error)
 	userSession           func(contextcli.Args) (*standalonecli.Service, error)
 	verifyHelperSignature func(context.Context, string, []string) error
 	stdout                io.Writer
@@ -23,6 +26,7 @@ type contextIO struct {
 	getenv                func(string) string
 	dial                  func(path string, timeout time.Duration) (net.Conn, error)
 	defaultSocket         func() (string, error)
+	desktopSocket         func() (string, bool)
 	executable            func() (string, error)
 	lookPath              func(string) (string, error)
 	cliVersion            func() string
@@ -30,11 +34,20 @@ type contextIO struct {
 
 func defaultContextIO() contextIO {
 	return contextIO{
+		stdin: os.Stdin,
+		configDir: func() (string, error) {
+			dir, err := os.UserConfigDir()
+			if err != nil {
+				return "", err
+			}
+			return filepath.Join(dir, "riido-cli"), nil
+		},
 		stdout:        os.Stdout,
 		stderr:        os.Stderr,
 		getenv:        os.Getenv,
 		dial:          dialDaemonSocket,
 		defaultSocket: defaultAgentDaemonSocket,
+		desktopSocket: desktopDaemonSocket,
 		executable:    os.Executable,
 		lookPath:      exec.LookPath,
 		cliVersion:    versionLabel,
@@ -48,6 +61,11 @@ func (c contextIO) environment() contextcli.Environment {
 func (c contextIO) daemonSocket(env contextcli.Environment) (string, error) {
 	if env.DaemonSocket != "" {
 		return env.DaemonSocket, nil
+	}
+	if env.Mode == contextcli.ModeUser && c.desktopSocket != nil {
+		if socket, ok := c.desktopSocket(); ok {
+			return socket, nil
+		}
 	}
 	return c.defaultSocket()
 }

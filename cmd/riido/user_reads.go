@@ -3,14 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
 
 func (c contextIO) runUserWhoami(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -31,12 +30,12 @@ func (c contextIO) runUserWhoami(raw []string) error {
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "identity": identity}), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "identity": identity}), whoamiView(c.stdout, identity))
 }
 
 func (c contextIO) runUserWork(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id"}})
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id"}}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -44,18 +43,15 @@ func (c contextIO) runUserWork(raw []string) error {
 		printWorkUsage(c.stderr)
 		return nil
 	}
-	if len(args.Positionals) != 1 || strings.TrimSpace(args.Value("--team-id")) == "" {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "작업 ID와 --team-id가 필요합니다", "riido work get <ID> --team-id <TEAM-ID>"))
+	if len(args.Positionals) != 1 {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "작업 키나 ID가 필요합니다", "riido work get --help"))
 	}
-	ref, cliErr := contextcli.ParseWorkRef(args.Positionals[0])
+	work, team, cliErr := userWorkTarget(args, args.Positionals[0])
 	if cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
-	if ref.Kind == contextcli.WorkRefKey {
-		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "현재 사용자 조회는 작업 key 대신 ID를 사용합니다", "riido work get <ID> --team-id <TEAM-ID>"))
-	}
-	if cliErr := checkUserOptions(args); cliErr != nil {
-		return c.fail(args.JSON, requestID, cliErr)
+	if args.HasValue("--cursor") {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "work get에는 cursor를 사용할 수 없습니다", "작업 키나 ID를 지정하세요"))
 	}
 	session, err := c.openUserSession(args)
 	if err != nil {
@@ -63,9 +59,9 @@ func (c contextIO) runUserWork(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	work, err := session.Work(ctx, ref.Value, strings.TrimSpace(args.Value("--team-id")))
+	result, err := session.Work(ctx, work, team, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "work": work}), nil)
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "work": result}), workView(c.stdout, result))
 }

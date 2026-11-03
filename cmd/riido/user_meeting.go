@@ -11,7 +11,7 @@ import (
 
 func (c contextIO) runUserMeeting(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id"}, AllowLimit: true})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id"}, AllowLimit: true})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -40,7 +40,7 @@ func (c contextIO) runUserMeeting(raw []string) error {
 	if meetingHasDeferredContent(meeting) {
 		env.Warnings = append(env.Warnings, deferredContentWarning())
 	}
-	return c.succeed(args.JSON, env, nil)
+	return c.succeed(args.JSON, env, meetingView(c.stdout, meeting))
 }
 
 func userMeetingArguments(args contextcli.Args) (userapi.MeetingReadRequest, *contextcli.CLIError) {

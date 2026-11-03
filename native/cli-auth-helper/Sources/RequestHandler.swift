@@ -58,6 +58,13 @@ struct RequestHandler {
                 try proof.validate(now: now())
                 guard !signature.isEmpty, signature.count <= 72 else { throw HelperFailure.unavailable }
                 data = HelperData(algorithm: installationAlgorithm, signature: installationBase64URL(signature))
+            case "installation-repair-proof":
+                guard request.interactive else { throw HelperFailure.interactionRequired }
+                let proof = try InstallationRepairProof.decode(installationValue(request))
+                guard proof.scope.storageKey == request.key else { throw HelperFailure.invalid }
+                let signature = try installationKeys.signRepairProof(proof)
+                guard !signature.isEmpty, signature.count <= 72 else { throw HelperFailure.unavailable }
+                data = HelperData(algorithm: installationAlgorithm, signature: installationBase64URL(signature))
             default: throw HelperFailure.invalid
             }
             return HelperResponse(ok: true, data: data)
@@ -73,17 +80,19 @@ struct RequestHandler {
               Set(object.keys).isSubset(of: ["version", "operation", "key", "interactive", "value"]),
               let request = try? JSONDecoder().decode(HelperRequest.self, from: input),
               request.version == 1,
-              ["status", "load", "save", "delete", "confirm", "installation-key", "installation-existing-key", "installation-proof", "installation-device-link-proof"].contains(request.operation),
+              ["status", "load", "save", "delete", "confirm", "installation-key", "installation-existing-key", "installation-proof", "installation-device-link-proof", "installation-repair-proof"].contains(request.operation),
               (16...128).contains(request.key.utf8.count),
               request.key.utf8.allSatisfy({ byte in
                   (65...90).contains(byte) || (97...122).contains(byte) || (48...57).contains(byte) || byte == 45 || byte == 95
               }) else { throw HelperFailure.invalid }
-        if ["installation-key", "installation-existing-key", "installation-proof", "installation-device-link-proof"].contains(request.operation) {
+        if ["installation-key", "installation-existing-key", "installation-proof", "installation-device-link-proof", "installation-repair-proof"].contains(request.operation) {
             let bytes = try installationValue(request)
             if request.operation == "installation-key" || request.operation == "installation-existing-key" {
                 guard try InstallationScope.decode(bytes).storageKey == request.key else { throw HelperFailure.invalid }
             } else if request.operation == "installation-device-link-proof" {
                 guard try DeviceLinkProof.decode(bytes, now: now()).scope.storageKey == request.key else { throw HelperFailure.invalid }
+            } else if request.operation == "installation-repair-proof" {
+                guard try InstallationRepairProof.decode(bytes).scope.storageKey == request.key else { throw HelperFailure.invalid }
             } else {
                 guard try InstallationProof.decode(bytes, now: now()).scope.storageKey == request.key else { throw HelperFailure.invalid }
             }

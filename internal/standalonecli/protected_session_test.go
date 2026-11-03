@@ -23,6 +23,7 @@ const protectedTestResource = "https://api.example.test"
 type protectedNativeFixture struct {
 	lock         chan struct{}
 	mu           sync.Mutex
+	operation    sync.Mutex
 	raw          []byte
 	loadErr      error
 	saveErr      error
@@ -388,7 +389,7 @@ func TestProtectedManagerRefreshAndLogoutPreserveSessionBoundary(t *testing.T) {
 		switch request.URL.Path {
 		case "/oauth/token":
 			refreshes++
-			return protectedResponse(request, `{"access_token":"rotated","refresh_token":"rotated-refresh","token_type":"Bearer","expires_in":3600}`), nil
+			return protectedResponse(request, `{"access_token":"rotated","refresh_token":"rotated-refresh","token_type":"Bearer","expires_in":3600,"refresh_recovery":"v1"}`), nil
 		case "/oauth/revoke":
 			revokes++
 			return protectedResponse(request, `{}`), nil
@@ -440,7 +441,7 @@ func TestProtectedPendingAndLogoutSerializeWithRefresh(t *testing.T) {
 					case <-ctx.Done():
 						return nil, ctx.Err()
 					}
-					return protectedResponse(request, `{"access_token":"rotated","refresh_token":"rotated-refresh","token_type":"Bearer","expires_in":3600}`), nil
+					return protectedResponse(request, `{"access_token":"rotated","refresh_token":"rotated-refresh","token_type":"Bearer","expires_in":3600,"refresh_recovery":"v1"}`), nil
 				}
 				if request.URL.Path != "/oauth/revoke" {
 					return nil, errors.New("unexpected endpoint")

@@ -14,7 +14,7 @@ func TestSubmitStartRequestContextCLIContractPlacement(t *testing.T) {
 			env := map[string]string{"RIIDO_RUN_TOKEN": "cap-secret", "RIIDO_DAEMON_SOCKET": "/tmp/agentd.sock", "RIIDO_TASK_ID": "task-1"}
 			req := submitStartRequest(msg, Capability{}, "rt-1", env, nil, true, "")
 			combined := req.Prompt + req.SystemPrompt
-			for _, want := range []string{"riido context get --json --no-input", "assignment-time snapshot", "work comments", "Older snapshots use work comments --cursor", "riido context part <SOURCE-ID> --cursor <CURSOR>", "exact source ID and opaque cursor", "not supported", "Never print", "agents list --json", "ask a person", "riido meeting list", "riido meeting get", "body_status"} {
+			for _, want := range []string{"riido context get --json --no-input", "assignment-time snapshot", "work comments", "Older snapshots use work comments --cursor", "riido context part <SOURCE-ID> --cursor <CURSOR>", "exact source ID and opaque cursor", "not supported", "Never print", "agents list --json", "ask a person", "riido meeting list", "riido meeting get", "body_status", "riido context changes --since <SNAPSHOT>", "full_refresh_required", "budget exit 9", "does not replace the initial context get"} {
 				if !strings.Contains(combined, want) {
 					t.Errorf("missing CLI rule %q", want)
 				}

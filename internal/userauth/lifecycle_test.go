@@ -43,7 +43,7 @@ func TestCrossManagerLogoutRevokesRotatedToken(t *testing.T) {
 		}
 		close(entered)
 		<-release
-		fmt.Fprint(w, `{"access_token":"rotated-access","refresh_token":"rotated-refresh","token_type":"Bearer","expires_in":3600}`)
+		fmt.Fprint(w, `{"access_token":"rotated-access","refresh_token":"rotated-refresh","token_type":"Bearer","expires_in":3600,"refresh_recovery":"v1"}`)
 	}))
 	defer server.Close()
 	client, _ := NewClient(configFor(server))
@@ -73,7 +73,7 @@ func TestCrossManagerLogoutRevokesRotatedToken(t *testing.T) {
 
 func TestRefreshPreservesScopeWhenOmitted(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprint(w, `{"access_token":"new-access","token_type":"Bearer","expires_in":3600}`)
+		fmt.Fprint(w, `{"access_token":"new-access","refresh_token":"new-refresh","token_type":"Bearer","expires_in":3600,"refresh_recovery":"v1"}`)
 	}))
 	defer server.Close()
 	client, _ := NewClient(configFor(server))
@@ -84,7 +84,7 @@ func TestRefreshPreservesScopeWhenOmitted(t *testing.T) {
 	if _, err := NewManager(client, store).AccessToken(context.Background()); err != nil {
 		t.Fatal(err)
 	}
-	if store.credential.Scope != "read:workspace" || store.credential.RefreshToken != "old-refresh" {
+	if store.credential.Scope != "read:workspace" || store.credential.RefreshToken != "new-refresh" {
 		t.Fatal("refresh omitted fields erased existing grant metadata")
 	}
 }

@@ -8,8 +8,14 @@ import (
 // printContextUsage lists the work-context commands shared by root and
 // direct internal-command help; internal dispatch is documented separately.
 func printContextUsage(w io.Writer) {
+	printCompletionUsage(w)
+	printConfigUsage(w)
+	printWorkspaceUsage(w)
 	fmt.Fprintln(w, "  # Riido work context (agents and people; add --json for the envelope)")
 	printWorkUsage(w)
+	printResourceUsage(w)
+	printRepoUsage(w)
+	printThreadUsage(w)
 	printContextGroupUsage(w)
 	printAgentsUsage(w)
 	printMeetingUsage(w)
@@ -20,6 +26,8 @@ func printContextUsage(w io.Writer) {
 }
 
 func printWorkUsage(w io.Writer) {
+	fmt.Fprintln(w, "  riido work search --workspace <WORKSPACE-ID> --query <TEXT> [--cursor C] [--limit N] [--json]   (user live authorized title/key/body search; agent unsupported)")
+	fmt.Fprintln(w, "  riido work tree <ID> --team-id <TEAM-ID> [--json]   (user live one-hop hierarchy; up to 10 selected children; no pagination)")
 	fmt.Fprintln(w, "  riido work <get|body|tree|relations|comments|replies|activity|search> ...")
 	fmt.Fprintln(w, "    riido work get|tree|relations <RIID-1234|ID> [--json]")
 	fmt.Fprintln(w, "    riido work get <ID> --team-id <TEAM-ID> [--json]   (standalone user API)")
@@ -31,32 +39,51 @@ func printWorkUsage(w io.Writer) {
 	fmt.Fprintln(w, "    riido work replies <ID> --team-id <TEAM-ID> --comment-id <COMMENT-ID> [--json]   (user API; no pagination; agent replies unsupported)")
 	fmt.Fprintln(w, "    riido work comments|replies <ID> --kind component|backlog|intake --team-id <TEAM-ID> [--comment-id <PARENT-ID>] [--page N] [--limit N] [--version <VERSION>] [--json]   (user read-scope API; replies need parent ID, page > 1 needs original version)")
 	fmt.Fprintln(w, "    riido work activity <ID> --team-id <TEAM-ID> [--page N] [--limit N] [--json]   (user live activity; defaults 1/20, limit <= 100; agent unsupported, exit 8)")
-	fmt.Fprintln(w, "    riido work search --query TEXT   (unsupported, exit 8)")
+	fmt.Fprintln(w, "    User component keys: replace <ID> with <RIID-1234>; use --workspace <WORKSPACE-ID> and/or --team-id <TEAM-ID> (configured defaults supported). Both scopes intersect; ID calls still require --team-id.")
+	fmt.Fprintln(w, "    Backlog, intake, meeting, team and comment references require IDs.")
+	fmt.Fprintln(w, "    riido work search --query TEXT   (agent mode unsupported, exit 8)")
 }
 
 func printContextGroupUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido context get [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (agent runs default to the assigned task)")
+	fmt.Fprintln(w, "    Agent data.snapshot_id and captured_at identify the server's assignment snapshot; they are not credentials or live refresh evidence")
 	fmt.Fprintln(w, "  riido context get --work <ID> --team-id <TEAM-ID> [--json]   (user API; direct context within one relation hop)")
+	fmt.Fprintln(w, "  riido context get --work <RIID-1234> --workspace <WORKSPACE-ID> [--team-id <TEAM-ID>] [--json]   (user key lookup; configured scope defaults supported)")
 	fmt.Fprintln(w, "  riido context part <SOURCE-ID> --cursor <CURSOR> [--budget CHARS] [--json]   (agent snapshot; one call returns consecutive captured pages of the part, about 48 KiB by default; continue with next_cursor)")
-	fmt.Fprintln(w, "  riido context changes --since SNAPSHOT [--json]   (unsupported, exit 8)")
+	fmt.Fprintln(w, "  riido context changes --since SNAPSHOT [--budget CHARS] [--json]   (agent captured metadata; needs server support; user mode exit 8; partial/expired: context get recovery; budget overflow exit 9)")
 }
 
 func printAgentsUsage(w io.Writer) {
+	fmt.Fprintln(w, "  riido agents list --work <ID> --workspace <WORKSPACE-ID> [--cursor C] [--json]   (user mode)")
+	fmt.Fprintln(w, "  riido agents show <AGENT-ID> --work <ID> --workspace <WORKSPACE-ID> [--json]   (user mode)")
+	fmt.Fprintln(w, "    User work keys: --work <RIID-1234> with --workspace <WORKSPACE-ID> and/or --team-id <TEAM-ID>; configured scope defaults supported. Both scopes intersect. ID calls require workspace and ignore configured team.")
+	fmt.Fprintln(w, "    Current visible public agents; 50 per page. Runtime availability is not permission to mention or execute. Requires dedicated server reader activation.")
 	fmt.Fprintln(w, "  riido agents list [--cursor C] [--json]   (live: agents the run's requester can see, with work status and connection)")
 	fmt.Fprintln(w, "  riido agents show <AGENT-ID> [--json]")
 }
 
 func printAuthUsage(w io.Writer) {
-	fmt.Fprintln(w, "  riido auth <login|logout|status> [--json]")
-	fmt.Fprintln(w, "    riido auth login [--browser]   (browser PKCE; signed credential helper required)")
-	fmt.Fprintln(w, "    --desktop and --with-token are unsupported (exit 8); secrets are never accepted as arguments")
+	fmt.Fprintln(w, "  riido auth <login|link|repair|logout|status> [--json]")
+	fmt.Fprintln(w, "    User commands except login: --auth-origin browser|desktop overrides config auth_origin once. Default browser; no credential fallback.")
+	fmt.Fprintln(w, "    riido auth login [--browser|--desktop]   (PKCE; signed credential helper required)")
+	fmt.Fprintln(w, "    riido auth link               (explicit device approval; resumes the original protected request)")
+	fmt.Fprintln(w, "    riido auth link --no-input    (receipt recovery only; fails if protected storage requires OS confirmation)")
+	fmt.Fprintln(w, "    riido auth repair            (existing key + fresh browser consent; no OAuth login or grant restoration)")
+	fmt.Fprintln(w, "    riido auth repair --restart  (explicit new consent after a terminal request; active requests are preserved)")
+	fmt.Fprintln(w, "    riido auth repair --no-input (existing receipt recovery only; OS protection still applies)")
+	fmt.Fprintln(w, "    --desktop requires compatible Riido Desktop login; --with-token is unsupported (exit 8)")
+	fmt.Fprintln(w, "    secrets are never accepted as arguments; browser login remains independent of Desktop")
 }
 
 func printMeetingUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido meeting list [--work <RIID-1234|ID>] [--budget CHARS] [--json]   (snapshot metadata; defaults to the assigned task)")
+	fmt.Fprintln(w, "  riido meeting list --work <ID> --team-id <TEAM-ID> [--json]   (user API; selected direct meetings, maximum 5; summaries only)")
+	fmt.Fprintln(w, "  riido meeting list --work <RIID-1234> --workspace <WORKSPACE-ID> [--team-id <TEAM-ID>] [--json]   (user key lookup; configured scope defaults supported)")
 	fmt.Fprintln(w, "  riido meeting get <MEETING-ID> [--budget CHARS] [--json]   (captured document body)")
 	fmt.Fprintln(w, "  riido meeting get <MEETING-ID> --team-id <TEAM-ID> [--cursor C] [--limit N] [--json]   (user API; details, body and board; default 100 cards, maximum 200)")
-	fmt.Fprintln(w, "  riido meeting body <MEETING-ID> --team-id <TEAM-ID> --version <VERSION> [--part document|description|document_alternate|metadata|board_page] [--offset N] [--limit BYTES] [--json]")
+	fmt.Fprintln(w, "  riido meeting comments <MEETING-ID> --team-id <TEAM-ID> [--comment-id PARENT-ID] [--page N] [--limit N] [--version VERSION] [--json]   (user API; default 20, maximum 100; page > 1 requires original version)")
+	fmt.Fprintln(w, "  riido meeting body <MEETING-ID> --team-id <TEAM-ID> --version <VERSION> [--part document|description|document_alternate|metadata|comments_page|board_page] [--offset N] [--limit BYTES] [--json]")
+	fmt.Fprintln(w, "    comments_page: copy contentPage.selector with [--comment-id PARENT-ID] [--page N] [--comments-limit N]; keep it unchanged while reading byte pages")
 	fmt.Fprintln(w, "    board_page: copy contentPage.selector with [--board-cursor CURSOR] [--board-limit N]; keep it unchanged while reading byte pages")
 }
 

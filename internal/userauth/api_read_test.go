@@ -17,7 +17,7 @@ func TestExplicitReadPOSTRetries401WithReplayableBody(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/oauth/token" {
 			refreshes.Add(1)
-			fmt.Fprint(w, `{"access_token":"new-access","token_type":"Bearer","expires_in":3600}`)
+			fmt.Fprint(w, `{"access_token":"new-access","refresh_token":"new-refresh","token_type":"Bearer","expires_in":3600,"refresh_recovery":"v1"}`)
 			return
 		}
 		received, err := io.ReadAll(r.Body)

@@ -18,16 +18,31 @@ func main() {
 }
 
 func run(args []string) error {
+	noteNoColor(args)
 	if len(args) < 1 {
+		// A person typing just `riido` gets the home screen; scripts keep usage+exit 1.
+		if term := humanTerminal(os.Stdout); term.Interactive {
+			return runHome(os.Stdout, term, homeServer(defaultContextIO()))
+		}
 		printRootUsage()
 		return fmt.Errorf("missing command")
 	}
 	if args[0] == "--help" || args[0] == "-h" {
+		if term := humanTerminal(os.Stdout); term.Interactive && len(args) == 1 {
+			printFriendlyHelp(os.Stdout, term)
+			return nil
+		}
 		printRootUsage()
 		return nil
 	}
+	if args[0] == "help" {
+		return runHelp(os.Stdout, args[1:])
+	}
 	if args[0] == "--version" || args[0] == "-v" {
 		return runVersion(nil)
+	}
+	if handled, err := runFriendlyCommandHelp(args); handled {
+		return err
 	}
 	switch mainCommand(args[0]) {
 	case mainCommandMwsd:
@@ -46,8 +61,20 @@ func run(args []string) error {
 		return runDaemon(args[1:])
 	case mainCommandVersion:
 		return runVersion(args[1:])
+	case mainCommandWorkspace:
+		return runWorkspace(defaultContextIO(), args[1:])
+	case mainCommandConfig:
+		return runConfig(defaultContextIO(), args[1:])
+	case mainCommandCompletion:
+		return runCompletion(defaultContextIO(), args[1:])
 	case mainCommandWork:
 		return runWork(defaultContextIO(), args[1:])
+	case mainCommandThread:
+		return runThread(defaultContextIO(), args[1:])
+	case mainCommandRepo:
+		return runRepo(defaultContextIO(), args[1:])
+	case mainCommandResource:
+		return runResource(defaultContextIO(), args[1:])
 	case mainCommandContext:
 		return runContext(defaultContextIO(), args[1:])
 	case mainCommandAgents:
@@ -63,6 +90,9 @@ func run(args []string) error {
 	case mainCommandCapabilities:
 		return runCapabilities(defaultContextIO(), args[1:])
 	default:
+		if handled, err := friendlyUnknownCommand(args[0]); handled {
+			return err
+		}
 		printRootUsage()
 		return fmt.Errorf("unknown command: %s", args[0])
 	}

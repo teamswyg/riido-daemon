@@ -3,6 +3,7 @@ package standalonecli
 import (
 	"context"
 	"errors"
+	"sync/atomic"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/securecredential"
@@ -15,6 +16,12 @@ type linkKeyFixture struct {
 	keyErr                   error
 	existing, signs, ensures int
 	proof                    securecredential.DeviceLinkProof
+	loads                    atomic.Int32
+}
+
+func (n *linkKeyFixture) Load(ctx context.Context) ([]byte, error) {
+	n.loads.Add(1)
+	return n.protectedNativeFixture.Load(ctx)
 }
 
 func (n *linkKeyFixture) ExistingInstallationKey(context.Context, string) (securecredential.InstallationPublicKey, error) {

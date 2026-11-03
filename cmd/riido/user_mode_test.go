@@ -218,7 +218,7 @@ func TestStandaloneAuthHelpAccuratelyDescribesSupportedMethods(t *testing.T) {
 		t.Fatal(err)
 	}
 	output := h.stderr.String()
-	if !strings.Contains(output, "login [--browser]") || !strings.Contains(output, "--desktop and --with-token are unsupported") {
+	if !strings.Contains(output, "login [--browser|--desktop]") || !strings.Contains(output, "--with-token is unsupported") || !strings.Contains(output, "--desktop requires compatible Riido Desktop") {
 		t.Fatal("auth help advertises unsupported login methods")
 	}
 }

@@ -11,6 +11,8 @@ type authCommand string
 
 const (
 	authCommandLogin  authCommand = "login"
+	authCommandLink   authCommand = "link"
+	authCommandRepair authCommand = "repair"
 	authCommandLogout authCommand = "logout"
 	authCommandStatus authCommand = "status"
 )
@@ -37,6 +39,10 @@ func runAuth(c contextIO, args []string) error {
 	switch authCommand(args[0]) {
 	case authCommandLogin:
 		return c.runAuthLogin(args[1:])
+	case authCommandLink:
+		return c.runAuthLink(args[1:])
+	case authCommandRepair:
+		return c.runAuthRepair(args[1:])
 	case authCommandLogout:
 		return c.runAuthLogout(args[1:])
 	case authCommandStatus:
@@ -49,7 +55,7 @@ func runAuth(c contextIO, args []string) error {
 
 func (c contextIO) runAuthLocal(raw []string, note string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := contextcli.ParseArgs(raw, contextcli.ArgSpec{})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}

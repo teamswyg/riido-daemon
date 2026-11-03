@@ -21,10 +21,10 @@ func TestClaudeContextCLIAllowsOnlySupportedReadLeaves(t *testing.T) {
 		t.Fatal("missing native read allowlist")
 	}
 	rules := strings.Split(cmd.Args[idx+1], ",")
-	if len(rules) != 20 {
+	if len(rules) != 22 {
 		t.Fatalf("read rules = %v", rules)
 	}
-	for _, leaf := range []string{"context get", "context part", "work get", "work tree", "work relations", "work comments", "agents list", "agents show", "meeting list", "meeting get"} {
+	for _, leaf := range []string{"context get", "context part", "context changes", "work get", "work tree", "work relations", "work comments", "agents list", "agents show", "meeting list", "meeting get"} {
 		for _, suffix := range []string{"", " *"} {
 			if !slices.Contains(rules, "Bash(riido "+leaf+suffix+")") {
 				t.Errorf("missing read rule %s%s", leaf, suffix)

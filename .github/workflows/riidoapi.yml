@@ -9,6 +9,8 @@ on:
       - "cmd/riido/**"
       - "internal/contextcli/**"
       - "internal/contextbroker/**"
+      - "internal/securecredential/**"
+      - "native/cli-auth-helper-windows/**"
       - "internal/taskdb/**"
       - "internal/hostintegration/**"
       - "internal/validation/**"
@@ -25,6 +27,8 @@ on:
       - "cmd/riido/**"
       - "internal/contextcli/**"
       - "internal/contextbroker/**"
+      - "internal/securecredential/**"
+      - "native/cli-auth-helper-windows/**"
       - "internal/taskdb/**"
       - "internal/hostintegration/**"
       - "internal/validation/**"
@@ -99,3 +103,28 @@ jobs:
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Verify Windows context CLI and broker round trip
         run: go test ./cmd/riido -run TestContextCLINativeIPCRoundTrip -count=1 -timeout=5m
+      - name: Verify protected helper private-pipe boundaries without OS credentials
+        run: go test ./internal/securecredential -run TestPortableHelper -count=1 -timeout=3m
+      - name: Verify Windows credential lock and authorization launcher boundaries
+        run: |
+          go test -v ./internal/securecredential -run TestWindowsCredentialLock -count=1 -timeout=3m
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go test -v ./cmd/riido -run 'TestUserSessionPlatformPaths|TestUserAuthorizationLauncher|TestUserDesktopLauncher|TestWindowsAuthorization' -count=1 -timeout=3m
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $env:GOARCH = '386'
+          go test -v ./internal/securecredential -run TestWindowsCredentialLock -count=1 -timeout=3m
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go test -v ./cmd/riido -run 'TestUserSessionPlatformPaths|TestUserAuthorizationLauncher|TestUserDesktopLauncher|TestWindowsAuthorization' -count=1 -timeout=3m
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Measure Windows CNG protection without UI or product credentials
+        shell: cmd
+        run: |
+          for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do call "%%i\Common7\Tools\VsDevCmd.bat" -no_logo -arch=x64 -host_arch=x64
+          if errorlevel 1 exit /b %errorlevel%
+          pwsh -NoProfile -File native/cli-auth-helper-windows/probe/run.ps1
+      - uses: actions/upload-artifact@v7.0.1
+        if: always()
+        with:
+          name: windows-cli-protection-probe
+          path: out/windows-cli-protection-probe.json
+          if-no-files-found: error
