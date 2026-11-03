@@ -12,6 +12,7 @@ C4 Provider Runtime owns the provider session table that maps provider-native se
 | (`ProviderSessionID`, `RuntimeID`) | C4 provider session table `riido-provider-session-table.v1` |
 
 - Adapters do not keep session id as hidden private memory; they emit it as a draft for ingest.
+- Codex resume selects a locally installed executable with the original capability fingerprint for this submission only. New bindings retain a local executable hint. Older bindings can recover the provider version from the original run journal. Workspace, task, agent and repository grants are verified before resume.
 - Crash resume is recovered from the IR log plus provider session table.
 - The minimal session table key is `(ProviderSessionID, RuntimeID)`.
 - Runtime eligibility, lease expiry, stale fingerprint, and task handoff are still owned by C5/C9.

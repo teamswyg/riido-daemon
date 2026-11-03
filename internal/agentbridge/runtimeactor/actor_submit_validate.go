@@ -31,6 +31,13 @@ func (a *Actor) submitCapability(
 	if !ok {
 		return nil, Capability{}, fmt.Errorf("%w: %s", ErrUnknownProvider, msg.req.Provider)
 	}
+	if selected := msg.nativeResume; selected != nil {
+		c := selected.capability
+		if selected.owner != a || msg.req.ResumeSessionID == "" || c.Provider != adapter.Name() || msg.req.ExpectedCapabilityFingerprint != c.CapabilityFingerprint || string(detectedFingerprintForExecutable(c.Executable)) != c.DetectedFingerprint {
+			return nil, Capability{}, ErrRuntimePinViolated
+		}
+		return adapter, c, nil
+	}
 	capView, ok, err := a.capabilityForSubmit(msg.ctx, adapter, caps, detectedAt, string(msg.req.Provider))
 	if err != nil {
 		return nil, Capability{}, err

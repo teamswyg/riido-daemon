@@ -71,7 +71,7 @@ func submitExecutionCorrection(ctx context.Context, rt *runtimeactor.Actor, prev
 	deadline := time.NewTimer(2 * time.Second)
 	defer deadline.Stop()
 	for {
-		handle, err := rt.Submit(ctx, req)
+		handle, err := rt.SubmitContinuation(ctx, req, previous)
 		if !errors.Is(err, runtimeactor.ErrDuplicateTaskID) {
 			return handle, err
 		}
