@@ -32,12 +32,7 @@ type viewField struct {
 }
 
 func writeViewFields(w io.Writer, term cliui.Terminal, fields []viewField) {
-	width := 0
-	for _, field := range fields {
-		if field.value != "" {
-			width = max(width, cliui.DisplayWidth(field.label))
-		}
-	}
+	width := viewFieldLabelWidth(fields)
 	for _, field := range fields {
 		if field.value == "" {
 			continue
@@ -45,10 +40,25 @@ func writeViewFields(w io.Writer, term cliui.Terminal, fields []viewField) {
 		value := oneLine(field.value)
 		if strings.Contains(value, " ") {
 			// Prose is shortened; IDs, emails and URLs stay whole so they can be copied.
-			value = cliui.Truncate(value, max(term.Width-width-4, 12))
+			value = cliui.Truncate(value, viewFieldRoom(term, width))
 		}
 		fmt.Fprintf(w, "  %s  %s\n", term.Dim(cliui.PadRight(field.label, width)), value)
 	}
+}
+
+func viewFieldLabelWidth(fields []viewField) int {
+	width := 0
+	for _, field := range fields {
+		if field.value != "" {
+			width = max(width, cliui.DisplayWidth(field.label))
+		}
+	}
+	return width
+}
+
+// viewFieldRoom is the value width writeViewFields keeps for prose values.
+func viewFieldRoom(term cliui.Terminal, labelWidth int) int {
+	return max(term.Width-labelWidth-4, 12)
 }
 
 // writeViewHeader prints the bold title with a dim key, then a meta line.

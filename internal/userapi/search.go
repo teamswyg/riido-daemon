@@ -75,11 +75,14 @@ func (r Reader) Search(ctx context.Context, q WorkSearchRequest) (*WorkSearchPag
 	if p.SchemaVersion != "riido-work-search.v1" || p.WorkspaceID != q.WorkspaceID || p.Query != q.NormalizedQuery() || p.Limit != q.Limit || p.Items == nil || len(p.Items) > q.Limit {
 		return nil, ErrInvalidResponse
 	}
+	// RIID-6014: the server may end an incomplete page early at its scan budget,
+	// so an incomplete page can hold fewer than limit items (including none).
+	// It must still carry a new continuation cursor.
 	if p.Complete {
 		if p.NextCursor != nil {
 			return nil, ErrInvalidResponse
 		}
-	} else if len(p.Items) != p.Limit || p.NextCursor == nil || *p.NextCursor == "" || len(*p.NextCursor) > 2048 || *p.NextCursor == q.Cursor {
+	} else if p.NextCursor == nil || *p.NextCursor == "" || len(*p.NextCursor) > 2048 || *p.NextCursor == q.Cursor {
 		return nil, ErrInvalidResponse
 	}
 	if p.NextCursor != nil {
