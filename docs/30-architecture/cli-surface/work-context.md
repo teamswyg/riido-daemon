@@ -39,7 +39,7 @@ Two modes share the same commands and output contract:
 - agent mode: selected when the daemon injected `RIIDO_RUN_TOKEN` into the runtime process. Calls go CLI → local IPC (daemon broker, `RIIDO_DAEMON_SOCKET` or the default agentd endpoint) → control-plane run grant → monolith. The agent never holds a user credential
 - user mode: selected otherwise. Calls go straight to Riido servers with the signed-in user's OAuth credential kept in the OS keychain behind a user-presence check. The daemon is not involved
 
-Mode selection is not a security boundary. A shell-capable agent can unset environment variables; protection comes from server-side permission checks and from the OS refusing to release the user credential without user presence.
+Mode selection is not a security boundary. A shell-capable agent can unset environment variables; protection comes from server-side permission checks and from the OS refusing to release the user credential without user presence. Since RIID-6014 that holds for the refresh token, recovery secret and installation key; the short-lived access grant is cached without user presence so ordinary reads do not prompt, which means a process running as the same unlocked OS user can make read-only user API calls with it until it expires.
 
 Current availability in this binary:
 
