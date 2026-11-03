@@ -70,7 +70,7 @@ func TestTerminalViewKeepsJSONOffTerminal(t *testing.T) {
 		t.Fatal("a buffer must keep the nil renderer and JSON output")
 	}
 	for _, render := range []textRenderer{
-		whoamiView(io.Discard, userapi.Identity{}), workView(io.Discard, userapi.Work{}),
+		whoamiView(io.Discard, userapi.Identity{}, whoamiWorkspaces{}), workView(io.Discard, userapi.Work{}),
 		relationsView(io.Discard, nil), activityView(io.Discard, userapi.ActivityPage{}),
 		commentsView(io.Discard, userapi.CommentPage{}), repliesView(io.Discard, nil),
 		scopeCommentsView(io.Discard, userapi.ReadScopeCommentPage{}), bodyPageView(io.Discard, userapi.ReadBodyPage{}),
@@ -151,8 +151,12 @@ func TestWhoamiAndWorkViews(t *testing.T) {
 	}
 	checkViews(t, []viewCase{
 		{"whoami", func(w io.Writer, term cliui.Terminal) {
-			renderWhoamiView(w, term, userapi.Identity{ID: "user-1", Email: "me@example.com", Username: viewEvil, LoginType: "google"})
+			renderWhoamiView(w, term, userapi.Identity{ID: "user-1", Email: "me@example.com", Username: viewEvil, LoginType: "google"}, whoamiWorkspaces{})
 		}, []string{cliui.Safe(viewEvil), "로그인됨", "me@example.com", "user-1", "google"}},
+		{"whoami workspace names", func(w io.Writer, term cliui.Terminal) {
+			renderWhoamiView(w, term, userapi.Identity{ID: "user-1", LastViewedWorkspaceID: "ws-recent"},
+				whoamiWorkspaces{defaultID: "ws-default", names: map[string]string{"ws-recent": "스위그"}})
+		}, []string{"최근 워크스페이스", "스위그 (ws-recent)", "기본 워크스페이스", "ws-default"}},
 		{
 			"work", func(w io.Writer, term cliui.Terminal) { renderWorkView(w, term, work) },
 			[]string{"RIID-12", "● 진행 중", "수정 3시간 전", "리도", "버그", "2026-10-01 → 2026-10-31", "설명 굵게", "아주 긴 문서", "work-1"},
