@@ -15,7 +15,7 @@ func TestUserCommentArgumentsFailBeforeProtectedStorage(t *testing.T) {
 		exit int
 	}{
 		{"missing-team", []string{"comments", "work-one"}, 2},
-		{"work-key", []string{"comments", "RIID-5900", "--team-id", "team-one"}, 8},
+		{"unscoped-work-key", []string{"comments", "RIID-5900"}, 2},
 		{"page-zero", []string{"comments", "work-one", "--team-id", "team-one", "--page", "0"}, 2},
 		{"page-empty", []string{"comments", "work-one", "--team-id", "team-one", "--page="}, 2},
 		{"page-overflow", []string{"comments", "work-one", "--team-id", "team-one", "--page", "2147483648"}, 2},

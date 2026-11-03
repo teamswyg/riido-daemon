@@ -21,6 +21,7 @@ func TestUserTypedBodySelectorUsesProtectedSessionWithoutDaemon(t *testing.T) {
 		{"work_metadata", "metadata", "getComponentReadScopeBody", false, nil, map[string]any{}},
 		{"backlog_replies", "comments_page", "getBacklogReadScopeBody", false, []string{"--kind", "backlog", "--comment-id", "parent-one", "--page", "2", "--comments-limit", "3"}, map[string]any{"parentCommentId": "parent-one", "page": float64(2), "limit": float64(3)}},
 		{"meeting_board", "board_page", "getMeetingReadScopeBody", true, []string{"--board-cursor", "board-page-two", "--board-limit", "17"}, map[string]any{"boardCursor": "board-page-two", "limit": float64(17)}},
+		{"meeting_replies", "comments_page", "getMeetingReadScopeBody", true, []string{"--comment-id", "parent-one", "--page", "2", "--comments-limit", "3"}, map[string]any{"parentCommentId": "parent-one", "page": float64(2), "limit": float64(3)}},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			version := "sha256:" + strings.Repeat("a", 64)

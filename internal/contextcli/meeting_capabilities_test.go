@@ -11,7 +11,7 @@ func TestMeetingCapabilitiesRequireAgentBroker(t *testing.T) {
 		status CommandStatus
 		modes  []Mode
 	}{
-		{"meeting list", CommandNeedsDaemon, []Mode{ModeAgent}},
+		{"meeting list", CommandAvailable, []Mode{ModeAgent, ModeUser}},
 		{"meeting get", CommandAvailable, []Mode{ModeAgent, ModeUser}},
 		{"meeting body", CommandAvailable, []Mode{ModeUser}},
 	} {

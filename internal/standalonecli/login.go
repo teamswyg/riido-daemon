@@ -13,8 +13,11 @@ type LoginResult struct {
 	Mode          string           `json:"mode"`
 	Authenticated bool             `json:"authenticated"`
 	APIOrigin     string           `json:"api_origin"`
+	AuthOrigin    string           `json:"auth_origin"`
+	Profile       string           `json:"profile,omitempty"`
 	Identity      userapi.Identity `json:"identity"`
 	Warnings      []string         `json:"warnings,omitempty"`
+	NextAction    string           `json:"next_action,omitempty"`
 }
 
 func (s *Service) Login(ctx context.Context) (LoginResult, error) {
@@ -31,22 +34,11 @@ func (s *Service) Login(ctx context.Context) (LoginResult, error) {
 	if err := ctx.Err(); err != nil {
 		return LoginResult{}, err
 	}
-	if s.openBrowser == nil {
-		return LoginResult{}, ErrBrowserUnavailable
-	}
-	flow, err := s.client.BeginInstallationAuthorization(ctx, key, func(ctx context.Context, proof userauth.InstallationProof) (string, error) {
-		return s.store.SignInstallationProof(ctx, key, proof)
-	})
+	flow, err := s.beginLogin(ctx, key)
 	if err != nil {
 		return LoginResult{}, err
 	}
 	defer flow.Close()
-	if err := s.openBrowser(ctx, flow.URL); err != nil {
-		if ctx.Err() != nil {
-			return LoginResult{}, ctx.Err()
-		}
-		return LoginResult{}, ErrBrowserUnavailable
-	}
 	credential, err := flow.Wait(ctx)
 	if err != nil {
 		return LoginResult{}, err
@@ -57,13 +49,18 @@ func (s *Service) Login(ctx context.Context) (LoginResult, error) {
 		return LoginResult{}, err
 	}
 	credential = verified
+	credential.Binding = &userauth.CredentialBinding{Resource: s.origin, ClientID: "riido-cli", AccountID: identity.ID, KeyFingerprint: key.KeyFingerprint, AuthOrigin: s.authOrigin}
+	if !credential.Binding.Valid() {
+		s.cleanupNewGrant(ctx, credential)
+		return LoginResult{}, userauth.ErrReauthRequired
+	}
 	loginErr := s.manager.Login(ctx, credential)
 	partial := errors.Is(loginErr, userauth.ErrPreviousGrantRevocationFailed)
 	if loginErr != nil && !partial {
 		s.cleanupNewGrant(ctx, credential)
 		return LoginResult{}, loginErr
 	}
-	result := LoginResult{Mode: "user", Authenticated: true, APIOrigin: s.origin, Identity: identity}
+	result := LoginResult{Mode: "user", Authenticated: true, APIOrigin: s.origin, AuthOrigin: s.authOrigin, Identity: identity}
 	if partial {
 		result.Warnings = []string{"previous_grant_revocation_failed"}
 	}

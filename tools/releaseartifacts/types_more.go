@@ -7,6 +7,8 @@ type installer struct {
 	VersionEnv        string   `json:"version_env"`
 	InstallDirEnv     string   `json:"install_dir_env"`
 	DefaultInstallDir string   `json:"default_install_dir"`
+	ChannelEnv        string   `json:"channel_env,omitempty"`
+	Channels          []string `json:"channels,omitempty"`
 }
 
 type desktopMSIX struct {

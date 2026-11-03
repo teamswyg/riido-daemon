@@ -32,16 +32,20 @@ func TestDeferredWorkPreservesReferenceInsteadOfClaimingEmptyMetadata(t *testing
 }
 
 func TestDeferredCommentsBindLogicalPageAndParent(t *testing.T) {
-	page, limit, done, parent := 2, 3, false, "comment-one"
-	q := ReadScopeCommentsRequest{ResourceID: "root", ResourceKind: "component", TeamID: "team", Page: page, Limit: limit, ParentCommentID: parent, Version: "sha256:" + strings.Repeat("a", 64)}
-	p := &ReadScopeCommentPage{ResourceID: q.ResourceID, ResourceKind: q.ResourceKind, Version: q.Version, Status: "deferred", Page: page, Limit: limit, ParentCommentID: &parent, Complete: &done, Items: []json.RawMessage{}, ContentPage: deferredPart("root", "comments_page", &ReadPartSelector{Page: &page, Limit: &limit, ParentCommentID: &parent})}
-	if !validReadScopeCommentPage(p, q) {
-		t.Fatal("large logical comment page was rejected instead of returning its body reference")
-	}
-	other := "another-parent"
-	p.ContentPage.Selector.ParentCommentID = &other
-	if validReadScopeCommentPage(p, q) {
-		t.Fatal("parent-bound comment continuation was substituted")
+	for _, kind := range []string{"component", "meeting"} {
+		t.Run(kind, func(t *testing.T) {
+			page, limit, done, parent := 2, 3, false, "comment-one"
+			q := ReadScopeCommentsRequest{ResourceID: "root", ResourceKind: kind, TeamID: "team", Page: page, Limit: limit, ParentCommentID: parent, Version: "sha256:" + strings.Repeat("a", 64)}
+			p := &ReadScopeCommentPage{ResourceID: q.ResourceID, ResourceKind: q.ResourceKind, Version: q.Version, Status: "deferred", Page: page, Limit: limit, ParentCommentID: &parent, Complete: &done, Items: []json.RawMessage{}, ContentPage: deferredPart("root", "comments_page", &ReadPartSelector{Page: &page, Limit: &limit, ParentCommentID: &parent})}
+			if !validReadScopeCommentPage(p, q) {
+				t.Fatal("large logical comment page was rejected instead of returning its body reference")
+			}
+			other := "another-parent"
+			p.ContentPage.Selector.ParentCommentID = &other
+			if validReadScopeCommentPage(p, q) {
+				t.Fatal("parent-bound comment continuation was substituted")
+			}
+		})
 	}
 }
 

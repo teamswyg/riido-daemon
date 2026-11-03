@@ -1,5 +1,6 @@
 import Foundation
 import LocalAuthentication
+import Security
 
 if CommandLine.arguments.dropFirst().first == "--installation-lock-probe" { exit(installationLockProbe()) }
 
@@ -32,6 +33,51 @@ let store = FakeStore()
 var confirmCalls = 0
 let handler = RequestHandler(preflight: {}, store: store, confirm: { confirmCalls += 1 })
 check(handler.handle(request("status")).data?.present == true, "status sees presence")
+check((try? protectedItemPresence(errSecInteractionNotAllowed)) == true, "protected credential counts as present without UI")
+check((try? protectedItemPresence(errSecSuccess)) == true, "readable attributes count as present")
+check((try? protectedItemPresence(errSecItemNotFound)) == false, "missing credential is absent")
+check((try? protectedItemPresence(errSecUserCanceled)) == nil, "other keychain failures stay failures")
+
+final class CountingPresence: PresenceContext {
+    var evaluations = 0
+    func evaluate(_ completion: @escaping (Bool, Error?) -> Void) { evaluations += 1; completion(true, nil) }
+    func invalidate() {}
+}
+do {
+    let presence = CountingPresence()
+    let session = AuthenticationSession(verifier: UserPresenceVerifier(makeContext: { presence }))
+    let sessionStore = FakeStore()
+    var sessionHandler = RequestHandler(preflight: {}, store: sessionStore, confirm: { try session.ensureVerified() })
+    sessionHandler.beforeProtected = { request in
+        guard request.interactive else { throw HelperFailure.interactionRequired }
+        try session.ensureVerified()
+    }
+    check(sessionHandler.handle(request("status", interactive: true)).ok && presence.evaluations == 0, "session status never asks")
+    check(sessionHandler.handle(request("load", interactive: true)).ok, "session load")
+    check(sessionHandler.handle(request("save", value: Data("rotated".utf8).base64EncodedString(), interactive: true)).ok, "session save")
+    check(sessionHandler.handle(request("load", interactive: true)).ok, "session second load")
+    check(sessionHandler.handle(request("confirm", interactive: true)).data?.confirmed == true, "session confirm")
+    check(presence.evaluations == 1, "one OS confirmation per session")
+    check(sessionHandler.handle(request("load")).error?.code == "INTERACTION_REQUIRED", "session refuses noninteractive protected requests")
+}
+func lineOutcome(_ reader: inout SessionLineReader) -> String {
+    do {
+        guard let line = try reader.next() else { return "EOF" }
+        return String(decoding: line, as: UTF8.self)
+    } catch { return "ERROR" }
+}
+do {
+    var chunks = [Data("one\ntw".utf8), Data("o\n".utf8)]
+    var reader = SessionLineReader(read: { _ in chunks.isEmpty ? nil : chunks.removeFirst() })
+    check(lineOutcome(&reader) == "one", "session first line")
+    check(lineOutcome(&reader) == "two", "session second line across reads")
+    check(lineOutcome(&reader) == "EOF", "session ends at EOF")
+    var unterminatedChunks = [Data("{}".utf8)]
+    var unterminated = SessionLineReader(read: { _ in unterminatedChunks.isEmpty ? nil : unterminatedChunks.removeFirst() })
+    check(lineOutcome(&unterminated) == "ERROR", "unterminated request is rejected")
+    var big = SessionLineReader(read: { _ in Data(repeating: 65, count: 4096) })
+    check(lineOutcome(&big) == "ERROR", "oversized request is rejected")
+}
 check(store.calls == ["status"], "status never loads bytes")
 check(handler.handle(request("status")).data?.value == nil, "status omits secret")
 let loaded = handler.handle(request("load"))
@@ -131,7 +177,7 @@ let verifier = UserPresenceVerifier(makeContext: {
 })
 for _ in 0..<2 { do { try verifier.confirm() } catch { check(false, "fresh confirmation succeeds") } }
 check(contexts.count == 2 && contexts.allSatisfy { $0.calls == 1 && $0.invalidations == 1 }, "fresh context per confirmation and no cache")
-for (code, expected) in [(LAError.Code.userCancel, "CANCELLED"), (.appCancel, "CANCELLED"), (.systemCancel, "CANCELLED"), (.authenticationFailed, "INTERACTION_REQUIRED"), (.invalidContext, "UNAVAILABLE")] {
+for (code, expected) in [(LAError.Code.userCancel, "CANCELLED"), (.appCancel, "CANCELLED"), (.systemCancel, "CANCELLED"), (.authenticationFailed, "INTERACTION_REQUIRED"), (.notInteractive, "INTERACTION_REQUIRED"), (.invalidContext, "UNAVAILABLE")] {
     let context = FakePresenceContext()
     context.response = (false, LAError(code))
     do { try UserPresenceVerifier(makeContext: { context }).confirm(); check(false, "OS refusal must throw") }
@@ -164,6 +210,7 @@ runInstallationTests()
 runExistingInstallationKeyTests()
 runDeviceLinkTests()
 runDeviceLinkSigningTests()
+runInstallationRepairTests()
 runInstallationRegistrationTests()
 runInstallationLockTests()
 if failures > 0 { exit(1) }

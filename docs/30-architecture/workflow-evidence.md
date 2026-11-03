@@ -98,7 +98,7 @@
 | `.github/workflows/repo-executable-knowledge-coverage.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/repo-verification.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/riido-work-branch.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
-| `.github/workflows/riidoapi.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
+| `.github/workflows/riidoapi.yml` | `covered` | `1` | `1/1` | `true` | `2/2` | - |
 | `.github/workflows/roadmap-docs.yml` | `covered` | `3` | `3/3` | `true` | `1/1` | - |
 | `.github/workflows/runtime-eligibility-evidence.yml` | `covered` | `1` | `1/1` | `true` | `1/1` | - |
 | `.github/workflows/runtime-scheduling-docs.yml` | `covered` | `5` | `5/5` | `true` | `1/1` | - |

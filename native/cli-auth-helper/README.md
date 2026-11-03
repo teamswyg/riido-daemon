@@ -59,8 +59,28 @@ The CLI starts the helper with an empty stdin pipe, keeps the child unreaped, an
 
 A synthetic path-swap regression reproduces the pre-fix credential delivery and now refuses it before any credential bytes are written. This is a negative boundary test, not valid signed-helper acceptance. The current OS's Apple system-process probes did not provide a positive equivalent to a signed Riido helper. Real helper signature/profile/dynamic verification/user-presence QA remains held by the user.
 
-The `.userPresence` access control protects later reads of stored credentials; first `SecItemAdd` and metadata-only status are not proof of a user-presence check before a fresh OAuth exchange or first API call. Standalone login now requires `Status -> EnsureInstallationKey -> installation intent -> browser/PKCE -> typed proof -> token exchange -> Whoami -> save`, including account replacement. `EnsureInstallationKey` performs this fresh confirmation before public-key access; login does not call `ConfirmUserPresence` separately and prompt twice before the browser. The independent `confirm` operation remains available. `confirm` does not access the keychain. It refuses noninteractive input before OS verification and uses a fresh `LAContext` with `.deviceOwnerAuthentication` and no authentication reuse for each request. The bounded wait invalidates the context on completion or timeout. Its fixed `TIMED_OUT` error preserves CLI timeout exit 6; user cancellation remains exit 3 and missing protection exit 8. The parent applies the same two-minute confirmation bound across signing and child execution. Denial, cancellation, timeout, missing support, or invalid response cannot open a browser or replace an existing credential. This explicit OS confirmation source contract still does not prove signed-helper acceptance or server-verifiable installation binding.
+The `.userPresence` access control protects later reads of stored credentials; first `SecItemAdd` and metadata-only status are not proof of a user-presence check before a fresh OAuth exchange or first API call. Standalone login now requires `Status -> EnsureInstallationKey -> installation intent -> browser/PKCE -> typed proof -> token exchange -> Whoami -> save`, including account replacement. `EnsureInstallationKey` performs this fresh confirmation before public-key access; login does not call `ConfirmUserPresence` separately and prompt twice before the browser. The independent `confirm` operation remains available. `confirm` does not access the keychain. It refuses noninteractive input before OS verification and uses a fresh `LAContext` with `.deviceOwnerAuthentication` and no authentication reuse for each request. The bounded wait invalidates the context on completion or timeout. Its fixed `TIMED_OUT` error preserves CLI timeout exit 6; user cancellation remains exit 3 and missing protection exit 8. A process without a GUI login session (SSH, launchd, a background job) gets `INTERACTION_REQUIRED` (exit 3) instead of missing protection, because the helper is installed correctly and only the OS prompt cannot be shown. The parent applies the same two-minute confirmation bound across signing and child execution. Denial, cancellation, timeout, missing support, or invalid response cannot open a browser or replace an existing credential. This explicit OS confirmation source contract still does not prove signed-helper acceptance or server-verifiable installation binding.
 
+
+### Command session: one confirmation per command
+
+An interactive CLI command starts the helper once with the single argument
+`--session` and keeps it for the rest of that command (`SharedSession`, set only
+when `--no-input` is absent). The same path check and unreaped live-process
+verification run before the first request byte. Requests and responses are the
+same version 1 documents, newline-delimited, each at most 64 KiB; every request
+still runs signing preflight and the normal decoder. The helper creates one
+`LAContext` and, before the first protected operation (anything but `status`),
+evaluates `.deviceOwnerAuthentication` on it once. Later loads, saves, deletes,
+installation-key lookups and proof signatures in the same command pass that
+context (`kSecUseAuthenticationContext`), so a command asks for Touch ID or the
+password once instead of once per keychain access. `confirm` in a session is
+that same single confirmation. A noninteractive request is refused with
+`INTERACTION_REQUIRED` inside a session. The session ends on stdin EOF (also on
+CLI exit), after 64 requests or after 10 minutes; the context is invalidated on
+exit. A failed or cancelled round trip kills the helper, and the next request
+starts a new session with a new confirmation. `--no-input` commands and other
+callers keep the one-request-per-process mode with interaction forbidden.
 
 ### Release bundle metadata
 

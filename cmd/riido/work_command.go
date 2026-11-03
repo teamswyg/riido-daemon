@@ -31,6 +31,9 @@ func runWork(c contextIO, args []string) error {
 	sub := workCommand(args[0])
 	switch sub {
 	case workCommandGet, workCommandTree, workCommandRelations, workCommandComments:
+		if sub == workCommandTree && c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserTree(args[1:])
+		}
 		if sub == workCommandGet && c.environment().Mode != contextcli.ModeAgent {
 			return c.runUserWork(args[1:])
 		}
@@ -48,6 +51,9 @@ func runWork(c contextIO, args []string) error {
 	case workCommandBody:
 		return c.runUserBody(args[1:])
 	case workCommandSearch:
+		if c.environment().Mode != contextcli.ModeAgent {
+			return c.runUserSearch(args[1:])
+		}
 		return c.runContextRead(workSearchCall(), args[1:])
 	default:
 		return c.fail(wantsJSON(args), contextcli.NewRequestID(),

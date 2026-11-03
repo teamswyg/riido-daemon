@@ -2,19 +2,19 @@ package contextcli
 
 import "testing"
 
-func TestUnsupportedCommandsAreNotAdvertisedAsBrokerReads(t *testing.T) {
-	for _, name := range []string{"context changes", "work search"} {
+func TestChangesAdvertisesOnlyAgentBrokerMode(t *testing.T) {
+	for _, name := range []string{"context changes"} {
 		found := false
 		for _, command := range Capabilities("test").Commands {
 			if command.Name == name {
 				found = true
-				if command.Status != CommandUnavailable || command.Note == "" {
-					t.Fatalf("unsupported command advertised as supported: %+v", command)
+				if command.Status != CommandNeedsDaemon || command.Note == "" || len(command.Modes) != 1 || command.Modes[0] != ModeAgent {
+					t.Fatalf("changes must be Agent-only and require daemon: %+v", command)
 				}
 			}
 		}
 		if !found {
-			t.Fatalf("missing explicit unavailable capability %s", name)
+			t.Fatalf("missing comparison capability %s", name)
 		}
 	}
 }
@@ -26,4 +26,19 @@ func TestIgnoredOptionsAreExplicitlyUnsupported(t *testing.T) {
 			t.Fatalf("ignored options %v must return unsupported, got %v", args, err)
 		}
 	}
+}
+
+func TestWorkSearchIsUserOnlyAndAgentBrokerRemainsUnsupported(t *testing.T) {
+	if !ReadCommandUnavailable("work search") {
+		t.Fatal("agent search must be guarded before IPC")
+	}
+	for _, c := range Capabilities("test").Commands {
+		if c.Name == "work search" {
+			if c.Status != CommandAvailable || len(c.Modes) != 1 || c.Modes[0] != ModeUser || c.Note == "" {
+				t.Fatal(c)
+			}
+			return
+		}
+	}
+	t.Fatal("missing user search capability")
 }

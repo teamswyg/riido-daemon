@@ -33,7 +33,13 @@ func fetchContent(ctx context.Context, fetcher Fetcher, q Query) (Result, error)
 		return result, err
 	}
 	q.MaxBytes = 0
-	return fetcher.FetchAssignmentContext(ctx, q)
+	q.CacheEnabled, q.KnownDigest = false, ""
+	result, err = fetcher.FetchAssignmentContext(ctx, q)
+	if err == nil && result.NotModified {
+		return Result{}, errors.New("unexpected conditional legacy content response")
+	}
+	result.ContentDigest = ""
+	return result, err
 }
 
 func unsupportedContentBatch(err error) bool {

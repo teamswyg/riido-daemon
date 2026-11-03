@@ -15,6 +15,60 @@
   "purpose": "Keeps the cmd/riido command surface and root-help visibility generated from a manifest and verified against black-box CLI output plus source boundaries. Internal daemon, bridge and mwsd commands remain callable with their existing arguments but are absent from root help; claude-permission-mcp also remains absent. Legacy serve, api and task groups remain public.",
   "command_groups": [
     {
+      "name": "completion",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/clicompletion",
+      "boundary": "Static human-terminal command/flag/enum completion for bash/zsh/fish/PowerShell. Generator and stdin-framed private query do not open settings, credentials, daemon or API. No dynamic object IDs or path fallback. Internal runtime commands and currently unavailable user leaves are excluded.",
+      "subcommands": [
+        "bash",
+        "zsh",
+        "fish",
+        "powershell"
+      ],
+      "usage_tokens": [
+        "riido completion <bash|zsh|fish|powershell> [--json]"
+      ],
+      "source_checks": [
+        "main-command-completion"
+      ]
+    },
+    {
+      "name": "config",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/cliconfig",
+      "boundary": "Nonsecret per-OS-user settings for local/staging/production; active profile, API origin, defaults. Does not read OAuth credentials. Workspace writes verify membership through workspace use. Agent mode cannot read or mutate user profiles.",
+      "subcommands": [
+        "list",
+        "get",
+        "set"
+      ],
+      "usage_tokens": [
+        "riido config list [--profile PROFILE] [--json]",
+        "riido config get <KEY> [--profile PROFILE] [--json]",
+        "riido config set <KEY> <VALUE> [--profile PROFILE] [--json]"
+      ],
+      "source_checks": [
+        "main-command-config"
+      ]
+    },
+    {
+      "name": "workspace",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/standalonecli, internal/userapi",
+      "boundary": "User OAuth current workspace membership lookup only; use saves a nonsecret origin-bound local preference after lookup, never a server mutation or grant. Agent mode unsupported.",
+      "subcommands": [
+        "list",
+        "use"
+      ],
+      "usage_tokens": [
+        "riido workspace list [--limit N] [--cursor CURSOR] [--json]",
+        "riido workspace use <WORKSPACE-ID> [--profile PROFILE] [--json]"
+      ],
+      "source_checks": [
+        "main-command-workspace"
+      ]
+    },
+    {
       "name": "work",
       "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
@@ -31,11 +85,59 @@
       ],
       "usage_tokens": [
         "riido work <get|body|tree|relations|comments|replies|activity|search>",
-        "riido work activity <ID> --team-id <TEAM-ID>"
+        "riido work activity <ID> --team-id <TEAM-ID>",
+        "riido work search --workspace <WORKSPACE-ID> --query <TEXT>"
       ],
       "source_checks": [
         "main-command-work",
         "work-subcommand-vocabulary"
+      ]
+    },
+    {
+      "name": "resource",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/userapi",
+      "boundary": "user OAuth fixed read-scope projection of links, attachments and Figma references on the named work; does not fetch external URLs or follow related works; agent mode is explicitly unsupported",
+      "subcommands": [
+        "list"
+      ],
+      "usage_tokens": [
+        "riido resource list --work <ID> --team-id <TEAM-ID>"
+      ],
+      "source_checks": [
+        "main-command-resource"
+      ]
+    },
+    {
+      "name": "repo",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/userapi",
+      "boundary": "user OAuth lists Riido-stored repository and pull-request metadata for the named component; local Git/GitHub/SSH credentials are neither used nor probed; agent mode unsupported",
+      "subcommands": [
+        "list"
+      ],
+      "usage_tokens": [
+        "riido repo list --work <ID> --team-id <TEAM-ID>"
+      ],
+      "source_checks": [
+        "main-command-repo"
+      ]
+    },
+    {
+      "name": "thread",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/userauth, internal/userapi",
+      "boundary": "User-only retained thread projection. Original OAuth stays at fixed monolith; a fresh task-scoped ticket goes to fixed CP GET. No pagination or redirect, never an all-time completeness claim.",
+      "subcommands": [
+        "list",
+        "show"
+      ],
+      "usage_tokens": [
+        "riido thread list --work <ID> --workspace <WORKSPACE-ID>",
+        "riido thread show <THREAD-ID> --work <ID> --workspace <WORKSPACE-ID>"
+      ],
+      "source_checks": [
+        "main-command-thread"
       ]
     },
     {
@@ -62,16 +164,18 @@
       "name": "meeting",
       "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
-      "boundary": "lists connected meeting metadata or reads captured parts through the run-authorized daemon broker; user get/body use fixed typed APIs for details, editor and structured board pages",
+      "boundary": "lists connected meeting metadata or reads captured parts through the run-authorized daemon broker; user get/body/comments use fixed typed APIs for details, editor, structured board and comment/reply pages",
       "subcommands": [
         "list",
         "get",
-        "body"
+        "body",
+        "comments"
       ],
       "usage_tokens": [
         "riido meeting list",
         "riido meeting get",
-        "riido meeting body"
+        "riido meeting body",
+        "riido meeting comments"
       ],
       "source_checks": [
         "main-command-meeting",
@@ -81,19 +185,26 @@
     {
       "name": "agents",
       "root_help": "public",
-      "owner": "cmd/riido, internal/contextcli",
-      "boundary": "lists or shows the agents the run's requester can see, read live through the same daemon broker for choosing whom to mention; never invokes an agent",
+      "owner": "cmd/riido, internal/contextcli, internal/userauth, internal/userapi, internal/standalonecli",
+      "boundary": "lists or shows current visible public agents through the run broker (agent mode) or dedicated task-bound user ticket (user mode); never invokes an agent or fabricates mention permission",
       "subcommands": [
         "list",
         "show"
       ],
       "usage_tokens": [
         "riido agents list",
-        "riido agents show"
+        "riido agents show",
+        "riido agents list --work <ID> --workspace <WORKSPACE-ID>",
+        "riido agents show <AGENT-ID> --work <ID> --workspace <WORKSPACE-ID>"
       ],
       "source_checks": [
         "main-command-agents",
-        "agents-subcommand-vocabulary"
+        "agents-subcommand-vocabulary",
+        "user-agents-command",
+        "user-agents-protected-read",
+        "user-agents-fixed-purpose",
+        "user-agents-public-shape",
+        "user-agents-cli-http-regression"
       ]
     },
     {
@@ -104,11 +215,12 @@
       "subcommands": [
         "login",
         "link",
+        "repair",
         "logout",
         "status"
       ],
       "usage_tokens": [
-        "riido auth <login|link|logout|status>"
+        "riido auth <login|link|repair|logout|status>"
       ],
       "source_checks": [
         "main-command-auth",
@@ -356,7 +468,7 @@
     {
       "name": "meeting-subcommand-vocabulary",
       "file": "cmd/riido/meeting_command.go",
-      "contains": "meetingCommandGet  meetingCommand = \"get\""
+      "contains": "meetingCommandGet      meetingCommand = \"get\""
     },
     {
       "name": "agents-subcommand-vocabulary",
@@ -437,6 +549,81 @@
       "name": "run-version-dispatch",
       "file": "cmd/riido/main.go",
       "contains": "return runVersion(args[1:])"
+    },
+    {
+      "name": "main-command-resource",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandResource            mainCommand = \"resource\""
+    },
+    {
+      "name": "main-command-repo",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandRepo                mainCommand = \"repo\""
+    },
+    {
+      "name": "main-command-thread",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandThread              mainCommand = \"thread\""
+    },
+    {
+      "name": "user-agents-command",
+      "file": "cmd/riido/user_agents.go",
+      "contains": "func (c contextIO) runUserAgents"
+    },
+    {
+      "name": "user-agents-protected-read",
+      "file": "internal/userauth/agent_read.go",
+      "contains": "return m.WithReadSession(ctx,"
+    },
+    {
+      "name": "user-agents-fixed-purpose",
+      "file": "internal/userauth/agent_read_ticket.go",
+      "contains": "ticket.Purpose != \"task_agents_read\""
+    },
+    {
+      "name": "user-agents-public-shape",
+      "file": "internal/userapi/agents_validate.go",
+      "contains": "func validPublicAgent"
+    },
+    {
+      "name": "user-agents-cli-http-regression",
+      "file": "cmd/riido/user_agents_test.go",
+      "contains": "TestUserAgentsCLIHTTPListAndShow"
+    },
+    {
+      "name": "main-command-workspace",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandWorkspace           mainCommand = \"workspace\""
+    },
+    {
+      "name": "main-command-config",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandConfig              mainCommand = \"config\""
+    },
+    {
+      "name": "main-command-completion",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandCompletion          mainCommand = \"completion\""
+    },
+    {
+      "name": "user-credential-origin-factory",
+      "file": "cmd/riido/user_session.go",
+      "contains": "standalonecli.NewProtectedStore(native, origin, authOrigin)"
+    },
+    {
+      "name": "user-credential-binding-refresh",
+      "file": "internal/userauth/refresh.go",
+      "contains": "fresh.Binding = &binding"
+    },
+    {
+      "name": "user-credential-binding-immutable",
+      "file": "internal/standalonecli/protected_store.go",
+      "contains": "!userauth.SameCredentialBinding(record.Credential.Binding, credential.Binding)"
+    },
+    {
+      "name": "user-auth-origin-command-snapshot",
+      "file": "cmd/riido/user_settings.go",
+      "contains": "args.AuthOrigin, args.AuthOriginSource = resolved.AuthOrigin, resolved.Sources[\"auth_origin\"]"
     }
   ],
   "forbidden_source_tokens": [
@@ -637,15 +824,39 @@
       "blocks": [
         {
           "kind": "paragraph",
+          "text": "Agent context part supports conditional body reuse inside one run capability only. The daemon keeps at most 8 entries per capability, 512 KiB per entry and 8 MiB total accounted payload in process memory; revoke, replacement and eviction remove entries. Runtime completion, stop and failed launch release the exact issued capability without touching a newer token for the same run; final activity checks recheck the exact token after their wait. Limits account for retained payload and metadata with overhead allowance, not the Go allocator footprint. Each read still sends device/lease authorization to the control plane and consumes quota and exact page-source audit before reuse. POST uses X-Riido-Context-Cache-Version: 1 and optional X-Riido-Context-Known-Digest, with optional content_digest and not_modified in a 200 response; it never uses HTTP304. Missing cache fields preserve legacy full reads; unsupported max_bytes fallback disables caching. Cache identity includes assignment, agent, task, lease, source, cursor and batch size. A conditional response requires the matching local digest and unchanged current metadata with no body; errors, malformed responses, ended/replaced capabilities and changed scope never serve stale data. Stored data is copied and never persisted or logged. The execution snapshot policy remains unchanged: original-source updates and permission changes apply to the next authenticated snapshot. This saves repeated response body transfer, not server page loading; cross-assignment reuse and automatic provider prompt delta remain separate."
+        },
+        {
+          "kind": "paragraph",
           "text": "The work-context commands let an agent running under the daemon, or a person in a terminal, read the Riido context of a work item on demand instead of receiving everything in the prompt. They extend this binary; there is no separate CLI engine."
         },
         {
           "kind": "paragraph",
-          "text": "Standalone user authentication is required for RIID-5900. Browser OAuth and protected-store integration are implemented; actual signed-helper acceptance and server rollout remain separate release gates. The portable userauth layer uses a public OAuth client, S256 PKCE, request-bound state and a bounded literal-loopback callback; it exchanges, refreshes and revokes credentials directly without Desktop or daemon. It accepts HTTPS endpoints (HTTP only for literal loopback tests), bounds response bodies, rejects redirects and never includes provider bodies or secrets in diagnostics. The installed CLI keeps one current account per API origin and client; replacement verifies the new grant before storing it and revokes the previous grant. Refresh is serialized across CLI processes and logout wins over late refresh. Before network rotation, the manager atomically saves a fresh canonical 32-byte recovery secret with the old token and original SessionID in the protected record. The dedicated urn:riido:params:oauth:grant-type:refresh-recovery grant returns refresh_recovery=v1 and the same next refresh for exact retries; a process restart reuses only that original pair. Pending recovery takes priority over a still-valid old access token. An older server fails closed without legacy fallback. Network or ambiguous final-save failures preserve recovery and do not revoke the newly rotated family. Completed save clears the pending secret; logout/account replacement never restores it. The server rechecks account, installation and device policy on every receipt and preserves original grant expiry and replay revocation. Reading stored credentials requires OS user presence, not an environment-variable or process-ID check. Metadata status and first item creation do not prove user presence. Every new or replacement login must execute Status -> EnsureInstallationKey -> installation intent -> browser/PKCE -> typed protected proof -> token exchange -> Whoami -> save. EnsureInstallationKey includes fresh native OS confirmation before returning a protected public key. The explicit ConfirmUserPresence operation remains available but standalone login does not call it a second time. Refusal, timeout, cancellation, unavailable protection, or an older helper must fail before opening the browser, calling user APIs, or replacing a prior session. A fresh LAContext uses deviceOwnerAuthentication for each interactive confirmation, with no reusable result; noninteractive requests are rejected without invoking OS verification. The confirmation deadline bounds signing and the child operation; native TIMED_OUT and caller deadlines preserve timeout exit 6, distinct from user cancellation exit 3 and unavailable protection exit 8. This source contract is not signed-helper acceptance or server-verifiable installation binding; both remain separate gates. The macOS native helper is an independently signed/profile-bearing app-like bundle and uses a versioned, size-bounded private JSON protocol with status/load/save/delete/confirm; missing protection is fail-closed. Before sending any helper request, the CLI must dynamically authenticate the started, unreaped helper process; a prior path signature check alone is not a credential-delivery boundary. A helper path replaced between inspection and launch must receive no credential bytes. Real user-mode availability is not enabled merely by adding these components or passing fake-store tests. Browser login, protected storage, real user API calls, refresh, revocation and existing agent-mode isolation must all pass before claiming support."
+          "text": "Agent context get adds data.snapshot_id and data.captured_at to the existing context object. The assignment ID is the opaque snapshot reference, not a credential or permission to query another run. The SaaS adapter checks response assignment/task/view against the active request and requires a capture timestamp before publishing provenance. Metadata participates in budget accounting while only free text is shortened, so identifiers stay intact and versioned content/pages keep their existing preservation warnings. captured_at is the server snapshot time, not proof of a fresh original-source read or reauthorization; inherited snapshots may have a newer capture timestamp. User live reads and live Agent directory results do not acquire snapshot provenance. Legacy snapshot IDs are not content hashes or proof that physical legacy storage cannot be overwritten. Agent context changes --since SNAPSHOT sends one current-run request to the server and compares only its authenticated conversation ancestry. Validate the returned snapshot_id/since and reject live or malformed comparisons. Project only current title/part metadata, preserving digest/cursors/completeness; --budget CHARS is optional and must be positive, and overflow returns INCOMPLETE exit9 with context get recovery instead of cutting comparison metadata. Never expose unknown extra body fields or unrelated/body audit sources. Changes requests send X-Riido-Context-Changes-Version: 2. A server that supports it may explain an omitted source as deleted (deleted while the requester keeps team membership) or unselected (still readable, outside this capture) with kind/ID/part only and no full refresh; sources the requester can no longer read are left out. Any other omission must be unavailable/not_in_current_capture, and omitted entries with titles, team, key, reasons or another status are rejected. Unavailable/partial/unknown omitted sources require a full context get; HTTP410 maps to SNAPSHOT_EXPIRED exit5. No raw cache or provider-session delta is implied. User mode remains unsupported; server/daemon rollout and real-account acceptance are separate gates."
         },
         {
           "kind": "paragraph",
-          "text": "Standalone credentials (including an optional pending refresh recovery secret) and an optional explicit device-link pending request share one versioned OS-protected resource record. Protected session v3 adds the optional credential refresh_recovery_secret; v1/v2 envelopes remain readable but cannot carry that field, and migrate only on successful save. These values remain in the same original SessionID and native atomic record, bounded to the native helper's 32 KiB opaque value. Existing credential JSON remains readable and migrates only on a successful next save; unknown or malformed envelope versions, duplicate keys and case aliases fail without overwriting or deleting the original record. After restart, pending reads require only the configured resource and expected current SessionID, returning the stored original device/key binding without a live daemon or lost in-memory state. Begin and Clear still compare the complete immutable binding. Pending recovery binds one immutable random request ID/secret to the exact canonical API resource, client riido-cli, current credential SessionID, protected key fingerprint and expected daemon device. It is stored atomically under the existing resource lock before the first link network request. Same-session token refresh preserves pending; account replacement never rebinds old pending to the new SessionID; logout deletes the entire record while leaving the installation key intact. Pending create/load/clear recheck the current session under that same lock, so late work after logout or a session switch cannot restore or clear another request. Storage errors, locked/cancelled OS confirmation and unknown schema do not trigger plaintext/environment fallback or implicit pending deletion. Ordinary login/API/refresh remains daemon-free. This record boundary alone does not implement the public link command, browser approval UI, fixed HTTP recovery, device confirm IPC, unknown repair or signed-helper acceptance."
+          "text": "User `work search --workspace ID --query TEXT [--cursor CURSOR] [--limit 1..100]` uses protected OAuth and fixed RiidoCLIWorkSearch / searchWorkspaceWork. The additive component API searches accessible component (including hierarchy kinds), backlog and intake titles, stored/display keys and visible description/current document text; completed/archived work is included, deleted/permanently deleted work and templates excluded. It requires original active workspace/team membership before paging, with no demo/admin substitution or M1 candidate cap. Provider JSON text nodes/HTML text are selected from the current stored projection (explicit empty stays empty); external content, comment and meeting search are separate. Query uses literal normalized case/whitespace substring semantics, 1..200 Unicode runes. Default20/max100, live updatedAt DESC/kind/id order, workspace/query-bound opaque cursor and per-request authorization; no stable cross-request snapshot, relevance ranking or hidden totals. Server selects current sources and bounds work/batch source bytes at 4MiB/8MiB before serialization; known Riido mention display labels are searchable and arbitrary attributes are excluded. Server scans bounded candidate batches and fails whole request on unreadable body/timeout instead of partial success. JSON data.search validates schema, workspace/query, limit, required/nullable fields, matchedFields, order/duplicates and complete/nextCursor. Text quotes remote values; continuation names the unchanged options and returns only a canonical base64url cursor, never an executable command interpolating the search query. Agent work search remains exit8 before user credentials/IPC. Server query/allowlist deployment and actual OAuth/OS acceptance remain distinct from synthetic HTTP proof."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Standalone user `riido repo list --work <ID> --team-id <TEAM-ID>` reads Riido-stored linked repository metadata (id/fullName/isPrivate/repositoryUrl/source) and linked PR summaries (id/title/number/state/htmlUrl/updatedAt/commentsCount/aiShortSummary) with a fixed getComponentReadScope selection. The existing server collects its authorized one-hop scope; the CLI includes only the uniquely identified component root and does not infer links between the separate repository and PR arrays. It does not contact GitHub, clone/fetch a repository, read external PR content, probe local Git/GitHub/SSH credentials, or grant private-repository access. data.local_repository_authentication is always {used:false,availability:\"not_checked\"}; Riido metadata visibility is not evidence of external repository authorization. Agent mode fails with exit8 before opening user credentials or IPC. Empty/null values, private=false, source labels, ordering and nullable timestamps are preserved; missing required fields, duplicate IDs or contradictory availability fail closed. Missing/unavailable parts are not silently treated as complete empty results. JSON uses data.repo with workId/teamId/repositories/pullRequests/partsStatus/complete/metadataVersion. Text quotes remote values. The command shares the root/status/deferred-metadata reader with resource list: exact original version/team/selector/offset, complete canonical SHA-256 verification, 16MiB automatic assembly bound, no partial output on denial/conflict/cancellation, and a directly executable work body continuation with the original version on overflow. resource list behavior is preserved by its existing regressions. No new API allowlist, server schema or authentication scope is introduced. Actual deployed OAuth/native-helper acceptance remains separate from synthetic HTTP receipt tests."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Standalone user `riido resource list --work <ID> --team-id <TEAM-ID>` returns the named work's authorized stored links (nullable title/URL), attachments (fileName/fileLocation), and nullable Figma reference. It does not download external URLs, emit unrelated metadata fields, include adjacent works' resources in its result, or infer local repository authorization. The initial getComponentReadScope call still collects the existing authorized one-hop scope; the CLI projects only the unique component root matching the requested team and root reason. It preserves resource statuses and warns when a part is unavailable instead of treating it as an empty successful list. Deferred metadata is read with the original version and contiguous byte offsets through getComponentReadScopeBody; every request retains user authorization, then the complete JSON and SHA-256 are validated before selected fields are emitted. Auto-assembly is bounded at 16 MiB; larger metadata returns explicit incomplete with a directly executable `work body --part metadata` command containing the original work/team/version/offset. The typed limit error preserves that authorized version; it does not depend on repeating context or related-meeting queries and never returns a truncated list. A changed version, revoked permission, malformed page or cancellation emits no partial list. Stored nullable/empty values and order remain intact; missing, duplicated or contradictory part metadata fails closed. JSON uses the existing envelope and text quotes all remote strings. User opaque work IDs require team IDs; component display keys accept workspace and/or team scope as described below. Pagination/budget overrides are unsupported. Agent resource list is exit 8 without opening user credentials or issuing IPC. The opaque-ID path retains its existing API contract; the display-key path additionally requires the deployed resolveCLIWorkReference query; actual signed user-authenticated acceptance remains separate from synthetic HTTP tests."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Standalone user `riido work tree <ID> --team-id <TEAM-ID>` uses the existing getComponentReadScope GraphQL query with a fixed summary-only selection. It emits the authorized root, project/milestone/parentTask ancestor roles (at most one each), and the server-selected direct children (maximum 10), with maxDepth=1, childrenLimit and contextStatus. Ancestor roles describe the root; they do not assert edges between ancestors. Mention/related-only resources are excluded. A resource may have several ancestor roles; child order follows the server scope, not a client sort. Missing authorized ancestors or an empty selected child list do not prove that no hidden or additional records exist; no hidden count, all-descendants total, pagination or completeness claim is emitted. Partial scope status is retained with CONTEXT_INCOMPLETE. After optional display-key resolution, this command sends one live user OAuth GraphQL read without fetching bodies, meeting boards or additional levels, and does not use the daemon. User mode accepts opaque work IDs with team ID, or component display keys with workspace and/or team scope. Cursor/page/budget/limit overrides are unsupported. Malformed scope identity, duplicate rows, missing summaries or ambiguous hierarchy roles fail without partial output. Agent mode retains its existing execution-scoped daemon/snapshot broker. Actual OS-signed login and production API acceptance remain separate from synthetic credential HTTP tests."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Standalone user authentication is required for RIID-5900. Browser OAuth and protected-store integration are implemented; actual signed-helper acceptance and server rollout remain separate release gates. The portable userauth layer uses a public OAuth client, S256 PKCE, request-bound state and a bounded literal-loopback callback; it exchanges, refreshes and revokes credentials directly without Desktop or daemon. It accepts HTTPS endpoints (HTTP only for literal loopback tests), bounds response bodies, rejects redirects and never includes provider bodies or secrets in diagnostics. Protected custody keeps one current account per API resource, client and authentication origin; replacement verifies the new grant before storing it and revokes only that origin's previous grant. Browser login remains independent. Explicit --desktop login uses a compatible installed Desktop app and verifies the direct token response origin before protected storage; Desktop app consumption, OS protocol registration and signed real-account acceptance remain separate gates. Existing credentials are selected per command/profile by authentication origin. Refresh is serialized across CLI processes and logout wins over late refresh. Before network rotation, the manager atomically saves a fresh canonical 32-byte recovery secret with the old token and original SessionID in the protected record. The dedicated urn:riido:params:oauth:grant-type:refresh-recovery grant returns refresh_recovery=v1 and the same next refresh for exact retries; a process restart reuses only that original pair. Pending recovery takes priority over a still-valid old access token. An older server fails closed without legacy fallback. Network or ambiguous final-save failures preserve recovery and do not revoke the newly rotated family. Completed save clears the pending secret; logout/account replacement never restores it. The server rechecks account, installation and device policy on every receipt and preserves original grant expiry and replay revocation. Reading stored credentials requires OS user presence, not an environment-variable or process-ID check. Metadata status and first item creation do not prove user presence. Every new or replacement login must execute Status -> EnsureInstallationKey -> installation intent -> browser/PKCE or compatible Desktop handoff -> typed protected proof -> token exchange -> Whoami -> save. EnsureInstallationKey includes fresh native OS confirmation before returning a protected public key. The explicit ConfirmUserPresence operation remains available but standalone login does not call it a second time. Refusal, timeout, cancellation, unavailable protection, or an older helper must fail before opening the browser, calling user APIs, or replacing a prior session. A fresh LAContext uses deviceOwnerAuthentication for each interactive confirmation, with no reusable result; noninteractive requests are rejected without invoking OS verification. The confirmation deadline bounds signing and the child operation; native TIMED_OUT and caller deadlines preserve timeout exit 6, distinct from user cancellation exit 3 and unavailable protection exit 8. This source contract is not signed-helper acceptance or server-verifiable installation binding; both remain separate gates. The macOS native helper is an independently signed/profile-bearing app-like bundle and uses a versioned, size-bounded private JSON protocol with status/load/save/delete/confirm; missing protection is fail-closed. Before sending any helper request, the CLI must dynamically authenticate the started, unreaped helper process; a prior path signature check alone is not a credential-delivery boundary. On macOS the running-process check passes codesign --ignore-resources because a pid disk representation cannot re-read sealed bundle resources (codesign reports Invalid argument for every +PID target on macOS 27); it still enforces dynamic validity, the code directory, the pinned Apple-anchored identifier/team requirement, hardened runtime and the entitlement policy. Bundle resources are verified on the helper path immediately before launch and, with every architecture, by packaged-helper verification. A helper path replaced between inspection and launch must receive no credential bytes. Real user-mode availability is not enabled merely by adding these components or passing fake-store tests. Browser login, protected storage, real user API calls, refresh, revocation and existing agent-mode isolation must all pass before claiming support."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Standalone credentials (including an optional pending refresh recovery secret) and an optional explicit device-link pending request share one versioned OS-protected resource record. Protected session v4 adds a complete immutable binding from one verified proof-backed login: authentication origin (browser/Desktop), exact resource, client riido-cli, Whoami account ID and the exchanged installation key fingerprint. It does not invent server installation or parent-session IDs. Partial/unknown/duplicate/case-alias bindings fail closed. Browser/Desktop item keys are distinct, while legacy browser keys and common resource credential/repair-operation locks are preserved. A Desktop store rejects unbound or browser records without fallback. Raw/v1/v2/v3 records remain explicitly unbound browser compatibility; only successful save upgrades raw/v1/v2 to v3, and only a fresh proof login creates v4. A current local key plus legacy Whoami does not establish old grant provenance. v3 supports refresh_recovery_secret; v1/v2 cannot carry it. Refresh copies the exact binding, and same-SessionID save cannot add, erase or replace it. Bound pending links must match the credential resource/client/key. See [custody contract](../cli-auth-custody.md). These values remain in the same original SessionID and native atomic record, bounded to the native helper's 32 KiB opaque value. Existing credential JSON remains readable and migrates only on a successful next save; unknown or malformed envelope versions, duplicate keys and case aliases fail without overwriting or deleting the original record. After restart, pending reads require only the configured resource and expected current SessionID, returning the stored original device/key binding without a live daemon or lost in-memory state. Begin and Clear still compare the complete immutable binding. Pending recovery binds one immutable random request ID/secret to the exact canonical API resource, client riido-cli, current credential SessionID, protected key fingerprint and expected daemon device. It is stored atomically under the existing resource lock before the first link network request. Same-session token refresh preserves pending; account replacement never rebinds old pending to the new SessionID; logout deletes the entire record while leaving the installation key intact. Pending create/load/clear recheck the current session under that same lock, so late work after logout or a session switch cannot restore or clear another request. Storage errors, locked/cancelled OS confirmation and unknown schema do not trigger plaintext/environment fallback or implicit pending deletion. Ordinary login/API/refresh remains daemon-free. This record boundary alone does not implement the public link command, browser approval UI, fixed HTTP recovery, device confirm IPC, unknown repair or signed-helper acceptance."
         },
         {
           "kind": "paragraph",
@@ -653,11 +864,15 @@
         },
         {
           "kind": "paragraph",
-          "text": "Explicit CLI device linking uses only private cli_installation_link_info and cli_installation_link_confirm IPC with schema riido-cli-device-link-ipc.v1. These methods are separate from context_read and never accept run capabilities, caller-selected URLs, OAuth credentials or recovery secrets. The daemon requires an explicitly configured RIIDO_CLI_API_URL canonical HTTPS resource and its current DeviceID/device credential/SaaS HTTPS origin; missing settings make only linking unsupported. ServerURL, DaemonID and standalone default origins are never authority fallbacks. Info returns only resource and DeviceID. Confirm validates immutable approved-proof binding and P-256 DER signature shape, posts once to the fixed control-plane confirm endpoint using daemon-only device headers, rejects redirects and malformed/mismatched acknowledgements, and never exposes raw errors or credentials. The CP acknowledgement is not final monolith linked completion: the caller retains its original protected pending pair and recovers the original server receipt. Strict decoding applies only to these new methods; existing IPC remains compatible. Desktop profile resource injection, standalone orchestration and actual signed OS acceptance are separate follow-up gates."
+          "text": "Explicit repair after logout uses the same existing OS-protected installation key. The typed installation-repair-proof helper signs only riido-cli-installation-repair-request.v1, canonical HTTPS resource, client riido-cli, a canonical 32-byte base64url request ID, decoded SHA-256 key fingerprint and decoded SHA-256 recovery-secret hash; fields use uint32 big-endian length framing. It never receives arbitrary bytes or the recovery secret, accesses OAuth credentials, creates a missing key or substitutes an OAuth/device-link proof. Native user-presence and live helper verification still apply, and the Go caller verifies the returned DER signature against the exact proof. Missing/older helpers fail closed. The protected repair request must be saved before network creation and reused after response loss; new human consent, authenticated daemon confirmation and final server linked receipt are mandatory. Signing alone neither restores an old grant nor completes repair. The CLI orchestration below uses this proof; consent UI and real signed-helper acceptance remain separate gates. The fixed installation-repairs create transport sends only the public key, typed signature and recovery hash; recovery sends only the durably retained request ID and secret. Neither transport reads, refreshes or revokes OAuth credentials, sends ambient cookies/Origin, follows redirects or accepts a caller URL. Responses are bounded to 4 KiB and exact-schema decoded. Only exact HTTP400 invalid_installation_repair may permit first creation of a prepared request. Recovery proof resource/client/key are locally bound; its server-selected original device must match the authenticated daemon before signing. Linked receipt recovery itself does not require a live daemon. Repair custody uses a separate OS-protected resource-and-authentication-origin item with its own strict version, but both origins hold the existing common resource credential lock for state changes. Browser and Desktop repair payload keys differ; logout deletes only its origin's payload, including logged-out requests. The installation key and shared repair-operation lock remain common. It captures the current local SessionID (or no-session) and the existing key fingerprint. Ordinary status remains credential presence only. Logout clears auxiliary repair custody under that lock even without an OAuth credential; a failed clear reports failure and preserves the original request. A different successful login invalidates the captured session binding without silently replacing the repair pair. Prepared/created progress, exact request cleanup and ambiguous-save retry never overwrite a newer request. OS key material survives logout as before. The explicit auth repair command recovers before creating, opens the fixed repair authorize entry, waits through preparing, validates the authenticated daemon device before typed confirmation, and requires the monolith linked receipt before cleanup. It never logs in automatically. A user-requested --restart may replace only an exact locally retained request whose server positively reports approval_expired, repair_expired, consent_rejected or recovery_expired. Terminal replies do not delete custody or start new consent by themselves; without --restart the original pair stays protected. The CLI distinguishes rejected consent from expiration. recovery_expired ends the old consent only: it does not guarantee an unknown installation or a new repair, so already linked installations can proceed to normal auth login instead. HTTP400 invalid_installation_repair is not terminal evidence: it can mean a temporarily inactive client or principal. Active/ambiguous/transient states preserve the original pair. The server persists its terminal fence before returning expiration; the CLI still does not infer deletion, terminal state or completion from 400. Older servers without positive terminal responses preserve the original pair. Restart requires interactive existing-key confirmation, saves a new protected pair with compare-and-swap and then obtains fresh human consent. Noninteractive repair only recovers existing custody and never creates, restarts, opens a browser or signs. On macOS/Linux, auth repair acquires a nonblocking OS process lock for the existing origin-hashed repair item before reading pending state. Only one live repair operation per API resource/installation, across browser and Desktop authentication origins, may open approval, sign or confirm; a contending command fails with REPAIR_IN_PROGRESS (CONFLICT/10) without reading or changing custody or contacting APIs/daemon. This operation lock is distinct from the short credential transaction lock, so logout and login can still invalidate the captured binding. Unlock is deferred on every return and the OS releases it on process exit; a later command recovers the original pending pair. It is not persistent exactly-once state and does not suppress necessary retry after a crash. Unsupported platforms and unavailable locks fail closed."
         },
         {
           "kind": "paragraph",
-          "text": "The private native helper also has typed installation-key and installation-proof operations. Both require interactive user verification and the existing signature/bundle/live-process boundary. Their value is bounded base64-encoded flat JSON, never an arbitrary signing message. A stable, non-extractable P-256 key is scoped to OS user, exact canonical API resource and client riido-cli in the dedicated Data Protection Keychain group with WhenUnlockedThisDeviceOnly/userPresence. Existing keys are reused; native helper processes serialize first-key creation with a scope-specific advisory lock in the OS account home, recheck under that lock, and reject ambiguous Keychain matches. The empty lock coordinates cooperating helpers and does not replace OS user presence; it is not a credential store. Credential logout or account replacement never deletes or rotates installation keys. installation-key returns only its public X9.63 key, algorithm and SHA-256 fingerprint. installation-proof validates the exact read-only authorization intent, challenge digest, key fingerprint, authorization code, loopback redirect, PKCE/state and expiry, then signs only the domain-separated length-prefixed installation proof with SHA256/X9.62 DER. Noninteractive, malformed, duplicate, unknown, expired, mismatched-key or missing protection requests fail before signing. No private-key export, arbitrary-sign, plaintext fallback or installation-key delete API exists. Unsigned compile and fake-store/golden tests are source evidence only: real signed Keychain acceptance, deployed CLI OAuth acceptance, daemon-device link and server policy remain separate gates."
+          "text": "Explicit CLI device linking uses only private cli_installation_link_info and cli_installation_link_confirm IPC with schema riido-cli-device-link-ipc.v1. In user mode without RIIDO_DAEMON_SOCKET, the CLI first uses the Riido desktop app daemon socket for the build default profile when it exists (macOS: riido-desktop/ai-agent-daemon/agentd.sock for production, ai-agent-daemon-staging for staging), otherwise the default agentd endpoint; agent mode keeps the injected socket. These methods are separate from context_read and never accept run capabilities, caller-selected URLs, OAuth credentials or recovery secrets. The daemon requires an explicitly configured RIIDO_CLI_API_URL canonical HTTPS resource and its current DeviceID/device credential/SaaS HTTPS origin; missing settings make only linking unsupported. ServerURL, DaemonID and standalone default origins are never authority fallbacks. Info returns only resource and DeviceID. Confirm validates immutable approved-proof binding and P-256 DER signature shape, posts once to the fixed control-plane confirm endpoint using daemon-only device headers, rejects redirects and malformed/mismatched acknowledgements, and never exposes raw errors or credentials. The CP acknowledgement is not final monolith linked completion: the caller retains its original protected pending pair and recovers the original server receipt. Strict decoding applies only to these new methods; existing IPC remains compatible. Desktop profile resource injection, standalone orchestration and actual signed OS acceptance are separate follow-up gates."
+        },
+        {
+          "kind": "paragraph",
+          "text": "The private native helper also has typed installation-key and installation-proof operations. Both require interactive user verification and the existing signature/bundle/live-process boundary. Their value is bounded base64-encoded flat JSON, never an arbitrary signing message. A stable P-256 key generated in the Secure Enclave (the private key never leaves hardware; Macs without a Secure Enclave fail closed) is scoped to OS user, exact canonical API resource and client riido-cli in the dedicated Data Protection Keychain group with WhenUnlockedThisDeviceOnly/userPresence plus private-key usage, under the v2 application tag. Software keys in that keychain always report themselves extractable, so the helper checks the Secure Enclave token instead; a v1 software key left by an earlier build is never matched, reused or deleted. Existing keys are reused; native helper processes serialize first-key creation with a scope-specific advisory lock in the OS account home, recheck under that lock, and reject ambiguous Keychain matches. The empty lock coordinates cooperating helpers and does not replace OS user presence; it is not a credential store. Credential logout or account replacement never deletes or rotates installation keys. installation-key returns only its public X9.63 key, algorithm and SHA-256 fingerprint. installation-proof validates the exact read-only authorization intent, challenge digest, key fingerprint, authorization code, loopback redirect, PKCE/state and expiry, then signs only the domain-separated length-prefixed installation proof with SHA256/X9.62 DER. Noninteractive, malformed, duplicate, unknown, expired, mismatched-key or missing protection requests fail before signing. No private-key export, arbitrary-sign, plaintext fallback or installation-key delete API exists. Unsigned compile and fake-store/golden tests are source evidence only: real signed Keychain acceptance, deployed CLI OAuth acceptance, daemon-device link and server policy remain separate gates."
         },
         {
           "kind": "paragraph",
@@ -694,9 +909,9 @@
             "with `RIIDO_CONTEXT_CLI=on`, the daemon issues a random per-run capability at provider launch (stored only as a SHA-256 hash, rotated on retry) and injects `RIIDO_RUN_TOKEN`, `RIIDO_DAEMON_SOCKET`, `RIIDO_TASK_ID`, `RIIDO_WORKSPACE_ID`, and its own bin directory first on `PATH`",
             "the broker rejects missing, unknown, rotated, or ended-run capabilities with exit 4 `PERMISSION_DENIED`, and task or workspace mismatches with exit 4 `OUT_OF_RUN_SCOPE`. It answers `whoami` with run facts plus a `REQUESTER_UNRESOLVED` warning",
             "on the SaaS control plane, Riido data reads come from the assignment context snapshot (control-plane ADR-001 option 4): the task context the server composed into the prompt at assign/reply time. The broker sends `POST /v1/agents/{agent_id}/assignment-context` with the device credential and the run's lease token, which never leave the daemon. `context get` (without `--work` it reads the assigned task), `work get` (the task or its project, milestone, or parent), `work tree`, `work relations` (links, files, and related work and meeting titles), and `work comments` (all comments stored at assignment time in priority order — the comment that started the run, the 20 most recent, then older — paged by `--cursor`) are served with an `ASSIGNMENT_SNAPSHOT` warning. `--budget CHARS` is enforced by the broker: the longest free-text fields (content, body, description, summary) are halved (marked `…`) while ids, keys and URLs are never shortened, until the JSON data fits, with a `BUDGET_TRUNCATED` warning and truncated sources, or `BUDGET_EXCEEDED` when the structure alone is larger. A run whose runtime cannot answer the activity check in time gets a retryable exit 6 and keeps its capability; the server records each served source as a read. `agents list` (50 per `--cursor` page) and `agents show <agent-id>` are not snapshot reads: the control-plane answers them live (`live: true`) for the requester-visible agents only, with public description and role status, work status, runtime connection and `callable`/`unavailable_reasons` but no instructions or owners, and the broker marks them with a `LIVE_STATUS` warning instead of `ASSIGNMENT_SNAPSHOT`. Work outside the snapshot returns exit 4 `OUT_OF_RUN_SCOPE`, an ended run exit 10 `LEASE_LOST`, and a server without the feature exit 8 `CONTROL_PLANE_UNSUPPORTED`",
-            "Agent-mode `work activity`, `work search`, and `context changes` are not implemented. Capabilities marks them unavailable, help labels them unsupported, and valid calls return exit 8 `CONTROL_PLANE_UNSUPPORTED` before daemon IPC; file and task-DB control planes have no snapshot either",
-            "Capability-bearing provider launches add snapshot CLI instructions on the existing native/inline surfaces. Claude approval mode adds only the supported read leaves to --allowedTools: context get/part, work get/tree/relations/comments, agents list/show and meeting list/get, with exact and argument-bearing rules. No broad riido/work/context wildcard, write, auth, unsupported read, or permission-bypass rule is added. Caller allowedTools aliases cannot override the daemon-owned list while enabled. Missing capability/socket/task keeps prior launch behavior. Native shell composition parsing remains Claude-owned and needs real-runtime QA. Codex uses a daemon-owned, shell-quoted absolute executable in its CLI instructions to avoid login-shell PATH replacement; this does not change native sandbox/socket permissions.",
-            "user mode implements `auth login [--browser]`, `auth status`, `auth logout`, `whoami`, `work get <COMPONENT-ID> --team-id <TEAM-ID>`, `work comments <COMPONENT-ID> --team-id <TEAM-ID> [--page N] [--limit N]`, `work activity <COMPONENT-ID> --team-id <TEAM-ID> [--page N] [--limit N]`, and `work replies <COMPONENT-ID> --team-id <TEAM-ID> --comment-id <COMMENT-ID>`. Login and reads require a valid signed macOS helper, OS user presence and the deployed public-client OAuth server contract. Missing helper protection fails before opening the browser. `auth status` reports credential presence without reading it or claiming API verification. User `context get`, `work body`, `meeting get` and `meeting body` additionally require the read-scope server contract. `--desktop`, `--with-token` and the remaining unadvertised user-mode commands remain unsupported. Display keys are not accepted in user-mode work reads; use exact component and team IDs"
+            "Agent-mode `work activity` and `work search` are not implemented. Capabilities marks them unavailable, help labels them unsupported, and valid calls return exit 8 `CONTROL_PLANE_UNSUPPORTED` before daemon IPC; file and task-DB control planes have no snapshot either",
+            "Capability-bearing provider launches add snapshot CLI instructions on the existing native/inline surfaces. Claude approval mode adds only the supported read leaves to --allowedTools: context get/part/changes, work get/tree/relations/comments, agents list/show and meeting list/get, with exact and argument-bearing rules. No broad riido/work/context wildcard, write, auth, unsupported read, or permission-bypass rule is added. Caller allowedTools aliases cannot override the daemon-owned list while enabled. Missing capability/socket/task keeps prior launch behavior. Native shell composition parsing remains Claude-owned and needs real-runtime QA. Codex uses a daemon-owned, shell-quoted absolute executable in its CLI instructions to avoid login-shell PATH replacement; this does not change native sandbox/socket permissions.",
+            "user mode implements `auth login [--browser|--desktop]`, `auth status`, `auth logout`, `whoami`, `work get <COMPONENT-ID> --team-id <TEAM-ID>`, `work comments <COMPONENT-ID> --team-id <TEAM-ID> [--page N] [--limit N]`, `work activity <COMPONENT-ID> --team-id <TEAM-ID> [--page N] [--limit N]`, and `work replies <COMPONENT-ID> --team-id <TEAM-ID> --comment-id <COMMENT-ID>`. Login and reads require a valid signed macOS helper, OS user presence and the deployed public-client OAuth server contract. Missing helper protection fails before opening the browser. `auth status` reports credential presence without reading it or claiming API verification. User `context get`, `work body`, `meeting get` and `meeting body` additionally require the read-scope server contract. `--with-token` and the remaining unadvertised user-mode commands remain unsupported. Component display keys are supported by the work/context/resource/repo/meeting-list readers described below, using workspace and/or team scope. Thread and Agent display-key consumers remain follow-up work"
           ]
         },
         {
@@ -717,7 +932,7 @@
         },
         {
           "kind": "paragraph",
-          "text": "User `work activity <ID> --team-id <TEAM-ID> [--page N] [--limit N]` performs one fixed getComponentActivityLogs query under the current protected OAuth session. Its ComponentP06ActivityPaginationInput page/limit are canonical decimal strings: page defaults to 1, limit to 20, positive int32 page and int32-safe offset, limit at most 100. The server must authorize the actual component/team and nested author scope in that same read. Output data.activityLogs and data.meta preserve every selected field, null versus empty property/oldValue/newValue, author/profile/avatar metadata, ordering and live offset page metadata; envelope page remains null. Missing required fields, inconsistent metadata, partial GraphQL errors and responses above 2 MiB fail without partial output or truncation. Activity strings are not recursively resolved. Actual component/team IDs are required; display keys, workspace/profile/cursor, recursive or all-pages options are unsupported. Agent activity remains exit 8 without opening user storage or daemon IPC, even when a user credential exists. Help examples leave --no-input optional because OS presence may be required. API deployment, installed signed-helper and actual-account acceptance remain separate from local command/HTTP fixtures."
+          "text": "User `work activity <ID> --team-id <TEAM-ID> [--page N] [--limit N]` performs one fixed getComponentActivityLogs query under the current protected OAuth session. Its ComponentP06ActivityPaginationInput page/limit are canonical decimal strings: page defaults to 1, limit to 20, positive int32 page and int32-safe offset, limit at most 100. The server must authorize the actual component/team and nested author scope in that same read. Output data.activityLogs and data.meta preserve every selected field, null versus empty property/oldValue/newValue, author/profile/avatar metadata, ordering and live offset page metadata; envelope page remains null. Missing required fields, inconsistent metadata, partial GraphQL errors and responses above 2 MiB fail without partial output or truncation. Activity strings are not recursively resolved. Opaque component IDs require team IDs; display keys accept workspace and/or team scope and one exact resolver request before the activity query in the same protected session. Profile selection is supported. Cursor, recursive and all-pages options are unsupported. Agent activity remains exit 8 without opening user storage or daemon IPC, even when a user credential exists. Help examples leave --no-input optional because OS presence may be required. API deployment, installed signed-helper and actual-account acceptance remain separate from local command/HTTP fixtures."
         },
         {
           "kind": "paragraph",
@@ -725,11 +940,11 @@
         },
         {
           "kind": "paragraph",
-          "text": "RIID-5900 read-scope expansion: user `context get --work <ID> --team-id <TEAM-ID>` uses the fixed typed getComponentReadScope query with the protected OAuth session, without daemon IPC or a browser. The server selects explicit structured mentions, five direct related works across relation types, five direct meetings, direct parent/goal/project and ten direct children; these counts are the current implementation interpretation pending product clarification. Targets are deduplicated and never expanded through a second relation hop. Task details, links, GitHub/Figma metadata, comments and body, plus meeting details and structured board users/groups/labels/cards must retain typed fields and per-part completeness. Scope reads do not fetch external provider bodies. Required IDs/options and server scope identity are validated before emitting data. Source fixtures, server deployment and signed-helper runtime acceptance remain separate gates."
+          "text": "RIID-5900 read-scope expansion: user `context get --work <ID> --team-id <TEAM-ID>` uses the fixed typed getComponentReadScope query with the protected OAuth session, without daemon IPC or a browser. The server selects explicit structured mentions, five direct related works across relation types, five direct meetings, direct parent/goal/project and ten direct children; these counts are confirmed product policy. Targets are deduplicated and never expanded through a second relation hop. Task details, links, GitHub/Figma metadata, comments and body, plus meeting details and structured board users/groups/labels/cards must retain typed fields and per-part completeness. Scope reads do not fetch external provider bodies. Required IDs/options and server scope identity are validated before emitting data. Source fixtures, server deployment and signed-helper runtime acceptance remain separate gates."
         },
         {
           "kind": "paragraph",
-          "text": "User-mode `work activity`, `work comments`, `work body`, `meeting get` and `meeting body` accept `--limit`; other commands retain exit 8 unless their typed page contract explicitly supports it. `--team` and `--profile` remain unsupported. Agent comments keep a fixed 20-item page and agent lists a fixed 50-item page; continue with their next cursor. Agent `work replies` is unsupported and never opens user storage or daemon IPC. CLI requests do not forward an ineffective default limit or team filter."
+          "text": "User-mode `work activity`, `work comments`, `work body`, `meeting get`, `meeting comments` and `meeting body` accept `--limit`; other commands retain exit 8 unless their typed page contract explicitly supports it. `--team` and `--profile` remain unsupported. Agent comments keep a fixed 20-item page and agent lists a fixed 50-item page; continue with their next cursor. Agent `work replies` is unsupported and never opens user storage or daemon IPC. CLI requests do not forward an ineffective default limit or team filter."
         },
         {
           "kind": "paragraph",
@@ -749,15 +964,19 @@
         },
         {
           "kind": "paragraph",
-          "text": "User context resolves each selected meeting through getMeetingReadScope using its authorized ID/team, then attaches its detail/board snapshot without following the meeting relations. A permission change between selection and detail read fails the command without emitting a partial scope. User meeting get supports board cursors (default 100, max 200 cards), retaining empty participant rows and all board groups/labels. Board cursors bind the meeting, team and metadata/card version; body pages use meeting body with the same source/version/byte rules as work body. These are live reads and never consume the Agent snapshot capability or bypass the protected OAuth session. A partial board or body retains its continuation and incomplete state; meeting list in user mode remains unsupported."
+          "text": "User context resolves each selected meeting through getMeetingReadScope using its authorized ID/team, then attaches its detail/board snapshot without following the meeting relations. User context get, resource list and repo list hold the protected credential store lock and original SessionID across every selected meeting or metadata continuation read and final parsing. A changed login or generation, cancellation, or any read failure discards the entire result. Refresh and a single exact 401 replay stay within the original login. This does not make the sequential API reads one database snapshot, preserve one login across separate invocations, or add Agent snapshot authority. A permission change between selection and detail read fails the command without emitting a partial scope. User meeting get supports board cursors (default 100, max 200 cards), retaining empty participant rows and all board groups/labels. Board cursors bind the meeting, team and metadata/card version; body pages use meeting body with the same source/version/byte rules as work body. These are live reads and never consume the Agent snapshot capability or bypass the protected OAuth session. A partial board or body retains its continuation and incomplete state. User meeting list has the separate bounded summary projection described below."
         },
         {
           "kind": "paragraph",
-          "text": "Read-scope comment continuation is a fixed getReadScopeComments query for component/backlog/intake only. User work comments or work replies selects this surface with --kind (or --version, default component); --comment-id is required only for replies. Both support positive int32-safe page/limit (default 1/20, max100) and page>1 requires the original SHA256 version. A changed comment set returns sanitized conflict/exit10. Source ID/kind/team, reply parent, page/limit, exact version and next-page progress are checked; no arbitrary query, meeting comment access or Agent-to-user fallback is introduced. Initial context comments carry the same identity/version/continuation fields. Existing component-only commands without those flags retain their earlier live offset/unpaginated API contracts."
+          "text": "Read-scope comment continuation is a fixed getReadScopeComments query for component/backlog/intake and meeting. User work comments or work replies selects this surface with --kind (or --version, default component); --comment-id is required only for replies. Both support positive int32-safe page/limit (default 1/20, max100) and page>1 requires the original SHA256 version. A changed comment set returns sanitized conflict/exit10. Source ID/kind/team, reply parent, page/limit, exact version and next-page progress are checked; no arbitrary query or Agent-to-user fallback is introduced. Initial context comments carry the same identity/version/continuation fields. Existing component-only commands without those flags retain their earlier live offset/unpaginated API contracts."
         },
         {
           "kind": "paragraph",
-          "text": "Large typed metadata, comment pages and board pages expose contentPage with the original resource, version and normalized selector. Deferred items/cards are placeholders, never evidence of an empty page. User work body supports metadata and comments_page; meeting body supports metadata and board_page. Copy the returned part/version/offset and selector using --comment-id, --page, --comments-limit or --board-cursor, --board-limit. --limit always bounds UTF-8 bytes, separate from logical item counts. Selectors for another part/kind, incompatible or unknown flags, malformed values and mismatched response selectors fail before emitting data. Keep the same selector and version until complete, concatenate content in offset order, then parse the reconstructed JSON and follow its original logical continuation. Deferred results carry CONTENT_DEFERRED guidance. No automatic unbounded hydration, live external fetch, credential fallback or daemon connection is introduced."
+          "text": "Large typed metadata, comment pages and board pages expose contentPage with the original resource, version and normalized selector. Deferred items/cards are placeholders, never evidence of an empty page. User work body supports metadata and comments_page; meeting body supports metadata, comments_page and board_page. Copy the returned part/version/offset and selector using --comment-id, --page, --comments-limit or --board-cursor, --board-limit. --limit always bounds UTF-8 bytes, separate from logical item counts. Selectors for another part/kind, incompatible or unknown flags, malformed values and mismatched response selectors fail before emitting data. Keep the same selector and version until complete, concatenate content in offset order, then parse the reconstructed JSON and follow its original logical continuation. Deferred results carry CONTENT_DEFERRED guidance. No automatic unbounded hydration, live external fetch, credential fallback or daemon connection is introduced."
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 user meeting list --work WORK-ID --team-id TEAM-ID reads getComponentReadScope with only root identity, status, selection.relatedMeetingLimit and meeting references, then getMeetingReadScope with only identity/status/summary for each selected reference. At most five unique directly related meetings are selected by the server; no relation recursion, detail/body/board hydration or complete-list claim is made. Preserve server order and authorized cross-team references within the workspace, use each reference team, allow empty titles, and reject missing/null/mismatched identities, duplicate IDs or limits beyond the fixed five before subsequent reads. Any request failure emits no partial list. contextStatus and per-meeting status retain partial context without claiming incomplete summary titles. Report selected meetings, selectionLimit=5 and maxDepth=1, not total/complete/hidden counts. At most six logical GraphQL reads exclude OAuth refresh/401 replay. The protected store lock and fixed SessionID span selection, summary reads and response parsing; generation/account changes before completion discard the entire result. Sequential API reads are not a single database snapshot. User mode requires actual work/team IDs and rejects scope/pagination/budget/profile overrides before credentials; Agent mode keeps its original snapshot/grant route. Server active-workspace membership guards must be deployed before live acceptance."
         },
         {
           "kind": "paragraph",
@@ -775,12 +994,13 @@
             "7 rate limited",
             "8 unsupported version, connection, or format",
             "9 incomplete result (partial data kept with warnings)",
-            "10 conflict (version mismatch, session in use, lease lost)"
+            "10 conflict (version mismatch, session in use, lease lost)",
+            "11 stored data cannot be read safely (DATA_INTEGRITY); retrying the same read will not succeed"
           ]
         },
         {
           "kind": "paragraph",
-          "text": "Secrets never travel in argv. `--token`, `--secret`, `--password`, `--api-key` and their `--flag=value` forms are rejected with exit 2 on every work-context command; `riido auth login --with-token` is unsupported and does not read stdin. No command prints stored tokens. Set `RIIDO_CLI_API_URL` to select the API origin (default https://monolith.riido.io); origin-specific credentials are not shared across environments. User reads use only fixed GraphQL queries, retry a read once after a 401 refresh and never retry a 403. HTTP 429 from any standalone read (including existing whoami and work get) returns RATE_LIMITED/exit 7 using the existing retryable contract, without an automatic retry or sleep; Retry-After does not trigger hidden polling. Logout deletes local credentials first and reports remote revocation failure separately."
+          "text": "Secrets never travel in argv. `--token`, `--secret`, `--password`, `--api-key` and their `--flag=value` forms are rejected with exit 2 on every work-context command; `riido auth login --with-token` is unsupported and does not read stdin. No command prints stored tokens. Set `RIIDO_CLI_API_URL` to select the API origin (default https://monolith.riido.io); origin-specific credentials are not shared across environments. User GraphQL reads use only fixed queries, retry a read once after a 401 refresh and never retry a 403. Thread reads use the dedicated fixed monolith ticket and CP history endpoints below, without an automatic retry. HTTP 429 from any standalone read (including existing whoami and work get) returns RATE_LIMITED/exit 7 using the existing retryable contract, without an automatic retry or sleep; Retry-After does not trigger hidden polling. Logout deletes local credentials first and reports remote revocation failure separately."
         },
         {
           "kind": "paragraph",
@@ -805,6 +1025,127 @@
         {
           "kind": "paragraph",
           "text": "The observer first proves the capability works with `whoami` and matches the exact active execution. It then observes both execution ownership and the native slot absent twice on the same daemon PID/start time/version before invoking `whoami` and `context get` once each with that same capability. The local-only `whoami` rejection rules out a server-side permission denial masquerading as broker revocation. Both calls must return CLI exit 4, PERMISSION_DENIED and no data/sources; a daemon restart, inconclusive status, timeout, reappearing execution or another error is a failure. Socket reads and the overall watcher have absolute time limits, so partial byte trickles cannot extend the budget. This proves local ended-run rejection, not the separate control-plane stale-lease path (exit 10), server terminal persistence, or release acceptance. It never dispatches, cancels, restarts or replaces a daemon; use the external watcher so provider process cleanup cannot terminate the observer."
+        },
+        {
+          "text": "RIID-5972 user thread list/show reads the existing server-retained v3 task history through a fixed two-hop authentication flow. The original OAuth stays on the configured monolith origin; a task-bound opaque ticket is exchanged at POST /oauth/cli/thread-read-tickets and sent only to the pinned corresponding CP origin (production monolith.riido.io -> ai-api.riido.io; staging monolith.api.riido.io -> staging.ai-api.riido.io). Unknown/custom origins are unsupported before protected storage access. Both hops reject redirects and cookies; no credential or response-selected target is accepted from arguments. Protected-session locking and generation checks span exchange and bounded history consumption so account changes do not publish another session response. Each command exchanges a fresh ticket; no ticket cache, stream, write or daemon authority is added.",
+          "kind": "paragraph"
+        },
+        {
+          "text": "thread list --work ID --workspace WORKSPACE-ID returns summaries of the full retained response; thread show THREAD-ID --work ID --workspace WORKSPACE-ID returns the named retained record and its agent snapshot only after validating the full response. It is not an all-time archive: complete=false and projection_complete=true describe the known retention boundary, with an explicit retained-history warning. Missing named records are not found within this retained view, not proof of all-time absence. No page/cursor/limit/budget or external URL option is supported. More than 16 MiB, malformed/missing identity, duplicate or case-aliased DTO fields, or null required scalar/array JSON (including assigned_agent_ids and messages; empty arrays must be []) fails without partial data. Names, identifiers and message text are escaped in terminal output. Actual server activation, real OAuth acceptance and native signing remain independent gates.",
+          "kind": "paragraph"
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 user meeting comments MEETING-ID --team-id TEAM-ID [--comment-id PARENT-ID] [--page N] [--limit N] [--version VERSION] reads authorized live meeting comments or replies through getReadScopeComments(resourceKind=meeting). Defaults are page 1 and limit 20, maximum100; page>1 requires the original comment-set version. The requested meeting/team and original user are reauthorized on every page, including after membership changes. Large pages preserve contentPage and CONTENT_DEFERRED; use meeting body --part comments_page with the original body version and selector (--comment-id/--page/--comments-limit), then reconstruct JSON before advancing its logical nextPage. Agent mode is unsupported before user storage or daemon IPC. Work commands retain their component/backlog/intake-only kind contract. Legacy meeting comments and getComponentRelatedMeetings are not opened as a CLI fallback. Server read-scope meeting-comment support must be deployed separately."
+        },
+        {
+          "text": "RIID-5972 user agents list/show require --work ID and an explicit or configured workspace, or a component display key with workspace and/or team scope as described below. List accepts an omitted cursor or canonical nonnegative decimal page; show rejects cursor. Both reject page/budget/limit, secret argv and caller-selected targets before protected storage or network. Existing Agent-mode broker and run permissions remain unchanged. The original user OAuth is sent only to monolith POST /oauth/cli/agent-read-tickets; the fixed schema riido-cli-agent-read.v1, purpose task_agents_read and riido_cli_agent_v1_ ticket are consumed only at the pinned corresponding CP /v1/cli/workspaces/{workspace_id}/tasks/{task_id}/agents route. Thread tickets, redirects, cookies and unknown origins are rejected. Each request exchanges a fresh ticket without caching or pagination auto-follow.",
+          "kind": "paragraph"
+        },
+        {
+          "text": "The protected login SessionID and generation remain fixed from ticket exchange through CP body read, strict public response parsing and final return. Cancellation, account replacement or store failure discards the entire result. List pages contain at most50 current visible public entries and the current visible total; opaque secrets, private instructions, owners and devices are never part of the response. Missing/duplicate/unknown fields, null required values, invalid enums, oversized16MiB bodies, inconsistent pagination and hidden/absent detail fail closed. Text output quotes remote values. policy_checked=false and is_current_agent=false are required for user mode; runtime callable is not a RIID-5892 mention verdict or permission to start a run. No synthetic assignment, run quota or run read record is created. Actual server activation and real OAuth/signed-helper acceptance remain separate gates.",
+          "kind": "paragraph"
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 user workspace list reads exactly one page from getCLIWorkspaces(cursor, limit) with the protected original login held through final parsing. Only current active memberships and undeleted workspaces appear, including for administrators; a workspace-bound credential remains limited by the server. The fixed projection returns schemaVersion riido-cli-workspaces.v1, userId, limit, items(id/name/isDemo), nextCursor and complete. Default limit 50, maximum 100. Cursor binds user, optional grant workspace and limit and is never authority. Separate invocations recheck current membership and do not share a DB snapshot. Validate required fields, item identity/order, page bounds and continuation consistency before output; errors or login changes discard the result. Text quotes remote values, JSON keeps empty names and false demo flags. Agent mode, scope/team overrides and invalid input fail before user credentials or IPC. User profile selection follows the shared nonsecret settings resolver. No legacy/admin API, external URL, mutation, default workspace change, automatic pagination or OAuth activation is introduced. workspace use is the separate explicit selection command; synthetic HTTP/DB receipt is not signed-helper or live-account acceptance."
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 standalone settings use the nonsecret OS user config file riido-cli/config.json, version1. Only production/staging/local profiles and allowlisted preference fields are accepted. Tokens, cookie/session values and arbitrary keys are never stored or shown. Profile selection is explicit --profile, RIIDO_CLI_PROFILE, active config, then the build default: production, or staging for a package built with RIIDO_CLI_DEFAULT_PROFILE=staging (the staging channel). A saved or explicit profile always wins over the build default. API origin is RIIDO_CLI_API_URL, selected profile setting, then production=https://monolith.riido.io or staging=https://monolith.api.riido.io; local requires an explicit loopback origin. Existing origin-hashed OS credential and repair keys remain unchanged. Bad/oversized config fails closed without echoing content. Writes use the repository cross-process lock and atomic replacement, preserve other profiles, and never silently reset malformed settings. Stored workspace/team defaults apply only when selectionOrigin equals the effective API origin. Changing api_origin clears them; workspace use clears the old team when selection changes. Every API call still checks current server authorization, and these local preferences are not grants or account identity proofs."
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 human terminal output applies only in user mode when the stream is a real terminal (terminal-driver query; files, pipes and /dev/null are not) and neither RIIDO_CLI_PLAIN=1 nor TERM=dumb is set. Bare riido then shows a home screen (on color terminals of at least LogoWidth+2 columns the round half-block symbol with a hand-drawn pixel Riido wordmark in the brand purple #5d4ff9 (logo artwork keeps the brand color; only text uses the accent tint) and the name, version, description and current server as text below; narrower, the symbol with that text beside it or above it; no symbol below 16 columns or without color; then quick start, with each summary moved under its command when two columns would wrap; one blank line before and after the screen) and exits 0; a non-terminal bare riido keeps usage on stderr with exit 1. riido help and --help show grouped common commands with examples; riido <command> --help, riido <command> <subcommand> --help and riido help <command> [<subcommand>] show curated help for user commands (summary, usage, commands, flags, examples, learn more), a user command that needs a subcommand shows that help when run without one, and an unknown command or subcommand prints a short error with a did-you-mean suggestion instead of the full usage (unknown top-level exit 1, unknown subcommand usage exit). riido help --all prints the full usage. auth login prints progress lines on the terminal stderr (OS confirmation prompt, approval page opened in the browser; never the authorization URL, state or PKCE values) and a gh-style success line with the account, server and next step; auth status and logout show a gh-style status line, config list/get/set show aligned values with Korean source labels, doctor shows Korean check labels, and local usage errors omit the code/request_id footer. doctor, workspace list and agents list/show render status symbols and aligned tables; errors render as message, next action and code/request_id, and warnings with a marker. NO_COLOR or --no-color removes color but keeps layout. Accent text uses the brand purple #5d4ff9 only when COLORFGBG reports a light background, the lighter #9a8cff when it reports a dark one, and #8577ff when unknown, so it stays readable on both. Remote values (names, descriptions, IDs, cursors, server messages) are escaped for control characters, bidi overrides and invalid UTF-8 before styling. --json, pipes, agent mode and other machine-readable output stay unchanged. On such a terminal, whoami, work get/relations/activity/comments/replies/body, context get and meeting get/comments/body replace their indented JSON with a read view: bold title with key, colored state, aligned metadata, HTML bodies reflowed as indented wrapped text, relative times and next-page hints; raw body pages stay byte-exact apart from escaping and wrapping, no web link is shown because the responses carry none, and off-terminal output of these commands remains the previous indented JSON."
+        },
+        {
+          "kind": "paragraph",
+          "text": "User command defaults are applied once per invocation before credentials: explicit flags, allowlisted RIIDO_CLI_WORKSPACE/TEAM/FORMAT/TIMEOUT environment values, origin-bound profile preferences, then current command defaults. --team is an alias only on commands supporting --team-id; conflicting explicit aliases fail. Workspace defaults are consumed only by commands requiring a workspace (work search, thread and agents) and component display-key reads. Auth and diagnostics use the same resolved profile origin; user team/profile overrides remain unavailable to Agent execution before file/credential/IPC access, and stored defaults cannot expand its fixed grant. config list/get expose only validated nonsecret effective values and their sources; config set accepts profile/api_origin/auth_origin/workspace/team/format/timeout, with workspace delegated to verified workspace use. Empty team/workspace values clear local defaults. workspace use scans membership pages within one protected login and bounded command timeout, matches an actual opaque ID, persists only the verified ID and origin after success, and never changes the server default workspace. A lookup failure does not write config. A later permission/account change is reauthorized by the server; a saved preference is not ongoing access evidence. Display-key reads consume the same captured settings without reloading profiles; opaque-ID monolith reads continue to ignore stored workspace defaults; thread/agents ID reads consume workspace defaults but ignore stored team defaults."
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5972 completion emits bash, zsh, fish or PowerShell scripts without loading config or credentials. The wrappers invoke only a bounded internal completion query; typed words travel over NUL-framed UTF-8 stdin, never extra argv. Candidates are static public user commands, their supported flags and fixed profile/format/config-key/shell enums. Internal daemon/bridge/mwsd/MCP surfaces, unavailable user context part/changes, unsupported auth login methods, secrets, remote IDs and local paths are not suggested. Invalid, oversized or unknown input produces no candidates and no diagnostic containing typed values. Bash/zsh/fish disable shell file fallback; PowerShell native completion falls back to its own local filenames on no match because its public native API has no handled-empty result. Riido does not supply those filenames; no private reflection, global TabExpansion2/key-binding override, fake candidate or exception sentinel is used. Cursor suffixes are excluded, quotes are not evaluated, and unquoted Bash/fish substitution/control expressions conservatively produce no candidates. Quoted contents are treated as literals without evaluation; mixed quoting inside Bash option names is left uncompleted. This is discoverability only: execution parsers, authenticated API permissions, settings and installation files remain authoritative and unchanged. Scripts are output only; shell startup files are not edited."
+        },
+        {
+          "kind": "paragraph",
+          "text": "User work references: work get/tree/relations/comments/replies/activity/body, context get, resource/repo list and meeting list --work accept display keys with an explicit or configured workspace and/or team scope. Both scopes intersect. A fixed resolveCLIWorkReference query returns only authorized metadata and runs with the subsequent read inside one protected login session; no account-wide search, body search or origin fallback is permitted. Visible key ambiguity returns CONFLICT with an ID/team hint. A read the server rejects as stored-data integrity (GraphQL conflict with reason read_scope_integrity, RIID-6008) returns DATA_INTEGRITY exit 11 instead of CONFLICT: the same read will keep failing, so the CLI does not suggest re-reading a new version. A plain conflict keeps CONFLICT exit 10. Existing opaque-ID calls retain their team requirement and perform zero reference lookups; stored workspace defaults do not alter that path. Only component work references accept keys: meeting/backlog/intake/team/comment identifiers remain strict IDs. Body/comment continuations preserve their original version/selector/offset and recheck access. Agent snapshot key resolution is unchanged. User thread/agents key support uses the same protected reference resolution followed by their separate purpose-bound ticket integration described below."
+        },
+        {
+          "kind": "paragraph",
+          "text": "User thread list/show and agents list/show accept component display keys in --work with an explicit or configured workspace and/or team scope; both scopes intersect. Existing opaque-ID calls retain their workspace requirement, ignore stored team defaults, reject explicit team options, and perform zero reference lookups. A supported fixed monolith/CP mapping and valid inputs are checked before credential access. The private read-session client exposes only the two fixed-purpose task readers; it does not accept caller-selected target URLs or generic cross-origin OAuth forwarding. Service composition holds one protected login across exact key resolution, task-scoped ticket exchange, current-authority CP read, full DTO parsing and final SessionID/generation/cancellation verification, without nesting public Manager locks. Retained session clients fail after callback completion. Thread/Agent ticket purposes, token prefixes, closed origin mapping, visibility, bounded retained-history/unchecked execution policy semantics, response limits and no-retry/redirect/cookie rules remain unchanged. Resolution is not permission for the subsequent exchange/read. Ambiguous keys keep CONFLICT and suggest narrowing the key by team or using an actual work ID plus workspace; the monolith ID/team recovery hint is unchanged. This code/fixture validation is not deployed OAuth or signed OS-helper acceptance."
+        }
+      ]
+    },
+    {
+      "title": "CLI Authentication Custody",
+      "path": "docs/30-architecture/cli-auth-custody.md",
+      "blocks": [
+        {
+          "kind": "paragraph",
+          "text": "RIID-5971 (parent RIID-5900). Browser OAuth remains usable without Desktop. Desktop authorization is a separate login origin, not another installation key."
+        },
+        {
+          "kind": "paragraph",
+          "text": "**Protected records**"
+        },
+        {
+          "kind": "bullets",
+          "items": [
+            "Keep one current credential per API resource and login origin. Deliberate login replaces/revokes only that origin's previous grant, including account changes.",
+            "A new proof-backed login records the verified Whoami account, API resource, `riido-cli` client, installation public-key fingerprint and browser/Desktop origin in a strict v4 protected credential. This is custody metadata, not permission or a substitute for current server authorization. Do not invent a server installation ID or parent session ID absent from the response.",
+            "Original raw/v1/v2/v3 browser records remain readable without a write. They do not become verified bindings from Whoami plus the current local key. Their original SessionID, pending link and refresh recovery pair survive refresh; only a new proof-backed login can establish a new binding. Unknown/corrupt records fail without overwriting. Old clients must reject v4 records.",
+            "The authentication manager rejects a bound credential for a different API resource/client before access, replacement, revocation or deletion.",
+            "Refresh preserves the exact binding and login SessionID. A save for the same SessionID cannot add, erase or change its binding. Failed login verification revokes only the newly issued grant and preserves previous credentials."
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "text": "**Keys and locks**"
+        },
+        {
+          "kind": "bullets",
+          "items": [
+            "Browser credential and repair keys keep their existing resource hashes. Desktop uses distinct credential and repair keys; it never reads the browser key as fallback. A Desktop record requires a valid Desktop binding.",
+            "Both origins use the existing resource credential lock for short state transactions and the existing resource repair operation lock for the whole repair. Repair payloads remain origin-specific, so one origin's logout cannot delete the other's request. Operation lock precedes credential lock; logout takes only the credential lock and can invalidate its own active request.",
+            "Installation-key resource/client namespace, OS helper service, signing and user-presence protection do not change. These locks coordinate trusted CLI processes; they are not the OS protection against a malicious peer. Helper status is presence-only: it queries attributes with UI disallowed, and because a stored credential requires user presence the keychain answers errSecInteractionNotAllowed, which status reports as present. Only errSecItemNotFound means absent; any other result stays a failure. Presence never permits reading credential bytes: load still needs an interactive request and a fresh OS user confirmation, and noninteractive load still fails with INTERACTION_REQUIRED. An interactive command confirms the OS user once: it keeps one verified helper process for the command (--session) and the helper reuses that single evaluated LAContext for later credential and installation-key operations, so token reads, refresh saves and proof signatures do not prompt again. --no-input keeps per-request helpers with interaction forbidden, and a failed session is killed and restarted with a new confirmation. A process without a GUI login session (SSH, launchd, a background job) cannot show the OS prompt; the helper reports INTERACTION_REQUIRED (exit 3, approve at an interactive login and retry), not missing protection (exit 8), because the signed helper itself is available.",
+            "macOS helper verification has two steps before any request byte: the helper path (with sealed bundle resources) right before launch, then the started, unreaped process. The process step uses codesign --ignore-resources because a pid disk representation cannot re-read bundle resources on macOS 27; it still enforces dynamic validity, the code directory, the pinned Apple-anchored identifier/team requirement, hardened runtime and entitlement policy. Packaged-helper verification checks resources for every architecture."
+          ]
+        },
+        {
+          "kind": "paragraph",
+          "text": "Protected custody binds new proof-backed browser/Desktop logins. The CLI Desktop handoff consumer is implemented; a compatible Desktop app, actual OS signing and real-account acceptance remain separate gates. Per-command/profile origin selection is implemented below."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Authentication origin selection is nonsecret, never authority: user commands accept --auth-origin browser|desktop, otherwise use the selected profile authOrigin, otherwise browser. Resolve once before credential access; API/resource origin and authentication origin are distinct. Config set auth_origin accepts browser, desktop or empty and clears stored workspace/team defaults only when the effective authentication origin changes; empty and browser are equivalent. A missing, corrupt or revoked selected credential never falls back to the other origin. When one-shot selection differs from the stored origin, discard only profile workspace/team defaults; explicit scope flags/environment remain explicit. Nonempty workspace/team persistence under another one-shot origin is rejected, and workspace use rejects it before opening credentials. Agent calls reject the selector before preferences or user credentials. Status/logout report the selected auth_origin without claiming verified account or API access."
+        },
+        {
+          "kind": "paragraph",
+          "text": "auth login and auth login --browser always open the browser slot, independent of a saved Desktop selection; auth login --desktop explicitly selects the Desktop slot. Login rejects --auth-origin (choose the login method instead), --with-token and noninteractive login. After successful authentication, activate the chosen origin with a profile compare-and-swap. A failed or concurrent preference write preserves the new credential and the other origin, returning authenticated=true, auth_origin_selection_not_saved and the captured api_origin via RIIDO_CLI_API_URL plus the selected --auth-origin recovery hint. Failed/canceled login does not change preferences. No automatic fallback occurs. Older CLI versions reject config with the new authOrigin field."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Desktop handoff v1: after protected installation-key access, send only the existing ten public InstallationRequest fields in base64url JSON to riido-cli-auth://cli/authorize/v1?request=... (https://monolith.riido.io) or riido-staging-cli-auth://cli/authorize/v1?request=... (https://monolith.api.riido.io). Other API resources use browser login; the native launcher never selects a caller-supplied application or shell command. The compatible app retains its own token and posts the seven-field native authorization response to the original 127.0.0.1 ephemeral /callback. The CLI accepts JSON POST only, no query/Cookie/Origin/Authorization, exact host/path/state/key fingerprint and redirect_url, fresh bounded expiry and strict nonduplicate fields, at most 8 KiB. An error callback contains only state and access_denied, login_required or temporarily_unavailable. Invalid callbacks do not consume the flow; the first valid response consumes it once. Browser GET is rejected in Desktop mode. Cancellation, timeout, app absence and malformed responses never save a new credential."
+        },
+        {
+          "kind": "paragraph",
+          "text": "PKCE verifier remains in the CLI. The callback is not origin authority: after typed OS-protected signing, exchange directly with the configured OAuth server and require auth_origin=desktop in the token response. Required token fields must be canonical and non-null; duplicate keys and protected-field case aliases are rejected while unrelated additive metadata is allowed. Missing/other origin is rejected and cleanup is attempted only for that newly issued grant, never existing credentials. Verify Whoami before saving the bound Desktop credential. Server origin support (monolith #925) and compatible Desktop handoff are prerequisites; command support is not real-app acceptance. Refresh/recovery retain the existing protected origin binding and never manufacture one from a response."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Helper output is bounded at the io.Copy writer boundary as well as during protocol decoding; no promoted ReaderFrom path may bypass the 64 KiB cap. Portable helper-process tests execute the Go test binary as a synthetic child on macOS, Linux and Windows. They verify zero request bytes before process approval, denial and cancellation, bounded stdout, child failure and the real unsupported/untrusted verifier. The Windows CI job runs this private-pipe matrix without a shell script, credentials, native keys or OS prompts. Passing this matrix does not enable Windows user authentication or prove Authenticode, CNG user presence, protected credential unwrap, package trust or installation support. Windows protected-store rejection remains until native protection is implemented and accepted; handle-based coordination is implemented and validated separately."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Windows native protection measurement is separate from the shipped CLI/helper. native/cli-auth-helper-windows/probe creates only three fresh, randomly named current-user test keys in Microsoft Software KSP, never overwrites or enumerates existing keys, and uses silent operations only. An exportable P-256 positive control must first complete the identical private export and validate the blob shape before zeroing its buffer. Only then are NTE_PERM or the observed NTE_NOT_SUPPORTED treated as baseline export denial; unknown failures remain inconclusive. A nonexportable P-256 baseline tests actual private-export denial and silent signing across reopened handles and a separate process. The high-protection candidate records setup UI requirements, property readback and silent-operation results without translating arbitrary provider failure into user-presence proof. It deletes its owned test keys and verifies absence before success. Measurement success is not product support: interactive Windows account confirmation, credential unwrap, publisher/process trust, NSIS/MSIX, real-account and signed-helper acceptance remain separate gates. The probe emits only bounded status metadata and always records production_supported=false; it is not packaged or called by the CLI."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Windows user-session plumbing selects an adjacent riido-cli-auth-helper.exe and a local, non-roaming auth-lock directory; macOS retains its existing app helper and configuration path. Browser authorization accepts only HTTPS or the existing literal-loopback HTTP development endpoints. Desktop launch comes only from the typed production/staging authorization request. Windows dispatch uses the native Unicode Shell API on an initialized COM thread, never cmd.exe, PowerShell, a PATH lookup or shell command concatenation. Cancellation observed before dispatch and invalid requests do not reach the launcher; native errors do not reveal URLs. A cancellation during the native Shell API call is observed only when that call returns, so this adapter does not yet establish bounded interruption of a stalled OS dispatch. NOASYNC does not guarantee URI dispatch completion, and NO_UI does not suppress security prompts. Return-after-cancel is rejected and cannot complete the authorization flow. Real browser/Desktop URI launch and bounded OS-dispatch cancellation remain activation gates. A launch is not proof of Desktop acceptance, OS protection or login success. Unimplemented publisher/process/credential protection remains fail-closed."
+        },
+        {
+          "kind": "paragraph",
+          "text": "Windows credential coordination uses a real non-inheritable file handle and exclusive nonblocking LockFileEx over one byte. It checks the local directory/file owner and restrictive ACL, rejects reparse points, unexpected file types and hard links, and does not share deletion or delete the lock file to release it. Each child directory and lock file is opened relative to its already checked parent handle with NtCreateFile and OBJ_DONT_REPARSE; missing components receive the private security descriptor in the same create operation. Attribute-only reparse mutation is not prevented by write sharing, so an absolute path must not be re-resolved after checking its parent. Native regression uses a FILE_WRITE_ATTRIBUTES-only junction positive control and the empty-directory creation race before any lock file exists. Lock retries contention within the existing two-minute/context bound; TryLock returns busy without queuing. Unlock is idempotent, and process death relies on OS handle release. Coordination never replaces OS user confirmation or enables the unsupported Windows credential helper. Native CI uses isolated temporary paths and synthetic processes, never product credentials; per-case output distinguishes executed passes from conditional skips."
         }
       ]
     }

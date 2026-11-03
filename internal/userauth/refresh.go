@@ -20,12 +20,20 @@ func (m *Manager) accessCredential(ctx context.Context, rejected, expectedSessio
 		return Credential{}, err
 	}
 	defer unlock()
+	return m.accessCredentialLocked(ctx, rejected, expectedSession, generation)
+}
+
+// Caller owns the protected store lock for the entire credential operation.
+func (m *Manager) accessCredentialLocked(ctx context.Context, rejected, expectedSession string, generation uint64) (Credential, error) {
 	if m.generation.Load() != generation {
 		return Credential{}, ErrLoggedOut
 	}
 	credential, err := m.store.Load(ctx)
 	if err != nil {
 		return Credential{}, storageError(err)
+	}
+	if !m.acceptsBinding(credential) {
+		return Credential{}, failure("STORAGE_ERROR")
 	}
 	if m.generation.Load() != generation {
 		return Credential{}, ErrLoggedOut
@@ -78,6 +86,10 @@ func (m *Manager) accessCredential(ctx context.Context, rejected, expectedSessio
 		return Credential{}, ErrLoggedOut
 	}
 	fresh.SessionID = credential.SessionID
+	if credential.Binding != nil {
+		binding := *credential.Binding
+		fresh.Binding = &binding
+	}
 	if fresh.Scope == "" {
 		fresh.Scope = credential.Scope
 	}

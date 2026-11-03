@@ -12,25 +12,35 @@ import (
 type Query struct {
 	AgentID      string
 	AssignmentID string
-	LeaseToken   string
-	View         string
-	Target       string
-	Cursor       string
-	RequestID    string
+	// TaskID binds response provenance to the assigned root, not a related target.
+	TaskID     string
+	LeaseToken string
+	View       string
+	Target     string
+	Cursor     string
+	Since      string
+	RequestID  string
 	// MaxBytes batches consecutive captured pages of one part (content view).
-	MaxBytes int
+	MaxBytes     int
+	CacheEnabled bool
+	KnownDigest  string
 }
 
 // ResultSource is one source the control-plane recorded as read.
 type ResultSource struct {
-	Kind    string `json:"kind"`
-	ID      string `json:"id"`
-	Part    string `json:"part"`
-	Version string `json:"version,omitempty"`
+	Kind      string `json:"kind"`
+	ID        string `json:"id"`
+	Part      string `json:"part"`
+	Version   string `json:"version,omitempty"`
+	UpdatedAt string `json:"updated_at,omitempty"`
 }
 
 // Result is the control-plane answer for one view of the assignment snapshot.
 type Result struct {
+	ContentDigest string `json:"-"`
+	NotModified   bool   `json:"-"`
+	// SnapshotID is verified by the fetcher for assignment base context only.
+	SnapshotID string          `json:"snapshot_id,omitempty"`
 	Data       json.RawMessage `json:"data"`
 	Sources    []ResultSource  `json:"sources"`
 	CapturedAt time.Time       `json:"captured_at"`
@@ -69,17 +79,20 @@ const (
 	viewMeetings  = "meetings"
 	viewMeeting   = "meeting"
 	viewContent   = "content"
+	viewChanges   = "changes"
 )
 
 // viewForCommand maps CLI read commands onto control-plane views: snapshot
 // views for work context, live views for the agent directory. Activity,
-// search and changes are not served.
+// and search are not served.
 func viewForCommand(command string) (string, bool) {
 	switch command {
 	case "context get":
 		return viewBase, true
 	case "context part":
 		return viewContent, true
+	case "context changes":
+		return viewChanges, true
 	case "work get":
 		return viewTask, true
 	case "work tree":

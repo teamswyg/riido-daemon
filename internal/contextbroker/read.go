@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 	"time"
+	"unicode/utf8"
 
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
@@ -27,20 +28,41 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	defer cancel()
 	query := Query{
 		AgentID: binding.AgentID, AssignmentID: binding.AssignmentID, LeaseToken: binding.LeaseToken,
-		View: view, Target: queryTarget(req.Args), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
+		TaskID: binding.TaskID,
+		View:   view, Target: queryTarget(req.Args), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
 	}
 	if view == viewContent {
 		query.MaxBytes = contentBatchBytes(req.Args)
 	}
-	result, err := fetchContent(ctx, b.Fetcher, query)
+	if view == viewChanges {
+		since, cliErr := changesSince(req.Args)
+		if cliErr != nil {
+			return contextcli.FailureEnvelope(requestID, cliErr)
+		}
+		query.Since = since
+	}
+	result, err := b.fetchContent(ctx, req.RunCapability, query)
+	if err != nil {
+		return contextcli.FailureEnvelope(requestID, changesFetchFailure(query, err))
+	}
+	if view == viewChanges {
+		result.Data, err = changesMetadata(result, query)
+		if err != nil {
+			return contextcli.FailureEnvelope(requestID, fetchFailure(err))
+		}
+	}
+	data, err := snapshotProvenance(result.Data, result, query)
 	if err != nil {
 		return contextcli.FailureEnvelope(requestID, fetchFailure(err))
 	}
 	budget := budgetChars(req.Args)
-	preservePage := capturedReadBudget(view, result.Data, budget)
-	data, budgetCut, budgetFits := result.Data, false, true
+	if view == viewChanges && budget > 0 && utf8.RuneCount(data) > budget {
+		return contextcli.FailureEnvelope(requestID, contextcli.Fail(contextcli.CodeIncomplete, "변경 목록이 조회 예산을 초과했습니다. 비교 결과를 자르지 않았습니다", "riido context get"))
+	}
+	preservePage := capturedReadBudget(view, data, budget)
+	budgetCut, budgetFits := false, true
 	if !preservePage {
-		data, budgetCut, budgetFits = applyBudget(result.Data, budget)
+		data, budgetCut, budgetFits = applyBudget(data, budget)
 	}
 	truncated := result.Truncated || budgetCut
 	env := contextcli.NewEnvelope(requestID, data)

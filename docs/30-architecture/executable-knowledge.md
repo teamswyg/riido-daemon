@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 87 |
+| Generated reader docs | 89 |
 | Direct SSOT docs | 6 |
-| Registered manual docs | 1 |
-| Scanned docs | 94 |
+| Registered manual docs | 0 |
+| Scanned docs | 95 |
 
 ## Generated Reader Origins
 
@@ -19,8 +19,8 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | --- | ---: | --- |
 | `go run ./tools/storedistributiondocs -write-doc` | 15 | `docs/30-architecture/store-distribution.md`<br>`docs/30-architecture/store-distribution/architecture.md`<br>`docs/30-architecture/store-distribution/architecture/decisions.md` |
 | `go run ./tools/agentexecutiondesign -write-doc` | 14 | `docs/30-architecture/agent-execution-unresolved-design.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md` |
-| `go run ./tools/configreference -write-doc` | 11 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
-| `go run ./tools/clisurface -write-doc` | 8 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
+| `go run ./tools/configreference -write-doc` | 12 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
+| `go run ./tools/clisurface -write-doc` | 9 | `docs/30-architecture/cli-auth-custody.md`<br>`docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md` |
 | `go run ./tools/figmaboundarydocs -write-doc` | 7 | `docs/30-architecture/figma-ai-agent-daemon-boundary.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/boundary-criteria.md`<br>`docs/30-architecture/figma-ai-agent-daemon-boundary/change-loop.md` |
 | `go run ./tools/integrationmatrix -write-doc` | 6 | `docs/30-architecture/integration-matrix.md`<br>`docs/30-architecture/integration-matrix/assertions.md`<br>`docs/30-architecture/integration-matrix/change-procedure.md` |
 | `go run ./tools/moduledecomposition -write-doc` | 6 | `docs/30-architecture/module-decomposition.md`<br>`docs/30-architecture/module-decomposition/12-factor-boundary.md`<br>`docs/30-architecture/module-decomposition/change-procedure.md` |
@@ -75,21 +75,15 @@ _None missing._
 | `local-qa-daily-evidence-sweep` | `24h` | local-qa-schedule.json trigger<br>local-qa-coverage.json local.qa.daily_freshness row<br>dashboard stale rows after expires_at | refreshes_expired_evidence<br>daily-evidence-sweep trigger identity<br>semantic peer binding for freshness changes | .riido-local/evidence/local-qa-schedule.json<br>.riido-local/evidence/local-qa-coverage.json<br>executable-knowledge-coverage/local-qa-schedule-binding.json | evidence_missing<br>expires_at_missing<br>freshness_row_missing<br>semantic_drift |
 ## Registered Manual Surfaces
 
-| Group | Owner | Next artifact | Matched docs |
-| --- | --- | --- | ---: |
-| `device-assignment-delivery` | RIID-5827 | device-assignment-notifications.riido.json generated protocol/rollout evidence | 1 |
+_None._
 
 ## Manual Hotspots
 
-| Directory | Matched docs |
-| --- | ---: |
-| `docs/30-architecture` | 1 |
+_None._
 
 ## Manual Samples
 
-| Group | Path |
-| --- | --- |
-| `device-assignment-delivery` | `docs/30-architecture/device-assignment-notifications.md` |
+_None._
 
 ## Evidence Loop
 

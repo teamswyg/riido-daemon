@@ -14,6 +14,7 @@ type tokenResponse struct {
 	ExpiresIn       int64  `json:"expires_in"`
 	Scope           string `json:"scope"`
 	RefreshRecovery string `json:"refresh_recovery"`
+	AuthOrigin      string `json:"auth_origin"`
 }
 
 func (c *Client) exchange(ctx context.Context, code, verifier, redirect string) (Credential, error) {

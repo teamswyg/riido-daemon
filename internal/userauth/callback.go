@@ -9,6 +9,10 @@ func (a *Authorization) callback(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	w.Header().Set("Content-Security-Policy", "default-src 'none'")
 	w.Header().Set("X-Content-Type-Options", "nosniff")
+	if a.desktop != nil {
+		a.desktopCallback(w, r)
+		return
+	}
 	if r.Host != a.host || r.URL.Path != "/callback" || r.Method != http.MethodGet || len(r.URL.RawQuery) > 16384 {
 		http.Error(w, "Invalid authorization response.", http.StatusBadRequest)
 		return

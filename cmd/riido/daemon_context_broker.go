@@ -56,6 +56,13 @@ func daemonContextLaunchEnv(broker *contextbroker.Broker) func(bridge.TaskReques
 	}
 }
 
+func daemonContextReleaseCapability(broker *contextbroker.Broker) func(string) {
+	if broker == nil {
+		return nil
+	}
+	return broker.Registry.RevokeCapability
+}
+
 func contextBindingForRun(req bridge.TaskRequest, runtimeID string) contextbroker.Binding {
 	taskID := strings.TrimSpace(req.Metadata[controlplane.MetadataTaskID])
 	if taskID == "" {

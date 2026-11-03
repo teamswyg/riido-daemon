@@ -26,7 +26,7 @@ func normalizedReadPartSelector(kind, part string, in *ReadPartSelector) (*ReadP
 	case "metadata":
 		return &ReadPartSelector{}, empty
 	case "comments_page":
-		if kind == "meeting" || s.BoardCursor != nil {
+		if s.BoardCursor != nil {
 			return nil, false
 		}
 		page, limit := 1, 20

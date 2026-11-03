@@ -9,6 +9,10 @@ import (
 )
 
 func (p *Plane) doJSON(ctx context.Context, method, path string, body []byte, out any) error {
+	return p.doJSONHeaders(ctx, method, path, body, out, nil)
+}
+
+func (p *Plane) doJSONHeaders(ctx context.Context, method, path string, body []byte, out any, headers http.Header) error {
 	ctx, cancel := context.WithTimeout(ctx, p.cfg.RequestTimeout)
 	defer cancel()
 
@@ -31,6 +35,9 @@ func (p *Plane) doJSON(ctx context.Context, method, path string, body []byte, ou
 			req.Header.Set("Content-Type", "application/json")
 		}
 		p.attachAuthHeaders(req)
+		for key, values := range headers {
+			req.Header[key] = append([]string(nil), values...)
+		}
 		resp, err := p.client.Do(req)
 		if err != nil {
 			if ctx.Err() != nil {

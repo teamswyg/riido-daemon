@@ -18,6 +18,7 @@ func TestTypedPartUsesFixedBodyRouteAndNormalizedSelector(t *testing.T) {
 		{"intake replies", "intake", "comments_page", `{"parentCommentId":"comment-one","page":2,"limit":3}`, `{"parentCommentId":"comment-one","page":2,"limit":3}`},
 		{"meeting board", "meeting", "board_page", `{"boardCursor":"board-next","limit":5}`, `{"boardCursor":"board-next","limit":5}`},
 		{"meeting metadata", "meeting", "metadata", `{}`, `{}`},
+		{"meeting replies", "meeting", "comments_page", `{"parentCommentId":"comment-one","page":2,"limit":3}`, `{"parentCommentId":"comment-one","page":2,"limit":3}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			version := "sha256:" + strings.Repeat("a", 64)

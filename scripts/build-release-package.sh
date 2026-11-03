@@ -7,6 +7,16 @@ version="${GITHUB_REF_NAME:-pull-request}"
 # GitHub pull_request refs use <number>/merge, not a release version.
 if [ "${GITHUB_EVENT_NAME:-}" = pull_request ]; then version="pull-request"; fi
 helper_bundle="${RIIDO_CLI_AUTH_HELPER_BUNDLE:-}"
+# Channel default for user-mode CLI when no profile is saved: empty (production) or staging.
+default_profile="${RIIDO_CLI_DEFAULT_PROFILE:-}"
+case "$default_profile" in
+  ""|staging) ;;
+  *) echo "RIIDO_CLI_DEFAULT_PROFILE must be empty or staging" >&2; exit 1 ;;
+esac
+ldflags="-s -w -X main.binaryVersion=$version"
+if [ -n "$default_profile" ]; then
+  ldflags="$ldflags -X github.com/teamswyg/riido-daemon/internal/cliconfig.buildDefaultProfile=$default_profile"
+fi
 case "$target" in
   darwin/amd64/tar|darwin/arm64/tar|linux/amd64/tar|linux/arm64/tar|windows/amd64/zip|windows/arm64/zip) ;;
   *) echo "unsupported release target" >&2; exit 1 ;;
@@ -27,7 +37,7 @@ trap 'rm -rf "$package_dir" "$archive_stage"' EXIT
 binary="riido"
 [ "$goos" != windows ] || binary="riido.exe"
 GOOS="$goos" GOARCH="$goarch" go build \
-  -trimpath -ldflags "-s -w -X main.binaryVersion=$version" -o "$package_dir/$binary" ./cmd/riido
+  -trimpath -ldflags "$ldflags" -o "$package_dir/$binary" ./cmd/riido
 cp LICENSE NOTICE.md "$package_dir/"
 printf '%s\n' "$version" > "$package_dir/VERSION"
 if [ -n "$helper_bundle" ]; then

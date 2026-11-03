@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	protectedSessionVersion = "riido-cli-protected-session.v3"
+	protectedSessionVersion = "riido-cli-protected-session.v4"
+	protectedSessionV3      = "riido-cli-protected-session.v3"
 	protectedSessionV2      = "riido-cli-protected-session.v2"
 	protectedSessionV1      = "riido-cli-protected-session.v1"
 	protectedSessionLimit   = 32 << 10
@@ -57,18 +58,25 @@ func decodeProtectedSession(raw []byte) (protectedSession, error) {
 		record.SchemaVersion = protectedSessionVersion
 	} else {
 		var version string
-		if json.Unmarshal(fields["schema_version"], &version) != nil || (version != protectedSessionV1 && version != protectedSessionV2 && version != protectedSessionVersion) {
+		if json.Unmarshal(fields["schema_version"], &version) != nil || (version != protectedSessionV1 && version != protectedSessionV2 && version != protectedSessionV3 && version != protectedSessionVersion) {
 			return protectedSession{}, securecredential.ErrUnavailable
 		}
 		credentialFields, credentialErr := protectedObject(fields["credential"])
 		credentialKeys := []string{"session_id", "access_token", "refresh_token", "expires_at", "token_type", "scope"}
-		if version == protectedSessionVersion {
+		if version == protectedSessionVersion || version == protectedSessionV3 {
 			credentialKeys = append(credentialKeys, "refresh_recovery_secret")
 			if value, present := credentialFields["refresh_recovery_secret"]; present {
 				var secret string
 				if json.Unmarshal(value, &secret) != nil || secret == "" {
 					return protectedSession{}, securecredential.ErrUnavailable
 				}
+			}
+		}
+		if version == protectedSessionVersion {
+			credentialKeys = append(credentialKeys, "binding")
+			binding, bindingErr := protectedObject(credentialFields["binding"])
+			if bindingErr != nil || len(binding) != 5 || !protectedFields(binding, "resource", "client_id", "account_id", "key_fingerprint", "auth_origin") {
+				return protectedSession{}, securecredential.ErrUnavailable
 			}
 		}
 		if !protectedFields(fields, "schema_version", "credential", "pending_link") || len(fields) != 3 || credentialErr != nil || !protectedFields(credentialFields, credentialKeys...) {
@@ -141,6 +149,11 @@ func encodeProtectedSession(record protectedSession) ([]byte, error) {
 	if !validProtectedSession(record) {
 		return nil, securecredential.ErrUnavailable
 	}
+	// Legacy credentials remain explicitly unbound. Only a fresh verified login
+	// writes v4; reading or rotating an old token cannot invent provenance.
+	if record.Credential.Binding == nil {
+		record.SchemaVersion = protectedSessionV3
+	}
 	raw, err := json.Marshal(record)
 	if err != nil || len(raw) > protectedSessionLimit {
 		return nil, securecredential.ErrUnavailable
@@ -152,11 +165,19 @@ func validProtectedSession(record protectedSession) bool {
 	if record.SchemaVersion != protectedSessionVersion || record.Credential.AccessToken == "" || record.Credential.TokenType != "Bearer" {
 		return false
 	}
+	if record.Credential.Binding != nil && !record.Credential.Binding.Valid() {
+		return false
+	}
 	if secret := record.Credential.RefreshRecoverySecret; secret != "" {
 		raw, err := base64.RawURLEncoding.DecodeString(secret)
 		if err != nil || len(raw) != 32 || base64.RawURLEncoding.EncodeToString(raw) != secret || record.Credential.SessionID == "" || record.Credential.RefreshToken == "" {
 			return false
 		}
 	}
-	return record.PendingLink == nil || (record.PendingLink.valid() && record.PendingLink.SessionID == record.Credential.SessionID)
+	return record.PendingLink == nil || (record.PendingLink.valid() && record.PendingLink.SessionID == record.Credential.SessionID && credentialMatchesLink(record.Credential, record.PendingLink.LinkBinding))
+}
+
+func credentialMatchesLink(credential userauth.Credential, binding LinkBinding) bool {
+	b := credential.Binding
+	return b == nil || b.Resource == binding.Resource && b.ClientID == binding.ClientID && b.KeyFingerprint == binding.KeyFingerprint
 }

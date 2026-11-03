@@ -10,6 +10,7 @@ Keeps the public riido-daemon env and flag catalog generated from a manifest and
 
 ## Focused Sections
 
+- [User CLI preferences](config-reference/user-cli-preferences.md)
 - [Naming rules](config-reference/naming-rules.md)
 - [Provider executable overrides](config-reference/provider-executable-overrides.md)
 - [Executable search path](config-reference/executable-search-path.md)

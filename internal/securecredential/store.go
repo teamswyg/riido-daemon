@@ -21,6 +21,7 @@ var (
 	ErrInteractionRequired = errors.New("OS user confirmation is required")
 	ErrCancelled           = errors.New("credential access was cancelled")
 	ErrNotFound            = errors.New("no protected credential is stored")
+	ErrBusy                = errors.New("protected credential operation is in progress")
 )
 
 type Store struct {
@@ -28,8 +29,11 @@ type Store struct {
 	Key         string
 	Interactive bool
 	LockDir     string
-	verify      func(context.Context, string) error
-	run         func(context.Context, string, []byte) ([]byte, error)
+	// SharedSession lets an interactive command reuse one verified helper
+	// process, so the OS asks for user confirmation once per command.
+	SharedSession bool
+	verify        func(context.Context, string) error
+	run           func(context.Context, string, []byte) ([]byte, error)
 }
 type request struct {
 	Version     int    `json:"version"`
@@ -150,6 +154,18 @@ func (s *Store) invoke(ctx context.Context, op string, value []byte) ([]byte, er
 		return nil, ErrUnavailable
 	}
 	run := s.run
+	if run == nil && s.SharedSession && s.Interactive && sessionSupported {
+		conn, err := sharedSession(ctx, s.HelperPath)
+		if err != nil {
+			return nil, ErrUnavailable
+		}
+		output, err := conn.roundTrip(ctx, body)
+		if err != nil || len(output) > maxMessageBytes {
+			dropSession(s.HelperPath, conn)
+			return nil, ErrUnavailable
+		}
+		return output, nil
+	}
 	if run == nil {
 		run = runHelper
 	}

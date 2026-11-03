@@ -6,8 +6,8 @@ import CryptoKit
 struct ProtectedInstallationKeyStore: InstallationKeyStore {
     func ensureKey(scope: InstallationScope) throws -> Data {
         try scope.validate()
-        let context = installationContext()
-        defer { context.invalidate() }
+        let (context, owned) = installationContext()
+        defer { if owned { context.invalidate() } }
         let registration = InstallationKeyRegistration(
             reserve: { try InstallationKeyLock().acquire(key: scope.storageKey) },
             load: { try find(scope: scope, context: context) },
@@ -17,8 +17,8 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
 
     func existingKey(scope: InstallationScope) throws -> Data {
         try scope.validate()
-        let context = installationContext()
-        defer { context.invalidate() }
+        let (context, owned) = installationContext()
+        defer { if owned { context.invalidate() } }
         let matches = try find(scope: scope, context: context)
         if matches.isEmpty { throw HelperFailure.notFound }
         guard matches.count == 1 else { throw HelperFailure.unavailable }
@@ -31,12 +31,16 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
             kSecAttrIsExtractable as String: false,
             kSecAttrApplicationTag as String: tag(scope),
             kSecAttrAccessGroup as String: SigningPolicy.accessGroup,
-            kSecAttrAccessControl as String: try protectedAccessControl()
+            kSecAttrAccessControl as String: try installationAccessControl()
         ]
         privateAttributes[kSecAttrCanSign as String] = true
         let attributes: [String: Any] = [
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrKeySizeInBits as String: 256,
+            // Software keys in the Data Protection Keychain always report
+            // themselves extractable; only the Secure Enclave keeps the private
+            // key in hardware. Macs without one fail closed here.
+            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
             kSecUseDataProtectionKeychain as String: true,
             kSecAttrSynchronizable as String: false,
             kSecUseAuthenticationContext as String: context,
@@ -59,10 +63,16 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
                         validate: { try proof.validate(now: Date()) })
     }
 
+    func signRepairProof(_ proof: InstallationRepairProof) throws -> Data {
+        try proof.validate()
+        return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0) },
+                        validate: { try proof.validate() })
+    }
+
     private func sign(scope: InstallationScope, message makeMessage: (Data) throws -> Data,
                       validate: () throws -> Void) throws -> Data {
-        let context = installationContext()
-        defer { context.invalidate() }
+        let (context, owned) = installationContext()
+        defer { if owned { context.invalidate() } }
         let matches = try find(scope: scope, context: context)
         if matches.isEmpty { throw HelperFailure.notFound }
         guard matches.count == 1 else { throw HelperFailure.unavailable }
@@ -82,13 +92,16 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
     }
 
     private func tag(_ scope: InstallationScope) -> Data {
-        Data(("io.riido.cli.installation.v1." + scope.storageKey).utf8)
+        // v2: Secure Enclave keys. A v1 software key from an earlier build is
+        // never matched, reused or deleted.
+        Data(("io.riido.cli.installation.v2." + scope.storageKey).utf8)
     }
-    private func installationContext() -> LAContext {
+    private func installationContext() -> (LAContext, Bool) {
+        if let session = currentAuthenticationSession { return (session.context, false) }
         let context = LAContext()
         context.localizedReason = "Verify the Riido CLI installation for your sign-in."
         context.touchIDAuthenticationAllowableReuseDuration = 0
-        return context
+        return (context, true)
     }
     private func find(scope: InstallationScope, context: LAContext) throws -> [SecKey] {
         let query: [String: Any] = [
@@ -97,6 +110,7 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrApplicationTag as String: tag(scope),
             kSecAttrAccessGroup as String: SigningPolicy.accessGroup,
+            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
             kSecAttrSynchronizable as String: false,
             kSecUseDataProtectionKeychain as String: true,
             kSecUseAuthenticationContext as String: context,
@@ -116,7 +130,7 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
               attributes[kSecAttrKeyClass as String] as? String == kSecAttrKeyClassPrivate as String,
               attributes[kSecAttrKeyType as String] as? String == kSecAttrKeyTypeECSECPrimeRandom as String,
               attributes[kSecAttrKeySizeInBits as String] as? Int == 256,
-              attributes[kSecAttrIsExtractable as String] as? Bool == false,
+              attributes[kSecAttrTokenID as String] as? String == kSecAttrTokenIDSecureEnclave as String,
               let key = SecKeyCopyPublicKey(privateKey) else { throw HelperFailure.unavailable }
         var error: Unmanaged<CFError>?
         // Only the public key has an external representation; the private key

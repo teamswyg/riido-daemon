@@ -8,10 +8,10 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 
 | Class | Count |
 | --- | ---: |
-| Generated reader docs | 308 |
+| Generated reader docs | 310 |
 | Direct SSOT docs | 6 |
-| Registered manual docs | 1 |
-| Scanned docs | 315 |
+| Registered manual docs | 0 |
+| Scanned docs | 316 |
 
 ## Generated Reader Origins
 
@@ -20,12 +20,12 @@ Executable SSOT: [`executable-knowledge.riido.json`](executable-knowledge.riido.
 | `go run ./tools/migrationdocs -write-doc` | 62 | `docs/migration/cli.md`<br>`docs/migration/cli/cli-daemon-split.md`<br>`docs/migration/cli/current-slices.md` |
 | `go run ./tools/storedistributiondocs -write-doc` | 15 | `docs/30-architecture/store-distribution.md`<br>`docs/30-architecture/store-distribution/architecture.md`<br>`docs/30-architecture/store-distribution/architecture/decisions.md` |
 | `go run ./tools/agentexecutiondesign -write-doc` | 14 | `docs/30-architecture/agent-execution-unresolved-design.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-daemon-slice-status.md`<br>`docs/30-architecture/agent-execution-unresolved-design/current-structure-evidence.md` |
-| `go run ./tools/configreference -write-doc` | 11 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
+| `go run ./tools/configreference -write-doc` | 12 | `docs/30-architecture/config-reference.md`<br>`docs/30-architecture/config-reference/agent-instruction-placement.md`<br>`docs/30-architecture/config-reference/change-procedure.md` |
 | `go run ./tools/providerintegrationgatedocs -write-doc` | 10 | `docs/20-domain/provider-runtime/integration-gates.md`<br>`docs/20-domain/provider-runtime/integration-gates/cursor-real-cli.md`<br>`docs/20-domain/provider-runtime/integration-gates/daemon-lifecycle-adapter.md` |
 | `go run ./tools/workspaceinvariantsdocs -write-doc` | 10 | `docs/20-domain/workspace/invariants.md`<br>`docs/20-domain/workspace/invariants/core.md`<br>`docs/20-domain/workspace/invariants/directory-layout.md` |
+| `go run ./tools/clisurface -write-doc` | 9 | `docs/30-architecture/cli-auth-custody.md`<br>`docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md` |
 | `go run ./tools/providerruntimeboundarydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-actor-boundary.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/adjacent-ssot-contracts.md`<br>`docs/20-domain/provider-runtime/runtime-actor-boundary/control-plane-port.md` |
 | `go run ./tools/providerruntimeresponsibilitydocs -write-doc` | 9 | `docs/20-domain/provider-runtime/runtime-responsibility.md`<br>`docs/20-domain/provider-runtime/runtime-responsibility/agent-client-nonresponsibilities.md`<br>`docs/20-domain/provider-runtime/runtime-responsibility/c3-c4-boundary.md` |
-| `go run ./tools/clisurface -write-doc` | 8 | `docs/30-architecture/cli-surface.md`<br>`docs/30-architecture/cli-surface/command-groups.md`<br>`docs/30-architecture/cli-surface/guarded-mutation-rule.md` |
 | `go run ./tools/contextmapdocs -write-doc` | 8 | `docs/20-domain/context-map.md`<br>`docs/20-domain/context-map/acl-locations.md`<br>`docs/20-domain/context-map/bounded-contexts.md` |
 | `go run ./tools/readmedocs -write-doc` | 8 | `AGENTS.md`<br>`NOTICE.md`<br>`README.md` |
 | `go run ./tools/securityredactiondocs -write-doc` | 8 | `docs/20-domain/security-redaction.md`<br>`docs/20-domain/security-redaction/audit-event.md`<br>`docs/20-domain/security-redaction/execution-responsibility.md` |
@@ -118,21 +118,15 @@ _None missing._
 _None._
 ## Registered Manual Surfaces
 
-| Group | Owner | Next artifact | Matched docs |
-| --- | --- | --- | ---: |
-| `device-assignment-delivery` | RIID-5827 | device-assignment-notifications.riido.json generated protocol/rollout evidence | 1 |
+_None._
 
 ## Manual Hotspots
 
-| Directory | Matched docs |
-| --- | ---: |
-| `docs/30-architecture` | 1 |
+_None._
 
 ## Manual Samples
 
-| Group | Path |
-| --- | --- |
-| `device-assignment-delivery` | `docs/30-architecture/device-assignment-notifications.md` |
+_None._
 
 ## Evidence Loop
 
