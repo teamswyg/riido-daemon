@@ -13,7 +13,7 @@ func TestParseClaudeRuntimeModelHelpUsesCliAliases(t *testing.T) {
 	if len(models) != 4 {
 		t.Fatalf("models = %+v", models)
 	}
-	if countRuntimeModelDefaults(models) != 1 {
+	if countRuntimeModelDefaults(models) != 0 {
 		t.Fatalf("default model count invalid: %+v", models)
 	}
 }

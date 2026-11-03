@@ -2,6 +2,7 @@ package supervisor
 
 import (
 	"context"
+	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
@@ -9,7 +10,11 @@ import (
 
 func (a *Actor) register(ctx context.Context, status runtimeactor.Status) error {
 	reg := runtimeRegistration(a.cfg.DaemonID, status)
-	return a.cfg.Source.RegisterRuntime(ctx, reg)
+	err := a.cfg.Source.RegisterRuntime(ctx, reg)
+	if err == nil {
+		a.runtimeSyncSuccess.Store(status.RuntimeID, time.Now().UTC())
+	}
+	return err
 }
 
 func runtimeRegistration(daemonID string, status runtimeactor.Status) controlplane.RuntimeRegistration {

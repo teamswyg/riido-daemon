@@ -11,7 +11,12 @@ func buildRuntimeCapability(runtimeID, provider string, res agentbridge.DetectRe
 	if err != nil {
 		return Capability{}, err
 	}
+	var versionObservedAt time.Time
+	if res.Version != "" {
+		versionObservedAt = discoveredAt.UTC()
+	}
 	return Capability{
+		VersionObservedAt:         versionObservedAt,
 		Provider:                  provider,
 		Available:                 res.Available,
 		Version:                   res.Version,
