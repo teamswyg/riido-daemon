@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"strings"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/securecredential"
@@ -65,7 +66,7 @@ func TestProtectedSaveKeepsAccessCacheInStep(t *testing.T) {
 		t.Fatal("refresh token reached the access cache")
 	}
 	pending := credential
-	pending.RefreshRecoverySecret = "synthetic-recovery"
+	pending.RefreshRecoverySecret = strings.Repeat("A", 43) // canonical 32-byte secret
 	if err = saveProtectedCredential(t, store, pending); err != nil {
 		t.Fatal(err)
 	}
