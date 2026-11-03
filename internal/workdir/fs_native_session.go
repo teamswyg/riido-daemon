@@ -26,7 +26,11 @@ func nativeSessionPath(provider, sessionID string) string {
 func (a *FSAdapter) LookupNativeSession(provider, sessionID string) (NativeSession, bool, error) {
 	nativeSessionMu.Lock()
 	defer nativeSessionMu.Unlock()
-	return a.lookupNativeSession(provider, sessionID)
+	record, found, err := a.lookupNativeSession(provider, sessionID)
+	if found && provider == "codex" {
+		record.RuntimeHint = a.codexRuntimeHint(record)
+	}
+	return record, found, err
 }
 
 func (a *FSAdapter) lookupNativeSession(provider, sessionID string) (NativeSession, bool, error) {
@@ -86,6 +90,8 @@ func (a *FSAdapter) PinNativeSession(record NativeSession) error {
 		return err
 	}
 	previous.Workdir, record.Workdir = "", ""
+	hint := record.RuntimeHint
+	record.RuntimeHint = NativeRuntimeHint{}
 	if found {
 		if previous != record {
 			return errors.New("workdir: native session already belongs to another execution context")
@@ -111,6 +117,19 @@ func (a *FSAdapter) PinNativeSession(record NativeSession) error {
 		return errors.New("workdir: native session binding exceeds 16 KiB")
 	}
 	path := nativeSessionPath(record.Provider, record.SessionID)
+	if record.Provider == "codex" && filepath.IsAbs(hint.Executable) && hint.Version != "" {
+		encoded, err := json.Marshal(hint)
+		if err != nil {
+			return err
+		}
+		if err := writeNativeFile(root, path+".runtime", encoded); err != nil {
+			return err
+		}
+	}
+	return writeNativeFile(root, path, data)
+}
+
+func writeNativeFile(root *os.Root, path string, data []byte) error {
 	tmp := path + "." + rand.Text()
 	file, err := root.OpenFile(tmp, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o600)
 	if err != nil {

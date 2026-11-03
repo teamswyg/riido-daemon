@@ -24,7 +24,7 @@ func blockRuntimeDriftedTasks(ctx context.Context, inFlight map[string]*runningT
 
 func taskPinnedToDriftedCapability(task *runningTask, capView Capability) bool {
 	return task != nil &&
-		task.handle != nil &&
+		task.handle != nil && task.handle.nativeResume == nil &&
 		task.provider == capView.Provider &&
 		task.capabilityFingerprint != "" &&
 		task.capabilityFingerprint != capView.CapabilityFingerprint

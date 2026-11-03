@@ -79,6 +79,11 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 			finish(err, true)
 			return
 		}
+		selected, selectErr := a.selectNativeResume(budgetCtx, rt, &status, req)
+		if selectErr != nil {
+			finish(fmt.Errorf("%w: %w", errWorkspacePreparation, selectErr), true)
+			return
+		}
 		capability, found := findCapability(status.Capabilities, string(req.Provider))
 		scope = string(req.Provider) + ":" + capability.CapabilityFingerprint
 		circuit, wait := circuits.Acquire(scope, req.ID, time.Now())
@@ -157,7 +162,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 				prepared.request = &snapshot
 			}
 			var handle *runtimeactor.SessionHandle
-			handle, err = rt.SubmitPreflight(budgetCtx, ctx, *req)
+			handle, err = rt.SubmitWithNativeResume(budgetCtx, ctx, *req, selected)
 			if err == nil && handle != nil {
 				observation.State = "dispatched"
 				observation.Reason = "none"

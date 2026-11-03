@@ -86,6 +86,7 @@ func (a *Actor) restoreNativeSessionWorkspace(req *bridge.TaskRequest, capView r
 	want.OriginRunID = record.OriginRunID
 	cwd := record.Workdir
 	record.Workdir = ""
+	record.RuntimeHint = workdir.NativeRuntimeHint{}
 	if want != record || !capView.SupportsResume {
 		return false, fmt.Errorf("%w: task, agent, runtime or repository grant changed", errNativeSessionBinding)
 	}
@@ -124,6 +125,7 @@ func (a *Actor) pinTaskNativeSession(task *runningTask, ev agentbridge.Event) er
 	}
 	record, err := a.nativeSessionRecord(task.request, task.events.capability, ev.SessionID)
 	if err == nil {
+		record.RuntimeHint = workdir.NativeRuntimeHint{Executable: task.events.capability.Executable, Version: task.events.capability.Version}
 		err = store.PinNativeSession(record)
 	}
 	if err != nil {

@@ -37,3 +37,13 @@ func (bridgeCodexAdapter) NewProtocolDriver(req agentbridge.StartRequest) (agent
 func (bridgeCodexAdapter) BuildProviderInput(cmd agentbridge.Command) ([]byte, error) {
 	return codex.BuildProviderInput(cmd)
 }
+
+func (bridgeCodexAdapter) ResumeExecutableIdentity(path, version string) agentbridge.DetectResult {
+	res := codex.ExecutableCapability(path)
+	res.Version = version
+	return res
+}
+
+func (bridgeCodexAdapter) ProbeResumeExecutable(ctx context.Context, path string) (agentbridge.DetectResult, error) {
+	return codex.Detect(ctx, agentbridge.DetectEnv{EnvOverride: map[string]string{codex.EnvOverride: path}})
+}

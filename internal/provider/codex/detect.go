@@ -19,20 +19,7 @@ func Detect(ctx context.Context, env agentbridge.DetectEnv) (agentbridge.DetectR
 			Reason:         "codex executable not found on PATH and " + EnvOverride + " is not set",
 		}, nil
 	}
-	res := agentbridge.DetectResult{
-		Available:         true,
-		Executable:        exe,
-		SupportsStreaming: true,
-		SupportsResume:    true,  // thread/resume in app-server
-		SupportsSystem:    true,  // developer instructions
-		SupportsMaxTurns:  false, // adapter-dependent; conservative
-		SupportsMCP:       false, // partial / unsupported on app-server flavor
-		SupportsToolHooks: true,
-		SupportsUsage:     true,
-		Metadata:          map[string]string{},
-		HealthStatus:      hostintegration.ProviderHealthHealthy,
-		DiagnosticCode:    hostintegration.ProviderDiagnosticNone,
-	}
+	res := ExecutableCapability(exe)
 	switch detectutil.AuthStatusProbe(ctx, exe, "login", "status") {
 	case detectutil.AuthProbeAuthenticated:
 	case detectutil.AuthProbeUnauthenticated:
@@ -66,4 +53,22 @@ func envValue(env agentbridge.DetectEnv, key string) string {
 		}
 	}
 	return ""
+}
+
+// ExecutableCapability describes the Codex protocol surface before probing a local installation.
+func ExecutableCapability(exe string) agentbridge.DetectResult {
+	return agentbridge.DetectResult{
+		Available:         true,
+		Executable:        exe,
+		SupportsStreaming: true,
+		SupportsResume:    true,  // thread/resume in app-server
+		SupportsSystem:    true,  // developer instructions
+		SupportsMaxTurns:  false, // adapter-dependent; conservative
+		SupportsMCP:       false, // partial / unsupported on app-server flavor
+		SupportsToolHooks: true,
+		SupportsUsage:     true,
+		Metadata:          map[string]string{},
+		HealthStatus:      hostintegration.ProviderHealthHealthy,
+		DiagnosticCode:    hostintegration.ProviderDiagnosticNone,
+	}
 }
