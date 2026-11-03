@@ -10,8 +10,15 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/userapi"
 )
 
-func whoamiView(w io.Writer, identity userapi.Identity) textRenderer {
-	return terminalView(w, func(out io.Writer, term cliui.Terminal) { renderWhoamiView(out, term, identity) })
+// whoamiWorkspaces carries the configured default and looked-up names for the
+// terminal view; both are optional.
+type whoamiWorkspaces struct {
+	defaultID string
+	names     map[string]string
+}
+
+func whoamiView(w io.Writer, identity userapi.Identity, workspaces whoamiWorkspaces) textRenderer {
+	return terminalView(w, func(out io.Writer, term cliui.Terminal) { renderWhoamiView(out, term, identity, workspaces) })
 }
 
 func workView(w io.Writer, work userapi.Work) textRenderer {
@@ -26,7 +33,7 @@ func activityView(w io.Writer, page userapi.ActivityPage) textRenderer {
 	return terminalView(w, func(out io.Writer, term cliui.Terminal) { renderActivityView(out, term, page) })
 }
 
-func renderWhoamiView(w io.Writer, term cliui.Terminal, id userapi.Identity) {
+func renderWhoamiView(w io.Writer, term cliui.Terminal, id userapi.Identity, workspaces whoamiWorkspaces) {
 	writeViewHeader(w, term, orText(orText(id.Username, id.Email), id.ID), "", term.Success("● 로그인됨"))
 	fmt.Fprintln(w)
 	writeViewFields(w, term, []viewField{
@@ -34,7 +41,8 @@ func renderWhoamiView(w io.Writer, term cliui.Terminal, id userapi.Identity) {
 		{"사용자 이름", id.Username},
 		{"로그인 방식", id.LoginType},
 		{"사용자 ID", id.ID},
-		{"최근 워크스페이스", id.LastViewedWorkspaceID},
+		{"최근 워크스페이스", workspaceLabel(id.LastViewedWorkspaceID, workspaces.names)},
+		{"기본 워크스페이스", workspaceLabel(workspaces.defaultID, workspaces.names)},
 	})
 }
 
