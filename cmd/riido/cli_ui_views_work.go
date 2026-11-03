@@ -36,14 +36,20 @@ func activityView(w io.Writer, page userapi.ActivityPage) textRenderer {
 func renderWhoamiView(w io.Writer, term cliui.Terminal, id userapi.Identity, workspaces whoamiWorkspaces) {
 	writeViewHeader(w, term, orText(orText(id.Username, id.Email), id.ID), "", term.Success("● 로그인됨"))
 	fmt.Fprintln(w)
-	writeViewFields(w, term, []viewField{
+	fields := []viewField{
 		{"이메일", id.Email},
 		{"사용자 이름", id.Username},
 		{"로그인 방식", id.LoginType},
 		{"사용자 ID", id.ID},
-		{"최근 워크스페이스", workspaceLabel(id.LastViewedWorkspaceID, workspaces.names)},
-		{"기본 워크스페이스", workspaceLabel(workspaces.defaultID, workspaces.names)},
-	})
+		{"최근 워크스페이스", id.LastViewedWorkspaceID},
+		{"기본 워크스페이스", workspaces.defaultID},
+	}
+	// Measure with the bare IDs, then shorten only the names so the full
+	// workspace IDs stay copyable on narrow terminals.
+	room := viewFieldRoom(term, viewFieldLabelWidth(fields))
+	fields[4].value = workspaceLabel(id.LastViewedWorkspaceID, workspaces.names, room)
+	fields[5].value = workspaceLabel(workspaces.defaultID, workspaces.names, room)
+	writeViewFields(w, term, fields)
 }
 
 func renderWorkView(w io.Writer, term cliui.Terminal, work userapi.Work) {

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/teamswyg/riido-daemon/internal/cliui"
 	"github.com/teamswyg/riido-daemon/internal/standalonecli"
 	"github.com/teamswyg/riido-daemon/internal/userapi"
 )
@@ -41,10 +42,18 @@ func whoamiWorkspaceNames(ctx context.Context, session *standalonecli.Service, i
 	return names
 }
 
-// workspaceLabel shows "name (id)" so the ID stays visible for copying.
-func workspaceLabel(id string, names map[string]string) string {
-	if name := names[id]; id != "" && name != "" {
-		return name + " (" + id + ")"
+// workspaceLabel shows "name (id)" so the ID stays visible for copying. Only
+// the name is shortened to fit room; when even a short name cannot fit, the
+// bare ID is shown, which the field writer never truncates.
+func workspaceLabel(id string, names map[string]string, room int) string {
+	name := oneLine(names[id])
+	if id == "" || name == "" {
+		return id
 	}
-	return id
+	suffix := " (" + id + ")"
+	nameRoom := room - cliui.DisplayWidth(oneLine(suffix))
+	if nameRoom < 4 {
+		return id
+	}
+	return cliui.Truncate(name, nameRoom) + suffix
 }

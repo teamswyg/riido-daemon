@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/teamswyg/riido-daemon/internal/cliui"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/standalonecli"
 )
@@ -18,7 +19,7 @@ func TestWorkspaceLabelKeepsID(t *testing.T) {
 		{"ws-unknown", "ws-unknown"},
 		{"", ""},
 	} {
-		if got := workspaceLabel(c.id, names); got != c.want {
+		if got := workspaceLabel(c.id, names, 80); got != c.want {
 			t.Errorf("workspaceLabel(%q) = %q, want %q", c.id, got, c.want)
 		}
 	}
@@ -43,5 +44,23 @@ func TestWhoamiSkipsNameLookupOffTerminal(t *testing.T) {
 		if len(queries) != 1 || !strings.Contains(queries[0], "getMyAccountInfo") {
 			t.Fatalf("args=%v made extra requests: %d", args, len(queries))
 		}
+	}
+}
+
+// Review on #822: a long name on a narrow terminal is shortened, never the ID.
+func TestWorkspaceLabelShortensOnlyTheName(t *testing.T) {
+	id := "1IFsD2cWorkspaceID"
+	names := map[string]string{id: strings.Repeat("아주긴워크스페이스", 10)}
+	for _, room := range []int{12, 30, 60} {
+		got := workspaceLabel(id, names, room)
+		if !strings.HasSuffix(got, id+")") && got != id {
+			t.Fatalf("room=%d lost the ID: %q", room, got)
+		}
+		if got != id && cliui.DisplayWidth(got) > room {
+			t.Fatalf("room=%d label wider than room: %q", room, got)
+		}
+	}
+	if got := workspaceLabel(id, names, 12); got != id {
+		t.Fatalf("no room for a name must show the bare ID: %q", got)
 	}
 }
