@@ -19,6 +19,9 @@ var (
 	ErrGraphQL         = errors.New("riido could not complete this read")
 	ErrConflict        = errors.New("the requested resource version has changed")
 	ErrInvalidRequest  = errors.New("the read request parameters are invalid")
+	// ErrDataIntegrity means Riido cannot serve the stored data safely; the
+	// same read will keep failing (server reason read_scope_integrity).
+	ErrDataIntegrity = errors.New("the stored work data cannot be read safely")
 )
 
 type ReadClient interface {

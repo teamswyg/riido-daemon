@@ -23,6 +23,8 @@ const (
 	ExitUnsupported  = contract.ExitUnsupported
 	ExitIncomplete   = contract.ExitIncomplete
 	ExitConflict     = contract.ExitConflict
+	// ExitDataIntegrity: stored data cannot be served safely; retry will not help.
+	ExitDataIntegrity = contract.ExitDataIntegrity
 )
 
 const (
@@ -43,6 +45,7 @@ const (
 	CodeIncomplete              = contract.CodeIncomplete
 	CodeConflict                = contract.CodeConflict
 	CodeLeaseLost               = contract.CodeLeaseLost
+	CodeDataIntegrity           = contract.CodeDataIntegrity
 )
 
 // CLIError is a work-context failure with its envelope fields.

@@ -43,6 +43,8 @@ func userAuthError(err error) *contextcli.CLIError {
 		return contextcli.Fail(contextcli.CodeRateLimited, "요청 한도를 초과했습니다", "잠시 뒤 다시 시도하세요")
 	case errors.Is(err, userapi.ErrAmbiguousWorkReference):
 		return contextcli.Fail(contextcli.CodeConflict, "표시 키에 해당하는 작업이 여러 개입니다", "작업의 실제 ID와 --team-id를 지정하세요")
+	case errors.Is(err, userapi.ErrDataIntegrity):
+		return contextcli.Fail(contextcli.CodeDataIntegrity, "작업 자료가 올바르지 않아 읽을 수 없습니다", "다시 실행해도 같습니다. Riido 화면에서 작업을 확인하고, 계속되면 관리자에게 알려 주세요")
 	case errors.Is(err, userapi.ErrConflict):
 		return contextcli.Fail(contextcli.CodeConflict, "자료가 변경되어 기존 페이지를 이어 읽을 수 없습니다", "맥락을 다시 조회해 새 version의 첫 페이지부터 읽으세요")
 	case errors.Is(err, userapi.ErrInvalidRequest):
