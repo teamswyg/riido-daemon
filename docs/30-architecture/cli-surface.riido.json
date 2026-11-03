@@ -994,7 +994,8 @@
             "7 rate limited",
             "8 unsupported version, connection, or format",
             "9 incomplete result (partial data kept with warnings)",
-            "10 conflict (version mismatch, session in use, lease lost)"
+            "10 conflict (version mismatch, session in use, lease lost)",
+            "11 stored data cannot be read safely (DATA_INTEGRITY); retrying the same read will not succeed"
           ]
         },
         {
@@ -1067,7 +1068,7 @@
         },
         {
           "kind": "paragraph",
-          "text": "User work references: work get/tree/relations/comments/replies/activity/body, context get, resource/repo list and meeting list --work accept display keys with an explicit or configured workspace and/or team scope. Both scopes intersect. A fixed resolveCLIWorkReference query returns only authorized metadata and runs with the subsequent read inside one protected login session; no account-wide search, body search or origin fallback is permitted. Visible key ambiguity returns CONFLICT with an ID/team hint. Existing opaque-ID calls retain their team requirement and perform zero reference lookups; stored workspace defaults do not alter that path. Only component work references accept keys: meeting/backlog/intake/team/comment identifiers remain strict IDs. Body/comment continuations preserve their original version/selector/offset and recheck access. Agent snapshot key resolution is unchanged. User thread/agents key support uses the same protected reference resolution followed by their separate purpose-bound ticket integration described below."
+          "text": "User work references: work get/tree/relations/comments/replies/activity/body, context get, resource/repo list and meeting list --work accept display keys with an explicit or configured workspace and/or team scope. Both scopes intersect. A fixed resolveCLIWorkReference query returns only authorized metadata and runs with the subsequent read inside one protected login session; no account-wide search, body search or origin fallback is permitted. Visible key ambiguity returns CONFLICT with an ID/team hint. A read the server rejects as stored-data integrity (GraphQL conflict with reason read_scope_integrity, RIID-6008) returns DATA_INTEGRITY exit 11 instead of CONFLICT: the same read will keep failing, so the CLI does not suggest re-reading a new version. A plain conflict keeps CONFLICT exit 10. Existing opaque-ID calls retain their team requirement and perform zero reference lookups; stored workspace defaults do not alter that path. Only component work references accept keys: meeting/backlog/intake/team/comment identifiers remain strict IDs. Body/comment continuations preserve their original version/selector/offset and recheck access. Agent snapshot key resolution is unchanged. User thread/agents key support uses the same protected reference resolution followed by their separate purpose-bound ticket integration described below."
         },
         {
           "kind": "paragraph",
