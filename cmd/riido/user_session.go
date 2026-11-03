@@ -58,7 +58,7 @@ func (c contextIO) openUserSession(args contextcli.Args) (*standalonecli.Service
 	if err != nil {
 		return nil, err
 	}
-	native := securecredential.Store{HelperPath: helper, Interactive: !args.NoInput, LockDir: locks}
+	native := securecredential.Store{HelperPath: helper, Interactive: !args.NoInput, SharedSession: !args.NoInput, LockDir: locks}
 	store, err := standalonecli.NewProtectedStore(native, origin, authOrigin)
 	if err != nil {
 		return nil, err
