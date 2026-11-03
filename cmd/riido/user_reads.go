@@ -9,7 +9,7 @@ import (
 
 func (c contextIO) runUserWhoami(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{})
+	args, settings, cliErr := c.parseSettings(raw, contextcli.ArgSpec{})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -30,7 +30,16 @@ func (c contextIO) runUserWhoami(raw []string) error {
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
-	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "identity": identity}), whoamiView(c.stdout, identity))
+	view := whoamiWorkspaces{}
+	if settings != nil {
+		view.defaultID = settings.resolved.Workspace
+	}
+	// Names appear only in the terminal read view; pipes, files, TERM=dumb and
+	// RIIDO_CLI_PLAIN=1 print the unchanged JSON, so they skip the lookup.
+	if !args.JSON && humanTerminal(c.stdout).Interactive {
+		view.names = whoamiWorkspaceNames(ctx, session, identity.LastViewedWorkspaceID, view.defaultID)
+	}
+	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "identity": identity}), whoamiView(c.stdout, identity, view))
 }
 
 func (c contextIO) runUserWork(raw []string) error {
