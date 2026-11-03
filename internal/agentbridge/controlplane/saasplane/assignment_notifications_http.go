@@ -47,7 +47,10 @@ func (p *Plane) readAssignmentNotifications(ctx context.Context) (received, unsu
 	for scanner.Scan() {
 		watchdog.Reset(45 * time.Second)
 		line := scanner.Text()
-		if line == "" {
+		eventValue, isEvent := strings.CutPrefix(line, "event:")
+		dataValue, isData := strings.CutPrefix(line, "data:")
+		switch {
+		case line == "":
 			if eventType == "assignments" {
 				var event assignmentNotification
 				if err := json.Unmarshal([]byte(data), &event); err != nil {
@@ -63,10 +66,10 @@ func (p *Plane) readAssignmentNotifications(ctx context.Context) (received, unsu
 				}
 			}
 			eventType, data = "", ""
-		} else if strings.HasPrefix(line, "event:") {
-			eventType = strings.TrimSpace(strings.TrimPrefix(line, "event:"))
-		} else if strings.HasPrefix(line, "data:") {
-			data += strings.TrimSpace(strings.TrimPrefix(line, "data:")) + "\n"
+		case isEvent:
+			eventType = strings.TrimSpace(eventValue)
+		case isData:
+			data += strings.TrimSpace(dataValue) + "\n"
 			if len(data) > 1024*1024 {
 				return received, false, fmt.Errorf("assignment stream event too large")
 			}

@@ -26,7 +26,7 @@ func TestAssignmentNotificationsOneStreamNoIdleFanout(t *testing.T) {
 		streams.Add(1)
 		if r.Header.Get("X-Riido-Device-Secret") != "secret" {
 			t.Error("stream missing device auth")
-			http.Error(w, "auth", 401)
+			http.Error(w, "auth", http.StatusUnauthorized)
 			return
 		}
 		w.Header().Set("Content-Type", "text/event-stream")
@@ -48,7 +48,7 @@ func TestAssignmentNotificationsOneStreamNoIdleFanout(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer p.Close()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	wake := p.AssignmentNotifications(ctx)
 	if wake != p.AssignmentNotifications(ctx) {
@@ -62,7 +62,7 @@ func TestAssignmentNotificationsOneStreamNoIdleFanout(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		_, _ = p.ClaimTask(ctx, "daemon-1:codex")
 		_, _ = p.ClaimTask(ctx, "daemon-1:cursor")
 	}
@@ -103,7 +103,9 @@ func TestAssignmentNotificationsRetryAndNewHintDuringClaim(t *testing.T) {
 		if polls.Load() == 2 {
 			plane.acceptAssignmentNotification(ctx, assignmentNotification{Bindings: []assignmentcontract.AgentRuntimeBinding{codexRuntimeBinding("a")}, AgentIDs: []string{"a"}})
 		}
-		json.NewEncoder(w).Encode(assignmentcontract.PollResponse{Action: assignmentcontract.PollNone})
+		if err := json.NewEncoder(w).Encode(assignmentcontract.PollResponse{Action: assignmentcontract.PollNone}); err != nil {
+			t.Error(err)
+		}
 	}))
 	defer server.Close()
 	plane, _ = New(Config{BaseURL: server.URL, DaemonID: "daemon-1", DeviceSecret: "secret"})
@@ -133,7 +135,10 @@ func TestAssignmentNotificationsRetryAndNewHintDuringClaim(t *testing.T) {
 func TestAssignmentNotificationsAuthFailureRetainsRetryWithoutBurst(t *testing.T) {
 	ctx := context.Background()
 	var polls atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { polls.Add(1); http.Error(w, "forbidden", 403) }))
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		polls.Add(1)
+		http.Error(w, "forbidden", http.StatusForbidden)
+	}))
 	defer server.Close()
 	p, _ := New(Config{BaseURL: server.URL, DaemonID: "daemon-1", DeviceSecret: "secret"})
 	defer p.Close()
@@ -144,7 +149,7 @@ func TestAssignmentNotificationsAuthFailureRetainsRetryWithoutBurst(t *testing.T
 	if _, err := p.ClaimTask(ctx, "daemon-1:codex"); err == nil {
 		t.Fatal("expected failure")
 	}
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		_, _ = p.ClaimTask(ctx, "daemon-1:codex")
 	}
 	if polls.Load() != 1 {
@@ -162,7 +167,7 @@ func TestAssignmentNotificationsExplicitLegacyFallback(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	p, _ := New(Config{BaseURL: fake.URL(), DaemonID: "daemon-1", DeviceSecret: "secret", AssignmentEvents: true})
 	defer p.Close()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	wake := p.AssignmentNotifications(ctx)
 	awaitAssignmentNotice(t, wake)
@@ -243,7 +248,7 @@ func TestAssignmentNotificationsReconnectRestoresMissedHint(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer p.Close()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	wake := p.AssignmentNotifications(ctx)
 	<-firstRead
@@ -262,7 +267,7 @@ func TestAssignmentNotificationsReconnectRestoresMissedHint(t *testing.T) {
 	if streams.Load() != 2 {
 		t.Fatalf("streams=%d", streams.Load())
 	}
-	for i := 0; i < 20; i++ {
+	for range 20 {
 		again, err := p.ClaimTask(ctx, "daemon-1:codex")
 		if err != nil || again != nil {
 			t.Fatalf("duplicate claim: %v %v", again, err)

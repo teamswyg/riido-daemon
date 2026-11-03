@@ -59,6 +59,14 @@ func (s *sessionReadClient) checkLogin(ctx context.Context) error {
 	if !s.active || m.generation.Load() != s.generation {
 		return ErrLoggedOut
 	}
+	// The store keeps the access cache in step with Save and Delete, so a
+	// cached session answers without another user-presence prompt (RIID-6014).
+	if session, ok := m.cachedSession(ctx); ok {
+		if session != s.sessionID || m.generation.Load() != s.generation {
+			return ErrLoggedOut
+		}
+		return nil
+	}
 	current, err := m.store.Load(ctx)
 	if err != nil {
 		return storageError(err)

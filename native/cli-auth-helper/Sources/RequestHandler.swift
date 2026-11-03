@@ -5,6 +5,7 @@ struct RequestHandler {
     let store: CredentialStore
     let confirm: () throws -> Void
     var installationKeys: InstallationKeyStore = UnavailableInstallationKeyStore()
+    var accessCache: AccessCacheStore = UnavailableAccessCacheStore()
     var now: () -> Date = Date.init
     // Session mode: confirm once before the first protected operation.
     var beforeProtected: ((HelperRequest) throws -> Void)? = nil
@@ -12,7 +13,7 @@ struct RequestHandler {
         do {
             let request = try decode(input)
             try preflight()
-            if request.operation != "status", let beforeProtected { try beforeProtected(request) }
+            if !RequestHandler.unprotectedOperations.contains(request.operation), let beforeProtected { try beforeProtected(request) }
             let data: HelperData
             switch request.operation {
             case "status":
@@ -27,6 +28,17 @@ struct RequestHandler {
                 data = HelperData(present: true)
             case "delete":
                 try store.delete(key: request.key, interactive: request.interactive)
+                data = HelperData(present: false)
+            case "access-load":
+                let value = try accessCache.load(key: request.key)
+                guard !value.isEmpty, value.count <= RequestHandler.accessValueLimit else { throw HelperFailure.unavailable }
+                data = HelperData(present: true, value: value.base64EncodedString())
+            case "access-save":
+                guard let text = request.value, let value = Data(base64Encoded: text) else { throw HelperFailure.invalid }
+                try accessCache.save(key: request.key, value: value)
+                data = HelperData(present: true)
+            case "access-delete":
+                try accessCache.delete(key: request.key)
                 data = HelperData(present: false)
             case "confirm":
                 guard request.interactive else { throw HelperFailure.interactionRequired }
@@ -77,13 +89,16 @@ struct RequestHandler {
             return HelperResponse(ok: false, error: .unavailable)
         }
     }
+    // Operations that never ask for user presence, also in session mode.
+    static let unprotectedOperations: Set<String> = ["status", "access-load", "access-save", "access-delete"]
+    static let accessValueLimit = 8192
     private func decode(_ input: Data) throws -> HelperRequest {
         let object = try flatJSONObject(input)
         guard
               Set(object.keys).isSubset(of: ["version", "operation", "key", "interactive", "value"]),
               let request = try? JSONDecoder().decode(HelperRequest.self, from: input),
               request.version == 1,
-              ["status", "load", "save", "delete", "confirm", "installation-key", "installation-existing-key", "installation-proof", "installation-device-link-proof", "installation-repair-proof"].contains(request.operation),
+              ["status", "load", "save", "delete", "access-load", "access-save", "access-delete", "confirm", "installation-key", "installation-existing-key", "installation-proof", "installation-device-link-proof", "installation-repair-proof"].contains(request.operation),
               (16...128).contains(request.key.utf8.count),
               request.key.utf8.allSatisfy({ byte in
                   (65...90).contains(byte) || (97...122).contains(byte) || (48...57).contains(byte) || byte == 45 || byte == 95
@@ -102,6 +117,9 @@ struct RequestHandler {
         } else if request.operation == "save" {
             guard let text = request.value, let value = Data(base64Encoded: text),
                   !value.isEmpty, value.count <= 32768 else { throw HelperFailure.invalid }
+        } else if request.operation == "access-save" {
+            guard let text = request.value, let value = Data(base64Encoded: text),
+                  !value.isEmpty, value.count <= RequestHandler.accessValueLimit else { throw HelperFailure.invalid }
         } else if object.keys.contains("value") { throw HelperFailure.invalid }
         return request
     }

@@ -28,6 +28,11 @@ func (m *Manager) accessCredentialLocked(ctx context.Context, rejected, expected
 	if m.generation.Load() != generation {
 		return Credential{}, ErrLoggedOut
 	}
+	if rejected == "" {
+		if credential, ok := m.cachedAccess(ctx, expectedSession, generation); ok {
+			return credential, nil
+		}
+	}
 	credential, err := m.store.Load(ctx)
 	if err != nil {
 		return Credential{}, storageError(err)
@@ -52,6 +57,7 @@ func (m *Manager) accessCredentialLocked(ctx context.Context, rejected, expected
 		mustRefresh = true
 	}
 	if !mustRefresh {
+		m.rememberAccess(ctx, credential)
 		return credential, nil
 	}
 	if credential.RefreshToken == "" {
