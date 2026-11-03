@@ -86,8 +86,9 @@ func (s *ProtectedStore) syncAccess(ctx context.Context, credential userauth.Cre
 	_ = native.DeleteAccess(ctx)
 }
 
-// clearAccess runs before the protected credential is deleted, so a logged-out
-// access token never stays readable without user presence. A helper without
+// clearAccess runs before the protected credential is saved or deleted, so a
+// replaced or logged-out access token never stays readable without user
+// presence. A helper without
 // the access cache has nothing to clear.
 func (s *ProtectedStore) clearAccess(ctx context.Context) error {
 	native, ok := s.accessNative()

@@ -41,6 +41,11 @@ func (n *accessNativeFixture) DeleteAccess(context.Context) error {
 	return nil
 }
 
+func (n *accessNativeFixture) Save(ctx context.Context, raw []byte) error {
+	n.events = append(n.events, "save")
+	return n.protectedNativeFixture.Save(ctx, raw)
+}
+
 func (n *accessNativeFixture) Delete(ctx context.Context) error {
 	n.events = append(n.events, "delete")
 	return n.protectedNativeFixture.Delete(ctx)
@@ -120,5 +125,39 @@ func TestProtectedAccessCacheRejectsForeignOrMalformedRecords(t *testing.T) {
 	legacy := &ProtectedStore{Native: native.protectedNativeFixture, Resource: protectedTestResource}
 	if _, err := legacy.LoadAccess(context.Background()); err == nil {
 		t.Fatal("native without the access item must miss")
+	}
+}
+
+// Review on #824: an account switch whose protected save is interrupted must
+// not leave the previous login's grant in the cache.
+func TestProtectedSaveClearsAccessCacheBeforeReplacing(t *testing.T) {
+	store, native, credential := newAccessFixture(t)
+	if err := saveProtectedCredential(t, store, credential); err != nil {
+		t.Fatal(err)
+	}
+	native.events = nil
+	next := credential
+	next.SessionID, next.AccessToken = "next-login-session", "next-access"
+	native.saveErr = securecredential.ErrUnavailable
+	if err := saveProtectedCredential(t, store, next); err == nil {
+		t.Fatal("failed protected save reported success")
+	}
+	if len(native.events) < 2 || native.events[0] != "access-delete" || native.events[1] != "save" {
+		t.Fatalf("cache must be cleared before the protected save: %v", native.events)
+	}
+	if _, err := store.LoadAccess(context.Background()); !errors.Is(err, userauth.ErrNotAuthenticated) {
+		t.Fatalf("previous login stayed cached: %v", err)
+	}
+	native.saveErr, native.events = nil, nil
+	if err := saveProtectedCredential(t, store, next); err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"access-delete", "save", "access-save"}; len(native.events) != 3 || native.events[0] != want[0] || native.events[1] != want[1] || native.events[2] != want[2] {
+		t.Fatalf("save order %v", native.events)
+	}
+	native.deleteErr = securecredential.ErrUnavailable
+	native.events = nil
+	if err := saveProtectedCredential(t, store, credential); err == nil || len(native.events) != 1 {
+		t.Fatalf("an uncleared cache must stop the protected save: %v", native.events)
 	}
 }

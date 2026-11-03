@@ -40,9 +40,9 @@ recovery secret or installation key) under the separate service
 synchronized and stays in the helper access group. Its operations never show
 UI and never trigger the session confirmation, so a command whose access token
 is still valid needs no Touch ID; refresh, login and installation-key signing
-still read the protected items below. The Go store rewrites this item on every
-protected save, clears it while a refresh rotation is pending and deletes it
-before the protected credential. Older helpers answer `INVALID_REQUEST`, which
+still read the protected items below. The Go store clears this item before every
+protected save and rewrites it afterwards, leaves it empty while a refresh
+rotation is pending and deletes it before the protected credential. Older helpers answer `INVALID_REQUEST`, which
 the CLI treats as no cache.
 
 Storage uses the data-protection keychain, `.userPresence`, and

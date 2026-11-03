@@ -99,6 +99,13 @@ func (s *ProtectedStore) Save(ctx context.Context, credential userauth.Credentia
 		record = protectedSession{SchemaVersion: protectedSessionVersion}
 	}
 	record.Credential = credential
+	// Clear the access cache before the protected record changes, so an
+	// interrupted or ambiguous save never leaves another login's or a rotated
+	// grant readable without user presence; reads then fall back to the
+	// protected record until syncAccess writes the saved grant.
+	if err := s.clearAccess(ctx); err != nil {
+		return err
+	}
 	if err := s.saveRecord(ctx, record); err != nil {
 		return err
 	}
