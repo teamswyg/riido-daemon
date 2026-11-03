@@ -1,6 +1,15 @@
 package main
 
-import "testing"
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strings"
+	"testing"
+
+	"github.com/teamswyg/riido-daemon/internal/contextcli"
+	"github.com/teamswyg/riido-daemon/internal/standalonecli"
+)
 
 func TestWorkspaceLabelKeepsID(t *testing.T) {
 	names := map[string]string{"ws-1": "스위그"}
@@ -11,6 +20,28 @@ func TestWorkspaceLabelKeepsID(t *testing.T) {
 	} {
 		if got := workspaceLabel(c.id, names); got != c.want {
 			t.Errorf("workspaceLabel(%q) = %q, want %q", c.id, got, c.want)
+		}
+	}
+}
+
+// Off-terminal whoami prints the unchanged JSON, so it must not spend extra
+// requests resolving names nobody sees.
+func TestWhoamiSkipsNameLookupOffTerminal(t *testing.T) {
+	for _, args := range [][]string{nil, {"--json"}} {
+		queries := []string{}
+		service := commentService(t, func(w http.ResponseWriter, r *http.Request) {
+			var body struct{ Query string }
+			_ = json.NewDecoder(r.Body).Decode(&body)
+			queries = append(queries, body.Query)
+			fmt.Fprint(w, `{"data":{"getMyAccountInfo":{"id":"user-one","lastViewedWorkspaceId":"workspace-one"}}}`)
+		})
+		h := newContextHarness(t, nil)
+		h.io.userSession = func(contextcli.Args) (*standalonecli.Service, error) { return service, nil }
+		if err := runWhoami(h.io, args); err != nil {
+			t.Fatal(err)
+		}
+		if len(queries) != 1 || !strings.Contains(queries[0], "getMyAccountInfo") {
+			t.Fatalf("args=%v made extra requests: %d", args, len(queries))
 		}
 	}
 }

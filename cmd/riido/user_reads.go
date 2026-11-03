@@ -34,7 +34,9 @@ func (c contextIO) runUserWhoami(raw []string) error {
 	if settings != nil {
 		view.defaultID = settings.resolved.Workspace
 	}
-	if !args.JSON {
+	// Names appear only in the terminal read view; pipes, files, TERM=dumb and
+	// RIIDO_CLI_PLAIN=1 print the unchanged JSON, so they skip the lookup.
+	if !args.JSON && humanTerminal(c.stdout).Interactive {
 		view.names = whoamiWorkspaceNames(ctx, session, identity.LastViewedWorkspaceID, view.defaultID)
 	}
 	return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "identity": identity}), whoamiView(c.stdout, identity, view))
