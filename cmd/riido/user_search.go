@@ -43,7 +43,7 @@ func (c contextIO) runUserSearch(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	result, err := session.Search(ctx, q)
+	result, err := followWorkSearch(ctx, session.Search, q)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
 	}
@@ -55,6 +55,9 @@ func (c contextIO) runUserSearch(raw []string) error {
 		}
 		if result.Complete && len(result.Items) == 0 {
 			fmt.Fprintln(w, "  검색 결과가 없습니다.")
+		}
+		if !result.Complete && len(result.Items) < result.Limit {
+			fmt.Fprintln(w, "검색할 작업이 많아 제한 시간 안에 끝까지 찾지 못했습니다. 지금까지 찾은 결과입니다.")
 		}
 		if result.NextCursor != nil {
 			fmt.Fprintf(w, "다음 페이지: 같은 --workspace, --query, --limit 값을 유지하고 --cursor %q 를 추가하세요.\n", *result.NextCursor)
