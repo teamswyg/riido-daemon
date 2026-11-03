@@ -32,7 +32,7 @@ func userAuthError(err error) *contextcli.CLIError {
 	case errors.Is(err, userauth.ErrNotAuthenticated), errors.Is(err, userauth.ErrReauthRequired), errors.Is(err, userapi.ErrAuthentication):
 		return contextcli.Fail(contextcli.CodeAuthRequired, "Riido CLI 로그인이 필요하거나 만료되었습니다", "riido auth login")
 	case errors.Is(err, userauth.ErrStoreLocked):
-		return contextcli.Fail(contextcli.CodeAuthRequired, "OS 사용자 확인이 필요하거나 취소되었습니다", "대화형 터미널에서 --no-input 없이 다시 실행하세요")
+		return contextcli.Fail(contextcli.CodeAuthRequired, "OS 사용자 확인(Touch ID 또는 암호)이 취소됐거나 끝나지 않았습니다", "확인 창에서 승인한 뒤 다시 실행하세요. --no-input 을 썼다면 빼고 대화형 터미널에서 실행하세요")
 	case errors.Is(err, securecredential.ErrUnavailable):
 		return contextcli.Fail(contextcli.CodeUnsupported, "서명된 CLI 인증 보호 도우미를 사용할 수 없습니다", "Riido CLI의 인증 보호 도우미 설치와 서명을 확인하세요")
 	case errors.Is(err, userapi.ErrPermission):

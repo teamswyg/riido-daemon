@@ -7,10 +7,7 @@ struct ProtectedKeychainStore: CredentialStore {
         query[kSecMatchLimit as String] = kSecMatchLimitOne
         query[kSecReturnData as String] = false
         query[kSecReturnAttributes as String] = true
-        let result = SecItemCopyMatching(query as CFDictionary, nil)
-        if result == errSecItemNotFound { return false }
-        guard result == errSecSuccess else { throw keychainFailure(result) }
-        return true
+        return try protectedItemPresence(SecItemCopyMatching(query as CFDictionary, nil))
     }
     func load(key: String, interactive: Bool) throws -> Data {
         var query = keychainQuery(key: key, interactive: interactive)
