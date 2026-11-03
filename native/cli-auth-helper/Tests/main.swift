@@ -1,5 +1,6 @@
 import Foundation
 import LocalAuthentication
+import Security
 
 if CommandLine.arguments.dropFirst().first == "--installation-lock-probe" { exit(installationLockProbe()) }
 
@@ -32,6 +33,10 @@ let store = FakeStore()
 var confirmCalls = 0
 let handler = RequestHandler(preflight: {}, store: store, confirm: { confirmCalls += 1 })
 check(handler.handle(request("status")).data?.present == true, "status sees presence")
+check((try? protectedItemPresence(errSecInteractionNotAllowed)) == true, "protected credential counts as present without UI")
+check((try? protectedItemPresence(errSecSuccess)) == true, "readable attributes count as present")
+check((try? protectedItemPresence(errSecItemNotFound)) == false, "missing credential is absent")
+check((try? protectedItemPresence(errSecUserCanceled)) == nil, "other keychain failures stay failures")
 check(store.calls == ["status"], "status never loads bytes")
 check(handler.handle(request("status")).data?.value == nil, "status omits secret")
 let loaded = handler.handle(request("load"))
