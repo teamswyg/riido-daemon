@@ -194,9 +194,11 @@ func validResponse(op string, r response) bool {
 	switch op {
 	case "load":
 		return present && r.Data.Value != nil && *r.Data.Value != "" || !present && r.Data.Value == nil
-	case "save":
+	case "access-load":
+		return present && r.Data.Value != nil && *r.Data.Value != ""
+	case "save", "access-save":
 		return present && r.Data.Value == nil
-	case "delete":
+	case "delete", "access-delete":
 		return !present && r.Data.Value == nil
 	case "status":
 		return r.Data.Value == nil

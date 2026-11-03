@@ -9,8 +9,9 @@ The helper accepts exactly one bounded JSON document on stdin and returns one
 JSON document on stdout. Stdout is a private pipe that may contain credentials;
 the parent must never forward it to a terminal, logs, diagnostics, or evidence.
 Requests and responses have `version: 1`. Requests contain `operation`
-(`status`, `load`, `save`, `delete`, `confirm`), an opaque `key`, and `interactive`. Only
-`save` accepts `value`, a base64-encoded opaque blob of at most 32 KiB. The whole
+(`status`, `load`, `save`, `delete`, `access-load`, `access-save`,
+`access-delete`, `confirm`), an opaque `key`, and `interactive`. Only
+`save` and `access-save` accept `value`, a base64-encoded opaque blob of at most 32 KiB. The whole
 request is at most 64 KiB. Keys are 16–128 URL-safe ASCII characters; the Go
 caller owns issuer/account/environment/grant binding and must use a digest.
 Storage responses contain `data.present` and, for load only, `data.value`.
@@ -29,6 +30,20 @@ A terminal on stdin or stdout is also refused; this is a private-pipe protocol.
 The parent must independently verify the helper path, signature, identifier and
 team, hardened runtime and absence of unsafe debugging/injection entitlements
 *before* sending secrets. A helper cannot authenticate itself to its caller.
+
+RIID-6014 access grant item: `access-load`, `access-save` (value at most 8 KiB)
+and `access-delete` keep only the current OAuth access grant (session ID,
+access token, expiry, token type, scope and binding; never the refresh token,
+recovery secret or installation key) under the separate service
+`io.riido.cli.userauth.access.v1`. That item uses
+`kSecAttrAccessibleWhenUnlockedThisDeviceOnly` without `.userPresence`, is not
+synchronized and stays in the helper access group. Its operations never show
+UI and never trigger the session confirmation, so a command whose access token
+is still valid needs no Touch ID; refresh, login and installation-key signing
+still read the protected items below. The Go store rewrites this item on every
+protected save, clears it while a refresh rotation is pending and deletes it
+before the protected credential. Older helpers answer `INVALID_REQUEST`, which
+the CLI treats as no cache.
 
 Storage uses the data-protection keychain, `.userPresence`, and
 `kSecAttrAccessibleWhenUnlockedThisDeviceOnly`. There is no file-based keychain,
@@ -70,7 +85,8 @@ when `--no-input` is absent). The same path check and unreaped live-process
 verification run before the first request byte. Requests and responses are the
 same version 1 documents, newline-delimited, each at most 64 KiB; every request
 still runs signing preflight and the normal decoder. The helper creates one
-`LAContext` and, before the first protected operation (anything but `status`),
+`LAContext` and, before the first protected operation (anything but `status`
+and the `access-*` operations),
 evaluates `.deviceOwnerAuthentication` on it once. Later loads, saves, deletes,
 installation-key lookups and proof signatures in the same command pass that
 context (`kSecUseAuthenticationContext`), so a command asks for Touch ID or the

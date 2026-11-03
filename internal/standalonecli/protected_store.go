@@ -99,7 +99,11 @@ func (s *ProtectedStore) Save(ctx context.Context, credential userauth.Credentia
 		record = protectedSession{SchemaVersion: protectedSessionVersion}
 	}
 	record.Credential = credential
-	return s.saveRecord(ctx, record)
+	if err := s.saveRecord(ctx, record); err != nil {
+		return err
+	}
+	s.syncAccess(ctx, credential)
+	return nil
 }
 
 func (s *ProtectedStore) loadRecord(ctx context.Context) (protectedSession, error) {
@@ -145,6 +149,9 @@ func (s *ProtectedStore) saveRecord(ctx context.Context, record protectedSession
 }
 
 func (s *ProtectedStore) Delete(ctx context.Context) error {
+	if err := s.clearAccess(ctx); err != nil {
+		return err
+	}
 	return mapStorageError(s.Native.Delete(ctx))
 }
 

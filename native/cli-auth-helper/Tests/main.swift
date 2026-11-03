@@ -60,6 +60,35 @@ do {
     check(presence.evaluations == 1, "one OS confirmation per session")
     check(sessionHandler.handle(request("load")).error?.code == "INTERACTION_REQUIRED", "session refuses noninteractive protected requests")
 }
+final class FakeAccessCache: AccessCacheStore {
+    var value: Data?
+    func load(key: String) throws -> Data { guard let value else { throw HelperFailure.notFound }; return value }
+    func save(key: String, value: Data) throws { self.value = value }
+    func delete(key: String) throws { value = nil }
+}
+do {
+    // RIID-6014: the access grant item never asks for user presence, also in
+    // session mode and for noninteractive requests.
+    let presence = CountingPresence()
+    let session = AuthenticationSession(verifier: UserPresenceVerifier(makeContext: { presence }))
+    var accessHandler = RequestHandler(preflight: {}, store: FakeStore(), confirm: { try session.ensureVerified() })
+    let cache = FakeAccessCache()
+    accessHandler.accessCache = cache
+    accessHandler.beforeProtected = { request in
+        guard request.interactive else { throw HelperFailure.interactionRequired }
+        try session.ensureVerified()
+    }
+    check(accessHandler.handle(request("access-load")).error?.code == "NOT_FOUND", "missing access grant")
+    check(accessHandler.handle(request("access-save", value: Data("grant".utf8).base64EncodedString())).ok, "access save")
+    let grant = accessHandler.handle(request("access-load"))
+    check(grant.ok && Data(base64Encoded: grant.data?.value ?? "") == Data("grant".utf8), "access load")
+    check(accessHandler.handle(request("access-delete")).ok && cache.value == nil, "access delete")
+    check(presence.evaluations == 0, "access grant never asks for user presence")
+    check(accessHandler.handle(request("load")).error?.code == "INTERACTION_REQUIRED", "protected load still needs presence")
+    check(accessHandler.handle(request("access-save", value: Data(repeating: 7, count: 8193).base64EncodedString())).error?.code == "INVALID_REQUEST", "access value bound")
+    check(accessHandler.handle(request("access-load", value: "eA==")).error?.code == "INVALID_REQUEST", "access load takes no value")
+    check(RequestHandler(preflight: {}, store: FakeStore(), confirm: {}).handle(request("access-load")).error?.code == "UNAVAILABLE", "no access cache by default")
+}
 func lineOutcome(_ reader: inout SessionLineReader) -> String {
     do {
         guard let line = try reader.next() else { return "EOF" }

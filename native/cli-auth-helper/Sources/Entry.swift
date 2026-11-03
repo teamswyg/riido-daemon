@@ -5,9 +5,10 @@ import Foundation
 struct HelperMain {
     static func main() {
         if CommandLine.arguments.dropFirst() == ["--session"] { return serveSession() }
-        let handler = RequestHandler(preflight: verifySigningPreflight, store: ProtectedKeychainStore(),
+        var handler = RequestHandler(preflight: verifySigningPreflight, store: ProtectedKeychainStore(),
                                      confirm: { try UserPresenceVerifier().confirm() },
                                      installationKeys: ProtectedInstallationKeyStore())
+        handler.accessCache = ProtectedAccessCacheStore()
         let input: Data
         do { input = try readBoundedInput() }
         catch { write(HelperResponse(ok: false, error: .invalid)); return }
@@ -26,6 +27,7 @@ struct HelperMain {
         var handler = RequestHandler(preflight: verifySigningPreflight, store: ProtectedKeychainStore(),
                                      confirm: { try session.ensureVerified() },
                                      installationKeys: ProtectedInstallationKeyStore())
+        handler.accessCache = ProtectedAccessCacheStore()
         handler.beforeProtected = { request in
             guard request.interactive else { throw HelperFailure.interactionRequired }
             try session.ensureVerified()
