@@ -16,15 +16,15 @@ The launcher passes `RIIDO_DEVICE_ID`, `RIIDO_DEVICE_SECRET`, `RIIDO_SAAS_URL` w
 
 ## CDN latest mirror
 
-GitHub Releases remain immutable. `https://cdn.riido.io/releases/latest/ai-agent/` is a mutable development/test mirror only.
+GitHub Releases remain immutable. `https://cdn.riido.io/releases/safe/ai-agent/` is the mutable production mirror for desktop clients that implement atomic idle shutdown. Legacy latest/staging paths stay frozen; staging uses releases/staging-safe/ai-agent.
 
 The mirror is published by `.github/workflows/cdn-latest-ai-agent.yml` using `scripts/publish-cdn-latest.sh` when a GitHub Release is published, with manual resync available through workflow dispatch.
 
 Mirror paths:
 
-- releases/latest/ai-agent/riido-daemon_darwin_arm64.tar.gz
-- releases/latest/ai-agent/riido-daemon_darwin_amd64.tar.gz
-- releases/latest/ai-agent/riido-daemon_windows_amd64.zip
-- releases/latest/ai-agent/riido-daemon_windows_arm64.zip
+- releases/safe/ai-agent/riido-daemon_darwin_arm64.tar.gz
+- releases/safe/ai-agent/riido-daemon_darwin_amd64.tar.gz
+- releases/safe/ai-agent/riido-daemon_windows_amd64.zip
+- releases/safe/ai-agent/riido-daemon_windows_arm64.zip
 
 The archive `VERSION` file must identify the release tag that was mirrored.

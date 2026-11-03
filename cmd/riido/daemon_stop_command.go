@@ -30,6 +30,12 @@ func daemonStopLevel(force bool) lifecycle.ShutdownLevel {
 func stopDaemonWithFlags(flags daemonStopFlags) error {
 	timeout := time.Duration(flags.timeoutSeconds) * time.Second
 	level := daemonStopLevel(flags.force)
+	if !flags.force {
+		if flags.socket == "" {
+			return daemonErrorf(ErrDaemonSocket, "stop.idle-required", "safe stop requires a socket; use --force for explicit termination")
+		}
+		return shutdownIdleDaemon(flags.socket, timeout)
+	}
 	if flags.socket != "" && tryShutdownViaSocket(flags.socket, timeout, level) {
 		return nil
 	}

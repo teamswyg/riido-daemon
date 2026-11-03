@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	AssignmentEvents            bool // Device-scoped assignment notifications; legacy servers are supported.
 	BaseURL                     string
 	DaemonID                    string
 	DeviceID                    string

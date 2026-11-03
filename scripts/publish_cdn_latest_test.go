@@ -39,7 +39,7 @@ func TestPublishCDNLatestDryRunSyncWritesEvidenceWithoutInvalidation(t *testing.
 		"RIIDO_CDN_DIST_DIR="+dist,
 		"RIIDO_RELEASE_TAG=v1.2.3",
 		"RIIDO_CDN_BUCKET=riido-cdn-test",
-		"RIIDO_CDN_PREFIX=releases/latest/ai-agent",
+		"RIIDO_CDN_PREFIX=",
 		"RIIDO_CDN_DRY_RUN=true",
 		"RIIDO_CLOUDFRONT_DISTRIBUTION_ID=TESTDIST",
 	)
@@ -58,6 +58,9 @@ func TestPublishCDNLatestDryRunSyncWritesEvidenceWithoutInvalidation(t *testing.
 		if !strings.Contains(log, want) {
 			t.Fatalf("aws dry-run log missing %s: %s", want, log)
 		}
+	}
+	if !strings.Contains(log, "s3://riido-cdn-test/releases/safe/ai-agent/") || strings.Contains(log, "releases/latest/") {
+		t.Fatalf("unsafe CDN destination: %s", log)
 	}
 	if strings.Contains(log, "cloudfront create-invalidation") {
 		t.Fatalf("dry-run must not invalidate CloudFront: %s", log)

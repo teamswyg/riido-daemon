@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"net/http"
 	"os"
 	"time"
@@ -45,6 +46,7 @@ const (
 )
 
 type daemonSettings struct {
+	prepareIdleUpdate     func(context.Context) bool
 	executionObservations func() []execution.Observation
 	ExecutionBindingStore *execution.BindingStore
 	// contextBroker is set by serveAgentDaemon when ContextCLI is on.

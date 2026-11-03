@@ -11,8 +11,9 @@ import (
 )
 
 type Actor struct {
-	cfg      Config
-	recovery *providerrecovery.Circuits
+	idleStops chan idleStopRequest
+	cfg       Config
+	recovery  *providerrecovery.Circuits
 
 	mailbox   chan envelope
 	stopReqCh chan lifecycle.ShutdownLevel
@@ -22,6 +23,7 @@ type Actor struct {
 	claimMu                 sync.Mutex
 	claimCancel             context.CancelFunc
 	registeredRuntimeStates map[string]string
+	runtimeSyncSuccess      sync.Map // runtime ID -> time.Time; registration and heartbeat run concurrently
 	heartbeatMu             sync.RWMutex
 	heartbeatExecutions     map[string][]string
 	executionObservations   []execution.Observation

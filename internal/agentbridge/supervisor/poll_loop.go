@@ -19,8 +19,15 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 	heartbeat := time.NewTicker(a.cfg.HeartbeatEvery)
 	defer heartbeat.Stop()
 
+	var assignmentNotices <-chan struct{}
+	if source, ok := a.cfg.Source.(interface {
+		AssignmentNotifications(context.Context) <-chan struct{}
+	}); ok {
+		assignmentNotices = source.AssignmentNotifications(heartbeatCtx)
+	}
 	inFlight := map[string]*runningTask{}
 	detachedReports := []detachedReport{}
+	var quiesceUntil time.Time
 
 	for {
 		a.publishHeartbeatExecutions(inFlight)
@@ -32,11 +39,22 @@ func (a *Actor) run(ctx context.Context, runtimes []*runtimeactor.Actor) {
 		case level := <-a.stopReqCh:
 			a.stopRun(runtimes, inFlight, &detachedReports, a.drainStopLevel(level), nil)
 			return
+		case request := <-a.idleStops:
+			ready := request.ctx.Err() == nil && idleForUpdate(inFlight, detachedReports, len(a.mailbox))
+			if ready {
+				quiesceUntil = time.Now().Add(10 * time.Second)
+			}
+			request.reply <- ready
+		case <-assignmentNotices:
+			resetTimer(poll, time.Millisecond)
 		case <-poll.C:
 			a.retryEventReports(ctx, inFlight)
 			a.retryTerminalReports(ctx, inFlight)
 			a.retryDetachedReports(ctx, &detachedReports)
-			claimed := a.claimAvailable(ctx, runtimes, inFlight)
+			claimed := false
+			if !time.Now().Before(quiesceUntil) {
+				claimed = a.claimAvailable(ctx, runtimes, inFlight)
+			}
 			resetTimer(poll, a.nextPollInterval(claimed, len(inFlight)))
 		case <-heartbeat.C:
 			a.refreshRuntimeRegistrations(ctx, runtimes, inFlight)
