@@ -177,7 +177,7 @@ let verifier = UserPresenceVerifier(makeContext: {
 })
 for _ in 0..<2 { do { try verifier.confirm() } catch { check(false, "fresh confirmation succeeds") } }
 check(contexts.count == 2 && contexts.allSatisfy { $0.calls == 1 && $0.invalidations == 1 }, "fresh context per confirmation and no cache")
-for (code, expected) in [(LAError.Code.userCancel, "CANCELLED"), (.appCancel, "CANCELLED"), (.systemCancel, "CANCELLED"), (.authenticationFailed, "INTERACTION_REQUIRED"), (.invalidContext, "UNAVAILABLE")] {
+for (code, expected) in [(LAError.Code.userCancel, "CANCELLED"), (.appCancel, "CANCELLED"), (.systemCancel, "CANCELLED"), (.authenticationFailed, "INTERACTION_REQUIRED"), (.notInteractive, "INTERACTION_REQUIRED"), (.invalidContext, "UNAVAILABLE")] {
     let context = FakePresenceContext()
     context.response = (false, LAError(code))
     do { try UserPresenceVerifier(makeContext: { context }).confirm(); check(false, "OS refusal must throw") }

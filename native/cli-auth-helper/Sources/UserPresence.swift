@@ -69,7 +69,9 @@ private func presenceFailure(_ error: Error?) -> HelperFailure {
     guard let failure = error as? LAError else { return .unavailable }
     switch failure.code {
     case .userCancel, .appCancel, .systemCancel: return .cancelled
-    case .authenticationFailed: return .interactionRequired
+    // No GUI session (SSH, launchd, a background job) cannot show the OS
+    // prompt; that needs the user at an interactive login, not a reinstall.
+    case .authenticationFailed, .notInteractive: return .interactionRequired
     default: return .unavailable
     }
 }
