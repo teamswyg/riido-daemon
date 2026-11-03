@@ -31,10 +31,8 @@ func followWorkSearch(ctx context.Context, search workSearchFunc, q userapi.Work
 		if deadline, ok := ctx.Deadline(); ok && time.Until(deadline) < searchFollowReserve {
 			break
 		}
-		next := q
-		next.Cursor, next.Limit = *page.NextCursor, page.Limit-len(page.Items)
-		more, err := search(ctx, next)
-		if err != nil {
+		more := continueWorkSearch(ctx, search, q, page)
+		if more == nil {
 			break
 		}
 		for _, item := range more.Items {
@@ -47,4 +45,16 @@ func followWorkSearch(ctx context.Context, search workSearchFunc, q userapi.Work
 		page.Complete, page.NextCursor = more.Complete, more.NextCursor
 	}
 	return page, nil
+}
+
+// continueWorkSearch reads the page after page. Any failure ends the follow
+// with no page; the caller keeps what it already read and its cursor.
+func continueWorkSearch(ctx context.Context, search workSearchFunc, q userapi.WorkSearchRequest, page *userapi.WorkSearchPage) *userapi.WorkSearchPage {
+	next := q
+	next.Cursor, next.Limit = *page.NextCursor, page.Limit-len(page.Items)
+	more, err := search(ctx, next)
+	if err != nil {
+		return nil
+	}
+	return more
 }
