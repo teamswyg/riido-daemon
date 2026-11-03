@@ -40,6 +40,18 @@ func installationAccessControl() throws -> SecAccessControl {
     return control
 }
 
+// Status asks for attributes only and never shows UI. A stored credential is
+// protected by user presence, so the keychain answers that query with
+// errSecInteractionNotAllowed instead of the attributes; only "not found"
+// means absent. The value itself is still read only by load with UI allowed.
+func protectedItemPresence(_ status: OSStatus) throws -> Bool {
+    switch status {
+    case errSecSuccess, errSecInteractionNotAllowed: return true
+    case errSecItemNotFound: return false
+    default: throw keychainFailure(status)
+    }
+}
+
 func keychainFailure(_ status: OSStatus) -> HelperFailure {
     switch status {
     case errSecItemNotFound: return .notFound
