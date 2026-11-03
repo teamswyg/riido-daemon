@@ -48,7 +48,7 @@ func TestAssignmentNotificationsOneStreamNoIdleFanout(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer p.Close()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	wake := p.AssignmentNotifications(ctx)
 	if wake != p.AssignmentNotifications(ctx) {
@@ -62,7 +62,7 @@ func TestAssignmentNotificationsOneStreamNoIdleFanout(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		_, _ = p.ClaimTask(ctx, "daemon-1:codex")
 		_, _ = p.ClaimTask(ctx, "daemon-1:cursor")
 	}
@@ -149,7 +149,7 @@ func TestAssignmentNotificationsAuthFailureRetainsRetryWithoutBurst(t *testing.T
 	if _, err := p.ClaimTask(ctx, "daemon-1:codex"); err == nil {
 		t.Fatal("expected failure")
 	}
-	for i := 0; i < 100; i++ {
+	for range 100 {
 		_, _ = p.ClaimTask(ctx, "daemon-1:codex")
 	}
 	if polls.Load() != 1 {
@@ -167,7 +167,7 @@ func TestAssignmentNotificationsExplicitLegacyFallback(t *testing.T) {
 	fake := newFakeAssignmentServer(t)
 	p, _ := New(Config{BaseURL: fake.URL(), DaemonID: "daemon-1", DeviceSecret: "secret", AssignmentEvents: true})
 	defer p.Close()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	wake := p.AssignmentNotifications(ctx)
 	awaitAssignmentNotice(t, wake)
@@ -248,7 +248,7 @@ func TestAssignmentNotificationsReconnectRestoresMissedHint(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer p.Close()
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(t.Context())
 	defer cancel()
 	wake := p.AssignmentNotifications(ctx)
 	<-firstRead
@@ -267,7 +267,7 @@ func TestAssignmentNotificationsReconnectRestoresMissedHint(t *testing.T) {
 	if streams.Load() != 2 {
 		t.Fatalf("streams=%d", streams.Load())
 	}
-	for i := 0; i < 20; i++ {
+	for range 20 {
 		again, err := p.ClaimTask(ctx, "daemon-1:codex")
 		if err != nil || again != nil {
 			t.Fatalf("duplicate claim: %v %v", again, err)
