@@ -6,8 +6,8 @@ import CryptoKit
 struct ProtectedInstallationKeyStore: InstallationKeyStore {
     func ensureKey(scope: InstallationScope) throws -> Data {
         try scope.validate()
-        let context = installationContext()
-        defer { context.invalidate() }
+        let (context, owned) = installationContext()
+        defer { if owned { context.invalidate() } }
         let registration = InstallationKeyRegistration(
             reserve: { try InstallationKeyLock().acquire(key: scope.storageKey) },
             load: { try find(scope: scope, context: context) },
@@ -17,8 +17,8 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
 
     func existingKey(scope: InstallationScope) throws -> Data {
         try scope.validate()
-        let context = installationContext()
-        defer { context.invalidate() }
+        let (context, owned) = installationContext()
+        defer { if owned { context.invalidate() } }
         let matches = try find(scope: scope, context: context)
         if matches.isEmpty { throw HelperFailure.notFound }
         guard matches.count == 1 else { throw HelperFailure.unavailable }
@@ -71,8 +71,8 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
 
     private func sign(scope: InstallationScope, message makeMessage: (Data) throws -> Data,
                       validate: () throws -> Void) throws -> Data {
-        let context = installationContext()
-        defer { context.invalidate() }
+        let (context, owned) = installationContext()
+        defer { if owned { context.invalidate() } }
         let matches = try find(scope: scope, context: context)
         if matches.isEmpty { throw HelperFailure.notFound }
         guard matches.count == 1 else { throw HelperFailure.unavailable }
@@ -96,11 +96,12 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
         // never matched, reused or deleted.
         Data(("io.riido.cli.installation.v2." + scope.storageKey).utf8)
     }
-    private func installationContext() -> LAContext {
+    private func installationContext() -> (LAContext, Bool) {
+        if let session = currentAuthenticationSession { return (session.context, false) }
         let context = LAContext()
         context.localizedReason = "Verify the Riido CLI installation for your sign-in."
         context.touchIDAuthenticationAllowableReuseDuration = 0
-        return context
+        return (context, true)
     }
     private func find(scope: InstallationScope, context: LAContext) throws -> [SecKey] {
         let query: [String: Any] = [

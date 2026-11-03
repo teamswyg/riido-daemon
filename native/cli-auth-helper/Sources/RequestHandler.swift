@@ -6,10 +6,13 @@ struct RequestHandler {
     let confirm: () throws -> Void
     var installationKeys: InstallationKeyStore = UnavailableInstallationKeyStore()
     var now: () -> Date = Date.init
+    // Session mode: confirm once before the first protected operation.
+    var beforeProtected: ((HelperRequest) throws -> Void)? = nil
     func handle(_ input: Data) -> HelperResponse {
         do {
             let request = try decode(input)
             try preflight()
+            if request.operation != "status", let beforeProtected { try beforeProtected(request) }
             let data: HelperData
             switch request.operation {
             case "status":

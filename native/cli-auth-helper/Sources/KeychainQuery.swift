@@ -3,10 +3,15 @@ import Security
 import LocalAuthentication
 
 func keychainQuery(key: String, interactive: Bool) -> [String: Any] {
-    let context = LAContext()
-    context.localizedReason = "Allow Riido CLI to access your Riido account credential."
-    context.interactionNotAllowed = !interactive
-    context.touchIDAuthenticationAllowableReuseDuration = 0
+    let context: LAContext
+    if interactive, let session = currentAuthenticationSession {
+        context = session.context
+    } else {
+        context = LAContext()
+        context.localizedReason = "Allow Riido CLI to access your Riido account credential."
+        context.interactionNotAllowed = !interactive
+        context.touchIDAuthenticationAllowableReuseDuration = 0
+    }
     return [kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: "io.riido.cli.userauth.v1",
             kSecAttrAccount as String: key,
