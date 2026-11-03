@@ -40,7 +40,11 @@ type protocolDriver struct {
 	// Handshake progress flags. Single-goroutine access (session actor).
 	initialized        bool
 	threadID           string
+	turnID             string
 	turnStarted        bool
+	finalOutput        string
+	hasFinalAnswer     bool
+	hasAssistantText   bool
 	sawAssistantOutput bool
 	lastRuntimeError   string
 }
