@@ -48,6 +48,7 @@ var friendlyHelpGroups = []helpGroup{
 	}},
 	{"설정", []helpEntry{
 		{"config", "기본 워크스페이스·팀·프로필 (list, get, set)"},
+		{"update", "CLI를 최신 버전으로 업데이트"},
 		{"completion", "셸 자동완성 스크립트 (bash, zsh, fish, powershell)"},
 		{"capabilities", "이 CLI가 지원하는 명령"},
 		{"version", "버전"},

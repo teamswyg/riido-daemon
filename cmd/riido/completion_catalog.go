@@ -74,6 +74,8 @@ func completionCatalog() []clicompletion.Command {
 	user(string(mainCommandWhoami), "")
 	user(string(mainCommandCapabilities), "")
 	user(string(mainCommandDoctor), "", "--check-api")
+	user(string(mainCommandUpdate), "--channel", "--check")
+	result[len(result)-1].Values["--channel"] = []string{"staging", "latest"}
 	// Generator options are deliberately independent of user settings.
 	result = append(result, clicompletion.Command{Path: string(mainCommandCompletion), Flags: []string{"--help", "-h", "--json", "--no-input", "--no-color"}, Values: map[string][]string{"--format": {"text", "json"}}, Positionals: func(previous []string) []string {
 		if len(previous) == 0 {

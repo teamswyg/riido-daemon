@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -30,6 +31,12 @@ type contextIO struct {
 	executable            func() (string, error)
 	lookPath              func(string) (string, error)
 	cliVersion            func() string
+	// updateBaseURL, updateClient and updateGOOS/updateGOARCH replace the
+	// release CDN and host platform in riido update tests only.
+	updateBaseURL string
+	updateClient  *http.Client
+	updateGOOS    string
+	updateGOARCH  string
 }
 
 func defaultContextIO() contextIO {
