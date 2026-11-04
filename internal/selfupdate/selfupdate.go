@@ -192,7 +192,7 @@ var allowedTop = map[string]bool{"riido": true, "VERSION": true, "LICENSE": true
 func extract(archive []byte, dest string) error {
 	gz, err := gzip.NewReader(bytes.NewReader(archive))
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrInvalid, err)
+		return fmt.Errorf("%w: %w", ErrInvalid, err)
 	}
 	defer gz.Close()
 	limited := &io.LimitedReader{R: gz, N: cliinstallation.MaxArchiveBytes + 1}
@@ -207,7 +207,7 @@ func extract(archive []byte, dest string) error {
 			break
 		}
 		if err != nil {
-			return fmt.Errorf("%w: %v", ErrInvalid, err)
+			return fmt.Errorf("%w: %w", ErrInvalid, err)
 		}
 		if count > 8192 {
 			return fmt.Errorf("%w: too many files", ErrInvalid)
@@ -299,8 +299,8 @@ func (u Updater) check(ctx context.Context, staged *Staged, pkg string) error {
 	bundle := filepath.Join(pkg, cliinstallation.BundleName)
 	_, manifestErr := os.Stat(manifestPath)
 	_, bundleErr := os.Stat(bundle)
-	if manifestErr != nil && bundleErr != nil {
-		return nil
+	if errors.Is(manifestErr, os.ErrNotExist) && errors.Is(bundleErr, os.ErrNotExist) {
+		return nil // a helperless package (non-signed build) installs without a helper
 	}
 	if manifestErr != nil || bundleErr != nil {
 		return invalid("incomplete helper")
