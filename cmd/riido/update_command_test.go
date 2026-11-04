@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/binary"
 	"encoding/hex"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -78,14 +79,26 @@ func updateHarness(t *testing.T, vars map[string]string, current string) (*conte
 	return h, root, hits
 }
 
+func decodeUpdate(t *testing.T, raw []byte) updateData {
+	t.Helper()
+	var env struct {
+		Data struct {
+			Update updateData `json:"update"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(raw, &env); err != nil {
+		t.Fatal(err, string(raw))
+	}
+	return env.Data.Update
+}
+
 func TestRunUpdateCheckThenInstall(t *testing.T) {
 	h, root, _ := updateHarness(t, nil, "v0.0.105-staging.riid5971")
 	if err := runUpdate(h.io, []string{"--check", "--json"}); err != nil {
 		t.Fatal(err, h.stdout.String())
 	}
-	out := h.stdout.String()
-	if !strings.Contains(out, `"latest_version":"v0.0.108-staging.riid6021"`) || !strings.Contains(out, `"update_needed":true`) || !strings.Contains(out, `"updated":false`) {
-		t.Fatalf("check output %s", out)
+	if got := decodeUpdate(t, h.stdout.Bytes()); got.LatestVersion != "v0.0.108-staging.riid6021" || !got.UpdateNeeded || got.Updated {
+		t.Fatalf("check output %+v", got)
 	}
 	if body, _ := os.ReadFile(filepath.Join(root, "riido")); string(body) != "old-binary" {
 		t.Fatal("--check replaced the binary")
@@ -94,8 +107,8 @@ func TestRunUpdateCheckThenInstall(t *testing.T) {
 	if err := runUpdate(h.io, []string{"--json"}); err != nil {
 		t.Fatal(err, h.stdout.String())
 	}
-	if !strings.Contains(h.stdout.String(), `"updated":true`) {
-		t.Fatalf("update output %s", h.stdout.String())
+	if got := decodeUpdate(t, h.stdout.Bytes()); !got.Updated {
+		t.Fatalf("update output %+v", got)
 	}
 	if version, _ := os.ReadFile(filepath.Join(root, "VERSION")); strings.TrimSpace(string(version)) != "v0.0.108-staging.riid6021" {
 		t.Fatal("VERSION not replaced")
