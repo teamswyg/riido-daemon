@@ -25,6 +25,7 @@ const (
 	mainCommandWhoami              mainCommand = "whoami"
 	mainCommandDoctor              mainCommand = "doctor"
 	mainCommandCapabilities        mainCommand = "capabilities"
+	mainCommandUpdate              mainCommand = "update"
 )
 
 type daemonCommand string
