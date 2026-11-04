@@ -139,7 +139,7 @@ func TestRunUpdateRefusesUnmanagedInstalls(t *testing.T) {
 			if err := runUpdate(h.io, []string{"--json"}); err == nil {
 				t.Fatal("update accepted an unmanaged install")
 			}
-			if !strings.Contains(h.stdout.String(), "unsupported") || *hits != 0 {
+			if !strings.Contains(h.stdout.String(), `"code": "UNSUPPORTED"`) || *hits != 0 {
 				t.Fatalf("output %s hits %d", h.stdout.String(), *hits)
 			}
 			if body, _ := os.ReadFile(filepath.Join(root, "riido")); string(body) != "old-binary" {
