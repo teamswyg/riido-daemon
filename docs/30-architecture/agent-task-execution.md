@@ -32,6 +32,10 @@ verification feedback and then verifies again. It never clones over changes,
 reclaims the assignment, or repeats an acknowledged terminal report. Cancellation,
 authentication, policy, provider failure, invalid output paths, and verification
 timeouts do not trigger continuation. Exhaustion stays failed with its reason.
+Corrections also retain the previous run’s selected native-resume executable and
+capability fingerprint while preserving per-run CLI capability release and claim
+ownership fencing.
+
 Verification runs outside the supervisor mailbox so checks cannot hold unrelated
 assignments or cancellation. Heartbeats retain supervisor-owned execution IDs
 during preparation, verification, correction and pending terminal acknowledgement,

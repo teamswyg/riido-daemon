@@ -209,12 +209,12 @@ Daemon lifecycle, status, shutdown, tool-approval IPC, local API, and default lo
 
 ### agent_execution_correction_must_preserve_identity_and_be_bounded
 
-A host-authorized correction preserves the native session and workspace, requires fresh evidence, and stops on cancellation or the configured limit.
+A host-authorized correction preserves the native session and workspace, requires fresh evidence, and stops on cancellation or the configured limit. Corrections retain the selected native-resume executable and capability fingerprint with per-run CLI capability release and claim ownership fencing.
 
-- Files: `internal/agentbridge/supervisor/execution_continuation.go`, `internal/agentbridge/supervisor/execution_verification.go`, `internal/execution/binding.go`, `internal/execution/types.go`, `internal/agentbridge/supervisor/heartbeat_executions.go`, `cmd/riido/daemon_observation.go`
+- Files: `internal/agentbridge/supervisor/execution_continuation.go`, `internal/agentbridge/supervisor/execution_verification.go`, `internal/execution/binding.go`, `internal/execution/types.go`, `internal/agentbridge/supervisor/heartbeat_executions.go`, `cmd/riido/daemon_observation.go`, `internal/agentbridge/runtimeactor/native_resume.go`, `internal/agentbridge/supervisor/native_resume_selection.go`
 - Docs: `docs/30-architecture/agent-task-execution.md`, `docs/30-architecture/loop-registry.riido.json`, `docs/30-architecture/loop-registry.md`
-- Evidence: `TestExecutionCorrectionResumesSameWorkspaceAndAssignment`, `TestExecutionCorrectionStopsAtHostLimit`
-- Verifiers: `correction-identity-and-limit-tests`, `host-activity-ownership-test`
+- Evidence: `TestExecutionCorrectionResumesSameWorkspaceAndAssignment`, `TestExecutionCorrectionStopsAtHostLimit`, `TestNativeResumeContinuationRetainsSelection`, `TestNativeResumeSelectionChecksScopeBeforeSearchingCLI`
+- Verifiers: `correction-identity-and-limit-tests`, `host-activity-ownership-test`, `native-resume-selection-preservation`
 
 ### native_session_history_must_preserve_owner_and_workspace
 

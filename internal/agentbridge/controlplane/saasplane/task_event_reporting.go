@@ -11,6 +11,9 @@ import (
 func (p *Plane) ReportEvent(ctx context.Context, executionID string, ev agentbridge.Event) error {
 	assignment, ok, err := p.assignmentForExecution(ctx, executionID)
 	if err != nil || !ok {
+		if err == nil && ev.NativeHistory != nil {
+			return errors.New("native history assignment authority is unavailable")
+		}
 		if err == nil && ev.RecoveryContext != nil {
 			return errors.New("recovery assignment authority is unavailable")
 		}
@@ -21,6 +24,9 @@ func (p *Plane) ReportEvent(ctx context.Context, executionID string, ev agentbri
 	}
 	req, ok := eventRequestFromAgentEvent(assignment, ev)
 	if !ok {
+		if ev.NativeHistory != nil {
+			return errors.New("native history cannot be encoded")
+		}
 		return nil
 	}
 	if ev.Kind == agentbridge.EventProgress && ev.RecoveryContext != nil {
