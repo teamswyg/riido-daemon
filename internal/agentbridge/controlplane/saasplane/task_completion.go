@@ -21,6 +21,9 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 	if binding != nil {
 		binding.mu.Lock()
 		defer binding.mu.Unlock()
+		if binding.serverTerminal.Load() {
+			return nil
+		}
 		if binding.terminal != nil {
 			return p.deliverClaimTerminal(ctx, executionID, binding, *binding.terminal)
 		}
@@ -77,6 +80,9 @@ func (p *Plane) CompleteTask(ctx context.Context, executionID string, res agentb
 		return p.deliverClaimTerminal(ctx, executionID, binding, request)
 	}
 	if _, err = p.postAgentEvent(ctx, assignment, request); err != nil {
+		if errors.Is(err, errServerTerminal) {
+			return nil
+		}
 		return err
 	}
 	return p.clearCompletedAssignment(ctx, executionID)
@@ -137,6 +143,9 @@ func firstNonEmpty(first, second string) string {
 func (p *Plane) deliverClaimTerminal(ctx context.Context, executionID string, binding *executionClaimBinding, request assignmentcontract.AgentEventRequest) error {
 	if !binding.terminalACK {
 		if _, err := p.postAgentEvent(ctx, binding.assignment, request); err != nil {
+			if errors.Is(err, errServerTerminal) {
+				return nil
+			}
 			return err
 		}
 		binding.terminalACK = true
