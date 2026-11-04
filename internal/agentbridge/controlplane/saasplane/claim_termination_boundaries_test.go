@@ -376,3 +376,25 @@ func TestTerminationOldPartialBodyCannotCrossEpochBetweenReadAndWrite(t *testing
 		t.Fatal("old scoped body/running event posted under new epoch")
 	}
 }
+
+func TestServerTerminalConflictOnOldLeasePreservesCurrentClaim(t *testing.T) {
+	f := newTerminationFixture(t)
+	old := claimTerminationFixture(t, f.plane, assignmentcontract.PollStart, "old-lease", "runtime")
+	ctx := claimProofContext(t, old.LocalExecutionScope)
+	current := claimTerminationFixture(t, f.plane, assignmentcontract.PollStart, "new-lease", "runtime")
+	f.eventReply = func(w http.ResponseWriter, _ *http.Request) bool {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"schema_version":"riido-ai-server.v1","error":"invalid assignment transition completed -> failed"}`))
+		return true
+	}
+	if err := f.plane.CompleteTask(ctx, old.ID, agentbridge.Result{Status: agentbridge.ResultFailed, Error: "fixture"}); err != nil {
+		t.Fatal(err)
+	}
+	a, ok, err := f.plane.assignmentForExecution(claimProofContext(t, current.LocalExecutionScope), current.ID)
+	if err != nil || !ok || a.LeaseToken != "new-lease" {
+		t.Fatal("old conflict retired replacement lease")
+	}
+	if len(f.receipts) != 0 {
+		t.Fatal("obsolete result sent a termination receipt")
+	}
+}

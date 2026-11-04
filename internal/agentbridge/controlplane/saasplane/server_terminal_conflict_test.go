@@ -40,7 +40,7 @@ func TestServerTerminalConflictStopsRepeatedDelivery(t *testing.T) {
 				t.Fatal(err)
 			}
 			ctx := claimProofContext(t, req.LocalExecutionScope)
-			for i := 0; i < 4; i++ {
+			for range 4 {
 				if err := p.CompleteTask(ctx, req.ID, agentbridge.Result{Status: state, Error: "fixture"}); err != nil {
 					t.Fatal(err)
 				}
