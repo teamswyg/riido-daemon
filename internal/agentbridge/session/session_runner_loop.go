@@ -1,13 +1,25 @@
 package session
 
-import "github.com/teamswyg/riido-daemon/internal/agentbridge"
+import (
+	"time"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+)
 
 func (r *sessionRunner) loop() {
+	var poll <-chan time.Time
+	if driver, ok := r.cfg.ProtocolDriver.(agentbridge.ProtocolPoller); ok && driver.PollInterval() > 0 {
+		ticker := time.NewTicker(driver.PollInterval())
+		defer ticker.Stop()
+		poll = ticker.C
+	}
 	for !r.state.Terminal {
 		if r.flushDeferredExitWhenDrained() {
 			break
 		}
 		select {
+		case <-poll:
+			r.pollProtocol()
 		case <-r.ctx.Done():
 			r.emitAndTerminate(contextTerminationEvent(r.ctx))
 		case req := <-r.sess.cancel:

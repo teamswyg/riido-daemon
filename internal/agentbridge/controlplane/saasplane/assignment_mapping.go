@@ -1,6 +1,8 @@
 package saasplane
 
 import (
+	"encoding/json"
+
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/pkg/util/textutil"
@@ -10,6 +12,16 @@ func eventRequestFromAgentEvent(assignment assignmentcontract.Assignment, ev age
 	req := assignmentcontract.AgentEventRequest{
 		AssignmentID: assignment.ID,
 		TaskID:       assignment.TaskID,
+	}
+	if ev.NativeHistory != nil {
+		body, err := json.Marshal(ev.NativeHistory)
+		if err != nil {
+			return req, false
+		}
+		req.EventType = assignmentcontract.EventRiidoLog
+		req.Message = "Native conversation history imported"
+		req.Metadata = map[string]string{agentbridge.NativeHistoryMetadataKey: string(body), "lease_token": assignment.LeaseToken}
+		return req, true
 	}
 	if ev.Kind == agentbridge.EventProgress && ev.RecoveryContext != nil {
 		req.EventType = assignmentcontract.EventRiidoLog

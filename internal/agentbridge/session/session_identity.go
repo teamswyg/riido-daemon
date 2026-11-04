@@ -9,6 +9,10 @@ import (
 // Validate before publishing: a foreign pin must never enter the server's
 // assignment history, including for providers without a protocol driver.
 func (r *sessionRunner) guardSessionIdentity(ev agentbridge.Event) (agentbridge.Event, bool) {
+	if ev.NativeHistory != nil && (r.state.SessionID == "" || ev.NativeHistory.SessionID != r.state.SessionID || ev.NativeHistory.SessionID != r.cfg.Request.ResumeSessionID) {
+		r.sessionIdentityBlocked = true
+		return agentbridge.Event{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultBlocked, Error: "native history session identity mismatch"}}, true
+	}
 	if ev.Kind == agentbridge.EventResult && (ev.Result.Status == agentbridge.ResultCompleted || ev.Result.Status == "") &&
 		strings.TrimSpace(r.cfg.Request.ResumeSessionID) != "" && r.state.SessionID == "" {
 		r.state.Output = nil

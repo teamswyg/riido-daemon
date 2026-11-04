@@ -7,6 +7,9 @@ import (
 )
 
 func (r *sessionRunner) interruptDelivery(ctx context.Context, ev agentbridge.Event) {
+	if note := r.terminateProtocol(ctx); note != "" {
+		ev.Err += "; " + note
+	}
 	if ev.At.IsZero() {
 		ev.At = r.cfg.Now()
 	}
