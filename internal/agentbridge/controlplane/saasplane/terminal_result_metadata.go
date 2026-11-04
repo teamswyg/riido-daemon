@@ -47,6 +47,9 @@ func terminalFailureCategory(status agentbridge.ResultStatus, message string) st
 }
 
 func terminalResultNeedsUserInput(res agentbridge.Result, message string) bool {
+	if res.Status == agentbridge.ResultBlocked && res.RequiresUserAction {
+		return true
+	}
 	status := res.Status
 	if status == "" {
 		status = agentbridge.ResultCompleted

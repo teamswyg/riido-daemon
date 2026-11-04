@@ -43,6 +43,7 @@ type protocolDriver struct {
 	turnStarted        bool
 	sawAssistantOutput bool
 	lastRuntimeError   string
+	mcpFailures        map[string]string
 	historyTurns       []any
 	historyCursors     map[string]bool
 	shared             *sharedWriter

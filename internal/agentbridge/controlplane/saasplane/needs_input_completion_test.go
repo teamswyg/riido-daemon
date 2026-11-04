@@ -66,3 +66,16 @@ func TestCompleteTaskPreservesStreamedClarification(t *testing.T) {
 		t.Fatalf("streamed clarification changed semantics: %+v", last)
 	}
 }
+
+func TestMCPRecoveryReplyToOriginalAssignment(t *testing.T) {
+	fake, plane, req := newTextDeltaFixture(t)
+	reportTextDeltas(t, plane, req.ID, "문서를 찾는 중")
+	advice := "docs MCP 인증을 갱신해 주세요."
+	if err := plane.CompleteTask(t.Context(), req.ID, agentbridge.Result{Status: agentbridge.ResultBlocked, RequiresUserAction: true, Output: advice}); err != nil {
+		t.Fatal(err)
+	}
+	ev := fake.events[len(fake.events)-1]
+	if ev.AssignmentID != req.ID || ev.Message != advice || ev.Metadata[metadatakeys.AssignmentResultStatus.String()] != "needs_input" || ev.State != assignmentcontract.AssignmentRunning {
+		t.Fatalf("recovery response: %+v", ev)
+	}
+}

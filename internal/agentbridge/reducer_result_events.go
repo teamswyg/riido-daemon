@@ -12,6 +12,7 @@ func reduceTimeout(s State, e Event) (State, []Command) {
 
 func reduceResult(s State, e Event) (State, []Command) {
 	s.HasProviderResult = true
+	s.Result.RequiresUserAction = e.Result.RequiresUserAction
 	status := normalizeResultStatus(e.Result.Status)
 	s = terminate(s, status, e.Result.Error, phaseForResultStatus(status), e.At)
 	if e.Result.Output != "" {

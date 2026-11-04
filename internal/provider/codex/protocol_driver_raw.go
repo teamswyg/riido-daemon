@@ -18,6 +18,11 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		id, _ := rpcID(raw.Payload)
 		if pr, known := d.pending[id]; known {
 			delete(d.pending, id)
+			if pr.method == codexMethodThreadStart || pr.method == codexMethodThreadResume || pr.method == codexMethodTurnStart {
+				if advice := requiredMCPRecovery(codexRPCErrorMessage(raw.Payload)); advice != "" {
+					return recoveryReply(advice), nil, nil
+				}
+			}
 			if pr.method == codexMethodThreadResume && d.req.ResumeSessionID != "" && codexRPCErrorMessage(raw.Payload) == "thread "+d.req.ResumeSessionID+" already has an active writer" {
 				return d.attachSharedWriter(ctx, io)
 			}
@@ -37,6 +42,14 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		return nil, nil, nil
 	}
 	if after, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok {
+		if codexMethod(after) == codexMethodMCPStartupStatusUpdated {
+			return d.onMCPStartup(params(raw)), nil, nil
+		}
+		if codexMethod(after) == codexMethodItemCompleted {
+			if recovery := d.mcpToolRecovery(params(raw)); recovery != nil {
+				return recovery, nil, nil
+			}
+		}
 		if events, handled := d.handleNotification(codexMethod(after), raw); handled {
 			return events, nil, nil
 		}

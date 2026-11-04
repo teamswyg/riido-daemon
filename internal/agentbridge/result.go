@@ -31,12 +31,13 @@ type Result struct {
 
 	ExecutionContext *assignment.ExecutionContext
 
-	Status     ResultStatus
-	Output     string
-	Error      string
-	SessionID  string
-	Workdir    string
-	Usage      Usage
-	StartedAt  time.Time
-	FinishedAt time.Time
+	RequiresUserAction bool // Explicit provider recovery instructions for the assignment owner.
+	Status             ResultStatus
+	Output             string
+	Error              string
+	SessionID          string
+	Workdir            string
+	Usage              Usage
+	StartedAt          time.Time
+	FinishedAt         time.Time
 }
