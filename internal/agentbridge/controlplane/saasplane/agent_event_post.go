@@ -24,6 +24,9 @@ func (p *Plane) postAgentEvent(
 		return out, err
 	}
 	if binding != nil {
+		if binding.serverTerminal.Load() {
+			return out, errServerTerminal
+		}
 		req.DeviceID, req.DaemonID = binding.deviceID, binding.daemonID
 		runtimeID = binding.runtimeID
 	}
@@ -33,6 +36,9 @@ func (p *Plane) postAgentEvent(
 		return out, err
 	}
 	err = p.postJSON(ctx, "/v1/agents/"+url.PathEscape(assignment.AgentID)+"/events", req, &out)
+	if serverState, ok := confirmedTerminalConflict(err, req.State); ok {
+		return out, p.retireObsoleteReport(ctx, assignment, binding, serverState, req.State)
+	}
 	if err == nil {
 		err = p.withState(ctx, func(s *planeState) {
 			current, ok := s.assignmentsByExecution[assignmentExecutionID(assignment)]
