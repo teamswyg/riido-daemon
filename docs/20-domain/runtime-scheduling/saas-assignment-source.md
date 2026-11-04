@@ -14,6 +14,7 @@ Prove the daemon-side SaaS assignment source/reporter contract without claiming 
 
 | Fact | Status | Summary | Evidence |
 | --- | --- | --- | --- |
+| retire obsolete assignment reports | `implemented` | An authenticated events response identifying a rejected transition out of a terminal assignment state retires that claim’s obsolete report. Other errors retain existing handling. Reconciliation is logged separately from a delivered result and cannot authorize a termination receipt. | `terminal-conflict-test` |
 | active delivery fairness | `implemented` | Long-poll is restricted to idle waves with no in-flight runs or queued supervisor messages; active execution and terminal delivery retain short polls. | `active-delivery-poll-test` |
 | shared assignment contract | `implemented` | SaaS adapter consumes assignment DTO/state/event constants from riido-contracts. | `shared-contract-test`, `shared-contract-import` |
 | poll start active cancel mapping | `implemented` | Poll start/active become TaskRequest; poll cancel is delivered to the local cancellation watcher. | `poll-action-switch`, `poll-cancel-branch` |
