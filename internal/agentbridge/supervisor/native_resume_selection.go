@@ -27,9 +27,9 @@ func (a *Actor) selectNativeResume(ctx context.Context, rt *runtimeactor.Actor, 
 		return nil, nil
 	}
 	// The candidate search cannot grant a different task access to session history.
-	cap := status.Capabilities[idx]
-	cap.CapabilityFingerprint = record.Fingerprint
-	want, err := a.nativeSessionRecord(req, cap, req.ResumeSessionID)
+	resumeCapability := status.Capabilities[idx]
+	resumeCapability.CapabilityFingerprint = record.Fingerprint
+	want, err := a.nativeSessionRecord(req, resumeCapability, req.ResumeSessionID)
 	if err != nil {
 		return nil, err
 	}

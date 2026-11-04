@@ -2,12 +2,13 @@ package runtimeactor
 
 import (
 	"context"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/teamswyg/riido-daemon/internal/agentbridge"
+	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 )
 
 type resumeTestAdapter struct {

@@ -43,12 +43,12 @@ func TestCodexLegacyHintRequiresMatchingOriginFingerprint(t *testing.T) {
 	}
 	got, _, _ := store.LookupNativeSession("codex", record.SessionID)
 	path := filepath.Join(filepath.Dir(got.Workdir), "ir", "events.jsonl")
-	if err := os.MkdirAll(filepath.Dir(path), 0700); err != nil {
+	if err := os.MkdirAll(filepath.Dir(path), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	for _, fingerprint := range []string{record.Fingerprint, "foreign"} {
 		data, _ := json.Marshal(map[string]string{"CapabilityFingerprint": fingerprint, "ProviderVersion": "original"})
-		if err := os.WriteFile(path, data, 0600); err != nil {
+		if err := os.WriteFile(path, data, 0o600); err != nil {
 			t.Fatal(err)
 		}
 		got, _, err := store.LookupNativeSession("codex", record.SessionID)

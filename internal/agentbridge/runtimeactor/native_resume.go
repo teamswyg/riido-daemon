@@ -41,11 +41,11 @@ func (a *Actor) ResolveNativeResume(ctx context.Context, provider, fingerprint, 
 		}
 		seen[candidate] = true
 		identity := adapter.ResumeExecutableIdentity(candidate, version)
-		cap, err := buildRuntimeCapability(a.cfg.RuntimeID, provider, identity, a.cfg.PolicyBundleVersion, a.cfg.Now())
-		if err != nil || cap.DetectedFingerprint == "" || cap.CapabilityFingerprint != fingerprint {
+		capability, err := buildRuntimeCapability(a.cfg.RuntimeID, provider, identity, a.cfg.PolicyBundleVersion, a.cfg.Now())
+		if err != nil || capability.DetectedFingerprint == "" || capability.CapabilityFingerprint != fingerprint {
 			continue
 		}
-		runtime := &NativeResumeRuntime{owner: a, capability: cap, probe: adapter}
+		runtime := &NativeResumeRuntime{owner: a, capability: capability, probe: adapter}
 		observed, err := runtime.observe(ctx, a)
 		if err == nil && observed.Available && observed.CapabilityFingerprint == fingerprint {
 			runtime.capability = observed
