@@ -226,3 +226,22 @@ func TestStageRejectsUnsupportedPlatformAndInsecureBase(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+
+func TestIsOlder(t *testing.T) {
+	cases := []struct {
+		candidate, current string
+		want               bool
+	}{
+		{"v0.0.102", "v0.0.107-staging.riid6014", true},
+		{"v0.0.108-staging.riid6021", "v0.0.107-staging.riid6014", false},
+		{"v0.0.107-staging.riid6021", "v0.0.107-staging.riid6014", false},
+		{"v0.1.0", "v0.0.999", false},
+		{"production-riid6005-20261103", "v0.0.107", false},
+		{"v0.0.1", "dev", false},
+	}
+	for _, tc := range cases {
+		if got := IsOlder(tc.candidate, tc.current); got != tc.want {
+			t.Errorf("IsOlder(%q, %q) = %v", tc.candidate, tc.current, got)
+		}
+	}
+}

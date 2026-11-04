@@ -20,13 +20,16 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"unicode"
 
 	"github.com/teamswyg/riido-daemon/internal/cliinstallation"
 )
 
-// DefaultBaseURL is the release CDN that the installer and desktop app use.
+// DefaultBaseURL is the release CDN prefix that scripts/install-riido-daemon.sh
+// reads for RIIDO_DAEMON_CHANNEL=staging|latest. The desktop app's safe and
+// staging-safe mirrors are a different feed; the CLI follows its installer.
 const DefaultBaseURL = "https://cdn.riido.io/releases"
 
 const (
@@ -47,6 +50,45 @@ func ChannelForVersion(version string) string {
 		return ChannelStaging
 	}
 	return ChannelLatest
+}
+
+// IsOlder reports whether candidate's vMAJOR.MINOR.PATCH core is lower than
+// current's. Versions without that core never count as older.
+func IsOlder(candidate, current string) bool {
+	a, okA := versionCore(candidate)
+	b, okB := versionCore(current)
+	if !okA || !okB {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return a[i] < b[i]
+		}
+	}
+	return false
+}
+
+func versionCore(version string) ([3]int, bool) {
+	var core [3]int
+	version, ok := strings.CutPrefix(version, "v")
+	if !ok {
+		return core, false
+	}
+	if i := strings.IndexAny(version, "-+"); i >= 0 {
+		version = version[:i]
+	}
+	parts := strings.Split(version, ".")
+	if len(parts) != 3 {
+		return core, false
+	}
+	for i, part := range parts {
+		n, err := strconv.Atoi(part)
+		if err != nil || n < 0 || part == "" || len(part) > 9 {
+			return core, false
+		}
+		core[i] = n
+	}
+	return core, true
 }
 
 func ValidChannel(channel string) bool {

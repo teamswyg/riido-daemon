@@ -168,3 +168,18 @@ func TestRunUpdateRejectsUnknownChannel(t *testing.T) {
 		t.Fatal("unknown channel accepted")
 	}
 }
+
+// A frozen or rolled-back channel must never downgrade a newer install unless
+// the user explicitly switches channel.
+func TestRunUpdateKeepsNewerInstall(t *testing.T) {
+	h, root, _ := updateHarness(t, nil, "v0.0.110-staging.riid9999")
+	if err := runUpdate(h.io, []string{"--json"}); err != nil {
+		t.Fatal(err, h.stdout.String())
+	}
+	if got := decodeUpdate(t, h.stdout.Bytes()); got.UpdateNeeded || got.Updated || !got.NewerInstalled {
+		t.Fatalf("downgrade output %+v", got)
+	}
+	if body, _ := os.ReadFile(filepath.Join(root, "riido")); string(body) != "old-binary" {
+		t.Fatal("same-channel update downgraded the install")
+	}
+}

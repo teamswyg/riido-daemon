@@ -25,6 +25,7 @@ type updateData struct {
 	CurrentVersion string `json:"current_version"`
 	LatestVersion  string `json:"latest_version"`
 	UpdateNeeded   bool   `json:"update_needed"`
+	NewerInstalled bool   `json:"newer_installed"`
 	Updated        bool   `json:"updated"`
 	InstallDir     string `json:"install_dir"`
 }
@@ -46,11 +47,13 @@ func runUpdate(c contextIO, raw []string) error {
 	}
 	current := strings.TrimSpace(binaryVersion)
 	channel := selfupdate.ChannelForVersion(current)
+	switched := false
 	if args.HasValue("--channel") {
 		channel = args.Value("--channel")
 		if !selfupdate.ValidChannel(channel) {
 			return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "--channel은 staging 또는 latest만 받습니다", "riido update --channel staging"))
 		}
+		switched = channel != selfupdate.ChannelForVersion(current)
 	}
 	root, cliErr := c.updateRoot(current)
 	if cliErr != nil {
@@ -78,6 +81,11 @@ func runUpdate(c contextIO, raw []string) error {
 	}
 	defer staged.Cleanup()
 	data := updateData{Channel: channel, CurrentVersion: current, LatestVersion: staged.Version, UpdateNeeded: staged.Version != current, InstallDir: root}
+	// Within the same channel a lower release is never installed; only an
+	// explicit switch to the other channel may move to a lower version.
+	if data.UpdateNeeded && !switched && selfupdate.IsOlder(staged.Version, current) {
+		data.UpdateNeeded, data.NewerInstalled = false, true
+	}
 	if data.UpdateNeeded && !args.Bool("--check") {
 		if err = selfupdate.Install(staged, root); err != nil {
 			return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnavailable, "새 버전으로 바꾸지 못했습니다", "riido update 를 다시 실행하거나 설치 스크립트로 다시 설치하세요"))
@@ -87,6 +95,8 @@ func runUpdate(c contextIO, raw []string) error {
 	env := contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "update": data})
 	return c.succeed(args.JSON, env, func(w io.Writer, _ any) {
 		switch {
+		case data.NewerInstalled:
+			fmt.Fprintf(w, "설치된 버전(%s)이 %s 채널 버전(%s)보다 새로워 그대로 둡니다\n", data.CurrentVersion, data.Channel, data.LatestVersion)
 		case !data.UpdateNeeded:
 			fmt.Fprintf(w, "이미 최신 버전입니다: %s (%s)\n", data.CurrentVersion, data.Channel)
 		case data.Updated:
