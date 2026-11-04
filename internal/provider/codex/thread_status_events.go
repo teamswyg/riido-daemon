@@ -7,19 +7,14 @@ import (
 )
 
 // threadStatusEvents maps Codex thread/status/changed notifications to
-// run-scope events. Completion is gated on turnStarted so initial idle cannot
-// end the run before any work happens.
+// run-scope events. Thread availability cannot replace the parent turn result.
 func (d *protocolDriver) threadStatusEvents(p map[string]any) []agentbridge.Event {
 	status := threadStatus(strings.ToLower(strings.TrimSpace(threadStatusFromPayload(p))))
 	switch {
 	case codexStatusIsError(status):
 		return d.failedEvents("codex thread status: " + string(status))
 	case codexStatusIsTerminal(status):
-		if !d.turnStarted {
-			return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex thread status: " + string(status) + " (no active turn)"}}
-		}
-		d.turnStarted = false
-		return []agentbridge.Event{{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultCompleted}}}
+		return []agentbridge.Event{{Kind: agentbridge.EventLog, Text: "codex thread status: " + string(status) + " (awaiting turn result)"}}
 	case codexStatusIsActive(status):
 		d.turnStarted = true
 		return []agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}

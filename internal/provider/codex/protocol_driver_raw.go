@@ -11,6 +11,9 @@ import (
 // machine (for "response") or the existing Translate (for notifications
 // and server_requests).
 func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
+	if (strings.HasPrefix(raw.Type, rawFrameNotificationPrefix) || strings.HasPrefix(raw.Type, rawFrameServerRequestPrefix)) && !d.belongsToRun(params(raw)) {
+		return nil, nil, nil
+	}
 	if rawFrameType(raw.Type) == rawFrameResponse {
 		return d.handleResponse(ctx, raw, io)
 	}
@@ -39,8 +42,9 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 }
 
 func (d *protocolDriver) handleNotification(method codexMethod, raw agentbridge.RawEvent) ([]agentbridge.Event, bool) {
+	p := params(raw)
+	d.observeAssistantMessage(method, p)
 	if method == codexMethodError {
-		p := params(raw)
 		errText := codexNotificationErrorMessage(p)
 		if retry, _ := p["willRetry"].(bool); retry {
 			return []agentbridge.Event{{Kind: agentbridge.EventWarning, Err: errText}}, true
@@ -50,17 +54,14 @@ func (d *protocolDriver) handleNotification(method codexMethod, raw agentbridge.
 	}
 	if method == codexMethodTurnStarted || method == codexMethodTurnStartedSlash {
 		d.turnStarted = true
+		if id := turnIDFromParams(p); id != "" {
+			d.turnID = id
+		}
 	}
 	if method == codexMethodTurnCompleted || method == codexMethodTurnCompleteSlash {
-		p := params(raw)
-		if stringField(mapField(p, "turn"), "status") != "" {
-			// Native terminal status is authoritative; legacy error fallback must
-			// neither overwrite interruption nor reject a successful retry.
-			return nil, false
-		}
-		if d.lastRuntimeError != "" && !d.sawAssistantOutput && stringField(p, "output") == "" {
-			return d.failedEvents(d.lastRuntimeError), true
-		}
+		events := d.turnResultEvents(method, p)
+		d.observeEvents(events)
+		return events, true
 	}
 	if method == codexMethodThreadStatusChanged || method == codexMethodThreadStatusAlt {
 		events := d.threadStatusEvents(params(raw))

@@ -26,6 +26,9 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 	case codexMethodThreadStart, codexMethodThreadResume:
 		return d.handleThreadReadyResponse(ctx, raw, io)
 	case codexMethodTurnStart:
+		if id := turnIDFromParams(mapField(raw.Payload, "result")); id != "" {
+			d.turnID = id
+		}
 		events, commands, err := d.handleTurnStartResponse()
 		if title := codexTaskTitle(d.req); title != "" {
 			if _, nameErr := d.sendRequest(ctx, io, codexMethodThreadNameSet, map[string]any{"threadId": d.threadID, "name": title}); nameErr != nil {
