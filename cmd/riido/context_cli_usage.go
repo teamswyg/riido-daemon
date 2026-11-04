@@ -23,6 +23,7 @@ func printContextUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido whoami [--json]")
 	printDoctorUsage(w)
 	fmt.Fprintln(w, "  riido capabilities [--json]")
+	printUpdateUsage(w)
 }
 
 func printWorkUsage(w io.Writer) {

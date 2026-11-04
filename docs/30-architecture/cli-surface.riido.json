@@ -254,6 +254,19 @@
       ]
     },
     {
+      "name": "update",
+      "root_help": "public",
+      "owner": "cmd/riido, internal/selfupdate",
+      "boundary": "RIID-6021: replaces an installer-managed riido (resolved binary named riido with an adjacent VERSION equal to the running version, outside any .app bundle) with the newest CDN package of its channel (a -staging version stays on staging, otherwise latest; --channel staging|latest overrides). It downloads SHA256SUMS and the platform tar.gz over HTTPS only, verifies the checksum, extracts only the installer's top-level files and the helper bundle (no links, special files, setuid or unsafe paths, bounded size), checks VERSION, riido and helper architecture, helper manifest, Info.plist and profile, and verifies the helper code signature before any change. It then swaps helper, manifest and VERSION and renames riido last within the install directory; any earlier failure leaves the current install untouched. --check reports without installing. macOS arm64/amd64 only; agent mode, Desktop-bundled CLIs and other layouts return exit 8 with the installer as the next step. It never reads credentials",
+      "subcommands": [],
+      "usage_tokens": [
+        "riido update"
+      ],
+      "source_checks": [
+        "main-command-update"
+      ]
+    },
+    {
       "name": "capabilities",
       "root_help": "public",
       "owner": "cmd/riido, internal/contextcli",
@@ -434,6 +447,11 @@
       "name": "main-command-whoami",
       "file": "cmd/riido/cli_commands.go",
       "contains": "mainCommandWhoami              mainCommand = \"whoami\""
+    },
+    {
+      "name": "main-command-update",
+      "file": "cmd/riido/cli_commands.go",
+      "contains": "mainCommandUpdate              mainCommand = \"update\""
     },
     {
       "name": "main-command-doctor",

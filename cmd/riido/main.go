@@ -89,6 +89,8 @@ func run(args []string) error {
 		return runDoctor(defaultContextIO(), args[1:])
 	case mainCommandCapabilities:
 		return runCapabilities(defaultContextIO(), args[1:])
+	case mainCommandUpdate:
+		return runUpdate(defaultContextIO(), args[1:])
 	default:
 		if handled, err := friendlyUnknownCommand(args[0]); handled {
 			return err
