@@ -208,6 +208,8 @@ main() {
     resolved_version="$(head -n 1 "$tmp_dir/package/VERSION")"
   fi
   mkdir -p "$install_dir"
+  # The staging link must name the real directory even for a relative override.
+  install_dir="$(cd "$install_dir" && pwd -P)"
   rm -f "$install_dir/riido"
   install -m 0755 "$tmp_dir/package/riido" "$install_dir/riido"
   install_package_files "$tmp_dir/package"

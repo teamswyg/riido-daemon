@@ -2,6 +2,7 @@ package scripts_test
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -172,5 +173,41 @@ func TestInstallRiidoDaemonWarnsWhenAnotherRiidoShadowsInstall(t *testing.T) {
 	}
 	if !strings.Contains(out, "먼저 찾는 riido는 "+filepath.Join(shadowDir, "riido")) || strings.Contains(out, "PATH에 추가하세요") {
 		t.Fatalf("shadow warning missing:\n%s", out)
+	}
+}
+
+// A relative RIIDO_DAEMON_INSTALL_DIR still yields a riido-staging link that
+// resolves to the installed binary.
+func TestInstallRiidoDaemonStagingLinkResolvesRelativeInstallDir(t *testing.T) {
+	fixture := newInstallFixture(t)
+	writePackageAssets(t, fixture, helperPackage("v0.1.1"))
+	work := t.TempDir()
+	linkDir := filepath.Join(t.TempDir(), "bin")
+	script, err := filepath.Abs("install-riido-daemon.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("sh", script)
+	cmd.Dir = work
+	cmd.Env = append(os.Environ(),
+		"PATH="+fixture.binDir+string(os.PathListSeparator)+os.Getenv("PATH"),
+		"RIIDO_DAEMON_INSTALL_DIR=local/libexec",
+		"RIIDO_DAEMON_LINK_DIR="+linkDir,
+		"RIIDO_DAEMON_CHANNEL=staging",
+		"INSTALL_FIXTURE_DIR="+fixture.assetDir,
+		"INSTALL_MARKER="+filepath.Join(t.TempDir(), "marker"),
+		"HOME="+t.TempDir(),
+		"SHELL=/bin/zsh",
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("install failed: %v\n%s", err, out)
+	}
+	resolved, err := filepath.EvalSymlinks(filepath.Join(linkDir, "riido-staging"))
+	if err != nil {
+		t.Fatalf("riido-staging does not resolve: %v", err)
+	}
+	want, _ := filepath.EvalSymlinks(filepath.Join(work, "local", "libexec", "riido"))
+	if resolved != want {
+		t.Fatalf("riido-staging -> %s, want %s", resolved, want)
 	}
 }
