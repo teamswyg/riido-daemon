@@ -132,14 +132,14 @@ print_next_steps() {
       found="$(command -v "$command_name" 2>/dev/null || true)"
       if [ -n "$found" ] && [ "$found" != "$path_dir/$command_name" ]; then
         echo ""
-        echo "주의: 터미널에서 먼저 찾는 $command_name는 $found 입니다."
+        echo "주의: 터미널에서 먼저 찾는 ${command_name}는 $found 입니다."
         echo "  PATH에서 $path_dir 를 앞쪽으로 옮기거나 오래된 파일을 지우세요."
       fi
       ;;
     *)
       rc="$(profile_file)"
       echo ""
-      echo "터미널에서 $command_name를 바로 쓰려면 PATH에 추가하세요:"
+      echo "터미널에서 ${command_name}를 바로 쓰려면 PATH에 추가하세요:"
       case "$rc" in
         *config.fish) echo "  fish_add_path $path_dir" ;;
         *) echo "  echo 'export PATH=\"$path_dir:\$PATH\"' >> $rc && . $rc" ;;
