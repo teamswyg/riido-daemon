@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/teamswyg/riido-daemon/internal/cliinstallation"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/securecredential"
 	"github.com/teamswyg/riido-daemon/internal/selfupdate"
@@ -46,19 +47,27 @@ func runUpdate(c contextIO, raw []string) error {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "riido update는 사용자 터미널에서만 실행할 수 있습니다", "사용자가 직접 riido update 를 실행하세요"))
 	}
 	current := strings.TrimSpace(binaryVersion)
-	channel := selfupdate.ChannelForVersion(current)
-	switched := false
-	if args.HasValue("--channel") {
-		channel = args.Value("--channel")
-		if !selfupdate.ValidChannel(channel) {
-			return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "--channel은 staging 또는 latest만 받습니다", "riido update --channel staging"))
-		}
-		switched = channel != selfupdate.ChannelForVersion(current)
+	requested := args.Value("--channel")
+	if args.HasValue("--channel") && !selfupdate.ValidChannel(requested) {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "--channel은 staging 또는 latest만 받습니다", "riido update --channel staging"))
 	}
 	root, cliErr := c.updateRoot(current)
 	if cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
+	// RIID-6036: the install, not the version name, picks the feed. A
+	// riido-staging install follows staging; production riido follows latest.
+	installed := cliinstallation.InstalledChannelAt(root)
+	channel := selfupdate.ChannelLatest
+	if installed == cliinstallation.ChannelStaging {
+		channel = selfupdate.ChannelStaging
+	}
+	switched := false
+	if args.HasValue("--channel") {
+		switched = requested != channel
+		channel = requested
+	}
+	command := cliinstallation.CommandName(installed)
 	verify := c.verifyHelperSignature
 	if verify == nil {
 		verify = securecredential.VerifyPackagedHelper
@@ -101,10 +110,10 @@ func runUpdate(c contextIO, raw []string) error {
 			fmt.Fprintf(w, "이미 최신 버전입니다: %s (%s)\n", data.CurrentVersion, data.Channel)
 		case data.Updated:
 			fmt.Fprintf(w, "✓ %s → %s 로 업데이트했습니다 (%s)\n", data.CurrentVersion, data.LatestVersion, data.Channel)
-			fmt.Fprintln(w, "  riido --version 으로 확인하세요. 첫 조회에서 Touch ID가 한 번 뜰 수 있어요.")
+			fmt.Fprintf(w, "  %s --version 으로 확인하세요. 첫 조회에서 Touch ID가 한 번 뜰 수 있어요.\n", command)
 		default:
 			fmt.Fprintf(w, "새 버전이 있습니다: %s → %s (%s)\n", data.CurrentVersion, data.LatestVersion, data.Channel)
-			fmt.Fprintln(w, "  riido update 로 업데이트하세요.")
+			fmt.Fprintf(w, "  %s update 로 업데이트하세요.\n", command)
 		}
 	})
 }

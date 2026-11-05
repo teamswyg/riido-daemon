@@ -4,9 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
+
+	"github.com/teamswyg/riido-daemon/internal/cliconfig"
 )
 
 func main() {
+	cliconfig.UseInstalledChannel(currentInstallChannel())
 	if err := run(os.Args[1:]); err != nil {
 		var reported reportedExit
 		if errors.As(err, &reported) {

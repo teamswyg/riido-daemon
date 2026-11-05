@@ -22,6 +22,7 @@ func (a *resumeTestAdapter) ResumeExecutableIdentity(path, version string) agent
 	r.Version = version
 	return r
 }
+
 func (a *resumeTestAdapter) ProbeResumeExecutable(_ context.Context, path string) (agentbridge.DetectResult, error) {
 	a.probes++
 	return a.ResumeExecutableIdentity(path, a.detected.Version), nil
@@ -29,7 +30,7 @@ func (a *resumeTestAdapter) ProbeResumeExecutable(_ context.Context, path string
 
 func TestNativeResumeVerifiesExecutableBeforeProbeAndSubmit(t *testing.T) {
 	file := filepath.Join(t.TempDir(), "codex")
-	if err := os.WriteFile(file, []byte("original"), 0700); err != nil {
+	if err := os.WriteFile(file, []byte("original"), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	adapter := &resumeTestAdapter{stubAdapter: stubAdapter{name: "codex", detected: agentbridge.DetectResult{Version: "original", Available: true, Executable: file, SupportsResume: true}}}
@@ -46,7 +47,7 @@ func TestNativeResumeVerifiesExecutableBeforeProbeAndSubmit(t *testing.T) {
 	if _, got, err := a.submitCapability(msg, indexAdapters(a.cfg.Adapters), nil, nil); err != nil || got.Executable != file {
 		t.Fatalf("submit=%+v %v", got, err)
 	}
-	if err := os.WriteFile(file, []byte("changed"), 0700); err != nil {
+	if err := os.WriteFile(file, []byte("changed"), 0o700); err != nil {
 		t.Fatal(err)
 	}
 	if _, _, err := a.submitCapability(msg, indexAdapters(a.cfg.Adapters), nil, nil); err == nil {

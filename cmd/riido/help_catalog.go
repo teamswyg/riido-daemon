@@ -58,9 +58,9 @@ var commandHelpCatalog = map[string]commandHelp{
 		flags: []helpEntry{jsonFlag}, examples: []string{"riido whoami"},
 	},
 	"update": {
-		name: "update", summary: "CLI를 같은 채널(staging·정식)의 최신 버전으로 업데이트합니다.", usage: "riido update [옵션]",
-		notes:    []string{"설치 스크립트로 설치한 CLI만 업데이트해요. Riido 앱에 포함된 CLI는 앱을 업데이트하세요."},
-		flags:    []helpEntry{{"--check", "설치하지 않고 새 버전이 있는지만 확인"}, {"--channel <staging|latest>", "받을 채널 (기본: 지금 버전의 채널)"}, jsonFlag},
+		name: "update", summary: "CLI를 설치한 채널(정식·staging)의 최신 버전으로 업데이트합니다.", usage: "riido update [옵션]",
+		notes:    []string{"설치 스크립트로 설치한 CLI만 업데이트해요. Riido 앱에 포함된 CLI는 앱을 업데이트하세요.", "riido는 정식, riido-staging은 staging 채널을 따라요."},
+		flags:    []helpEntry{{"--check", "설치하지 않고 새 버전이 있는지만 확인"}, {"--channel <staging|latest>", "받을 채널 (기본: 설치한 채널)"}, jsonFlag},
 		examples: []string{"riido update", "riido update --check"},
 	},
 	"doctor": {

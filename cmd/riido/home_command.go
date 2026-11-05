@@ -5,6 +5,7 @@ import (
 	"io"
 	"strings"
 
+	"github.com/teamswyg/riido-daemon/internal/cliinstallation"
 	"github.com/teamswyg/riido-daemon/internal/cliui"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
@@ -79,6 +80,9 @@ func homeIntro(term cliui.Terminal, server string) []string {
 	lines := []string{
 		term.Brand("Riido CLI") + " " + term.Dim(versionNumber()),
 		term.Dim("작업·미팅·Agent 맥락을 터미널에서 조회합니다."),
+	}
+	if currentInstallChannel() == cliinstallation.ChannelStaging {
+		lines = append(lines, term.Dim("staging 테스트용 CLI · 명령은 riido-staging"))
 	}
 	if server != "" {
 		lines = append(lines, "", term.Dim("서버")+" "+server)
