@@ -15,18 +15,30 @@ type ThreadReadClient interface {
 type ThreadReader struct{ Client ThreadReadClient }
 
 type ThreadMessage struct {
-	DisplayMessage    string    `json:"display_message,omitempty"`
-	MessageID         string    `json:"message_id"`
-	Role              string    `json:"role"`
-	CommentKind       string    `json:"comment_kind,omitempty"`
-	AssignmentID      string    `json:"assignment_id,omitempty"`
-	RunID             string    `json:"run_id,omitempty"`
-	SourceMessageID   string    `json:"source_message_id,omitempty"`
-	AuthorPrincipalID string    `json:"author_principal_id,omitempty"`
-	Seq               int       `json:"seq,omitempty"`
-	Body              string    `json:"body,omitempty"`
-	ResultMessage     string    `json:"result_message,omitempty"`
-	ObservedAt        time.Time `json:"observed_at,omitzero"`
+	Reactions         []ThreadReaction `json:"reactions,omitempty"`
+	DisplayMessage    string           `json:"display_message,omitempty"`
+	MessageID         string           `json:"message_id"`
+	Role              string           `json:"role"`
+	CommentKind       string           `json:"comment_kind,omitempty"`
+	AssignmentID      string           `json:"assignment_id,omitempty"`
+	RunID             string           `json:"run_id,omitempty"`
+	SourceMessageID   string           `json:"source_message_id,omitempty"`
+	AuthorPrincipalID string           `json:"author_principal_id,omitempty"`
+	Seq               int              `json:"seq,omitempty"`
+	Body              string           `json:"body,omitempty"`
+	ResultMessage     string           `json:"result_message,omitempty"`
+	ObservedAt        time.Time        `json:"observed_at,omitzero"`
+}
+
+type ThreadReactionActor struct {
+	Kind string `json:"kind"`
+	ID   string `json:"id"`
+}
+
+type ThreadReaction struct {
+	Emoji  string                `json:"emoji"`
+	Count  int                   `json:"count"`
+	Actors []ThreadReactionActor `json:"actors"`
 }
 
 type ThreadStream struct {
@@ -43,18 +55,20 @@ type ThreadFailure struct {
 	Message         string `json:"message,omitempty"`
 }
 type ThreadIdentity struct {
-	ThreadID        string    `json:"thread_id"`
-	ConversationID  string    `json:"conversation_id"`
-	ParentThreadID  string    `json:"parent_thread_id,omitempty"`
-	TaskID          string    `json:"task_id"`
-	AssignmentID    string    `json:"assignment_id,omitempty"`
-	AgentID         string    `json:"agent_id"`
-	AgentSnapshotID string    `json:"agent_snapshot_id,omitempty"`
-	RunID           string    `json:"run_id"`
-	WorkStatus      string    `json:"work_status"`
-	AssignmentState string    `json:"assignment_state"`
-	StartedAt       time.Time `json:"started_at,omitzero"`
-	CompletedAt     time.Time `json:"completed_at,omitzero"`
+	ThreadID           string    `json:"thread_id"`
+	ConversationID     string    `json:"conversation_id"`
+	ParentThreadID     string    `json:"parent_thread_id,omitempty"`
+	TaskID             string    `json:"task_id"`
+	AssignmentID       string    `json:"assignment_id,omitempty"`
+	AgentID            string    `json:"agent_id"`
+	AgentSnapshotID    string    `json:"agent_snapshot_id,omitempty"`
+	RunID              string    `json:"run_id"`
+	RequestedBy        string    `json:"requested_by,omitempty"`
+	ConfirmationReason string    `json:"confirmation_reason,omitempty"`
+	WorkStatus         string    `json:"work_status"`
+	AssignmentState    string    `json:"assignment_state"`
+	StartedAt          time.Time `json:"started_at,omitzero"`
+	CompletedAt        time.Time `json:"completed_at,omitzero"`
 }
 type ThreadRecord struct {
 	ThreadIdentity
