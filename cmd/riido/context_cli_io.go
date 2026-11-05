@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/teamswyg/riido-daemon/internal/cliinstallation"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 	"github.com/teamswyg/riido-daemon/internal/standalonecli"
 )
@@ -47,7 +48,7 @@ func defaultContextIO() contextIO {
 			if err != nil {
 				return "", err
 			}
-			return filepath.Join(dir, "riido-cli"), nil
+			return filepath.Join(dir, cliinstallation.ConfigName(currentInstallChannel())), nil
 		},
 		stdout:        os.Stdout,
 		stderr:        os.Stderr,

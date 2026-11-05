@@ -39,7 +39,12 @@
     "install_dir_env": "RIIDO_DAEMON_INSTALL_DIR",
     "default_install_dir": "$HOME/.riido/bin",
     "channel_env": "RIIDO_DAEMON_CHANNEL",
-    "channels": ["staging", "latest"]
+    "channels": ["staging", "latest"],
+    "channel_notes": [
+      "Channels read the active CDN feeds the desktop app uses: `latest` reads `releases/safe/ai-agent` and `staging` reads `releases/staging-safe/ai-agent`. The legacy `releases/latest` and `releases/staging` prefixes stay frozen.",
+      "Production stays `riido` in `$HOME/.riido/bin` (no channel, or `latest`); such an install removes a staging `INSTALL_CHANNEL` marker left in that directory.",
+      "`staging` is the test channel (RIID-6036): the same package installs to `$HOME/.riido-staging/libexec` with an `INSTALL_CHANNEL` marker, and only the `riido-staging` link in `$HOME/.riido-staging/bin` (`RIIDO_DAEMON_LINK_DIR`) goes on PATH, so it never replaces production `riido`. The marker makes the binary default to the staging profile, keep its settings in `riido-cli-staging`, and update from the staging feed."
+    ]
   },
   "desktop_msix": {
     "download_source": "GitHub Release asset",
@@ -86,7 +91,9 @@
     {"name": "install-prerelease-latest", "file": "scripts/install-riido-daemon.sh", "contains": "releases?per_page=1"},
     {"name": "install-checksum-verification", "file": "scripts/install-riido-daemon.sh", "contains": "checksum mismatch"},
     {"name": "install-dir-override", "file": "scripts/install-riido-daemon.sh", "contains": "RIIDO_DAEMON_INSTALL_DIR"},
-    {"name": "install-channel-cdn", "file": "scripts/install-riido-daemon.sh", "contains": "base_url=\"$cdn_base/$channel/ai-agent\""},
+    {"name": "install-channel-cdn", "file": "scripts/install-riido-daemon.sh", "contains": "base_url=\"$cdn_base/$(cdn_prefix \"$channel\")/ai-agent\""},
+    {"name": "install-channel-active-feeds", "file": "scripts/install-riido-daemon.sh", "contains": "staging) echo \"staging-safe\" ;;"},
+    {"name": "install-staging-separate-command", "file": "scripts/install-riido-daemon.sh", "contains": "ln -s \"$install_dir/riido\" \"$link_dir/$command_name\""},
     {"name": "install-helper-pair", "file": "scripts/install-riido-daemon.sh", "contains": "package has an incomplete $helper_bundle"},
     {"name": "install-helper-pair-test", "file": "scripts/install_riido_daemon_package_test.go", "contains": "TestInstallRiidoDaemonRejectsIncompleteHelperBeforeTouchingBinary"},
     {"name": "build-package-binary-version-ldflags", "file": "scripts/build-release-package.sh", "contains": "-X main.binaryVersion=$version"},

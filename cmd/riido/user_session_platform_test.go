@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -24,6 +25,16 @@ func TestUserSessionPlatformPaths(t *testing.T) {
 		if err != nil || helper != wantHelper || locks != wantLocks {
 			t.Fatal("platform path selection changed", os, err)
 		}
+	}
+	// RIID-6036: a staging-channel install keeps separate locks.
+	if err := os.MkdirAll(filepath.Dir(exe), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(filepath.Dir(exe), "INSTALL_CHANNEL"), []byte("staging\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, locks, _ := userSessionPathsForOS("darwin", exe, config, cache); locks != filepath.Join(config, "riido-cli-staging", "auth-locks") {
+		t.Fatalf("staging locks = %s", locks)
 	}
 	for _, tc := range [][4]string{{"linux", exe, config, cache}, {"windows", "relative", config, cache}, {"windows", exe, config, "relative"}, {"darwin", exe, "", cache}} {
 		if _, _, err := userSessionPathsForOS(tc[0], tc[1], tc[2], tc[3]); !errors.Is(err, securecredential.ErrUnavailable) {

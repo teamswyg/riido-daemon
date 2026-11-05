@@ -5,7 +5,15 @@ repo="${RIIDO_DAEMON_REPO:-teamswyg/riido-daemon}"
 version="${RIIDO_DAEMON_VERSION:-latest}"
 channel="${RIIDO_DAEMON_CHANNEL:-}"
 cdn_base="${RIIDO_DAEMON_CDN_BASE:-https://cdn.riido.io/releases}"
-install_dir="${RIIDO_DAEMON_INSTALL_DIR:-$HOME/.riido/bin}"
+install_dir="${RIIDO_DAEMON_INSTALL_DIR:-}"
+link_dir="${RIIDO_DAEMON_LINK_DIR:-$HOME/.riido-staging/bin}"
+# production keeps `riido` in $HOME/.riido/bin. The staging test channel lives
+# beside it as `riido-staging` (RIID-6036): package files under
+# $HOME/.riido-staging/libexec, a marker so the same binary uses staging
+# defaults, and only the riido-staging link on PATH.
+command_name="riido"
+path_dir=""
+channel_marker="INSTALL_CHANNEL"
 helper_bundle="RiidoCLIAuthHelper.app"
 helper_manifest="CLI_AUTH_HELPER.json"
 fail() { printf '%s\n' "$*" >&2; exit 1; }
@@ -55,7 +63,14 @@ resolve_version() {
   echo "$latest"
 }
 # A channel install reads the same verified assets the desktop app uses from
-# the CDN (for example staging) instead of GitHub release tags.
+# the CDN instead of GitHub release tags. The legacy latest/staging CDN paths
+# are frozen; the active feeds are safe and staging-safe.
+cdn_prefix() {
+  case "$1" in
+    staging) echo "staging-safe" ;;
+    latest) echo "safe" ;;
+  esac
+}
 check_channel() {
   case "$channel" in
     "") return ;;
@@ -113,42 +128,68 @@ profile_file() {
 }
 print_next_steps() {
   case ":${PATH:-}:" in
-    *":$install_dir:"*)
-      found="$(command -v riido 2>/dev/null || true)"
-      if [ -n "$found" ] && [ "$found" != "$install_dir/riido" ]; then
+    *":$path_dir:"*)
+      found="$(command -v "$command_name" 2>/dev/null || true)"
+      if [ -n "$found" ] && [ "$found" != "$path_dir/$command_name" ]; then
         echo ""
-        echo "주의: 터미널에서 먼저 찾는 riido는 $found 입니다."
-        echo "  PATH에서 $install_dir 를 앞쪽으로 옮기거나 오래된 파일을 지우세요."
+        echo "주의: 터미널에서 먼저 찾는 $command_name는 $found 입니다."
+        echo "  PATH에서 $path_dir 를 앞쪽으로 옮기거나 오래된 파일을 지우세요."
       fi
       ;;
     *)
       rc="$(profile_file)"
       echo ""
-      echo "터미널에서 riido를 바로 쓰려면 PATH에 추가하세요:"
+      echo "터미널에서 $command_name를 바로 쓰려면 PATH에 추가하세요:"
       case "$rc" in
-        *config.fish) echo "  fish_add_path $install_dir" ;;
-        *) echo "  echo 'export PATH=\"$install_dir:\$PATH\"' >> $rc && . $rc" ;;
+        *config.fish) echo "  fish_add_path $path_dir" ;;
+        *) echo "  echo 'export PATH=\"$path_dir:\$PATH\"' >> $rc && . $rc" ;;
       esac
       ;;
   esac
   echo ""
   echo "다음 단계:"
-  echo "  riido doctor       설치 상태 확인"
+  echo "  $command_name doctor       설치 상태 확인"
   if [ -d "$install_dir/$helper_bundle" ]; then
-    echo "  riido auth login   브라우저로 로그인"
+    echo "  $command_name auth login   브라우저로 로그인"
   fi
-  echo "  riido help         자주 쓰는 명령 보기"
+  echo "  $command_name help         자주 쓰는 명령 보기"
+  if [ "$channel" = staging ]; then
+    echo ""
+    echo "staging 테스트용 CLI입니다. production은 riido, staging은 $command_name 로 따로 실행됩니다."
+  fi
+}
+# Point the staging command at the installed binary; production has no link.
+link_staging_command() {
+  [ "$channel" = staging ] || return 0
+  mkdir -p "$link_dir"
+  rm -f "$link_dir/$command_name"
+  ln -s "$install_dir/riido" "$link_dir/$command_name"
+}
+write_channel_marker() {
+  if [ "$channel" = staging ]; then
+    printf 'staging\n' > "$install_dir/$channel_marker"
+  else
+    rm -f "$install_dir/$channel_marker"
+  fi
 }
 main() {
   need curl
   need install
   need tar
   check_channel
+  if [ "$channel" = staging ]; then
+    command_name="riido-staging"
+    install_dir="${install_dir:-$HOME/.riido-staging/libexec}"
+    path_dir="$link_dir"
+  else
+    install_dir="${install_dir:-$HOME/.riido/bin}"
+    path_dir="$install_dir"
+  fi
   os="$(detect_os)"
   arch="$(detect_arch)"
   asset="riido-daemon_${os}_${arch}.tar.gz"
   if [ -n "$channel" ]; then
-    base_url="$cdn_base/$channel/ai-agent"
+    base_url="$cdn_base/$(cdn_prefix "$channel")/ai-agent"
   else
     resolved_version="$(resolve_version)"
     base_url="https://github.com/$repo/releases/download/$resolved_version"
@@ -170,7 +211,10 @@ main() {
   rm -f "$install_dir/riido"
   install -m 0755 "$tmp_dir/package/riido" "$install_dir/riido"
   install_package_files "$tmp_dir/package"
+  write_channel_marker
+  link_staging_command
   echo "riido-daemon installed: $install_dir/riido"
+  [ "$channel" != staging ] || echo "riido-staging command: $link_dir/$command_name"
   echo "riido-daemon version: $resolved_version"
   [ -z "$channel" ] || echo "riido-daemon channel: $channel"
   print_next_steps

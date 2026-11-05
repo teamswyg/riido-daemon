@@ -9,6 +9,7 @@ type installer struct {
 	DefaultInstallDir string   `json:"default_install_dir"`
 	ChannelEnv        string   `json:"channel_env,omitempty"`
 	Channels          []string `json:"channels,omitempty"`
+	ChannelNotes      []string `json:"channel_notes,omitempty"`
 }
 
 type desktopMSIX struct {

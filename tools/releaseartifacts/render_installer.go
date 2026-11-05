@@ -16,6 +16,10 @@ func renderInstaller(m manifest) string {
 		if m.Installer.ChannelEnv != "" {
 			b.WriteString("\nInstall the package the desktop app uses for a channel (" + codeList(m.Installer.Channels) + ") from the CDN with:\n\n")
 			fmt.Fprintf(b, "```bash\ncurl -fsSL %s | %s=staging sh\n```\n", installerScriptURL(m), m.Installer.ChannelEnv)
+			if len(m.Installer.ChannelNotes) > 0 {
+				b.WriteString("\n")
+				writeBullets(b, m.Installer.ChannelNotes)
+			}
 		}
 	})
 }

@@ -104,7 +104,7 @@ func Capabilities(cliVersion string) CapabilitiesData {
 		{Name: "resource list", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; --work ID와 --team-id로 링크·첨부·Figma 참조를 조회합니다; 큰 메타데이터 자동 이어 읽기 한도 16 MiB, 초과 시 work body 사용; agent mode는 exit 8입니다"},
 		local("capabilities"),
 		local("doctor"),
-		{Name: "update", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: "설치 스크립트로 설치한 CLI를 같은 채널(staging·정식) CDN 최신 패키지로 교체합니다; SHA256SUMS와 도우미 서명 검증 실패 시 기존 설치 유지; Riido 앱 포함 CLI와 agent mode는 exit 8"},
+		{Name: "update", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: "설치 스크립트로 설치한 CLI를 설치한 채널(riido 정식은 safe, riido-staging은 staging-safe) CDN 최신 패키지로 교체합니다; SHA256SUMS와 도우미 서명 검증 실패 시 기존 설치 유지; Riido 앱 포함 CLI와 agent mode는 exit 8"},
 		{Name: "auth status", Modes: []Mode{ModeAgent, ModeUser}, Status: CommandAvailable, Note: "user mode는 서명된 보호 도우미의 저장 여부만 확인합니다; API 인증 확인은 whoami를 사용하세요"},
 		{Name: "auth logout", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode},
 		{Name: "auth login", Modes: []Mode{ModeUser}, Status: CommandAvailable, Note: noteUserMode + "; 기본/--browser PKCE만 지원합니다; --desktop/--with-token은 exit 8입니다"},
