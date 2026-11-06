@@ -23,6 +23,10 @@ func userLinkError(err error) *contextcli.CLIError {
 		code = local.Code
 	}
 	switch code {
+	case "LINK_APPROVAL_EXPIRED":
+		return contextcli.Fail(contextcli.CodeConflict, "기기 연결 승인 요청이 만료됐습니다", "로그인은 유지됩니다. riido auth link --restart 로 새 승인 요청을 시작하세요")
+	case "LINK_RESTART_NOT_REQUIRED":
+		return contextcli.Fail(contextcli.CodeConflict, "다시 시작할 수 있는 만료 요청이 없습니다", "기존 요청은 유지됩니다. riido auth link 로 상태를 확인하세요")
 	case "LINK_APPROVAL_REQUIRED":
 		return contextcli.Fail(contextcli.CodeAuthRequired, "기기 연결에는 브라우저 승인과 OS 사용자 확인이 필요합니다", "기존 요청은 유지됩니다. --no-input 없이 riido auth link 를 실행하세요")
 	case "LINK_BINDING_MISMATCH", "LINK_REQUEST_CHANGED":

@@ -98,7 +98,7 @@ func (c *Client) decodeDeviceLinkRecovery(raw []byte, input DeviceLinkRecoveryRe
 		return DeviceLinkRecoveryResult{}, linkFailure("LINK_INVALID_RESPONSE")
 	}
 	switch result.State {
-	case "awaiting_approval", "proof_expired", "linked":
+	case "awaiting_approval", "approval_expired", "proof_expired", "linked":
 		return result, nil
 	case "proof_required":
 	default:

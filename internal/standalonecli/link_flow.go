@@ -15,6 +15,7 @@ type linkFlow struct {
 	interactive bool
 	opened      bool
 	confirmed   bool
+	restart     bool
 }
 
 func (f *linkFlow) recover(ctx context.Context) (userauth.DeviceLinkRecoveryResult, error) {
@@ -42,6 +43,22 @@ func (f *linkFlow) run(ctx context.Context) error {
 		return err
 	}
 	result, err := f.recover(ctx)
+	if f.restart && result.State != "linked" {
+		if err != nil {
+			return err
+		}
+		if result.State != "approval_expired" {
+			return linkError("LINK_RESTART_NOT_REQUIRED")
+		}
+		if err = f.validateRestart(ctx); err != nil {
+			return err
+		}
+		f.pending, err = f.store.RestartPendingLink(ctx, f.pending)
+		if err != nil {
+			return err
+		}
+		result, err = f.recover(ctx)
+	}
 	if linkCreateAllowed(err, f.pending) {
 		if currentErr := f.checkCurrent(ctx); currentErr != nil {
 			return currentErr
@@ -83,6 +100,8 @@ func (f *linkFlow) run(ctx context.Context) error {
 
 func (f *linkFlow) advance(ctx context.Context, result userauth.DeviceLinkRecoveryResult) error {
 	switch result.State {
+	case "approval_expired":
+		return linkError("LINK_APPROVAL_EXPIRED")
 	case "proof_expired":
 		return linkError("LINK_PROOF_EXPIRED")
 	case "awaiting_approval":
