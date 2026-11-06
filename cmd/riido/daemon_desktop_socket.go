@@ -29,6 +29,10 @@ func desktopDaemonSocketFor(goos, home, profile string, exists func(string) bool
 	case "production":
 	case "staging":
 		dir += "-staging"
+		isolated := filepath.Join(home, "Library", "Application Support", "Riido Staging", dir, "agentd.sock")
+		if exists(isolated) {
+			return isolated, true
+		}
 	default:
 		return "", false
 	}
