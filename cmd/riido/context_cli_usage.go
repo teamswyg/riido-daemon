@@ -68,6 +68,7 @@ func printAuthUsage(w io.Writer) {
 	fmt.Fprintln(w, "    User commands except login: --auth-origin browser|desktop overrides config auth_origin once. Default browser; no credential fallback.")
 	fmt.Fprintln(w, "    riido auth login [--browser|--desktop]   (PKCE; signed credential helper required)")
 	fmt.Fprintln(w, "    riido auth link               (explicit device approval; resumes the original protected request)")
+	fmt.Fprintln(w, "    riido auth link --restart     (new approval after confirmed unapproved expiry; preserves login)")
 	fmt.Fprintln(w, "    riido auth link --no-input    (receipt recovery only; fails if protected storage requires OS confirmation)")
 	fmt.Fprintln(w, "    riido auth repair            (existing key + fresh browser consent; no OAuth login or grant restoration)")
 	fmt.Fprintln(w, "    riido auth repair --restart  (explicit new consent after a terminal request; active requests are preserved)")

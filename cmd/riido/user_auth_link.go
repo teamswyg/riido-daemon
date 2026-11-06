@@ -12,7 +12,7 @@ import (
 
 func (c contextIO) runAuthLink(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{Bools: []string{"--restart"}})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -26,6 +26,9 @@ func (c contextIO) runAuthLink(raw []string) error {
 	if cliErr := checkUserOptions(args); cliErr != nil {
 		return c.fail(args.JSON, requestID, cliErr)
 	}
+	if args.NoInput && args.Bool("--restart") {
+		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUsage, "--no-input 에서는 연결 요청을 다시 시작할 수 없습니다", "사람의 터미널에서 riido auth link --restart 를 실행하세요"))
+	}
 	if !args.HasValue("--timeout") {
 		args.Timeout = 5 * time.Minute
 	}
@@ -35,7 +38,7 @@ func (c contextIO) runAuthLink(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
-	result, err := session.Link(ctx, cliLinkDaemon{io: c}, !args.NoInput)
+	result, err := session.LinkWithRestart(ctx, cliLinkDaemon{io: c}, !args.NoInput, args.Bool("--restart"))
 	if err != nil {
 		return c.fail(args.JSON, requestID, userLinkError(err))
 	}
