@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/teamswyg/riido-daemon/internal/cliinstallation"
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
 
@@ -119,15 +120,16 @@ func (c contextIO) doctorBinary() doctorCheck {
 }
 
 func (c contextIO) doctorPath() doctorCheck {
-	found, err := c.lookPath("riido")
+	exe, executableErr := c.executable()
+	command := cliinstallation.CommandName(cliinstallation.InstalledChannel(exe))
+	found, err := c.lookPath(command)
 	if err != nil {
-		return doctorCheck{Name: "path", Status: doctorWarn, Detail: "터미널 PATH에서 riido를 찾지 못했습니다. Riido Desktop 설정에서 터미널 연결을 켜세요"}
+		return doctorCheck{Name: "path", Status: doctorWarn, Detail: "터미널 PATH에서 " + command + "를 찾지 못했습니다. Riido Desktop 설정에서 터미널 연결을 켜세요"}
 	}
-	exe, err := c.executable()
-	if err == nil && sameFile(found, exe) {
+	if executableErr == nil && sameFile(found, exe) {
 		return doctorCheck{Name: "path", Status: doctorOK, Detail: found}
 	}
-	return doctorCheck{Name: "path", Status: doctorWarn, Detail: "PATH의 riido가 지금 실행한 바이너리와 다릅니다: " + found}
+	return doctorCheck{Name: "path", Status: doctorWarn, Detail: "PATH의 " + command + "가 지금 실행한 바이너리와 다릅니다: " + found}
 }
 
 func sameFile(a, b string) bool {
