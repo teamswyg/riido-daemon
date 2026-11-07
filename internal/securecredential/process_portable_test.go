@@ -155,3 +155,20 @@ func TestPortableHelperRealVerifierRejectsUntrustedProcess(t *testing.T) {
 	}
 	assertNoCapturedRequest(t, capture)
 }
+
+func TestPortableVerifiedHelperDeadlineReturnsNoOutput(t *testing.T) {
+	path, capture := portableHelperFixture(t, "wait")
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	input := []byte("synthetic-request")
+	out, err := runVerifiedHelper(ctx, path, input, func(ctx context.Context, _ int) error {
+		return waitForEmptyCapture(ctx, capture)
+	})
+	if !errors.Is(err, context.DeadlineExceeded) || len(out) != 0 {
+		t.Fatalf("verified helper deadline = %v, expected local deadline without output", err)
+	}
+	data, readErr := os.ReadFile(capture)
+	if readErr != nil || !bytes.Equal(data, input) {
+		t.Fatal("did not exercise timeout after verified request delivery")
+	}
+}
