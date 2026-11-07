@@ -73,6 +73,9 @@ func runVerifiedHelper(ctx context.Context, path string, input []byte, verify fu
 	}
 	err = command.Wait()
 	reaped = true
+	if ctx.Err() != nil {
+		return nil, ctx.Err()
+	}
 	if err != nil || out.overflow {
 		return nil, ErrUnavailable
 	}
