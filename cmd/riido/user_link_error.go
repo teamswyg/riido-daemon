@@ -15,7 +15,7 @@ func userLinkError(err error) *contextcli.CLIError {
 	code := ""
 	if errors.As(err, &remote) {
 		code = remote.Code
-		if remote.StatusCode == http.StatusConflict || remote.StatusCode == http.StatusGone {
+		if code != "LINK_ALREADY_LINKED" && (remote.StatusCode == http.StatusConflict || remote.StatusCode == http.StatusGone) {
 			code = "LINK_REPAIR_REQUIRED"
 		}
 	}
@@ -23,6 +23,10 @@ func userLinkError(err error) *contextcli.CLIError {
 		code = local.Code
 	}
 	switch code {
+	case "LINK_ALREADY_LINKED":
+		result := contextcli.Fail(contextcli.CodeConflict, "이미 기기에 연결된 CLI 설치입니다", "재로그인이나 repair로 연결 기기가 바뀌지 않습니다. 기존 기기 연결을 확인하세요")
+		result.NoRetry = true
+		return result
 	case "LINK_APPROVAL_EXPIRED":
 		return contextcli.Fail(contextcli.CodeConflict, "기기 연결 승인 요청이 만료됐습니다", "로그인은 유지됩니다. riido auth link --restart 로 새 승인 요청을 시작하세요")
 	case "LINK_RESTART_NOT_REQUIRED":
