@@ -27,9 +27,11 @@ struct HelperData: Encodable {
     var publicKey: String? = nil
     var keyFingerprint: String? = nil
     var signature: String? = nil
+    var bootDigest: String? = nil
     enum CodingKeys: String, CodingKey {
         case present, value, confirmed, algorithm, signature
         case publicKey = "public_key", keyFingerprint = "key_fingerprint"
+        case bootDigest = "boot_digest"
     }
 }
 
