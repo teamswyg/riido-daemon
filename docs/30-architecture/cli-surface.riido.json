@@ -642,6 +642,16 @@
       "name": "user-auth-origin-command-snapshot",
       "file": "cmd/riido/user_settings.go",
       "contains": "args.AuthOrigin, args.AuthOriginSource = resolved.AuthOrigin, resolved.Sources[\"auth_origin\"]"
+    },
+    {
+      "name": "installation-bootstrap-typed-witness",
+      "file": "internal/securecredential/device_bootstrap.go",
+      "contains": "\"installation-device-bootstrap-proof\""
+    },
+    {
+      "name": "installation-bootstrap-kernel-source",
+      "file": "native/cli-auth-helper/Sources/BootSession.swift",
+      "contains": "sysctlbyname(\"kern.bootsessionuuid\""
     }
   ],
   "forbidden_source_tokens": [
@@ -1172,6 +1182,10 @@
         {
           "kind": "paragraph",
           "text": "Windows credential coordination uses a real non-inheritable file handle and exclusive nonblocking LockFileEx over one byte. It checks the local directory/file owner and restrictive ACL, rejects reparse points, unexpected file types and hard links, and does not share deletion or delete the lock file to release it. Each child directory and lock file is opened relative to its already checked parent handle with NtCreateFile and OBJ_DONT_REPARSE; missing components receive the private security descriptor in the same create operation. Attribute-only reparse mutation is not prevented by write sharing, so an absolute path must not be re-resolved after checking its parent. Native regression uses a FILE_WRITE_ATTRIBUTES-only junction positive control and the empty-directory creation race before any lock file exists. Lock retries contention within the existing two-minute/context bound; TryLock returns busy without queuing. Unlock is idempotent, and process death relies on OS handle release. Coordination never replaces OS user confirmation or enables the unsupported Windows credential helper. Native CI uses isolated temporary paths and synthetic processes, never product credentials; per-case output distinguishes executed passes from conditional skips."
+        },
+        {
+          "kind": "paragraph",
+          "text": "RIID-5971 legacy device bootstrap uses a separate installation-device-bootstrap-proof helper operation. It signs a fixed prepare/activate intent with the existing protected installation key after OS user presence, and reads kern.bootsessionuuid inside the trusted macOS helper through sysctlbyname. The request may not supply the current boot identity or digest. Only a resource/client/key-scoped digest is returned with the signature; raw boot UUID is neither stored nor logged. Activate requires a previous digest and rejects the same boot; prepare requires no previous digest. Resource, installation, device, transition, intent, challenge, key, phase, previous/current boot digests and canonical expiry are all domain-separated and length-framed. Missing or malformed OS evidence, missing keys, expired requests and mismatched scope fail without creating, replacing or deleting credentials. This is signing support only: server intent validation, durable pre-restart fencing, credential/coverage CAS, Desktop recovery journal and real reboot/link/repair acceptance are separate activation gates. It is not hardware attestation and cannot by itself grant permission or change legacy coverage."
         }
       ]
     }
