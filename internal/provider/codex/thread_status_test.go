@@ -6,10 +6,8 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-// Newer codex app-server builds end a turn with thread/status/changed instead of
-// turn/completed. The driver must complete the run on a terminal status, but
-// only after a turn actually started (so an initial idle can't end it early),
-// fail on an error status, and never hard-fail on an unknown status.
+// Thread activity cannot substitute for the parent turn's terminal result.
+// Error statuses still fail the run; unknown statuses remain informational.
 func TestThreadStatusEvents(t *testing.T) {
 	// terminal status before any turn → benign log, no completion.
 	d := &protocolDriver{}
@@ -27,11 +25,10 @@ func TestThreadStatusEvents(t *testing.T) {
 		t.Fatal("active status should mark the turn started")
 	}
 
-	// terminal status after a turn → completed result.
+	// A terminal thread status still awaits the parent turn's result.
 	ev = d.threadStatusEvents(map[string]any{"status": "completed"})
-	if len(ev) != 1 || ev[0].Kind != agentbridge.EventResult ||
-		ev[0].Result.Status != agentbridge.ResultCompleted {
-		t.Fatalf("terminal status after a turn should complete: %+v", ev)
+	if len(ev) != 1 || ev[0].Kind != agentbridge.EventLog {
+		t.Fatalf("thread status must not complete the parent turn: %+v", ev)
 	}
 
 	// error status → failed result (regardless of turn state).

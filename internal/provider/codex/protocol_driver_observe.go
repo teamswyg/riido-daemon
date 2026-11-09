@@ -12,6 +12,7 @@ func (d *protocolDriver) observeEvents(events []agentbridge.Event) {
 		case agentbridge.EventTextDelta:
 			if strings.TrimSpace(ev.Text) != "" {
 				d.sawAssistantOutput = true
+				d.hasAssistantText = true
 			}
 		case agentbridge.EventResult:
 			if strings.TrimSpace(ev.Result.Output) != "" {
