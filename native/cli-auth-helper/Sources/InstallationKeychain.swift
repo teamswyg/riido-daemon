@@ -81,6 +81,12 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
         return DeviceBootstrapSignature(bootDigest: bootDigest, signature: signature)
     }
 
+    func signDeviceTransferProof(_ proof: DeviceTransferProof) throws -> Data {
+        try proof.validate(now: Date())
+        return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0, now: Date()) },
+                        validate: { try proof.validate(now: Date()) })
+    }
+
     private func sign(scope: InstallationScope, message makeMessage: (Data) throws -> Data,
                       validate: () throws -> Void) throws -> Data {
         let (context, owned) = installationContext()

@@ -38,7 +38,8 @@ link_proof = dict(scope, installation_id='fixture-installation', intent_id='fixt
                   expires_at=datetime.datetime.fromtimestamp(time.time()+300,datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'))
 repair_proof = dict(scope, request_id='A'*43, key_fingerprint=vector['KeyFingerprint'], recovery_hash='a'*64)
 bootstrap_proof=dict(link_proof, intent_id='A'*43, phase='prepare', transition_id='B'*42+'A', previous_boot_digest='')
-for operation, payload in [('installation-device-bootstrap-proof',bootstrap_proof),('installation-repair-proof',repair_proof),('installation-key',scope),('installation-existing-key',scope),('installation-proof',proof),('installation-device-link-proof',link_proof)]:
+transfer_proof=dict(link_proof, intent_id='A'*43, previous_device_id='source-device', previous_link_revision='2')
+for operation, payload in [('installation-device-transfer-proof',transfer_proof),('installation-device-bootstrap-proof',bootstrap_proof),('installation-repair-proof',repair_proof),('installation-key',scope),('installation-existing-key',scope),('installation-proof',proof),('installation-device-link-proof',link_proof)]:
     request = {'version':1,'operation':operation,'key':'08eba32e93e89b49cbed7c040f8de7dba724391c4015de3baaa78d9dad03957f',
                'interactive':True,'value':base64.b64encode(json.dumps(payload).encode()).decode()}
     responses.append(subprocess.run([sys.argv[4]], input=json.dumps(request),text=True,capture_output=True,check=True,timeout=10).stdout)
@@ -47,5 +48,5 @@ for body in responses:
     assert response['version']==1 and response['ok'] is False
     assert response['error']['code']=='UNAVAILABLE'
     assert 'data' not in response
-print('PASS: unsigned helper refuses credential/confirmation/installation key/existing key/OAuth proof/device-link proof/bootstrap proof/repair proof before keychain or OS access')
+print('PASS: unsigned helper refuses credential/confirmation/installation key/existing key/OAuth proof/device-link proof/transfer proof/bootstrap proof/repair proof before keychain or OS access')
 PYTHON

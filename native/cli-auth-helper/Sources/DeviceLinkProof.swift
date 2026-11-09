@@ -50,7 +50,7 @@ struct DeviceLinkProof: Decodable {
     }
 }
 
-private func deviceLinkID(_ value: String) -> Bool {
+func deviceLinkID(_ value: String) -> Bool {
     !value.isEmpty && value.utf8.count <= 512 && value.trimmingCharacters(in: .whitespacesAndNewlines) == value
         && !value.contains(where: { "/\\\0\r\n\t".contains($0) })
 }
