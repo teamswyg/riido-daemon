@@ -16,6 +16,7 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/session"
 	"github.com/teamswyg/riido-daemon/internal/process/processexec"
+	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
 // Opt-in native CLI transport test. No user configuration or paid API is used.
@@ -62,6 +63,14 @@ func testClaudeNativeStartup(t *testing.T, executable string, mode PermissionMod
 	}))
 	defer server.Close()
 	dir := t.TempDir()
+	workspaceAdapter := workdir.NewFSAdapter(filepath.Join(dir, "runs"))
+	workspace, err := workspaceAdapter.Prepare(workdir.TaskID{Workspace: "test", Task: "startup", Run: "native"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := workspaceAdapter.InjectRuntimeConfig(workspace, workdir.RuntimeConfig{Provider: "claude", ProtocolKind: "claude-stream-json"}); err != nil {
+		t.Fatal(err)
+	}
 	config := filepath.Join(dir, "config")
 	if err := os.Mkdir(config, 0o700); err != nil {
 		t.Fatal(err)
@@ -71,7 +80,7 @@ func testClaudeNativeStartup(t *testing.T, executable string, mode PermissionMod
 		t.Fatal(err)
 	}
 	req := agentbridge.StartRequest{
-		Executable: executable, Cwd: dir, Prompt: prompt,
+		Executable: executable, Cwd: workspace.Workdir, Prompt: prompt,
 		Env: map[string]string{
 			"CLAUDE_CONFIG_DIR":                        config,
 			"ANTHROPIC_API_KEY":                        "riido-local-test-only",
