@@ -24,7 +24,7 @@ RAG index must not contain:
 
 | ID | Decision needed | Default until decided |
 | --- | --- | --- |
-| Q-EXEC-001 | private repo auth broker shape | public repo only, private fail-closed |
+| Q-EXEC-001 | private repo auth broker shape | public/private clone with existing host Git credentials; fail closed on clone failure; token broker deferred |
 | Q-EXEC-002 | long-lived provider process default | one-shot default, resume id requires explicit resume |
 | Q-EXEC-003 | web approval timeout and fallback terminal state | blocked with approval_timeout |
 | Q-EXEC-004 | WorkspacePlan inline vs linked execution plan id | assignment snapshot inline minimal plan |

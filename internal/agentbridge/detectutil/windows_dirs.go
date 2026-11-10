@@ -23,6 +23,7 @@ func windowsWellKnownDirs() []string {
 
 func windowsHomeDirs(home string) []string {
 	return []string{
+		filepath.Join(home, ".local", "bin"),
 		filepath.Join(home, ".cargo", "bin"),
 		filepath.Join(home, ".bun", "bin"),
 		filepath.Join(home, "go", "bin"),
