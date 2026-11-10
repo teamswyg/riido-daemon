@@ -41,7 +41,7 @@ func newTransferPair() (string, string, error) {
 func (s *ProtectedStore) validateTransfer(j transferJournal) bool {
 	binding := LinkBinding{Resource: j.Resource, ClientID: "riido-cli", SessionID: j.Session, ExpectedDeviceID: j.Device, KeyFingerprint: j.Fingerprint}
 	hasRepair := j.RepairRequest != "" || j.RepairSecret != "" || j.RepairCreated
-	return s != nil && s.TransferNative != nil && j.Schema == "riido-cli-transfer.v1" && j.Origin == s.authOrigin() && j.Resource == s.Resource && binding.valid() && linkRandom(j.Request) && linkRandom(j.Secret) && (!hasRepair || j.Created && linkRandom(j.RepairRequest) && linkRandom(j.RepairSecret) && j.RepairRequest != j.Request)
+	return s != nil && s.TransferNative != nil && j.Schema == "riido-cli-transfer.v1" && j.Origin == s.authOrigin() && j.Resource == s.Resource && binding.valid() && linkRandom(j.Request) && linkRandom(j.Secret) && (!hasRepair || linkRandom(j.RepairRequest) && linkRandom(j.RepairSecret) && j.RepairRequest != j.Request)
 }
 
 func (s *ProtectedStore) loadTransfer(ctx context.Context) (*transferJournal, error) {

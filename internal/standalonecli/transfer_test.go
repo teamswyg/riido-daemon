@@ -144,3 +144,45 @@ func TestTransferRepairRestartOnlyConsumesPositiveTerminalEvidence(t *testing.T)
 		t.Fatal("restart changed the original protected pair")
 	}
 }
+
+func TestTransferRepairAfterLogoutWithUnacknowledgedCreation(t *testing.T) {
+	var original string
+	var calls []string
+	f, n, _ := newRepairFixture(t, func(w http.ResponseWriter, r *http.Request) {
+		body := linkRequest(t, r)
+		if r.Header.Get("Authorization") != "" {
+			t.Error("unexpected grant")
+		}
+		calls = append(calls, r.URL.Path)
+		switch r.URL.Path {
+		case "/oauth/cli/installation-transfers/repairs":
+			if body["original_request_id"] != original {
+				t.Error("replaced original request")
+			}
+			w.WriteHeader(http.StatusCreated)
+			_ = json.NewEncoder(w).Encode(map[string]any{"request_id": body["request_id"], "state": "pending", "expires_at": 1, "recovery_until": 2})
+		case "/oauth/cli/installation-transfers/repairs/recover":
+			linkState(w, body["request_id"], "awaiting_evidence")
+		default:
+			t.Error("unexpected endpoint")
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	n2 := &transferTestKey{n.linkKeyFixture}
+	f.store.Native = n2
+	f.store.TransferNative = &protectedNativeFixture{}
+	id, secret, _ := newTransferPair()
+	original = id
+	j := transferJournal{Schema: "riido-cli-transfer.v1", Resource: f.binding.Resource, Origin: "browser", Session: f.binding.SessionID, Fingerprint: n2.key.KeyFingerprint, Device: f.binding.ExpectedDeviceID, Request: id, Secret: secret}
+	if err := f.store.saveTransfer(t.Context(), j); err != nil {
+		t.Fatal(err)
+	}
+	result, err := f.service.Transfer(t.Context(), nil, true, true, false)
+	if err != nil || result.State != "awaiting_evidence" || len(calls) != 2 || n2.loads.Load() != 0 {
+		t.Fatalf("recovery did not reach original evidence: %v %v", result, err)
+	}
+	p, err := f.store.loadTransfer(t.Context())
+	if err != nil || p == nil || p.Request != id || p.Secret != secret || p.Created || !p.RepairCreated {
+		t.Fatal("lost source custody or fabricated create ACK")
+	}
+}

@@ -228,9 +228,9 @@ func (f *transferFlow) createRepair(ctx context.Context) error {
 
 func (f *transferFlow) repair(ctx context.Context, restart bool) (TransferStatus, error) {
 	j := f.journal
-	if !j.Created {
-		return TransferStatus{}, linkError("TRANSFER_NO_JOURNAL")
-	}
+	// A lost create response or an interrupted progress save can leave
+	// Created false. Only the server can decide whether this original request
+	// has a recoverable transfer; the original ID and key remain authoritative.
 	if j.RepairRequest == "" {
 		if !f.interactive || restart {
 			return TransferStatus{}, linkError("TRANSFER_NO_REPAIR")
