@@ -29,9 +29,10 @@ type ProtectedStore struct {
 	RepairLock interface {
 		TryLock(context.Context) (func(), error)
 	}
-	Native       protectedNativeStore
-	RepairNative protectedRepairNativeStore
-	Resource     string
+	Native         protectedNativeStore
+	RepairNative   protectedRepairNativeStore
+	TransferNative protectedRepairNativeStore
+	Resource       string
 }
 
 func (s *ProtectedStore) Lock(ctx context.Context) (func(), error) {

@@ -49,6 +49,7 @@ var commandHelpCatalog = map[string]commandHelp{
 			{"logout", "로그아웃하고 저장된 로그인을 지웁니다.", "riido auth logout", nil, "riido auth logout"},
 			{"link", "이 CLI를 Riido 앱(이 기기)과 연결합니다.", "riido auth link [--restart] [--no-input]", []helpEntry{{"--restart", "만료된 미승인 요청을 새 승인 요청으로 교체"}, {"--no-input", "확인 창 없이 이전 승인만 이어받기"}}, "riido auth link"},
 			{"repair", "보호 저장소를 복구합니다. 브라우저에서 다시 동의해요.", "riido auth repair [--restart] [--no-input]", []helpEntry{{"--restart", "끝난 요청 대신 새로 동의 시작"}, {"--no-input", "확인 창 없이 기존 영수증만 복구"}}, "riido auth repair"},
+			{"transfer", "현재 기기로 연결을 전환하거나 진행 중인 전환을 복구합니다.", "riido auth transfer [--repair] [--restart] [--no-input]", []helpEntry{{"--repair", "기존 설치 키와 새 사용자 승인으로 전환 복구"}, {"--restart", "만료되거나 거절된 복구 승인 다시 요청"}, {"--no-input", "기존 요청 상태 확인"}}, "riido auth transfer"},
 		},
 		flags:    []helpEntry{{"--auth-origin <browser|desktop>", "이번 실행만 로그인 방식 지정"}, jsonFlag},
 		examples: []string{"riido auth login", "riido auth status"},

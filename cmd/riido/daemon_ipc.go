@@ -72,7 +72,7 @@ func dispatchDaemonRequest(conn net.Conn, req daemonRequest, flags startFlags, s
 		// 5s connection deadline would drop a slower successful answer.
 		_ = conn.SetDeadline(time.Now().Add(contextReadConnDeadline))
 		writeContextRead(conn, req, settings, runtimes, log)
-	case daemonMethodCLIInstallationLinkInfo, daemonMethodCLIInstallationLinkConfirm:
+	case daemonMethodCLIInstallationLinkInfo, daemonMethodCLIInstallationLinkConfirm, daemonMethodCLITransferConfirm:
 		_ = conn.SetDeadline(time.Now().Add(12 * time.Second))
 		ctx, cancel := daemonConnClosedContext(conn)
 		defer cancel()

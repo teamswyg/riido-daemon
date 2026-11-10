@@ -2,6 +2,7 @@ package contextcli
 
 const (
 	CLIInstallationLinkIPCSchema        = "riido-cli-device-link-ipc.v1"
+	IPCMethodCLITransferConfirm         = "cli_installation_transfer_confirm"
 	IPCMethodCLIInstallationLinkInfo    = "cli_installation_link_info"
 	IPCMethodCLIInstallationLinkConfirm = "cli_installation_link_confirm"
 )
@@ -24,10 +25,12 @@ func (CLIInstallationLinkProof) String() string   { return "[redacted installati
 func (CLIInstallationLinkProof) GoString() string { return "[redacted installation link proof]" }
 
 type CLIInstallationLinkRequest struct {
-	Method        string                    `json:"method"`
-	SchemaVersion string                    `json:"schema_version"`
-	Proof         *CLIInstallationLinkProof `json:"proof,omitempty"`
-	Signature     string                    `json:"signature,omitempty"`
+	Method               string                    `json:"method"`
+	SchemaVersion        string                    `json:"schema_version"`
+	Proof                *CLIInstallationLinkProof `json:"proof,omitempty"`
+	Signature            string                    `json:"signature,omitempty"`
+	PreviousDeviceID     string                    `json:"previous_device_id,omitempty"`
+	PreviousLinkRevision string                    `json:"previous_link_revision,omitempty"`
 }
 
 func (CLIInstallationLinkRequest) String() string   { return "[redacted installation link request]" }

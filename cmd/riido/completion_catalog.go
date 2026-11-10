@@ -72,6 +72,7 @@ func completionCatalog() []clicompletion.Command {
 		user(string(mainCommandAuth)+" "+sub, "")
 	}
 	user(string(mainCommandWhoami), "")
+	user(string(mainCommandAuth)+" "+string(authCommandTransfer), "", "--repair", "--restart")
 	user(string(mainCommandCapabilities), "")
 	user(string(mainCommandDoctor), "", "--check-api")
 	user(string(mainCommandUpdate), "--channel", "--check")
