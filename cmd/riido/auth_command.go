@@ -38,6 +38,8 @@ func runAuth(c contextIO, args []string) error {
 		return nil
 	}
 	switch authCommand(args[0]) {
+	case "desktop-bootstrap":
+		return c.runDesktopBootstrap(args[1:])
 	case authCommandLogin:
 		return c.runAuthLogin(args[1:])
 	case authCommandLink:

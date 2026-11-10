@@ -33,6 +33,17 @@ func (m *Manager) transferPost(ctx context.Context, session, path string, input 
 	if m == nil || !validDeviceLinkClient(m.client) || !validDeviceLinkRequest(input) || !deviceLinkID(session) {
 		return nil, 0, linkFailure("TRANSFER_INVALID_CONFIG")
 	}
+	body := map[string]string{"request_id": input.RequestID, "recovery_secret": input.RecoverySecret}
+	if path == transferPath {
+		body["expected_device_id"] = input.ExpectedDeviceID
+	}
+	return m.installationSessionPost(ctx, session, path, body)
+}
+
+func (m *Manager) installationSessionPost(ctx context.Context, session, path string, body map[string]string) ([]byte, int, error) {
+	if m == nil || !validDeviceLinkClient(m.client) || !deviceLinkID(session) {
+		return nil, 0, linkFailure("LINK_INVALID_CONFIG")
+	}
 	gen := m.generation.Load()
 	c, err := m.accessCredential(ctx, "", session)
 	if err != nil {
@@ -43,10 +54,6 @@ func (m *Manager) transferPost(ctx context.Context, session, path string, input 
 	}
 	if c.TokenType != "Bearer" || strings.TrimSpace(c.Scope) != "read" {
 		return nil, 0, linkFailure("TRANSFER_INVALID_CONFIG")
-	}
-	body := map[string]string{"request_id": input.RequestID, "recovery_secret": input.RecoverySecret}
-	if path == transferPath {
-		body["expected_device_id"] = input.ExpectedDeviceID
 	}
 	raw, status, err := m.client.deviceLinkPOST(ctx, path, body, c.AccessToken)
 	if err != nil {
