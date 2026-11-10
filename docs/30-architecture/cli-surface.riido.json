@@ -645,6 +645,16 @@
       "contains": "args.AuthOrigin, args.AuthOriginSource = resolved.AuthOrigin, resolved.Sources[\"auth_origin\"]"
     },
     {
+      "name": "desktop-bootstrap-stdio-entry",
+      "file": "cmd/riido/auth_command.go",
+      "contains": "return c.runDesktopBootstrap(args[1:])"
+    },
+    {
+      "name": "desktop-bootstrap-original-session",
+      "file": "internal/standalonecli/device_bootstrap.go",
+      "contains": "input.BootstrapIdentity != id"
+    },
+    {
       "name": "installation-bootstrap-typed-witness",
       "file": "internal/securecredential/device_bootstrap.go",
       "contains": "\"installation-device-bootstrap-proof\""
@@ -1188,6 +1198,10 @@
         {
           "kind": "paragraph",
           "text": "Windows credential coordination uses a real non-inheritable file handle and exclusive nonblocking LockFileEx over one byte. It checks the local directory/file owner and restrictive ACL, rejects reparse points, unexpected file types and hard links, and does not share deletion or delete the lock file to release it. Each child directory and lock file is opened relative to its already checked parent handle with NtCreateFile and OBJ_DONT_REPARSE; missing components receive the private security descriptor in the same create operation. Attribute-only reparse mutation is not prevented by write sharing, so an absolute path must not be re-resolved after checking its parent. Native regression uses a FILE_WRITE_ATTRIBUTES-only junction positive control and the empty-directory creation race before any lock file exists. Lock retries contention within the existing two-minute/context bound; TryLock returns busy without queuing. Unlock is idempotent, and process death relies on OS handle release. Coordination never replaces OS user confirmation or enables the unsupported Windows credential helper. Native CI uses isolated temporary paths and synthetic processes, never product credentials; per-case output distinguishes executed passes from conditional skips."
+        },
+        {
+          "kind": "paragraph",
+          "text": "The managed Desktop privately invokes riido auth desktop-bootstrap identity --json or request --json under the installed profile. Identity POSTs an empty object to /oauth/cli/installation-transfers/device-bootstraps/identity and binds resource, client, installation, key fingerprint and owner to the live CLI session and existing OS installation key. Request input is bounded to 4096 bytes of strict JSON on stdin: resource, client_id, installation_id, key_fingerprint, owner_principal_id, expected_device_id, request_id, recovery_secret and next_secret_hash. Only the fixed collection receives the bound commitment with the original bearer. The response carries request_id, expires_at and pending, issued, prepared or complete. The Desktop retains both native credentials; the CLI neither accepts them on argv nor changes the active device. An agent, changed session or mismatched identity fails closed."
         },
         {
           "kind": "paragraph",
