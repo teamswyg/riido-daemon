@@ -33,7 +33,7 @@ type helpGroup struct {
 
 var friendlyHelpGroups = []helpGroup{
 	{"시작하기", []helpEntry{
-		{"auth", "로그인·로그아웃·상태 확인 (login, status, logout, link, repair)"},
+		{"auth", "로그인·로그아웃·상태 확인 (login, status, logout, link, repair, transfer)"},
 		{"whoami", "지금 로그인한 계정"},
 		{"doctor", "설치·연결·로그인 진단"},
 	}},

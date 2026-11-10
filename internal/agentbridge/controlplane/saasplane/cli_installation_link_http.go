@@ -15,7 +15,7 @@ import (
 
 // A dedicated transport prevents caller-controlled endpoints, redirected device
 // credentials, and reflected server bodies from crossing the local IPC boundary.
-func (c *CLIInstallationLinkClient) postConfirmation(ctx context.Context, proof contextcli.CLIInstallationLinkProof, signature string) error {
+func (c *CLIInstallationLinkClient) postConfirmation(ctx context.Context, proof contextcli.CLIInstallationLinkProof, signature, revision string) error {
 	body, err := json.Marshal(struct {
 		SchemaVersion string `json:"schema_version"`
 		Signature     string `json:"signature"`
@@ -51,7 +51,7 @@ func (c *CLIInstallationLinkClient) postConfirmation(ctx context.Context, proof 
 		return cliLinkFailure("LINK_INVALID_RESPONSE")
 	}
 	payload, err := io.ReadAll(io.LimitReader(resp.Body, (16<<10)+1))
-	if err != nil || len(payload) > 16<<10 || !validCLILinkACK(payload, proof) {
+	if err != nil || len(payload) > 16<<10 || !validCLILinkRevisionACK(payload, proof, revision) {
 		return cliLinkFailure("LINK_INVALID_RESPONSE")
 	}
 	return nil

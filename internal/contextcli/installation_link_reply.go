@@ -25,7 +25,7 @@ func DecodeCLIInstallationLinkReply(raw []byte, method string) (CLIInstallationL
 		return CLIInstallationLinkData{}, fail
 	}
 	keys := []string{"resource", "device_id"}
-	if method == IPCMethodCLIInstallationLinkConfirm {
+	if method == IPCMethodCLIInstallationLinkConfirm || method == IPCMethodCLITransferConfirm {
 		keys = append(keys, "intent_id", "confirmed")
 		if reply.Data.IntentID == "" || !reply.Data.Confirmed {
 			return CLIInstallationLinkData{}, fail

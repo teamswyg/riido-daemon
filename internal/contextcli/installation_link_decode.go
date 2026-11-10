@@ -18,8 +18,12 @@ func DecodeCLIInstallationLinkRequest(raw []byte) (CLIInstallationLinkRequest, e
 		if _, err := cliLinkIPCObject(raw, "method", "schema_version"); err != nil {
 			return CLIInstallationLinkRequest{}, fail
 		}
-	case IPCMethodCLIInstallationLinkConfirm:
-		fields, err := cliLinkIPCObject(raw, "method", "schema_version", "proof", "signature")
+	case IPCMethodCLIInstallationLinkConfirm, IPCMethodCLITransferConfirm:
+		keys := []string{"method", "schema_version", "proof", "signature"}
+		if request.Method == IPCMethodCLITransferConfirm {
+			keys = append(keys, "previous_device_id", "previous_link_revision")
+		}
+		fields, err := cliLinkIPCObject(raw, keys...)
 		if err != nil || request.Proof == nil || request.Signature == "" {
 			return CLIInstallationLinkRequest{}, fail
 		}

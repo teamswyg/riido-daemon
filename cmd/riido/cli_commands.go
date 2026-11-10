@@ -53,6 +53,7 @@ const (
 	daemonMethodShutdown                   daemonMethod = "shutdown"
 	daemonMethodToolApproval               daemonMethod = "tool_approval"
 	daemonMethodContextRead                daemonMethod = "context_read"
+	daemonMethodCLITransferConfirm         daemonMethod = "cli_installation_transfer_confirm"
 	daemonMethodCLIInstallationLinkInfo    daemonMethod = "cli_installation_link_info"
 	daemonMethodCLIInstallationLinkConfirm daemonMethod = "cli_installation_link_confirm"
 )
