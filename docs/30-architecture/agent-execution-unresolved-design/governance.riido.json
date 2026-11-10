@@ -15,7 +15,7 @@
     "production smoke response body containing customer/task private content"
   ],
   "open_decisions": [
-    {"id": "Q-EXEC-001", "decision": "private repo auth broker shape", "default": "public repo only, private fail-closed"},
+    {"id": "Q-EXEC-001", "decision": "private repo auth broker shape", "default": "public/private clone with existing host Git credentials; fail closed on clone failure; token broker deferred"},
     {"id": "Q-EXEC-002", "decision": "long-lived provider process default", "default": "one-shot default, resume id requires explicit resume"},
     {"id": "Q-EXEC-003", "decision": "web approval timeout and fallback terminal state", "default": "blocked with approval_timeout"},
     {"id": "Q-EXEC-004", "decision": "WorkspacePlan inline vs linked execution plan id", "default": "assignment snapshot inline minimal plan"},

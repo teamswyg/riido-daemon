@@ -10,11 +10,13 @@ The executable evidence manifest is verified by tools/agentexecutionevidence.
 | --- | --- | --- |
 | `same-task-multiple-assignments` | `./internal/agentbridge/runtimeactor:TestRuntimeActorUsesAssignmentIDAsExecutionKey` | same logical task_id with distinct assignment ids runs as distinct runtime executions |
 | `public-repo-worktree-materialization` | `./internal/agentbridge/supervisor:TestMaterializeAssignmentWorktreeRunsShallowBranchClone` | public GitHub repo and branch are shallow cloned into daemon-selected workdir |
-| `private-repo-fail-closed` | `./internal/agentbridge/supervisor:TestSupervisorBlocksPrivateAssignmentWorktreeBeforeProviderStart` | private or unsupported worktree is blocked before provider process start |
+| `private-repo-fail-closed` | `./internal/agentbridge/supervisor:TestSupervisorBlocksPrivateAssignmentWorktreeBeforeProviderStart` | private clone failure reaches the task result with a specific reason and recovery steps before provider startup, without exposing credential helper output |
 | `async-workspace-preparation` | `./internal/agentbridge/supervisor:TestSupervisorHeartbeatContinuesDuringWorkspaceMaterialization` | slow workspace materialization does not block supervisor heartbeat |
 | `restart-recovery-skips-unresumable-active` | `./internal/agentbridge/controlplane/saasplane:TestPlaneSkipsActiveAssignmentWithoutSessionAfterLocalStateLoss` | stateless poller skips active assignment without provider session id and emits no terminal event |
 | `restart-recovery-provider-session-resume` | `./internal/agentbridge/controlplane/saasplane:TestPlaneClaimsActiveAssignmentAfterLocalStateLoss` | active assignment with provider session id is claimed with resume session |
 | `cancellation-watcher-release` | `./internal/agentbridge/supervisor:TestSupervisorCancelsCancellationWatchAfterTaskCompletion` | terminal task path releases cancellation watcher lifetime |
+| `private-repo-authenticated-clone` | `./internal/agentbridge/supervisor:TestPrivateWorktreeUsesExistingGitCredentialHelper` | real Git clones with a host credential helper and distinguishes missing credentials, rejected credentials and a missing branch with actionable diagnostics |
+| `private-repo-provider-start` | `./internal/agentbridge/supervisor:TestSupervisorStartsPrivateAssignmentAfterGitClone` | private clone success allows provider startup and task completion |
 | `launch-path-freeze` | `./internal/agentbridge/runtimeactor:TestRuntimeActorPassesDetectedExecutableToBuildStartAndSpawn` | detected executable and frozen launch PATH reach provider build and process spawn |
 | `capability-ttl-redetect` | `./internal/agentbridge/runtimeactor:TestRuntimeActorRefreshesUnavailableCapabilityAfterTTL` | unavailable provider capability is re-detected after TTL instead of staying permanently cached |
 | `transient-poll-retry` | `./internal/agentbridge/controlplane/saasplane:TestPlaneRetriesTransientPoll` | poll retries transient server failure |

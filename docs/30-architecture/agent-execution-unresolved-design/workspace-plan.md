@@ -8,13 +8,18 @@ F3 is fixed by passing structured assignment snapshot fields, not prompt text.
 
 | Field | Phase | Rule |
 | --- | --- | --- |
-| `source_kind` | P0 | empty, git_public, git_private_unsupported, git_private_token_ref |
-| `repo_url` | P0 public | public clone URL only |
+| `source_kind` | P0 | public/private GitHub repository preparation; token-ref broker deferred |
+| `repo_url` | current | credential-free GitHub HTTPS clone URL |
 | `repo_full_name` | P0 | stable display/diagnostic id |
 | `branch_name` | P0 | Riido task branch or selected branch |
 | `commit_sha` | P1 | exact checkout when present |
 | `visibility` | P0 | public, private, unknown |
-| `auth_mode` | P0 | none, unsupported, token_ref |
+| `auth_mode` | P0 | existing host Git credentials; token_ref broker deferred |
 | `auth_ref` | P2 private | secret broker reference, never raw token |
 
-P0 clones public repositories only; private repositories fail closed until token-ref broker ownership is defined.
+- Public and private GitHub repositories use the daemon OS user’s existing Git authentication. Git verifies repository access before provider startup.
+- Both visibility values require a credential-free GitHub HTTPS URL; embedded credentials, query strings, fragments, other hosts and protocols remain rejected.
+- The host owns Git authentication, including existing credential helpers. A Riido/GitHub integration login alone does not configure credentials on that PC. Riido does not read or transfer credentials or change Git configuration; daemon-only secrets are removed from the child environment.
+- Git terminal/askpass prompts and Git Credential Manager interaction are disabled. On clone failure the task reports a specific cause and recovery action: missing/rejected Git authentication, unavailable repository or access, missing branch, network or TLS failure, or an explicitly unknown cause. Git stderr is classified locally within a bounded buffer under the C locale; only fixed diagnostic text reaches the task, never raw output or credentials. Repository-not-found does not prove that the repository is absent. Provider startup waits for successful repository preparation, and cancellation remains cancellation.
+- Token-reference brokers and new assignment fields remain deferred. Users configure repository access on the daemon PC before retrying; no server migration or stored-credential rollback is needed.
+- RIID-6086 (2026-11-10): real Git and an authenticated loopback fixture verify clone failure without credentials and success with a host credential helper. Supervisor tests cover provider startup, cancellation, URL validation and credential-output isolation. Reverting this behavior restores the private-repository block.
