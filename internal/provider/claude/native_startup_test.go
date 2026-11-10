@@ -26,11 +26,17 @@ func TestClaudeStartupNativeCLI(t *testing.T) {
 		t.Skip("set RIIDO_TEST_CLAUDE_EXECUTABLE to a native Claude binary")
 	}
 	for _, mode := range []PermissionMode{PermissionModeApproval, PermissionModeBypassDangerous} {
-		t.Run(string(mode), func(t *testing.T) { testClaudeNativeStartup(t, executable, mode) })
+		t.Run(string(mode), func(t *testing.T) { testClaudeNativeStartup(t, executable, mode, "Reply with OK only.", false) })
 	}
+	t.Run("large-input", func(t *testing.T) {
+		testClaudeNativeStartup(t, executable, PermissionModeBypassDangerous, "Reply with OK only.\n"+strings.Repeat("x", 2*1024*1024), false)
+	})
+	t.Run("rejected-launch", func(t *testing.T) {
+		testClaudeNativeStartup(t, executable, PermissionModeBypassDangerous, strings.Repeat("x", 2*1024*1024), true)
+	})
 }
 
-func testClaudeNativeStartup(t *testing.T, executable string, mode PermissionMode) {
+func testClaudeNativeStartup(t *testing.T, executable string, mode PermissionMode, prompt string, invalid bool) {
 	t.Helper()
 	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +71,7 @@ func testClaudeNativeStartup(t *testing.T, executable string, mode PermissionMod
 		t.Fatal(err)
 	}
 	req := agentbridge.StartRequest{
-		Executable: executable, Cwd: dir, Prompt: "Reply with OK only.",
+		Executable: executable, Cwd: dir, Prompt: prompt,
 		Env: map[string]string{
 			"CLAUDE_CONFIG_DIR":                        config,
 			"ANTHROPIC_API_KEY":                        "riido-local-test-only",
@@ -74,6 +80,9 @@ func testClaudeNativeStartup(t *testing.T, executable string, mode PermissionMod
 			"DISABLE_AUTOUPDATER":                      "1",
 			"CLAUDECODE":                               "", "CLAUDE_CODE_OAUTH_TOKEN": "",
 		},
+	}
+	if invalid {
+		req.CustomArgs = []string{"--riido-invalid-startup-fixture"}
 	}
 	spawn, err := BuildStart(req, StartOptions{PermissionMode: mode, BetaFullAccessAllowed: true, MCPConfigPath: mcp})
 	if err != nil {
@@ -99,6 +108,12 @@ func testClaudeNativeStartup(t *testing.T, executable string, mode PermissionMod
 		}
 	}
 	result := <-sess.Result()
+	if invalid {
+		if result.Status != agentbridge.ResultFailed || !strings.Contains(result.Error, "unknown option") || calls.Load() != 0 {
+			t.Fatalf("native startup error was lost: status=%s error=%q calls=%d logs=%v", result.Status, result.Error, calls.Load(), logs)
+		}
+		return
+	}
 	if result.Status != agentbridge.ResultCompleted || strings.TrimSpace(result.Output) != "OK" || calls.Load() == 0 {
 		t.Fatalf("native CLI status=%s output=%q error=%q calls=%d logs=%v", result.Status, result.Output, result.Error, calls.Load(), logs)
 	}
