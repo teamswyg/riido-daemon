@@ -25,6 +25,13 @@ func TestClaudeStartupNativeCLI(t *testing.T) {
 	if executable == "" {
 		t.Skip("set RIIDO_TEST_CLAUDE_EXECUTABLE to a native Claude binary")
 	}
+	for _, mode := range []PermissionMode{PermissionModeApproval, PermissionModeBypassDangerous} {
+		t.Run(string(mode), func(t *testing.T) { testClaudeNativeStartup(t, executable, mode) })
+	}
+}
+
+func testClaudeNativeStartup(t *testing.T, executable string, mode PermissionMode) {
+	t.Helper()
 	var calls atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/v1/messages" {
@@ -50,11 +57,11 @@ func TestClaudeStartupNativeCLI(t *testing.T) {
 	defer server.Close()
 	dir := t.TempDir()
 	config := filepath.Join(dir, "config")
-	if err := os.Mkdir(config, 0700); err != nil {
+	if err := os.Mkdir(config, 0o700); err != nil {
 		t.Fatal(err)
 	}
 	mcp := filepath.Join(dir, "mcp.json")
-	if err := os.WriteFile(mcp, []byte(`{"mcpServers":{}}`), 0600); err != nil {
+	if err := os.WriteFile(mcp, []byte(`{"mcpServers":{}}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	req := agentbridge.StartRequest{
@@ -68,7 +75,7 @@ func TestClaudeStartupNativeCLI(t *testing.T) {
 			"CLAUDECODE":                               "", "CLAUDE_CODE_OAUTH_TOKEN": "",
 		},
 	}
-	spawn, err := BuildStart(req, StartOptions{PermissionMode: PermissionModeApproval, MCPConfigPath: mcp})
+	spawn, err := BuildStart(req, StartOptions{PermissionMode: mode, BetaFullAccessAllowed: true, MCPConfigPath: mcp})
 	if err != nil {
 		t.Fatal(err)
 	}

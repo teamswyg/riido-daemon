@@ -7,8 +7,10 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
 
-const startupDiagnosticTimeout = 250 * time.Millisecond
-const startupDiagnosticBytes = 64 * 1024
+const (
+	startupDiagnosticTimeout = 250 * time.Millisecond
+	startupDiagnosticBytes   = 64 * 1024
+)
 
 // The child can reject startup before accepting stdin. Read its explanation
 // before failure teardown discards the streams; never resume a failed protocol.

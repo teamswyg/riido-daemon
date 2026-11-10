@@ -31,6 +31,8 @@ func (d *startupDiagnostic) collect(adapter agentbridge.Adapter, raws []agentbri
 				if raw.Source == agentbridge.RawSourceStderr {
 					d.stderr = safeStartupDetail(d.stderr + "\n" + event.Text)
 				}
+			default:
+				// Non-diagnostic events cannot resume a failed protocol.
 			}
 		}
 	}

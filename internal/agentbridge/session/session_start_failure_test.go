@@ -18,7 +18,7 @@ func (*startupDiagnosticAdapter) Translate(raw agentbridge.RawEvent) ([]agentbri
 		{Kind: agentbridge.EventError, Err: string(raw.Bytes)},
 		{Kind: agentbridge.EventToolApprovalNeeded},
 		{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultCompleted}},
-	}, []agentbridge.Command{{Kind: agentbridge.CommandCancelProvider}}, nil
+	}, []agentbridge.Command{{Kind: agentbridge.CommandWriteProviderInput, Input: []byte("must not write")}}, nil
 }
 
 func TestStartupDiagnosticIsBoundedAndNeverResumesDriver(t *testing.T) {
@@ -42,6 +42,11 @@ func TestStartupDiagnosticIsBoundedAndNeverResumesDriver(t *testing.T) {
 	}
 	if driver.rawCalls != 0 || approved {
 		t.Fatal("startup diagnostics resumed protocol processing or approved a tool")
+	}
+	select {
+	case <-running.StdinRecv():
+		t.Fatal("startup diagnostics executed a provider input command")
+	default:
 	}
 }
 
