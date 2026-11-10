@@ -27,6 +27,8 @@ func runDaemonWithLifecycle(ctx lifecycle.Context, args []string) error {
 		return nil
 	}
 	switch daemonCommand(args[0]) {
+	case "device-bootstrap":
+		return runDaemonDeviceBootstrap(ctx.Context(), args[1:])
 	case daemonCommandStart:
 		return runDaemonStart(ctx, args[1:])
 	case daemonCommandStatus:
