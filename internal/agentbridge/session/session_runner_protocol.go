@@ -7,9 +7,13 @@ func (r *sessionRunner) startProtocol() {
 		return
 	}
 	if err := r.cfg.ProtocolDriver.OnStart(r.ctx, r.io); err != nil {
+		message := r.startFailureMessage(err)
+		if r.state.Terminal {
+			return
+		}
 		r.applyEvents([]agentbridge.Event{
-			{Kind: agentbridge.EventError, Err: err.Error()},
-			{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultFailed, Error: err.Error()}},
+			{Kind: agentbridge.EventError, Err: message},
+			{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultFailed, Error: message}},
 		}, nil)
 	}
 }

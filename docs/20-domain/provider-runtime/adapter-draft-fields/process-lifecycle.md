@@ -30,6 +30,9 @@ Evidence artifact: `process-lifecycle-evidence`.
 
 - `spawn is a session/process concern, not direct adapter state ownership`
 - `observe path converts process streams through Parser and Adapter.Translate`
+- `Claude parser shutdown preserves stderr provenance for a final line without a newline, so startup diagnostics and ordinary exit handling can still identify it as stderr.`
+- `RIID-6086: a failed initial protocol write collects at most 64 KiB of child diagnostics for at most 250 ms before reporting failure. Native error results and stderr explain the failure instead of being discarded behind a broken-pipe error. Collection never executes provider commands, cannot promote a failed start to success, preserves cancellation/deadlines, and redacts diagnostics through the existing secret catalog.`
+- `Native Windows CI executes the real-process Claude early-stdin-close regression and launches pinned Claude Code 2.1.322 through processexec against a local fixture API. The native CLI smoke test isolates user configuration and requires no production credential; it proves hidden-process stream transport, not user authentication. A successful cross-build alone is not Windows runtime evidence.`
 - `provider observations map to ProviderEventDraft but terminal task transitions stay in terminal result mapping`
 - `stop path uses CommandCancelProvider and lifecycle-aware process kill`
 - `daemon-owned Windows child commands do not allocate visible console windows`
