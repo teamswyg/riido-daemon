@@ -29,6 +29,9 @@ if [ -n "$helper_bundle" ]; then
     echo "optional helper requires a macOS host, Darwin target and absolute bundle path" >&2; exit 1
   fi
 fi
+if [ "$goos" = darwin ] && [[ "${GITHUB_REF:-}" = refs/tags/v* ]] && [ -z "$helper_bundle" ]; then
+  echo "macOS tag release requires a signed CLI auth helper" >&2; exit 1
+fi
 out_dir="$GITHUB_WORKSPACE/dist/${goos}_${goarch}"
 mkdir -p "$out_dir" "$RUNNER_TEMP"
 package_dir="$(mktemp -d "$RUNNER_TEMP/riido-package-${goos}-${goarch}.XXXXXX")"

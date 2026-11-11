@@ -1,6 +1,8 @@
 package scripts_test
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -74,5 +76,48 @@ func TestPublishCDNLatestDryRunSyncWritesEvidenceWithoutInvalidation(t *testing.
 		if !strings.Contains(got, want) {
 			t.Fatalf("evidence missing %s: %s", want, got)
 		}
+	}
+}
+
+func TestPublishCDNRejectsBareMacPackageBeforeAnyUpload(t *testing.T) {
+	dist := newCDNDistFixture(t, "v1.2.3")
+	asset := "riido-daemon_darwin_arm64.tar.gz"
+	source := t.TempDir()
+	for _, name := range []string{"VERSION", "riido"} {
+		content := "daemon"
+		if name == "VERSION" {
+			content = "v1.2.3\n"
+		}
+		if err := os.WriteFile(filepath.Join(source, name), []byte(content), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	archive := filepath.Join(dist, asset)
+	tarCommand := exec.Command("tar", "-czf", archive, "-C", source, "VERSION", "riido")
+	tarCommand.Env = append(os.Environ(), "COPYFILE_DISABLE=1")
+	if out, err := tarCommand.CombinedOutput(); err != nil {
+		t.Fatalf("%v %s", err, out)
+	}
+	sums := string(readFile(t, filepath.Join(dist, "SHA256SUMS")))
+	lines := strings.Split(sums, "\n")
+	for i, line := range lines {
+		if strings.HasSuffix(line, "  "+asset) {
+			lines[i] = fmt.Sprintf("%x  %s", sha256.Sum256(readFile(t, archive)), asset)
+		}
+	}
+	if err := os.WriteFile(filepath.Join(dist, "SHA256SUMS"), []byte(strings.Join(lines, "\n")), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	bin := t.TempDir()
+	log := filepath.Join(t.TempDir(), "aws.log")
+	writeExecutable(t, filepath.Join(bin, "aws"), fakeAWSScript())
+	cmd := exec.Command("bash", "publish-cdn-latest.sh", "sync")
+	cmd.Env = append(os.Environ(), "RIIDO_CDN_DIST_DIR="+dist, "RIIDO_RELEASE_TAG=v1.2.3", "PATH="+bin+string(os.PathListSeparator)+os.Getenv("PATH"), "AWS_LOG="+log)
+	out, err := cmd.CombinedOutput()
+	if err == nil || !strings.Contains(string(out), "release archive requires CLI auth helper") {
+		t.Fatalf("%v %s", err, out)
+	}
+	if _, err := os.Stat(log); !os.IsNotExist(err) {
+		t.Fatal("invalid release touched CDN")
 	}
 }
