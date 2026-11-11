@@ -7,6 +7,7 @@ case "$arch" in arm64|amd64) ;; *) exit 1 ;; esac
 version="${GITHUB_REF_NAME:?}"
 revision="$(git rev-parse HEAD)"
 work="$(mktemp -d "$RUNNER_TEMP/riido-release-input.XXXXXX")"
+work="$(cd "$work" && pwd -P)"
 asset="riido-macos-input_darwin_$arch.tar.gz"
 gh release download "$version" --repo "$GITHUB_REPOSITORY" --dir "$work" --pattern "$asset"
 go run ./tools/clihelperpackage -archive "$work/$asset" -version "$version" -arch "$arch" -require-helper -recheck-signature

@@ -17,6 +17,7 @@ git diff --quiet HEAD -- || { echo 'Commit release source before signing' >&2; e
 revision="$(git rev-parse HEAD)"
 mkdir -p "$out"
 work="$(mktemp -d "${TMPDIR:-/tmp}/riido-signed-input.XXXXXX")"
+work="$(cd "$work" && pwd -P)"
 trap 'rm -rf "$work"' EXIT
 RIIDO_CLI_RELEASE_VERSION="$version" RIIDO_CLI_SOURCE_REVISION="$revision" \
   native/cli-auth-helper/build.sh "$work/helper" "$swift_arch"
