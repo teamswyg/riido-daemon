@@ -14,6 +14,10 @@ mkdir -p "$bundle/Contents/MacOS"
 cp "$helper_dir/Info.plist" "$bundle/Contents/Info.plist"
 # Release metadata must be set before any subsequent signing step.
 /usr/bin/plutil -insert RiidoCLIReleaseVersion -string "$release_version" "$bundle/Contents/Info.plist"
+if [ -n "${RIIDO_CLI_SOURCE_REVISION:-}" ]; then
+  [[ "$RIIDO_CLI_SOURCE_REVISION" =~ ^[a-f0-9]{40}$ ]] || { echo "Invalid source revision" >&2; exit 2; }
+  /usr/bin/plutil -insert RiidoCLISourceRevision -string "$RIIDO_CLI_SOURCE_REVISION" "$bundle/Contents/Info.plist"
+fi
 /usr/bin/plutil -convert xml1 "$bundle/Contents/Info.plist"
 xcrun swiftc -warnings-as-errors -O -whole-module-optimization -target "$architecture-apple-macos13.0" \
   "$helper_dir"/Sources/*.swift -o "$bundle/Contents/MacOS/riido-cli-auth-helper"

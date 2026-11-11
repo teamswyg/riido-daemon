@@ -50,7 +50,7 @@ check_asset() {
       arch="${asset#riido-daemon_darwin_}"
       arch="${arch%.tar.gz}"
       repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-      (cd "$repo_root" && go run ./tools/clihelperpackage -archive "$path" -version "$version" -arch "$arch")
+      (cd "$repo_root" && go run ./tools/clihelperpackage -archive "$path" -version "$version" -arch "$arch" -require-helper)
       ;;
   esac
 }

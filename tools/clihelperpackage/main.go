@@ -17,11 +17,12 @@ func main() {
 	version := flag.String("version", "", "exact release version")
 	arch := flag.String("arch", "", "Go target architecture")
 	recheck := flag.Bool("recheck-signature", false, "unpack and verify helper signature on macOS")
+	requireHelper := flag.Bool("require-helper", false, "reject legacy archives without a helper")
 	flag.Parse()
 	var err error
 	switch {
 	case *archive != "" && *bundle == "" && *output == "":
-		err = verifyArchive(*archive, *version, *arch)
+		err = verifyArchivePolicy(*archive, *version, *arch, *requireHelper)
 		if err == nil && *recheck {
 			err = recheckArchive(context.Background(), *archive, *version, *arch, securecredential.VerifyPackagedHelper)
 		}

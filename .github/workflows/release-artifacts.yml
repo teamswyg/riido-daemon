@@ -13,7 +13,7 @@ permissions: { contents: write }
 jobs:
   build:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    runs-on: ubuntu-latest
+    runs-on: ${{ startsWith(matrix.target, 'darwin/') && 'macos-latest' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +37,19 @@ jobs:
 
       - name: Test
         run: go test ./...
+
+      - name: Verify native helper fixtures
+        if: startsWith(matrix.target, 'darwin/')
+        run: native/cli-auth-helper/test.sh
+
+      - name: Verify signed macOS release input
+        if: startsWith(matrix.target, 'darwin/') && startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          arch="${TARGET#darwin/}"
+          scripts/consume-macos-release-input.sh "${arch%/tar}"
 
       - name: Build package
         shell: bash
@@ -84,6 +97,7 @@ jobs:
       - uses: actions/download-artifact@v8.0.1
         with:
           path: dist
+          pattern: riido-daemon-*
           merge-multiple: true
 
       - name: Generate checksums
