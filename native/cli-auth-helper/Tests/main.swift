@@ -243,6 +243,7 @@ runDeviceBootstrapTests()
 runDeviceTransferTests()
 runBootSessionTests()
 runInstallationRepairTests()
+runInstallationTransferRepairTests()
 runInstallationRegistrationTests()
 runInstallationLockTests()
 if failures > 0 { exit(1) }

@@ -30,6 +30,18 @@ func (d cliLinkDaemon) Confirm(ctx context.Context, proof userauth.DeviceLinkPro
 	return nil
 }
 
+func (d cliLinkDaemon) ConfirmTransfer(ctx context.Context, proof userauth.TransferProof, signature string) error {
+	p := contextcli.CLIInstallationLinkProof(proof.DeviceLinkProof)
+	data, err := d.call(ctx, contextcli.CLIInstallationLinkRequest{Method: contextcli.IPCMethodCLITransferConfirm, SchemaVersion: contextcli.CLIInstallationLinkIPCSchema, Proof: &p, Signature: signature, PreviousDeviceID: proof.PreviousDeviceID, PreviousLinkRevision: proof.PreviousLinkRevision})
+	if err != nil {
+		return err
+	}
+	if !data.Confirmed || data.Resource != p.Resource || data.DeviceID != p.ExpectedDeviceID || data.IntentID != p.IntentID {
+		return &contextcli.CLIInstallationLinkError{Code: "LINK_INVALID_RESPONSE"}
+	}
+	return nil
+}
+
 func (d cliLinkDaemon) call(ctx context.Context, request contextcli.CLIInstallationLinkRequest) (contextcli.CLIInstallationLinkData, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()

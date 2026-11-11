@@ -25,6 +25,8 @@ func writeCLIInstallationLink(ctx context.Context, conn net.Conn, request *conte
 			data = client.Info()
 		case request.Method == contextcli.IPCMethodCLIInstallationLinkConfirm && request.Proof != nil:
 			data, err = client.Confirm(ctx, *request.Proof, request.Signature)
+		case request.Method == contextcli.IPCMethodCLITransferConfirm && request.Proof != nil:
+			data, err = client.ConfirmTransfer(ctx, *request.Proof, request.PreviousDeviceID, request.PreviousLinkRevision, request.Signature)
 		default:
 			err = &contextcli.CLIInstallationLinkError{Code: "LINK_INVALID_REQUEST"}
 		}
