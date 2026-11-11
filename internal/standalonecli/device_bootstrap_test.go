@@ -13,7 +13,7 @@ func TestDesktopBootstrapRetainsCredentialCustodyAndBindsRequests(t *testing.T) 
 	var f *linkFixture
 	identity := userauth.BootstrapIdentity{ClientID: "riido-cli", InstallationID: "installation", OwnerID: "owner"}
 	reqID := strings.Repeat("A", 43)
-	requests := 0
+	requests, restarts := 0, 0
 	mode := "pending"
 	f = newLinkFixture(t, func(w http.ResponseWriter, r *http.Request) {
 		body := linkRequest(t, r)
@@ -26,6 +26,12 @@ func TestDesktopBootstrapRetainsCredentialCustodyAndBindsRequests(t *testing.T) 
 				t.Error("identity request was not empty")
 			}
 			_ = json.NewEncoder(w).Encode(identity)
+		case "/oauth/cli/installation-transfers/device-bootstraps/restart":
+			restarts++
+			if len(body) != 7 || body["expected_expires_at"] != "1800000000" || body["request_id"] != reqID || body["key_fingerprint"] != identity.KeyFingerprint {
+				t.Fatal("incorrect restart binding")
+			}
+			_ = json.NewEncoder(w).Encode(map[string]any{"request_id": reqID, "state": mode, "expires_at": int64(1800000600)})
 		case "/oauth/cli/installation-transfers/device-bootstraps":
 			requests++
 			if len(body) != 6 || body["key_fingerprint"] != identity.KeyFingerprint || body["installation_id"] != identity.InstallationID || body["request_id"] != reqID {
@@ -39,15 +45,15 @@ func TestDesktopBootstrapRetainsCredentialCustodyAndBindsRequests(t *testing.T) 
 	})
 	identity.KeyFingerprint = f.binding.KeyFingerprint
 	identity.Resource = f.binding.Resource
-	got, err := f.service.DesktopBootstrap(t.Context(), nil)
+	got, err := f.service.DesktopBootstrap(t.Context(), "identity", nil)
 	if err != nil || got != identity {
 		t.Fatal("identity mismatch", err)
 	}
 	input := userauth.BootstrapRequest{BootstrapIdentity: identity, DeviceID: "dev_" + strings.Repeat("1", 32), RequestID: reqID, RecoverySecret: strings.Repeat("B", 42) + "A", NextHash: strings.Repeat("c", 64)}
-	for _, state := range []string{"pending", "issued", "prepared", "complete"} {
+	for _, state := range []string{"pending", "issued", "prepared", "complete", "expired", "expired_pending"} {
 		mode = state
 		raw, _ := json.Marshal(input)
-		v, err := f.service.DesktopBootstrap(t.Context(), raw)
+		v, err := f.service.DesktopBootstrap(t.Context(), "request", raw)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -62,11 +68,34 @@ func TestDesktopBootstrapRetainsCredentialCustodyAndBindsRequests(t *testing.T) 
 		_ = json.Unmarshal(raw, &fields)
 		fields[field] = "wrong"
 		raw, _ = json.Marshal(fields)
-		if _, err := f.service.DesktopBootstrap(t.Context(), raw); err == nil {
+		if _, err := f.service.DesktopBootstrap(t.Context(), "request", raw); err == nil {
 			t.Fatal("accepted changed " + field)
 		}
 	}
-	if requests != 4 {
+	raw, _ := json.Marshal(input)
+	var fields map[string]string
+	_ = json.Unmarshal(raw, &fields)
+	fields["expected_expires_at"] = "1800000000"
+	raw, _ = json.Marshal(fields)
+	mode = "pending"
+	if _, err := f.service.DesktopBootstrap(t.Context(), "restart", raw); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := f.service.DesktopBootstrap(t.Context(), "request", raw); err == nil {
+		t.Fatal("normal request accepted restart epoch")
+	}
+	mode = "issued"
+	if _, err := f.service.DesktopBootstrap(t.Context(), "restart", raw); err == nil {
+		t.Fatal("restart accepted a prepare authority")
+	}
+	for _, invalid := range []string{"", "0", "-1", "+1800000000", "01800000000", "9223372036854775808"} {
+		fields["expected_expires_at"] = invalid
+		raw, _ = json.Marshal(fields)
+		if _, err := f.service.DesktopBootstrap(t.Context(), "restart", raw); err == nil {
+			t.Fatal("invalid restart epoch accepted")
+		}
+	}
+	if restarts != 2 || requests != 6 {
 		t.Fatal("invalid binding reached admission")
 	}
 }

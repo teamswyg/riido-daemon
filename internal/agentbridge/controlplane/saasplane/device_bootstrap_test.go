@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/securecredential"
+	"github.com/teamswyg/riido-daemon/internal/userauth"
 )
 
 type bootstrapWitnessFixture struct {
@@ -32,7 +33,7 @@ func (f *bootstrapWitnessFixture) SignDeviceBootstrapProof(_ context.Context, _ 
 }
 
 func TestNativeBootstrapHTTPRequiresBoundWitnessAndRecoversACK(t *testing.T) {
-	for _, scenario := range []string{"prepare", "lost-prepare", "prepared-retry", "activate", "renew-prepared", "same-boot", "wrong-owner", "expired-issued", "redirect", "wrong-completion"} {
+	for _, scenario := range []string{"prepare", "lost-prepare", "prepared-retry", "activate", "renew-prepared", "same-boot", "wrong-owner", "expired-issued", "redirect", "wrong-completion", "fresh-renew-issued", "stale-after-witness"} {
 		t.Run(scenario, func(t *testing.T) {
 			id := strings.Repeat("A", 43)
 			q := bootstrapRequest{resource: "https://monolith.api.riido.io", installation: "fixture-install", key: strings.Repeat("a", 64), device: "dev_" + strings.Repeat("2", 32), secret: "test-native", owner: "fixture-owner", id: id, nextHash: strings.Repeat("3", 64)}
@@ -51,7 +52,7 @@ func TestNativeBootstrapHTTPRequiresBoundWitnessAndRecoversACK(t *testing.T) {
 			if scenario == "same-boot" {
 				witness.boot = oldBoot
 			}
-			if scenario == "expired-issued" || scenario == "renew-prepared" {
+			if scenario == "expired-issued" || scenario == "renew-prepared" || scenario == "fresh-renew-issued" {
 				exp = time.Now().UTC().Add(-time.Minute)
 			}
 			witness.verify = func(p securecredential.DeviceBootstrapProof) {
@@ -78,7 +79,7 @@ func TestNativeBootstrapHTTPRequiresBoundWitnessAndRecoversACK(t *testing.T) {
 						t.Error("injected application data")
 					}
 				case "renew":
-					if scenario != "renew-prepared" || len(body) != 1 {
+					if (scenario != "renew-prepared" && scenario != "fresh-renew-issued") || len(body) != 1 {
 						t.Error("unexpected renewal")
 					}
 					exp = time.Now().UTC().Add(time.Minute)
@@ -124,9 +125,26 @@ func TestNativeBootstrapHTTPRequiresBoundWitnessAndRecoversACK(t *testing.T) {
 			}))
 			defer srv.Close()
 			q.origin = srv.URL
-			out, err := q.advance(t.Context(), action, witness, srv.Client())
+			q.approvalExpiry = time.Now().Add(2 * time.Minute).Unix()
+			q.recovery = strings.Repeat("C", 42) + "A"
+			checks := 0
+			admission := func(_ context.Context, in userauth.BootstrapRequest) (userauth.DeviceLinkApproval, error) {
+				checks++
+				if in.RequestID != q.id || in.DeviceID != q.device || in.OwnerID != q.owner || in.KeyFingerprint != q.key || in.NextHash != q.nextHash || in.RecoverySecret != q.recovery || in.InstallationID != q.installation || in.ClientID != "riido-cli" || in.Resource != q.resource || in.ExpectedExpiresAt != "" {
+					t.Fatal("wrong original admission")
+				}
+				approved := userauth.DeviceLinkApproval{RequestID: q.id, State: "issued", ExpiresAt: q.approvalExpiry}
+				if scenario == "expired-issued" {
+					approved.State = "expired"
+				}
+				if scenario == "stale-after-witness" && checks == 2 {
+					approved.ExpiresAt++
+				}
+				return approved, nil
+			}
+			out, err := q.advance(t.Context(), action, witness, srv.Client(), admission)
 			switch scenario {
-			case "prepare", "prepared-retry":
+			case "prepare", "prepared-retry", "fresh-renew-issued":
 				if err != nil || out != "prepared" {
 					t.Fatal(out, err)
 				}
@@ -138,7 +156,7 @@ func TestNativeBootstrapHTTPRequiresBoundWitnessAndRecoversACK(t *testing.T) {
 				if err == nil {
 					t.Fatal("lost ACK was accepted")
 				}
-				out, err = q.advance(t.Context(), action, witness, srv.Client())
+				out, err = q.advance(t.Context(), action, witness, srv.Client(), admission)
 				if err != nil || out != "prepared" || witness.count != 1 {
 					t.Fatal("did not recover same fence")
 				}
@@ -150,6 +168,15 @@ func TestNativeBootstrapHTTPRequiresBoundWitnessAndRecoversACK(t *testing.T) {
 			if (scenario == "expired-issued" || scenario == "wrong-owner" || scenario == "redirect" || scenario == "prepared-retry") && (len(ops) != 1 || witness.count != 0) {
 				t.Fatal("unexpected side effect", ops)
 			}
+			if scenario == "stale-after-witness" && (checks != 2 || witness.count != 1 || len(ops) != 1) {
+				t.Fatal("stale approval submitted a proof")
+			}
+			if scenario == "fresh-renew-issued" && (checks != 2 || strings.Join(ops, "/") != "status/renew/prepare") {
+				t.Fatal("incorrect ordered renewal", ops)
+			}
+			if (scenario == "prepared-retry" || scenario == "renew-prepared") && checks != 0 {
+				t.Fatal("existing fence unexpectedly required a read grant")
+			}
 			if scenario == "same-boot" && len(ops) != 1 {
 				t.Fatal("sent activation from original boot")
 			}
@@ -160,15 +187,36 @@ func TestNativeBootstrapHTTPRequiresBoundWitnessAndRecoversACK(t *testing.T) {
 func TestNativeBootstrapInputRejectsInjectedEndpointAndProof(t *testing.T) {
 	request := map[string]string{"resource": "https://monolith.api.riido.io", "control_plane_origin": "https://staging.ai-api.riido.io", "installation_id": "i", "key_fingerprint": strings.Repeat("b", 64), "device_id": "dev_" + strings.Repeat("a", 32), "device_secret": "synthetic-native", "owner_principal_id": "human", "transition_id": strings.Repeat("A", 43), "next_secret_hash": strings.Repeat("c", 64)}
 	valid, _ := json.Marshal(request)
-	q, err := parseBootstrapInput(valid)
+	q, err := parseBootstrapInput(valid, "status")
 	if err != nil || q.origin != "https://staging.ai-api.riido.io" {
 		t.Fatal("trusted resource mapping failed")
 	}
+	if _, err := parseBootstrapInput(valid, "prepare"); err == nil {
+		t.Fatal("prepare accepted missing protected admission")
+	}
+	prepare := maps.Clone(request)
+	prepare["recovery_secret"] = strings.Repeat("A", 43)
+	prepare["expected_expires_at"] = "1800000000"
+	encoded, _ := json.Marshal(prepare)
+	if parsed, err := parseBootstrapInput(encoded, "prepare"); err != nil || parsed.approvalExpiry != 1800000000 || parsed.recovery != prepare["recovery_secret"] {
+		t.Fatal("bounded native prepare precondition rejected")
+	}
+	for _, op := range []string{"status", "activate"} {
+		if _, err := parseBootstrapInput(encoded, op); err == nil {
+			t.Fatal("unneeded recovery material accepted")
+		}
+	}
+	prepare["expected_expires_at"] = "+1800000000"
+	encoded, _ = json.Marshal(prepare)
+	if _, err := parseBootstrapInput(encoded, "prepare"); err == nil {
+		t.Fatal("noncanonical epoch accepted")
+	}
+
 	for _, field := range []string{"resource", "control_plane_origin", "device_id", "key_fingerprint", "transition_id", "endpoint", "intent_id", "signature", "boot_digest"} {
 		altered := maps.Clone(request)
 		altered[field] = "https://outside.invalid"
 		data, _ := json.Marshal(altered)
-		if _, err := parseBootstrapInput(data); err == nil {
+		if _, err := parseBootstrapInput(data, "status"); err == nil {
 			t.Fatal("accepted " + field)
 		}
 	}

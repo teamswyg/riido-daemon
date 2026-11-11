@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"io"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf8"
@@ -59,16 +60,31 @@ func bootstrapTimestamp(s string) (time.Time, bool) {
 	return at, err == nil && !at.IsZero() && at.UTC().Format(time.RFC3339Nano) == s
 }
 
-type bootstrapRequest struct{ resource, origin, installation, key, device, secret, owner, id, nextHash string }
+type bootstrapRequest struct {
+	resource, origin, installation, key, device, secret, owner, id, nextHash string
+	recovery                                                                 string
+	approvalExpiry                                                           int64
+}
 
 func (bootstrapRequest) String() string     { return "[redacted native bootstrap]" }
 func (r bootstrapRequest) GoString() string { return r.String() }
-func parseBootstrapInput(raw []byte) (bootstrapRequest, error) {
-	f, e := bootstrapFields(raw, "resource", "control_plane_origin", "installation_id", "key_fingerprint", "device_id", "device_secret", "owner_principal_id", "transition_id", "next_secret_hash")
+func parseBootstrapInput(raw []byte, action string) (bootstrapRequest, error) {
+	keys := []string{"resource", "control_plane_origin", "installation_id", "key_fingerprint", "device_id", "device_secret", "owner_principal_id", "transition_id", "next_secret_hash"}
+	if action == "prepare" {
+		keys = append(keys, "recovery_secret", "expected_expires_at")
+	}
+	f, e := bootstrapFields(raw, keys...)
 	if e != nil {
 		return bootstrapRequest{}, e
 	}
 	q := bootstrapRequest{resource: f["resource"], installation: f["installation_id"], key: f["key_fingerprint"], device: f["device_id"], secret: f["device_secret"], owner: f["owner_principal_id"], id: f["transition_id"], nextHash: f["next_secret_hash"]}
+	if action == "prepare" {
+		q.recovery = f["recovery_secret"]
+		q.approvalExpiry, e = strconv.ParseInt(f["expected_expires_at"], 10, 64)
+		if e != nil || q.approvalExpiry <= 0 || strconv.FormatInt(q.approvalExpiry, 10) != f["expected_expires_at"] || !bootstrapRandomID(q.recovery) {
+			return bootstrapRequest{}, cliLinkFailure("BOOTSTRAP_INVALID")
+		}
+	}
 	switch q.resource {
 	case "https://monolith.riido.io":
 		q.origin = "https://ai-api.riido.io"

@@ -16,6 +16,8 @@ func TestDesktopBootstrapRejectsArgvAndUnboundedInput(t *testing.T) {
 		{[]string{"request", "--json", "not-a-request"}, "{}"},
 		{[]string{"request", "--json"}, ""},
 		{[]string{"request", "--json"}, strings.Repeat("x", 4097)},
+		{[]string{"restart", "--json", "1800000000"}, "{}"},
+		{[]string{"restart", "--json"}, ""},
 		{[]string{"identity"}, ""},
 		{[]string{"other", "--json"}, ""},
 	} {
