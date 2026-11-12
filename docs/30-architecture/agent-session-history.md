@@ -117,3 +117,7 @@ Primary protocol references:
 
 Verification uses synthetic `native_history_test.go` fixtures for both providers,
 the shared selection tests and the session/supervisor delivery regression suites.
+
+A resumed provider session reopens its retained workdir. Pull request checkout
+and task-branch recovery run only during workspace preparation for a fresh
+provider session, so a linked PR cannot replace a resumed session's files.

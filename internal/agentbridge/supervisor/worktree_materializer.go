@@ -76,8 +76,10 @@ func materializeAssignmentWorktree(ctx context.Context, targetDir string, worktr
 
 // A GitHub pull ref can outlive a deleted head branch. Fetch exactly the
 // selected ref into a local worktree; never substitute the default branch.
-var assignmentPullRequestHead = regexp.MustCompile(`^refs/pull/[1-9][0-9]{0,9}/head$`)
-var assignmentPullRequestFallbackSource = regexp.MustCompile(`^pull_request_fallback:([1-9][0-9]{0,9})$`)
+var (
+	assignmentPullRequestHead           = regexp.MustCompile(`^refs/pull/[1-9][0-9]{0,9}/head$`)
+	assignmentPullRequestFallbackSource = regexp.MustCompile(`^pull_request_fallback:([1-9][0-9]{0,9})$`)
+)
 
 func assignmentPullRequestFallback(source string) string {
 	match := assignmentPullRequestFallbackSource.FindStringSubmatch(source)
