@@ -41,16 +41,26 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		return nil, nil, nil
 	}
 	if after, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok {
-		if events, handled := d.handleNotification(codexMethod(after), raw); handled {
+		if events, handled := d.guardOwnedNotification(raw); handled {
 			return events, nil, nil
+		}
+		if events, handled := d.handleNotification(codexMethod(after), raw); handled {
+			return d.ownedResultEvents(raw, events), nil, nil
 		}
 	}
 	events, cmds, err := Translate(raw)
+	events = d.ownedResultEvents(raw, events)
 	d.observeEvents(events)
 	return events, cmds, err
 }
 
 func (d *protocolDriver) handleNotification(method codexMethod, raw agentbridge.RawEvent) ([]agentbridge.Event, bool) {
+	if d.owned.id != "" {
+		if events, handled := d.ownedMessageEvents(method, params(raw)); handled {
+			d.observeEvents(events)
+			return events, true
+		}
+	}
 	if method == codexMethodError {
 		p := params(raw)
 		errText := codexNotificationErrorMessage(p)

@@ -97,7 +97,6 @@ func (d *protocolDriver) sharedTurnEvents(turn map[string]any) []agentbridge.Eve
 		d.turnStarted = true
 		events = append(events, agentbridge.Event{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning})
 	}
-	var final, all []string
 	items, _ := turn["items"].([]any)
 	for _, value := range items {
 		item, _ := value.(map[string]any)
@@ -110,20 +109,17 @@ func (d *protocolDriver) sharedTurnEvents(turn map[string]any) []agentbridge.Eve
 		}
 		previous := d.shared.output[id]
 		if strings.HasPrefix(text, previous) && len(text) > len(previous) {
-			events = append(events, agentbridge.Event{Kind: agentbridge.EventTextDelta, Text: strings.TrimPrefix(text, previous)})
+			kind := agentbridge.EventProgress
+			if stringField(item, "phase") == "final_answer" {
+				kind = agentbridge.EventTextDelta
+			}
+			events = append(events, agentbridge.Event{Kind: kind, Text: strings.TrimPrefix(text, previous)})
 		}
 		d.shared.output[id] = text
-		all = append(all, text)
-		if stringField(item, "phase") == "final_answer" {
-			final = append(final, text)
-		}
 	}
 	if sharedTurnFinished(turn) {
 		d.shared.done = true
-		if len(final) == 0 {
-			final = all
-		}
-		events = append(events, codexTurnCompletedEvent(map[string]any{"turn": turn, "output": strings.Join(final, "\n\n")})...)
+		events = append(events, codexTurnCompletedEvent(map[string]any{"turn": turn, "output": finalAnswer(items)})...)
 	}
 	return events
 }
