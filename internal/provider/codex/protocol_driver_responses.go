@@ -31,6 +31,17 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 		return d.handleThreadReadyResponse(ctx, raw, io)
 	case codexMethodTurnStart:
 		events, commands, err := d.handleTurnStartResponse()
+		d.owned.id = stringField(mapField(mapField(raw.Payload, "result"), "turn"), "id")
+		queued := d.owned.early
+		d.owned.early = nil
+		d.owned.earlyBytes = 0
+		for _, notification := range queued {
+			next, _, replayErr := d.OnRaw(ctx, notification, io)
+			if replayErr != nil {
+				return nil, nil, replayErr
+			}
+			events = append(events, next...)
+		}
 		if title := codexTaskTitle(d.req); title != "" {
 			if _, nameErr := d.sendRequest(ctx, io, codexMethodThreadNameSet, map[string]any{"threadId": d.threadID, "name": title}); nameErr != nil {
 				events = append(events, agentbridge.Event{Kind: agentbridge.EventWarning, Err: "Codex thread name could not be sent"})
