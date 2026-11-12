@@ -40,7 +40,7 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
 		return true
 	case <-r.idleC:
-		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "semantic idle timeout"})
+		r.onSemanticIdle()
 		return true
 	}
 }

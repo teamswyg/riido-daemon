@@ -24,3 +24,26 @@ func (r *sessionRunner) finalResult() agentbridge.Result {
 	}
 	return finalResult
 }
+
+// The single Result channel owns completion. Events mirrors the result for
+// observers when space is available, without holding the completed run open.
+func (r *sessionRunner) commitResult(ev agentbridge.Event) {
+	if r.state.Terminal {
+		return
+	}
+	if r.ctx.Err() != nil {
+		r.interruptDelivery(r.ctx, contextTerminationEvent(r.ctx))
+		return
+	}
+	select {
+	case <-r.hardC:
+		r.interruptDelivery(r.ctx, agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
+		return
+	default:
+	}
+	if ev.At.IsZero() {
+		ev.At = r.cfg.Now()
+	}
+	r.state, _ = agentbridge.Reduce(r.state, ev, nil)
+	r.mirrorEvent(ev)
+}

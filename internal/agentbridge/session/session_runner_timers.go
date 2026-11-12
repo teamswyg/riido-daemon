@@ -15,7 +15,7 @@ func (r *sessionRunner) applySemanticActivity(ev agentbridge.Event) bool {
 	case <-r.hardC:
 		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
 	case <-r.idleC:
-		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "semantic idle timeout"})
+		r.onSemanticIdle()
 	default:
 		if ev.At.IsZero() {
 			ev.At = r.cfg.Now()

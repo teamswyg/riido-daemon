@@ -41,6 +41,7 @@ type protocolDriver struct {
 	initialized        bool
 	threadID           string
 	owned              ownedTurn
+	idleRecoveryID     int64
 	turnStarted        bool
 	sawAssistantOutput bool
 	lastRuntimeError   string

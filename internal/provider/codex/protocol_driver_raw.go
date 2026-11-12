@@ -11,6 +11,16 @@ import (
 // machine (for "response") or the existing Translate (for notifications
 // and server_requests).
 func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
+	events, commands, err := d.onRaw(ctx, raw, io)
+	for i := range events {
+		if events[i].Kind == agentbridge.EventLog {
+			events[i].LocalOnly = true
+		}
+	}
+	return events, commands, err
+}
+
+func (d *protocolDriver) onRaw(ctx context.Context, raw agentbridge.RawEvent, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
 	if rawFrameType(raw.Type) == rawFrameResponse {
 		return d.handleResponse(ctx, raw, io)
 	}

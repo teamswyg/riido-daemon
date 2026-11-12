@@ -36,7 +36,7 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 		d.owned.early = nil
 		d.owned.earlyBytes = 0
 		for _, notification := range queued {
-			next, _, replayErr := d.OnRaw(ctx, notification, io)
+			next, _, replayErr := d.onRaw(ctx, notification, io)
 			if replayErr != nil {
 				return nil, nil, replayErr
 			}

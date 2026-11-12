@@ -54,3 +54,11 @@ type ProtocolPoller interface {
 type ProtocolTerminationDriver interface {
 	OnTerminate(context.Context, ProtocolIO) (bool, error)
 }
+
+// ProtocolIdleRecovery optionally checks the exact provider turn before the
+// semantic idle watchdog terminates it. The session serializes this read with
+// other driver calls and bounds the time spent waiting for a response.
+type ProtocolIdleRecovery interface {
+	BeginIdleRecovery(context.Context, ProtocolIO) (bool, error)
+	OnIdleRecoveryRaw(RawEvent) (Result, bool)
+}
