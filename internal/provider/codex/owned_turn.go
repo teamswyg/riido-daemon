@@ -15,6 +15,7 @@ type ownedTurn struct {
 	messages   map[string]map[string]any
 	order      []string
 	streamed   map[string]string
+	waits      map[string]map[string]string // wait item ID -> target thread ID -> observed turn ID
 }
 
 func notificationTurnID(p map[string]any) string {
@@ -37,6 +38,13 @@ func (d *protocolDriver) guardOwnedNotification(raw agentbridge.RawEvent) ([]age
 		return nil, true
 	}
 	if d.threadID != "" && thread != "" && thread != d.threadID {
+		if !d.owned.done && d.owned.observeWaitTarget(method, thread, turn, p) {
+			events := []agentbridge.Event{{Kind: agentbridge.EventSemanticActivity}}
+			if method == codexMethodTurnCompleted || method == codexMethodTurnCompleteSlash {
+				events = append(events, d.ownedDecision(raw, "observed", "waited_target_terminal")...)
+			}
+			return events, true
+		}
 		return d.ownedDecision(raw, "ignored", "thread_mismatch"), true
 	}
 	if d.owned.id == "" {
@@ -64,6 +72,11 @@ func (d *protocolDriver) guardOwnedNotification(raw agentbridge.RawEvent) ([]age
 	}
 	if d.owned.done {
 		return nil, true
+	}
+	if method == codexMethodItemStarted || method == codexMethodItemCompleted {
+		if events := d.trackOwnedWait(method, mapField(p, "item")); len(events) > 0 {
+			return events, true
+		}
 	}
 	return nil, false
 }

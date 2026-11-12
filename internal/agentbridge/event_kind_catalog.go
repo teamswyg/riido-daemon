@@ -14,6 +14,7 @@ func EventKinds() []EventKind {
 		EventToolApprovalNeeded,
 		EventUsageDelta,
 		EventProgress,
+		EventSemanticActivity,
 		EventLog,
 		EventWarning,
 		EventError,

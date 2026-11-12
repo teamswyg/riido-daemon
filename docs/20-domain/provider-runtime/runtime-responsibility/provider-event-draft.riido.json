@@ -24,6 +24,7 @@
   "skipped_events": [
     {"event_kind": "tool_call_delta", "event_kind_const": "EventToolCallDelta", "reason": "delta payload is not yet canonicalized by providerEventDraft"},
     {"event_kind": "progress", "event_kind_const": "EventProgress", "reason": "progress is local telemetry, not provider raw canonical event mapping"},
+    {"event_kind": "semantic_activity", "event_kind_const": "EventSemanticActivity", "reason": "the session consumes this idle-watchdog signal before publishing events"},
     {"event_kind": "result", "event_kind_const": "EventResult", "reason": "terminal provider result is handled by run controller transition logic"},
     {"event_kind": "cancellation_requested", "event_kind_const": "EventCancellation", "reason": "cancellation is orchestration state, not provider Cat C output"},
     {"event_kind": "timeout", "event_kind_const": "EventTimeout", "reason": "timeout is session actor transition input"},

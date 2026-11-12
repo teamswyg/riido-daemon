@@ -39,6 +39,9 @@ func (r *sessionRunner) applyExpandedEvent(ev agentbridge.Event) bool {
 	if !accepted {
 		return false
 	}
+	if ev.Kind == agentbridge.EventSemanticActivity {
+		return r.applySemanticActivity(ev)
+	}
 	approver := r.cfg.AutoApprove
 	if ev.Kind == agentbridge.EventToolApprovalNeeded && approver != nil {
 		approved := approver(ev.Tool)

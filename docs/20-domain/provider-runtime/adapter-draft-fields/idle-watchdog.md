@@ -20,6 +20,7 @@ Idle watchdog resets only on events where the provider advances task meaning.
 - `tool_approval_needed`
 - `usage_delta`
 - `progress`
+- `semantic_activity`
 
 ## Non-Semantic Activity
 

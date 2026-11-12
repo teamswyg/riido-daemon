@@ -26,6 +26,9 @@ const (
 	EventProcessExit        EventKind = "process_exit"
 )
 
+// EventSemanticActivity updates the session watchdog without publishing an event.
+const EventSemanticActivity EventKind = "semantic_activity"
+
 // IsSemanticActivity reports whether an event resets the idle watchdog.
 // Stderr/log spam and process-level signals do not count; only events that
 // show provider task progress reset it.
@@ -37,7 +40,7 @@ func (k EventKind) IsSemanticActivity() bool {
 		EventToolCallCompleted, EventToolCallFailed,
 		EventToolApprovalNeeded,
 		EventUsageDelta,
-		EventProgress:
+		EventProgress, EventSemanticActivity:
 		return true
 	default:
 		return false
