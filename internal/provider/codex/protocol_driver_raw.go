@@ -18,6 +18,10 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		id, _ := rpcID(raw.Payload)
 		if pr, known := d.pending[id]; known {
 			delete(d.pending, id)
+			if pr.method == codexMethodQueueDelete && d.shared != nil && d.shared.startError != "" {
+				d.shared.done = true
+				return d.failedEvents(d.shared.startError + ". 대기 중인 요청을 정리하지 못했습니다. 재요청 전에 Codex 앱의 대기열을 확인해주세요"), nil, nil
+			}
 			if pr.method == codexMethodThreadResume && d.req.ResumeSessionID != "" && codexRPCErrorMessage(raw.Payload) == "thread "+d.req.ResumeSessionID+" already has an active writer" {
 				return d.attachSharedWriter(ctx, io)
 			}

@@ -69,7 +69,7 @@ func (d *protocolDriver) finishSharedHistory(ctx context.Context, turns []any, i
 		d.shared.submitted = true
 		return append(events, d.sharedTurnEvents(matched)...), nil, nil
 	}
-	if !d.shared.submitted && !unsettled && !d.shared.stopping {
+	if !d.shared.startRequested && !unsettled && !d.shared.stopping {
 		d.shared.queueCursors = map[string]bool{}
 		return events, nil, d.requestSharedQueue(ctx, "", io)
 	}

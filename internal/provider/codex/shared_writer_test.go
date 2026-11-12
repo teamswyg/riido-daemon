@@ -1,6 +1,7 @@
 package codex
 
 import (
+	"context"
 	"encoding/json"
 	"strings"
 	"testing"
@@ -13,6 +14,7 @@ func sharedFixture(t *testing.T) (*protocolDriver, *recordingIO) {
 	t.Helper()
 	driver, _ := NewProtocolDriver(agentbridge.StartRequest{TaskID: "run", ResumeSessionID: "native", Cwd: "/work", Prompt: "continue"})
 	d := driver.(*protocolDriver)
+	d.startSharedOwner = func(context.Context, agentbridge.StartRequest, string, string) error { return nil }
 	io := newRecordingIO()
 	_ = d.OnStart(t.Context(), io)
 	_ = io.next(t, time.Second)
@@ -169,6 +171,7 @@ func TestSharedWriterImportsExternalHistoryOnceAndPreservesMessageIDs(t *testing
 	}
 	assertSharedMethod(t, io, "thread/queue/list")
 	d.shared.submitted = true
+	d.shared.startRequested = true
 	events, _, err = d.finishSharedHistory(t.Context(), []any{owned, external}, io)
 	if err != nil || len(events) != 0 {
 		t.Fatal("history repeated", events, err)

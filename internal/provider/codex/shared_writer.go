@@ -3,6 +3,7 @@ package codex
 import (
 	"context"
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"path/filepath"
 	"time"
@@ -19,15 +20,17 @@ const (
 )
 
 type sharedWriter struct {
-	clientID     string
-	submissionID string
-	submitted    bool
-	done         bool
-	stopping     bool
-	turnID       string
-	queueCursors map[string]bool
-	imported     map[string]bool
-	output       map[string]string
+	clientID       string
+	submissionID   string
+	submitted      bool
+	startRequested bool
+	startError     string
+	done           bool
+	stopping       bool
+	turnID         string
+	queueCursors   map[string]bool
+	imported       map[string]bool
+	output         map[string]string
 }
 
 func (d *protocolDriver) attachSharedWriter(ctx context.Context, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
@@ -78,9 +81,16 @@ func (d *protocolDriver) handleSharedResponse(ctx context.Context, method codexM
 		if s.stopping {
 			return nil, nil, d.deleteSharedQueue(ctx, io)
 		}
-		return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: "Codex 앱의 같은 대화에서 요청을 이어갑니다. 앱의 실행 설정을 사용하며, 실행 중 중지는 Codex 앱에서 할 수 있습니다."}}, nil, nil
+		return d.startSharedSubmission(ctx, io)
 	case codexMethodQueueDelete:
 		s.done = true
+		if s.startError != "" {
+			message := s.startError
+			if deleted, _ := result["deleted"].(bool); !deleted {
+				message += ". 요청이 이미 실행되었을 수 있으니 재요청 전에 Codex 앱의 결과와 대기열을 확인해주세요"
+			}
+			return d.failedEvents(message), nil, nil
+		}
 		note := ""
 		if deleted, _ := result["deleted"].(bool); !deleted {
 			note = sharedStopNotice
@@ -113,7 +123,7 @@ func (d *protocolDriver) handleSharedQueueList(ctx context.Context, result map[s
 				return d.failedEvents("codex: queued request identity missing"), nil, nil
 			}
 			d.shared.submitted = true
-			return nil, nil, nil
+			return d.startSharedSubmission(ctx, io)
 		}
 	}
 	if cursor := stringField(result, "nextCursor"); cursor != "" {
@@ -123,6 +133,12 @@ func (d *protocolDriver) handleSharedQueueList(ctx context.Context, result map[s
 		d.shared.queueCursors[cursor] = true
 		return nil, nil, d.requestSharedQueue(ctx, cursor, io)
 	}
+	if d.shared.submitted {
+		// Our acknowledged entry has been consumed or removed. Reconcile by
+		// client ID in history; never add it again or start somebody else's entry.
+		d.shared.startRequested = true
+		return nil, nil, nil
+	}
 	// Native insertion is not idempotent. Submit once after inspecting history
 	// and pending entries; never retry a write whose acknowledgement is uncertain.
 	_, err := d.sendRequest(ctx, io, codexMethodQueueAdd, map[string]any{
@@ -130,6 +146,30 @@ func (d *protocolDriver) handleSharedQueueList(ctx context.Context, result map[s
 		"input": []map[string]any{{"type": "text", "text": d.sharedPrompt()}},
 	})
 	return nil, nil, err
+}
+
+func (d *protocolDriver) startSharedSubmission(ctx context.Context, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
+	s := d.shared
+	if s.startRequested || s.stopping {
+		return nil, nil, nil
+	}
+	err := d.startSharedOwner(ctx, d.req, d.threadID, s.submissionID)
+	if errors.Is(err, errSharedOwnerBusy) {
+		// The owner can become busy between the history read and queue/start.
+		// Recheck idle history and the same pending entry before trying again.
+		return nil, nil, nil
+	}
+	if err != nil && !errors.Is(err, errSharedQueueConsumed) {
+		s.startError, s.stopping = sharedOwnerUnavailable, true
+		if err := d.deleteSharedQueue(ctx, io); err != nil {
+			s.done = true
+			//nolint:nilerr // The terminal result carries the actionable failure instead of a raw pipe error.
+			return d.failedEvents(s.startError + ". 대기 중인 요청을 정리하지 못했습니다. 재요청 전에 Codex 앱의 대기열을 확인해주세요"), nil, nil
+		}
+		return nil, nil, nil
+	}
+	s.startRequested = true
+	return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: "Codex 앱의 같은 대화에서 요청을 이어갑니다. 앱의 실행 설정을 사용하며, 실행 중 중지는 Codex 앱에서 할 수 있습니다."}}, nil, nil
 }
 
 func (d *protocolDriver) sharedPrompt() string {
