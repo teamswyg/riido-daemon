@@ -46,6 +46,7 @@ type protocolDriver struct {
 	historyTurns       []any
 	historyCursors     map[string]bool
 	shared             *sharedWriter
+	startSharedOwner   func(context.Context, agentbridge.StartRequest, string, string) error
 }
 
 type pendingRequest struct {
@@ -56,8 +57,9 @@ type pendingRequest struct {
 // Codex app-server JSON-RPC handshake.
 func NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	return &protocolDriver{
-		req:     req,
-		pending: map[int64]pendingRequest{},
+		req:              req,
+		pending:          map[int64]pendingRequest{},
+		startSharedOwner: startSharedOwner,
 	}, nil
 }
 
