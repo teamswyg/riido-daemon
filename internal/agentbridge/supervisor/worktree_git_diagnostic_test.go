@@ -41,7 +41,7 @@ func TestPrivateWorktreeReportsCauseAndRecovery(t *testing.T) {
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			t.Setenv("RIIDO_TEST_GIT_STDERR", tt.stderr+"\nfixture-secret-token")
-			err := materializeAssignmentWorktree(t.Context(), t.TempDir(), privateWorktreeRequest().Worktree)
+			err := materializeAssignmentWorktree(t.Context(), t.TempDir(), privateWorktreeRequest().Worktree, nil)
 			if !errors.Is(err, errAssignmentWorktreeBlocked) {
 				t.Fatalf("expected repository preparation failure, got %v", err)
 			}

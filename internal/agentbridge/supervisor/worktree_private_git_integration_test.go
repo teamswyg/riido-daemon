@@ -39,6 +39,10 @@ func TestPrivateWorktreeUsesExistingGitCredentialHelper(t *testing.T) {
 	privateFixtureGit(t, git, "-C", seed, "add", "README.md")
 	privateFixtureGit(t, git, "-C", seed, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false", "commit", "-m", "fixture")
 	privateFixtureGit(t, git, "clone", "--bare", seed, filepath.Join(root, "fixture.git"))
+	expectedHead := privateFixtureGit(t, git, "-C", seed, "rev-parse", "HEAD")
+	privateFixtureGit(t, git, "-C", filepath.Join(root, "fixture.git"), "update-ref", "refs/pull/1396/head", "HEAD")
+	privateFixtureGit(t, git, "-C", seed, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "-c", "commit.gpgsign=false", "commit", "--allow-empty", "-m", "new default head")
+	privateFixtureGit(t, git, "-C", seed, "push", filepath.Join(root, "fixture.git"), "main")
 	backend := &cgi.Handler{Path: git, Args: []string{"http-backend"}, Env: []string{"GIT_PROJECT_ROOT=" + root, "GIT_HTTP_EXPORT_ALL=1"}}
 	var authenticated atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -56,7 +60,7 @@ func TestPrivateWorktreeUsesExistingGitCredentialHelper(t *testing.T) {
 	worktree := &assignmentcontract.AssignmentWorktree{RepositoryURL: "https://github.com/fixture/private-repo", BranchName: "main", IsPrivate: true}
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	t.Cleanup(cancel)
-	err = materializeAssignmentWorktree(ctx, filepath.Join(root, "denied"), worktree)
+	err = materializeAssignmentWorktree(ctx, filepath.Join(root, "denied"), worktree, nil)
 	if !errors.Is(err, errAssignmentWorktreeBlocked) {
 		t.Fatalf("missing credentials must block the private clone, got %v", err)
 	}
@@ -64,7 +68,7 @@ func TestPrivateWorktreeUsesExistingGitCredentialHelper(t *testing.T) {
 		t.Fatalf("missing credentials must explain the cause and recovery: %v", err)
 	}
 	privateFixtureGit(t, git, "config", "--file", config, "credential.helper", `!f() { printf 'username=fixture\npassword=fixture-wrong-password\n'; }; f`)
-	err = materializeAssignmentWorktree(ctx, filepath.Join(root, "rejected"), worktree)
+	err = materializeAssignmentWorktree(ctx, filepath.Join(root, "rejected"), worktree, nil)
 	if !errors.Is(err, errAssignmentWorktreeBlocked) || !strings.Contains(err.Error(), "Git authentication was rejected") || strings.Contains(err.Error(), "fixture-wrong-password") {
 		t.Fatalf("rejected credentials must explain authentication recovery without exposing credentials: %v", err)
 	}
@@ -72,7 +76,7 @@ func TestPrivateWorktreeUsesExistingGitCredentialHelper(t *testing.T) {
 	// never read by the daemon. Git invokes it through its normal credential API.
 	privateFixtureGit(t, git, "config", "--file", config, "credential.helper", `!f() { printf 'username=fixture\npassword=fixture-password\n'; }; f`)
 	target := filepath.Join(root, "allowed")
-	if err := materializeAssignmentWorktree(ctx, target, worktree); err != nil {
+	if err := materializeAssignmentWorktree(ctx, target, worktree, nil); err != nil {
 		t.Fatalf("authenticated private clone: %v", err)
 	}
 	content, err := os.ReadFile(filepath.Join(target, "README.md"))
@@ -84,9 +88,18 @@ func TestPrivateWorktreeUsesExistingGitCredentialHelper(t *testing.T) {
 		t.Fatal("credential persisted in clone origin")
 	}
 	worktree.BranchName = "missing-branch"
-	err = materializeAssignmentWorktree(ctx, filepath.Join(root, "missing-branch"), worktree)
+	err = materializeAssignmentWorktree(ctx, filepath.Join(root, "missing-branch"), worktree, nil)
 	if !errors.Is(err, errAssignmentWorktreeBlocked) || !strings.Contains(err.Error(), "selected branch was not found") {
 		t.Fatalf("missing branch must not be reported as an authentication failure: %v", err)
+	}
+	worktree.Source = "pull_request_fallback:1396"
+	recoveredDir := filepath.Join(root, "recovered")
+	var recoveredPull string
+	if err := materializeAssignmentWorktree(ctx, recoveredDir, worktree, func(number string) { recoveredPull = number }); err != nil {
+		t.Fatalf("PR fallback did not recover the missing branch: %v", err)
+	}
+	if recoveredPull != "1396" || privateFixtureGit(t, git, "-C", recoveredDir, "rev-parse", "HEAD") != expectedHead {
+		t.Fatal("PR fallback checked out a different commit")
 	}
 }
 
