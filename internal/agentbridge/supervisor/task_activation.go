@@ -42,7 +42,8 @@ func resultForActivationError(err error) agentbridge.Result {
 		status = agentbridge.ResultBlocked
 	}
 	code, action := "provider_failed", "check_provider"
-	if readyErr != nil {
+	var reportErr *recoveryReportFailure
+	if readyErr != nil || errors.As(err, &reportErr) {
 		code, action = "unknown", "review_result"
 	}
 	if errors.Is(err, errWorkspacePreparation) {
