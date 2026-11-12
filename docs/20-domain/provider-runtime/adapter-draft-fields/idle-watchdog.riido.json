@@ -16,7 +16,8 @@
     "tool_call_failed",
     "tool_approval_needed",
     "usage_delta",
-    "progress"
+    "progress",
+    "semantic_activity"
   ],
   "non_semantic_activity": [
     "session_identified",

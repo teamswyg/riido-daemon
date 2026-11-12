@@ -15,7 +15,7 @@ func validManifest(doc string) Manifest {
 		GeneratedDoc:        doc,
 		Workflow:            "workflow.yml",
 		EvidenceArtifact:    "artifact",
-		SemanticActivity:    []string{"lifecycle", "text_delta", "thinking_delta", "tool_call_started", "tool_call_delta", "tool_call_completed", "tool_call_failed", "tool_approval_needed", "usage_delta", "progress"},
+		SemanticActivity:    []string{"lifecycle", "text_delta", "thinking_delta", "tool_call_started", "tool_call_delta", "tool_call_completed", "tool_call_failed", "tool_approval_needed", "usage_delta", "progress", "semantic_activity"},
 		NonSemanticActivity: []string{"session_identified", "log", "warning", "error", "result", "cancellation_requested", "timeout", "process_exit"},
 		Assertions:          []string{"classification matches runtime"},
 	}

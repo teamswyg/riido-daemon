@@ -117,6 +117,7 @@ func (d *protocolDriver) ownedResultEvents(raw agentbridge.RawEvent, events []ag
 		}
 		events[i].Result.Output = finalAnswer(items)
 		d.owned.done = true
+		d.owned.waits = nil
 		d.turnStarted = false
 		return append(d.ownedDecision(raw, "terminal", string(events[i].Result.Status)), events...)
 	}

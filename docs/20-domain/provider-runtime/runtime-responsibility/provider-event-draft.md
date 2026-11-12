@@ -31,6 +31,7 @@ ProviderEventDraft is the only domain output an adapter may produce.
 | --- | --- |
 | `tool_call_delta` | delta payload is not yet canonicalized by providerEventDraft |
 | `progress` | progress is local telemetry, not provider raw canonical event mapping |
+| `semantic_activity` | the session consumes this idle-watchdog signal before publishing events |
 | `result` | terminal provider result is handled by run controller transition logic |
 | `cancellation_requested` | cancellation is orchestration state, not provider Cat C output |
 | `timeout` | timeout is session actor transition input |

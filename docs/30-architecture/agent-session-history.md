@@ -51,6 +51,10 @@ OpenClaw resume, UI navigation, provider login-account identity isolation, or
 provider automatic recovery. Capability fingerprints describe the executable
 and execution policy, not the provider login account.
 
+A Codex wait correlated to the owned turn can receive idle-watchdog activity
+from its named delegated threads. The session consumes the activity before
+publication. The owned turn remains the source of assistant output and completion.
+
 ## Evidence
 
 Hermetic tests cover two follow-ups across adapter reconstruction, retained
