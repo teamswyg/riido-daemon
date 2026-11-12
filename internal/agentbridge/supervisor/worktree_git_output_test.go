@@ -28,7 +28,7 @@ func TestPrivateWorktreeCancellationRemainsCancellation(t *testing.T) {
 	t.Cleanup(func() { runAssignmentGitClone = original })
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	err := materializeAssignmentWorktree(ctx, t.TempDir(), privateWorktreeRequest().Worktree)
+	err := materializeAssignmentWorktree(ctx, t.TempDir(), privateWorktreeRequest().Worktree, nil)
 	if !errors.Is(err, context.Canceled) || errors.Is(err, errAssignmentWorktreeBlocked) {
 		t.Fatalf("canceled private preparation = %v", err)
 	}

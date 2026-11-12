@@ -5,8 +5,9 @@ import "strings"
 // Only fixed text is retained in this error. Git/helper output may contain
 // credentials and must never be wrapped, logged, or sent to the control plane.
 type assignmentGitCloneFailure struct {
-	reason string
-	action string
+	branchMissing bool
+	reason        string
+	action        string
 }
 
 func (e *assignmentGitCloneFailure) Error() string {
@@ -21,8 +22,9 @@ func classifyAssignmentGitCloneFailure(stderr []byte) *assignmentGitCloneFailure
 	case strings.Contains(output, "remote branch") && strings.Contains(output, "not found"),
 		strings.Contains(output, "couldn't find remote ref"):
 		return &assignmentGitCloneFailure{
-			reason: "The selected branch was not found in the remote repository.",
-			action: "Select an existing branch in the task's repository settings, or push the intended branch to GitHub, then retry the task.",
+			branchMissing: true,
+			reason:        "The selected branch was not found in the remote repository.",
+			action:        "Select an existing branch in the task's repository settings, or push the intended branch to GitHub, then retry the task.",
 		}
 	case containsGitDiagnostic(output, "ssl certificate problem", "server certificate verification failed", "certificate verify failed", "unable to get local issuer certificate", "ssl peer certificate"):
 		return &assignmentGitCloneFailure{

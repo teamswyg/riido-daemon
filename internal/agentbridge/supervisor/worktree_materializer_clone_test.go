@@ -25,6 +25,7 @@ func TestMaterializeAssignmentWorktreeRunsShallowBranchClone(t *testing.T) {
 		context.Background(),
 		"/tmp/riido-workdir",
 		publicBranchWorktree(),
+		nil,
 	)
 	if err != nil {
 		if errors.Is(err, context.Canceled) || strings.Contains(err.Error(), "git executable not found") {
