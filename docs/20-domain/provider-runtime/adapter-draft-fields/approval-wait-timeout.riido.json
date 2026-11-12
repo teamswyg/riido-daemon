@@ -24,7 +24,8 @@
     {"name": "semantic idle timer is configured by session clock", "file": "internal/agentbridge/session/session_runner_timers.go", "contains": "time.NewTimer(r.cfg.SemanticIdle)"},
     {"name": "semantic activity resets idle timer", "file": "internal/agentbridge/session/session_runner_emit.go", "contains": "ev.Kind.IsSemanticActivity()"},
     {"name": "main run loop emits hard timeout", "file": "internal/agentbridge/session/session_runner_loop.go", "contains": "Err: \"hard timeout\""},
-    {"name": "main run loop emits semantic idle timeout", "file": "internal/agentbridge/session/session_runner_loop.go", "contains": "Err: \"semantic idle timeout\""},
+    {"name": "main run loop delegates semantic idle expiry", "file": "internal/agentbridge/session/session_runner_loop.go", "contains": "r.onSemanticIdle()"},
+    {"name": "semantic idle expiry emits timeout after bounded recovery", "file": "internal/agentbridge/session/session_idle_recovery.go", "contains": "Err: \"semantic idle timeout\""},
     {"name": "approval resolver remains bounded by hard timeout", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "case <-r.hardC:"},
     {"name": "approval resolver remains bounded by semantic idle timeout", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "case <-r.idleC:"},
     {"name": "reducer turns timeout into ResultTimeout", "file": "internal/agentbridge/reducer_result_events.go", "contains": "ResultTimeout"},
@@ -33,7 +34,7 @@
   "assertions": [
     "provider-native approval requests map to ApprovalRequested",
     "tool_approval_needed is semantic activity and resets SemanticIdle",
-    "approval wait is bounded by both SemanticIdle and HardTimeout",
+    "approval wait is bounded by SemanticIdle and HardTimeout, with an optional bounded read of the already-completed native turn at semantic idle",
     "EventIngestor does not own timeout decisions",
     "EventTimeout reduces to ResultTimeout plus CommandCancelProvider"
   ]

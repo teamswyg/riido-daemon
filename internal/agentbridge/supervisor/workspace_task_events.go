@@ -31,7 +31,7 @@ func (a *Actor) appendTaskProviderEvent(ctx context.Context, task *runningTask, 
 		return
 	}
 	nativeConfigVersion := eventNativeConfigVersion(task.events)
-	if _, err := task.events.agentIngestor.Append(ctx, task.events.draft(eventType, nativeConfigVersion, payload)); err != nil {
+	if _, err := task.events.agentIngestor.Append(ctx, task.events.draft(eventType, nativeConfigVersion, payload)); err != nil && (ev.Kind != agentbridge.EventLog || !ev.LocalOnly) {
 		a.reportTaskEvent(ctx, task, workspaceAppendWarning("provider event", eventType, err))
 	}
 }

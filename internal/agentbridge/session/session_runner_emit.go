@@ -16,9 +16,15 @@ func (r *sessionRunner) interruptDelivery(ctx context.Context, ev agentbridge.Ev
 	r.state, _ = agentbridge.Reduce(r.state, ev, nil)
 	r.deliveryInterrupted = true
 	_ = killProcess(ctx, r.proc, r.cfg.ProcessKillTimeout)
+	r.mirrorEvent(ev)
+}
+
+func (r *sessionRunner) mirrorEvent(ev agentbridge.Event) bool {
 	select {
 	case r.sess.events <- ev:
+		return true
 	default:
+		return false
 	}
 }
 
@@ -29,6 +35,10 @@ func (r *sessionRunner) emit(ev agentbridge.Event) {
 	if ev.At.IsZero() {
 		ev.At = r.cfg.Now()
 	}
+	if r.state.Terminal {
+		r.mirrorEvent(ev)
+		return
+	}
 	if ev.Kind == agentbridge.EventCancellation || ev.Kind == agentbridge.EventTimeout {
 		r.interruptDelivery(r.ctx, ev)
 		return
@@ -36,6 +46,15 @@ func (r *sessionRunner) emit(ev agentbridge.Event) {
 	if r.ctx.Err() != nil {
 		r.interruptDelivery(r.ctx, contextTerminationEvent(r.ctx))
 		return
+	}
+	if ev.Kind == agentbridge.EventLog && ev.LocalOnly {
+		if !r.mirrorEvent(ev) {
+			r.localDiagnosticsOmitted++
+		}
+		return
+	}
+	if ev.Kind.IsSemanticActivity() {
+		r.resetIdle()
 	}
 	select {
 	case r.sess.events <- ev:
@@ -49,11 +68,7 @@ func (r *sessionRunner) emit(ev agentbridge.Event) {
 		r.interruptDelivery(r.ctx, agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
 		return
 	case <-r.idleC:
-		r.interruptDelivery(r.ctx, agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "semantic idle timeout"})
-		return
-	}
-	if ev.Kind.IsSemanticActivity() {
-		r.resetIdle()
+		r.onSemanticIdle()
 	}
 }
 

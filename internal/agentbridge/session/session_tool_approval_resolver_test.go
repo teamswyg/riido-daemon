@@ -58,3 +58,30 @@ func TestSessionResolverDeniedApprovalBlocksProviderCompletion(t *testing.T) {
 	}
 	_ = drainEvents(t, started.sess, time.Second)
 }
+
+func TestSessionResolverSemanticIdleDoesNotGrantApproval(t *testing.T) {
+	requested := make(chan struct{})
+	started := startRecordingSession(t, "assignment-1", approvalAdapter(t, "patch_apply"), func(cfg *Config) {
+		cfg.SemanticIdle = 150 * time.Millisecond
+		cfg.ToolApprovalResolver = resolverFunc(func(ctx context.Context, _ string, _ agentbridge.ToolRef) (agentbridge.ToolApprovalResolution, error) {
+			close(requested)
+			<-ctx.Done()
+			return agentbridge.ToolApprovalResolution{}, ctx.Err()
+		})
+	})
+	started.running.EmitStdout([]byte("ASK"))
+	select {
+	case <-requested:
+	case <-time.After(time.Second):
+		t.Fatal("approval resolver was not reached")
+	}
+	res := waitResult(t, started.sess, time.Second)
+	if res.Status != agentbridge.ResultTimeout || res.Error != "semantic idle timeout" {
+		t.Fatalf("result: %+v", res)
+	}
+	select {
+	case frame := <-started.running.StdinRecv():
+		t.Fatalf("sent a provider approval decision after idle: %q", frame)
+	default:
+	}
+}

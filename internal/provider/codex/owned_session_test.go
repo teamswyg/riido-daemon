@@ -70,9 +70,14 @@ func startOwnedSession(t *testing.T) (*session.Session, *process.FakeRunning) {
 
 func startOwnedSessionWithIdle(t *testing.T, idle time.Duration) (*session.Session, *process.FakeRunning) {
 	t.Helper()
+	return startOwnedSessionWithObserver(t, idle, 0)
+}
+
+func startOwnedSessionWithObserver(t *testing.T, idle time.Duration, buffer int) (*session.Session, *process.FakeRunning) {
+	t.Helper()
 	child := process.NewFakeRunning()
 	driver, _ := NewProtocolDriver(agentbridge.StartRequest{Prompt: "review"})
-	sess, err := session.Start(t.Context(), session.Config{TaskID: "owned", RuntimeID: "codex", Adapter: integrationAdapter{}, Process: &process.Fake{NextRunning: child}, ProtocolDriver: driver, HardTimeout: 5 * time.Second, SemanticIdle: idle})
+	sess, err := session.Start(t.Context(), session.Config{TaskID: "owned", RuntimeID: "codex", Adapter: integrationAdapter{}, Process: &process.Fake{NextRunning: child}, ProtocolDriver: driver, HardTimeout: 5 * time.Second, SemanticIdle: idle, EventBuffer: buffer})
 	if err != nil {
 		t.Fatal(err)
 	}

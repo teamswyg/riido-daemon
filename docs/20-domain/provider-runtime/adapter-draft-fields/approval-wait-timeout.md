@@ -23,7 +23,8 @@ Evidence artifact: `approval-wait-timeout-evidence`.
 | semantic idle timer is configured by session clock | `internal/agentbridge/session/session_runner_timers.go` |
 | semantic activity resets idle timer | `internal/agentbridge/session/session_runner_emit.go` |
 | main run loop emits hard timeout | `internal/agentbridge/session/session_runner_loop.go` |
-| main run loop emits semantic idle timeout | `internal/agentbridge/session/session_runner_loop.go` |
+| main run loop delegates semantic idle expiry | `internal/agentbridge/session/session_runner_loop.go` |
+| semantic idle expiry emits timeout after bounded recovery | `internal/agentbridge/session/session_idle_recovery.go` |
 | approval resolver remains bounded by hard timeout | `internal/agentbridge/session/session_tool_approval_resolver.go` |
 | approval resolver remains bounded by semantic idle timeout | `internal/agentbridge/session/session_tool_approval_resolver.go` |
 | reducer turns timeout into ResultTimeout | `internal/agentbridge/reducer_result_events.go` |
@@ -33,6 +34,6 @@ Evidence artifact: `approval-wait-timeout-evidence`.
 
 - `provider-native approval requests map to ApprovalRequested`
 - `tool_approval_needed is semantic activity and resets SemanticIdle`
-- `approval wait is bounded by both SemanticIdle and HardTimeout`
+- `approval wait is bounded by SemanticIdle and HardTimeout, with an optional bounded read of the already-completed native turn at semantic idle`
 - `EventIngestor does not own timeout decisions`
 - `EventTimeout reduces to ResultTimeout plus CommandCancelProvider`

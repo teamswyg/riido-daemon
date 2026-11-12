@@ -1,6 +1,7 @@
 package codex
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 	"testing/synctest"
@@ -98,6 +99,17 @@ func TestOwnedSessionIdleIgnoresUncorrelatedWaitActivity(t *testing.T) {
 				time.Sleep(60 * time.Millisecond)
 				emit(tc.childMethod, waitChildDelta("child", tc.childTurn))
 				time.Sleep(45 * time.Millisecond)
+				select {
+				case wire := <-child.StdinRecv():
+					var request map[string]any
+					if err := json.Unmarshal(wire, &request); err != nil || request["method"] != "thread/read" {
+						t.Fatalf("unexpected idle recovery request: %s", wire)
+					}
+					child.EmitStdout(jsonline(t, map[string]any{"jsonrpc": "2.0", "id": request["id"], "result": map[string]any{"thread": map[string]any{"id": "parent"}}}))
+					synctest.Wait()
+				default:
+					t.Fatal("uncorrelated activity extended the parent's idle deadline")
+				}
 				select {
 				case result := <-sess.Result():
 					if result.Status != agentbridge.ResultTimeout || result.Error != "semantic idle timeout" {

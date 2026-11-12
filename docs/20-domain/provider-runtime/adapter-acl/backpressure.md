@@ -11,13 +11,14 @@ C4 Provider Runtime owns provider process stream, provider draft/session event c
 | process stdout chunk stream | `internal/process.DefaultStdoutBuffer` | `64` | no-drop, blocking process backpressure |
 | process stderr chunk stream | `internal/process.DefaultStderrBuffer` | `64` | no-drop, blocking process backpressure |
 | provider/session semantic event stream | `internal/agentbridge/session.DefaultEventBuffer` | `256` | no-drop, blocking backpressure |
-| terminal result stream | `internal/agentbridge/session.DefaultResultBuffer` | `1` | exactly one terminal result |
+| terminal result stream | `internal/agentbridge/session.DefaultResultBuffer` | `1` | authoritative terminal result independent of observer capacity |
 | runtime actor mailbox | `internal/agentbridge/runtimeactor.DefaultMailboxSize` | `16` | caller-context bounded send |
 | supervisor actor mailbox | `internal/agentbridge/supervisor.DefaultMailboxSize` | `64` | caller-context bounded send |
 
 1. stdout/stderr channels block when full; text/log/warning chunks are not dropped, overwritten, or reordered.
-2. session actor blocks when the event buffer is full until the consumer drains `Events()`.
-3. runtime actor and supervisor mailbox sends are bounded sends; caller context owns deadline / cancellation.
-4. callers must drain `Events()` until close. Result-only callers must discard-drain.
-5. C4 currently has no in-memory retry queue. Durable retry/outbox is a future C2/C10 decision.
-6. changing buffer/mailbox values requires one work unit to update this SSOT, implementation constants, default-size tests, and CI evidence.
+2. The session applies observed progress and commits its terminal result independently of observer delivery. A terminal result is authoritative on `Result()` and mirrored on `Events()` when space is available.
+3. Ordinary session events retain bounded delivery. Codex protocol diagnostics are local-only and never wait for the observer. Under pressure the session counts omitted diagnostics and records one summary in the journal or daemon log.
+4. runtime actor and supervisor mailbox sends are bounded sends; caller context owns deadline / cancellation.
+5. callers must drain `Events()` until close. Result-only callers must discard-drain.
+6. C4 currently has no in-memory retry queue. Durable retry/outbox is a future C2/C10 decision.
+7. changing buffer/mailbox values requires one work unit to update this SSOT, implementation constants, default-size tests, and CI evidence.

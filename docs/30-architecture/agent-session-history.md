@@ -111,6 +111,12 @@ Codex turn limit 10,000. Attachments are not uploaded. Concurrent external turns
 must finish before a Riido continuation. No fallback to a latest/new session.
 
 Deploy the Control Plane consumer before this producer. Roll back producer first.
+An owned Codex run may check its pinned thread and acknowledged turn once when
+semantic idle expires. The read-only protocol request has a two-second budget.
+Only a completed turn with a completion timestamp and an answer can recover the
+result. Hard deadlines and cancellation keep priority, and the existing result
+path verifies and publishes the answer under the original execution claim.
+
 Existing first runs and unrelated providers do not read local history. This is
 append-only projection, not a realtime mirror or source edit/delete replication.
 

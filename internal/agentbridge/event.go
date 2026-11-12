@@ -28,6 +28,9 @@ type Event struct {
 	ExitCode     int
 	Err          string
 
+	// LocalOnly keeps informational diagnostics in the local journal.
+	LocalOnly bool
+
 	// AutomaticallyApproved records the session tool-policy decision.
 	AutomaticallyApproved bool
 }
