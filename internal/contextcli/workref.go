@@ -20,8 +20,9 @@ type WorkRef struct {
 }
 
 var (
-	workKeyPattern = regexp.MustCompile(`^[A-Z][A-Z0-9]*-[0-9]+$`)
-	workIDPattern  = regexp.MustCompile(`^[A-Za-z0-9_-]{8,64}$`)
+	workKeyPattern          = regexp.MustCompile(`^[A-Z][A-Z0-9]*-[0-9]+$`)
+	workIDPattern           = regexp.MustCompile(`^[A-Za-z0-9_-]{8,64}$`)
+	workspaceWorkKeyPattern = regexp.MustCompile(`^[A-Z][A-Z0-9_]{1,19}-[0-9]+$`)
 )
 
 // ParseWorkRef validates a work reference without contacting any server.
@@ -37,4 +38,15 @@ func ParseWorkRef(raw string) (WorkRef, *CLIError) {
 		return WorkRef{Value: value, Kind: WorkRefID}, nil
 	}
 	return WorkRef{}, Failf(CodeUsage, "작업 키나 ID 형식이 아닙니다: %s", value)
+}
+
+// ParseWorkspaceWorkRef is opt-in for native v2. Preserve new underscore-key
+// spelling because the server tries an exact, case-sensitive opaque ID before
+// falling back to that key or its historical alias. V1 parsing is unchanged.
+func ParseWorkspaceWorkRef(raw string) (WorkRef, *CLIError) {
+	value := strings.TrimSpace(raw)
+	if strings.Contains(value, "_") && workspaceWorkKeyPattern.MatchString(strings.ToUpper(value)) {
+		return WorkRef{Value: value, Kind: WorkRefKey}, nil
+	}
+	return ParseWorkRef(raw)
 }

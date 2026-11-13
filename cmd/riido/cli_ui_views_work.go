@@ -91,7 +91,9 @@ func renderWorkView(w io.Writer, term cliui.Terminal, work userapi.Work) {
 func workMembers(members []userapi.WorkMember) string {
 	names := make([]string, 0, len(members))
 	for _, member := range members {
-		if member.TeamMember != nil && member.TeamMember.WorkspaceProfile != nil && member.TeamMember.WorkspaceProfile.Nickname != "" {
+		if member.WorkspaceMember != nil && member.WorkspaceMember.Nickname != "" {
+			names = append(names, member.WorkspaceMember.Nickname)
+		} else if member.TeamMember != nil && member.TeamMember.WorkspaceProfile != nil && member.TeamMember.WorkspaceProfile.Nickname != "" {
 			names = append(names, member.TeamMember.WorkspaceProfile.Nickname)
 		}
 	}
