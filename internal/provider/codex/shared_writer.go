@@ -83,14 +83,23 @@ func (d *protocolDriver) handleSharedResponse(ctx context.Context, method codexM
 		}
 		return d.startSharedSubmission(ctx, io)
 	case codexMethodQueueDelete:
-		s.done = true
 		if s.startError != "" {
+			deleted, valid := result["deleted"].(bool)
+			if valid && !deleted {
+				// queue/start may have succeeded before its connection was lost.
+				// A missing entry is not proof of failure. Observe only our client
+				// ID under the existing deadlines; never insert or start it again.
+				s.startError, s.stopping, s.startRequested = "", false, true
+				return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: "대기열에서 요청을 찾지 못했습니다. 같은 요청이 이미 실행되었는지 결과를 확인합니다."}}, nil, nil
+			}
+			s.done = true
 			message := s.startError
-			if deleted, _ := result["deleted"].(bool); !deleted {
-				message += ". 요청이 이미 실행되었을 수 있으니 재요청 전에 Codex 앱의 결과와 대기열을 확인해주세요"
+			if !valid {
+				message += " 대기 중인 요청의 정리 여부를 확인하지 못했습니다. 재요청 전에 Codex 앱의 대기열을 확인해주세요"
 			}
 			return d.failedEvents(message), nil, nil
 		}
+		s.done = true
 		note := ""
 		if deleted, _ := result["deleted"].(bool); !deleted {
 			note = sharedStopNotice
@@ -160,7 +169,7 @@ func (d *protocolDriver) startSharedSubmission(ctx context.Context, io agentbrid
 		return nil, nil, nil
 	}
 	if err != nil && !errors.Is(err, errSharedQueueConsumed) {
-		s.startError, s.stopping = sharedOwnerUnavailable, true
+		s.startError, s.stopping = sharedOwnerFailureMessage(err), true
 		if err := d.deleteSharedQueue(ctx, io); err != nil {
 			s.done = true
 			//nolint:nilerr // The terminal result carries the actionable failure instead of a raw pipe error.

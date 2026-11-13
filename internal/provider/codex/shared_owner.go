@@ -15,10 +15,24 @@ import (
 var (
 	errSharedOwnerBusy        = errors.New("codex app already has an active or pending turn")
 	errSharedQueueConsumed    = errors.New("codex queued submission already consumed")
-	errSharedOwnerUnavailable = errors.New("codex owner connection or start unavailable")
+	errSharedOwnerConnect     = errors.New("codex_owner_connect_failed")
+	errSharedOwnerInitialize  = errors.New("codex_owner_initialize_failed")
+	errSharedOwnerRejected    = errors.New("codex_owner_start_rejected")
+	errSharedOwnerUnconfirmed = errors.New("codex_owner_start_unconfirmed")
 )
 
-const sharedOwnerUnavailable = "Codex 앱이 소유한 대화의 후속 실행을 시작하지 못했습니다. Codex 앱을 열고 해당 대화의 실행 상태를 확인한 뒤 다시 요청해주세요"
+func sharedOwnerFailureMessage(err error) string {
+	switch {
+	case errors.Is(err, errSharedOwnerConnect):
+		return "Codex의 기존 대화에 연결하지 못했습니다. 실행 중인 작업이 끝난 뒤, 에이전트가 실행되는 Mac에서 해당 대화를 소유한 Codex 앱 또는 CLI를 종료하고 Riido 답글로 다시 요청해주세요. 기존 대화에서 이어갑니다. [codex_owner_connect_failed]"
+	case errors.Is(err, errSharedOwnerInitialize):
+		return "Codex 연결 초기화에 실패했습니다. 에이전트가 실행되는 Mac의 Codex 앱과 CLI 버전을 확인해주세요. [codex_owner_initialize_failed]"
+	case errors.Is(err, errSharedOwnerRejected):
+		return "Codex가 기존 대화의 후속 실행을 거절했습니다. 해당 Codex 대화의 오류나 대기 중인 요청을 확인한 뒤 Riido 답글로 다시 요청해주세요. [codex_owner_start_rejected]"
+	default:
+		return "Codex 후속 실행의 시작 응답을 확인하지 못했습니다. 재요청 전에 해당 Codex 대화의 결과와 대기열을 확인해주세요. [codex_owner_start_unconfirmed]"
+	}
+}
 
 type sharedOwnerClient struct {
 	wire   *sharedOwnerWire
@@ -44,14 +58,14 @@ func openSharedOwnerCommand(ctx context.Context, cmd *exec.Cmd) (*sharedOwnerCli
 	cmd.WaitDelay = time.Second
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return nil, err
+		return nil, errSharedOwnerConnect
 	}
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return nil, err
+		return nil, errSharedOwnerConnect
 	}
 	if err := cmd.Start(); err != nil {
-		return nil, err
+		return nil, errSharedOwnerConnect
 	}
 	stop := context.AfterFunc(ctx, func() { _ = stdout.Close(); _ = stdin.Close() })
 	closeProxy := func() {
@@ -65,7 +79,7 @@ func openSharedOwnerCommand(ctx context.Context, cmd *exec.Cmd) (*sharedOwnerCli
 	wire, err := upgradeSharedOwner(stdout, stdin)
 	if err != nil {
 		closeProxy()
-		return nil, err
+		return nil, errSharedOwnerConnect
 	}
 	client := &sharedOwnerClient{wire: wire, close: closeProxy}
 	_, err = client.request("initialize", map[string]any{
@@ -77,7 +91,7 @@ func openSharedOwnerCommand(ctx context.Context, cmd *exec.Cmd) (*sharedOwnerCli
 	}
 	if err != nil {
 		client.close()
-		return nil, err
+		return nil, errSharedOwnerInitialize
 	}
 	return client, nil
 }
@@ -122,7 +136,7 @@ func (c *sharedOwnerClient) request(method string, params map[string]any) (map[s
 					return nil, errSharedQueueConsumed
 				}
 			}
-			return nil, errSharedOwnerUnavailable
+			return nil, errSharedOwnerRejected
 		}
 		result, ok := frame["result"].(map[string]any)
 		if !ok {
@@ -138,18 +152,18 @@ func startSharedOwner(ctx context.Context, req agentbridge.StartRequest, threadI
 	defer cancel()
 	client, err := openSharedOwner(ctx, req)
 	if err != nil {
-		return errSharedOwnerUnavailable
+		return err
 	}
 	defer client.close()
 	result, err := client.request("thread/queue/start", map[string]any{"threadId": threadID, "queuedSubmissionId": submissionID})
 	if err != nil {
-		if errors.Is(err, errSharedOwnerBusy) || errors.Is(err, errSharedQueueConsumed) {
+		if errors.Is(err, errSharedOwnerBusy) || errors.Is(err, errSharedQueueConsumed) || errors.Is(err, errSharedOwnerRejected) {
 			return err
 		}
-		return errSharedOwnerUnavailable
+		return errSharedOwnerUnconfirmed
 	}
 	if stringField(mapField(result, "turn"), "id") == "" {
-		return errSharedOwnerUnavailable
+		return errSharedOwnerUnconfirmed
 	}
 	return nil
 }
