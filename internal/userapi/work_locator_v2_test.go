@@ -224,3 +224,50 @@ func TestWorkspaceLocatorV2WorkspaceActors(t *testing.T) {
 		t.Fatal("workspace comment actor lost", err)
 	}
 }
+
+func TestWorkspaceLocatorV2NativeKeys(t *testing.T) {
+	for _, tc := range []struct{ name, request, key, number string }{
+		{"underscore-current", "WS_PM-123", "WS_PM-123", "123"},
+		{"short-underscore-current", "WS_P-1", "WS_P-1", "WS_P-1"},
+		{"legacy-alias-current-key", "OLD-11", "NEW_PM-42", "NEW_PM-42"},
+		{"underscore-alias-current-key", "OLD_PM-11", "NEW_PM-42", "42"},
+		{"lowercase-underscore-alias", "old_pm-11", "NEW_PM-42", "42"},
+		{"lowercase-key-shaped-id", "opaque_ref-7", "SPACE-7", "SPACE-7"},
+		{"uppercase-key-shadow", "OPAQUE_REF-7", "OPAQUE_REF-7", "OPAQUE_REF-7"},
+		{"opaque-id-current-key", "work-one", "NEW_PM-42", "42"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			p := locatorV2Ref("project", nil)
+			p["key"], p["keyNumber"] = tc.key, tc.number
+			id := "work-one"
+			if tc.name == "lowercase-key-shaped-id" {
+				id = tc.request
+				p["id"] = id
+			}
+			r := locatorV2Reader(t, "resolveCLIWorkReference", p, func(query string, v map[string]any) {
+				if query != workReferenceV2Query || v["reference"] != tc.request || v["workspaceId"] != "workspace-one" {
+					t.Error("changed fixed native reference", v)
+				}
+			})
+			got, err := r.ResolveWorkReference(t.Context(), WorkReferenceRequest{Reference: tc.request, WorkspaceID: "workspace-one", LocatorVersion: 2})
+			if err != nil || got.ID != id || got.Key != tc.key || got.KeyNumber != tc.number {
+				t.Fatal("native key/alias rejected", got, err)
+			}
+		})
+	}
+	for _, tc := range []struct{ name, reference, key, number, id, workspace string }{
+		{"inconsistent-canonical-pair", "OLD-11", "NEW_PM-42", "43", "work-one", "workspace-one"},
+		{"missing-canonical-key", "OLD-11", "", "42", "work-one", "workspace-one"},
+		{"opaque-id-mismatch", "work-one", "NEW_PM-42", "42", "other-work", "workspace-one"},
+		{"alias-workspace-mismatch", "OLD-11", "NEW_PM-42", "42", "work-one", "other-workspace"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			p := locatorV2Ref("project", nil)
+			p["key"], p["keyNumber"], p["id"], p["workspaceId"] = tc.key, tc.number, tc.id, tc.workspace
+			r := locatorV2Reader(t, "resolveCLIWorkReference", p, nil)
+			if _, err := r.ResolveWorkReference(t.Context(), WorkReferenceRequest{Reference: tc.reference, WorkspaceID: "workspace-one", LocatorVersion: 2}); !errors.Is(err, ErrInvalidResponse) {
+				t.Fatal("invalid canonical locator accepted", err)
+			}
+		})
+	}
+}

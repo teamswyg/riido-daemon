@@ -42,6 +42,9 @@ func userWorkTarget(args contextcli.Args, raw string) (string, string, *contextc
 		return "", "", versionErr
 	}
 	ref, err := contextcli.ParseWorkRef(raw)
+	if version == 2 {
+		ref, err = contextcli.ParseWorkspaceWorkRef(raw)
+	}
 	if err != nil {
 		return "", "", err
 	}

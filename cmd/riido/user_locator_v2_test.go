@@ -127,3 +127,37 @@ func TestUserWorkspaceLocatorV2DeferredHint(t *testing.T) {
 		t.Fatal("invalid workspace continuation", out.String())
 	}
 }
+
+func TestUserWorkspaceLocatorV2NativeKeys(t *testing.T) {
+	for _, ref := range []string{"ws_pm-123", "WS_P-1", "OLD-11"} {
+		t.Run(ref, func(t *testing.T) {
+			calls := 0
+			service := commentService(t, func(w http.ResponseWriter, r *http.Request) {
+				calls++
+				var q struct {
+					Query     string
+					Variables map[string]any
+				}
+				if json.NewDecoder(r.Body).Decode(&q) != nil {
+					t.Fatal("invalid request")
+				}
+				if strings.Contains(q.Query, "resolveCLIWorkReference") {
+					if q.Variables["reference"] != ref || q.Variables["workspaceId"] != "workspace-one" || !strings.Contains(q.Query, "locatorVersion:2") {
+						t.Error("native key identity/case lost", q.Variables)
+					}
+					fmt.Fprint(w, `{"data":{"resolveCLIWorkReference":{"schemaVersion":"riido-work-reference.v2","workspaceId":"workspace-one","teamId":null,"id":"work-one","key":"NEW_PM-42","keyNumber":"42","componentType":"project"}}}`)
+					return
+				}
+				if q.Variables["componentId"] != "work-one" || q.Variables["teamId"] != nil {
+					t.Error("canonical locator not used")
+				}
+				fmt.Fprint(w, `{"data":{"getComponent":{"schemaVersion":"riido-work-detail.v2","workspaceId":"workspace-one","ownerTeamId":null,"canEdit":true,"id":"work-one","componentType":"project","title":"canonical alias target","componentMembers":[],"componentLabels":[]}}}`)
+			})
+			h := newContextHarness(t, nil)
+			h.io.userSession = func(contextcli.Args) (*standalonecli.Service, error) { return service, nil }
+			if err := runWork(h.io, []string{"get", ref, "--workspace", "workspace-one", "--locator-version", "2", "--json"}); err != nil || calls != 2 {
+				t.Fatal("native key did not reach canonical target", err, calls)
+			}
+		})
+	}
+}
