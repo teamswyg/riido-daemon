@@ -86,6 +86,24 @@ https://code.claude.com/docs/en/permissions.
 
 The daemon supplies its own absolute executable path through trusted runtime configuration when the context CLI is enabled. Codex instructions invoke that executable directly with shell-safe quoting, so a login shell cannot select an older `riido` from a different PATH. The path is never accepted from assignment environment values. Other provider instructions and Claude read allow rules retain their existing command forms. This changes executable selection only; it does not grant socket access or relax provider sandbox policy. A read-only Codex sandbox may still reject the daemon socket and must be reported as unsupported in that mode.
 
+### Codex command environment
+
+The app-server process environment alone is insufficient: Codex can remove the
+run binding before starting a command when `shell_environment_policy.inherit`
+is `core` or `none`. For daemon-owned thread start and resume, pass only the
+current capability, socket, task ID and optional workspace ID through the
+in-memory `shell_environment_policy.set` thread override. Keep the user's
+inheritance, filters, other explicit values, sandbox and approval settings.
+Do not put capabilities in command arguments, instructions, files or diagnostics.
+Each resume supplies its current binding; a previous run's capability must not
+be reused. Disabled/incomplete CLI wiring supplies no override. Shared-owner
+queue execution does not accept these thread overrides and remains separate.
+
+Regression evidence must include real Codex command execution with a trimmed
+environment and the compiled Riido CLI, covering context, task, comments and
+relations through the local broker. A prompt instruction or a successful
+app-server launch alone is not proof that those commands can read their context.
+
 RIID-5900 read-scope expansion keeps direct selection separate from detail reads. New snapshots include work inspector and integration metadata plus meeting participants, board groups/labels and cards. Never traverse a selected target's own relations. Continue captured parts with `riido context part <SOURCE-ID> --cursor <CURSOR> --json --no-input`; only manifest-issued cursors are valid. One call returns consecutive captured pages of that part in `data.pages` (about 48 KiB by default; `--budget CHARS` selects 8-256 KiB); read them in order and continue with `data.next_cursor` until it is empty. Older snapshots or an exhausted capture budget retain unavailable/incomplete status and are not an empty board. User OAuth and live body pagination remain separate from the agent path.
 
 Captured pages and their inline forms must retain exact content with their
