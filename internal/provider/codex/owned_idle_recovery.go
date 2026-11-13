@@ -18,6 +18,22 @@ func (d *protocolDriver) BeginIdleRecovery(ctx context.Context, io agentbridge.P
 
 func (d *protocolDriver) OnIdleRecoveryRaw(raw agentbridge.RawEvent) (agentbridge.Result, bool) {
 	kind := rawFrameType(raw.Type)
+	if method, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok && d.idleRecoveryID != 0 {
+		events, _, err := d.notificationEvents(codexMethod(method), raw)
+		if err != nil {
+			return agentbridge.Result{}, false
+		}
+		for _, event := range events {
+			if event.Kind == agentbridge.EventResult {
+				delete(d.pending, d.idleRecoveryID)
+				d.idleRecoveryID = 0
+				result := event.Result
+				result.SessionID = d.threadID
+				return result, true
+			}
+		}
+		return agentbridge.Result{}, false
+	}
 	id, ok := rpcID(raw.Payload)
 	if !ok || d.idleRecoveryID == 0 || id != d.idleRecoveryID || (kind != rawFrameResponse && kind != rawFrameError) {
 		return agentbridge.Result{}, false

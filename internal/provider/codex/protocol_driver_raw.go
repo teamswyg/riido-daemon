@@ -54,12 +54,22 @@ func (d *protocolDriver) onRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		return d.handleMCPApproval(ctx, raw, io)
 	}
 	if after, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok {
-		if events, handled := d.guardOwnedNotification(raw); handled {
-			return events, nil, nil
-		}
-		if events, handled := d.handleNotification(codexMethod(after), raw); handled {
-			return d.ownedResultEvents(raw, events), nil, nil
-		}
+		return d.notificationEvents(codexMethod(after), raw)
+	}
+	events, cmds, err := Translate(raw)
+	events = d.ownedResultEvents(raw, events)
+	d.observeEvents(events)
+	return events, cmds, err
+}
+
+// notificationEvents has no protocol I/O, so idle recovery can consume owned
+// output and terminal evidence without dispatching requests or publishing logs.
+func (d *protocolDriver) notificationEvents(method codexMethod, raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
+	if events, handled := d.guardOwnedNotification(raw); handled {
+		return events, nil, nil
+	}
+	if events, handled := d.handleNotification(method, raw); handled {
+		return d.ownedResultEvents(raw, events), nil, nil
 	}
 	events, cmds, err := Translate(raw)
 	events = d.ownedResultEvents(raw, events)
