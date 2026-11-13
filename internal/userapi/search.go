@@ -12,9 +12,12 @@ import (
 
 const workSearchQuery = `query RiidoCLIWorkSearch($workspaceId:String!,$query:String!,$cursor:String,$limit:Int){searchWorkspaceWork(workspaceId:$workspaceId,query:$query,cursor:$cursor,limit:$limit){schemaVersion workspaceId query limit complete nextCursor items{kind id teamId title componentType key keyNumber updatedAt matchedFields}}}`
 
+const workSearchV2Query = `query RiidoCLIWorkSearch($workspaceId:String!,$query:String!,$cursor:String,$limit:Int){searchWorkspaceWork(workspaceId:$workspaceId,query:$query,cursor:$cursor,limit:$limit,locatorVersion:2){schemaVersion workspaceId query limit complete nextCursor items{kind id teamId title componentType key keyNumber updatedAt matchedFields}}}`
+
 type WorkSearchRequest struct {
 	WorkspaceID, Query, Cursor string
 	Limit                      int
+	LocatorVersion             int
 }
 
 func (q WorkSearchRequest) NormalizedQuery() string {
@@ -22,13 +25,16 @@ func (q WorkSearchRequest) NormalizedQuery() string {
 }
 
 func (q WorkSearchRequest) Valid() bool {
+	if !validLocatorVersion(q.LocatorVersion) {
+		return false
+	}
 	return q.WorkspaceID != "" && len(q.WorkspaceID) <= 200 && strings.TrimSpace(q.WorkspaceID) == q.WorkspaceID && utf8.ValidString(q.WorkspaceID) && !strings.ContainsAny(q.WorkspaceID, "\x00\r\n") && utf8.ValidString(q.Query) && len(q.Query) <= 4096 && !strings.ContainsRune(q.Query, 0) && q.NormalizedQuery() != "" && utf8.RuneCountInString(q.NormalizedQuery()) <= 200 && len(q.Cursor) <= 2048 && utf8.ValidString(q.Cursor) && !strings.ContainsRune(q.Cursor, 0) && q.Limit >= 0 && q.Limit <= 100
 }
 
 type WorkSearchItem struct {
 	Kind          string   `json:"kind"`
 	ID            string   `json:"id"`
-	TeamID        string   `json:"teamId"`
+	TeamID        *string  `json:"teamId"`
 	Title         *string  `json:"title"`
 	ComponentType *string  `json:"componentType"`
 	Key           *string  `json:"key"`
@@ -60,7 +66,11 @@ func (r Reader) Search(ctx context.Context, q WorkSearchRequest) (*WorkSearchPag
 	var data struct {
 		Page json.RawMessage `json:"searchWorkspaceWork"`
 	}
-	if err := r.read(ctx, workSearchQuery, map[string]any{"workspaceId": q.WorkspaceID, "query": q.NormalizedQuery(), "cursor": cursor, "limit": q.Limit}, &data); err != nil {
+	query := workSearchQuery
+	if q.LocatorVersion == 2 {
+		query = workSearchV2Query
+	}
+	if err := r.read(ctx, query, map[string]any{"workspaceId": q.WorkspaceID, "query": q.NormalizedQuery(), "cursor": cursor, "limit": q.Limit}, &data); err != nil {
 		return nil, err
 	}
 	var page struct {
@@ -72,7 +82,7 @@ func (r Reader) Search(ctx context.Context, q WorkSearchRequest) (*WorkSearchPag
 	}
 	p := &page.WorkSearchPage
 	p.Complete = *page.Complete
-	if p.SchemaVersion != "riido-work-search.v1" || p.WorkspaceID != q.WorkspaceID || p.Query != q.NormalizedQuery() || p.Limit != q.Limit || p.Items == nil || len(p.Items) > q.Limit {
+	if p.SchemaVersion != locatorSchema("riido-work-search", q.LocatorVersion) || p.WorkspaceID != q.WorkspaceID || p.Query != q.NormalizedQuery() || p.Limit != q.Limit || p.Items == nil || len(p.Items) > q.Limit {
 		return nil, ErrInvalidResponse
 	}
 	// RIID-6014: the server may end an incomplete page early at its scan budget,
@@ -95,7 +105,14 @@ func (r Reader) Search(ctx context.Context, q WorkSearchRequest) (*WorkSearchPag
 	var priorTime time.Time
 	priorKind, priorID := "", ""
 	for _, item := range p.Items {
-		if item == nil || item.ID == "" || item.TeamID == "" || item.Title == nil || !slices.Contains([]string{"component", "backlog", "intake"}, item.Kind) || seen[item.Kind+":"+item.ID] || len(item.MatchedFields) == 0 {
+		if item == nil || item.ID == "" || item.Title == nil || !slices.Contains([]string{"component", "backlog", "intake"}, item.Kind) || seen[item.Kind+":"+item.ID] || len(item.MatchedFields) == 0 {
+			return nil, ErrInvalidResponse
+		}
+		componentType := ""
+		if item.ComponentType != nil {
+			componentType = *item.ComponentType
+		}
+		if !validLocatorTeam(q.LocatorVersion, item.Kind, componentType, item.TeamID) {
 			return nil, ErrInvalidResponse
 		}
 		if item.Kind == "component" {
@@ -136,7 +153,7 @@ func workSearchNullableFieldsPresent(raw json.RawMessage) bool {
 		return false
 	}
 	for _, item := range fields.Items {
-		for _, name := range []string{"componentType", "key", "keyNumber"} {
+		for _, name := range []string{"teamId", "componentType", "key", "keyNumber"} {
 			if len(item[name]) == 0 {
 				return false
 			}

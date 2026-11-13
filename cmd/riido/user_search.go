@@ -12,7 +12,7 @@ import (
 
 func (c contextIO) runUserSearch(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{UseWorkspace: true, Values: []string{"--query", "--page", "--budget"}, AllowLimit: true})
+	args, cliErr := c.parseArgs(raw, contextcli.ArgSpec{UseWorkspace: true, Values: []string{"--query", "--page", "--budget", "--locator-version"}, AllowLimit: true})
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -27,6 +27,10 @@ func (c contextIO) runUserSearch(raw []string) error {
 		return c.fail(args.JSON, requestID, contextcli.Fail(contextcli.CodeUnsupported, "작업 검색은 page/budget을 지원하지 않습니다", "nextCursor를 --cursor로 이어 읽으세요"))
 	}
 	q := userapi.WorkSearchRequest{WorkspaceID: args.Workspace, Query: args.Value("--query"), Cursor: args.Cursor, Limit: 20}
+	q.LocatorVersion, cliErr = userLocatorVersion(args)
+	if cliErr != nil {
+		return c.fail(args.JSON, requestID, cliErr)
+	}
 	if args.HasValue("--limit") {
 		limit, err := strconv.Atoi(args.Value("--limit"))
 		if err != nil || strconv.Itoa(limit) != args.Value("--limit") || limit < 1 || limit > 100 {
@@ -51,7 +55,11 @@ func (c contextIO) runUserSearch(raw []string) error {
 	return c.succeed(args.JSON, env, func(w io.Writer, _ any) {
 		fmt.Fprintf(w, "워크스페이스 %q 검색 %q\n", result.WorkspaceID, result.Query)
 		for _, item := range result.Items {
-			fmt.Fprintf(w, "  %q %q (id=%q, team=%q, matched=%q)\n", item.Kind, *item.Title, item.ID, item.TeamID, item.MatchedFields)
+			if item.TeamID == nil {
+				fmt.Fprintf(w, "  %q %q (id=%q, workspace=%q, matched=%q)\n", item.Kind, *item.Title, item.ID, result.WorkspaceID, item.MatchedFields)
+			} else {
+				fmt.Fprintf(w, "  %q %q (id=%q, team=%q, matched=%q)\n", item.Kind, *item.Title, item.ID, *item.TeamID, item.MatchedFields)
+			}
 		}
 		if result.Complete && len(result.Items) == 0 {
 			fmt.Fprintln(w, "  검색 결과가 없습니다.")
@@ -60,6 +68,9 @@ func (c contextIO) runUserSearch(raw []string) error {
 			fmt.Fprintln(w, "검색할 작업이 많아 제한 시간 안에 끝까지 찾지 못했습니다. 지금까지 찾은 결과입니다.")
 		}
 		if result.NextCursor != nil {
+			if q.LocatorVersion == 2 {
+				fmt.Fprintln(w, "다음 요청에도 --locator-version 2를 유지하세요.")
+			}
 			fmt.Fprintf(w, "다음 페이지: 같은 --workspace, --query, --limit 값을 유지하고 --cursor %q 를 추가하세요.\n", *result.NextCursor)
 		}
 	})

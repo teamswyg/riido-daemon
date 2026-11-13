@@ -44,7 +44,7 @@ func (c contextIO) runUserWhoami(raw []string) error {
 
 func (c contextIO) runUserWork(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id"}}, true)
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--locator-version"}}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -68,6 +68,13 @@ func (c contextIO) runUserWork(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
+	if version, _ := userLocatorVersion(args); version == 2 {
+		result, err := session.WorkV2(ctx, userV2Reference(args, work, team))
+		if err != nil {
+			return c.fail(args.JSON, requestID, userAuthError(err))
+		}
+		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "work": result}), workView(c.stdout, result.Work))
+	}
 	result, err := session.Work(ctx, work, team, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
