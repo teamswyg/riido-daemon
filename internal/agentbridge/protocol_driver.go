@@ -62,3 +62,9 @@ type ProtocolIdleRecovery interface {
 	BeginIdleRecovery(context.Context, ProtocolIO) (bool, error)
 	OnIdleRecoveryRaw(RawEvent) (Result, bool)
 }
+
+// ProtocolIdleGrace optionally grants another idle interval for a known
+// provider operation. The driver must bound its grants to the current run.
+type ProtocolIdleGrace interface {
+	ConsumeIdleGrace() bool
+}

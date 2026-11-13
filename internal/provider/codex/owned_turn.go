@@ -16,6 +16,7 @@ type ownedTurn struct {
 	order      []string
 	streamed   map[string]string
 	waits      map[string]map[string]string // wait item ID -> target thread ID -> observed turn ID
+	compaction ownedCompaction
 }
 
 func notificationTurnID(p map[string]any) string {
@@ -74,7 +75,11 @@ func (d *protocolDriver) guardOwnedNotification(raw agentbridge.RawEvent) ([]age
 		return nil, true
 	}
 	if method == codexMethodItemStarted || method == codexMethodItemCompleted {
-		if events := d.trackOwnedWait(method, mapField(p, "item")); len(events) > 0 {
+		item := mapField(p, "item")
+		if d.owned.compaction.observe(method, item) {
+			return []agentbridge.Event{{Kind: agentbridge.EventSemanticActivity}}, true
+		}
+		if events := d.trackOwnedWait(method, item); len(events) > 0 {
 			return events, true
 		}
 	}

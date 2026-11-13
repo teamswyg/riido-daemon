@@ -29,7 +29,7 @@ func (r *sessionRunner) loop() {
 		case <-r.hardC:
 			r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
 		case <-r.idleC:
-			r.onSemanticIdle()
+			r.onProviderIdle()
 		case chunk, ok := <-r.stdoutCh:
 			r.consumeStdout(chunk, ok)
 		case chunk, ok := <-r.stderrCh:

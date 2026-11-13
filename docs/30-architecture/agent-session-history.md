@@ -122,6 +122,13 @@ Codex turn limit 10,000. Attachments are not uploaded. Concurrent external turns
 must finish before a Riido continuation. No fallback to a latest/new session.
 
 Deploy the Control Plane consumer before this producer. Roll back producer first.
+An owned Codex run recognizes `contextCompaction` item start and completion
+for its pinned thread and acknowledged turn. If an identified compaction is
+still active at the semantic idle deadline, the session loop can grant one more
+configured idle interval per turn. Duplicate and uncorrelated events cannot
+extend that allowance. This applies to provider output processing only. Tool
+approval waits, cancellation and the hard deadline retain their existing limits.
+
 An owned Codex run may check its pinned thread and acknowledged turn once when
 semantic idle expires. The read-only protocol request has a two-second budget.
 Only a completed turn with a completion timestamp and an answer can recover the
