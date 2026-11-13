@@ -145,7 +145,7 @@ func reasonText(reasons []*userapi.ReadScopeReason) string {
 	return oneLine(strings.Join(parts, ", "))
 }
 
-func renderContextView(w io.Writer, term cliui.Terminal, scope userapi.ReadScope) {
+func renderContextView(w io.Writer, term cliui.Terminal, scope userapi.ReadScope, bodyCommands ...func(*userapi.ReadScopeWork) string) {
 	counts := term.Dim(fmt.Sprintf("작업 %d개 · 미팅 %d개", len(scope.Works), len(scope.Meetings)))
 	writeViewHeader(w, term, "작업 맥락", scope.RootID, readStatusBadge(term, scope.Status), counts)
 	for _, work := range scope.Works {
@@ -168,7 +168,11 @@ func renderContextView(w io.Writer, term cliui.Terminal, scope userapi.ReadScope
 		fmt.Fprintln(w, "  "+joinMeta(term, meta))
 		fmt.Fprintln(w, "  "+term.Dim("id "+oneLine(work.ID)))
 		if work.ContentPage != nil {
-			writeBodyPageHint(w, term, workBodyCommand(work.ID, work.TeamID, work.Kind), work.ContentPage)
+			command := workBodyCommand(work.ID, work.TeamID, work.Kind)
+			if len(bodyCommands) > 0 {
+				command = bodyCommands[0](work)
+			}
+			writeBodyPageHint(w, term, command, work.ContentPage)
 		}
 	}
 	if len(scope.Meetings) > 0 {

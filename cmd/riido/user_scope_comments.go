@@ -11,7 +11,7 @@ import (
 
 func hasScopeCommentOptions(raw []string) bool {
 	for _, arg := range raw {
-		if arg == "--kind" || arg == "--version" || strings.HasPrefix(arg, "--kind=") || strings.HasPrefix(arg, "--version=") {
+		if arg == "--kind" || arg == "--version" || arg == "--locator-version" || strings.HasPrefix(arg, "--kind=") || strings.HasPrefix(arg, "--version=") || strings.HasPrefix(arg, "--locator-version=") {
 			return true
 		}
 	}
@@ -20,7 +20,7 @@ func hasScopeCommentOptions(raw []string) bool {
 
 func (c contextIO) runUserScopeComments(sub workCommand, raw []string) error {
 	id := contextcli.NewRequestID()
-	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--kind", "--comment-id", "--page", "--version"}, AllowLimit: true}, true)
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--kind", "--comment-id", "--page", "--version", "--locator-version"}, AllowLimit: true}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), id, cliErr)
 	}
@@ -45,6 +45,17 @@ func (c contextIO) readUserScopeComments(id string, args contextcli.Args, q user
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
+	if version, _ := userLocatorVersion(args); version == 2 {
+		page, err := session.ScopeCommentsV2(ctx, userV2Reference(args, q.ResourceID, q.TeamID), q)
+		if err != nil {
+			return c.fail(args.JSON, id, userAuthError(err))
+		}
+		env := contextcli.NewEnvelope(id, map[string]any{"mode": "user", "live": true, "comment_page": page})
+		if page.ContentPage != nil {
+			env.Warnings = append(env.Warnings, deferredContentWarning())
+		}
+		return c.succeed(args.JSON, env, scopeCommentsV2View(c.stdout, page))
+	}
 	page, err := session.ScopeComments(ctx, q, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, id, userAuthError(err))
@@ -71,7 +82,11 @@ func scopeCommentArguments(sub workCommand, args contextcli.Args) (userapi.ReadS
 	if args.HasValue("--kind") {
 		q.ResourceKind = args.Value("--kind")
 	}
-	if q.ResourceKind == "component" {
+	version, versionErr := userLocatorVersion(args)
+	if versionErr != nil {
+		return q, versionErr
+	}
+	if q.ResourceKind == "component" || version == 2 {
 		q.ResourceID, q.TeamID, cliErr = userWorkTarget(args, args.Positionals[0])
 	} else {
 		if args.HasValue("--workspace") {

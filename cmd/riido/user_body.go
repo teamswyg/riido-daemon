@@ -16,7 +16,7 @@ func (c contextIO) runUserResourceBody(raw []string, kind string) error {
 	requestID := contextcli.NewRequestID()
 	values := []string{"--team-id", "--part", "--version", "--offset", "--comment-id", "--page", "--comments-limit", "--board-cursor", "--board-limit"}
 	if kind == "component" {
-		values = append(values, "--kind")
+		values = append(values, "--kind", "--locator-version")
 	}
 	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: values, AllowLimit: true}, kind != "meeting")
 	if cliErr != nil {
@@ -43,6 +43,13 @@ func (c contextIO) runUserResourceBody(raw []string, kind string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
+	if version, _ := userLocatorVersion(args); version == 2 {
+		page, err := session.BodyV2(ctx, userV2Reference(args, q.ComponentID, q.TeamID), q)
+		if err != nil {
+			return c.fail(args.JSON, requestID, userAuthError(err))
+		}
+		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "live": true, "body": page}), bodyPageView(c.stdout, page.ReadBodyPage))
+	}
 	page, err := session.Body(ctx, q, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))
@@ -71,7 +78,11 @@ func userResourceBodyArguments(args contextcli.Args, kind string) (userapi.ReadB
 		return userapi.ReadBodyRequest{}, contextcli.Fail(contextcli.CodeUnsupported, "사용자 본문 조회는 --offset과 --limit을 사용합니다", "Agent의 snapshot cursor는 사용자 조회에 사용할 수 없습니다")
 	}
 	var err *contextcli.CLIError
-	if q.Kind == "" || q.Kind == "component" {
+	version, versionErr := userLocatorVersion(args)
+	if versionErr != nil {
+		return q, versionErr
+	}
+	if q.Kind == "" || q.Kind == "component" || version == 2 {
 		q.ComponentID, q.TeamID, err = userWorkTarget(args, args.Positionals[0])
 	} else {
 		if args.HasValue("--workspace") {
