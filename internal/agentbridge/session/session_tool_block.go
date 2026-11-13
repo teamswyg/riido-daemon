@@ -21,6 +21,10 @@ func (r *sessionRunner) blockPendingApprovalIfNeeded(ev agentbridge.Event, cmds 
 	if r.resolvePendingApprovalIfAvailable(ev.Tool) {
 		return r.state.Terminal
 	}
+	if ev.Tool.RequireHuman {
+		r.executeResolvedToolApproval(ev.Tool, agentbridge.ToolApprovalResolution{Reason: "human approval is unavailable in this run"})
+		return true
+	}
 	decision := decideApprovalTool(r.cfg.ToolApprovalGate, ev.Tool)
 	if !decision.Block {
 		return false

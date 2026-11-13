@@ -8,6 +8,9 @@ import (
 )
 
 func (d *protocolDriver) OnTerminate(ctx context.Context, io agentbridge.ProtocolIO) (bool, error) {
+	if err := d.cancelMCPApprovals(ctx, io); err != nil {
+		return false, err
+	}
 	s := d.shared
 	if s == nil || s.done || s.stopping {
 		return false, nil
