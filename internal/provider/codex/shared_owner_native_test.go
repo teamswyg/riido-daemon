@@ -30,6 +30,7 @@ func TestIntegrationSharedOwnerStartsQueuedFollowup(t *testing.T) {
 }
 
 func testNativeSharedOwnerFollowup(t *testing.T, loseAcknowledgement bool) {
+	t.Helper()
 	exe := os.Getenv("RIIDO_CODEX_NATIVE_TEST_EXECUTABLE")
 	if exe == "" {
 		t.Skip("set RIIDO_CODEX_NATIVE_TEST_EXECUTABLE to a Codex binary")

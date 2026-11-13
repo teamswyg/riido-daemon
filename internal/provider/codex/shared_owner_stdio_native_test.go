@@ -163,5 +163,8 @@ func (c *nativeStdioFixture) request(method string, params map[string]any) (map[
 		}
 		return frame["result"].(map[string]any), nil
 	}
-	return nil, fmt.Errorf("native fixture ended: %v", c.out.Err())
+	if err := c.out.Err(); err != nil {
+		return nil, fmt.Errorf("native fixture ended: %w", err)
+	}
+	return nil, io.EOF
 }
