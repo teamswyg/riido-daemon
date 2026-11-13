@@ -3,10 +3,11 @@ package agentbridge
 func reduceToolApprovalNeeded(s State, e Event, approver AutoApprover) (State, []Command) {
 	s.Phase = StateWaitingToolApproval
 	s = recordToolRef(s, e.Tool)
-	if approver != nil && approver(e.Tool) {
+	if !e.Tool.RequireHuman && approver != nil && approver(e.Tool) {
 		return s, []Command{{
 			Kind:              CommandApproveTool,
 			ToolID:            e.Tool.ID,
+			ToolKind:          e.Tool.Kind,
 			ProviderRequestID: e.Tool.ProviderRequestID,
 		}}
 	}

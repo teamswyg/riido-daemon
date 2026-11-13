@@ -42,6 +42,7 @@ type protocolDriver struct {
 	threadID           string
 	owned              ownedTurn
 	idleRecoveryID     int64
+	mcpApprovals       map[string]string
 	turnStarted        bool
 	sawAssistantOutput bool
 	lastRuntimeError   string

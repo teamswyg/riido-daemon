@@ -55,6 +55,17 @@ A Codex wait correlated to the owned turn can receive idle-watchdog activity
 from its named delegated threads. The session consumes the activity before
 publication. The owned turn remains the source of assistant output and completion.
 
+## RIID-6142: Codex MCP tool confirmation
+
+Only an MCP tool confirmation for the pinned thread and acknowledged turn can
+enter the existing human approval flow. Supported requests are marked by Codex
+as MCP tool calls and use an empty confirmation form. The approval shows the
+request's question, without publishing form metadata or tool arguments.
+Approval is per request and cannot be granted by the automatic tool policy.
+Return the matching JSON-RPC ID with Codex's `accept`, `decline`, or `cancel`
+action. Unsupported forms and uncorrelated requests are cancelled explicitly.
+Cancellation and existing hard and idle deadlines continue to bound the wait.
+
 ## Evidence
 
 Hermetic tests cover two follow-ups across adapter reconstruction, retained

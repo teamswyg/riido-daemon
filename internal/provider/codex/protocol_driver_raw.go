@@ -50,6 +50,9 @@ func (d *protocolDriver) onRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		// may publish its output or completion.
 		return nil, nil, nil
 	}
+	if raw.Type == rawFrameServerRequestPrefix+codexMCPApprovalMethod {
+		return d.handleMCPApproval(ctx, raw, io)
+	}
 	if after, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok {
 		if events, handled := d.guardOwnedNotification(raw); handled {
 			return events, nil, nil

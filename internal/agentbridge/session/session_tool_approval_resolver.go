@@ -49,6 +49,7 @@ func (r *sessionRunner) executeResolvedToolApproval(tool agentbridge.ToolRef, re
 	cmd := agentbridge.Command{
 		Kind:              agentbridge.CommandRejectTool,
 		ToolID:            tool.ID,
+		ToolKind:          tool.Kind,
 		ProviderRequestID: tool.ProviderRequestID,
 		Reason:            resolution.Reason,
 	}
