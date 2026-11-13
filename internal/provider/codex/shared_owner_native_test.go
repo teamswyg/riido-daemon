@@ -22,6 +22,14 @@ import (
 // Uses a real Codex binary, an isolated home, and a localhost fake model. No
 // credentials, user's desktop threads, provider billing or external tools.
 func TestIntegrationSharedOwnerStartsQueuedFollowup(t *testing.T) {
+	for _, loseAcknowledgement := range []bool{false, true} {
+		t.Run(map[bool]string{false: "acknowledged", true: "lost_start_acknowledgement"}[loseAcknowledgement], func(t *testing.T) {
+			testNativeSharedOwnerFollowup(t, loseAcknowledgement)
+		})
+	}
+}
+
+func testNativeSharedOwnerFollowup(t *testing.T, loseAcknowledgement bool) {
 	exe := os.Getenv("RIIDO_CODEX_NATIVE_TEST_EXECUTABLE")
 	if exe == "" {
 		t.Skip("set RIIDO_CODEX_NATIVE_TEST_EXECUTABLE to a Codex binary")
@@ -89,6 +97,16 @@ func TestIntegrationSharedOwnerStartsQueuedFollowup(t *testing.T) {
 	driver, err := NewProtocolDriver(req)
 	if err != nil {
 		t.Fatal(err)
+	}
+	if loseAcknowledgement {
+		driver.(*protocolDriver).startSharedOwner = func(ctx context.Context, req agentbridge.StartRequest, threadID, submissionID string) error {
+			if err := startSharedOwner(ctx, req, threadID, submissionID); err != nil {
+				return err
+			}
+			// The real owner has consumed the queue entry. Model the response
+			// being lost before Riido can confirm the returned turn identity.
+			return errSharedOwnerUnconfirmed
+		}
 	}
 	sess, err := session.Start(ctx, session.Config{
 		TaskID: req.TaskID, RuntimeID: "codex", Adapter: integrationAdapter{}, Process: processexec.New(),
