@@ -73,11 +73,12 @@ func validReadScopeV2(scope *ReadScopeV2, locator WorkLocator) bool {
 			var detail struct {
 				ComponentType string `json:"componentType"`
 			}
-			if work.ContentPage != nil && work.Summary != nil && work.Summary.ComponentType != nil {
+			switch {
+			case work.ContentPage != nil && work.Summary != nil && work.Summary.ComponentType != nil:
 				componentType = *work.Summary.ComponentType
-			} else if json.Unmarshal(work.Details, &detail) == nil {
+			case json.Unmarshal(work.Details, &detail) == nil:
 				componentType = detail.ComponentType
-			} else {
+			default:
 				return false
 			}
 		}

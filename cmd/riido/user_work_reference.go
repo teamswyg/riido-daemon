@@ -57,15 +57,16 @@ func userWorkTarget(args contextcli.Args, raw string) (string, string, *contextc
 	} else if args.HasValue("--team-id") {
 		return "", "", contextcli.Fail(contextcli.CodeUsage, "팀 ID가 비어 있습니다", "--team-id에 실제 팀 ID를 지정하세요")
 	}
-	if version == 2 {
+	switch {
+	case version == 2:
 		if !(userapi.WorkReferenceRequest{Reference: ref.Value, WorkspaceID: args.Workspace, TeamID: team, LocatorVersion: 2}).Valid() {
 			return "", "", contextcli.Fail(contextcli.CodeUsage, "버전 2 작업 조회에는 워크스페이스와 작업 키 또는 ID가 필요합니다", "--locator-version 2 --workspace <WORKSPACE-ID>를 지정하세요")
 		}
-	} else if ref.Kind == contextcli.WorkRefKey {
+	case ref.Kind == contextcli.WorkRefKey:
 		if !(userapi.WorkReferenceRequest{Reference: ref.Value, WorkspaceID: args.Workspace, TeamID: team}).Valid() || (args.HasValue("--workspace") && args.Workspace == "") || (team == "" && args.Workspace == "") {
 			return "", "", contextcli.Fail(contextcli.CodeUsage, "표시 키에는 워크스페이스 또는 팀이 필요합니다", "--workspace <WORKSPACE-ID> 또는 --team-id <TEAM-ID>를 지정하세요 (riido workspace use <WORKSPACE-ID>로 기본값을 저장할 수 있어요)")
 		}
-	} else {
+	default:
 		if team == "" {
 			return "", "", contextcli.Fail(contextcli.CodeUsage, "작업 ID와 --team-id가 필요합니다", "작업의 실제 팀 ID를 지정하세요")
 		}

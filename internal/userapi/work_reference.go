@@ -85,7 +85,7 @@ func (r Reader) ResolveWorkReference(ctx context.Context, q WorkReferenceRequest
 		if w.Key == "" || ref.Kind == contextcli.WorkRefID && w.ID != q.Reference {
 			return ResolvedWorkReference{}, ErrInvalidResponse
 		}
-		if strings.ToUpper(w.KeyNumber) != strings.ToUpper(w.Key) {
+		if !strings.EqualFold(w.KeyNumber, w.Key) {
 			parts := strings.SplitN(strings.ToUpper(w.Key), "-", 2)
 			if len(parts) != 2 || w.KeyNumber != parts[1] {
 				return ResolvedWorkReference{}, ErrInvalidResponse

@@ -27,7 +27,7 @@ func workspaceLocatorService(t *testing.T, replaceAfterResolve, denyRead bool) (
 		}
 		if r.URL.Path != "/graphql" || r.Header.Get("Authorization") != "Bearer locator-access" || json.NewDecoder(r.Body).Decode(&q) != nil || !strings.Contains(q.Query, "locatorVersion:2") {
 			t.Error("changed fixed authorized request")
-			w.WriteHeader(400)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
 		if store.mu.TryLock() {

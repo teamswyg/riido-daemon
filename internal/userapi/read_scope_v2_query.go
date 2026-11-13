@@ -42,12 +42,15 @@ const readScopeV2Query = `query RiidoCLIReadScope($componentId:String!,$teamId:S
 const readScopeBodyV2Query = `query RiidoCLIReadScopeBody($componentId:String!,$workspaceId:String!,$teamId:String,$part:String!,$version:String!,$offset:Int!,$limit:Int!,$selector:RiidoReadPartSelectorInput){
  getComponentReadScopeBody(componentId:$componentId,workspaceId:$workspaceId,teamId:$teamId,locatorVersion:2,part:$part,version:$version,offset:$offset,limit:$limit,selector:$selector){` + readBodyV2Fields + `}
 }`
+
 const readBacklogBodyV2Query = `query RiidoCLIBacklogBody($backlogId:String!,$workspaceId:String!,$teamId:String,$part:String!,$version:String!,$offset:Int!,$limit:Int!,$selector:RiidoReadPartSelectorInput){
  getBacklogReadScopeBody(backlogId:$backlogId,workspaceId:$workspaceId,teamId:$teamId,locatorVersion:2,part:$part,version:$version,offset:$offset,limit:$limit,selector:$selector){` + readBodyV2Fields + `}
 }`
+
 const readIntakeBodyV2Query = `query RiidoCLIIntakeBody($intakeId:String!,$workspaceId:String!,$teamId:String,$part:String!,$version:String!,$offset:Int!,$limit:Int!,$selector:RiidoReadPartSelectorInput){
  getIntakeReadScopeBody(intakeId:$intakeId,workspaceId:$workspaceId,teamId:$teamId,locatorVersion:2,part:$part,version:$version,offset:$offset,limit:$limit,selector:$selector){` + readBodyV2Fields + `}
 }`
+
 const readScopeCommentsV2Query = `query RiidoCLIReadScopeComments($resourceId:String!,$resourceKind:String!,$workspaceId:String!,$teamId:String,$page:Int!,$limit:Int!,$parentCommentId:String,$version:String){
  getReadScopeComments(resourceId:$resourceId,resourceKind:$resourceKind,workspaceId:$workspaceId,teamId:$teamId,locatorVersion:2,page:$page,limit:$limit,parentCommentId:$parentCommentId,version:$version){` + readScopeCommentsV2Fields + `}
 }`

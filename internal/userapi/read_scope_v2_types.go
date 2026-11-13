@@ -58,18 +58,22 @@ func (v *ReadScopeV2) UnmarshalJSON(raw []byte) error {
 	type plain ReadScopeV2
 	return decodeV2Locator(raw, (*plain)(v), "teamId")
 }
+
 func (v *ReadScopeWorkV2) UnmarshalJSON(raw []byte) error {
 	type plain ReadScopeWorkV2
 	return decodeV2Locator(raw, (*plain)(v), "teamId")
 }
+
 func (v *ReadBodyPageV2) UnmarshalJSON(raw []byte) error {
 	type plain ReadBodyPageV2
 	return decodeV2Locator(raw, (*plain)(v), "teamId")
 }
+
 func (v *ReadScopeCommentPageV2) UnmarshalJSON(raw []byte) error {
 	type plain ReadScopeCommentPageV2
 	return decodeV2Locator(raw, (*plain)(v), "teamId")
 }
+
 func (v *WorkV2) UnmarshalJSON(raw []byte) error {
 	type plain WorkV2
 	return decodeV2Locator(raw, (*plain)(v), "ownerTeamId")
