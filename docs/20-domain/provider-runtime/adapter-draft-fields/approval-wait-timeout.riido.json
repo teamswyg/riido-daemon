@@ -24,10 +24,12 @@
     {"name": "semantic idle timer is configured by session clock", "file": "internal/agentbridge/session/session_runner_timers.go", "contains": "time.NewTimer(r.cfg.SemanticIdle)"},
     {"name": "semantic activity resets idle timer", "file": "internal/agentbridge/session/session_runner_emit.go", "contains": "ev.Kind.IsSemanticActivity()"},
     {"name": "main run loop emits hard timeout", "file": "internal/agentbridge/session/session_runner_loop.go", "contains": "Err: \"hard timeout\""},
-    {"name": "main run loop delegates semantic idle expiry", "file": "internal/agentbridge/session/session_runner_loop.go", "contains": "r.onSemanticIdle()"},
+    {"name": "main run loop delegates provider idle expiry", "file": "internal/agentbridge/session/session_runner_loop.go", "contains": "r.onProviderIdle()"},
+    {"name": "provider idle falls through to semantic idle expiry", "file": "internal/agentbridge/session/session_idle_recovery.go", "contains": "r.onSemanticIdle()"},
     {"name": "semantic idle expiry emits timeout after bounded recovery", "file": "internal/agentbridge/session/session_idle_recovery.go", "contains": "Err: \"semantic idle timeout\""},
     {"name": "approval resolver remains bounded by hard timeout", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "case <-r.hardC:"},
     {"name": "approval resolver remains bounded by semantic idle timeout", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "case <-r.idleC:"},
+    {"name": "approval resolver delegates directly to semantic idle expiry", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "r.onSemanticIdle()"},
     {"name": "reducer turns timeout into ResultTimeout", "file": "internal/agentbridge/reducer_result_events.go", "contains": "ResultTimeout"},
     {"name": "reducer cancels provider on timeout", "file": "internal/agentbridge/reducer_result_events.go", "contains": "CommandCancelProvider"}
   ],

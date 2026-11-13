@@ -23,10 +23,12 @@ Evidence artifact: `approval-wait-timeout-evidence`.
 | semantic idle timer is configured by session clock | `internal/agentbridge/session/session_runner_timers.go` |
 | semantic activity resets idle timer | `internal/agentbridge/session/session_runner_emit.go` |
 | main run loop emits hard timeout | `internal/agentbridge/session/session_runner_loop.go` |
-| main run loop delegates semantic idle expiry | `internal/agentbridge/session/session_runner_loop.go` |
+| main run loop delegates provider idle expiry | `internal/agentbridge/session/session_runner_loop.go` |
+| provider idle falls through to semantic idle expiry | `internal/agentbridge/session/session_idle_recovery.go` |
 | semantic idle expiry emits timeout after bounded recovery | `internal/agentbridge/session/session_idle_recovery.go` |
 | approval resolver remains bounded by hard timeout | `internal/agentbridge/session/session_tool_approval_resolver.go` |
 | approval resolver remains bounded by semantic idle timeout | `internal/agentbridge/session/session_tool_approval_resolver.go` |
+| approval resolver delegates directly to semantic idle expiry | `internal/agentbridge/session/session_tool_approval_resolver.go` |
 | reducer turns timeout into ResultTimeout | `internal/agentbridge/reducer_result_events.go` |
 | reducer cancels provider on timeout | `internal/agentbridge/reducer_result_events.go` |
 

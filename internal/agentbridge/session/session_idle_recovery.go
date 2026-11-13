@@ -9,6 +9,14 @@ import (
 
 const idleRecoveryTimeout = 2 * time.Second
 
+func (r *sessionRunner) onProviderIdle() {
+	if driver, ok := r.cfg.ProtocolDriver.(agentbridge.ProtocolIdleGrace); ok && driver.ConsumeIdleGrace() {
+		r.resetIdle()
+		return
+	}
+	r.onSemanticIdle()
+}
+
 func (r *sessionRunner) onSemanticIdle() {
 	if r.state.Terminal {
 		return
