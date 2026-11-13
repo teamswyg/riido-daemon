@@ -28,7 +28,7 @@ func TestOwnedMCPToolApprovalSurfacesAsHumanApproval(t *testing.T) {
 			if !tool.RequireHuman || tool.ProviderRequestID != "42" || tool.Name != "Allow Riido update task body?" || len(tool.Args) != 0 {
 				t.Fatalf("unexpected approval: %+v", tool)
 			}
-			_, commands := agentbridge.Reduce(agentbridge.State{Tools: map[string]agentbridge.ToolRef{}}, events[0], func(agentbridge.ToolRef) bool {
+			_, commands := agentbridge.Reduce(agentbridge.NewState(), events[0], func(agentbridge.ToolRef) bool {
 				t.Fatal("human confirmation reached automatic policy")
 				return true
 			})
