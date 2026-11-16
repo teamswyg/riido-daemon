@@ -18,6 +18,7 @@ func TestSessionResolverApprovalWaitRemainsCancellable(t *testing.T) {
 				requested, resolverDone := make(chan struct{}), make(chan struct{})
 				started := startRecordingSessionContext(t, ctx, "assignment-1", approvalAdapter(t, "patch_apply"), func(cfg *Config) {
 					cfg.SemanticIdle = 100 * time.Millisecond
+					cfg.HardTimeout = 150 * time.Millisecond
 					cfg.ToolApprovalResolver = resolverFunc(func(ctx context.Context, _ string, _ agentbridge.ToolRef) (agentbridge.ToolApprovalResolution, error) {
 						defer close(resolverDone)
 						close(requested)
