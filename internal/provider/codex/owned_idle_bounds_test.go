@@ -48,8 +48,13 @@ func TestOwnedIdleGraceKeepsHardDeadlineAndCancellation(t *testing.T) {
 			}
 			select {
 			case result := <-sess.Result():
-				if result.Status != want || (!cancel && result.Error != "hard timeout") {
+				if result.Status != want {
 					t.Fatalf("result = %+v", result)
+				}
+				// The hard timer and its context deadline expire together. Either
+				// existing error spelling is valid; the original deadline is exact.
+				if !cancel && (result.Error != "hard timeout" && result.Error != "run hard timeout exceeded (5s)" || result.FinishedAt.Sub(result.StartedAt) != 5*time.Second) {
+					t.Fatalf("hard deadline changed: %+v", result)
 				}
 			case <-time.After(2100 * time.Millisecond):
 				t.Fatal("idle continuation extended the hard deadline")
