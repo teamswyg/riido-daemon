@@ -4,6 +4,8 @@
 
 [Back to runtime actor boundary](../runtime-actor-boundary.md)
 
+RIID-6140: An owner connection failure is retried only before initialize or queue/start is sent, at most three connections within the existing five-second deadline, with cancellable backoff. After a typed owner-connect failure, only an explicit deleted=true acknowledgement for our queued submission permits one thread/resume retry on the same native ID. A still-active writer fails actionably without requeueing; missing, malformed, failed or already-consumed deletion never permits replay. Cancellation wins. This recovers transient socket outages and owner-release races, not a permanently stdio-only owner; Riido never terminates the owner, changes its locks, forks or starts an owner daemon. A released session uses the existing daemon resume parameters; a live owner retains its execution policy.
+
 C4 Provider Runtime owns the provider session table that maps provider-native session identity to Riido runtime identity. C5 Scheduling owns task claim lease and heartbeat semantics, not this table.
 
 | Pair key | Preservation location |
