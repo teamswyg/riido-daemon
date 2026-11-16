@@ -8,15 +8,17 @@ import (
 )
 
 type ownedTurn struct {
-	id         string
-	done       bool
-	early      []agentbridge.RawEvent
-	earlyBytes int
-	messages   map[string]map[string]any
-	order      []string
-	streamed   map[string]string
-	waits      map[string]map[string]string // wait item ID -> target thread ID -> observed turn ID
-	compaction ownedCompaction
+	id               string
+	done             bool
+	early            []agentbridge.RawEvent
+	earlyBytes       int
+	messages         map[string]map[string]any
+	order            []string
+	streamed         map[string]string
+	waits            map[string]map[string]string // wait item ID -> target thread ID -> observed turn ID
+	compaction       ownedCompaction
+	runningConfirmed bool
+	idleGraceUsed    bool
 }
 
 func notificationTurnID(p map[string]any) string {
@@ -101,6 +103,7 @@ func runScopedNotification(method codexMethod) bool {
 		codexMethodTurnCompleted, codexMethodTurnCompleteSlash,
 		codexMethodTurnError, codexMethodTurnErrorSlash, codexMethodTurnFailedSlash,
 		codexMethodError, codexMethodAgentMessage, codexMethodItemAgentMessageDelta,
+		codexMethodItemCommandOutput,
 		codexMethodReasoning, codexMethodItemStarted, codexMethodItemUpdated, codexMethodItemCompleted:
 		return true
 	default:

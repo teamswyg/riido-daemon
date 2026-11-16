@@ -56,11 +56,12 @@ type ProtocolTerminationDriver interface {
 }
 
 // ProtocolIdleRecovery optionally checks the exact provider turn before the
-// semantic idle watchdog terminates it. The session serializes this read with
-// other driver calls and bounds the time spent waiting for a response.
+// semantic idle watchdog terminates it. Ordinary events keep flowing while the
+// bounded read is pending. Only the matching read response is consumed here.
 type ProtocolIdleRecovery interface {
 	BeginIdleRecovery(context.Context, ProtocolIO) (bool, error)
 	OnIdleRecoveryRaw(RawEvent) (Result, bool)
+	EndIdleRecovery()
 }
 
 // ProtocolIdleGrace optionally grants another idle interval for a known

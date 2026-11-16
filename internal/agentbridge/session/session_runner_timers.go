@@ -40,6 +40,7 @@ func (r *sessionRunner) startTimers() {
 }
 
 func (r *sessionRunner) stopTimers() {
+	r.stopIdleRecovery()
 	if r.hardTimer != nil {
 		r.hardTimer.Stop()
 	}

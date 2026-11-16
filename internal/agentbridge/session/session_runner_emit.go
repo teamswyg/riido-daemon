@@ -69,6 +69,8 @@ func (r *sessionRunner) emit(ev agentbridge.Event) {
 		return
 	case <-r.idleC:
 		r.onSemanticIdle()
+	case <-r.idleRecoveryC:
+		r.finishIdleTimeout()
 	}
 }
 
@@ -80,6 +82,7 @@ func cancellationMessage(cause error) string {
 }
 
 func (r *sessionRunner) resetIdle() {
+	r.stopIdleRecovery()
 	if r.idleTimer == nil {
 		return
 	}

@@ -1,9 +1,8 @@
 package codex
 
 type ownedCompaction struct {
-	activeID  string
-	seen      map[string]struct{}
-	graceUsed bool
+	activeID string
+	seen     map[string]struct{}
 }
 
 func (c *ownedCompaction) observe(method codexMethod, item map[string]any) bool {
@@ -31,9 +30,9 @@ func (c *ownedCompaction) observe(method codexMethod, item map[string]any) bool 
 
 func (d *protocolDriver) ConsumeIdleGrace() bool {
 	c := &d.owned.compaction
-	if d.owned.done || c.activeID == "" || c.graceUsed {
+	if d.owned.done || (c.activeID == "" && !d.owned.runningConfirmed) || d.owned.idleGraceUsed {
 		return false
 	}
-	c.graceUsed = true
+	d.owned.idleGraceUsed = true
 	return true
 }

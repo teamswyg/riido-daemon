@@ -72,6 +72,15 @@ func (d *protocolDriver) onRaw(ctx context.Context, raw agentbridge.RawEvent, io
 
 func (d *protocolDriver) handleNotification(method codexMethod, raw agentbridge.RawEvent) ([]agentbridge.Event, bool) {
 	if d.owned.id != "" {
+		if method == codexMethodItemCommandOutput {
+			p := params(raw)
+			if stringField(p, "itemId") != "" && stringField(p, "delta") != "" {
+				// Correlation was checked by guardOwnedNotification. Keep raw tool
+				// output private while recognizing real activity on the owned turn.
+				return []agentbridge.Event{{Kind: agentbridge.EventSemanticActivity}}, true
+			}
+			return nil, true
+		}
 		if events, handled := d.ownedMessageEvents(method, params(raw)); handled {
 			d.observeEvents(events)
 			return events, true
