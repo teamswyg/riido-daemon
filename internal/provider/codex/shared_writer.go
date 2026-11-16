@@ -25,6 +25,7 @@ type sharedWriter struct {
 	submitted      bool
 	startRequested bool
 	startError     string
+	startFailure   error
 	done           bool
 	stopping       bool
 	turnID         string
@@ -91,6 +92,20 @@ func (d *protocolDriver) handleSharedResponse(ctx context.Context, method codexM
 				// ID under the existing deadlines; never insert or start it again.
 				s.startError, s.stopping, s.startRequested = "", false, true
 				return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: "대기열에서 요청을 찾지 못했습니다. 같은 요청이 이미 실행되었는지 결과를 확인합니다."}}, nil, nil
+			}
+			if valid && deleted && errors.Is(s.startFailure, errSharedOwnerConnect) && !d.sharedResumeRetried && ctx.Err() == nil {
+				// Confirmed deletion proves our prompt never started. The owner
+				// may have exited while proxy connection/cleanup was in flight.
+				// Let Codex arbitrate the same thread's writer lock exactly once.
+				d.sharedResumeRetried = true
+				d.shared = nil
+				d.historyTurns, d.historyCursors = nil, nil
+				method, params := d.threadStartRequest()
+				if _, err := d.sendRequest(ctx, io, method, params); err != nil {
+					//nolint:nilerr // Emit the sanitized terminal result instead of exposing the reconnect pipe error.
+					return d.failedEvents(s.startError), nil, nil
+				}
+				return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: "Codex 연결이 변경되어 같은 대화에 다시 연결합니다."}}, nil, nil
 			}
 			s.done = true
 			message := s.startError
@@ -169,6 +184,7 @@ func (d *protocolDriver) startSharedSubmission(ctx context.Context, io agentbrid
 		return nil, nil, nil
 	}
 	if err != nil && !errors.Is(err, errSharedQueueConsumed) {
+		s.startFailure = err
 		s.startError, s.stopping = sharedOwnerFailureMessage(err), true
 		if err := d.deleteSharedQueue(ctx, io); err != nil {
 			s.done = true
