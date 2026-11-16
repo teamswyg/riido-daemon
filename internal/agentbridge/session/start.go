@@ -39,7 +39,9 @@ func Start(ctx context.Context, cfg Config) (*Session, error) {
 	sess.stop = stop
 	var deadline *time.Timer
 	if cfg.HardTimeout > 0 {
+		cfg.runDeadlineAt = time.Now().Add(cfg.HardTimeout)
 		deadline = time.AfterFunc(cfg.HardTimeout, func() { stop(fmt.Errorf("%w (%s)", errRunHardDeadline, cfg.HardTimeout)) })
+		cfg.runDeadline = deadline
 	}
 	go func() {
 		defer stop(nil)

@@ -17,6 +17,8 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 	}
 	ctx, cancel := context.WithCancel(r.ctx)
 	defer cancel()
+	resumeHardTimeout := r.pauseApprovalHardTimeout()
+	defer resumeHardTimeout()
 	if r.idleTimer != nil {
 		r.idleTimer.Stop()
 	}
@@ -27,6 +29,7 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 	}()
 	select {
 	case result := <-resolved:
+		resumeHardTimeout()
 		r.resetIdle()
 		if result.err != nil {
 			r.emit(agentbridge.Event{Kind: agentbridge.EventWarning, Text: "tool approval resolver failed", Err: result.err.Error()})
@@ -39,6 +42,15 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 		return true
 	case req := <-r.sess.cancel:
 		r.cancel(req)
+		return true
+	case req := <-r.sess.terminal:
+		r.terminal(req)
+		return true
+	case status, ok := <-r.exitedCh:
+		r.deferExit(status, ok)
+		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventResult, Result: agentbridge.Result{
+			Status: agentbridge.ResultAborted, Error: "provider disconnected while waiting for tool approval",
+		}})
 		return true
 	case <-r.hardC:
 		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
@@ -57,6 +69,15 @@ func (r *sessionRunner) executeResolvedToolApproval(tool agentbridge.ToolRef, re
 	case req := <-r.sess.cancel:
 		r.cancel(req)
 		return
+	case req := <-r.sess.terminal:
+		r.terminal(req)
+		return
+	case status, ok := <-r.exitedCh:
+		r.deferExit(status, ok)
+		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventResult, Result: agentbridge.Result{
+			Status: agentbridge.ResultAborted, Error: "provider disconnected while waiting for tool approval",
+		}})
+		return
 	case <-r.hardC:
 		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
 		return
@@ -72,8 +93,12 @@ func (r *sessionRunner) executeResolvedToolApproval(tool agentbridge.ToolRef, re
 	if resolution.Approved {
 		cmd.Kind = agentbridge.CommandApproveTool
 	}
-	for _, cmdEvent := range r.executeCommands(r.ctx, []agentbridge.Command{cmd}) {
+	commandEvents := r.executeCommands(r.ctx, []agentbridge.Command{cmd})
+	for _, cmdEvent := range commandEvents {
 		r.emit(cmdEvent)
+	}
+	if resolution.Approved && len(commandEvents) == 0 && !r.state.Terminal {
+		r.applyEvents([]agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}, nil)
 	}
 	if !resolution.Approved {
 		r.blockToolUse("tool approval rejected by resolver", toolApprovalRejectionReason(resolution))

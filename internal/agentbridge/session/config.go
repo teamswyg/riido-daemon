@@ -29,8 +29,10 @@ type Config struct {
 	Spawn   process.Command
 	Request agentbridge.StartRequest
 
-	// HardTimeout is the wall-clock deadline for the entire run. Zero disables.
-	HardTimeout time.Duration
+	// HardTimeout bounds active run time, excluding human approval waits. Zero disables.
+	HardTimeout   time.Duration
+	runDeadline   *time.Timer
+	runDeadlineAt time.Time
 	// SemanticIdle is the idle watchdog timeout. Zero disables.
 	SemanticIdle time.Duration
 
