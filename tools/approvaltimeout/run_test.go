@@ -1,7 +1,9 @@
 package main
 
 import (
+	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -15,12 +17,21 @@ func TestRunWritesVerifiedEvidence(t *testing.T) {
 	}
 }
 
-func TestRunDetectsMissingIdleBound(t *testing.T) {
-	repo := t.TempDir()
-	writeFixtureRepo(t, repo)
-	writeFile(t, repo, "internal/agentbridge/session/session_tool_approval_resolver.go", "package session\n")
-	err := run(t.Context(), options{Repo: repo, Manifest: defaultManifest})
-	if err == nil {
-		t.Fatal("expected source drift")
+func TestRunDetectsMissingApprovalWaitGuard(t *testing.T) {
+	for _, guard := range []string{"case <-r.hardC:", "r.idleTimer.Stop()", "r.resetIdle()", "case <-r.ctx.Done():", "case req := <-r.sess.cancel:"} {
+		t.Run(guard, func(t *testing.T) {
+			repo := t.TempDir()
+			writeFixtureRepo(t, repo)
+			const sourcePath = "internal/agentbridge/session/session_tool_approval_resolver.go"
+			path := filepath.Join(repo, sourcePath)
+			source, err := os.ReadFile(path)
+			if err != nil {
+				t.Fatal(err)
+			}
+			writeFile(t, repo, sourcePath, strings.Replace(string(source), guard, "", 1))
+			if err := run(t.Context(), options{Repo: repo, Manifest: defaultManifest}); err == nil {
+				t.Fatal("expected source drift")
+			}
+		})
 	}
 }
