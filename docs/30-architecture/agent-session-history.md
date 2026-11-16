@@ -129,11 +129,29 @@ configured idle interval per turn. Duplicate and uncorrelated events cannot
 extend that allowance. This applies to provider output processing only. Tool
 approval waits, cancellation and the hard deadline retain their existing limits.
 
-An owned Codex run may check its pinned thread and acknowledged turn once when
-semantic idle expires. The read-only protocol request has a two-second budget.
-Only a completed turn with a completion timestamp and an answer can recover the
-result. Hard deadlines and cancellation keep priority, and the existing result
-path verifies and publishes the answer under the original execution claim.
+An owned Codex run checks its pinned thread and acknowledged turn when semantic
+idle expires. The read-only request has a two-second budget and runs through the
+ordinary session actor. Progress, approvals, cancellation, process exit and
+terminal notifications continue through their existing handlers while the read
+is pending. A matching completed turn with a completion timestamp and an answer
+can recover the result. A matching `inProgress` turn can receive one additional
+configured idle interval per run, shared with the compaction allowance. Status
+alone cannot renew this allowance. Missing, foreign, stale or failed reads do
+not extend the wait. Actual semantic progress ends the read and restores the
+ordinary watchdog; late read responses cannot affect the run. Cancellation and
+the hard deadline retain priority. No recovery starts a new turn or repeats a
+tool call, and the original execution claim still owns result publication.
+
+RIID-6203 regression evidence: `owned_idle_continuation_test.go` reproduces a
+still-running turn killed at the first idle deadline and a completion lost while
+reading. The same suite covers bounded continuation, identity rejection and the
+ordinary event path during recovery. The initiating network outage in RAX-52
+remains unproven; these tests establish the daemon's premature termination and
+event-loss defects without claiming to reproduce that external outage.
+Owned `item/commandExecution/outputDelta` notifications with a nonempty item ID
+and delta count as semantic activity after thread/turn correlation. Raw command
+output is not published as assistant text or completion. Missing or foreign
+identities and empty output cannot keep the watchdog alive.
 
 Existing first runs and unrelated providers do not read local history. This is
 append-only projection, not a realtime mirror or source edit/delete replication.
