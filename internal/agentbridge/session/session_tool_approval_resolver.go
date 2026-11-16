@@ -17,6 +17,9 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 	}
 	ctx, cancel := context.WithCancel(r.ctx)
 	defer cancel()
+	if r.idleTimer != nil {
+		r.idleTimer.Stop()
+	}
 	resolved := make(chan toolApprovalResolverResult, 1)
 	go func() {
 		resolution, err := r.cfg.ToolApprovalResolver.ResolveToolApproval(ctx, r.cfg.TaskID, tool)
@@ -24,6 +27,7 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 	}()
 	select {
 	case result := <-resolved:
+		r.resetIdle()
 		if result.err != nil {
 			r.emit(agentbridge.Event{Kind: agentbridge.EventWarning, Text: "tool approval resolver failed", Err: result.err.Error()})
 			return false
@@ -39,13 +43,25 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 	case <-r.hardC:
 		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
 		return true
-	case <-r.idleC:
-		r.onSemanticIdle()
-		return true
 	}
 }
 
 func (r *sessionRunner) executeResolvedToolApproval(tool agentbridge.ToolRef, resolution agentbridge.ToolApprovalResolution) {
+	if r.state.Terminal {
+		return
+	}
+	select {
+	case <-r.ctx.Done():
+		r.emitAndTerminate(contextTerminationEvent(r.ctx))
+		return
+	case req := <-r.sess.cancel:
+		r.cancel(req)
+		return
+	case <-r.hardC:
+		r.emitAndTerminate(agentbridge.Event{Kind: agentbridge.EventTimeout, Err: "hard timeout"})
+		return
+	default:
+	}
 	cmd := agentbridge.Command{
 		Kind:              agentbridge.CommandRejectTool,
 		ToolID:            tool.ID,

@@ -12,7 +12,8 @@ Evidence artifact: `approval-wait-timeout-evidence`.
 
 - `tool_approval_needed` maps to `ApprovalRequested`.
 - `tool_approval_needed` is semantic activity and resets `SemanticIdle`.
-- Approval wait remains bounded by `SemanticIdle` and `HardTimeout`.
+- Only the current resolver wait pauses `SemanticIdle`; a response restarts the original idle budget.
+- `HardTimeout`, cancellation, and explicit current-request approval remain required during the wait.
 - `timeout` reduces to `timeout` and `cancel_provider`.
 
 ## Source Evidence
@@ -27,8 +28,10 @@ Evidence artifact: `approval-wait-timeout-evidence`.
 | provider idle falls through to semantic idle expiry | `internal/agentbridge/session/session_idle_recovery.go` |
 | semantic idle expiry emits timeout after bounded recovery | `internal/agentbridge/session/session_idle_recovery.go` |
 | approval resolver remains bounded by hard timeout | `internal/agentbridge/session/session_tool_approval_resolver.go` |
-| approval resolver remains bounded by semantic idle timeout | `internal/agentbridge/session/session_tool_approval_resolver.go` |
-| approval resolver delegates directly to semantic idle expiry | `internal/agentbridge/session/session_tool_approval_resolver.go` |
+| current resolver wait pauses the semantic idle timer | `internal/agentbridge/session/session_tool_approval_resolver.go` |
+| resolver response restarts the original semantic idle budget | `internal/agentbridge/session/session_tool_approval_resolver.go` |
+| approval resolver honors context cancellation | `internal/agentbridge/session/session_tool_approval_resolver.go` |
+| approval resolver honors session cancellation | `internal/agentbridge/session/session_tool_approval_resolver.go` |
 | reducer turns timeout into ResultTimeout | `internal/agentbridge/reducer_result_events.go` |
 | reducer cancels provider on timeout | `internal/agentbridge/reducer_result_events.go` |
 
@@ -36,6 +39,9 @@ Evidence artifact: `approval-wait-timeout-evidence`.
 
 - `provider-native approval requests map to ApprovalRequested`
 - `tool_approval_needed is semantic activity and resets SemanticIdle`
-- `approval wait is bounded by SemanticIdle and HardTimeout, with an optional bounded read of the already-completed native turn at semantic idle`
+- `only the current ToolApprovalResolver wait pauses SemanticIdle; a resolver response restarts the original idle budget before processing the decision`
+- `HardTimeout and context or session cancellation remain active throughout approval wait`
+- `approval wait never grants permission; explicit current-request approval, request identity checks, and fail-closed rejection remain unchanged`
+- `already-terminal state or ready cancellation and hard timeout take priority before a resolved decision writes provider input`
 - `EventIngestor does not own timeout decisions`
 - `EventTimeout reduces to ResultTimeout plus CommandCancelProvider`
