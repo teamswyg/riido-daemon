@@ -150,7 +150,9 @@ func (c *sharedOwnerClient) request(method string, params map[string]any) (map[s
 func startSharedOwner(ctx context.Context, req agentbridge.StartRequest, threadID, submissionID string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	client, err := openSharedOwner(ctx, req)
+	client, err := connectSharedOwner(ctx, func(ctx context.Context) (*sharedOwnerClient, error) {
+		return openSharedOwner(ctx, req)
+	})
 	if err != nil {
 		return err
 	}
@@ -166,4 +168,25 @@ func startSharedOwner(ctx context.Context, req agentbridge.StartRequest, threadI
 		return errSharedOwnerUnconfirmed
 	}
 	return nil
+}
+
+// Retry only an unestablished control connection, never initialize/start RPCs
+// whose effects could be uncertain. All attempts share the existing deadline.
+func connectSharedOwner(ctx context.Context, open func(context.Context) (*sharedOwnerClient, error)) (*sharedOwnerClient, error) {
+	for attempt := 0; ; attempt++ {
+		if ctx.Err() != nil {
+			return nil, errSharedOwnerConnect
+		}
+		client, err := open(ctx)
+		if err == nil || !errors.Is(err, errSharedOwnerConnect) || attempt == 2 {
+			return client, err
+		}
+		timer := time.NewTimer(time.Duration(attempt+1) * 100 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil, errSharedOwnerConnect
+		case <-timer.C:
+		}
+	}
 }
