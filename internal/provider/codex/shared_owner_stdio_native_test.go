@@ -25,7 +25,16 @@ import (
 
 // Uses a real Codex binary, an isolated home, and a localhost fake model. No
 // credentials, user's desktop threads, provider billing or external tools.
-func TestIntegrationSharedStdioOwnerRequiresReleaseBeforeRetry(t *testing.T) {
+func TestIntegrationSharedStdioOwner(t *testing.T) {
+	for _, release := range []bool{true, false} {
+		t.Run(map[bool]string{true: "thread_released_without_exit", false: "retained_owner_hard_deadline"}[release], func(t *testing.T) {
+			testNativeStdioOwner(t, release)
+		})
+	}
+}
+
+func testNativeStdioOwner(t *testing.T, release bool) {
+	t.Helper()
 	exe := os.Getenv("RIIDO_CODEX_NATIVE_TEST_EXECUTABLE")
 	if exe == "" {
 		t.Skip("set RIIDO_CODEX_NATIVE_TEST_EXECUTABLE to a Codex binary")
@@ -41,7 +50,7 @@ func TestIntegrationSharedStdioOwnerRequiresReleaseBeforeRetry(t *testing.T) {
 	}))
 	defer model.Close()
 	home := t.TempDir()
-	config := fmt.Sprintf("model_provider = 'fixture'\nmodel = 'gpt-5'\n[model_providers.fixture]\nname = 'fixture'\nbase_url = '%s/v1'\nwire_api = 'responses'\nrequires_openai_auth = false\n", model.URL)
+	config := fmt.Sprintf("thread_unload_delay_secs = 0\nmodel_provider = 'fixture'\nmodel = 'gpt-5'\n[model_providers.fixture]\nname = 'fixture'\nbase_url = '%s/v1'\nwire_api = 'responses'\nrequires_openai_auth = false\n", model.URL)
 	if err := os.WriteFile(filepath.Join(home, "config.toml"), []byte(config), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -92,28 +101,39 @@ func TestIntegrationSharedStdioOwnerRequiresReleaseBeforeRetry(t *testing.T) {
 		}
 		time.Sleep(50 * time.Millisecond)
 	}
-	result := runNativeSharedFollowup(t, ctx, req)
-	if result.Status != agentbridge.ResultFailed || result.SessionID != req.ResumeSessionID || !strings.Contains(result.Error, "codex_owner_connect_failed") || !strings.Contains(result.Error, "종료") {
-		t.Fatalf("stdio-only owner must explain release and same-thread retry: %+v", result)
+	// Model navigating away from the idle thread, not closing the owner app.
+	// The original Riido request must remain alive until Codex releases its lock.
+	released := make(chan error, 1)
+	if release {
+		timer := time.AfterFunc(5*time.Second, func() {
+			_, err := client.request("thread/unsubscribe", map[string]any{"threadId": req.ResumeSessionID})
+			released <- err
+		})
+		defer timer.Stop()
 	}
+	result := runNativeSharedFollowup(t, ctx, req)
+	if release {
+		if err := <-released; err != nil {
+			t.Fatal(err)
+		}
+		if result.Status != agentbridge.ResultCompleted || result.SessionID != req.ResumeSessionID || strings.TrimSpace(result.Output) != "OK" {
+			t.Fatalf("original request did not automatically complete after thread release: %+v", result)
+		}
+	} else if result.Status != agentbridge.ResultTimeout || !strings.Contains(result.Error, "hard timeout") || result.SessionID != req.ResumeSessionID {
+		t.Fatalf("retained owner must remain bounded by the hard deadline: %+v", result)
+	}
+	// The owner still answers RPCs after Riido has completed or timed out.
 	queue, err := client.request("thread/queue/list", map[string]any{"threadId": req.ResumeSessionID})
 	if err != nil || len(queue["data"].([]any)) != 0 {
-		t.Fatalf("pending request not cleaned up: %v %v", queue, err)
+		t.Fatalf("owner unavailable or pending request left behind: %v %v", queue, err)
 	}
 	history, err := client.request("thread/turns/list", map[string]any{"threadId": req.ResumeSessionID, "itemsView": "full"})
-	if err != nil || len(history["data"].([]any)) != 1 {
-		t.Fatalf("blocked request unexpectedly ran: %v %v", history, err)
+	want := 1
+	if release {
+		want = 2
 	}
-	// Closing this isolated owner models the explicit action on the execution Mac.
-	// Riido must not stop it implicitly, fork the thread or rewrite its writer lock.
-	stopOwner()
-	req.TaskID = "native-followup-retry"
-	result = runNativeSharedFollowup(t, ctx, req)
-	if result.Status != agentbridge.ResultCompleted || result.SessionID != req.ResumeSessionID || strings.TrimSpace(result.Output) != "OK" {
-		t.Fatalf("same-thread retry after owner exit did not complete: %+v", result)
-	}
-	if modelCalls.Load() != 2 {
-		t.Fatalf("expected the initial turn and exactly one follow-up, got %d model requests", modelCalls.Load())
+	if err != nil || len(history["data"].([]any)) != want || int(modelCalls.Load()) != want {
+		t.Fatalf("request duplicated or missing: turns=%v modelCalls=%d err=%v", history, modelCalls.Load(), err)
 	}
 }
 

@@ -24,7 +24,7 @@ var (
 func sharedOwnerFailureMessage(err error) string {
 	switch {
 	case errors.Is(err, errSharedOwnerConnect):
-		return "Codex의 기존 대화에 연결하지 못했습니다. 실행 중인 작업이 끝난 뒤, 에이전트가 실행되는 Mac에서 해당 대화를 소유한 Codex 앱 또는 CLI를 종료하고 Riido 답글로 다시 요청해주세요. 기존 대화에서 이어갑니다. [codex_owner_connect_failed]"
+		return "Codex의 기존 대화에 연결하지 못했습니다. 에이전트가 실행되는 Mac에서 해당 Codex 대화의 실행 상태와 연결을 확인해주세요. [codex_owner_connect_failed]"
 	case errors.Is(err, errSharedOwnerInitialize):
 		return "Codex 연결 초기화에 실패했습니다. 에이전트가 실행되는 Mac의 Codex 앱과 CLI 버전을 확인해주세요. [codex_owner_initialize_failed]"
 	case errors.Is(err, errSharedOwnerRejected):

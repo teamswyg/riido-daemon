@@ -26,16 +26,20 @@ import (
 func TestIntegrationSharedOwnerStartsQueuedFollowup(t *testing.T) {
 	for _, loseAcknowledgement := range []bool{false, true} {
 		t.Run(map[bool]string{false: "acknowledged", true: "lost_start_acknowledgement"}[loseAcknowledgement], func(t *testing.T) {
-			testNativeSharedOwnerFollowup(t, loseAcknowledgement, false)
+			testNativeSharedOwnerFollowup(t, loseAcknowledgement, false, 0)
 		})
 	}
 }
 
 func TestIntegrationSharedOwnerExitDuringFollowupReconnectsSameThread(t *testing.T) {
-	testNativeSharedOwnerFollowup(t, false, true)
+	testNativeSharedOwnerFollowup(t, false, true, 0)
 }
 
-func testNativeSharedOwnerFollowup(t *testing.T, loseAcknowledgement, ownerExits bool) {
+func TestIntegrationSharedOwnerRecoversWithoutExiting(t *testing.T) {
+	testNativeSharedOwnerFollowup(t, false, false, 2)
+}
+
+func testNativeSharedOwnerFollowup(t *testing.T, loseAcknowledgement, ownerExits bool, connectionFailures int) {
 	t.Helper()
 	exe := os.Getenv("RIIDO_CODEX_NATIVE_TEST_EXECUTABLE")
 	if exe == "" {
@@ -123,6 +127,15 @@ func testNativeSharedOwnerFollowup(t *testing.T, loseAcknowledgement, ownerExits
 			// The real owner has consumed the queue entry. Model the response
 			// being lost before Riido can confirm the returned turn identity.
 			return errSharedOwnerUnconfirmed
+		}
+	}
+	if connectionFailures > 0 {
+		driver.(*protocolDriver).startSharedOwner = func(ctx context.Context, req agentbridge.StartRequest, threadID, submissionID string) error {
+			if connectionFailures > 0 {
+				connectionFailures--
+				return errSharedOwnerConnect
+			}
+			return startSharedOwner(ctx, req, threadID, submissionID)
 		}
 	}
 	sess, err := session.Start(ctx, session.Config{

@@ -33,8 +33,8 @@ func (d *protocolDriver) onRaw(ctx context.Context, raw agentbridge.RawEvent, io
 				return d.failedEvents(d.shared.startError + ". 대기 중인 요청을 정리하지 못했습니다. 재요청 전에 Codex 앱의 대기열을 확인해주세요"), nil, nil
 			}
 			if pr.method == codexMethodThreadResume && d.req.ResumeSessionID != "" && codexRPCErrorMessage(raw.Payload) == "thread "+d.req.ResumeSessionID+" already has an active writer" {
-				if d.sharedResumeRetried {
-					return d.failedEvents(sharedOwnerFailureMessage(errSharedOwnerConnect)), nil, nil
+				if d.shared != nil && d.shared.reconnecting {
+					return d.waitSharedReconnect(), nil, nil
 				}
 				return d.attachSharedWriter(ctx, io)
 			}

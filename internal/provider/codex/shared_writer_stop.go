@@ -12,7 +12,18 @@ func (d *protocolDriver) OnTerminate(ctx context.Context, io agentbridge.Protoco
 		return false, err
 	}
 	s := d.shared
-	if s == nil || s.done || s.stopping {
+	if s == nil || s.done {
+		return false, nil
+	}
+	if s.stopping {
+		// Failure cleanup may already be in flight. Cancellation must await it
+		// and must never turn its acknowledgement into a reconnect attempt.
+		s.startError = ""
+		for _, pending := range d.pending {
+			if pending.method == codexMethodQueueDelete {
+				return true, nil
+			}
+		}
 		return false, nil
 	}
 	s.stopping = true

@@ -32,7 +32,7 @@ func TestSharedOwnerMissingProxyIsActionableWithoutExposingPaths(t *testing.T) {
 	req := agentbridge.StartRequest{Executable: filepath.Join(t.TempDir(), "private-credential-path")}
 	err := startSharedOwner(t.Context(), req, "native", "mine")
 	message := sharedOwnerFailureMessage(err)
-	if !errors.Is(err, errSharedOwnerConnect) || !strings.Contains(message, "codex_owner_connect_failed") || !strings.Contains(message, "종료") || strings.Contains(message, "private-credential-path") {
+	if !errors.Is(err, errSharedOwnerConnect) || !strings.Contains(message, "codex_owner_connect_failed") || !strings.Contains(message, "실행 상태와 연결") || strings.Contains(message, "종료") || strings.Contains(message, "private-credential-path") {
 		t.Fatalf("missing owner diagnostic was unsafe or unactionable: %v %s", err, message)
 	}
 }
