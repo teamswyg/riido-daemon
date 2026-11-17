@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"syscall"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/pkg/util/netutil"
@@ -50,8 +51,12 @@ func writeRequest(conn net.Conn, method string, params any) error {
 	if _, err := conn.Write(requestBody); err != nil {
 		return fmt.Errorf("write riido API request: %w", err)
 	}
+	return closeRequestStream(conn)
+}
+
+func closeRequestStream(conn net.Conn) error {
 	if unix, ok := conn.(*net.UnixConn); ok {
-		if err := unix.CloseWrite(); err != nil {
+		if err := unix.CloseWrite(); err != nil && !errors.Is(err, syscall.ENOTCONN) {
 			return fmt.Errorf("close riido API request stream: %w", err)
 		}
 	}

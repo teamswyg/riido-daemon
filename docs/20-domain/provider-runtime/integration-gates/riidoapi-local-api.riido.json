@@ -10,6 +10,7 @@
       "The local API supports Unix socket and Windows named-pipe transport surfaces.",
       "It calls public task DB guarded mutation and validation APIs.",
       "Provider runtime execution and remote server HTTP/SSE transport remain outside this local API adapter."
-    ]}
+    ]},
+    {"kind": "paragraph", "text": "After writing a complete JSON request, the Unix client half-closes its write stream. If the peer has already replied and closed, ENOTCONN from that half-close alone must not discard a buffered reply. The client still reads and validates the existing response envelope, method and data; missing, malformed, refused or mismatched responses, read errors, other half-close errors and the existing deadline remain failures. No request replay is added."}
   ]
 }
