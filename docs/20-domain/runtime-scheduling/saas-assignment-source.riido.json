@@ -50,7 +50,7 @@
     {"name": "dynamic-long-poll-disabled-test", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_long_poll_context_test.go", "contains": "TestPlaneDisablesDynamicLongPollFromClaimContext"},
     {"name": "stale-binding-sentinel", "file": "internal/agentbridge/controlplane/saasplane/agent_poll.go", "contains": "errStaleAgentBindingPoll"},
     {"name": "stale-binding-cache-test", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_cache_test.go", "contains": "TestPlaneInvalidatesDynamicAgentBindingsAfterPollBadRequest"},
-    {"name": "stale-binding-live-candidate-test", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_stale_candidate_test.go", "contains": "TestPlaneSkipsStaleDynamicCandidateAndClaimsLiveAgent"},
+    {"name": "stale-binding-live-candidate-test", "file": "internal/agentbridge/controlplane/saasplane/runtime_binding_stale_candidate_test.go", "contains": "TestPlaneSkipsMultipleStaleCandidatesAndClaimsLiveAgent"},
     {"name": "heartbeat-default", "file": "internal/agentbridge/supervisor/config_normalize.go", "contains": "cfg.HeartbeatEvery = 5 * time.Second"},
     {"name": "heartbeat-post", "file": "internal/agentbridge/controlplane/saasplane/runtime_heartbeat.go", "contains": "ActiveAssignmentIDs: assignmentIDs"},
     {"name": "stale-heartbeat-cancel-test", "file": "internal/agentbridge/controlplane/saasplane/heartbeat_stale_cancellation_test.go", "contains": "TestPlaneDeliversCancellationFromUnrefreshedHeartbeat"},
