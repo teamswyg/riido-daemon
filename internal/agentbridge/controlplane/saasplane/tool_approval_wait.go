@@ -2,6 +2,7 @@ package saasplane
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 
@@ -14,6 +15,7 @@ func (p *Plane) waitToolApproval(
 	assignment assignmentcontract.Assignment,
 	approvalID string,
 ) (agentbridge.ToolApprovalResolution, error) {
+	consecutiveDeadlines := 0
 	for {
 		var out assignmentcontract.ToolApprovalWaitResponse
 		err := p.postJSON(ctx, toolApprovalWaitPath(assignment, approvalID), assignmentcontract.ToolApprovalWaitRequest{
@@ -21,12 +23,20 @@ func (p *Plane) waitToolApproval(
 			WaitMs:       pollWaitMilliseconds(p.cfg.LongPollWait),
 		}, &out)
 		if err != nil {
+			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == nil && consecutiveDeadlines < jsonRequestMaxAttempts-1 {
+				consecutiveDeadlines++
+				if waitErr := waitJSONRetry(ctx, consecutiveDeadlines); waitErr != nil {
+					return agentbridge.ToolApprovalResolution{}, waitErr
+				}
+				continue
+			}
 			return agentbridge.ToolApprovalResolution{}, err
 		}
 		resolution, done, err := toolApprovalWaitResolution(ctx, out)
 		if err != nil || done {
 			return resolution, err
 		}
+		consecutiveDeadlines = 0
 	}
 }
 
