@@ -28,6 +28,14 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 	case codexMethodInitialize:
 		return d.handleInitializeResponse(ctx, io)
 	case codexMethodThreadStart, codexMethodThreadResume:
+		if d.shared != nil && d.shared.reconnecting {
+			if ctx.Err() != nil || d.shared.stopping {
+				//nolint:nilerr // Cancellation is represented by the terminal result, not a protocol failure.
+				return []agentbridge.Event{{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultCancelled}}}, nil, nil
+			}
+			d.owned.clientID = d.shared.clientID
+			d.shared = nil
+		}
 		return d.handleThreadReadyResponse(ctx, raw, io)
 	case codexMethodTurnStart:
 		events, commands, err := d.handleTurnStartResponse()

@@ -26,6 +26,10 @@ type sharedWriter struct {
 	startRequested bool
 	startError     string
 	startFailure   error
+	reconnecting   bool
+	retryAt        time.Time
+	retryDelay     time.Duration
+	waitAnnounced  bool
 	done           bool
 	stopping       bool
 	turnID         string
@@ -48,7 +52,10 @@ func (d *protocolDriver) attachSharedWriter(ctx context.Context, io agentbridge.
 func (d *protocolDriver) PollInterval() time.Duration { return time.Second }
 
 func (d *protocolDriver) OnPoll(ctx context.Context, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
-	if d.shared == nil || d.shared.done || d.shared.stopping || len(d.pending) > 0 {
+	if err := ctx.Err(); err != nil {
+		return nil, nil, err
+	}
+	if d.shared == nil || d.shared.done || d.shared.stopping || len(d.pending) > 0 || time.Now().Before(d.shared.retryAt) {
 		return nil, nil, nil
 	}
 	d.historyTurns, d.historyCursors = nil, map[string]bool{}
@@ -93,19 +100,24 @@ func (d *protocolDriver) handleSharedResponse(ctx context.Context, method codexM
 				s.startError, s.stopping, s.startRequested = "", false, true
 				return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: "대기열에서 요청을 찾지 못했습니다. 같은 요청이 이미 실행되었는지 결과를 확인합니다."}}, nil, nil
 			}
-			if valid && deleted && errors.Is(s.startFailure, errSharedOwnerConnect) && !d.sharedResumeRetried && ctx.Err() == nil {
+			if valid && deleted && errors.Is(s.startFailure, errSharedOwnerConnect) && ctx.Err() == nil {
 				// Confirmed deletion proves our prompt never started. The owner
 				// may have exited while proxy connection/cleanup was in flight.
-				// Let Codex arbitrate the same thread's writer lock exactly once.
-				d.sharedResumeRetried = true
-				d.shared = nil
+				// Let Codex arbitrate the same thread's writer lock. Retain the
+				// request identity if the owner still holds it, for safe retry.
+				message := s.startError
+				s.submissionID, s.submitted, s.stopping = "", false, false
+				s.startError, s.startFailure, s.reconnecting = "", nil, true
 				d.historyTurns, d.historyCursors = nil, nil
 				method, params := d.threadStartRequest()
 				if _, err := d.sendRequest(ctx, io, method, params); err != nil {
 					//nolint:nilerr // Emit the sanitized terminal result instead of exposing the reconnect pipe error.
-					return d.failedEvents(s.startError), nil, nil
+					return d.failedEvents(message), nil, nil
 				}
-				return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: "Codex 연결이 변경되어 같은 대화에 다시 연결합니다."}}, nil, nil
+				if !s.waitAnnounced {
+					return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: "Codex 연결이 변경되어 같은 대화에 다시 연결합니다."}}, nil, nil
+				}
+				return nil, nil, nil
 			}
 			s.done = true
 			message := s.startError
@@ -135,6 +147,12 @@ func (d *protocolDriver) requestSharedQueue(ctx context.Context, cursor string, 
 }
 
 func (d *protocolDriver) handleSharedQueueList(ctx context.Context, result map[string]any, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
+	if err := ctx.Err(); err != nil {
+		return nil, nil, err
+	}
+	if d.shared.stopping || d.shared.done {
+		return nil, nil, nil
+	}
 	data, ok := result["data"].([]any)
 	if !ok {
 		return d.failedEvents("codex: invalid native queue list"), nil, nil

@@ -2,7 +2,6 @@ package codex
 
 import (
 	"context"
-	"strings"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -10,6 +9,7 @@ import (
 
 func TestSharedWriterReleasedOwnerResumesOnlyAfterConfirmedDeletion(t *testing.T) {
 	d, io := sharedPendingFixture(t)
+	clientID := d.shared.clientID
 	d.startSharedOwner = func(context.Context, agentbridge.StartRequest, string, string) error { return errSharedOwnerConnect }
 	_, _, _ = d.OnRaw(t.Context(), makeResponse(5, map[string]any{"data": []any{map[string]any{"id": "mine", "clientUserMessageId": d.shared.clientID}}}), io)
 	deletion := assertSharedMethod(t, io, "thread/queue/delete")
@@ -28,12 +28,12 @@ func TestSharedWriterReleasedOwnerResumesOnlyAfterConfirmedDeletion(t *testing.T
 		t.Fatal(err)
 	}
 	turn := assertSharedMethod(t, io, "turn/start")
-	if turn["params"].(map[string]any)["threadId"] != "native" || len(io.writes) != 0 {
+	if turn["params"].(map[string]any)["threadId"] != "native" || turn["params"].(map[string]any)["clientUserMessageId"] != clientID || len(io.writes) != 0 {
 		t.Fatal("must send exactly one turn on the same native thread")
 	}
 }
 
-func TestSharedWriterReconnectNeverRequeuesAnActiveOwner(t *testing.T) {
+func TestSharedWriterReconnectBacksOffForAnActiveOwner(t *testing.T) {
 	d, io := sharedPendingFixture(t)
 	d.startSharedOwner = func(context.Context, agentbridge.StartRequest, string, string) error { return errSharedOwnerConnect }
 	_, _, _ = d.OnRaw(t.Context(), makeResponse(5, map[string]any{"data": []any{map[string]any{"id": "mine", "clientUserMessageId": d.shared.clientID}}}), io)
@@ -43,12 +43,12 @@ func TestSharedWriterReconnectNeverRequeuesAnActiveOwner(t *testing.T) {
 	events, _, err := d.OnRaw(t.Context(), agentbridge.RawEvent{Type: "error", Payload: map[string]any{
 		"id": int64(resume["id"].(float64)), "error": map[string]any{"message": "thread native already has an active writer"},
 	}}, io)
-	if err != nil || len(events) == 0 || !strings.Contains(events[len(events)-1].Result.Error, "codex_owner_connect_failed") {
-		t.Fatalf("persistent owner did not fail actionably: %+v %v", events, err)
+	if err != nil || len(events) != 1 || events[0].Kind != agentbridge.EventProgress || !d.shared.waitAnnounced {
+		t.Fatalf("persistent owner did not enter connection wait: %+v %v", events, err)
 	}
 	_, _, _ = d.OnPoll(t.Context(), io)
 	if len(io.writes) != 0 {
-		t.Fatal("active owner was retried or requeued")
+		t.Fatal("active owner was retried without backoff")
 	}
 }
 

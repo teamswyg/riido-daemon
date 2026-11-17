@@ -38,6 +38,9 @@ func (d *protocolDriver) threadIdentifiedEvents() []agentbridge.Event {
 
 func (d *protocolDriver) turnStartParams() map[string]any {
 	params := map[string]any{}
+	if d.owned.clientID != "" {
+		params["clientUserMessageId"] = d.owned.clientID
+	}
 	if d.threadID != "" {
 		params["threadId"] = d.threadID
 	}

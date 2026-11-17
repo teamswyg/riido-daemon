@@ -29,6 +29,11 @@ func (c *ownedCompaction) observe(method codexMethod, item map[string]any) bool 
 }
 
 func (d *protocolDriver) ConsumeIdleGrace() bool {
+	if d.shared.waitingForReconnect() {
+		// Coordination wait is not a silent model run. Keep the original
+		// request alive; cancellation and the session hard deadline still apply.
+		return true
+	}
 	c := &d.owned.compaction
 	if d.owned.done || (c.activeID == "" && !d.owned.runningConfirmed) || d.owned.idleGraceUsed {
 		return false

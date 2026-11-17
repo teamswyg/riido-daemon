@@ -38,19 +38,18 @@ type protocolDriver struct {
 	pending map[int64]pendingRequest
 
 	// Handshake progress flags. Single-goroutine access (session actor).
-	initialized         bool
-	threadID            string
-	owned               ownedTurn
-	idleRecoveryID      int64
-	mcpApprovals        map[string]string
-	turnStarted         bool
-	sawAssistantOutput  bool
-	lastRuntimeError    string
-	historyTurns        []any
-	historyCursors      map[string]bool
-	shared              *sharedWriter
-	sharedResumeRetried bool
-	startSharedOwner    func(context.Context, agentbridge.StartRequest, string, string) error
+	initialized        bool
+	threadID           string
+	owned              ownedTurn
+	idleRecoveryID     int64
+	mcpApprovals       map[string]string
+	turnStarted        bool
+	sawAssistantOutput bool
+	lastRuntimeError   string
+	historyTurns       []any
+	historyCursors     map[string]bool
+	shared             *sharedWriter
+	startSharedOwner   func(context.Context, agentbridge.StartRequest, string, string) error
 }
 
 type pendingRequest struct {

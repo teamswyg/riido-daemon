@@ -9,6 +9,7 @@ import (
 
 type ownedTurn struct {
 	id               string
+	clientID         string
 	done             bool
 	early            []agentbridge.RawEvent
 	earlyBytes       int
