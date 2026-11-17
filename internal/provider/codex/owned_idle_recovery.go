@@ -8,6 +8,7 @@ import (
 )
 
 func (d *protocolDriver) BeginIdleRecovery(ctx context.Context, io agentbridge.ProtocolIO) (bool, error) {
+	d.owned.runningConfirmed = false
 	if d.threadID == "" || d.owned.id == "" || d.shared != nil {
 		return false, nil
 	}
@@ -37,6 +38,10 @@ func (d *protocolDriver) OnIdleRecoveryRaw(raw agentbridge.RawEvent) (agentbridg
 		if stringField(turn, "id") != d.owned.id {
 			continue
 		}
+		if stringField(turn, "status") == "inProgress" && intField(turn, "completedAt") == 0 {
+			d.owned.runningConfirmed = true
+			break
+		}
 		if stringField(turn, "status") != "completed" || intField(turn, "completedAt") <= 0 {
 			break
 		}
@@ -48,4 +53,9 @@ func (d *protocolDriver) OnIdleRecoveryRaw(raw agentbridge.RawEvent) (agentbridg
 		break
 	}
 	return agentbridge.Result{}, true
+}
+
+func (d *protocolDriver) EndIdleRecovery() {
+	delete(d.pending, d.idleRecoveryID)
+	d.idleRecoveryID = 0
 }

@@ -22,7 +22,8 @@
   ],
   "latest_evidence": [
     "A-57-AI-Agent-Provider-Codex-worktree-side-effect-검증",
-    "RIID-4917-Codex-full-access-harness-policy"
+    "RIID-4917-Codex-full-access-harness-policy",
+    "RIID-6203: deterministic owned idle continuation, event delivery during recovery, approval wait preservation and correlated command progress; no network-outage reproduction claim"
   ],
   "must_not_claim": [
     "Codex full-access came from provider default sandbox selection",
