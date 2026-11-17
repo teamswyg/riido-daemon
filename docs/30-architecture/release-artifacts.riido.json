@@ -105,7 +105,8 @@
     {"name": "tag-requires-helper", "file": "scripts/build-release-package.sh", "contains": "macOS tag release requires a signed CLI auth helper"},
     {"name": "cdn-requires-helper", "file": "scripts/publish-cdn-latest.sh", "contains": "-require-helper"},
     {"name": "signed-source-binding", "file": "scripts/consume-macos-release-input.sh", "contains": "RiidoCLISourceRevision"},
-    {"name": "notarized-input", "file": "scripts/consume-macos-release-input.sh", "contains": "stapler validate"}
+    {"name": "notarized-input", "file": "scripts/consume-macos-release-input.sh", "contains": "stapler validate"},
+    {"name": "native-variable-length-der-fixture", "file": "native/cli-auth-helper/Tests/InstallationSignatureFixture.swift", "contains": "proof fixture accepts valid 69-byte DER"}
   ],
   "detail_docs": [
     {"title": "Decision and Asset Names", "path": "docs/30-architecture/release-artifacts/assets.md"},
@@ -126,6 +127,7 @@
     "CDN verification requires the macOS helper bundle and manifest, and checks paths and versions with a portable archive validator. Apple signature and notarization are checked by the macOS build lane; neither check claims first-login presence or installation-binding acceptance.",
     "The standalone shell installer still installs the daemon binary only; optional helper packaging does not claim standalone auth installation support.",
     "Prepare each macOS input with scripts/prepare-macos-release-input.sh using the existing Apple signing identity and authorized provisioning profile. Upload riido-macos-input_darwin_{arm64,amd64}.tar.gz to a draft release targeting the reviewed main commit before pushing the tag. CI alone publishes the final release and CDN. No signing credential is uploaded in a package or copied into repository secrets.",
-    "Both legacy flat desktop installs and managed helper installs must update to a helper-inclusive package; managed installs must continue rejecting helper removal. Real signed-package installation checks supplement fixture lifecycle tests. Busy daemons defer activation without forced termination."
+    "Both legacy flat desktop installs and managed helper installs must update to a helper-inclusive package; managed installs must continue rejecting helper removal. Real signed-package installation checks supplement fixture lifecycle tests. Busy daemons defer activation without forced termination.",
+    "Native installation-proof fixtures retain canonical base64url decoding, CryptoKit DER parsing and verification against the exact golden message. DER validity is not inferred from a 70-to-72-byte length heuristic; a fixed valid 69-byte signature guards this boundary without changing production signing or authentication."
   ]
 }
