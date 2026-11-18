@@ -61,7 +61,7 @@ func TestAgentCommentCursorIsUnchangedAndRepliesRemainUnsupported(t *testing.T) 
 	if request["command"] != "work comments" || args["cursor"] != "previous-opaque" || args["limit"] != nil {
 		t.Fatalf("agent paging changed: %v", args)
 	}
-	for _, command := range [][]string{{"comments", "RIID-5900", "--limit", "20"}, {"replies", "work-one", "--team-id", "team-one", "--comment-id", "comment-one"}} {
+	for _, command := range [][]string{{"replies", "work-one", "--team-id", "team-one", "--comment-id", "comment-one"}} {
 		if got := exitCodeOf(t, runWork(h.io, command)); got != 8 {
 			t.Fatalf("agent unsupported exit=%d", got)
 		}

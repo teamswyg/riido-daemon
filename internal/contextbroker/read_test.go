@@ -78,8 +78,8 @@ func TestReadWithoutSnapshotSupportStaysUnsupported(t *testing.T) {
 	b := New("", "")
 	b.Fetcher = &fakeFetcher{}
 	token := issueForTest(t, b, saasBinding())
-	if got := errorCode(t, b.Handle(request(token, "work activity"), activeSet("run-1"))); got != contextcli.CodeControlPlaneUnsupported {
-		t.Fatalf("activity is outside the snapshot, got %s", got)
+	if got := errorCode(t, b.Handle(request(token, "work search"), activeSet("run-1"))); got != contextcli.CodeControlPlaneUnsupported {
+		t.Fatalf("search is unsupported, got %s", got)
 	}
 	local := New("", "")
 	local.Fetcher = &fakeFetcher{}
