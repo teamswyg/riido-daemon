@@ -21,6 +21,9 @@ func TestUserWorkspaceLocatorV2Commands(t *testing.T) {
 		args        []string
 		field, body string
 	}{
+		{"tree", []string{"tree", "work-one"}, "getComponentReadScope", `{"schemaVersion":"riido-read-scope.v2","workspaceId":"workspace-one","rootId":"work-one","teamId":null,"status":"available","selection":{"childrenLimit":10},"works":[{"id":"work-one","workspaceId":"workspace-one","kind":"component","teamId":null,"reasons":[{"kind":"root"}],"summary":{"id":"work-one","kind":"component","title":"Project","keyNumber":null,"componentType":"project"}}]}`},
+		{"relations", []string{"relations", "work-one"}, "getComponentRelatedIssues", `[]`},
+		{"activity", []string{"activity", "work-one"}, "getComponentActivityLogs", `{"activityLogs":[],"meta":{"total":0,"currentPage":1,"nextPage":null,"prevPage":null,"lastPage":0}}`},
 		{"work", []string{"get", "work-one"}, "getComponent", `{"schemaVersion":"riido-work-detail.v2","workspaceId":"workspace-one","ownerTeamId":null,"canEdit":true,"id":"work-one","componentType":"project","title":"workspace project","componentMembers":[],"componentLabels":[]}`},
 		{"body", []string{"body", "work-one", "--version", version}, "getComponentReadScopeBody", `{"schemaVersion":"riido-read-body.v2","workspaceId":"workspace-one","teamId":null,"resourceKind":"component","resourceId":"work-one","part":"document","status":"available","source":"provider_json","format":"json","version":"` + version + `","offset":0,"content":"{}","nextOffset":null,"complete":true,"selector":null}`},
 		{"comments", []string{"comments", "work-one"}, "getReadScopeComments", `{"schemaVersion":"riido-read-comments.v2","workspaceId":"workspace-one","teamId":null,"resourceKind":"component","resourceId":"work-one","parentCommentId":null,"limit":20,"version":"` + version + `","status":"empty","page":1,"nextPage":null,"complete":true,"items":[]}`},
@@ -37,7 +40,7 @@ func TestUserWorkspaceLocatorV2Commands(t *testing.T) {
 					t.Error("version/workspace lost")
 				}
 				if strings.Contains(q.Query, "resolveCLIWorkReference") {
-					fmt.Fprint(w, `{"data":{"resolveCLIWorkReference":{"schemaVersion":"riido-work-reference.v2","workspaceId":"workspace-one","teamId":null,"id":"work-one","key":"SC-1","keyNumber":"1","componentType":"project"}}}`)
+					fmt.Fprint(w, `{"data":{"resolveCLIWorkReference":{"schemaVersion":"riido-work-reference.v2","workspaceId":"workspace-one","teamId":null,"id":"work-one","key":"","keyNumber":"","componentType":"project"}}}`)
 					return
 				}
 				if q.Variables["teamId"] != nil || !strings.Contains(q.Query, tc.field+"(") {
@@ -53,10 +56,10 @@ func TestUserWorkspaceLocatorV2Commands(t *testing.T) {
 			}
 			env := decodeEnvelope(t, h.stdout.Bytes())
 			payload, _ := json.Marshal(env.Data)
-			if calls != 2 || len(h.daemon.requests) != 0 || !strings.Contains(string(payload), `"workspaceId":"workspace-one"`) {
+			if calls != 2 || len(h.daemon.requests) != 0 || (tc.name != "relations" && tc.name != "activity" && !strings.Contains(string(payload), `"workspaceId":"workspace-one"`)) {
 				t.Fatal("lost workspace or wrong request path", calls, h.stdout.String())
 			}
-			if !strings.Contains(string(payload), `"teamId":null`) && !strings.Contains(string(payload), `"ownerTeamId":null`) {
+			if tc.name != "relations" && tc.name != "activity" && !strings.Contains(string(payload), `"teamId":null`) && !strings.Contains(string(payload), `"ownerTeamId":null`) {
 				t.Fatal("null team lost", h.stdout.String())
 			}
 		})
@@ -69,7 +72,7 @@ func TestUserWorkspaceLocatorV2RejectsBeforeCredentials(t *testing.T) {
 		{"get", "work-one", "--workspace", "workspace-one", "--locator-version", "0"},
 		{"get", "work-one", "--workspace", "workspace-one", "--locator-version", "3"},
 		{"search", "--workspace", "workspace-one", "--query", "hello", "--locator-version", "2.0"},
-		{"tree", "work-one", "--workspace", "workspace-one", "--locator-version", "2"},
+		{"tree", "work-one", "--locator-version", "2"},
 	} {
 		h := newContextHarness(t, nil)
 		opened := 0
@@ -116,6 +119,22 @@ func TestUserWorkspaceLocatorV2ActorRendering(t *testing.T) {
 	var comment userapi.Comment
 	if json.Unmarshal([]byte(`{"id":"comment-one","author":null,"workspaceAuthor":{"id":"workspace-member","nickname":"Workspace author","status":"active"}}`), &comment) != nil || comment.WorkspaceAuthor == nil || comment.Author != nil {
 		t.Fatal("workspace actor converted to team actor")
+	}
+}
+
+func TestUserWorkspaceLocatorV2ProjectPresentation(t *testing.T) {
+	lead := "workspace-member"
+	work := userapi.WorkV2{Work: userapi.Work{ID: "project-one", Title: "Project", ComponentType: "project", KeyNumber: "OLD-1"}, LeadMemberID: &lead, TeamIDs: []string{"participant-team"}, TaskTeamIDs: []string{"owner-team"}}
+	var out bytes.Buffer
+	renderWorkDetailView(&out, cliui.Terminal{Width: 100}, work.Work, &work)
+	if strings.Contains(out.String(), "OLD-1") || !strings.Contains(out.String(), "participant-team") || !strings.Contains(out.String(), "owner-team") || !strings.Contains(out.String(), lead) {
+		t.Fatal(out.String())
+	}
+	work.ComponentType = "milestone"
+	out.Reset()
+	renderWorkDetailView(&out, cliui.Terminal{Width: 100}, work.Work, &work)
+	if strings.Contains(out.String(), "담당자") || strings.Contains(out.String(), "OLD-1") || strings.Contains(out.String(), "participant-team") {
+		t.Fatal("goal invented a member/team", out.String())
 	}
 }
 

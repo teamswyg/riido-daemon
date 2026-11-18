@@ -73,7 +73,7 @@ func (c contextIO) runUserWork(raw []string) error {
 		if err != nil {
 			return c.fail(args.JSON, requestID, userAuthError(err))
 		}
-		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "work": result}), workView(c.stdout, result.Work))
+		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "work": result}), workV2View(c.stdout, result))
 	}
 	result, err := session.Work(ctx, work, team, args.Workspace)
 	if err != nil {

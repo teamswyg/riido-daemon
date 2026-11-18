@@ -9,7 +9,7 @@ import (
 
 func (c contextIO) runUserActivity(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--page"}, AllowLimit: true}, true)
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--locator-version", "--page"}, AllowLimit: true}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -46,6 +46,14 @@ func (c contextIO) runUserActivity(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
+
+	if version, _ := userLocatorVersion(args); version == 2 {
+		page, err := session.ActivityV2(ctx, userV2Reference(args, work, team), pagination)
+		if err != nil {
+			return c.fail(args.JSON, requestID, userAuthError(err))
+		}
+		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "activityLogs": page.ActivityLogs, "meta": page.Meta}), activityView(c.stdout, page))
+	}
 	page, err := session.Activity(ctx, work, team, pagination, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))

@@ -12,7 +12,7 @@ import (
 
 func (c contextIO) runUserTree(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--page", "--budget"}}, true)
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--locator-version", "--page", "--budget"}}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -36,6 +36,27 @@ func (c contextIO) runUserTree(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
+
+	if version, _ := userLocatorVersion(args); version == 2 {
+		tree, err := session.TreeV2(ctx, userV2Reference(args, work, team))
+		if err != nil {
+			return c.fail(args.JSON, requestID, userAuthError(err))
+		}
+		env := contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "live": true, "tree": tree})
+		if tree.ContextStatus == "partial" {
+			env.Warnings = append(env.Warnings, contextcli.Warning{Code: "CONTEXT_INCOMPLETE", Message: "서버가 선택한 한 단계 계층만 표시합니다"})
+		}
+		return c.succeed(args.JSON, env, func(w io.Writer, _ any) {
+			fmt.Fprintf(w, "작업: %q (id=%q)\n", tree.Root.Title, tree.Root.ID)
+			for _, a := range tree.Ancestors {
+				fmt.Fprintf(w, "  %s: %q (id=%q)\n", a.Relation, a.Work.Title, a.Work.ID)
+			}
+			fmt.Fprintf(w, "선택된 하위 작업: %d개 (최대 %d개, 한 단계)\n", len(tree.Children), tree.ChildrenLimit)
+			for _, child := range tree.Children {
+				fmt.Fprintf(w, "  - %q (id=%q)\n", child.Title, child.ID)
+			}
+		})
+	}
 	tree, err := session.Tree(ctx, work, team, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))

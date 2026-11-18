@@ -37,3 +37,7 @@ func scopeCommentsV2View(w io.Writer, page userapi.ReadScopeCommentPageV2) textR
 		renderScopeCommentsView(out, term, page.ContentView(), workBodyV2Command(page.ResourceID, page.WorkspaceID, page.ResourceKind, page.TeamID))
 	})
 }
+
+func workV2View(w io.Writer, work userapi.WorkV2) textRenderer {
+	return terminalView(w, func(out io.Writer, term cliui.Terminal) { renderWorkDetailView(out, term, work.Work, &work) })
+}

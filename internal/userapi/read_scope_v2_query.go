@@ -11,7 +11,7 @@ const readScopeV2Query = `query RiidoCLIReadScope($componentId:String!,$teamId:S
  getComponentReadScope(componentId:$componentId,teamId:$teamId,workspaceId:$workspaceId,locatorVersion:2){
   schemaVersion workspaceId rootId teamId status selection{relatedWorkLimit relatedMeetingLimit childrenLimit}
   works{id kind workspaceId teamId summary{id kind title updatedAt keyNumber componentType branchName} contentPage{` + readBodyV2Fields + `} reasons{kind relation source}
-   details{id componentType title keyNumber branchName startDate endDate estimate totalPriorityScore
+   details{id componentType title keyNumber branchName leadMemberId teamIds taskTeamIds startDate endDate estimate totalPriorityScore
     isTemplate isPublished isDone doneDate cancelledAt cancellationReason isArchived archivedDate
     isOnboardingComponent createdAt updatedAt deletedAt notificationSubscribed estimateMethod
     createdBy{id status workspaceProfile{nickname status avatar{fileLocation}}}
@@ -55,4 +55,4 @@ const readScopeCommentsV2Query = `query RiidoCLIReadScopeComments($resourceId:St
  getReadScopeComments(resourceId:$resourceId,resourceKind:$resourceKind,workspaceId:$workspaceId,teamId:$teamId,locatorVersion:2,page:$page,limit:$limit,parentCommentId:$parentCommentId,version:$version){` + readScopeCommentsV2Fields + `}
 }`
 
-const workV2Query = `query RiidoCLIWork($componentId:String!,$teamId:String,$workspaceId:String!){getComponent(componentId:$componentId,teamId:$teamId,workspaceId:$workspaceId,locatorVersion:2,getComponentDto:{getDocument:"true"}){schemaVersion workspaceId ownerTeamId canEdit createdByWorkspaceMember{id nickname status} lastUpdatedByWorkspaceMember{id nickname status} id componentType title keyNumber description createdAt updatedAt document{id HTMLContent tiptapDocumentId} startDate endDate estimate totalPriorityScore isDone isArchived status{id statusName statusType} componentMembers{id memberOrder workspaceMember{id nickname status} teamMember{id status workspaceProfile{nickname status}}} componentLabels{id labelOrder label{id labelName}}}}`
+const workV2Query = `query RiidoCLIWork($componentId:String!,$teamId:String,$workspaceId:String!){getComponent(componentId:$componentId,teamId:$teamId,workspaceId:$workspaceId,locatorVersion:2,getComponentDto:{getDocument:"true"}){schemaVersion workspaceId ownerTeamId canEdit leadMemberId teamIds taskTeamIds createdByWorkspaceMember{id nickname status} lastUpdatedByWorkspaceMember{id nickname status} id componentType title keyNumber description createdAt updatedAt document{id HTMLContent tiptapDocumentId} startDate endDate estimate totalPriorityScore isDone isArchived status{id statusName statusType} componentMembers{id memberOrder workspaceMember{id nickname status} teamMember{id status workspaceProfile{nickname status}}} componentLabels{id labelOrder label{id labelName}}}}`

@@ -39,6 +39,9 @@ type ReadScopeCommentPageV2 struct {
 
 type WorkV2 struct {
 	Work
+	LeadMemberID                 *string                `json:"leadMemberId"`
+	TeamIDs                      []string               `json:"teamIds"`
+	TaskTeamIDs                  []string               `json:"taskTeamIds"`
 	SchemaVersion                string                 `json:"schemaVersion"`
 	WorkspaceID                  string                 `json:"workspaceId"`
 	OwnerTeamID                  *string                `json:"ownerTeamId"`

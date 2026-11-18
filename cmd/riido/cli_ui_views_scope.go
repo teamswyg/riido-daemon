@@ -96,10 +96,11 @@ func bodySelectorFlags(part string, selector *userapi.ReadPartSelector) string {
 // scopeHeadline reads only the display fields every detail kind selects.
 // status is an object for components and a string for intakes.
 type scopeHeadline struct {
-	Title     *string         `json:"title"`
-	KeyNumber *string         `json:"keyNumber"`
-	IsDone    *bool           `json:"isDone"`
-	Status    json.RawMessage `json:"status"`
+	ComponentType string          `json:"componentType"`
+	Title         *string         `json:"title"`
+	KeyNumber     *string         `json:"keyNumber"`
+	IsDone        *bool           `json:"isDone"`
+	Status        json.RawMessage `json:"status"`
 }
 
 func workHeadline(term cliui.Terminal, work *userapi.ReadScopeWork) (string, string, string) {
@@ -112,6 +113,13 @@ func workHeadline(term cliui.Terminal, work *userapi.ReadScopeWork) (string, str
 	title, key := deref(head.Title), deref(head.KeyNumber)
 	if work.Summary != nil {
 		title, key = orText(title, work.Summary.Title), orText(key, deref(work.Summary.KeyNumber))
+	}
+	kind := head.ComponentType
+	if kind == "" && work.Summary != nil && work.Summary.ComponentType != nil {
+		kind = *work.Summary.ComponentType
+	}
+	if kind == "project" || kind == "milestone" {
+		key = ""
 	}
 	var status struct {
 		StatusName string `json:"statusName"`

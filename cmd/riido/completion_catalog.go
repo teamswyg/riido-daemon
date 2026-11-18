@@ -77,6 +77,11 @@ func completionCatalog() []clicompletion.Command {
 	user(string(mainCommandDoctor), "", "--check-api")
 	user(string(mainCommandUpdate), "--channel", "--check")
 	result[len(result)-1].Values["--channel"] = []string{"staging", "latest"}
+	for i := range result {
+		if strings.HasPrefix(result[i].Path, "work ") || result[i].Path == "context get" {
+			result[i].Values["--locator-version"] = []string{"1", "2"}
+		}
+	}
 	// Generator options are deliberately independent of user settings.
 	result = append(result, clicompletion.Command{Path: string(mainCommandCompletion), Flags: []string{"--help", "-h", "--json", "--no-input", "--no-color"}, Values: map[string][]string{"--format": {"text", "json"}}, Positionals: func(previous []string) []string {
 		if len(previous) == 0 {
