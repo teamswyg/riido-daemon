@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/teamswyg/riido-daemon/internal/workdir"
+
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -85,5 +87,15 @@ func TestRepositorySelectionWithoutChecksIsNotVerified(t *testing.T) {
 	got := resultExecutionContext(task, agentbridge.Result{Status: agentbridge.ResultCompleted})
 	if got.WorkspaceKind != "repository_clone" || got.VerificationStatus != "not_configured" {
 		t.Fatalf("folder selection invented host evidence: %+v", got)
+	}
+}
+
+func TestUnavailableAssignmentCheckoutReportsIsolatedWorkspace(t *testing.T) {
+	req := privateWorktreeRequest()
+	req.AssignmentCheckoutUnavailable = true
+	task := &runningTask{request: &req, workspace: &workdir.Workspace{}}
+	got := executionContextForTask(task)
+	if got.WorkspaceKind != "isolated" || got.VerificationStatus != "not_configured" {
+		t.Fatalf("workspace evidence after failed checkout = %+v", got)
 	}
 }
