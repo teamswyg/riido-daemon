@@ -180,3 +180,27 @@ func TestUserWorkspaceLocatorV2NativeKeys(t *testing.T) {
 		})
 	}
 }
+
+func TestUserContextProjectKeysStayVisibleInV1(t *testing.T) {
+	for _, kind := range []string{"project", "milestone"} {
+		for _, summaryOnly := range []bool{false, true} {
+			for _, version := range []string{"riido-read-scope.v1", "riido-read-scope.v2"} {
+				t.Run(fmt.Sprintf("%s/%s/summary=%t", version, kind, summaryOnly), func(t *testing.T) {
+					key := "OLD-42"
+					work := &userapi.ReadScopeWork{ID: "work-one", Kind: "component"}
+					if summaryOnly {
+						work.Summary = &userapi.ReadResourceSummary{ID: "work-one", Kind: "component", Title: "Workspace work", KeyNumber: &key, ComponentType: &kind}
+					} else {
+						work.Details = json.RawMessage(fmt.Sprintf(`{"id":"work-one","title":"Workspace work","componentType":%q,"keyNumber":"OLD-42"}`, kind))
+					}
+					scope := userapi.ReadScope{SchemaVersion: version, Works: []*userapi.ReadScopeWork{work}}
+					var out bytes.Buffer
+					renderContextView(&out, cliui.Terminal{Width: 100}, scope)
+					if strings.Contains(out.String(), key) != (version == "riido-read-scope.v1") {
+						t.Fatal(out.String())
+					}
+				})
+			}
+		}
+	}
+}

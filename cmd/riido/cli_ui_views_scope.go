@@ -103,7 +103,7 @@ type scopeHeadline struct {
 	Status        json.RawMessage `json:"status"`
 }
 
-func workHeadline(term cliui.Terminal, work *userapi.ReadScopeWork) (string, string, string) {
+func workHeadline(term cliui.Terminal, work *userapi.ReadScopeWork, workspaceLocator bool) (string, string, string) {
 	var head scopeHeadline
 	for _, raw := range []json.RawMessage{work.Details, work.BacklogDetails, work.IntakeDetails} {
 		if len(raw) > 0 && string(raw) != "null" && json.Unmarshal(raw, &head) == nil {
@@ -118,7 +118,7 @@ func workHeadline(term cliui.Terminal, work *userapi.ReadScopeWork) (string, str
 	if kind == "" && work.Summary != nil && work.Summary.ComponentType != nil {
 		kind = *work.Summary.ComponentType
 	}
-	if kind == "project" || kind == "milestone" {
+	if workspaceLocator && (kind == "project" || kind == "milestone") {
 		key = ""
 	}
 	var status struct {
@@ -160,7 +160,7 @@ func renderContextView(w io.Writer, term cliui.Terminal, scope userapi.ReadScope
 		if work == nil {
 			continue
 		}
-		title, key, state := workHeadline(term, work)
+		title, key, state := workHeadline(term, work, scope.SchemaVersion == "riido-read-scope.v2")
 		fmt.Fprintln(w)
 		line := term.Bold(cliui.Truncate(orText(oneLine(title), "(제목 없음)"), max(term.Width-cliui.DisplayWidth(key)-1, 12)))
 		if key != "" {
