@@ -31,6 +31,15 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 		TaskID: binding.TaskID,
 		View:   view, Target: queryTarget(req.Args), Cursor: strings.TrimSpace(req.Args["cursor"]), RequestID: requestID,
 	}
+	query.ThreadID = req.Args["thread"]
+	for _, key := range []string{"page", "limit", "version", "part", "offset", "comment-id", "comments-limit"} {
+		if value, ok := req.Args[key]; ok {
+			if query.Options == nil {
+				query.Options = map[string]string{}
+			}
+			query.Options[key] = value
+		}
+	}
 	if view == viewContent {
 		query.MaxBytes = contentBatchBytes(req.Args)
 	}
@@ -60,13 +69,18 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 		return contextcli.FailureEnvelope(requestID, contextcli.Fail(contextcli.CodeIncomplete, "변경 목록이 조회 예산을 초과했습니다. 비교 결과를 자르지 않았습니다", "riido context get"))
 	}
 	preservePage := capturedReadBudget(view, data, budget)
+	// Live pages carry original version/offset selectors. Never shorten them
+	// while claiming the server supplied the same page.
+	if result.Live && budget > 0 && utf8.RuneCount(data) > budget {
+		preservePage = true
+	}
 	budgetCut, budgetFits := false, true
 	if !preservePage {
 		data, budgetCut, budgetFits = applyBudget(data, budget)
 	}
 	truncated := result.Truncated || budgetCut
 	env := contextcli.NewEnvelope(requestID, data)
-	if (view == viewComments && !capturedReadResponse(view, result.Data)) || view == viewAgents || view == viewContent {
+	if (!result.Live && view == viewComments && !capturedReadResponse(view, result.Data)) || view == viewAgents || view == viewContent {
 		env.Page = cursorPage(view, result.Data)
 	}
 	status := contextcli.SourceAvailable
@@ -79,10 +93,14 @@ func (b *Broker) read(req contextcli.ContextReadRequest, requestID string, bindi
 	}
 	env.Warnings = append(env.Warnings, freshnessWarning(result.Live, fetchedAt))
 	if result.Truncated {
-		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "SNAPSHOT_TRUNCATED", Message: "일부 자료가 완전히 저장되지 않았습니다. 각 내용의 상태와 저장된 다음 페이지를 확인하세요"})
+		if result.Live {
+			env.Warnings = append(env.Warnings, contextcli.Warning{Code: "LIVE_PARTIAL", Message: "일부 자료는 이어 읽기가 필요합니다. resource의 contentPage·nextPage·nextOffset과 원 version을 사용하세요"})
+		} else {
+			env.Warnings = append(env.Warnings, contextcli.Warning{Code: "SNAPSHOT_TRUNCATED", Message: "일부 자료가 완전히 저장되지 않았습니다. 각 내용의 상태와 저장된 다음 페이지를 확인하세요"})
+		}
 	}
 	if preservePage {
-		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "BUDGET_PRESERVED_PAGE", Message: "저장된 페이지의 버전과 다음 위치를 보존하기 위해 --budget을 초과한 원문을 그대로 반환했습니다. 더 좁은 조회에는 응답의 부분 자료 커서를 사용하세요"})
+		env.Warnings = append(env.Warnings, contextcli.Warning{Code: "BUDGET_PRESERVED_PAGE", Message: "페이지의 버전과 다음 위치를 보존하기 위해 --budget을 초과한 원문을 그대로 반환했습니다. 응답의 이어 읽기 정보를 확인하세요"})
 	}
 	return withBudgetWarnings(env, budgetCut, budgetFits)
 }
@@ -93,6 +111,8 @@ func fetchFailure(err error) *contextcli.CLIError {
 		return contextcli.Fail(contextcli.CodeUnavailable, "Riido 서버에 연결하지 못했습니다", "잠시 후 다시 시도하세요")
 	}
 	switch {
+	case fetchErr.Status == http.StatusPreconditionFailed:
+		return contextcli.Fail(contextcli.CodeIncomplete, "자료가 변경되어 이어 읽기를 중단했습니다", "첫 페이지를 다시 조회하세요")
 	case fetchErr.Status == http.StatusBadRequest:
 		return contextcli.Fail(contextcli.CodeUsage, "조회 입력 또는 페이지 커서가 유효하지 않습니다", "새 맥락의 부분 자료는 riido context part <SOURCE-ID> --cursor <CURSOR>로 이어 읽으세요")
 	case fetchErr.Status == http.StatusTooManyRequests:
