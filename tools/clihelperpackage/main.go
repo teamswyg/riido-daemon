@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 
 	"github.com/teamswyg/riido-daemon/internal/securecredential"
 )
@@ -24,10 +25,10 @@ func main() {
 	case *archive != "" && *bundle == "" && *output == "":
 		err = verifyArchivePolicy(*archive, *version, *arch, *requireHelper)
 		if err == nil && *recheck {
-			err = recheckArchive(context.Background(), *archive, *version, *arch, securecredential.VerifyPackagedHelper)
+			err = recheckArchive(context.Background(), *archive, *version, *arch, verifyRunnablePackagedHelper)
 		}
 	case *bundle != "" && *archive == "" && *output != "" && !*recheck:
-		err = prepareBundle(context.Background(), *bundle, *output, *version, *arch, securecredential.VerifyPackagedHelper)
+		err = prepareBundle(context.Background(), *bundle, *output, *version, *arch, verifyRunnablePackagedHelper)
 	default:
 		err = fmt.Errorf("provide either -bundle/-out or -archive")
 	}
@@ -35,4 +36,18 @@ func main() {
 		fmt.Fprintln(os.Stderr, "CLI helper package:", err)
 		os.Exit(1)
 	}
+}
+
+// Run from the repository root, like the release scripts. Static Apple identity
+// checks precede execution; the probe has no credential or service operations.
+func verifyRunnablePackagedHelper(ctx context.Context, bundle string, architectures []string) error {
+	if err := securecredential.VerifyPackagedHelper(ctx, bundle, architectures); err != nil {
+		return err
+	}
+	cmd := exec.CommandContext(ctx, "python3", "scripts/verify-macos-helper.py", "verify-bundle", "--bundle", bundle)
+	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("helper profile/startup verification failed: %w", err)
+	}
+	return nil
 }
