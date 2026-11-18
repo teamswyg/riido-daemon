@@ -178,3 +178,15 @@ Older helpers reject the new operation and must not be retried through `installa
 This additive private opcode does not change existing response shapes or enable unsupported platforms.
 Explicit link preparation and proof-required signing can use it, while original receipt recovery
 must proceed without requiring a key lookup or a running daemon.
+
+### Release startup probe
+
+`--preflight` runs the existing signing preflight before constructing any credential
+store or authentication session. It emits exactly `riido-cli-helper-preflight.v1`
+and exits successfully only when the check passes. It never reads Keychain items,
+requests user presence or contacts a service. This proves OS execution and signing
+readiness; it does not prove login or installation binding.
+
+The release packaging tool also compares the actual signing certificate with the
+embedded profile's authorized certificates. See the release contract in
+[`release-artifacts.riido.json`](../../docs/30-architecture/release-artifacts.riido.json).

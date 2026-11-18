@@ -15,6 +15,10 @@ repo="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$repo"
 git diff --quiet HEAD -- || { echo 'Commit release source before signing' >&2; exit 1; }
 revision="$(git rev-parse HEAD)"
+# Common display names can refer to different certificates. Pin the certificate
+# authorized by this profile before building, signing or notarizing anything.
+identity="$(python3 scripts/verify-macos-helper.py select-identity \
+  --profile "$RIIDO_HELPER_PROFILE" --identity "$RIIDO_SIGNING_IDENTITY")"
 mkdir -p "$out"
 work="$(mktemp -d "${TMPDIR:-/tmp}/riido-signed-input.XXXXXX")"
 work="$(cd "$work" && pwd -P)"
@@ -25,7 +29,8 @@ bundle="$work/helper/RiidoCLIAuthHelper.app"
 cp "$RIIDO_HELPER_PROFILE" "$bundle/Contents/embedded.provisionprofile"
 /usr/bin/codesign --force --timestamp --options runtime \
   --entitlements native/cli-auth-helper/entitlements.plist \
-  --sign "$RIIDO_SIGNING_IDENTITY" "$bundle"
+  --sign "$identity" "$bundle"
+python3 scripts/verify-macos-helper.py verify-bundle --bundle "$bundle"
 /usr/bin/ditto -c -k --keepParent "$bundle" "$work/helper.zip"
 xcrun notarytool submit "$work/helper.zip" --apple-id "$APPLE_ID" \
   --password "$APPLE_APP_SPECIFIC_PASSWORD" --team-id "$APPLE_TEAM_ID" \
