@@ -18,6 +18,10 @@ func (a *Actor) reportTaskEvent(ctx context.Context, task *runningTask, ev agent
 	}
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
 	reportCtx = executionproof.ContextWithScope(reportCtx, executionproof.ScopeFromContext(task.ctx))
+	if a.queueProgressDelivery(reportCtx, task, ev) {
+		return
+	}
+	a.stopProgressDelivery(task)
 	err := task.timing.report(func() error { return a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, ev) })
 	if err != nil {
 		retainReportEvent(task, ev)

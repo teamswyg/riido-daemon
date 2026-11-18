@@ -12,6 +12,10 @@ import (
 
 // Actor-owned observations. Unknown durations are -1, never a zero-latency success.
 type responseMetrics struct {
+	reportSuperseded                                              int64
+	reportFailureKinds                                            map[string]int64
+	lastReportRequestID                                           string
+	progressSuperseded                                            int64
 	providerResults, queueObservations                            int64
 	claimedAt, firstTextAt, providerStartedAt, providerFinishedAt time.Time
 	textEvents, textCharacters, reportAttempts, reportFailures    int64
@@ -49,6 +53,7 @@ func (m *responseMetrics) report(send func() error) error {
 	m.reportTime += time.Since(start)
 	if err != nil {
 		m.reportFailures++
+		m.recordReportFailure(err)
 	}
 	return err
 }
@@ -81,7 +86,11 @@ func (m *responseMetrics) summary(provider, version string, status agentbridge.R
 		"provider_clock_scope": "adapter_including_backpressure", "native_turn_ms": int64(-1),
 		"post_provider_ms":    elapsedMS(m.providerFinishedAt, ack),
 		"mailbox_wait_max_ms": queueMS, "report_elapsed_ms": reportMS,
-		"report_attempts": m.reportAttempts, "report_failures": m.reportFailures,
+		"progress_groups_superseded": m.progressSuperseded,
+		"report_requests_superseded": m.reportSuperseded,
+		"report_failure_kinds":       m.reportFailureKinds,
+		"report_last_request_id":     m.lastReportRequestID,
+		"report_attempts":            m.reportAttempts, "report_failures": m.reportFailures,
 		"text_delta_events": m.textEvents, "text_characters": m.textCharacters,
 	}
 }

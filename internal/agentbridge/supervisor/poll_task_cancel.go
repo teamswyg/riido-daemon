@@ -11,6 +11,7 @@ func (a *Actor) handleTaskCancel(
 	if task == nil || (msg.claimContext != nil && task.ctx != msg.claimContext) {
 		return
 	}
+	a.stopProgressDelivery(task)
 	task.cancelCause = cancellationCause(msg.cause)
 	cancelRunningTask(task)
 	a.supersedeCancelledNotifications(ctx, task)
