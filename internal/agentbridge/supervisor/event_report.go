@@ -63,6 +63,7 @@ func (a *Actor) retryEventReports(ctx context.Context, inFlight map[string]*runn
 }
 
 func (a *Actor) flushNextEventReport(ctx context.Context, task *runningTask) bool {
+	a.stopProgressDelivery(task)
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
 	reportCtx = executionproof.ContextWithScope(reportCtx, executionproof.ScopeFromContext(task.ctx))
 	if err := task.timing.report(func() error { return a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, task.pendingEvents[0]) }); err != nil {
