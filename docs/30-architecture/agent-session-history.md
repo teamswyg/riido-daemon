@@ -20,6 +20,12 @@ are not stored in this index. Existing run IR remains the execution history.
 Resumed sessions and the repository preparation they reuse start from the scrubbed
 child environment (RIID-5900), so the device credential never reaches a native session.
 
+When an authorized Git checkout fails, the session binding records that the
+provider started in an isolated directory. A reply can reopen that directory
+after daemon restart. The workspace, task, agent, runtime and repository grant
+must still match. A session originally started with a checkout still requires
+its retained repository.
+
 A known resumed session reuses its original working directory (and therefore its
 native CLI project history/config home), while each new run keeps its own event,
 output and verification artifacts. Host execution checks take a fresh baseline

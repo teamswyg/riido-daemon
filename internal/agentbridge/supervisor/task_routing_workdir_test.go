@@ -37,8 +37,8 @@ func TestSupervisorUsesLogicalTaskIDMetadataForWorkspace(t *testing.T) {
 	if !strings.HasSuffix(res.Workdir, wantSuffix) {
 		t.Fatalf("workdir = %q, want suffix %q", res.Workdir, wantSuffix)
 	}
-	if len(*gotCloneArgs) == 0 || (*gotCloneArgs)[len(*gotCloneArgs)-1] != res.Workdir {
-		t.Fatalf("clone args did not target prepared workdir: args=%#v workdir=%q", *gotCloneArgs, res.Workdir)
+	if len(*gotCloneArgs) == 0 || filepath.Dir((*gotCloneArgs)[len(*gotCloneArgs)-1]) != filepath.Dir(res.Workdir) {
+		t.Fatalf("checkout was not staged within the run: args=%#v workdir=%q", *gotCloneArgs, res.Workdir)
 	}
 	events := readRunEvents(t, filepath.Join(filepath.Dir(res.Workdir), "ir", "events.jsonl"))
 	assertRunEvent(t, events, ir.EventRunReportedDone, func(ev ir.CanonicalEvent) {

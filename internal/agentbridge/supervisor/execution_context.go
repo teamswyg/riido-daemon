@@ -19,7 +19,7 @@ func executionContextForTask(task *runningTask) assignment.ExecutionContext {
 		c.WorkspaceKind = "isolated"
 	}
 	if task.request != nil {
-		if task.request.Worktree != nil {
+		if task.request.Worktree != nil && !task.request.AssignmentCheckoutUnavailable {
 			c.WorkspaceKind = "assignment_worktree"
 		}
 		if task.request.Metadata[metadataSessionOriginRun] != "" {

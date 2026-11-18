@@ -17,7 +17,7 @@
 - Promote minimal WorkspacePlan DTO to riido-contracts.
 - Persist repo/branch as assignment snapshot fields, not only prompt text.
 - Clone public/private GitHub repo/branch using existing host Git credentials before provider start.
-- Fail closed on private clone failure or unsupported URLs without exposing Git/helper output.
+- When an authorized checkout fails, discard the partial checkout and start in the isolated run directory with explicit repository availability. Reject unsupported URLs and preserve host verification and native session scope.
 
 ## P1: Stop Lifecycle Normalization
 
