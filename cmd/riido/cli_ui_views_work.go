@@ -53,6 +53,10 @@ func renderWhoamiView(w io.Writer, term cliui.Terminal, id userapi.Identity, wor
 }
 
 func renderWorkView(w io.Writer, term cliui.Terminal, work userapi.Work) {
+	renderWorkDetailView(w, term, work, nil)
+}
+
+func renderWorkDetailView(w io.Writer, term cliui.Terminal, work userapi.Work, workspace *userapi.WorkV2) {
 	var status userapi.WorkStatus
 	if work.Status != nil {
 		status = *work.Status
@@ -67,9 +71,13 @@ func renderWorkView(w io.Writer, term cliui.Terminal, work userapi.Work) {
 	if work.UpdatedAt != "" {
 		meta = append(meta, term.Dim("수정 "+viewTime(work.UpdatedAt)))
 	}
-	writeViewHeader(w, term, work.Title, work.KeyNumber, meta...)
+	key := work.KeyNumber
+	if workspace != nil && (work.ComponentType == "project" || work.ComponentType == "milestone") {
+		key = ""
+	}
+	writeViewHeader(w, term, work.Title, key, meta...)
 	fmt.Fprintln(w)
-	writeViewFields(w, term, []viewField{
+	fields := []viewField{
 		{"담당자", workMembers(work.ComponentMembers)},
 		{"라벨", workLabels(work.ComponentLabels)},
 		{"기간", viewPeriod(work.StartDate, work.EndDate)},
@@ -77,7 +85,17 @@ func renderWorkView(w io.Writer, term cliui.Terminal, work userapi.Work) {
 		{"우선순위 점수", intText(work.TotalPriorityScore)},
 		{"만든 시각", dateText(work.CreatedAt)},
 		{"ID", work.ID},
-	})
+	}
+	if workspace != nil {
+		if work.ComponentType == "milestone" {
+			fields = fields[1:]
+		}
+		if work.ComponentType == "project" {
+			fields[0] = viewField{"프로젝트 담당자 ID", deref(workspace.LeadMemberID)}
+			fields = append(fields, viewField{"참여 팀 ID", strings.Join(workspace.TeamIDs, ", ")}, viewField{"작업 소유 팀 ID", strings.Join(workspace.TaskTeamIDs, ", ")})
+		}
+	}
+	writeViewFields(w, term, fields)
 	shown := writeViewSection(w, term, "설명", cliui.HTMLText(work.Description))
 	if work.Document != nil && writeViewSection(w, term, "문서", cliui.HTMLText(work.Document.HTMLContent)) {
 		shown = true

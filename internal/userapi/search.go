@@ -116,11 +116,16 @@ func (r Reader) Search(ctx context.Context, q WorkSearchRequest) (*WorkSearchPag
 			return nil, ErrInvalidResponse
 		}
 		if item.Kind == "component" {
-			if item.ComponentType == nil || *item.ComponentType == "" || item.Key == nil || item.KeyNumber == nil {
+			keyless := q.LocatorVersion == 2 && (componentType == "project" || componentType == "milestone")
+			if item.ComponentType == nil || *item.ComponentType == "" || (!keyless && (item.Key == nil || item.KeyNumber == nil)) || (item.Key == nil) != (item.KeyNumber == nil) {
 				return nil, ErrInvalidResponse
 			}
 		} else if item.ComponentType != nil || item.Key != nil || item.KeyNumber != nil {
-			return nil, ErrInvalidResponse
+			// v2 stages retain the canonical TASK identity and display key. v1
+			// and older v2 servers keep the three explicitly null fields.
+			if q.LocatorVersion != 2 || (componentType != "task" && componentType != "subtask") || item.Key == nil || *item.Key == "" || item.KeyNumber == nil || *item.KeyNumber == "" {
+				return nil, ErrInvalidResponse
+			}
 		}
 		stamp, err := time.Parse(time.RFC3339Nano, item.UpdatedAt)
 		if err != nil {

@@ -96,13 +96,14 @@ func bodySelectorFlags(part string, selector *userapi.ReadPartSelector) string {
 // scopeHeadline reads only the display fields every detail kind selects.
 // status is an object for components and a string for intakes.
 type scopeHeadline struct {
-	Title     *string         `json:"title"`
-	KeyNumber *string         `json:"keyNumber"`
-	IsDone    *bool           `json:"isDone"`
-	Status    json.RawMessage `json:"status"`
+	ComponentType string          `json:"componentType"`
+	Title         *string         `json:"title"`
+	KeyNumber     *string         `json:"keyNumber"`
+	IsDone        *bool           `json:"isDone"`
+	Status        json.RawMessage `json:"status"`
 }
 
-func workHeadline(term cliui.Terminal, work *userapi.ReadScopeWork) (string, string, string) {
+func workHeadline(term cliui.Terminal, work *userapi.ReadScopeWork, workspaceLocator bool) (string, string, string) {
 	var head scopeHeadline
 	for _, raw := range []json.RawMessage{work.Details, work.BacklogDetails, work.IntakeDetails} {
 		if len(raw) > 0 && string(raw) != "null" && json.Unmarshal(raw, &head) == nil {
@@ -112,6 +113,13 @@ func workHeadline(term cliui.Terminal, work *userapi.ReadScopeWork) (string, str
 	title, key := deref(head.Title), deref(head.KeyNumber)
 	if work.Summary != nil {
 		title, key = orText(title, work.Summary.Title), orText(key, deref(work.Summary.KeyNumber))
+	}
+	kind := head.ComponentType
+	if kind == "" && work.Summary != nil && work.Summary.ComponentType != nil {
+		kind = *work.Summary.ComponentType
+	}
+	if workspaceLocator && (kind == "project" || kind == "milestone") {
+		key = ""
 	}
 	var status struct {
 		StatusName string `json:"statusName"`
@@ -152,7 +160,7 @@ func renderContextView(w io.Writer, term cliui.Terminal, scope userapi.ReadScope
 		if work == nil {
 			continue
 		}
-		title, key, state := workHeadline(term, work)
+		title, key, state := workHeadline(term, work, scope.SchemaVersion == "riido-read-scope.v2")
 		fmt.Fprintln(w)
 		line := term.Bold(cliui.Truncate(orText(oneLine(title), "(제목 없음)"), max(term.Width-cliui.DisplayWidth(key)-1, 12)))
 		if key != "" {

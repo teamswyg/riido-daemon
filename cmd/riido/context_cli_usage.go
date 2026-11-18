@@ -28,7 +28,7 @@ func printContextUsage(w io.Writer) {
 
 func printWorkUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido work search --workspace <WORKSPACE-ID> --query <TEXT> [--cursor C] [--limit N] [--json]   (user live authorized title/key/body search; agent unsupported)")
-	fmt.Fprintln(w, "  User work search/get/body/comments/replies: --locator-version 2 --workspace <WORKSPACE-ID> enables native workspace-owned projects/milestones; default 1 keeps the existing API.")
+	fmt.Fprintln(w, "  User work search/get/tree/relations/activity/body/comments/replies: --locator-version 2 --workspace <WORKSPACE-ID> enables native workspace-owned projects/milestones; default 1 keeps the existing API.")
 	fmt.Fprintln(w, "  riido work tree <ID> --team-id <TEAM-ID> [--json]   (user live one-hop hierarchy; up to 10 selected children; no pagination)")
 	fmt.Fprintln(w, "  riido work <get|body|tree|relations|comments|replies|activity|search> ...")
 	fmt.Fprintln(w, "    riido work get|tree|relations <RIID-1234|ID> [--json]")

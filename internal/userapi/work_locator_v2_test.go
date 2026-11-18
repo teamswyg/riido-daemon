@@ -31,7 +31,11 @@ func locatorV2Reader(t *testing.T, field string, payload any, check func(string,
 }
 
 func locatorV2Ref(componentType string, team any) map[string]any {
-	return map[string]any{"schemaVersion": "riido-work-reference.v2", "workspaceId": "workspace-one", "teamId": team, "id": "work-one", "key": "SC-1", "keyNumber": "1", "componentType": componentType}
+	key, number := "SC-1", "1"
+	if componentType == "project" || componentType == "milestone" {
+		key, number = "", ""
+	}
+	return map[string]any{"schemaVersion": "riido-work-reference.v2", "workspaceId": "workspace-one", "teamId": team, "id": "work-one", "key": key, "keyNumber": number, "componentType": componentType}
 }
 
 func TestWorkspaceLocatorV2Reference(t *testing.T) {
@@ -53,11 +57,28 @@ func TestWorkspaceLocatorV2Reference(t *testing.T) {
 			})
 		}
 	}
+	for _, typ := range []string{"project", "milestone"} {
+		for _, ref := range []string{"SC-1", "work-one"} {
+			t.Run(typ+"/graphql-null/"+ref, func(t *testing.T) {
+				payload := locatorV2Ref(typ, nil)
+				payload["key"], payload["keyNumber"] = nil, nil
+				r := locatorV2Reader(t, "resolveCLIWorkReference", payload, nil)
+				got, err := r.ResolveWorkReference(t.Context(), WorkReferenceRequest{Reference: ref, WorkspaceID: "workspace-one", LocatorVersion: 2})
+				if err != nil || !got.Locator().valid() || got.Key != "" || got.KeyNumber != "" {
+					t.Fatal(got, err)
+				}
+			})
+		}
+	}
 	for _, change := range []struct {
 		name  string
 		apply func(map[string]any)
 	}{
 		{"missing-team", func(m map[string]any) { delete(m, "teamId") }},
+		{"missing-key", func(m map[string]any) { delete(m, "key") }},
+		{"missing-key-number", func(m map[string]any) { delete(m, "keyNumber") }},
+		{"null-key", func(m map[string]any) { m["key"] = nil }},
+		{"partial-key", func(m map[string]any) { m["key"] = "SC-1" }},
 		{"empty-team", func(m map[string]any) { m["teamId"] = "" }},
 		{"fake-team", func(m map[string]any) { m["teamId"] = "team-one" }},
 		{"wrong-workspace", func(m map[string]any) { m["workspaceId"] = "another-workspace" }},
@@ -86,6 +107,9 @@ func TestWorkspaceLocatorV2Search(t *testing.T) {
 			item := map[string]any{"kind": tc.kind, "id": "work-one", "teamId": tc.team, "title": "hello", "componentType": nil, "key": nil, "keyNumber": nil, "updatedAt": "2026-11-13T00:00:00Z", "matchedFields": []string{"title"}}
 			if tc.kind == "component" {
 				item["componentType"], item["key"], item["keyNumber"] = tc.componentType, "SC-1", "1"
+				if tc.componentType == "project" || tc.componentType == "milestone" {
+					item["key"], item["keyNumber"] = nil, nil
+				}
 			}
 			p := map[string]any{"schemaVersion": "riido-work-search.v2", "workspaceId": "workspace-one", "query": "hello", "limit": 20, "complete": true, "nextCursor": nil, "items": []any{item}}
 			r := locatorV2Reader(t, "searchWorkspaceWork", p, nil)

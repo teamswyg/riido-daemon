@@ -63,15 +63,19 @@ func (r Reader) Activity(ctx context.Context, id, teamID string, pagination Acti
 	if err := r.read(ctx, activityQuery, variables, &data); err != nil {
 		return ActivityPage{}, err
 	}
-	if data.Page == nil || !validActivityLogs(data.Page.ActivityLogs) || !validCommentMeta(data.Page.Meta, CommentPagination(pagination)) {
+	return checkedActivityPage(data.Page, pagination)
+}
+
+func checkedActivityPage(result *ActivityPage, pagination ActivityPagination) (ActivityPage, error) {
+	if result == nil || !validActivityLogs(result.ActivityLogs) || !validCommentMeta(result.Meta, CommentPagination(pagination)) {
 		return ActivityPage{}, ErrInvalidResponse
 	}
 	page, limit, _ := CommentPagination(pagination).valid()
-	remaining := max(int64(*data.Page.Meta.Total)-(page-1)*limit, 0)
-	if int64(len(data.Page.ActivityLogs)) != min(remaining, limit) {
+	remaining := max(int64(*result.Meta.Total)-(page-1)*limit, 0)
+	if int64(len(result.ActivityLogs)) != min(remaining, limit) {
 		return ActivityPage{}, ErrInvalidResponse
 	}
-	return *data.Page, nil
+	return *result, nil
 }
 
 func validActivityLogs(logs []*ActivityLog) bool {

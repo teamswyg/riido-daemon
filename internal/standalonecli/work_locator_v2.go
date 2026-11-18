@@ -46,6 +46,25 @@ func (s *Service) ContextV2(ctx context.Context, q userapi.WorkReferenceRequest)
 	})
 }
 
+func (s *Service) TreeV2(ctx context.Context, q userapi.WorkReferenceRequest) (*userapi.WorkTreeV2, error) {
+	return readWorkspaceLocator(ctx, s, q, func(r userapi.Reader, l userapi.WorkLocator) (*userapi.WorkTreeV2, error) { return r.TreeV2(ctx, l) })
+}
+
+func (s *Service) RelationsV2(ctx context.Context, q userapi.WorkReferenceRequest) ([]*userapi.WorkRelation, error) {
+	return readWorkspaceLocator(ctx, s, q, func(r userapi.Reader, l userapi.WorkLocator) ([]*userapi.WorkRelation, error) {
+		return r.RelationsV2(ctx, l)
+	})
+}
+
+func (s *Service) ActivityV2(ctx context.Context, q userapi.WorkReferenceRequest, p userapi.ActivityPagination) (userapi.ActivityPage, error) {
+	if !p.Valid() {
+		return userapi.ActivityPage{}, userapi.ErrInvalidRequest
+	}
+	return readWorkspaceLocator(ctx, s, q, func(r userapi.Reader, l userapi.WorkLocator) (userapi.ActivityPage, error) {
+		return r.ActivityV2(ctx, l, p)
+	})
+}
+
 func (s *Service) BodyV2(ctx context.Context, ref userapi.WorkReferenceRequest, q userapi.ReadBodyRequest) (userapi.ReadBodyPageV2, error) {
 	if !q.ValidContent() || q.Kind == "meeting" {
 		return userapi.ReadBodyPageV2{}, userapi.ErrInvalidRequest

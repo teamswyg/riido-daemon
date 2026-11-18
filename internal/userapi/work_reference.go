@@ -74,11 +74,25 @@ func (r Reader) ResolveWorkReference(ctx context.Context, q WorkReferenceRequest
 	if json.Unmarshal(data.Work, &w) != nil || !nullableFieldPresent(data.Work, "teamId") || w.SchemaVersion != locatorSchema("riido-work-reference", q.LocatorVersion) || !workspaceIDPattern.MatchString(w.WorkspaceID) ||
 		!validLocatorTeam(q.LocatorVersion, "component", w.ComponentType, w.TeamID) || !resolvedWorkIDPattern.MatchString(w.ID) ||
 		(w.TeamID != nil && !resolvedWorkIDPattern.MatchString(*w.TeamID)) ||
-		w.KeyNumber == "" || w.ComponentType == "" ||
+		w.ComponentType == "" ||
 		(q.WorkspaceID != "" && w.WorkspaceID != q.WorkspaceID) || (q.TeamID != "" && w.TeamID != nil && *w.TeamID != q.TeamID) {
 		return ResolvedWorkReference{}, ErrInvalidResponse
 	}
 	ref, _ := q.parsed()
+	if q.LocatorVersion == 2 && (w.ComponentType == "project" || w.ComponentType == "milestone") {
+		// Keyless workspace resources are still required to carry both selected
+		// fields. Current GraphQL returns null pairs; older readers may return
+		// empty string pairs. Missing or mixed fields are invalid.
+		if !referenceKeyFieldsPresent(data.Work) || (w.Key == "") != (w.KeyNumber == "") || ref.Kind == contextcli.WorkRefID && w.ID != q.Reference {
+			return ResolvedWorkReference{}, ErrInvalidResponse
+		}
+		if w.Key == "" {
+			return w, nil
+		}
+	}
+	if w.KeyNumber == "" {
+		return ResolvedWorkReference{}, ErrInvalidResponse
+	}
 	if q.LocatorVersion == 2 {
 		// Native aliases resolve to the current canonical key. Compare the
 		// returned pair internally, never against a historical request key.
@@ -107,4 +121,22 @@ func (r Reader) ResolveWorkReference(ctx context.Context, q WorkReferenceRequest
 		return ResolvedWorkReference{}, ErrInvalidResponse
 	}
 	return w, nil
+}
+
+func referenceKeyFieldsPresent(raw json.RawMessage) bool {
+	var fields map[string]json.RawMessage
+	if json.Unmarshal(raw, &fields) != nil {
+		return false
+	}
+	key, keyOK := fields["key"]
+	number, numberOK := fields["keyNumber"]
+	if !keyOK || !numberOK {
+		return false
+	}
+	keyNull, numberNull := strings.TrimSpace(string(key)) == "null", strings.TrimSpace(string(number)) == "null"
+	if keyNull || numberNull {
+		return keyNull && numberNull
+	}
+	var k, n string
+	return json.Unmarshal(key, &k) == nil && json.Unmarshal(number, &n) == nil
 }
