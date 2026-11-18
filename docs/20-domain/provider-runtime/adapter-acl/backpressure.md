@@ -14,11 +14,13 @@ C4 Provider Runtime owns provider process stream, provider draft/session event c
 | terminal result stream | `internal/agentbridge/session.DefaultResultBuffer` | `1` | authoritative terminal result independent of observer capacity |
 | runtime actor mailbox | `internal/agentbridge/runtimeactor.DefaultMailboxSize` | `16` | caller-context bounded send |
 | supervisor actor mailbox | `internal/agentbridge/supervisor.DefaultMailboxSize` | `64` | caller-context bounded send |
+| supervisor remote progress queue | `internal/agentbridge/supervisor.maxProgressQueueBytes` | `256 KiB / 64 groups` | best-effort grouped display; original local journal and authoritative complete result retained |
 
 1. stdout/stderr channels block when full; text/log/warning chunks are not dropped, overwritten, or reordered.
 2. The session applies observed progress and commits its terminal result independently of observer delivery. A terminal result is authoritative on `Result()` and mirrored on `Events()` when space is available.
 3. Ordinary session events retain bounded delivery. Codex protocol diagnostics are local-only and never wait for the observer. Under pressure the session counts omitted diagnostics and records one summary in the journal or daemon log.
 4. runtime actor and supervisor mailbox sends are bounded sends; caller context owns deadline / cancellation.
 5. callers must drain `Events()` until close. Result-only callers must discard-drain.
-6. C4 currently has no in-memory retry queue. Durable retry/outbox is a future C2/C10 decision.
-7. changing buffer/mailbox values requires one work unit to update this SSOT, implementation constants, default-size tests, and CI evidence.
+6. The supervisor drains and journals provider events independently of best-effort remote progress HTTP. Cancel that display lane at critical boundaries or completion; superseded display groups never change the complete session result. Critical ownership, approval and terminal ACK retries remain ordered.
+7. C4 currently has no in-memory retry queue. Durable retry/outbox is a future C2/C10 decision.
+8. changing buffer/mailbox values requires one work unit to update this SSOT, implementation constants, default-size tests, and CI evidence.

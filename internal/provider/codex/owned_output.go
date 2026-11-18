@@ -47,12 +47,6 @@ func (d *protocolDriver) ownedMessageDelta(id, text string, delta bool) []agentb
 	}
 	// Only explicitly final text can enter the reducer's output buffer. The
 	// terminal result supplies the selected complete item for phase-less builds.
-	if stringField(d.owned.messages[id], "phase") != "final_answer" {
-		if text == "" {
-			return nil
-		}
-		return []agentbridge.Event{{Kind: agentbridge.EventProgress, Text: text}}
-	}
 	previous := d.owned.streamed[id]
 	if delta {
 		d.owned.streamed[id] = previous + text
@@ -66,7 +60,11 @@ func (d *protocolDriver) ownedMessageDelta(id, text string, delta bool) []agentb
 	if text == "" {
 		return nil
 	}
-	return []agentbridge.Event{{Kind: agentbridge.EventTextDelta, Text: text}}
+	kind := agentbridge.EventProgress
+	if stringField(d.owned.messages[id], "phase") == "final_answer" {
+		kind = agentbridge.EventTextDelta
+	}
+	return []agentbridge.Event{{Kind: kind, Text: text}}
 }
 
 // Explicit commentary is never a result. Older phase-less item streams use

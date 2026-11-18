@@ -16,6 +16,7 @@ func (a *Actor) handleTaskResult(
 	reportCtx := ctx
 	res := msg.result
 	if running != nil {
+		a.stopProgressDelivery(running)
 		if running.terminalResult != nil {
 			a.flushTerminalReport(ctx, inFlight, running)
 			return

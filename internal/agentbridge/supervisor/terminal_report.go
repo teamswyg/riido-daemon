@@ -15,6 +15,7 @@ func (a *Actor) finishTaskWithResult(
 	task *runningTask,
 	res agentbridge.Result,
 ) bool {
+	a.stopProgressDelivery(task)
 	if task.terminalResult != nil {
 		return a.flushTerminalReport(ctx, inFlight, task)
 	}
