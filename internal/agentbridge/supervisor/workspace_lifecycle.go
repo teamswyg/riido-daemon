@@ -5,9 +5,7 @@ import (
 	"fmt"
 
 	"github.com/teamswyg/riido-contracts/ir"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/bridge"
-	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
 	"github.com/teamswyg/riido-daemon/internal/execution"
 	"github.com/teamswyg/riido-daemon/internal/workdir"
@@ -51,15 +49,13 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"taskID":      ids.logicalTaskID,
 	})
 	if !resumed {
-		if err := materializeAssignmentWorktree(ctx, ws.Workdir, req.Worktree, func(number string) {
-			req.Prompt += "\n\nThe worktree has been checked out at the exact head of linked pull request #" + number + ". Use this checkout as the starting point."
-			if a.cfg.Reporter != nil {
-				_ = a.cfg.Reporter.ReportEvent(controlplane.ContextWithTaskReport(ctx, reportContextFor(req)), req.ID, agentbridge.Event{Kind: agentbridge.EventProgress, Text: "Using linked pull request #" + number + " for this execution."})
-			}
-		}); err != nil {
+		if err := a.prepareAssignmentCheckout(ctx, ws.Workdir, req); err != nil {
 			return nil, err
 		}
+	} else if req.AssignmentCheckoutUnavailable {
+		appendUnavailableCheckoutPrompt(req, "This session retained its original workspace.")
 	}
+
 	native, err := a.resolveNativeWorkspaceConfig(req)
 	if err != nil {
 		return nil, err

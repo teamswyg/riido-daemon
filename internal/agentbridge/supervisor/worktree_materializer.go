@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	errAssignmentGitUnavailable    = errors.New("supervisor: git executable not found for assignment worktree")
 	resolveAssignmentGitExecutable = detectutil.ResolveExecutable
 	runAssignmentGitClone          = defaultRunAssignmentGitClone
 )
@@ -30,7 +31,7 @@ func materializeAssignmentWorktree(ctx context.Context, targetDir string, worktr
 	}
 	git, ok := resolveAssignmentGitExecutable("git", "")
 	if !ok {
-		return errors.New("supervisor: git executable not found for assignment worktree. Action: Install Git on the daemon device, confirm `git --version` works for the same OS account as Riido, then restart Riido and retry the task")
+		return errAssignmentGitUnavailable
 	}
 	branch := strings.TrimSpace(worktree.BranchName)
 	fallback := assignmentPullRequestFallback(worktree.Source)
