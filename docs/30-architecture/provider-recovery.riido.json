@@ -28,6 +28,7 @@
     "remote prompt-derived recovery policy"
   ],
   "journal": "bounded RecoveryContext on existing Riido log events with deterministic assignment/run/attempt/state/provider/switch idempotency key and terminal metadata; no raw prompt/error/path/argv/token diagnostics",
+  "journal_failure": "pre-dispatch report errors stop admission as failed/unavailable with unknown reason (deadline_exceeded for deadline errors), not_started provider outcome and unknown/review_result execution diagnostic; cancellation takes precedence; report failure alone does not establish provider authentication failure or authorize retry or handoff",
   "restart": "existing active assignment without durable native session remains skipped; no fresh recovery replay after daemon state loss",
   "tests": [
     "slow probe Status/Cancel/Stop responsiveness",

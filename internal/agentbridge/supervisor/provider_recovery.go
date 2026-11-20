@@ -29,6 +29,13 @@ func (e *recoveryFailure) Error() string {
 }
 func (e *recoveryFailure) Unwrap() error { return e.cause }
 
+type recoveryReportFailure struct{ cause error }
+
+func (e *recoveryReportFailure) Error() string {
+	return "provider recovery acknowledgement was not confirmed; execution did not start"
+}
+func (e *recoveryReportFailure) Unwrap() error { return e.cause }
+
 func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status, rt *runtimeactor.Actor, req *bridge.TaskRequest, work *executionproof.HostWork) {
 	policy, err := req.RecoveryPolicy.Normalized()
 	circuits := a.recovery
@@ -55,6 +62,16 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 		}
 		copyObservation := observation.Sanitized()
 		a.forwardActivation(taskActivationMsg{hostWork: work, claimContext: ctx, taskID: req.ID, prepared: prepared, runtime: rt, status: status, recovery: &copyObservation, recoveryScope: scope, err: &recoveryFailure{cause: cause, blocked: blocked}})
+	}
+	finishReportFailure := func(cause error) {
+		// A missing journal acknowledgement denies admission, but says nothing
+		// about the provider's authentication or execution health.
+		observation.State = "unavailable"
+		observation.Reason = "unknown"
+		if errors.Is(cause, context.DeadlineExceeded) {
+			observation.Reason = "deadline_exceeded"
+		}
+		finish(&recoveryReportFailure{cause: cause}, false)
 	}
 	if err != nil {
 		observation.State = "user_action_required"
@@ -93,9 +110,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 			observation.State = "backoff"
 			observation.Reason = "transient_preflight"
 			if err = a.reportRecovery(budgetCtx, req, observation); err != nil {
-				observation.State = "user_action_required"
-				observation.Reason = "not_authorized"
-				finish(err, true)
+				finishReportFailure(err)
 				return
 			}
 			if !recoveryWait(budgetCtx, wait) {
@@ -114,9 +129,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 		observation.State = "checking"
 		observation.Provider = string(req.Provider)
 		if err = a.reportRecovery(budgetCtx, req, observation); err != nil {
-			observation.State = "user_action_required"
-			observation.Reason = "not_authorized"
-			finish(err, true)
+			finishReportFailure(err)
 			return
 		}
 		if budgetCtx.Err() != nil {
@@ -196,9 +209,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 				observation.Provider = string(nextReq.Provider)
 				observation.SwitchCount++
 				if err = a.reportRecovery(budgetCtx, req, observation); err != nil {
-					observation.State = "user_action_required"
-					observation.Reason = "not_authorized"
-					finish(err, true)
+					finishReportFailure(err)
 					return
 				}
 				if err = a.reconfigureRecoveryWorkspace(nextStatus, nextReq, prepared); err != nil {
@@ -220,9 +231,7 @@ func (a *Actor) recoverAndSubmit(ctx context.Context, status runtimeactor.Status
 		}
 		observation.State = "backoff"
 		if err = a.reportRecovery(budgetCtx, req, observation); err != nil {
-			observation.State = "user_action_required"
-			observation.Reason = "not_authorized"
-			finish(err, true)
+			finishReportFailure(err)
 			return
 		}
 		if !recoveryWait(budgetCtx, 200*time.Millisecond+time.Duration(rand.IntN(100))*time.Millisecond) {
