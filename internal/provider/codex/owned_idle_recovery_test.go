@@ -86,6 +86,57 @@ func TestOwnedTerminalSurvivesDiagnosticBurstWithFullObserver(t *testing.T) {
 	}
 }
 
+func TestOwnedIdleRecoveryPreservesCompletionNotifications(t *testing.T) {
+	for _, inline := range []bool{false, true} {
+		name := "answer in preceding item"
+		if inline {
+			name = "answer in terminal"
+		}
+		t.Run(name, func(t *testing.T) {
+			synctest.Test(t, func(t *testing.T) {
+				sess, child := startOwnedSessionWithObserver(t, 100*time.Millisecond, 2)
+				select {
+				case <-child.StdinRecv():
+				case <-time.After(time.Second):
+					t.Fatal("no recovery read")
+				}
+				// No read reply arrives. Unrelated completions and diagnostics
+				// must not finish the run or block the owned completion.
+				var wire []byte
+				appendNotification := func(method string, p map[string]any) {
+					raw := makeNotification(method, p)
+					wire = append(wire, raw.Bytes...)
+					wire = append(wire, '\n')
+				}
+				for _, p := range []map[string]any{
+					{"threadId": "child", "turn": map[string]any{"id": "child-turn", "status": "completed"}},
+					{"threadId": "parent", "turn": map[string]any{"id": "previous-turn", "status": "completed"}},
+					{"threadId": "parent", "turn": map[string]any{"status": "completed"}},
+					{"turn": map[string]any{"id": "parent-turn", "status": "completed"}},
+				} {
+					appendNotification("turn/completed", p)
+				}
+				answer := map[string]any{"id": "answer", "type": "agentMessage", "phase": "final_answer", "text": "parent review"}
+				turn := map[string]any{"id": "parent-turn", "status": "completed"}
+				if inline {
+					turn["items"] = []any{answer}
+				} else {
+					appendNotification("item/completed", map[string]any{"threadId": "parent", "turnId": "parent-turn", "item": answer})
+				}
+				appendNotification("turn/completed", map[string]any{"threadId": "parent", "turn": turn})
+				child.EmitStdout(wire)
+				result := <-sess.Result()
+				if result.Status != agentbridge.ResultCompleted || result.Output != "parent review" || result.SessionID != "parent" {
+					t.Fatalf("result = %+v", result)
+				}
+				if _, ok := <-sess.Result(); ok {
+					t.Fatal("published more than one terminal result")
+				}
+			})
+		})
+	}
+}
+
 func TestOwnedIdleRecoveryIsBoundedAndCancellationPreemptsIt(t *testing.T) {
 	for _, cancel := range []bool{false, true} {
 		name := "provider does not reply"

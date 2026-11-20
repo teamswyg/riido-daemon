@@ -139,7 +139,10 @@ An owned Codex run checks its pinned thread and acknowledged turn when semantic
 idle expires. The read-only request has a two-second budget and runs through the
 ordinary session actor. Progress, approvals, cancellation, process exit and
 terminal notifications continue through their existing handlers while the read
-is pending. A matching completed turn with a completion timestamp and an answer
+is pending. Matching terminal notifications can finish the run before the read
+reply, with the final answer in the terminal payload or a preceding item.
+Missing, foreign and stale notification identities cannot finish the run.
+A matching completed turn with a completion timestamp and an answer
 can recover the result. A matching `inProgress` turn can receive one additional
 configured idle interval per run, shared with the compaction allowance. Status
 alone cannot renew this allowance. Missing, foreign, stale or failed reads do
