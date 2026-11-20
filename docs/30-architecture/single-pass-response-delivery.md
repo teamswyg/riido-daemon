@@ -221,6 +221,12 @@ append a bounded local supersession diagnostic. Session ownership and other
 non-superseded delivery records keep their existing retry order. No generic
 HTTP400 is treated as success and server transition/lease fences remain intact.
 
+ToolCallStarted also maps to assignment_running, so suppress late tool starts
+after claim cancellation is known and retain bounded local supersession evidence.
+Each late start would otherwise produce a new report; tool starts are not retained
+for supervisor retry. Active claims still report starts, while session pins and
+tool completion/failure records remain deliverable after cancellation.
+
 A buffered result that has not reached the reporter can still be cancelled; append
 a cancellation correction and update its keep-in-place archive without erasing
 the earlier provider completion evidence or usage.

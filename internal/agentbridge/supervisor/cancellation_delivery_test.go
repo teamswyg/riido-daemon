@@ -98,6 +98,49 @@ func TestCancelledClaimSupersedesPendingLifecycleBeforeTerminal(t *testing.T) {
 	}
 }
 
+func TestCancelledClaimSuppressesLateToolStarts(t *testing.T) {
+	for _, cancellation := range []string{"matching-claim", "cancelled-result"} {
+		t.Run(cancellation, func(t *testing.T) {
+			reporter := &cancellationDeliveryReporter{}
+			a, task, tasks := cancellationDeliveryFixture(reporter)
+			t.Cleanup(task.cancel)
+			ev := agentbridge.Event{Kind: agentbridge.EventToolCallStarted, Tool: agentbridge.ToolRef{Name: "mock-tool"}}
+			a.reportTaskEvent(t.Context(), task, ev)
+			if len(reporter.order) != 1 {
+				t.Fatal("active claim did not report tool start")
+			}
+
+			reporter.cancelling = true
+			if cancellation == "matching-claim" {
+				cancelDeliveryClaim(a, task, tasks)
+			} else {
+				task.terminalResult = &agentbridge.Result{Status: agentbridge.ResultCancelled}
+			}
+			for range 64 {
+				a.reportTaskEvent(t.Context(), task, ev)
+			}
+			a.retryEventReports(t.Context(), tasks)
+			// Count all reporter calls, independently of its transition policy.
+			if len(reporter.order) != 1 || len(task.pendingEvents) != 0 {
+				t.Fatal("late tool starts reached the reporter or were retained for retry")
+			}
+			if len(task.supersededEvents) != maxPendingReportEvents || !reflect.DeepEqual(task.supersededEvents[0], ev) {
+				t.Fatal("late tool start evidence was not preserved within the bound")
+			}
+			if kind, phase := supersededNotificationClassification(ev); kind != string(agentbridge.EventToolCallStarted) || phase != "none" {
+				t.Fatal("tool start supersession diagnostic lost its classification")
+			}
+
+			for _, kind := range []agentbridge.EventKind{agentbridge.EventSessionIdentified, agentbridge.EventToolCallCompleted, agentbridge.EventToolCallFailed} {
+				a.reportTaskEvent(t.Context(), task, agentbridge.Event{Kind: kind, SessionID: "native"})
+			}
+			if len(reporter.order) != 4 {
+				t.Fatal("cancellation suppressed session or tool outcome records")
+			}
+		})
+	}
+}
+
 func TestCancellationBeforeQueuedCompletionWins(t *testing.T) {
 	for _, hostChecks := range []bool{false, true} {
 		t.Run(map[bool]string{false: "without-host-checks", true: "with-host-checks"}[hostChecks], func(t *testing.T) {

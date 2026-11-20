@@ -23,7 +23,7 @@ func claimDeliveryCancelled(task *runningTask) bool {
 }
 
 func obsoleteAfterCancellation(ev agentbridge.Event) bool {
-	if ev.Kind == agentbridge.EventToolApprovalNeeded {
+	if ev.Kind == agentbridge.EventToolApprovalNeeded || ev.Kind == agentbridge.EventToolCallStarted {
 		return true
 	}
 	if ev.Kind != agentbridge.EventLifecycle {
@@ -70,7 +70,7 @@ func (a *Actor) recordSupersededNotification(ctx context.Context, task *runningT
 func supersededNotificationClassification(ev agentbridge.Event) (string, string) {
 	kind := "unknown"
 	switch ev.Kind {
-	case agentbridge.EventLifecycle, agentbridge.EventToolApprovalNeeded:
+	case agentbridge.EventLifecycle, agentbridge.EventToolApprovalNeeded, agentbridge.EventToolCallStarted:
 		kind = string(ev.Kind)
 	default:
 	}
