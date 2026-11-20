@@ -140,7 +140,10 @@ protocol InstallationKeyStore {
     func existingKey(scope: InstallationScope) throws -> Data
     func signProof(_ proof: InstallationProof) throws -> Data
     func signDeviceLinkProof(_ proof: DeviceLinkProof) throws -> Data
+    func signDeviceTransferProof(_ proof: DeviceTransferProof) throws -> Data
+    func signDeviceBootstrapProof(_ proof: DeviceBootstrapProof) throws -> DeviceBootstrapSignature
     func signRepairProof(_ proof: InstallationRepairProof) throws -> Data
+    func signTransferRepairProof(_ proof: InstallationTransferRepairProof) throws -> Data
 }
 
 struct UnavailableInstallationKeyStore: InstallationKeyStore {

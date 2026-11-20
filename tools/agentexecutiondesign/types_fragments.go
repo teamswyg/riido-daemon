@@ -14,6 +14,7 @@ type executionFragment struct {
 	IdentityFields  []fieldMeaning `json:"identity_fields"`
 	IdentityRules   []string       `json:"identity_rules"`
 	WorkspaceFields []phaseRule    `json:"workspace_fields"`
+	WorkspaceRules  []string       `json:"workspace_rules"`
 	LaunchFields    []ownerRule    `json:"launch_fields"`
 }
 

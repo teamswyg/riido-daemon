@@ -22,7 +22,8 @@ func writeRules(b *bytes.Buffer, manifest Manifest) {
 	b.WriteString("## Ownership Rules\n\n")
 	fmt.Fprintf(b, "- `%s` maps to `%s`.\n", manifest.ApprovalEvent.EventKind, manifest.ApprovalEvent.EventType)
 	fmt.Fprintf(b, "- `%s` is semantic activity and resets `SemanticIdle`.\n", manifest.ApprovalEvent.EventKind)
-	b.WriteString("- Approval wait remains bounded by `SemanticIdle` and `HardTimeout`.\n")
+	b.WriteString("- Only the current resolver wait pauses `SemanticIdle` and `HardTimeout`; a response resumes the remaining execution budget and restarts the original idle budget.\n")
+	b.WriteString("- Cancellation and explicit current-request approval remain required during the wait; elapsed human response time never grants approval.\n")
 	fmt.Fprintf(b, "- `%s` reduces to `%s` and `%s`.\n",
 		manifest.TimeoutEvent.EventKind, manifest.TimeoutEvent.ResultStatus, manifest.TimeoutEvent.CancelCommand)
 }

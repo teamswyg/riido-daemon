@@ -1,6 +1,6 @@
 {
   "problems": [
-    {"id": "F3", "symptom": "AI works in empty temp folder", "cause": "repo/branch was prompt text", "direction": "public clone, private fail-closed, later token-ref broker"},
+    {"id": "F3", "symptom": "AI works in empty temp folder", "cause": "repo/branch was prompt text", "direction": "public/private clone with existing host Git credentials, later token-ref broker"},
     {"id": "C1", "symptom": "stop feels inconsistent", "cause": "stop intent, process kill, projection state split", "direction": "generated lifecycle states"},
     {"id": "S2/S4/S5", "symptom": "stream cleanup is client-hidden", "cause": "delta/progress/final share a path", "direction": "StreamEnvelope split"},
     {"id": "F4/F5", "symptom": "child tools missing", "cause": "detection and launch env diverged", "direction": "frozen launch PATH and TTL re-detect"},

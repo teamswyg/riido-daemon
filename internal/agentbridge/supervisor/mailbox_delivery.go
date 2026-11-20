@@ -57,7 +57,7 @@ func (a *Actor) coalesceQueuedDelivery(msg envelope) (envelope, *envelope) {
 
 // Structured events retain their identity and ordering, including future fields.
 func plainDeliveryEvent(ev agentbridge.Event) bool {
-	if ev.Kind != agentbridge.EventTextDelta && ev.Kind != agentbridge.EventLog {
+	if ev.Kind != agentbridge.EventTextDelta && ev.Kind != agentbridge.EventLog && ev.Kind != agentbridge.EventProgress {
 		return false
 	}
 	ev.Text = ""

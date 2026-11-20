@@ -14,7 +14,7 @@ Provider capability, protocol, and priority are owned by public `riido-contracts
 | Adapter | Runtime representation | Primary draft category |
 | --- | --- | --- |
 | `ClaudeStreamJSONAdapter` | `claude -p --output-format stream-json` stdout is consumed as NDJSON; session id is extracted from the `system.init` line. | Mostly Cat C |
-| `CodexAppServerAdapter` | `codex --sandbox danger-full-access app-server --listen stdio://` JSON-RPC; daemon owns the full-access harness envelope. | Cat C plus approval |
+| `CodexAppServerAdapter` | `codex --sandbox danger-full-access app-server --listen stdio://` JSON-RPC; daemon owns its child harness. An existing desktop writer is continued through the native queue, retaining the desktop execution envelope, model, tools, and approvals. | Cat C plus approval |
 | `OpenClawAgentJSONAdapter` | `openclaw agent --local --json`; unsupported CLI folds into unavailable through calendar-version gate. | Mostly Cat C |
 | `CursorAgentStreamJSONAdapter` | `cursor-agent -p --output-format stream-json` root-print shape; version/profile differences require explicit launch profile. | Mostly Cat C |
 

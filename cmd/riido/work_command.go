@@ -29,6 +29,9 @@ func runWork(c contextIO, args []string) error {
 		return nil
 	}
 	sub := workCommand(args[0])
+	if c.environment().Mode == contextcli.ModeAgent && (sub == workCommandActivity || sub == workCommandBody) {
+		return c.runContextRead(agentExplicitWorkCall(sub), args[1:])
+	}
 	switch sub {
 	case workCommandGet, workCommandTree, workCommandRelations, workCommandComments:
 		if sub == workCommandTree && c.environment().Mode != contextcli.ModeAgent {
@@ -64,6 +67,9 @@ func runWork(c contextIO, args []string) error {
 // workRefCall builds a read that takes exactly one work reference. Comment
 // paging uses --cursor with the server's fixed page size.
 func workRefCall(sub workCommand) contextReadCall {
+	if sub == workCommandComments {
+		return agentExplicitWorkCall(sub)
+	}
 	return contextReadCall{
 		command: "work " + string(sub),
 		spec:    contextcli.ArgSpec{MaxPositionals: 1},

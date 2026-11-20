@@ -47,8 +47,9 @@ var commandHelpCatalog = map[string]commandHelp{
 			{"login", "브라우저로 로그인합니다.", "riido auth login [--browser | --desktop]", []helpEntry{{"--browser", "브라우저에서 로그인 (기본)"}, {"--desktop", "Riido 앱에 로그인된 계정으로 로그인"}}, "riido auth login"},
 			{"status", "로그인 상태를 확인합니다.", "riido auth status", nil, "riido auth status"},
 			{"logout", "로그아웃하고 저장된 로그인을 지웁니다.", "riido auth logout", nil, "riido auth logout"},
-			{"link", "이 CLI를 Riido 앱(이 기기)과 연결합니다.", "riido auth link [--no-input]", []helpEntry{{"--no-input", "확인 창 없이 이전 승인만 이어받기"}}, "riido auth link"},
+			{"link", "이 CLI를 Riido 앱(이 기기)과 연결합니다.", "riido auth link [--restart] [--no-input]", []helpEntry{{"--restart", "만료된 미승인 요청을 새 승인 요청으로 교체"}, {"--no-input", "확인 창 없이 이전 승인만 이어받기"}}, "riido auth link"},
 			{"repair", "보호 저장소를 복구합니다. 브라우저에서 다시 동의해요.", "riido auth repair [--restart] [--no-input]", []helpEntry{{"--restart", "끝난 요청 대신 새로 동의 시작"}, {"--no-input", "확인 창 없이 기존 영수증만 복구"}}, "riido auth repair"},
+			{"transfer", "현재 기기로 연결을 전환하거나 진행 중인 전환을 복구합니다.", "riido auth transfer [--repair] [--restart] [--no-input]", []helpEntry{{"--repair", "기존 설치 키와 새 사용자 승인으로 전환 복구"}, {"--restart", "만료되거나 거절된 복구 승인 다시 요청"}, {"--no-input", "기존 요청 상태 확인"}}, "riido auth transfer"},
 		},
 		flags:    []helpEntry{{"--auth-origin <browser|desktop>", "이번 실행만 로그인 방식 지정"}, jsonFlag},
 		examples: []string{"riido auth login", "riido auth status"},
@@ -58,9 +59,9 @@ var commandHelpCatalog = map[string]commandHelp{
 		flags: []helpEntry{jsonFlag}, examples: []string{"riido whoami"},
 	},
 	"update": {
-		name: "update", summary: "CLI를 같은 채널(staging·정식)의 최신 버전으로 업데이트합니다.", usage: "riido update [옵션]",
-		notes:    []string{"설치 스크립트로 설치한 CLI만 업데이트해요. Riido 앱에 포함된 CLI는 앱을 업데이트하세요."},
-		flags:    []helpEntry{{"--check", "설치하지 않고 새 버전이 있는지만 확인"}, {"--channel <staging|latest>", "받을 채널 (기본: 지금 버전의 채널)"}, jsonFlag},
+		name: "update", summary: "CLI를 설치한 채널(정식·staging)의 최신 버전으로 업데이트합니다.", usage: "riido update [옵션]",
+		notes:    []string{"설치 스크립트로 설치한 CLI만 업데이트해요. Riido 앱에 포함된 CLI는 앱을 업데이트하세요.", "riido는 정식, riido-staging은 staging 채널을 따라요."},
+		flags:    []helpEntry{{"--check", "설치하지 않고 새 버전이 있는지만 확인"}, {"--channel <staging|latest>", "받을 채널 (기본: 설치한 채널)"}, jsonFlag},
 		examples: []string{"riido update", "riido update --check"},
 	},
 	"doctor": {

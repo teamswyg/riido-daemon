@@ -18,6 +18,7 @@ func TestLoginConfirmationFailurePreservesCLIExitAndStopsOAuth(t *testing.T) {
 	}{
 		{"user-cancel", userauth.ErrStoreLocked, 3},
 		{"deadline", context.DeadlineExceeded, 6},
+		{"cancelled-helper", context.Canceled, 6},
 		{"unavailable-helper", securecredential.ErrUnavailable, 8},
 	} {
 		t.Run(scenario.name, func(t *testing.T) {

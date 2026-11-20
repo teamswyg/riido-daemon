@@ -32,3 +32,7 @@ Install the package the desktop app uses for a channel (`staging`, `latest`) fro
 ```bash
 curl -fsSL https://raw.githubusercontent.com/teamswyg/riido-daemon/main/scripts/install-riido-daemon.sh | RIIDO_DAEMON_CHANNEL=staging sh
 ```
+
+- Channels read the active CDN feeds the desktop app uses: `latest` reads `releases/safe/ai-agent` and `staging` reads `releases/staging-safe/ai-agent`. The legacy `releases/latest` and `releases/staging` prefixes stay frozen.
+- Production stays `riido` in `$HOME/.riido/bin` (no channel, or `latest`); such an install removes a staging `INSTALL_CHANNEL` marker left in that directory.
+- `staging` is the test channel (RIID-6036): the same package installs to `$HOME/.riido-staging/libexec` with an `INSTALL_CHANNEL` marker, and only the `riido-staging` link in `$HOME/.riido-staging/bin` (`RIIDO_DAEMON_LINK_DIR`) goes on PATH, so it never replaces production `riido`. The marker makes the binary default to the staging profile, keep its settings in `riido-cli-staging`, and update from the staging feed.

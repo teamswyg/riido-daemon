@@ -9,12 +9,12 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/contextcli"
 )
 
-func validCLILinkACK(raw []byte, proof contextcli.CLIInstallationLinkProof) bool {
+func validCLILinkRevisionACK(raw []byte, proof contextcli.CLIInstallationLinkProof, revision string) bool {
 	expected := map[string]string{
 		"schema_version": "riido-cli-installation-link.v1", "installation_id": proof.InstallationID,
 		"resource": proof.Resource, "client_id": proof.ClientID, "key_fingerprint": proof.KeyFingerprint,
 		"device_id": proof.ExpectedDeviceID, "link_approved_by": proof.ApprovedPrincipalID,
-		"device_owner_at_link": proof.ApprovedPrincipalID, "link_revision": "1", "linked_at": "",
+		"device_owner_at_link": proof.ApprovedPrincipalID, "link_revision": revision, "linked_at": "",
 	}
 	decoder := json.NewDecoder(bytes.NewReader(raw))
 	token, err := decoder.Token()

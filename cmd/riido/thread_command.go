@@ -22,6 +22,9 @@ func runThread(c contextIO, raw []string) error {
 	if raw[0] != "list" && raw[0] != "show" {
 		return c.fail(wantsJSON(raw), requestID, contextcli.Fail(contextcli.CodeUsage, "지원하지 않는 thread 하위 명령입니다", "riido thread --help"))
 	}
+	if c.environment().Mode == contextcli.ModeAgent {
+		return c.runContextRead(agentThreadCall(raw[0]), raw[1:])
+	}
 	maxPositionals := 0
 	if raw[0] == "show" {
 		maxPositionals = 1
@@ -71,7 +74,7 @@ func printThreadUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido thread list --work <ID> --workspace <WORKSPACE-ID> [--json]")
 	fmt.Fprintln(w, "  riido thread show <THREAD-ID> --work <ID> --workspace <WORKSPACE-ID> [--json]")
 	fmt.Fprintln(w, "    User work keys: --work <RIID-1234> with --workspace <WORKSPACE-ID> and/or --team-id <TEAM-ID>; configured scope defaults supported. Both scopes intersect. ID calls require workspace and ignore configured team.")
-	fmt.Fprintln(w, "    User mode only; fresh task-scoped ticket, current visible server-retained history, not all-time history. No pagination. 16 MiB response limit; agent mode: exit 8.")
+	fmt.Fprintln(w, "    User mode uses a fresh task-scoped ticket; agent mode uses the active run and current requester access. Visible server-retained history, not all-time history. No pagination. 16 MiB response limit.")
 }
 
 func renderThreads(w io.Writer, result any) {

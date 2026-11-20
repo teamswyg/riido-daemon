@@ -17,7 +17,8 @@ import (
 	"testing"
 )
 
-// updateTestCDN serves a helperless darwin/arm64 package of version.
+// updateTestCDN serves a helperless darwin/arm64 package of version on the
+// staging feed only, and records every requested path.
 func updateTestCDN(t *testing.T, version string) (*httptest.Server, *int) {
 	t.Helper()
 	mach := make([]byte, 64)
@@ -44,10 +45,11 @@ func updateTestCDN(t *testing.T, version string) (*httptest.Server, *int) {
 	hits := 0
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits++
-		switch {
-		case strings.HasSuffix(r.URL.Path, "/staging/ai-agent/SHA256SUMS"):
+		lastUpdatePath = r.URL.Path
+		switch r.URL.Path {
+		case "/releases/staging-safe/ai-agent/SHA256SUMS":
 			_, _ = w.Write([]byte(hex.EncodeToString(sum[:]) + "  riido-daemon_darwin_arm64.tar.gz\n"))
-		case strings.HasSuffix(r.URL.Path, "/staging/ai-agent/riido-daemon_darwin_arm64.tar.gz"):
+		case "/releases/staging-safe/ai-agent/riido-daemon_darwin_arm64.tar.gz":
 			_, _ = w.Write(archive)
 		default:
 			http.NotFound(w, r)
@@ -57,6 +59,9 @@ func updateTestCDN(t *testing.T, version string) (*httptest.Server, *int) {
 	return server, &hits
 }
 
+var lastUpdatePath string
+
+// updateHarness is a riido-staging install (RIID-6036 marker beside riido).
 func updateHarness(t *testing.T, vars map[string]string, current string) (*contextHarness, string, *int) {
 	t.Helper()
 	old := binaryVersion
@@ -67,6 +72,9 @@ func updateHarness(t *testing.T, vars map[string]string, current string) (*conte
 		t.Fatal(err)
 	}
 	if err := os.WriteFile(filepath.Join(root, "VERSION"), []byte(current+"\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(root, "INSTALL_CHANNEL"), []byte("staging\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	server, hits := updateTestCDN(t, "v0.0.108-staging.riid6021")
@@ -181,5 +189,23 @@ func TestRunUpdateKeepsNewerInstall(t *testing.T) {
 	}
 	if body, _ := os.ReadFile(filepath.Join(root, "riido")); string(body) != "old-binary" {
 		t.Fatal("same-channel update downgraded the install")
+	}
+}
+
+// RIID-6036: production riido (no marker) reads the production feed even when
+// an older QA build left a -staging version in the production directory.
+func TestRunUpdateProductionInstallReadsSafeFeed(t *testing.T) {
+	h, root, _ := updateHarness(t, nil, "v0.0.105-staging.riid5971")
+	if err := os.Remove(filepath.Join(root, "INSTALL_CHANNEL")); err != nil {
+		t.Fatal(err)
+	}
+	if err := runUpdate(h.io, []string{"--check", "--json"}); err == nil {
+		t.Fatal("production install read the staging feed")
+	}
+	if lastUpdatePath != "/releases/safe/ai-agent/SHA256SUMS" {
+		t.Fatalf("production feed = %s", lastUpdatePath)
+	}
+	if body, _ := os.ReadFile(filepath.Join(root, "riido")); string(body) != "old-binary" {
+		t.Fatal("failed update touched the install")
 	}
 }

@@ -39,21 +39,44 @@ func (r *sessionRunner) applyExpandedEvent(ev agentbridge.Event) bool {
 	if !accepted {
 		return false
 	}
+	if ev.Kind == agentbridge.EventResult {
+		r.commitResult(ev)
+		return r.deliveryInterrupted || r.sessionIdentityBlocked
+	}
+	if ev.Kind == agentbridge.EventSemanticActivity {
+		return r.applySemanticActivity(ev)
+	}
 	approver := r.cfg.AutoApprove
-	if ev.Kind == agentbridge.EventToolApprovalNeeded && approver != nil {
+	if ev.Kind == agentbridge.EventToolApprovalNeeded && ev.Tool.RequireHuman {
+		ev.AutomaticallyApproved = false
+		approver = nil
+	} else if ev.Kind == agentbridge.EventToolApprovalNeeded && approver != nil {
 		approved := approver(ev.Tool)
 		ev.AutomaticallyApproved = approved
 		approver = func(agentbridge.ToolRef) bool { return approved }
 	}
-	r.emit(ev)
-	if r.deliveryInterrupted {
+	if ev.Kind == agentbridge.EventCancellation || ev.Kind == agentbridge.EventTimeout || r.ctx.Err() != nil {
+		r.emit(ev)
 		return true
 	}
-	if r.blockStartedToolIfNeeded(ev) {
-		return true
+	if ev.At.IsZero() {
+		ev.At = r.cfg.Now()
+	}
+	if ev.Kind == agentbridge.EventToolCallStarted {
+		// The tool-start gate owns rejection and its notification order.
+		r.emit(ev)
+		if r.deliveryInterrupted || r.state.Terminal || r.blockStartedToolIfNeeded(ev) {
+			return true
+		}
 	}
 	var cmds []agentbridge.Command
 	r.state, cmds = agentbridge.Reduce(r.state, ev, approver)
+	if ev.Kind != agentbridge.EventToolCallStarted {
+		r.emit(ev)
+		if r.deliveryInterrupted || r.state.Terminal {
+			return r.deliveryInterrupted
+		}
+	}
 	if r.blockPendingApprovalIfNeeded(ev, cmds) {
 		return true
 	}

@@ -12,12 +12,12 @@
 - Add transient retry/backoff for safe/idempotent JSON transport.
 - Freeze selected executable and launch PATH into StartRequest.Env and spawn env.
 
-## P1: Public Repo Workspace Materialization
+## P1: Repository Workspace Materialization
 
 - Promote minimal WorkspacePlan DTO to riido-contracts.
 - Persist repo/branch as assignment snapshot fields, not only prompt text.
-- Clone public repo/branch before provider start.
-- Fail closed for private or unknown repo without token broker.
+- Clone public/private GitHub repo/branch using existing host Git credentials before provider start.
+- When an authorized checkout fails, discard the partial checkout and start in the isolated run directory with explicit repository availability. Reject unsupported URLs and preserve host verification and native session scope.
 
 ## P1: Stop Lifecycle Normalization
 

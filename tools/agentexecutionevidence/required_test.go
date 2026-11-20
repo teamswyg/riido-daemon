@@ -4,6 +4,8 @@ var requiredRisks = []string{
 	"same-task-multiple-assignments",
 	"public-repo-worktree-materialization",
 	"private-repo-fail-closed",
+	"private-repo-authenticated-clone",
+	"private-repo-provider-start",
 	"async-workspace-preparation",
 	"restart-recovery-skips-unresumable-active",
 	"restart-recovery-provider-session-resume",

@@ -101,3 +101,20 @@ func TestReleasePackageSupportsGitHubPullRequestRef(t *testing.T) {
 		t.Fatalf("PR VERSION=%q error=%v", data, err)
 	}
 }
+
+func TestDarwinTagReleaseRejectsMissingHelper(t *testing.T) {
+	for _, target := range []string{"darwin/arm64/tar", "darwin/amd64/tar"} {
+		t.Run(target, func(t *testing.T) {
+			root := newReleaseBuildFixture(t)
+			cmd := releaseBuildCommand(t, root, target)
+			cmd.Env = append(cmd.Env, "GITHUB_REF=refs/tags/v1.2.3", "GITHUB_EVENT_NAME=push", "RIIDO_CLI_AUTH_HELPER_BUNDLE=")
+			out, err := cmd.CombinedOutput()
+			if err == nil || !strings.Contains(string(out), "macOS tag release requires a signed CLI auth helper") {
+				t.Fatalf("missing helper not rejected: %v %s", err, out)
+			}
+			if _, err := os.Stat(filepath.Join(root, "dist")); !os.IsNotExist(err) {
+				t.Fatal("failed build produced release output")
+			}
+		})
+	}
+}

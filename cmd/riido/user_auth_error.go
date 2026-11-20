@@ -54,7 +54,7 @@ func userAuthError(err error) *contextcli.CLIError {
 	case errors.Is(err, standalonecli.ErrLogoutRemoteIncomplete):
 		return contextcli.Fail(contextcli.CodeIncomplete, "로컬 자격은 삭제했으나 서버 인증 폐기를 확인하지 못했습니다", "서버 연결의 폐기 상태를 확인하세요")
 	case errors.Is(err, context.Canceled), errors.Is(err, context.DeadlineExceeded):
-		return contextcli.Fail(contextcli.CodeUnavailable, "CLI 인증 또는 조회가 취소되었거나 시간이 초과됐습니다", "필요하면 --timeout 값을 늘려 다시 실행하세요")
+		return contextcli.Fail(contextcli.CodeUnavailable, "CLI 인증 또는 조회가 취소되었거나 시간이 초과됐습니다", "OS 확인 창과 서버 연결 상태를 확인한 뒤 다시 실행하세요")
 	}
 	var authErr *userauth.Error
 	if errors.As(err, &authErr) {

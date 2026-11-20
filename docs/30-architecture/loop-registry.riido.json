@@ -948,7 +948,7 @@
           "contains": [
             "TestApplyRuntimeInstructionContractPlacesByProvider",
             "Riido assignment interaction contract:",
-            "어떤 작업부터 진행할까요?"
+            "\uc5b4\ub5a4 \uc791\uc5c5\ubd80\ud130 \uc9c4\ud589\ud560\uae4c\uc694?"
           ]
         },
         {
@@ -1377,14 +1377,16 @@
     },
     {
       "id": "agent_execution_correction_must_preserve_identity_and_be_bounded",
-      "text": "A host-authorized correction preserves the native session and workspace, requires fresh evidence, and stops on cancellation or the configured limit.",
+      "text": "A host-authorized correction preserves the native session and workspace, requires fresh evidence, and stops on cancellation or the configured limit. Corrections retain the selected native-resume executable and capability fingerprint with per-run CLI capability release and claim ownership fencing.",
       "files": [
         "internal/agentbridge/supervisor/execution_continuation.go",
         "internal/agentbridge/supervisor/execution_verification.go",
         "internal/execution/binding.go",
         "internal/execution/types.go",
         "internal/agentbridge/supervisor/heartbeat_executions.go",
-        "cmd/riido/daemon_observation.go"
+        "cmd/riido/daemon_observation.go",
+        "internal/agentbridge/runtimeactor/native_resume.go",
+        "internal/agentbridge/supervisor/native_resume_selection.go"
       ],
       "docs": [
         "docs/30-architecture/agent-task-execution.md",
@@ -1393,7 +1395,9 @@
       ],
       "evidence": [
         "TestExecutionCorrectionResumesSameWorkspaceAndAssignment",
-        "TestExecutionCorrectionStopsAtHostLimit"
+        "TestExecutionCorrectionStopsAtHostLimit",
+        "TestNativeResumeContinuationRetainsSelection",
+        "TestNativeResumeSelectionChecksScopeBeforeSearchingCLI"
       ],
       "verifiers": [
         {
@@ -1411,6 +1415,13 @@
           "contains": [
             "TestDaemonObservationRetainsSupervisorOwnedExecutions",
             "pending-report"
+          ]
+        },
+        {
+          "name": "native-resume-selection-preservation",
+          "file": "internal/agentbridge/runtimeactor/native_resume_test.go",
+          "contains": [
+            "TestNativeResumeContinuationRetainsSelection"
           ]
         }
       ]

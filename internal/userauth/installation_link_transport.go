@@ -27,6 +27,9 @@ func (c *Client) deviceLinkPOST(ctx context.Context, path string, body map[strin
 	}
 	request.Header.Set("Content-Type", "application/json")
 	request.Header.Set("Accept", "application/json")
+	if path == "/oauth/cli/installation-links" {
+		request.Header.Set("X-Riido-Cli-Link-Error-Contract", "v1")
+	}
 	if bearer != "" {
 		request.Header.Set("Authorization", "Bearer "+bearer)
 	}
@@ -70,8 +73,13 @@ func deviceLinkHTTPError(status int, raw []byte, recovery bool) error {
 	// Provider descriptions are ignored. No link error maps to REAUTH_REQUIRED.
 	if fields, err := deviceLinkObject(raw, "error", "error_description"); err == nil {
 		var serverCode string
-		if json.Unmarshal(fields["error"], &serverCode) == nil && serverCode == "installation_policy_unknown" {
-			code = "LINK_POLICY_UNKNOWN"
+		if json.Unmarshal(fields["error"], &serverCode) == nil {
+			if serverCode == "installation_policy_unknown" {
+				code = "LINK_POLICY_UNKNOWN"
+			}
+			if !recovery && status == http.StatusConflict && serverCode == "installation_already_linked" {
+				code = "LINK_ALREADY_LINKED"
+			}
 		}
 	}
 	return &DeviceLinkError{Code: code, StatusCode: status, Retryable: retry}

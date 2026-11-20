@@ -20,6 +20,8 @@ type Query struct {
 	Cursor     string
 	Since      string
 	RequestID  string
+	Options    map[string]string
+	ThreadID   string
 	// MaxBytes batches consecutive captured pages of one part (content view).
 	MaxBytes     int
 	CacheEnabled bool
@@ -87,6 +89,14 @@ const (
 // and search are not served.
 func viewForCommand(command string) (string, bool) {
 	switch command {
+	case "work activity":
+		return "activity", true
+	case "work body":
+		return "body", true
+	case "thread list":
+		return "threads", true
+	case "thread show":
+		return "thread", true
 	case "context get":
 		return viewBase, true
 	case "context part":

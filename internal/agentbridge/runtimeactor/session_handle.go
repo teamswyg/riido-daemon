@@ -9,8 +9,9 @@ import (
 // session.Session but is the Actor's surface so we don't leak the
 // internal session package across the API boundary.
 type SessionHandle struct {
-	TaskID  string
-	session *session.Session
+	nativeResume *NativeResumeRuntime
+	TaskID       string
+	session      *session.Session
 }
 
 // Events returns the run-scope event stream, closed when the session

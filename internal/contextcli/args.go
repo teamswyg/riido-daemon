@@ -81,6 +81,10 @@ func ParseArgs(args []string, spec ArgSpec) (Args, *CLIError) {
 		bools:   map[string]bool{},
 	}
 	for i := 0; i < len(args); i++ {
+		if args[i] == "--" {
+			parsed.Positionals = append(parsed.Positionals, args[i+1:]...)
+			break
+		}
 		name, inline, hasInline := strings.Cut(args[i], "=")
 		if !strings.HasPrefix(name, "-") {
 			parsed.Positionals = append(parsed.Positionals, args[i])

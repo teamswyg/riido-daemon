@@ -14,7 +14,8 @@ type envelope struct {
 }
 
 type submitMsg struct {
-	runCtx context.Context
+	nativeResume *NativeResumeRuntime
+	runCtx       context.Context
 
 	ctx   context.Context
 	req   bridge.TaskRequest

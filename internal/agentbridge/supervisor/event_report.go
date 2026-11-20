@@ -18,6 +18,10 @@ func (a *Actor) reportTaskEvent(ctx context.Context, task *runningTask, ev agent
 	}
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
 	reportCtx = executionproof.ContextWithScope(reportCtx, executionproof.ScopeFromContext(task.ctx))
+	if a.queueProgressDelivery(reportCtx, task, ev) {
+		return
+	}
+	a.stopProgressDelivery(task)
 	err := task.timing.report(func() error { return a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, ev) })
 	if err != nil {
 		retainReportEvent(task, ev)
@@ -25,7 +29,20 @@ func (a *Actor) reportTaskEvent(ctx context.Context, task *runningTask, ev agent
 }
 
 func retainReportEvent(task *runningTask, ev agentbridge.Event) {
-	if task == nil || !shouldRetainReportEvent(ev) || len(task.pendingEvents) >= maxPendingReportEvents {
+	if task == nil || !shouldRetainReportEvent(ev) {
+		return
+	}
+	limit := maxPendingReportEvents
+	if ev.NativeHistory != nil {
+		limit = 2000
+	}
+	count := 0
+	for _, pending := range task.pendingEvents {
+		if (pending.NativeHistory != nil) == (ev.NativeHistory != nil) {
+			count++
+		}
+	}
+	if count >= limit {
 		return
 	}
 	task.pendingEvents = append(task.pendingEvents, ev)
@@ -46,6 +63,7 @@ func (a *Actor) retryEventReports(ctx context.Context, inFlight map[string]*runn
 }
 
 func (a *Actor) flushNextEventReport(ctx context.Context, task *runningTask) bool {
+	a.stopProgressDelivery(task)
 	reportCtx := controlplane.ContextWithTaskReport(ctx, task.report)
 	reportCtx = executionproof.ContextWithScope(reportCtx, executionproof.ScopeFromContext(task.ctx))
 	if err := task.timing.report(func() error { return a.cfg.Reporter.ReportEvent(reportCtx, task.taskID, task.pendingEvents[0]) }); err != nil {

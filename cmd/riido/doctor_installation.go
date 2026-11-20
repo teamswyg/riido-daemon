@@ -28,6 +28,12 @@ func (c contextIO) doctorInstallation(env contextcli.Environment) []doctorCheck 
 		return append(checks, doctorCheck{Name: "helper_bundle", Status: doctorSkip, Detail: "에이전트 모드에서는 사용자 인증 도우미를 사용하지 않습니다"})
 	}
 	root := filepath.Dir(resolved)
+	// RIID-6036: say which install this is; riido-staging is the test channel.
+	if cliinstallation.InstalledChannelAt(root) == cliinstallation.ChannelStaging {
+		checks = append(checks, doctorCheck{Name: "install_channel", Status: doctorOK, Detail: "staging 테스트용 설치(riido-staging). production은 riido로 따로 설치합니다"})
+	} else {
+		checks = append(checks, doctorCheck{Name: "install_channel", Status: doctorOK, Detail: "production 설치(riido)"})
+	}
 	rawVersion, versionErr := doctorReadRegular(filepath.Join(root, "VERSION"), 4096)
 	version := strings.TrimSpace(string(rawVersion))
 	versionOK := versionErr == nil && cliinstallation.ValidateVersion(version) == nil && c.cliVersion() == "riido-daemon "+version

@@ -11,6 +11,16 @@ import (
 // machine (for "response") or the existing Translate (for notifications
 // and server_requests).
 func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
+	events, commands, err := d.onRaw(ctx, raw, io)
+	for i := range events {
+		if events[i].Kind == agentbridge.EventLog {
+			events[i].LocalOnly = true
+		}
+	}
+	return events, commands, err
+}
+
+func (d *protocolDriver) onRaw(ctx context.Context, raw agentbridge.RawEvent, io agentbridge.ProtocolIO) ([]agentbridge.Event, []agentbridge.Command, error) {
 	if rawFrameType(raw.Type) == rawFrameResponse {
 		return d.handleResponse(ctx, raw, io)
 	}
@@ -18,6 +28,16 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		id, _ := rpcID(raw.Payload)
 		if pr, known := d.pending[id]; known {
 			delete(d.pending, id)
+			if pr.method == codexMethodQueueDelete && d.shared != nil && d.shared.startError != "" {
+				d.shared.done = true
+				return d.failedEvents(d.shared.startError + ". 대기 중인 요청을 정리하지 못했습니다. 재요청 전에 Codex 앱의 대기열을 확인해주세요"), nil, nil
+			}
+			if pr.method == codexMethodThreadResume && d.req.ResumeSessionID != "" && codexRPCErrorMessage(raw.Payload) == "thread "+d.req.ResumeSessionID+" already has an active writer" {
+				if d.shared != nil && d.shared.reconnecting {
+					return d.waitSharedReconnect(), nil, nil
+				}
+				return d.attachSharedWriter(ctx, io)
+			}
 			if pr.method == codexMethodThreadNameSet {
 				return []agentbridge.Event{{Kind: agentbridge.EventWarning, Err: "Codex thread name unavailable: " + codexRPCErrorMessage(raw.Payload)}}, nil, nil
 			}
@@ -28,17 +48,44 @@ func (d *protocolDriver) OnRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		d.observeEvents(events)
 		return events, cmds, err
 	}
+	if d.shared != nil {
+		// The child does not own the native turn. Only correlated read replies
+		// may publish its output or completion.
+		return nil, nil, nil
+	}
+	if raw.Type == rawFrameServerRequestPrefix+codexMCPApprovalMethod {
+		return d.handleMCPApproval(ctx, raw, io)
+	}
 	if after, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok {
-		if events, handled := d.handleNotification(codexMethod(after), raw); handled {
+		if events, handled := d.guardOwnedNotification(raw); handled {
 			return events, nil, nil
+		}
+		if events, handled := d.handleNotification(codexMethod(after), raw); handled {
+			return d.ownedResultEvents(raw, events), nil, nil
 		}
 	}
 	events, cmds, err := Translate(raw)
+	events = d.ownedResultEvents(raw, events)
 	d.observeEvents(events)
 	return events, cmds, err
 }
 
 func (d *protocolDriver) handleNotification(method codexMethod, raw agentbridge.RawEvent) ([]agentbridge.Event, bool) {
+	if d.owned.id != "" {
+		if method == codexMethodItemCommandOutput {
+			p := params(raw)
+			if stringField(p, "itemId") != "" && stringField(p, "delta") != "" {
+				// Correlation was checked by guardOwnedNotification. Keep raw tool
+				// output private while recognizing real activity on the owned turn.
+				return []agentbridge.Event{{Kind: agentbridge.EventSemanticActivity}}, true
+			}
+			return nil, true
+		}
+		if events, handled := d.ownedMessageEvents(method, params(raw)); handled {
+			d.observeEvents(events)
+			return events, true
+		}
+	}
 	if method == codexMethodError {
 		p := params(raw)
 		errText := codexNotificationErrorMessage(p)

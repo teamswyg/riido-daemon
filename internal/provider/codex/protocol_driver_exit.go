@@ -11,6 +11,13 @@ import (
 // callers never block forever waiting for a response that will never
 // arrive. Also clears the pending map (cleanup).
 func (d *protocolDriver) OnProcessExit(_ context.Context, status agentbridge.ProcessExitStatus, _ agentbridge.ProtocolIO) ([]agentbridge.Event, error) {
+	if d.owned.id != "" && !d.owned.done {
+		message := fmt.Sprintf("codex: process exited before owned turn completed (thread=%s turn=%s exit_code=%d)", d.threadID, d.owned.id, status.Code)
+		if d.lastRuntimeError != "" {
+			message += ": " + d.lastRuntimeError
+		}
+		return d.failedEvents(message), nil
+	}
 	if d.lastRuntimeError != "" && !d.sawAssistantOutput {
 		return d.failedEvents(d.lastRuntimeError), nil
 	}

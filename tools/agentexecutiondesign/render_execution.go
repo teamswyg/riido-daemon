@@ -24,7 +24,8 @@ func workspacePlanDoc(m model) string {
 		for _, row := range m.Execution.WorkspaceFields {
 			fmt.Fprintf(b, "| `%s` | %s | %s |\n", row.Field, row.Phase, row.Rule)
 		}
-		b.WriteString("\nP0 clones public repositories only; private repositories fail closed until token-ref broker ownership is defined.\n")
+		b.WriteString("\n")
+		writeBullets(b, m.Execution.WorkspaceRules)
 	})
 }
 

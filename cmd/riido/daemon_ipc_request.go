@@ -49,7 +49,7 @@ func readDaemonRequest(conn net.Conn) (daemonRequest, bool, error) {
 	if err := json.Unmarshal(raw, &req); err != nil {
 		return daemonRequest{}, false, err
 	}
-	if req.Method == daemonMethodCLIInstallationLinkInfo || req.Method == daemonMethodCLIInstallationLinkConfirm {
+	if req.Method == daemonMethodCLIInstallationLinkInfo || req.Method == daemonMethodCLIInstallationLinkConfirm || req.Method == daemonMethodCLITransferConfirm {
 		trailing, err := io.ReadAll(decoder.Buffered())
 		if err != nil || len(bytes.TrimSpace(trailing)) != 0 {
 			return daemonRequest{}, false, &contextcli.CLIInstallationLinkError{Code: "LINK_INVALID_REQUEST"}

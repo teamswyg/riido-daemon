@@ -18,3 +18,5 @@ Each workspace operation has one responsibility, deterministic output, and an IR
 | `ReinjectNativeConfig` | T-CONFIG trigger | Native config refresh and `ConfigTemplateReinjected(from, to)` |
 
 RIID-5827: RIIDO_EXECUTION_BINDINGS_FILE selects an exact authenticated workspace/task, host repository, required changed files and argv checks. Committed HEAD is cloned into the run repository; completion requires changed outputs and successful bounded checks. The original checkout is preserved. Main terminal-report retention, native session resume, worktree grants and lifecycle authority remain in force.
+
+Assignment checkout accepts exact GitHub pull request head refs. A missing task-generated branch can use a server-selected linked pull request in the same repository; authentication and connectivity failures keep their original diagnostics. Fetch uses the current Git credential helper, takes the exact fetched commit before provider start and reports the pull request on the same execution.

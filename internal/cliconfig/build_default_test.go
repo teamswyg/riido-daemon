@@ -28,3 +28,23 @@ func TestBuildDefaultProfileSelectsChannelOnlyWithoutSavedChoice(t *testing.T) {
 		t.Fatal("RIIDO_CLI_PROFILE overridden by the build default")
 	}
 }
+
+// RIID-6036: a staging-channel install defaults to staging with the same
+// package; a saved choice still wins and production stays the default.
+func TestInstalledChannelSelectsStagingDefault(t *testing.T) {
+	t.Cleanup(func() { UseInstalledChannel("") })
+	none := func(string) string { return "" }
+	UseInstalledChannel("staging")
+	if resolved, _ := Resolve(Default(), "", false, none); resolved.Profile != "staging" || resolved.APIOrigin != DefaultAPIOrigin("staging") {
+		t.Fatalf("staging install default = %q", resolved.Profile)
+	}
+	saved := Default()
+	saved.ActiveProfile = "production"
+	if resolved, _ := Resolve(saved, "", false, none); resolved.Profile != "production" {
+		t.Fatal("saved profile overridden by the install channel")
+	}
+	UseInstalledChannel("")
+	if DefaultProfile() != "production" {
+		t.Fatal("production default changed")
+	}
+}

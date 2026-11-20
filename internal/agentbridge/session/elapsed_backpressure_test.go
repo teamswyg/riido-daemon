@@ -42,7 +42,7 @@ func TestAdapterElapsedIncludesBlockedEventDelivery(t *testing.T) {
 	default:
 	}
 	elapsed.Store(int64(5 * time.Second))
-	for range 3 {
+	for range 2 {
 		select {
 		case <-r.sess.events:
 		case <-time.After(time.Second):

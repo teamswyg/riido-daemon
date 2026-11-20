@@ -28,7 +28,9 @@ func (a *Actor) handleSubmit(
 	if err != nil {
 		return nil, err
 	}
-	blockRuntimeDriftedTasks(msg.ctx, inFlight, capView)
+	if msg.nativeResume == nil {
+		blockRuntimeDriftedTasks(msg.ctx, inFlight, capView)
+	}
 	if msg.req.ExpectedCapabilityFingerprint != "" && msg.req.ExpectedCapabilityFingerprint != capView.CapabilityFingerprint {
 		return nil, preflightError("not_authorized", false, false, ErrRuntimePinViolated)
 	}
@@ -60,6 +62,10 @@ func (a *Actor) handleSubmit(
 		return nil, err
 	}
 	handle := registerRunningSubmit(inFlight, msg.req.ID, string(msg.req.Provider), capView.CapabilityFingerprint, sess)
+	if msg.nativeResume != nil {
+		handle.nativeResume = msg.nativeResume
+		go msg.nativeResume.watch(msg.runCtx, a, handle)
+	}
 	watchSubmitCompletion(msg.req.ID, sess.Done(), a.stoppedCh, completeCh, release)
 	watching = true
 	return handle, nil

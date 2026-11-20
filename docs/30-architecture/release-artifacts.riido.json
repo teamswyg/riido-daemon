@@ -27,7 +27,7 @@
     "NOTICE.md",
     "VERSION",
     "binary version command reports VERSION",
-    "Optional macOS only: CLI_AUTH_HELPER.json (schema_version 1, exact release_version, fixed helper_bundle RiidoCLIAuthHelper.app) together with the adjacent signed RiidoCLIAuthHelper.app. Both absent is legacy; only one present is rejected.",
+    "macOS tag releases require CLI_AUTH_HELPER.json (schema_version 1, exact release_version, fixed helper_bundle RiidoCLIAuthHelper.app) and the adjacent signed, notarized helper. Legacy archives remain readable for development and historical installer compatibility only.",
     "Opt in with an absolute RIIDO_CLI_AUTH_HELPER_BUNDLE path on a macOS packaging host. The bundle must already be signed; packaging never signs or accesses signing credentials.",
     "Info.plist RiidoCLIReleaseVersion must exactly match VERSION, including tag prefix and suffix; inject release metadata before signing."
   ],
@@ -39,7 +39,12 @@
     "install_dir_env": "RIIDO_DAEMON_INSTALL_DIR",
     "default_install_dir": "$HOME/.riido/bin",
     "channel_env": "RIIDO_DAEMON_CHANNEL",
-    "channels": ["staging", "latest"]
+    "channels": ["staging", "latest"],
+    "channel_notes": [
+      "Channels read the active CDN feeds the desktop app uses: `latest` reads `releases/safe/ai-agent` and `staging` reads `releases/staging-safe/ai-agent`. The legacy `releases/latest` and `releases/staging` prefixes stay frozen.",
+      "Production stays `riido` in `$HOME/.riido/bin` (no channel, or `latest`); such an install removes a staging `INSTALL_CHANNEL` marker left in that directory.",
+      "`staging` is the test channel (RIID-6036): the same package installs to `$HOME/.riido-staging/libexec` with an `INSTALL_CHANNEL` marker, and only the `riido-staging` link in `$HOME/.riido-staging/bin` (`RIIDO_DAEMON_LINK_DIR`) goes on PATH, so it never replaces production `riido`. The marker makes the binary default to the staging profile, keep its settings in `riido-cli-staging`, and update from the staging feed."
+    ]
   },
   "desktop_msix": {
     "download_source": "GitHub Release asset",
@@ -86,7 +91,9 @@
     {"name": "install-prerelease-latest", "file": "scripts/install-riido-daemon.sh", "contains": "releases?per_page=1"},
     {"name": "install-checksum-verification", "file": "scripts/install-riido-daemon.sh", "contains": "checksum mismatch"},
     {"name": "install-dir-override", "file": "scripts/install-riido-daemon.sh", "contains": "RIIDO_DAEMON_INSTALL_DIR"},
-    {"name": "install-channel-cdn", "file": "scripts/install-riido-daemon.sh", "contains": "base_url=\"$cdn_base/$channel/ai-agent\""},
+    {"name": "install-channel-cdn", "file": "scripts/install-riido-daemon.sh", "contains": "base_url=\"$cdn_base/$(cdn_prefix \"$channel\")/ai-agent\""},
+    {"name": "install-channel-active-feeds", "file": "scripts/install-riido-daemon.sh", "contains": "staging) echo \"staging-safe\" ;;"},
+    {"name": "install-staging-separate-command", "file": "scripts/install-riido-daemon.sh", "contains": "ln -s \"$install_dir/riido\" \"$link_dir/$command_name\""},
     {"name": "install-helper-pair", "file": "scripts/install-riido-daemon.sh", "contains": "package has an incomplete $helper_bundle"},
     {"name": "install-helper-pair-test", "file": "scripts/install_riido_daemon_package_test.go", "contains": "TestInstallRiidoDaemonRejectsIncompleteHelperBeforeTouchingBinary"},
     {"name": "build-package-binary-version-ldflags", "file": "scripts/build-release-package.sh", "contains": "-X main.binaryVersion=$version"},
@@ -94,7 +101,15 @@
     {"name": "binary-version-command-test", "file": "cmd/riido/version_test.go", "contains": "TestVersionCommandPrintsBinaryVersion"},
     {"name": "helper-opt-in-input", "file": "scripts/build-release-package.sh", "contains": "RIIDO_CLI_AUTH_HELPER_BUNDLE"},
     {"name": "helper-archive-verification", "file": "scripts/publish-cdn-latest.sh", "contains": "tools/clihelperpackage"},
-    {"name": "helper-pre-sign-version", "file": "native/cli-auth-helper/build.sh", "contains": "RIIDO_CLI_RELEASE_VERSION"}
+    {"name": "helper-pre-sign-version", "file": "native/cli-auth-helper/build.sh", "contains": "RIIDO_CLI_RELEASE_VERSION"},
+    {"name": "tag-requires-helper", "file": "scripts/build-release-package.sh", "contains": "macOS tag release requires a signed CLI auth helper"},
+    {"name": "cdn-requires-helper", "file": "scripts/publish-cdn-latest.sh", "contains": "-require-helper"},
+    {"name": "signed-source-binding", "file": "scripts/consume-macos-release-input.sh", "contains": "RiidoCLISourceRevision"},
+    {"name": "notarized-input", "file": "scripts/consume-macos-release-input.sh", "contains": "stapler validate"},
+    {"name": "helper-profile-certificate-selection", "file": "scripts/prepare-macos-release-input.sh", "contains": "verify-macos-helper.py select-identity"},
+    {"name": "helper-real-startup-gate", "file": "tools/clihelperpackage/main.go", "contains": "verifyRunnablePackagedHelper"},
+    {"name": "helper-startup-before-credential-stores", "file": "native/cli-auth-helper/Sources/Entry.swift", "contains": "riido-cli-helper-preflight.v1"},
+    {"name": "native-variable-length-der-fixture", "file": "native/cli-auth-helper/Tests/InstallationSignatureFixture.swift", "contains": "proof fixture accepts valid 69-byte DER"}
   ],
   "detail_docs": [
     {"title": "Decision and Asset Names", "path": "docs/30-architecture/release-artifacts/assets.md"},
@@ -111,8 +126,12 @@
     "The executable must expose the same release tag through `riido version` and `riido --version`.",
     "Each build uses a fresh staging directory and atomically replaces its final archive only after validation; stale helper files and failed optional-helper builds never replace a prior asset.",
     "Helper packaging checks fixed Apple anchor/team/identifier, hardened runtime, safe entitlements, embedded profile, executable architecture, regular paths, and exact version. Its copied archive is unpacked and verified again on macOS before publication.",
-    "The Ubuntu release matrix remains legacy until a separately reviewed macOS signing/packaging lane supplies verified helper artifacts. Local fixtures and unsigned Swift builds are not signed-helper acceptance.",
-    "CDN verification checks optional bundle pairing, paths and versions with a portable archive validator. Linux structural validation is not Apple signature, notarization, first-login presence, or installation-binding acceptance.",
-    "The standalone shell installer still installs the daemon binary only; optional helper packaging does not claim standalone auth installation support."
+    "Tag releases require helper-inclusive macOS packages. The macOS CI lane consumes a pre-signed, notarized input package from the draft GitHub release, verifies the exact signed RiidoCLISourceRevision against the tag commit, helper identity/version/architecture and stapled ticket, then rebuilds the daemon from source. Pull requests may dry-run without signing credentials; they cannot publish.",
+    "CDN verification requires the macOS helper bundle and manifest, and checks paths and versions with a portable archive validator. Apple signature and notarization are checked by the macOS build lane; neither check claims first-login presence or installation-binding acceptance.",
+    "The standalone shell installer still installs the daemon binary only; optional helper packaging does not claim standalone auth installation support.",
+    "Prepare each macOS input with scripts/prepare-macos-release-input.sh using the existing Apple signing identity and authorized provisioning profile. Upload riido-macos-input_darwin_{arm64,amd64}.tar.gz to a draft release targeting the reviewed main commit before pushing the tag. CI alone publishes the final release and CDN. No signing credential is uploaded in a package or copied into repository secrets.",
+    "Both legacy flat desktop installs and managed helper installs must update to a helper-inclusive package; managed installs must continue rejecting helper removal. Real signed-package installation checks supplement fixture lifecycle tests. Busy daemons defer activation without forced termination.",
+    "Before signing, select exactly one usable Developer ID identity whose certificate fingerprint appears in the authorized profile. Reject mismatched or ambiguous identities without signing. Both macOS packaging lanes recheck the embedded profile against the actual signer and execute --preflight with empty stdin; this startup probe checks signing only and never constructs credential stores, contacts services or prompts for user presence. Intel and arm64 CI lanes run on their native architectures.",
+    "Native installation-proof fixtures retain canonical base64url decoding, CryptoKit DER parsing and verification against the exact golden message. DER validity is not inferred from a 70-to-72-byte length heuristic; a fixed valid 69-byte signature guards this boundary without changing production signing or authentication."
   ]
 }

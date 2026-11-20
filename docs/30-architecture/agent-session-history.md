@@ -1,5 +1,9 @@
 # Agent session and history management
 
+Native history reporting fails explicitly when the assignment authority is
+missing or the message cannot be encoded. Neither condition acknowledges an
+import or permits the next turn to proceed as if history had been persisted.
+
 RIID-5819 owns daemon-side native session continuity. The server remains the
 source of the requested resume ID; the daemon never selects a most recent
 session or starts another session as an automatic recovery policy.
@@ -15,6 +19,12 @@ remain separate. Prompts, replies, credentials and environment values
 are not stored in this index. Existing run IR remains the execution history.
 Resumed sessions and the repository preparation they reuse start from the scrubbed
 child environment (RIID-5900), so the device credential never reaches a native session.
+
+When an authorized Git checkout fails, the session binding records that the
+provider started in an isolated directory. A reply can reopen that directory
+after daemon restart. The workspace, task, agent, runtime and repository grant
+must still match. A session originally started with a checkout still requires
+its retained repository.
 
 A known resumed session reuses its original working directory (and therefore its
 native CLI project history/config home), while each new run keeps its own event,
@@ -47,6 +57,21 @@ OpenClaw resume, UI navigation, provider login-account identity isolation, or
 provider automatic recovery. Capability fingerprints describe the executable
 and execution policy, not the provider login account.
 
+A Codex wait correlated to the owned turn can receive idle-watchdog activity
+from its named delegated threads. The session consumes the activity before
+publication. The owned turn remains the source of assistant output and completion.
+
+## RIID-6142: Codex MCP tool confirmation
+
+Only an MCP tool confirmation for the pinned thread and acknowledged turn can
+enter the existing human approval flow. Supported requests are marked by Codex
+as MCP tool calls and use an empty confirmation form. The approval shows the
+request's question, without publishing form metadata or tool arguments.
+Approval is per request and cannot be granted by the automatic tool policy.
+Return the matching JSON-RPC ID with Codex's `accept`, `decline`, or `cancel`
+action. Unsupported forms and uncorrelated requests are cancelled explicitly.
+Cancellation and existing hard and idle deadlines continue to bound the wait.
+
 ## Evidence
 
 Hermetic tests cover two follow-ups across adapter reconstruction, retained
@@ -74,3 +99,77 @@ and do not appear as one native turn. Timing summaries contain no session/task
 identifiers and never change native pin ownership, cwd/grant binding, resume
 selection or terminal acknowledgement identity. Native-session continuity and fresh
 host-verification regressions remain required alongside timing tests.
+
+## RIID-5891: Import visible native history on Riido continuation
+
+RIID-5891 imports Codex/Claude text when the next Riido request resumes the exact
+bound session. Session/workdir/runtime ownership remains governed by
+this document; this does not scan other projects or start watchers.
+
+The consumer/wire contract is owned by Control Plane in
+`docs/20-domain/ai-agent-client-api.riido.json` (`native-history-*` rules). Producer payload:
+`agentbridge.NativeHistoryMessage`, sent as `riido_log` metadata
+`native_history_message` with the assignment lease token. User/Agent text alone
+is eligible. Tool output, reasoning and subagent sidechains are excluded.
+The canonical task prompt anchors the history, and Riido prompt/response pairs
+are skipped because the server already projects them. Stable provider IDs allow
+the consumer to deduplicate replays. Identical text is not a deduplication key.
+
+Codex reads inline resumed turns or all `thread/turns/list` pages (`asc`, `full`)
+before `turn/start`. Claude opens only the exact session JSONL in its bound
+project directory before process start, checks file stability, follows the main
+parent chain and publishes only after the provider confirms the session ID.
+Native history messages are guarded again by the session actor and retained by
+the supervisor when reporting fails. Pending imports gate terminal delivery.
+
+Unreadable/compacted/incomplete or foreign history fails explicitly. Text limits:
+64 KiB/message, 2,000 imported messages, 4 MiB text; transcript limit 64 MiB and
+Codex turn limit 10,000. Attachments are not uploaded. Concurrent external turns
+must finish before a Riido continuation. No fallback to a latest/new session.
+
+Deploy the Control Plane consumer before this producer. Roll back producer first.
+An owned Codex run recognizes `contextCompaction` item start and completion
+for its pinned thread and acknowledged turn. If an identified compaction is
+still active at the semantic idle deadline, the session loop can grant one more
+configured idle interval per turn. Duplicate and uncorrelated events cannot
+extend that allowance. This applies to provider output processing only. Tool
+approval waits, cancellation and the hard deadline retain their existing limits.
+
+An owned Codex run checks its pinned thread and acknowledged turn when semantic
+idle expires. The read-only request has a two-second budget and runs through the
+ordinary session actor. Progress, approvals, cancellation, process exit and
+terminal notifications continue through their existing handlers while the read
+is pending. A matching completed turn with a completion timestamp and an answer
+can recover the result. A matching `inProgress` turn can receive one additional
+configured idle interval per run, shared with the compaction allowance. Status
+alone cannot renew this allowance. Missing, foreign, stale or failed reads do
+not extend the wait. Actual semantic progress ends the read and restores the
+ordinary watchdog; late read responses cannot affect the run. Cancellation and
+the hard deadline retain priority. No recovery starts a new turn or repeats a
+tool call, and the original execution claim still owns result publication.
+
+RIID-6203 regression evidence: `owned_idle_continuation_test.go` reproduces a
+still-running turn killed at the first idle deadline and a completion lost while
+reading. The same suite covers bounded continuation, identity rejection and the
+ordinary event path during recovery. The initiating network outage in RAX-52
+remains unproven; these tests establish the daemon's premature termination and
+event-loss defects without claiming to reproduce that external outage.
+Owned `item/commandExecution/outputDelta` notifications with a nonempty item ID
+and delta count as semantic activity after thread/turn correlation. Raw command
+output is not published as assistant text or completion. Missing or foreign
+identities and empty output cannot keep the watchdog alive.
+
+Existing first runs and unrelated providers do not read local history. This is
+append-only projection, not a realtime mirror or source edit/delete replication.
+
+Primary protocol references:
+- https://learn.chatgpt.com/docs/app-server
+- https://code.claude.com/docs/en/agent-sdk/sessions
+- https://github.com/anthropics/claude-agent-sdk-python/blob/main/src/claude_agent_sdk/_internal/sessions.py
+
+Verification uses synthetic `native_history_test.go` fixtures for both providers,
+the shared selection tests and the session/supervisor delivery regression suites.
+
+A resumed provider session reopens its retained workdir. Pull request checkout
+and task-branch recovery run only during workspace preparation for a fresh
+provider session, so a linked PR cannot replace a resumed session's files.

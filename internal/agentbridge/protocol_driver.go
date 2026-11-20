@@ -1,6 +1,9 @@
 package agentbridge
 
-import "context"
+import (
+	"context"
+	"time"
+)
 
 // ProcessExitStatus is the provider-neutral process-exit signal passed to a
 // ProtocolDriver. The concrete process port owns OS/process details; providers
@@ -36,4 +39,33 @@ type ProtocolIO interface {
 // this in addition to Adapter.
 type ProtocolDriverProvider interface {
 	NewProtocolDriver(req StartRequest) (ProtocolDriver, error)
+}
+
+// ProtocolPoller observes provider-owned work without taking over its writer.
+// The session actor serializes polling with OnRaw and all other driver calls.
+type ProtocolPoller interface {
+	PollInterval() time.Duration
+	OnPoll(context.Context, ProtocolIO) ([]Event, []Command, error)
+}
+
+// ProtocolTerminationDriver cleans up externally queued work before the local
+// transport is killed. A true return asks the actor to drain replies until a
+// Result event or a bounded deadline. It must never stop another client's turn.
+type ProtocolTerminationDriver interface {
+	OnTerminate(context.Context, ProtocolIO) (bool, error)
+}
+
+// ProtocolIdleRecovery optionally checks the exact provider turn before the
+// semantic idle watchdog terminates it. Ordinary events keep flowing while the
+// bounded read is pending. Only the matching read response is consumed here.
+type ProtocolIdleRecovery interface {
+	BeginIdleRecovery(context.Context, ProtocolIO) (bool, error)
+	OnIdleRecoveryRaw(RawEvent) (Result, bool)
+	EndIdleRecovery()
+}
+
+// ProtocolIdleGrace optionally grants another idle interval for a known
+// provider operation. The driver must bound its grants to the current run.
+type ProtocolIdleGrace interface {
+	ConsumeIdleGrace() bool
 }

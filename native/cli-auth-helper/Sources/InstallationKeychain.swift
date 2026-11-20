@@ -69,6 +69,30 @@ struct ProtectedInstallationKeyStore: InstallationKeyStore {
                         validate: { try proof.validate() })
     }
 
+    func signTransferRepairProof(_ proof: InstallationTransferRepairProof) throws -> Data {
+        try proof.validate()
+        return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0) },
+                        validate: { try proof.validate() })
+    }
+
+    func signDeviceBootstrapProof(_ proof: DeviceBootstrapProof) throws -> DeviceBootstrapSignature {
+        try proof.validate(now: Date())
+        let bootDigest = try scopedBootSessionDigest(proof, bootID: currentBootSessionID())
+        let signature = try sign(scope: proof.scope,
+            message: { try proof.message(publicKey: $0, bootDigest: bootDigest, now: Date()) },
+            validate: {
+                try proof.validate(now: Date())
+                guard try scopedBootSessionDigest(proof, bootID: currentBootSessionID()) == bootDigest else { throw HelperFailure.unavailable }
+            })
+        return DeviceBootstrapSignature(bootDigest: bootDigest, signature: signature)
+    }
+
+    func signDeviceTransferProof(_ proof: DeviceTransferProof) throws -> Data {
+        try proof.validate(now: Date())
+        return try sign(scope: proof.scope, message: { try proof.message(publicKey: $0, now: Date()) },
+                        validate: { try proof.validate(now: Date()) })
+    }
+
     private func sign(scope: InstallationScope, message makeMessage: (Data) throws -> Data,
                       validate: () throws -> Void) throws -> Data {
         let (context, owned) = installationContext()

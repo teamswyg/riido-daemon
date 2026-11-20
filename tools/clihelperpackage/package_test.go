@@ -318,3 +318,16 @@ func TestArchiveRejectsTrailingPayloadAfterTarEnd(t *testing.T) {
 		t.Fatal("uninspected trailing archive payload accepted")
 	}
 }
+
+func TestReleaseArchiveRequiresHelper(t *testing.T) {
+	for _, modern := range []bool{false, true} {
+		archive := writeArchive(t, packageEntries("v1.2.3", modern))
+		err := verifyArchivePolicy(archive, "v1.2.3", "arm64", true)
+		if modern && err != nil {
+			t.Fatal(err)
+		}
+		if !modern && (err == nil || !strings.Contains(err.Error(), "requires CLI auth helper")) {
+			t.Fatalf("legacy release accepted: %v", err)
+		}
+	}
+}

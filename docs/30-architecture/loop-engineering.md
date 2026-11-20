@@ -54,15 +54,15 @@
 ### approval-wait-timeout
 
 - Owner: `tools/approvaltimeout and approval-wait-timeout workflow`
-- Observe: Approval wait timeout ownership was prose-only while the rule spans provider draft mapping, semantic activity, session clocks, and reducer timeout behavior.
+- Observe: RIID-6192: an explicit current tool approval wait ended on SemanticIdle before a human decision, interrupting PR publication and result persistence.
   - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.md`
-- Hypothesis: A manifest can prove approval requests map to ApprovalRequested, reset SemanticIdle, remain bounded by session timers, and reduce timeout to provider cancellation.
+- Hypothesis: Human approval response time is not provider execution time. Pause the idle and hard timers only during the current resolver wait, preserving the remaining active execution budget and explicit request identity.
   - Artifacts: `docs/20-domain/provider-runtime/adapter-draft-fields/approval-wait-timeout.riido.json`
-- Execute: Read idle-watchdog and provider-event-draft manifests, scan session timer/reducer sources, and upload approval timeout evidence.
+- Execute: Pause execution clocks during resolver wait, resume the remaining hard budget and original idle budget on response, and retain cancellation and fail-closed decisions without automatic approval.
   - Artifacts: `tools/approvaltimeout`, `.github/workflows/approval-wait-timeout.yml`
-- Evaluate: The verifier rejects manifest drift, source ownership drift, and generated doc drift.
-  - Artifacts: `tools/approvaltimeout/run_test.go`
-- Retrospective: Approval wait timeout docs are generated while existing session/reducer code remains the implementation evidence.
+- Evaluate: Session regressions advance approval wait by 24 hours, verify no provider input before a decision, preserve the remaining active execution budget, and check cancellation, denial, errors and termination priority.
+  - Artifacts: `tools/approvaltimeout/run_test.go`, `internal/agentbridge/session/session_tool_approval_wait_idle_test.go`, `internal/agentbridge/session/session_tool_approval_wait_decision_test.go`, `internal/agentbridge/session/session_tool_approval_wait_cancel_test.go`, `internal/agentbridge/session/session_tool_approval_wait_priority_test.go`, `internal/agentbridge/session/session_tool_approval_wait_budget_test.go`
+- Retrospective: User response time must not consume provider execution budgets. Missing resolvers, stale request authority, provider idle and explicit cancellation retain their existing behavior.
   - Artifacts: `internal/agentbridge/session/session_tool_approval_resolver.go`, `internal/agentbridge/reducer_result_events.go`
 - Evidence:
   - `command`: go run ./tools/approvaltimeout -check-doc -evidence-out /tmp/approval-wait-timeout-evidence.json; proves approval wait timeout manifest matches related manifests and runtime sources

@@ -1,7 +1,9 @@
 package supervisor
 
 import (
-	"strings"
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
@@ -12,7 +14,15 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/workdir"
 )
 
-func TestSupervisorBlocksPrivateAssignmentWorktreeBeforeProviderStart(t *testing.T) {
+func TestSupervisorStartsInIsolatedWorkspaceAfterPrivateCheckoutFailure(t *testing.T) {
+	original := runAssignmentGitClone
+	runAssignmentGitClone = func(_ context.Context, _ string, args []string) error {
+		if err := os.WriteFile(filepath.Join(args[len(args)-1], "partial"), []byte("partial source"), 0o600); err != nil {
+			return err
+		}
+		return classifyAssignmentGitCloneFailure([]byte("fatal: Authentication failed for https://fixture-secret@github.com"))
+	}
+	t.Cleanup(func() { runAssignmentGitClone = original })
 	source := controlplane.NewMemorySource()
 	source.Enqueue(privateWorktreeRequest())
 	reporter := newReporterProbe()
@@ -29,14 +39,36 @@ func TestSupervisorBlocksPrivateAssignmentWorktreeBeforeProviderStart(t *testing
 		Workdir:  workdir.NewFSAdapter(t.TempDir()),
 	})
 	expectStartedTask(t, reporter, "asn-private")
-	res := expectTaskResult(t, reporter, "blocked result was not reported")
-	if res.Status != agentbridge.ResultBlocked {
-		t.Fatalf("result status = %s, want %s; result=%+v", res.Status, agentbridge.ResultBlocked, res)
+	expectProcessStarted(t, running, "checkout failure prevented provider startup")
+	completeFakeProcess(running)
+	res := expectTaskResult(t, reporter, "isolated run did not finish")
+	if res.Status != agentbridge.ResultCompleted || res.ExecutionContext == nil || res.ExecutionContext.WorkspaceKind != "isolated" {
+		t.Fatalf("isolated result = %+v", res)
 	}
-	if !strings.Contains(res.Error, "private assignment worktree requires git credentials") {
-		t.Fatalf("result error does not explain private worktree credentials: %q", res.Error)
+	if _, err := os.Stat(filepath.Join(res.Workdir, "partial")); !os.IsNotExist(err) {
+		t.Fatalf("partial checkout visible: %v", err)
 	}
-	assertProcessDoesNotStart(t, running, "provider process should not start for blocked private worktree")
+}
+
+func TestSupervisorStartsPrivateAssignmentAfterGitClone(t *testing.T) {
+	clones := captureRunAssignmentGitClone(t)
+	source := controlplane.NewMemorySource()
+	source.Enqueue(privateWorktreeRequest())
+	reporter := newReporterProbe()
+	fake := process.NewFake()
+	running := process.NewFakeRunning()
+	fake.NextRunning = running
+	rt := startNamedRuntime(t, fake, "rt-codex", "codex")
+	startRoutingSupervisor(t, Config{
+		DaemonID: "daemon-1", Runtime: rt, Source: source, Reporter: reporter,
+		Workdir: workdir.NewFSAdapter(t.TempDir()),
+	})
+	expectStartedTask(t, reporter, "asn-private")
+	completeFakeProcess(running)
+	res := expectTaskResult(t, reporter, "private task did not finish")
+	if res.Status != agentbridge.ResultCompleted || len(*clones) == 0 {
+		t.Fatalf("private task result = %+v, clone arguments = %v", res, *clones)
+	}
 }
 
 func privateWorktreeRequest() bridge.TaskRequest {

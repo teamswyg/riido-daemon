@@ -27,9 +27,9 @@ import (
 	"github.com/teamswyg/riido-daemon/internal/cliinstallation"
 )
 
-// DefaultBaseURL is the release CDN prefix that scripts/install-riido-daemon.sh
-// reads for RIIDO_DAEMON_CHANNEL=staging|latest. The desktop app's safe and
-// staging-safe mirrors are a different feed; the CLI follows its installer.
+// DefaultBaseURL is the release CDN root. Channels map to the same active feeds
+// as the desktop app and scripts/install-riido-daemon.sh: latest -> safe,
+// staging -> staging-safe. The legacy latest/staging prefixes are frozen.
 const DefaultBaseURL = "https://cdn.riido.io/releases"
 
 const (
@@ -43,13 +43,14 @@ var (
 	ErrInvalid     = errors.New("release package failed verification")
 )
 
-// ChannelForVersion keeps a staging build on staging and everything else on
-// the latest channel, matching how the CDN prefixes are published.
-func ChannelForVersion(version string) string {
-	if strings.Contains(version, "-staging") {
-		return ChannelStaging
-	}
-	return ChannelLatest
+// cdnPrefix is the active CDN feed of a public channel name (RIID-6036).
+var cdnPrefix = map[string]string{ChannelLatest: "safe", ChannelStaging: "staging-safe"}
+
+// IsReleaseVersion reports whether version has the vMAJOR.MINOR.PATCH core
+// that riido update compares. Other published names are never auto-installed.
+func IsReleaseVersion(version string) bool {
+	_, ok := versionCore(version)
+	return ok
 }
 
 // IsOlder reports whether candidate's vMAJOR.MINOR.PATCH core is lower than
@@ -131,7 +132,7 @@ func (u Updater) channelURL(channel, name string) (string, error) {
 	if err != nil || base.Scheme != "https" || base.Host == "" || base.User != nil || base.RawQuery != "" || base.Fragment != "" || !ValidChannel(channel) {
 		return "", ErrInvalid
 	}
-	return strings.TrimSuffix(base.String(), "/") + "/" + channel + "/ai-agent/" + name, nil
+	return strings.TrimSuffix(base.String(), "/") + "/" + cdnPrefix[channel] + "/ai-agent/" + name, nil
 }
 
 // Stage downloads, checks and extracts the channel package into a new
@@ -326,7 +327,7 @@ func (u Updater) check(ctx context.Context, staged *Staged, pkg string) error {
 		return invalid("package is missing VERSION")
 	}
 	version := strings.TrimSpace(strings.SplitN(string(rawVersion), "\n", 2)[0])
-	if cliinstallation.ValidateVersion(version) != nil {
+	if cliinstallation.ValidateVersion(version) != nil || !IsReleaseVersion(version) {
 		return invalid("invalid VERSION")
 	}
 	staged.Version = version

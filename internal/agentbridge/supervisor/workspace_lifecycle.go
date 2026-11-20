@@ -49,10 +49,13 @@ func (a *Actor) prepareWorkspace(ctx context.Context, status runtimeactor.Status
 		"taskID":      ids.logicalTaskID,
 	})
 	if !resumed {
-		if err := materializeAssignmentWorktree(ctx, ws.Workdir, req.Worktree); err != nil {
+		if err := a.prepareAssignmentCheckout(ctx, ws.Workdir, req); err != nil {
 			return nil, err
 		}
+	} else if req.AssignmentCheckoutUnavailable {
+		appendUnavailableCheckoutPrompt(req, "This session retained its original workspace.")
 	}
+
 	native, err := a.resolveNativeWorkspaceConfig(req)
 	if err != nil {
 		return nil, err

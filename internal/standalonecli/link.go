@@ -22,6 +22,7 @@ type linkStore interface {
 	LoadPendingLink(context.Context, string) (*PendingLink, error)
 	MarkPendingLinkCreated(context.Context, PendingLink) (PendingLink, error)
 	ClearPendingLink(context.Context, PendingLink) error
+	RestartPendingLink(context.Context, PendingLink) (PendingLink, error)
 	ExistingInstallationKey(context.Context, string) (userauth.InstallationKey, error)
 	SignDeviceLinkProof(context.Context, userauth.InstallationKey, userauth.DeviceLinkProof) (string, error)
 }
@@ -37,6 +38,14 @@ func linkError(code string) error { return &userauth.DeviceLinkError{Code: code}
 // Link is explicit: ordinary login/read/refresh never calls the daemon.
 // Errors leave the original request protected for a later invocation.
 func (s *Service) Link(ctx context.Context, daemon LinkDaemon, interactive bool) (LinkResult, error) {
+	return s.LinkWithRestart(ctx, daemon, interactive, false)
+}
+
+// LinkWithRestart requires explicit human intent as well as a terminal server receipt.
+func (s *Service) LinkWithRestart(ctx context.Context, daemon LinkDaemon, interactive, restart bool) (LinkResult, error) {
+	if restart && !interactive {
+		return LinkResult{}, linkError("LINK_APPROVAL_REQUIRED")
+	}
 	store, ok := s.store.(linkStore)
 	if !ok {
 		return LinkResult{}, securecredential.ErrUnavailable
@@ -50,6 +59,9 @@ func (s *Service) Link(ctx context.Context, daemon LinkDaemon, interactive bool)
 		return LinkResult{}, err
 	}
 	if pending == nil {
+		if restart {
+			return LinkResult{}, linkError("LINK_RESTART_NOT_REQUIRED")
+		}
 		if !interactive {
 			return LinkResult{}, linkError("LINK_APPROVAL_REQUIRED")
 		}
@@ -58,7 +70,7 @@ func (s *Service) Link(ctx context.Context, daemon LinkDaemon, interactive bool)
 			return LinkResult{}, err
 		}
 	}
-	flow := linkFlow{service: s, store: store, daemon: daemon, pending: *pending, interactive: interactive}
+	flow := linkFlow{service: s, store: store, daemon: daemon, pending: *pending, interactive: interactive, restart: restart}
 	if err := flow.run(ctx); err != nil {
 		return LinkResult{}, err
 	}

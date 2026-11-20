@@ -31,7 +31,9 @@ func NewProtectedStore(native securecredential.Store, resource, authOrigin strin
 		credential.Key = protectedItemKey("riido-cli-desktop:" + resource)
 		repair.Key = protectedItemKey("riido-cli-repair-desktop:" + resource)
 	}
-	return &ProtectedStore{Native: &credential, RepairNative: &repair, CustodyLock: &custody, RepairLock: &operation, Resource: resource, AuthOrigin: authOrigin}, nil
+	transfer := native
+	transfer.Key = protectedItemKey("riido-cli-transfer:" + authOrigin + ":" + resource)
+	return &ProtectedStore{TransferNative: &transfer, Native: &credential, RepairNative: &repair, CustodyLock: &custody, RepairLock: &operation, Resource: resource, AuthOrigin: authOrigin}, nil
 }
 
 func protectedItemKey(namespace string) string {

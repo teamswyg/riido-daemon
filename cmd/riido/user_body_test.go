@@ -89,8 +89,8 @@ func TestUserBodyConflictIsSanitizedAndAgentNeverUsesUserCredentials(t *testing.
 		t.Fatal("agent opened user credentials")
 		return nil, nil
 	}
-	if code := exitCodeOf(t, runWork(agent.io, args)); code != 8 || len(agent.daemon.requests) != 0 {
-		t.Fatal("agent used a live body read")
+	if code := exitCodeOf(t, runWork(agent.io, args)); code != 2 || len(agent.daemon.requests) != 0 {
+		t.Fatal("agent accepted a user-only team-id flag")
 	}
 }
 

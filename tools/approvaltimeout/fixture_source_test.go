@@ -17,7 +17,10 @@ const fixtureManifestSource = `{
     {"name": "idle", "file": "internal/agentbridge/session/session_runner_timers.go", "contains": "time.NewTimer(r.cfg.SemanticIdle)"},
     {"name": "semantic", "file": "internal/agentbridge/session/session_runner_emit.go", "contains": "ev.Kind.IsSemanticActivity()"},
     {"name": "approval-hard", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "case <-r.hardC:"},
-    {"name": "approval-idle", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "case <-r.idleC:"}
+    {"name": "approval-idle-pause", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "r.idleTimer.Stop()"},
+    {"name": "approval-idle-resume", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "r.resetIdle()"},
+    {"name": "approval-context-cancel", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "case <-r.ctx.Done():"},
+    {"name": "approval-session-cancel", "file": "internal/agentbridge/session/session_tool_approval_resolver.go", "contains": "case req := <-r.sess.cancel:"}
   ]
 }`
 

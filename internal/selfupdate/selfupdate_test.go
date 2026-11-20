@@ -84,9 +84,9 @@ func cdn(t *testing.T, channel string, archive []byte, sums string) (*httptest.S
 	server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		hits++
 		switch r.URL.Path {
-		case "/releases/" + channel + "/ai-agent/SHA256SUMS":
+		case "/releases/" + cdnPrefix[channel] + "/ai-agent/SHA256SUMS":
 			_, _ = w.Write([]byte(sums))
-		case "/releases/" + channel + "/ai-agent/riido-daemon_darwin_arm64.tar.gz":
+		case "/releases/" + cdnPrefix[channel] + "/ai-agent/riido-daemon_darwin_arm64.tar.gz":
 			_, _ = w.Write(archive)
 		default:
 			http.NotFound(w, r)
@@ -114,10 +114,10 @@ func installRoot(t *testing.T, version string) string {
 	return root
 }
 
-func TestChannelForVersion(t *testing.T) {
-	for version, want := range map[string]string{"v0.0.105-staging.riid5971": ChannelStaging, "v0.0.102": ChannelLatest, "dev": ChannelLatest} {
-		if got := ChannelForVersion(version); got != want {
-			t.Errorf("%s: %s", version, got)
+func TestIsReleaseVersion(t *testing.T) {
+	for version, want := range map[string]bool{"v0.0.105-staging.riid5971": true, "v0.1.0": true, "production-riid6005-20261103": false, "dev": false, "v1.2": false} {
+		if got := IsReleaseVersion(version); got != want {
+			t.Errorf("%s: %v", version, got)
 		}
 	}
 }
@@ -176,6 +176,7 @@ func TestStageFailuresLeaveInstallUntouched(t *testing.T) {
 		"unexpected file":    {tarball(t, append(packageEntries(version, false), entry{name: "payload.sh", body: []byte("x"), mode: 0o755})), "", nil},
 		"helper version":     {tarball(t, append(packageEntries("v0.0.999", true)[2:], packageEntries(version, false)...)), "", nil},
 		"wrong architecture": {tarball(t, []entry{{name: "riido", body: machO(0x01000007), mode: 0o755}, {name: "VERSION", body: []byte(version), mode: 0o644}}), "", nil},
+		"not a release":      {tarball(t, packageEntries("production-riid6005-20261103", false)), "", nil},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -242,6 +243,20 @@ func TestIsOlder(t *testing.T) {
 	for _, tc := range cases {
 		if got := IsOlder(tc.candidate, tc.current); got != tc.want {
 			t.Errorf("IsOlder(%q, %q) = %v", tc.candidate, tc.current, got)
+		}
+	}
+}
+
+// RIID-6036: public channel names read the active feeds, never the frozen
+// legacy latest/staging prefixes.
+func TestChannelFeedsAreTheActiveCDNPrefixes(t *testing.T) {
+	u := Updater{BaseURL: DefaultBaseURL}
+	for channel, want := range map[string]string{
+		ChannelLatest:  "https://cdn.riido.io/releases/safe/ai-agent/SHA256SUMS",
+		ChannelStaging: "https://cdn.riido.io/releases/staging-safe/ai-agent/SHA256SUMS",
+	} {
+		if got, err := u.channelURL(channel, "SHA256SUMS"); err != nil || got != want {
+			t.Fatalf("%s: %s %v", channel, got, err)
 		}
 	}
 }

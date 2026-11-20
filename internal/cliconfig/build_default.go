@@ -5,10 +5,25 @@ package cliconfig
 // in the staging-only package. An unset or unknown value keeps production.
 var buildDefaultProfile string
 
+// installedDefaultProfile is "staging" when the running binary was installed
+// as the staging test channel (RIID-6036): the same package then defaults to
+// staging without a staging-only build.
+var installedDefaultProfile string
+
+// UseInstalledChannel records the install channel of the running binary
+// (cliinstallation.InstalledChannel). Only "staging" changes the default.
+func UseInstalledChannel(channel string) {
+	if channel == "staging" {
+		installedDefaultProfile = "staging"
+	} else {
+		installedDefaultProfile = ""
+	}
+}
+
 // DefaultProfile is used when no saved configuration selects a profile. A
 // saved activeProfile, RIIDO_CLI_PROFILE and --profile still take precedence.
 func DefaultProfile() string {
-	if buildDefaultProfile == "staging" {
+	if buildDefaultProfile == "staging" || installedDefaultProfile == "staging" {
 		return "staging"
 	}
 	return "production"

@@ -6,7 +6,7 @@
 
 | ID | Symptom | Structural cause | Direction |
 | --- | --- | --- | --- |
-| F3 | AI works in empty temp folder | repo/branch was prompt text | public clone, private fail-closed, later token-ref broker |
+| F3 | AI works in empty temp folder | repo/branch was prompt text | public/private clone with existing host Git credentials, later token-ref broker |
 | C1 | stop feels inconsistent | stop intent, process kill, projection state split | generated lifecycle states |
 | S2/S4/S5 | stream cleanup is client-hidden | delta/progress/final share a path | StreamEnvelope split |
 | F4/F5 | child tools missing | detection and launch env diverged | frozen launch PATH and TTL re-detect |

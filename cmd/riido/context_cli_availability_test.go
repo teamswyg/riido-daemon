@@ -34,7 +34,7 @@ func TestContextCLIUnsupportedReadsNeverReachDaemon(t *testing.T) {
 }
 
 func TestContextCLIUnsupportedFiltersNeverReachDaemon(t *testing.T) {
-	for _, flag := range []string{"--limit=20", "--team=RIID", "--profile=default"} {
+	for _, flag := range []string{"--team=RIID", "--profile=default"} {
 		h := newContextHarness(t, agentVars())
 		if got := exitCodeOf(t, runWork(h.io, []string{"comments", "RIID-1", flag, "--json"})); got != 8 {
 			t.Fatalf("%s: want exit 8, got %d", flag, got)

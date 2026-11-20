@@ -19,3 +19,16 @@ func TestParserUnterminatedLineFlushedOnClose(t *testing.T) {
 		t.Fatalf("trailing fragment should be RawSourceClose, got %q", raws[0].Source)
 	}
 }
+
+func TestParserUnterminatedStderrKeepsSourceOnClose(t *testing.T) {
+	p := NewParser()
+	_, _ = p.FeedStderr([]byte("stderr: invalid launch configuration"))
+	raws, err := p.Close()
+	if err != nil || len(raws) != 1 || raws[0].Source != agentbridge.RawSourceStderr {
+		t.Fatalf("trailing stderr lost provenance: %v %v", raws, err)
+	}
+	events, _, err := Translate(raws[0])
+	if err != nil || len(events) != 1 || events[0].Text != "invalid launch configuration" {
+		t.Fatalf("trailing stderr lost diagnostic: %v %v", events, err)
+	}
+}

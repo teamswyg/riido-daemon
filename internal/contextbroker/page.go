@@ -47,7 +47,7 @@ func queryTarget(args map[string]string) string {
 // read now, every other view is the assignment-time snapshot.
 func freshnessWarning(live bool, fetchedAt string) contextcli.Warning {
 	if live {
-		return contextcli.Warning{Code: "LIVE_STATUS", Message: fetchedAt + "에 조회한 현재 상태입니다. Agent를 멘션하는 시점에 서버가 다시 확인합니다"}
+		return contextcli.Warning{Code: "LIVE_STATUS", Message: fetchedAt + "에 현재 권한으로 조회한 상태입니다. 이후 변경은 다음 조회에서 확인합니다"}
 	}
 	return contextcli.Warning{Code: "ASSIGNMENT_SNAPSHOT", Message: "배정 시점(" + fetchedAt + ")에 저장된 맥락입니다. 이후 변경은 반영되지 않습니다"}
 }

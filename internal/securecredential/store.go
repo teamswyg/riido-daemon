@@ -162,7 +162,7 @@ func (s *Store) invoke(ctx context.Context, op string, value []byte) ([]byte, er
 		output, err := conn.roundTrip(ctx, body)
 		if err != nil || len(output) > maxMessageBytes {
 			dropSession(s.HelperPath, conn)
-			return nil, ErrUnavailable
+			return nil, helperInvocationError(err)
 		}
 		return output, nil
 	}
@@ -171,9 +171,21 @@ func (s *Store) invoke(ctx context.Context, op string, value []byte) ([]byte, er
 	}
 	output, err := run(ctx, s.HelperPath, body)
 	if err != nil || len(output) > maxMessageBytes {
-		return nil, ErrUnavailable
+		return nil, helperInvocationError(err)
 	}
 	return output, nil
+}
+
+// A verified helper that stops responding is not an unavailable installation.
+// Preserve only local cancellation/deadline causes; never expose diagnostics.
+func helperInvocationError(err error) error {
+	if errors.Is(err, context.DeadlineExceeded) {
+		return context.DeadlineExceeded
+	}
+	if errors.Is(err, context.Canceled) {
+		return context.Canceled
+	}
+	return ErrUnavailable
 }
 
 func onlyConfirmationData(output []byte) bool {

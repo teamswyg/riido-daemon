@@ -9,6 +9,7 @@ import (
 // Event is the run-scope envelope passed to the reducer. Fields not
 // applicable to a given Kind are simply zero-valued.
 type Event struct {
+	NativeHistory   *NativeHistoryMessage
 	RecoveryContext *assignment.RecoveryContext
 
 	ExecutionContext *assignment.ExecutionContext
@@ -26,6 +27,9 @@ type Event struct {
 	Result       Result
 	ExitCode     int
 	Err          string
+
+	// LocalOnly keeps informational diagnostics in the local journal.
+	LocalOnly bool
 
 	// AutomaticallyApproved records the session tool-policy decision.
 	AutomaticallyApproved bool

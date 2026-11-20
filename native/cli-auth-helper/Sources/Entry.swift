@@ -4,6 +4,14 @@ import Foundation
 @main
 struct HelperMain {
     static func main() {
+        // Release health check: no credential stores, user presence or network.
+        if CommandLine.arguments.dropFirst() == ["--preflight"] {
+            do {
+                try verifySigningPreflight()
+                FileHandle.standardOutput.write(Data("riido-cli-helper-preflight.v1\n".utf8))
+            } catch { exit(1) }
+            return
+        }
         if CommandLine.arguments.dropFirst() == ["--session"] { return serveSession() }
         var handler = RequestHandler(preflight: verifySigningPreflight, store: ProtectedKeychainStore(),
                                      confirm: { try UserPresenceVerifier().confirm() },

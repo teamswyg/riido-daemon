@@ -15,6 +15,9 @@ type textRenderer func(w io.Writer, data any)
 // wantsJSON pre-scans raw args so even argument errors honor --json.
 func wantsJSON(args []string) bool {
 	for i, arg := range args {
+		if arg == "--" {
+			break
+		}
 		switch {
 		case arg == "--json", arg == "--format=json":
 			return true

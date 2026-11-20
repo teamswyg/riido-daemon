@@ -113,6 +113,10 @@ func safeArchiveName(name string) (string, error) {
 }
 
 func verifyArchive(archive, version, arch string) error {
+	return verifyArchivePolicy(archive, version, arch, false)
+}
+
+func verifyArchivePolicy(archive, version, arch string, requireHelper bool) error {
 	if err := validateVersion(version); err != nil {
 		return err
 	}
@@ -157,6 +161,9 @@ func verifyArchive(archive, version, arch string) error {
 		return errors.New("helper bundle and manifest must both be present")
 	}
 	if !hasBundle {
+		if requireHelper {
+			return errors.New("release archive requires CLI auth helper")
+		}
 		return nil
 	}
 	if manifest.directory {

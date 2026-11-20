@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"testing"
+	"time"
 )
 
 const (
@@ -22,7 +23,7 @@ func TestMain(m *testing.M) {
 }
 
 func runProcessFixture(mode, capture string) int {
-	if mode != "echo" && mode != "overflow" && mode != "failure" {
+	if mode != "echo" && mode != "overflow" && mode != "failure" && mode != "wait" {
 		return 2
 	}
 	file, err := os.OpenFile(capture, os.O_CREATE|os.O_WRONLY|os.O_EXCL, 0o600)
@@ -37,6 +38,9 @@ func runProcessFixture(mode, capture string) int {
 		return 2
 	}
 	switch mode {
+	case "wait":
+		time.Sleep(time.Minute)
+		return 0
 	case "failure":
 		_, _ = os.Stderr.WriteString("synthetic-sensitive-diagnostic")
 		return 7

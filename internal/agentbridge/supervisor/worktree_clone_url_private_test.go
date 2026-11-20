@@ -1,23 +1,29 @@
 package supervisor
 
 import (
-	"errors"
-	"strings"
 	"testing"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 )
 
-func TestAssignmentCloneURLRejectsPrivateWorktree(t *testing.T) {
-	_, err := assignmentCloneURL(&assignmentcontract.AssignmentWorktree{
+func TestAssignmentCloneURLAcceptsPrivateWorktree(t *testing.T) {
+	got, err := assignmentCloneURL(&assignmentcontract.AssignmentWorktree{
 		RepositoryFullName: "teamswyg/private-repo",
 		RepositoryURL:      "https://github.com/teamswyg/private-repo",
 		IsPrivate:          true,
 	})
-	if err == nil || !strings.Contains(err.Error(), "private assignment worktree requires git credentials") {
-		t.Fatalf("expected private repository fail-closed error, got %v", err)
+	if err != nil || got != "https://github.com/teamswyg/private-repo" {
+		t.Fatalf("private repository URL = %q, error = %v", got, err)
 	}
-	if !errors.Is(err, errAssignmentWorktreeBlocked) {
-		t.Fatalf("private repository error is not classified as blocked: %v", err)
+}
+
+func TestAssignmentCloneURLRejectsSensitivePrivateURL(t *testing.T) {
+	for _, tt := range unsupportedCloneURLCases() {
+		t.Run(tt.name, func(t *testing.T) {
+			_, err := assignmentCloneURL(&assignmentcontract.AssignmentWorktree{
+				RepositoryFullName: tt.fullName, RepositoryURL: tt.repoURL, IsPrivate: true,
+			})
+			assertUnsupportedCloneURLError(t, err, tt.notContain)
+		})
 	}
 }

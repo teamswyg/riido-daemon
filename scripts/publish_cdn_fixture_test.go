@@ -5,6 +5,7 @@ import (
 	"archive/zip"
 	"compress/gzip"
 	"crypto/sha256"
+	"encoding/binary"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -51,7 +52,19 @@ func writeCDNArchive(t *testing.T, path, version string) {
 	}
 	gz := gzip.NewWriter(file)
 	tw := tar.NewWriter(gz)
-	writeTarFile(t, tw, "riido", "daemon\n", 0o755)
+	macho := make([]byte, 32)
+	binary.LittleEndian.PutUint32(macho, 0xfeedfacf)
+	cpu := uint32(0x0100000c)
+	if strings.Contains(path, "amd64") {
+		cpu = 0x01000007
+	}
+	binary.LittleEndian.PutUint32(macho[4:], cpu)
+	binary.LittleEndian.PutUint32(macho[12:], 2)
+	writeTarFile(t, tw, "riido", string(macho), 0o755)
+	writeTarFile(t, tw, "CLI_AUTH_HELPER.json", fmt.Sprintf(`{"schema_version":1,"release_version":%q,"helper_bundle":"RiidoCLIAuthHelper.app"}`, version), 0o644)
+	writeTarFile(t, tw, "RiidoCLIAuthHelper.app/Contents/Info.plist", `<?xml version="1.0"?><plist version="1.0"><dict><key>CFBundleIdentifier</key><string>io.riido.cli-auth-helper</string><key>CFBundleExecutable</key><string>riido-cli-auth-helper</string><key>RiidoCLIReleaseVersion</key><string>`+version+`</string></dict></plist>`, 0o644)
+	writeTarFile(t, tw, "RiidoCLIAuthHelper.app/Contents/MacOS/riido-cli-auth-helper", string(macho), 0o755)
+	writeTarFile(t, tw, "RiidoCLIAuthHelper.app/Contents/embedded.provisionprofile", "fixture-profile", 0o644)
 	writeTarFile(t, tw, "VERSION", version+"\n", 0o644)
 	if err := tw.Close(); err != nil {
 		t.Fatalf("close tar: %v", err)

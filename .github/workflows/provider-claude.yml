@@ -26,6 +26,30 @@ on:
       - "go.sum"
 
 jobs:
+  claude-startup-windows:
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6.0.3
+      - uses: actions/setup-go@v6.4.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Fetch pinned native Claude CLI and verify checksum
+        shell: pwsh
+        run: |
+          $base = 'https://downloads.claude.ai/claude-code-releases/2.1.322'
+          $manifest = Invoke-RestMethod "$base/manifest.json"
+          $binary = Join-Path $env:RUNNER_TEMP 'claude.exe'
+          Invoke-WebRequest "$base/win32-x64/claude.exe" -OutFile $binary
+          $checksum = (Get-FileHash $binary -Algorithm SHA256).Hash.ToLower()
+          if ($checksum -ne $manifest.platforms.'win32-x64'.checksum) { throw 'Claude checksum mismatch' }
+          & $binary --version
+          if ($LASTEXITCODE -ne 0) { throw 'Claude failed to launch' }
+          "RIIDO_TEST_CLAUDE_EXECUTABLE=$binary" >> $env:GITHUB_ENV
+      - name: Verify native Windows provider startup failures
+        run: go test ./internal/provider/claude ./internal/agentbridge/session -run "TestClaudeStartup|TestStartupDiagnostic|TestSessionProtocolDriverOnStartError" -count=3 -v
+
   claude-adapter-gate:
     runs-on: ubuntu-latest
     steps:

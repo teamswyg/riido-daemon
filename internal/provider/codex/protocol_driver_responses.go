@@ -21,12 +21,35 @@ func (d *protocolDriver) handleResponse(ctx context.Context, raw agentbridge.Raw
 	delete(d.pending, id)
 
 	switch pr.method {
+	case codexMethodThreadRead, codexMethodQueueList, codexMethodQueueAdd, codexMethodQueueDelete:
+		return d.handleSharedResponse(ctx, pr.method, mapField(raw.Payload, "result"), io)
+	case codexMethodThreadTurnsList:
+		return d.handleHistoryPage(ctx, raw, io)
 	case codexMethodInitialize:
 		return d.handleInitializeResponse(ctx, io)
 	case codexMethodThreadStart, codexMethodThreadResume:
+		if d.shared != nil && d.shared.reconnecting {
+			if ctx.Err() != nil || d.shared.stopping {
+				//nolint:nilerr // Cancellation is represented by the terminal result, not a protocol failure.
+				return []agentbridge.Event{{Kind: agentbridge.EventResult, Result: agentbridge.Result{Status: agentbridge.ResultCancelled}}}, nil, nil
+			}
+			d.owned.clientID = d.shared.clientID
+			d.shared = nil
+		}
 		return d.handleThreadReadyResponse(ctx, raw, io)
 	case codexMethodTurnStart:
 		events, commands, err := d.handleTurnStartResponse()
+		d.owned.id = stringField(mapField(mapField(raw.Payload, "result"), "turn"), "id")
+		queued := d.owned.early
+		d.owned.early = nil
+		d.owned.earlyBytes = 0
+		for _, notification := range queued {
+			next, _, replayErr := d.onRaw(ctx, notification, io)
+			if replayErr != nil {
+				return nil, nil, replayErr
+			}
+			events = append(events, next...)
+		}
 		if title := codexTaskTitle(d.req); title != "" {
 			if _, nameErr := d.sendRequest(ctx, io, codexMethodThreadNameSet, map[string]any{"threadId": d.threadID, "name": title}); nameErr != nil {
 				events = append(events, agentbridge.Event{Kind: agentbridge.EventWarning, Err: "Codex thread name could not be sent"})

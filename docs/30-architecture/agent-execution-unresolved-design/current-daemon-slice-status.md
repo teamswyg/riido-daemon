@@ -4,7 +4,7 @@
 
 [Back to Assignment Lifecycle FSM](assignment-lifecycle-fsm.md)
 
-Verified evidence items: `29`.
+Verified evidence items: `31`.
 
 | Risk | Status | Evidence owner |
 | --- | --- | --- |
@@ -15,6 +15,8 @@ Verified evidence items: `29`.
 | `restart-recovery-skips-unresumable-active` | `verified` | `./internal/agentbridge/controlplane/saasplane` |
 | `restart-recovery-provider-session-resume` | `verified` | `./internal/agentbridge/controlplane/saasplane` |
 | `cancellation-watcher-release` | `verified` | `./internal/agentbridge/supervisor` |
+| `private-repo-authenticated-clone` | `verified` | `./internal/agentbridge/supervisor` |
+| `private-repo-provider-start` | `verified` | `./internal/agentbridge/supervisor` |
 | `launch-path-freeze` | `verified` | `./internal/agentbridge/runtimeactor` |
 | `capability-ttl-redetect` | `verified` | `./internal/agentbridge/runtimeactor` |
 | `transient-poll-retry` | `verified` | `./internal/agentbridge/controlplane/saasplane` |
@@ -42,5 +44,5 @@ Remaining boundaries:
 
 | ID | Owner | Current handling | Required next artifact |
 | --- | --- | --- | --- |
-| `private-repo-auth` | contracts/control-plane/infra policy | private repositories fail closed without token broker | token-ref auth design and contract; raw token remains outside public daemon SSOT |
+| `private-repo-auth` | contracts/control-plane/infra policy | private repositories use existing host Git credentials; credential provisioning through the control plane is not implemented | token-ref auth design and contract; raw token remains outside public daemon SSOT |
 | `client-desktop-consumption` | client/desktop | server exposes active stream handoff but UI consumption is outside daemon ownership | client active stream subscription and desktop update/quit handoff |

@@ -10,11 +10,12 @@ import (
 type authCommand string
 
 const (
-	authCommandLogin  authCommand = "login"
-	authCommandLink   authCommand = "link"
-	authCommandRepair authCommand = "repair"
-	authCommandLogout authCommand = "logout"
-	authCommandStatus authCommand = "status"
+	authCommandLogin    authCommand = "login"
+	authCommandLink     authCommand = "link"
+	authCommandTransfer authCommand = "transfer"
+	authCommandRepair   authCommand = "repair"
+	authCommandLogout   authCommand = "logout"
+	authCommandStatus   authCommand = "status"
 )
 
 // authStatusData never carries a credential value, only its presence.
@@ -37,10 +38,14 @@ func runAuth(c contextIO, args []string) error {
 		return nil
 	}
 	switch authCommand(args[0]) {
+	case "desktop-bootstrap":
+		return c.runDesktopBootstrap(args[1:])
 	case authCommandLogin:
 		return c.runAuthLogin(args[1:])
 	case authCommandLink:
 		return c.runAuthLink(args[1:])
+	case authCommandTransfer:
+		return c.runAuthTransfer(args[1:])
 	case authCommandRepair:
 		return c.runAuthRepair(args[1:])
 	case authCommandLogout:

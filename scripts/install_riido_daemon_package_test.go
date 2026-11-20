@@ -2,6 +2,7 @@ package scripts_test
 
 import (
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -87,18 +88,59 @@ func TestInstallRiidoDaemonStagingChannelUsesCDNPackageVersion(t *testing.T) {
 	fixture := newInstallFixture(t)
 	writePackageAssets(t, fixture, helperPackage("v0.0.103-staging.cli"))
 	installDir := t.TempDir()
-	out, err := runInstaller(t, fixture, installDir, "RIIDO_DAEMON_CHANNEL=staging")
+	linkDir := filepath.Join(t.TempDir(), "bin")
+	out, err := runInstaller(t, fixture, installDir, "RIIDO_DAEMON_CHANNEL=staging", "RIIDO_DAEMON_LINK_DIR="+linkDir)
 	if err != nil {
 		t.Fatalf("staging install failed: %v\n%s", err, out)
 	}
-	for _, want := range []string{"riido-daemon version: v0.0.103-staging.cli", "riido-daemon channel: staging"} {
+	for _, want := range []string{"riido-daemon version: v0.0.103-staging.cli", "riido-daemon channel: staging", "riido-staging auth login", "PATH=\"" + linkDir} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("output missing %q:\n%s", want, out)
 		}
 	}
 	log := mustRead(t, filepath.Join(fixture.assetDir, "curl.log"))
-	if !strings.Contains(log, "https://cdn.riido.io/releases/staging/ai-agent/riido-daemon_darwin_arm64.tar.gz") || strings.Contains(log, "api.github.com") {
+	if !strings.Contains(log, "https://cdn.riido.io/releases/staging-safe/ai-agent/riido-daemon_darwin_arm64.tar.gz") || strings.Contains(log, "api.github.com") {
 		t.Fatalf("staging channel used the wrong source:\n%s", log)
+	}
+	// RIID-6036: the staging command is a link beside, not over, production riido.
+	if got := mustRead(t, filepath.Join(installDir, "INSTALL_CHANNEL")); got != "staging\n" {
+		t.Fatalf("marker = %q", got)
+	}
+	target, err := os.Readlink(filepath.Join(linkDir, "riido-staging"))
+	if err != nil || target != filepath.Join(installDir, "riido") {
+		t.Fatalf("riido-staging link = %q, %v", target, err)
+	}
+	if _, err := os.Lstat(filepath.Join(linkDir, "riido")); !os.IsNotExist(err) {
+		t.Fatalf("staging put a riido command on PATH: %v", err)
+	}
+}
+
+// Production keeps riido in its own directory; a later production install
+// removes a staging marker left by an earlier channel install there.
+func TestInstallRiidoDaemonLatestChannelUsesSafeFeedAsProduction(t *testing.T) {
+	fixture := newInstallFixture(t)
+	writePackageAssets(t, fixture, helperPackage("v0.1.1"))
+	installDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(installDir, "INSTALL_CHANNEL"), []byte("staging\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	linkDir := filepath.Join(t.TempDir(), "bin")
+	out, err := runInstaller(t, fixture, installDir, "RIIDO_DAEMON_CHANNEL=latest", "RIIDO_DAEMON_LINK_DIR="+linkDir)
+	if err != nil {
+		t.Fatalf("latest install failed: %v\n%s", err, out)
+	}
+	log := mustRead(t, filepath.Join(fixture.assetDir, "curl.log"))
+	if !strings.Contains(log, "https://cdn.riido.io/releases/safe/ai-agent/riido-daemon_darwin_arm64.tar.gz") {
+		t.Fatalf("latest channel used the wrong source:\n%s", log)
+	}
+	if _, err := os.Stat(filepath.Join(installDir, "INSTALL_CHANNEL")); !os.IsNotExist(err) {
+		t.Fatalf("production install kept the staging marker: %v", err)
+	}
+	if _, err := os.Lstat(linkDir); !os.IsNotExist(err) {
+		t.Fatalf("production install created the staging link dir: %v", err)
+	}
+	if !strings.Contains(out, "riido auth login") || strings.Contains(out, "riido-staging") {
+		t.Fatalf("production next steps wrong:\n%s", out)
 	}
 }
 
@@ -131,5 +173,41 @@ func TestInstallRiidoDaemonWarnsWhenAnotherRiidoShadowsInstall(t *testing.T) {
 	}
 	if !strings.Contains(out, "먼저 찾는 riido는 "+filepath.Join(shadowDir, "riido")) || strings.Contains(out, "PATH에 추가하세요") {
 		t.Fatalf("shadow warning missing:\n%s", out)
+	}
+}
+
+// A relative RIIDO_DAEMON_INSTALL_DIR still yields a riido-staging link that
+// resolves to the installed binary.
+func TestInstallRiidoDaemonStagingLinkResolvesRelativeInstallDir(t *testing.T) {
+	fixture := newInstallFixture(t)
+	writePackageAssets(t, fixture, helperPackage("v0.1.1"))
+	work := t.TempDir()
+	linkDir := filepath.Join(t.TempDir(), "bin")
+	script, err := filepath.Abs("install-riido-daemon.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cmd := exec.Command("sh", script)
+	cmd.Dir = work
+	cmd.Env = append(os.Environ(),
+		"PATH="+fixture.binDir+string(os.PathListSeparator)+os.Getenv("PATH"),
+		"RIIDO_DAEMON_INSTALL_DIR=local/libexec",
+		"RIIDO_DAEMON_LINK_DIR="+linkDir,
+		"RIIDO_DAEMON_CHANNEL=staging",
+		"INSTALL_FIXTURE_DIR="+fixture.assetDir,
+		"INSTALL_MARKER="+filepath.Join(t.TempDir(), "marker"),
+		"HOME="+t.TempDir(),
+		"SHELL=/bin/zsh",
+	)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Fatalf("install failed: %v\n%s", err, out)
+	}
+	resolved, err := filepath.EvalSymlinks(filepath.Join(linkDir, "riido-staging"))
+	if err != nil {
+		t.Fatalf("riido-staging does not resolve: %v", err)
+	}
+	want, _ := filepath.EvalSymlinks(filepath.Join(work, "local", "libexec", "riido"))
+	if resolved != want {
+		t.Fatalf("riido-staging -> %s, want %s", resolved, want)
 	}
 }

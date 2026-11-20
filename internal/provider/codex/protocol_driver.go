@@ -40,9 +40,16 @@ type protocolDriver struct {
 	// Handshake progress flags. Single-goroutine access (session actor).
 	initialized        bool
 	threadID           string
+	owned              ownedTurn
+	idleRecoveryID     int64
+	mcpApprovals       map[string]string
 	turnStarted        bool
 	sawAssistantOutput bool
 	lastRuntimeError   string
+	historyTurns       []any
+	historyCursors     map[string]bool
+	shared             *sharedWriter
+	startSharedOwner   func(context.Context, agentbridge.StartRequest, string, string) error
 }
 
 type pendingRequest struct {
@@ -53,15 +60,17 @@ type pendingRequest struct {
 // Codex app-server JSON-RPC handshake.
 func NewProtocolDriver(req agentbridge.StartRequest) (agentbridge.ProtocolDriver, error) {
 	return &protocolDriver{
-		req:     req,
-		pending: map[int64]pendingRequest{},
+		req:              req,
+		pending:          map[int64]pendingRequest{},
+		startSharedOwner: startSharedOwner,
 	}, nil
 }
 
 // OnStart writes the initialize request.
 func (d *protocolDriver) OnStart(ctx context.Context, io agentbridge.ProtocolIO) error {
 	_, err := d.sendRequest(ctx, io, codexMethodInitialize, map[string]any{
-		"clientInfo": map[string]any{"name": "riido", "version": "0.0.0"},
+		"clientInfo":   map[string]any{"name": "riido", "version": "0.0.0"},
+		"capabilities": map[string]any{"experimentalApi": true},
 	})
 	return err
 }

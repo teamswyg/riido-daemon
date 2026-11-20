@@ -102,7 +102,7 @@ callers keep the one-request-per-process mode with interaction forbidden.
 
 `RIIDO_CLI_RELEASE_VERSION=vX.Y.Z native/cli-auth-helper/build.sh <output-directory> <arm64|x86_64>` embeds the exact release string in `Info.plist` as `RiidoCLIReleaseVersion` **before signing**. Without the variable an unsigned development build uses `development`. Keep the plist in XML format for the portable archive validator. The Apple numeric bundle versions are separate from this exact release binding.
 
-The release packager accepts an already signed bundle through `RIIDO_CLI_AUTH_HELPER_BUNDLE` only on a macOS host targeting Darwin. It copies the complete bundle into a fresh package, checks pinned identity/hardening/entitlements for every Mach-O slice, generates `CLI_AUTH_HELPER.json`, and verifies the unpacked copy again. The current Ubuntu release workflow leaves the input unset and emits legacy archives. No signer, provisioning download, keychain access, notarization, or automatic authentication is added here. Actual signed/profiled acceptance and notarization remain separate held release gates.
+The release packager accepts an already signed bundle through `RIIDO_CLI_AUTH_HELPER_BUNDLE` only on a macOS host targeting Darwin. It copies the complete bundle into a fresh package, checks pinned identity/hardening/entitlements for every Mach-O slice, generates `CLI_AUTH_HELPER.json`, and verifies the unpacked copy again. Production tag releases require the helper. An operator prepares signed, notarized inputs with `scripts/prepare-macos-release-input.sh` and uploads them to a draft release before pushing its tag. The macOS CI lane verifies the signed source revision, version, architecture, Apple identity and stapled ticket before rebuilding the daemon. Signing credentials stay on the signing host. No automatic authentication or protected credential access is introduced; user-presence and installation-binding acceptance remain separate gates.
 
 ### Typed installation key and proof (source implementation)
 
@@ -178,3 +178,15 @@ Older helpers reject the new operation and must not be retried through `installa
 This additive private opcode does not change existing response shapes or enable unsupported platforms.
 Explicit link preparation and proof-required signing can use it, while original receipt recovery
 must proceed without requiring a key lookup or a running daemon.
+
+### Release startup probe
+
+`--preflight` runs the existing signing preflight before constructing any credential
+store or authentication session. It emits exactly `riido-cli-helper-preflight.v1`
+and exits successfully only when the check passes. It never reads Keychain items,
+requests user presence or contacts a service. This proves OS execution and signing
+readiness; it does not prove login or installation binding.
+
+The release packaging tool also compares the actual signing certificate with the
+embedded profile's authorized certificates. See the release contract in
+[`release-artifacts.riido.json`](../../docs/30-architecture/release-artifacts.riido.json).

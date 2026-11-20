@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -81,5 +82,22 @@ func TestUserDesktopLauncherUsesTypedKnownEnvironment(t *testing.T) {
 	r := userauth.DesktopAuthorizationRequest{Resource: "https://other.example.test"}
 	if err := openUserDesktopWith(t.Context(), r, func(context.Context, string) error { t.Fatal("unknown environment launched"); return nil }); !errors.Is(err, standalonecli.ErrDesktopUnavailable) {
 		t.Fatal("unknown environment accepted")
+	}
+}
+
+// RIID-6036: riido and riido-staging can hold the same server's credential
+// (Keychain keys are resource/auth-origin scoped), so refresh locks stay in the
+// shared riido-cli directory even for a staging-channel install.
+func TestUserSessionLocksStaySharedAcrossInstallChannels(t *testing.T) {
+	root := t.TempDir()
+	exe, config := filepath.Join(root, "libexec", "riido"), filepath.Join(root, "config")
+	if err := os.MkdirAll(filepath.Dir(exe), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(filepath.Dir(exe), "INSTALL_CHANNEL"), []byte("staging\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if _, locks, err := userSessionPathsForOS("darwin", exe, config, ""); err != nil || locks != filepath.Join(config, "riido-cli", "auth-locks") {
+		t.Fatalf("staging locks = %s %v", locks, err)
 	}
 }

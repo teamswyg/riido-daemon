@@ -31,11 +31,12 @@ const (
 	codexMethodItemAgentMessageDelta codexMethod = "item/agentMessage/delta"
 	codexMethodReasoning             codexMethod = "reasoning"
 
-	codexMethodCommandStarted   codexMethod = "command_execution_started"
-	codexMethodCommandOutput    codexMethod = "command_execution_output"
-	codexMethodCommandCompleted codexMethod = "command_execution_completed"
-	codexMethodApplyPatchStart  codexMethod = "apply_patch_started"
-	codexMethodApplyPatchDone   codexMethod = "apply_patch_completed"
+	codexMethodCommandStarted    codexMethod = "command_execution_started"
+	codexMethodCommandOutput     codexMethod = "command_execution_output"
+	codexMethodItemCommandOutput codexMethod = "item/commandExecution/outputDelta"
+	codexMethodCommandCompleted  codexMethod = "command_execution_completed"
+	codexMethodApplyPatchStart   codexMethod = "apply_patch_started"
+	codexMethodApplyPatchDone    codexMethod = "apply_patch_completed"
 
 	codexMethodAccountRateLimitsUpdated codexMethod = "account/rateLimits/updated"
 	codexMethodAccountRateLimitsAlt     codexMethod = "account_rate_limits_updated"

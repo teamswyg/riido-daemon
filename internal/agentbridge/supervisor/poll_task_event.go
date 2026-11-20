@@ -13,6 +13,7 @@ func (a *Actor) handleTaskEvent(
 	inFlight map[string]*runningTask,
 	detachedReports *[]detachedReport,
 ) {
+	localDiagnostic := msg.event.Kind == agentbridge.EventLog && msg.event.LocalOnly
 	if task := inFlight[msg.taskID]; task != nil {
 		if task.sessionBindingErr != nil {
 			return
@@ -34,8 +35,12 @@ func (a *Actor) handleTaskEvent(
 		if msg.event.Kind == agentbridge.EventSessionIdentified && task.recovery != nil && task.recovery.SwitchCount > 0 {
 			return
 		}
-		a.reportTaskEvent(ctx, task, msg.event)
+		if !localDiagnostic {
+			a.reportTaskEvent(ctx, task, msg.event)
+		}
 		return
 	}
-	a.reportOrRetainDetached(ctx, detachedReports, detachedEvent(msg.taskID, msg.event))
+	if !localDiagnostic {
+		a.reportOrRetainDetached(ctx, detachedReports, detachedEvent(msg.taskID, msg.event))
+	}
 }

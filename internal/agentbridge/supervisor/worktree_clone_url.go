@@ -15,16 +15,16 @@ func assignmentCloneURL(worktree *assignmentcontract.AssignmentWorktree) (string
 	if worktree == nil {
 		return "", nil
 	}
-	if worktree.IsPrivate {
-		return "", fmt.Errorf("%w: private assignment worktree requires git credentials", errAssignmentWorktreeBlocked)
-	}
 	repoURL, err := assignmentRepositoryURL(worktree)
+	if err == nil && repoURL == "" && worktree.IsPrivate {
+		return "", fmt.Errorf("%w: private assignment repository is missing", errAssignmentWorktreeBlocked)
+	}
 	if err != nil || repoURL == "" {
 		return repoURL, err
 	}
 	parsed, err := url.Parse(repoURL)
 	if err != nil {
-		return "", fmt.Errorf("%w: invalid assignment repository_url: %w", errAssignmentWorktreeBlocked, err)
+		return "", fmt.Errorf("%w: invalid assignment repository_url", errAssignmentWorktreeBlocked)
 	}
 	cloneURL := assignmentcontract.NormalizePublicGitHubRepositoryURL(repoURL)
 	if cloneURL == "" {
