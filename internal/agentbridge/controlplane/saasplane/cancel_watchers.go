@@ -52,14 +52,27 @@ func (p *Plane) WatchCancellation(ctx context.Context, executionID string) (<-ch
 	if executionID == "" {
 		return nil, errors.New("saasplane: empty executionID")
 	}
+	binding, err := p.claimBinding(ctx, executionID)
+	if err != nil {
+		return nil, err
+	}
 	ch := make(chan error, 1)
-	err := p.withState(ctx, func(s *planeState) {
+	registered := false
+	err = p.withState(ctx, func(s *planeState) {
+		if binding != nil && binding.serverTerminal.Load() {
+			ch <- errServerTerminal
+			close(ch)
+			return
+		}
 		closeCancelWatcher(s, executionID)
 		s.cancelWatchers[executionID] = ch
+		registered = true
 	})
 	if err != nil {
 		return nil, err
 	}
-	go p.closeCancelWatcherWhenContextDone(ctx, executionID, ch)
+	if registered {
+		go p.closeCancelWatcherWhenContextDone(ctx, executionID, ch)
+	}
 	return ch, nil
 }

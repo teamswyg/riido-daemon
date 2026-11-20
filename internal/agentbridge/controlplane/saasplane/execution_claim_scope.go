@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
@@ -20,6 +21,7 @@ type executionClaimBinding struct {
 	mu                            sync.Mutex
 	terminal                      *assignmentcontract.AgentEventRequest
 	terminalACK                   bool
+	serverTerminal                atomic.Bool
 	proof                         executionproof.Proof
 	known                         bool
 }

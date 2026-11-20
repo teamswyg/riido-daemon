@@ -20,7 +20,11 @@ func (p *Plane) ReportEvent(ctx context.Context, executionID string, ev agentbri
 		return err
 	}
 	if ev.Kind == agentbridge.EventTextDelta {
-		return p.accumulatePartialBody(ctx, assignment, executionID, ev.Text)
+		err := p.accumulatePartialBody(ctx, assignment, executionID, ev.Text)
+		if errors.Is(err, errServerTerminal) {
+			return nil
+		}
+		return err
 	}
 	req, ok := eventRequestFromAgentEvent(assignment, ev)
 	if !ok {
@@ -47,6 +51,9 @@ func (p *Plane) ReportEvent(ctx context.Context, executionID string, ev agentbri
 		return ctx.Err()
 	}
 	response, err := p.postAgentEvent(ctx, assignment, req)
+	if errors.Is(err, errServerTerminal) && ev.RecoveryContext == nil {
+		return nil
+	}
 	if err == nil && ev.Kind == agentbridge.EventProgress && ev.RecoveryContext != nil {
 		err = validateRecoveryAcknowledgement(assignment, req, response)
 	}
