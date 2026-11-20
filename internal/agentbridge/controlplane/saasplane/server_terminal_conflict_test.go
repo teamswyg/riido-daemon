@@ -74,3 +74,47 @@ func TestOnlyAuthoritativeTerminalTransitionRetiresReport(t *testing.T) {
 		}
 	}
 }
+
+func TestTerminalConflictCancelsAndRemovesCurrentClaim(t *testing.T) {
+	for _, watchBeforeConflict := range []bool{true, false} {
+		name := "late watcher"
+		if watchBeforeConflict {
+			name = "registered watcher"
+		}
+		t.Run(name, func(t *testing.T) {
+			f := newTerminationFixture(t)
+			f.eventReply = func(w http.ResponseWriter, _ *http.Request) bool {
+				w.WriteHeader(http.StatusBadRequest)
+				_, _ = w.Write([]byte(`{"schema_version":"riido-ai-server.v1","error":"invalid assignment transition cancelled -> running"}`))
+				return true
+			}
+			req := claimTerminationFixture(t, f.plane, assignmentcontract.PollStart, "fixture-lease", "runtime")
+			ctx := claimProofContext(t, req.LocalExecutionScope)
+			var cancel <-chan error
+			if watchBeforeConflict {
+				cancel = watchCancellation(t, f.plane, ctx, req.ID, "before terminal conflict")
+			}
+			if err := f.plane.ReportEvent(ctx, req.ID, agentbridge.Event{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}); err != nil {
+				t.Fatal(err)
+			}
+			if !watchBeforeConflict {
+				cancel = watchCancellation(t, f.plane, ctx, req.ID, "after terminal conflict")
+			}
+			select {
+			case cause, ok := <-cancel:
+				if !ok || cause == nil {
+					t.Error("local cancellation lacked a cause")
+				}
+			default:
+				t.Error("local cancellation was not delivered")
+			}
+			if err := f.plane.withState(ctx, func(s *planeState) {
+				if s.executionScopes[req.ID] != nil || s.cancelWatchers[req.ID] != nil {
+					t.Error("retired claim still owns a scope or watcher")
+				}
+			}); err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}

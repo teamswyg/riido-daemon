@@ -36,12 +36,17 @@ func confirmedTerminalConflict(err error, requested assignmentcontract.Assignmen
 
 func (p *Plane) retireObsoleteReport(ctx context.Context, assignment assignmentcontract.Assignment, binding *executionClaimBinding, serverState, requested assignmentcontract.AssignmentState) error {
 	executionID := assignmentExecutionID(assignment)
+	firstConflict := true
 	err := p.withState(ctx, func(s *planeState) {
+		if binding != nil {
+			firstConflict = binding.serverTerminal.CompareAndSwap(false, true)
+		}
 		current, ok := s.assignmentsByExecution[executionID]
 		if !ok || !currentClaimScope(ctx, s, executionID) || current.ID != assignment.ID || current.LeaseToken != assignment.LeaseToken {
 			return
 		}
-		closeCancelWatcher(s, executionID)
+		sendAndCloseCancelWatcher(s, executionID, errServerTerminal)
+		delete(s.executionScopes, executionID)
 		delete(s.assignmentsByExecution, executionID)
 		delete(s.runtimeIDsByExecution, executionID)
 		delete(s.partialBodies, executionID)
@@ -49,7 +54,7 @@ func (p *Plane) retireObsoleteReport(ctx context.Context, assignment assignmentc
 	if err != nil {
 		return err
 	}
-	if binding == nil || binding.serverTerminal.CompareAndSwap(false, true) {
+	if firstConflict {
 		ref := sha256.Sum256([]byte(assignment.ID))
 		log.Printf("riido_daemon event=assignment_report_superseded assignment_ref=%x server_state=%q requested_state=%q", ref[:8], serverState, requested)
 	}
