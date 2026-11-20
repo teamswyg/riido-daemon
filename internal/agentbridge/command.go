@@ -21,6 +21,7 @@ const (
 type Command struct {
 	Kind              CommandKind
 	ToolID            string
+	ToolKind          string
 	ProviderRequestID string
 	Input             []byte
 	Reason            string

@@ -43,7 +43,7 @@ func (a *Actor) nativeSessionRecord(req *bridge.TaskRequest, capView runtimeacto
 		Schema: 1, Provider: string(req.Provider), SessionID: sessionID,
 		WorkspaceID: ids.workspaceID, TaskID: ids.logicalTaskID,
 		AgentID: req.Metadata[controlplane.MetadataAgentID], Fingerprint: capView.CapabilityFingerprint,
-		GrantHash: hex.EncodeToString(hash[:]), OriginRunID: origin,
+		GrantHash: hex.EncodeToString(hash[:]), OriginRunID: origin, CheckoutUnavailable: req.AssignmentCheckoutUnavailable,
 	}, nil
 }
 
@@ -84,6 +84,7 @@ func (a *Actor) restoreNativeSessionWorkspace(req *bridge.TaskRequest, capView r
 		return false, err
 	}
 	want.OriginRunID = record.OriginRunID
+	want.CheckoutUnavailable = record.CheckoutUnavailable
 	cwd := record.Workdir
 	record.Workdir = ""
 	record.RuntimeHint = workdir.NativeRuntimeHint{}
@@ -107,12 +108,13 @@ func (a *Actor) restoreNativeSessionWorkspace(req *bridge.TaskRequest, capView r
 	}
 	if cloneURL, cloneErr := assignmentCloneURL(req.Worktree); cloneErr != nil {
 		return false, cloneErr
-	} else if cloneURL != "" {
+	} else if cloneURL != "" && !record.CheckoutUnavailable {
 		gitInfo, gitErr := os.Stat(filepath.Join(cwd, ".git"))
 		if gitErr != nil || !gitInfo.IsDir() {
 			return false, fmt.Errorf("%w: retained assignment repository is missing", errNativeSessionBinding)
 		}
 	}
+	req.AssignmentCheckoutUnavailable = record.CheckoutUnavailable
 	ws.Workdir = cwd
 	req.Metadata[metadataSessionOriginRun] = record.OriginRunID
 	return true, nil

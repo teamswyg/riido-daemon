@@ -7,4 +7,5 @@ type ToolRef struct {
 	Kind              string
 	Args              map[string]string
 	ProviderRequestID string
+	RequireHuman      bool
 }

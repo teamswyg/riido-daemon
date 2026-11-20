@@ -8,14 +8,18 @@ import (
 )
 
 type ownedTurn struct {
-	id         string
-	done       bool
-	early      []agentbridge.RawEvent
-	earlyBytes int
-	messages   map[string]map[string]any
-	order      []string
-	streamed   map[string]string
-	waits      map[string]map[string]string // wait item ID -> target thread ID -> observed turn ID
+	id               string
+	clientID         string
+	done             bool
+	early            []agentbridge.RawEvent
+	earlyBytes       int
+	messages         map[string]map[string]any
+	order            []string
+	streamed         map[string]string
+	waits            map[string]map[string]string // wait item ID -> target thread ID -> observed turn ID
+	compaction       ownedCompaction
+	runningConfirmed bool
+	idleGraceUsed    bool
 }
 
 func notificationTurnID(p map[string]any) string {
@@ -74,7 +78,11 @@ func (d *protocolDriver) guardOwnedNotification(raw agentbridge.RawEvent) ([]age
 		return nil, true
 	}
 	if method == codexMethodItemStarted || method == codexMethodItemCompleted {
-		if events := d.trackOwnedWait(method, mapField(p, "item")); len(events) > 0 {
+		item := mapField(p, "item")
+		if d.owned.compaction.observe(method, item) {
+			return []agentbridge.Event{{Kind: agentbridge.EventSemanticActivity}}, true
+		}
+		if events := d.trackOwnedWait(method, item); len(events) > 0 {
 			return events, true
 		}
 	}
@@ -96,6 +104,7 @@ func runScopedNotification(method codexMethod) bool {
 		codexMethodTurnCompleted, codexMethodTurnCompleteSlash,
 		codexMethodTurnError, codexMethodTurnErrorSlash, codexMethodTurnFailedSlash,
 		codexMethodError, codexMethodAgentMessage, codexMethodItemAgentMessageDelta,
+		codexMethodItemCommandOutput,
 		codexMethodReasoning, codexMethodItemStarted, codexMethodItemUpdated, codexMethodItemCompleted:
 		return true
 	default:

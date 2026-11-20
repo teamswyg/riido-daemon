@@ -4,6 +4,12 @@ import "github.com/teamswyg/riido-daemon/internal/agentbridge"
 
 func (r *sessionRunner) feed(raws []agentbridge.RawEvent) {
 	for _, raw := range raws {
+		if r.consumeIdleRecovery(raw) {
+			if r.state.Terminal {
+				return
+			}
+			continue
+		}
 		events, cmds, err := r.translateRaw(raw)
 		if err != nil {
 			r.emit(agentbridge.Event{Kind: agentbridge.EventError, Err: err.Error()})

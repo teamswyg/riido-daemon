@@ -8,7 +8,7 @@ import (
 
 func (c contextIO) runUserRelations(raw []string) error {
 	requestID := contextcli.NewRequestID()
-	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--page"}}, true)
+	args, cliErr := c.parseUserWorkArgs(raw, contextcli.ArgSpec{MaxPositionals: 1, Values: []string{"--team-id", "--locator-version", "--page"}}, true)
 	if cliErr != nil {
 		return c.fail(wantsJSON(raw), requestID, cliErr)
 	}
@@ -32,6 +32,14 @@ func (c contextIO) runUserRelations(raw []string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), args.Timeout)
 	defer cancel()
+
+	if version, _ := userLocatorVersion(args); version == 2 {
+		rows, err := session.RelationsV2(ctx, userV2Reference(args, work, team))
+		if err != nil {
+			return c.fail(args.JSON, requestID, userAuthError(err))
+		}
+		return c.succeed(args.JSON, contextcli.NewEnvelope(requestID, map[string]any{"mode": "user", "relations": rows}), relationsView(c.stdout, rows))
+	}
 	relations, err := session.Relations(ctx, work, team, args.Workspace)
 	if err != nil {
 		return c.fail(args.JSON, requestID, userAuthError(err))

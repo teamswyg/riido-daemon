@@ -15,17 +15,18 @@ const (
 )
 
 type Comment struct {
-	ID                string         `json:"id"`
-	Status            string         `json:"status"`
-	CreatedAt         string         `json:"createdAt"`
-	UpdatedAt         string         `json:"updatedAt"`
-	Body              string         `json:"body"`
-	Author            *CommentAuthor `json:"author"`
-	ReplyCount        *int32         `json:"replyCount,omitempty"`
-	IsFromSlack       bool           `json:"isFromSlack"`
-	SlackMessageURL   *string        `json:"slackMessageUrl"`
-	IsFromDiscord     bool           `json:"isFromDiscord"`
-	DiscordMessageURL *string        `json:"discordMessageUrl"`
+	WorkspaceAuthor   *NativeWorkspaceMember `json:"workspaceAuthor,omitempty"`
+	ID                string                 `json:"id"`
+	Status            string                 `json:"status"`
+	CreatedAt         string                 `json:"createdAt"`
+	UpdatedAt         string                 `json:"updatedAt"`
+	Body              string                 `json:"body"`
+	Author            *CommentAuthor         `json:"author"`
+	ReplyCount        *int32                 `json:"replyCount,omitempty"`
+	IsFromSlack       bool                   `json:"isFromSlack"`
+	SlackMessageURL   *string                `json:"slackMessageUrl"`
+	IsFromDiscord     bool                   `json:"isFromDiscord"`
+	DiscordMessageURL *string                `json:"discordMessageUrl"`
 }
 
 type CommentAuthor struct {

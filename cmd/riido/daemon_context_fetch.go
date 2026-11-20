@@ -20,6 +20,7 @@ func (f saasContextFetcher) FetchAssignmentContext(ctx context.Context, q contex
 	out, err := f.plane.FetchAssignmentContext(ctx, q.AgentID, saasplane.AssignmentContextRequest{
 		AssignmentID: q.AssignmentID, LeaseToken: q.LeaseToken, View: q.View, Target: q.Target, Cursor: q.Cursor, Since: q.Since, RequestID: q.RequestID, MaxBytes: q.MaxBytes,
 		CacheEnabled: q.CacheEnabled, KnownDigest: q.KnownDigest,
+		Options: q.Options, ThreadID: q.ThreadID,
 	})
 	if err != nil {
 		if status, message, ok := saasplane.HTTPStatus(err); ok {

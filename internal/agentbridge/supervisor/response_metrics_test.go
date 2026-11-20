@@ -1,6 +1,7 @@
 package supervisor
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"strings"
@@ -59,5 +60,25 @@ func TestTimingReportFailuresAreCountedWithoutErrorContents(t *testing.T) {
 	body, _ := json.Marshal(m.summary("claude", "unknown", agentbridge.ResultFailed, time.Now()))
 	if strings.Contains(string(body), "token-secret") {
 		t.Fatal("error leaked")
+	}
+}
+
+func TestTimingFailuresRetainSafeCategoryAndCorrelation(t *testing.T) {
+	m := responseMetrics{}
+	_ = m.report(func() error { return fixtureSyncHTTPError{} })
+	if m.reportFailureKinds["http_401"] != 1 || m.lastReportRequestID != "0123456789abcdef0123456789abcdef" {
+		t.Fatal("HTTP failure lost safe diagnosis")
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	m.reportProgress(ctx, func() error { return context.Canceled })
+	if m.reportFailures != 1 || m.reportSuperseded != 1 || m.reportFailureKinds["cancelled"] != 0 {
+		t.Fatal("preempted display counted as remote failure")
+	}
+	other := responseMetrics{}
+	_ = other.report(func() error { return context.DeadlineExceeded })
+	m.mergeReports(other)
+	if m.reportFailureKinds["timeout"] != 1 || m.reportAttempts != 3 {
+		t.Fatal("worker failure metrics lost")
 	}
 }

@@ -15,6 +15,11 @@ type startedRecordingSession struct {
 
 func startRecordingSession(t *testing.T, taskID string, adapter *recordingAdapter, configure func(*Config)) startedRecordingSession {
 	t.Helper()
+	return startRecordingSessionContext(t, context.Background(), taskID, adapter, configure)
+}
+
+func startRecordingSessionContext(t *testing.T, ctx context.Context, taskID string, adapter *recordingAdapter, configure func(*Config)) startedRecordingSession {
+	t.Helper()
 	fake := process.NewFake()
 	running := process.NewFakeRunning()
 	fake.NextRunning = running
@@ -28,7 +33,7 @@ func startRecordingSession(t *testing.T, taskID string, adapter *recordingAdapte
 	if configure != nil {
 		configure(&cfg)
 	}
-	sess, err := Start(context.Background(), cfg)
+	sess, err := Start(ctx, cfg)
 	if err != nil {
 		t.Fatalf("Start: %v", err)
 	}

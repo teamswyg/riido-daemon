@@ -24,10 +24,13 @@ type sessionRunner struct {
 	stderrCh  <-chan []byte
 	exitedCh  <-chan process.ExitStatus
 
-	hardTimer *time.Timer
-	hardC     <-chan time.Time
-	idleTimer *time.Timer
-	idleC     <-chan time.Time
+	hardTimer         *time.Timer
+	hardC             <-chan time.Time
+	hardDeadline      time.Time
+	idleTimer         *time.Timer
+	idleC             <-chan time.Time
+	idleRecoveryTimer *time.Timer
+	idleRecoveryC     <-chan time.Time
 
 	deferredExit            *process.ExitStatus
 	deliveryInterrupted     bool

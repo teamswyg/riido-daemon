@@ -52,7 +52,9 @@ func writeCommentList(w io.Writer, term cliui.Terminal, comments []*userapi.Comm
 // time and badges on top, the HTML body as indented text below.
 func writeCommentView(w io.Writer, term cliui.Terminal, comment *userapi.Comment) {
 	author := "알 수 없음"
-	if comment.Author != nil && comment.Author.WorkspaceProfile.Nickname != "" {
+	if comment.WorkspaceAuthor != nil && comment.WorkspaceAuthor.Nickname != "" {
+		author = comment.WorkspaceAuthor.Nickname
+	} else if comment.Author != nil && comment.Author.WorkspaceProfile.Nickname != "" {
 		author = comment.Author.WorkspaceProfile.Nickname
 	}
 	parts := []string{term.Bold(oneLine(author)), term.Dim(viewTime(comment.CreatedAt))}
@@ -82,7 +84,7 @@ func writeCommentView(w io.Writer, term cliui.Terminal, comment *userapi.Comment
 	}
 }
 
-func renderScopeCommentsView(w io.Writer, term cliui.Terminal, page userapi.ReadScopeCommentPage) {
+func renderScopeCommentsView(w io.Writer, term cliui.Terminal, page userapi.ReadScopeCommentPage, bodyCommands ...string) {
 	label := "댓글"
 	if page.ParentCommentID != nil {
 		label = "답글"
@@ -92,7 +94,11 @@ func renderScopeCommentsView(w io.Writer, term cliui.Terminal, page userapi.Read
 	if page.ContentPage != nil {
 		fmt.Fprintln(w)
 		writeViewHint(w, term, "댓글이 커서 나눠 읽어야 해요.")
-		writeBodyPageHint(w, term, scopeBodyCommand(page), page.ContentPage)
+		command := scopeBodyCommand(page)
+		if len(bodyCommands) > 0 {
+			command = bodyCommands[0]
+		}
+		writeBodyPageHint(w, term, command, page.ContentPage)
 		return
 	}
 	comments := make([]*userapi.Comment, 0, len(page.Items))

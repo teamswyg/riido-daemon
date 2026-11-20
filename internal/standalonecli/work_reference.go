@@ -38,7 +38,7 @@ func readWorkReference[T any](ctx context.Context, s *Service, id, team string, 
 			if err != nil {
 				return err
 			}
-			id, team = target.ID, target.TeamID
+			id, team = target.ID, *target.TeamID // v1 resolution requires a real team.
 		}
 		var err error
 		result, err = read(reader, id, team)

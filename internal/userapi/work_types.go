@@ -7,9 +7,17 @@ type WorkStatus struct {
 }
 
 type WorkMember struct {
-	ID          string          `json:"id"`
-	MemberOrder int             `json:"memberOrder"`
-	TeamMember  *WorkTeamMember `json:"teamMember"`
+	ID              string                 `json:"id"`
+	MemberOrder     int                    `json:"memberOrder"`
+	TeamMember      *WorkTeamMember        `json:"teamMember"`
+	WorkspaceMember *NativeWorkspaceMember `json:"workspaceMember,omitempty"`
+}
+
+// Native workspace members are kept distinct from historical team members.
+type NativeWorkspaceMember struct {
+	ID       string `json:"id"`
+	Nickname string `json:"nickname"`
+	Status   string `json:"status"`
 }
 
 type WorkTeamMember struct {

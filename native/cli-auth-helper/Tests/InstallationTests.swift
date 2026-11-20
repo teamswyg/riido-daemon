@@ -60,10 +60,10 @@ func runInstallationTests() {
     check(first.data?.value == nil && first.data?.present == nil && first.data?.signature == nil, "key response has no credential")
     let signed = handler.handle(request("installation-proof", proofObject))
     check(signed.ok && signed.data?.algorithm == installationAlgorithm, "typed proof supported")
-    let signature = (70...72).compactMap { try? installationDecodeURL(signed.data?.signature ?? "", count: $0) }.first ?? Data()
-    // DER signatures can be 70, 71 or 72 bytes; parse and verify the actual result.
+    let signature = installationFixtureSignature(signed.data?.signature ?? "")
     let actualSignature = try? P256.Signing.ECDSASignature(derRepresentation: signature)
     check(actualSignature != nil && fixturePrivateKey.publicKey.isValidSignature(actualSignature!, for: message), "proof uses valid ASN1 DER")
+    checkShortInstallationSignature(publicKey: fixturePrivateKey.publicKey, message: message)
     check(credentials.calls.isEmpty, "installation operations never load/save/delete OAuth credentials")
     let before = keys.calls.count
     for operation in ["installation-key", "installation-proof"] {

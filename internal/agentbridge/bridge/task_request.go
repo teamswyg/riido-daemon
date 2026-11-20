@@ -23,8 +23,9 @@ type TaskRequest struct {
 	AgentInstruction      string `json:"-"`
 
 	// Host bindings are captured once during preparation and never decoded from task input.
-	HostExecutionBinding         *execution.Binding `json:"-"`
-	HostExecutionBindingSelected bool               `json:"-"`
+	HostExecutionBinding          *execution.Binding `json:"-"`
+	AssignmentCheckoutUnavailable bool               `json:"-"`
+	HostExecutionBindingSelected  bool               `json:"-"`
 
 	ID           string
 	Provider     Provider

@@ -33,6 +33,9 @@ func (d *protocolDriver) onRaw(ctx context.Context, raw agentbridge.RawEvent, io
 				return d.failedEvents(d.shared.startError + ". 대기 중인 요청을 정리하지 못했습니다. 재요청 전에 Codex 앱의 대기열을 확인해주세요"), nil, nil
 			}
 			if pr.method == codexMethodThreadResume && d.req.ResumeSessionID != "" && codexRPCErrorMessage(raw.Payload) == "thread "+d.req.ResumeSessionID+" already has an active writer" {
+				if d.shared != nil && d.shared.reconnecting {
+					return d.waitSharedReconnect(), nil, nil
+				}
 				return d.attachSharedWriter(ctx, io)
 			}
 			if pr.method == codexMethodThreadNameSet {
@@ -50,23 +53,16 @@ func (d *protocolDriver) onRaw(ctx context.Context, raw agentbridge.RawEvent, io
 		// may publish its output or completion.
 		return nil, nil, nil
 	}
+	if raw.Type == rawFrameServerRequestPrefix+codexMCPApprovalMethod {
+		return d.handleMCPApproval(ctx, raw, io)
+	}
 	if after, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok {
-		return d.notificationEvents(codexMethod(after), raw)
-	}
-	events, cmds, err := Translate(raw)
-	events = d.ownedResultEvents(raw, events)
-	d.observeEvents(events)
-	return events, cmds, err
-}
-
-// notificationEvents has no protocol I/O, so idle recovery can consume owned
-// output and terminal evidence without dispatching requests or publishing logs.
-func (d *protocolDriver) notificationEvents(method codexMethod, raw agentbridge.RawEvent) ([]agentbridge.Event, []agentbridge.Command, error) {
-	if events, handled := d.guardOwnedNotification(raw); handled {
-		return events, nil, nil
-	}
-	if events, handled := d.handleNotification(method, raw); handled {
-		return d.ownedResultEvents(raw, events), nil, nil
+		if events, handled := d.guardOwnedNotification(raw); handled {
+			return events, nil, nil
+		}
+		if events, handled := d.handleNotification(codexMethod(after), raw); handled {
+			return d.ownedResultEvents(raw, events), nil, nil
+		}
 	}
 	events, cmds, err := Translate(raw)
 	events = d.ownedResultEvents(raw, events)
@@ -76,6 +72,15 @@ func (d *protocolDriver) notificationEvents(method codexMethod, raw agentbridge.
 
 func (d *protocolDriver) handleNotification(method codexMethod, raw agentbridge.RawEvent) ([]agentbridge.Event, bool) {
 	if d.owned.id != "" {
+		if method == codexMethodItemCommandOutput {
+			p := params(raw)
+			if stringField(p, "itemId") != "" && stringField(p, "delta") != "" {
+				// Correlation was checked by guardOwnedNotification. Keep raw tool
+				// output private while recognizing real activity on the owned turn.
+				return []agentbridge.Event{{Kind: agentbridge.EventSemanticActivity}}, true
+			}
+			return nil, true
+		}
 		if events, handled := d.ownedMessageEvents(method, params(raw)); handled {
 			d.observeEvents(events)
 			return events, true

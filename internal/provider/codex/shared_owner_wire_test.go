@@ -121,7 +121,7 @@ func TestSharedControlRPCIgnoresOtherResponsesAndSanitizesErrors(t *testing.T) {
 	}{
 		{"thread already has an active or pending turn", errSharedOwnerBusy},
 		{"queued submission not found: mine", errSharedQueueConsumed},
-		{"private-auth-token", nil},
+		{"private-auth-token", errSharedOwnerRejected},
 	} {
 		body, _ := json.Marshal(map[string]any{"id": 1, "error": map[string]any{"message": tc.message}})
 		input := serverControlFrame(1, true, []byte(`{"id":1,"method":"item/tool/requestUserInput","params":{}}`))

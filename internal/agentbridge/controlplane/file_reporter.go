@@ -18,8 +18,8 @@ type FileReportRecord struct {
 }
 
 // FileReporter appends task progress and terminal results to per-task
-// JSONL files. Like the other in-tree control-plane adapters, it is
-// owned by the SupervisorActor goroutine; no mutex is required here.
+// JSONL files. Configuration is immutable; independent claims write separate
+// files, with each claim serialized at its reporting boundaries.
 type FileReporter struct {
 	dir string
 	now func() time.Time

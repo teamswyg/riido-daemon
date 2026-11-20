@@ -100,7 +100,7 @@ func TestSharedWriterBusyRecoverySearchesAllQueuePages(t *testing.T) {
 }
 
 func TestSharedWriterOwnerFailureCleansOnlyOwnEntryAndExplainsAction(t *testing.T) {
-	for _, outcome := range []string{"deleted", "consumed", "cleanup_failed"} {
+	for _, outcome := range []string{"deleted", "malformed", "cleanup_failed"} {
 		t.Run(outcome, func(t *testing.T) {
 			d, io := sharedPendingFixture(t)
 			d.startSharedOwner = func(context.Context, agentbridge.StartRequest, string, string) error {
@@ -116,12 +116,15 @@ func TestSharedWriterOwnerFailureCleansOnlyOwnEntryAndExplainsAction(t *testing.
 			}
 			id := int64(frame["id"].(float64))
 			response := makeResponse(id, map[string]any{"deleted": outcome == "deleted"})
+			if outcome == "malformed" {
+				response = makeResponse(id, map[string]any{})
+			}
 			if outcome == "cleanup_failed" {
 				response = agentbridge.RawEvent{Type: "error", Payload: map[string]any{"id": id, "error": map[string]any{"message": "private provider diagnostic"}}}
 			}
 			events, _, _ = d.OnRaw(t.Context(), response, io)
 			result := events[len(events)-1].Result
-			if result.Status != agentbridge.ResultFailed || !strings.Contains(result.Error, "Codex 앱을 열고") || strings.Contains(result.Error, "private") {
+			if result.Status != agentbridge.ResultFailed || !strings.Contains(result.Error, "codex_owner_start_unconfirmed") || strings.Contains(result.Error, "private") {
 				t.Fatalf("unactionable/unsafe error: %+v", result)
 			}
 			if outcome != "deleted" && !strings.Contains(result.Error, "대기열") {
@@ -145,7 +148,7 @@ func TestSharedWriterCleanupWriteFailureIsActionable(t *testing.T) {
 	d, io := sharedPendingFixture(t)
 	d.shared.submissionID, d.shared.submitted = "mine", true
 	d.startSharedOwner = func(context.Context, agentbridge.StartRequest, string, string) error {
-		return errSharedOwnerUnavailable
+		return errSharedOwnerConnect
 	}
 	events, _, err := d.startSharedSubmission(t.Context(), sharedBrokenIO{io})
 	if err != nil || !d.shared.done || len(events) == 0 || !strings.Contains(events[len(events)-1].Result.Error, "대기열") {

@@ -37,6 +37,9 @@ type TaskSourcePort interface {
 }
 
 // TaskReporterPort is how the daemon reports progress and outcome.
+// ReportEvent must promptly return when its context is cancelled. Independent
+// claims may report concurrently; each claim serializes progress with critical
+// events and terminal delivery at its boundaries.
 type TaskReporterPort interface {
 	StartTask(ctx context.Context, taskID string) error
 	ReportEvent(ctx context.Context, taskID string, ev agentbridge.Event) error

@@ -13,7 +13,7 @@ permissions: { contents: write }
 jobs:
   build:
     if: github.event_name == 'pull_request' || github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
-    runs-on: ${{ startsWith(matrix.target, 'darwin/') && 'macos-latest' || 'ubuntu-latest' }}
+    runs-on: ${{ matrix.target == 'darwin/amd64/tar' && 'macos-15-intel' || matrix.target == 'darwin/arm64/tar' && 'macos-15' || 'ubuntu-latest' }}
     strategy:
       fail-fast: false
       matrix:
@@ -37,6 +37,9 @@ jobs:
 
       - name: Test
         run: go test ./...
+
+      - name: Verify helper release gate fixtures
+        run: python3 -m unittest discover -s scripts -p 'verify_macos_helper_test.py'
 
       - name: Verify native helper fixtures
         if: startsWith(matrix.target, 'darwin/')

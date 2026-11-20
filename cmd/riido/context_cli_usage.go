@@ -28,6 +28,7 @@ func printContextUsage(w io.Writer) {
 
 func printWorkUsage(w io.Writer) {
 	fmt.Fprintln(w, "  riido work search --workspace <WORKSPACE-ID> --query <TEXT> [--cursor C] [--limit N] [--json]   (user live authorized title/key/body search; agent unsupported)")
+	fmt.Fprintln(w, "  User work search/get/tree/relations/activity/body/comments/replies: --locator-version 2 --workspace <WORKSPACE-ID> enables native workspace-owned projects/milestones; default 1 keeps the existing API.")
 	fmt.Fprintln(w, "  riido work tree <ID> --team-id <TEAM-ID> [--json]   (user live one-hop hierarchy; up to 10 selected children; no pagination)")
 	fmt.Fprintln(w, "  riido work <get|body|tree|relations|comments|replies|activity|search> ...")
 	fmt.Fprintln(w, "    riido work get|tree|relations <RIID-1234|ID> [--json]")
@@ -39,7 +40,7 @@ func printWorkUsage(w io.Writer) {
 	fmt.Fprintln(w, "    riido work comments <ID> --team-id <TEAM-ID> [--page N] [--limit N] [--json]   (user API; defaults 1/20, limit <= 100)")
 	fmt.Fprintln(w, "    riido work replies <ID> --team-id <TEAM-ID> --comment-id <COMMENT-ID> [--json]   (user API; no pagination; agent replies unsupported)")
 	fmt.Fprintln(w, "    riido work comments|replies <ID> --kind component|backlog|intake --team-id <TEAM-ID> [--comment-id <PARENT-ID>] [--page N] [--limit N] [--version <VERSION>] [--json]   (user read-scope API; replies need parent ID, page > 1 needs original version)")
-	fmt.Fprintln(w, "    riido work activity <ID> --team-id <TEAM-ID> [--page N] [--limit N] [--json]   (user live activity; defaults 1/20, limit <= 100; agent unsupported, exit 8)")
+	fmt.Fprintln(w, "    riido work activity <ID> --team-id <TEAM-ID> [--page N] [--limit N] [--json]   (live activity; defaults 1/20, limit <= 100; agent mode omits --team-id and uses the active run)")
 	fmt.Fprintln(w, "    User component keys: replace <ID> with <RIID-1234>; use --workspace <WORKSPACE-ID> and/or --team-id <TEAM-ID> (configured defaults supported). Both scopes intersect; ID calls still require --team-id.")
 	fmt.Fprintln(w, "    Backlog, intake, meeting, team and comment references require IDs.")
 	fmt.Fprintln(w, "    riido work search --query TEXT   (agent mode unsupported, exit 8)")
@@ -50,6 +51,7 @@ func printContextGroupUsage(w io.Writer) {
 	fmt.Fprintln(w, "    Agent data.snapshot_id and captured_at identify the server's assignment snapshot; they are not credentials or live refresh evidence")
 	fmt.Fprintln(w, "  riido context get --work <ID> --team-id <TEAM-ID> [--json]   (user API; direct context within one relation hop)")
 	fmt.Fprintln(w, "  riido context get --work <RIID-1234> --workspace <WORKSPACE-ID> [--team-id <TEAM-ID>] [--json]   (user key lookup; configured scope defaults supported)")
+	fmt.Fprintln(w, "  riido context get --work <KEY|ID> --workspace <WORKSPACE-ID> --locator-version 2 [--json]   (native workspace locator; keep version 2 and workspace on continuations)")
 	fmt.Fprintln(w, "  riido context part <SOURCE-ID> --cursor <CURSOR> [--budget CHARS] [--json]   (agent snapshot; one call returns consecutive captured pages of the part, about 48 KiB by default; continue with next_cursor)")
 	fmt.Fprintln(w, "  riido context changes --since SNAPSHOT [--budget CHARS] [--json]   (agent captured metadata; needs server support; user mode exit 8; partial/expired: context get recovery; budget overflow exit 9)")
 }

@@ -10,6 +10,8 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -22,13 +24,32 @@ import (
 // Uses a real Codex binary, an isolated home, and a localhost fake model. No
 // credentials, user's desktop threads, provider billing or external tools.
 func TestIntegrationSharedOwnerStartsQueuedFollowup(t *testing.T) {
+	for _, loseAcknowledgement := range []bool{false, true} {
+		t.Run(map[bool]string{false: "acknowledged", true: "lost_start_acknowledgement"}[loseAcknowledgement], func(t *testing.T) {
+			testNativeSharedOwnerFollowup(t, loseAcknowledgement, false, 0)
+		})
+	}
+}
+
+func TestIntegrationSharedOwnerExitDuringFollowupReconnectsSameThread(t *testing.T) {
+	testNativeSharedOwnerFollowup(t, false, true, 0)
+}
+
+func TestIntegrationSharedOwnerRecoversWithoutExiting(t *testing.T) {
+	testNativeSharedOwnerFollowup(t, false, false, 2)
+}
+
+func testNativeSharedOwnerFollowup(t *testing.T, loseAcknowledgement, ownerExits bool, connectionFailures int) {
+	t.Helper()
 	exe := os.Getenv("RIIDO_CODEX_NATIVE_TEST_EXECUTABLE")
 	if exe == "" {
 		t.Skip("set RIIDO_CODEX_NATIVE_TEST_EXECUTABLE to a Codex binary")
 	}
 	ctx, cancel := context.WithTimeout(t.Context(), 25*time.Second)
 	defer cancel()
+	var modelCalls atomic.Int32
 	model := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		modelCalls.Add(1)
 		_, _ = io.Copy(io.Discard, r.Body)
 		w.Header().Set("Content-Type", "text/event-stream")
 		_, _ = io.WriteString(w, nativeSharedModelResponse)
@@ -45,7 +66,9 @@ func TestIntegrationSharedOwnerStartsQueuedFollowup(t *testing.T) {
 	if err := owner.Start(); err != nil {
 		t.Fatal(err)
 	}
-	defer func() { _ = owner.Process.Kill(); _ = owner.Wait() }()
+	var stopOnce sync.Once
+	stopOwner := func() { stopOnce.Do(func() { _ = owner.Process.Kill(); _ = owner.Wait() }) }
+	defer stopOwner()
 	var client *sharedOwnerClient
 	var err error
 	for deadline := time.Now().Add(5 * time.Second); time.Now().Before(deadline); {
@@ -90,6 +113,31 @@ func TestIntegrationSharedOwnerStartsQueuedFollowup(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if ownerExits {
+		driver.(*protocolDriver).startSharedOwner = func(context.Context, agentbridge.StartRequest, string, string) error {
+			stopOwner()
+			return errSharedOwnerConnect
+		}
+	}
+	if loseAcknowledgement {
+		driver.(*protocolDriver).startSharedOwner = func(ctx context.Context, req agentbridge.StartRequest, threadID, submissionID string) error {
+			if err := startSharedOwner(ctx, req, threadID, submissionID); err != nil {
+				return err
+			}
+			// The real owner has consumed the queue entry. Model the response
+			// being lost before Riido can confirm the returned turn identity.
+			return errSharedOwnerUnconfirmed
+		}
+	}
+	if connectionFailures > 0 {
+		driver.(*protocolDriver).startSharedOwner = func(ctx context.Context, req agentbridge.StartRequest, threadID, submissionID string) error {
+			if connectionFailures > 0 {
+				connectionFailures--
+				return errSharedOwnerConnect
+			}
+			return startSharedOwner(ctx, req, threadID, submissionID)
+		}
+	}
 	sess, err := session.Start(ctx, session.Config{
 		TaskID: req.TaskID, RuntimeID: "codex", Adapter: integrationAdapter{}, Process: processexec.New(),
 		Spawn: processCommandFromStart(spawn), Request: req, ProtocolDriver: driver,
@@ -102,6 +150,12 @@ func TestIntegrationSharedOwnerStartsQueuedFollowup(t *testing.T) {
 	result := <-sess.Result()
 	if result.Status != agentbridge.ResultCompleted || result.SessionID != req.ResumeSessionID || strings.TrimSpace(result.Output) != "OK" {
 		t.Fatalf("queued follow-up did not complete on same native thread: %+v", result)
+	}
+	if modelCalls.Load() != 2 {
+		t.Fatalf("follow-up duplicated: %d model requests", modelCalls.Load())
+	}
+	if ownerExits {
+		return
 	}
 	// The owner's connection survives observer teardown, and its policy did not
 	// inherit the detached Riido child's full-access launch configuration.

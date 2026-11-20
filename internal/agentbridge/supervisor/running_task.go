@@ -16,6 +16,7 @@ import (
 )
 
 type runningTask struct {
+	delivery      *progressDelivery
 	timing        responseMetrics
 	recovery      *assignment.RecoveryContext
 	recoveryScope string

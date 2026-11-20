@@ -81,17 +81,7 @@ func TestUserActivityHelpAndModeBoundary(t *testing.T) {
 	}
 	commands := contextcli.Capabilities("test").Commands
 	i := slices.IndexFunc(commands, func(c contextcli.CommandCapability) bool { return c.Name == "work activity" })
-	if i < 0 || commands[i].Status != contextcli.CommandAvailable || !slices.Equal(commands[i].Modes, []contextcli.Mode{contextcli.ModeUser}) || !contextcli.ReadCommandUnavailable("work activity") {
+	if i < 0 || commands[i].Status != contextcli.CommandAvailable || !slices.Equal(commands[i].Modes, []contextcli.Mode{contextcli.ModeAgent, contextcli.ModeUser}) || contextcli.ReadCommandUnavailable("work activity") {
 		t.Fatal("activity modes are inaccurate")
-	}
-	for _, args := range [][]string{{"activity", "RIID-5900", "--json"}, activityArgs()} {
-		h = newContextHarness(t, agentVars())
-		h.io.userSession = func(contextcli.Args) (*standalonecli.Service, error) {
-			t.Fatal("agent opened user credential")
-			return nil, nil
-		}
-		if code := exitCodeOf(t, runWork(h.io, args)); code != 8 || len(h.daemon.requests) != 0 {
-			t.Fatalf("agent activity code=%d calls=%d", code, len(h.daemon.requests))
-		}
 	}
 }

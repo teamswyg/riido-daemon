@@ -2,6 +2,7 @@ package controlplane
 
 import (
 	"context"
+	"sync"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 )
@@ -13,8 +14,9 @@ type TaskRecord struct {
 }
 
 // MemoryReporter stores per-task evidence in RAM, indexable by task id.
-// Single-goroutine ownership -- no mutex.
+// Independent claims may stream and complete concurrently.
 type MemoryReporter struct {
+	mu      sync.Mutex
 	records map[string]*TaskRecord
 }
 
@@ -32,16 +34,22 @@ func (r *MemoryReporter) record(taskID string) *TaskRecord {
 }
 
 func (r *MemoryReporter) StartTask(_ context.Context, taskID string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.record(taskID).Started = true
 	return nil
 }
 
 func (r *MemoryReporter) ReportEvent(_ context.Context, taskID string, ev agentbridge.Event) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.record(taskID).Events = append(r.record(taskID).Events, ev)
 	return nil
 }
 
 func (r *MemoryReporter) CompleteTask(_ context.Context, taskID string, res agentbridge.Result) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	r.record(taskID).Result = res
 	return nil
 }
@@ -49,6 +57,8 @@ func (r *MemoryReporter) CompleteTask(_ context.Context, taskID string, res agen
 // Recorded returns a snapshot of the task's record. If the task is
 // unknown, an empty record is returned (not nil).
 func (r *MemoryReporter) Recorded(taskID string) TaskRecord {
+	r.mu.Lock()
+	defer r.mu.Unlock()
 	if rec, ok := r.records[taskID]; ok {
 		out := *rec
 		out.Events = append([]agentbridge.Event(nil), rec.Events...)

@@ -20,6 +20,12 @@ are not stored in this index. Existing run IR remains the execution history.
 Resumed sessions and the repository preparation they reuse start from the scrubbed
 child environment (RIID-5900), so the device credential never reaches a native session.
 
+When an authorized Git checkout fails, the session binding records that the
+provider started in an isolated directory. A reply can reopen that directory
+after daemon restart. The workspace, task, agent, runtime and repository grant
+must still match. A session originally started with a checkout still requires
+its retained repository.
+
 A known resumed session reuses its original working directory (and therefore its
 native CLI project history/config home), while each new run keeps its own event,
 output and verification artifacts. Host execution checks take a fresh baseline
@@ -54,6 +60,17 @@ and execution policy, not the provider login account.
 A Codex wait correlated to the owned turn can receive idle-watchdog activity
 from its named delegated threads. The session consumes the activity before
 publication. The owned turn remains the source of assistant output and completion.
+
+## RIID-6142: Codex MCP tool confirmation
+
+Only an MCP tool confirmation for the pinned thread and acknowledged turn can
+enter the existing human approval flow. Supported requests are marked by Codex
+as MCP tool calls and use an empty confirmation form. The approval shows the
+request's question, without publishing form metadata or tool arguments.
+Approval is per request and cannot be granted by the automatic tool policy.
+Return the matching JSON-RPC ID with Codex's `accept`, `decline`, or `cancel`
+action. Unsupported forms and uncorrelated requests are cancelled explicitly.
+Cancellation and existing hard and idle deadlines continue to bound the wait.
 
 ## Evidence
 
@@ -111,17 +128,39 @@ Codex turn limit 10,000. Attachments are not uploaded. Concurrent external turns
 must finish before a Riido continuation. No fallback to a latest/new session.
 
 Deploy the Control Plane consumer before this producer. Roll back producer first.
-An owned Codex run may check its pinned thread and acknowledged turn once when
-semantic idle expires. The read-only protocol request has a two-second budget.
-Only a completed turn with a completion timestamp and an answer can recover the
-result from the read reply. While waiting, ordinary owned-turn notifications
-still use the normal thread/turn correlation and final-answer selection. A
-successful terminal notification can complete the run without a read reply,
-including when its answer arrives in a preceding item notification. Foreign,
-stale or unidentified notifications cannot complete it. Recovery does not
-publish diagnostics or dispatch tool requests, so a full observer buffer cannot
-delay the result. Hard deadlines and cancellation keep priority, and the existing result
-path verifies and publishes the answer under the original execution claim.
+An owned Codex run recognizes `contextCompaction` item start and completion
+for its pinned thread and acknowledged turn. If an identified compaction is
+still active at the semantic idle deadline, the session loop can grant one more
+configured idle interval per turn. Duplicate and uncorrelated events cannot
+extend that allowance. This applies to provider output processing only. Tool
+approval waits, cancellation and the hard deadline retain their existing limits.
+
+An owned Codex run checks its pinned thread and acknowledged turn when semantic
+idle expires. The read-only request has a two-second budget and runs through the
+ordinary session actor. Progress, approvals, cancellation, process exit and
+terminal notifications continue through their existing handlers while the read
+is pending. Matching terminal notifications can finish the run before the read
+reply, with the final answer in the terminal payload or a preceding item.
+Missing, foreign and stale notification identities cannot finish the run.
+A matching completed turn with a completion timestamp and an answer
+can recover the result. A matching `inProgress` turn can receive one additional
+configured idle interval per run, shared with the compaction allowance. Status
+alone cannot renew this allowance. Missing, foreign, stale or failed reads do
+not extend the wait. Actual semantic progress ends the read and restores the
+ordinary watchdog; late read responses cannot affect the run. Cancellation and
+the hard deadline retain priority. No recovery starts a new turn or repeats a
+tool call, and the original execution claim still owns result publication.
+
+RIID-6203 regression evidence: `owned_idle_continuation_test.go` reproduces a
+still-running turn killed at the first idle deadline and a completion lost while
+reading. The same suite covers bounded continuation, identity rejection and the
+ordinary event path during recovery. The initiating network outage in RAX-52
+remains unproven; these tests establish the daemon's premature termination and
+event-loss defects without claiming to reproduce that external outage.
+Owned `item/commandExecution/outputDelta` notifications with a nonempty item ID
+and delta count as semantic activity after thread/turn correlation. Raw command
+output is not published as assistant text or completion. Missing or foreign
+identities and empty output cannot keep the watchdog alive.
 
 Existing first runs and unrelated providers do not read local history. This is
 append-only projection, not a realtime mirror or source edit/delete replication.

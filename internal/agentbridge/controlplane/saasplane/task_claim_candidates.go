@@ -46,7 +46,10 @@ func (p *Plane) claimTaskFromCandidatesWithSingleLongPoll(
 	for _, candidate := range candidates {
 		req, err := p.claimTaskFromCandidate(ctx, runtimeID, provider, candidate, 0)
 		if errors.Is(err, errStaleAgentBindingPoll) {
-			return p.refreshCandidatesAfterStalePoll(ctx, runtimeID, provider, candidate, refresh)
+			if refresh != nil {
+				return p.refreshCandidatesAfterStalePoll(ctx, runtimeID, provider, candidate, refresh)
+			}
+			continue
 		}
 		if err != nil || req != nil {
 			return req, err

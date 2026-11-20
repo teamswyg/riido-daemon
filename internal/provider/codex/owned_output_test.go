@@ -1,6 +1,7 @@
 package codex
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -81,5 +82,25 @@ func TestOwnedTurnBoundsEarlyNotifications(t *testing.T) {
 	events, _, err := d.OnRaw(t.Context(), makeNotification("turn/completed", map[string]any{"threadId": "parent", "turn": map[string]any{"id": "parent-turn", "status": "completed"}}), io)
 	if err != nil || len(events) == 0 || events[len(events)-1].Result.Status != agentbridge.ResultFailed {
 		t.Fatalf("buffer overflow=%v %+v", err, events)
+	}
+}
+
+func TestOwnedCommentaryIsReportedOnceAcrossDeltaAndCompletion(t *testing.T) {
+	d := &protocolDriver{}
+	d.rememberMessage(map[string]any{"id": "p", "type": "agentMessage", "phase": "commentary"})
+	var text strings.Builder
+	for _, input := range []struct {
+		text  string
+		delta bool
+	}{{"검토 ", true}, {"중", true}, {"검토 중입니다", false}} {
+		for _, ev := range d.ownedMessageDelta("p", input.text, input.delta) {
+			if ev.Kind != agentbridge.EventProgress {
+				t.Fatalf("commentary leaked into final output: %+v", ev)
+			}
+			text.WriteString(ev.Text)
+		}
+	}
+	if text.String() != "검토 중입니다" {
+		t.Fatalf("duplicated progress: %q", text.String())
 	}
 }

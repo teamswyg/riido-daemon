@@ -283,3 +283,34 @@ The controlled-clock `TestAdapterElapsedIncludesBlockedEventDelivery` reproduces
 consumer wait in the adapter interval with no model call. Terminal metric tests
 cover ACK failure/retry, one summary only after ACK, and explicit multiple-result
 continuations; they do not infer native inference speed.
+
+## Completion independent of progress delivery · RIID-6237
+
+The supervisor owns local ingestion and execution completion; a per-claim worker
+owns best-effort remote progress. Plain commentary, diagnostic logs and answer
+deltas must not block provider event consumption on HTTP. Send the first display immediately, then combine compatible fragments at most
+ten times per second. Completion cancels this wait. Actor groups remain bounded
+by 64 events / 64 KiB; remote display groups remain bounded by 64 KiB. Bound
+pending remote progress to 64 groups / 256 KiB; under congestion supersede the
+oldest intermediate display groups. Keep original events in the local journal and
+the complete answer in the session reducer's authoritative result. Never infer
+completion from partial text, or execute another provider turn to repair delivery.
+
+Before a structured state boundary, cancellation, verification or terminal result,
+cancel the in-flight progress request and retire pending display groups. HTTP
+reporters must respect context cancellation. CompleteTask carries the original
+complete output and retains its existing immutable idempotent ACK retry behavior.
+Approval, native history, recovery and session ownership stay on the ordered
+critical reporting path; their authority and retries are not weakened. No API,
+credential, hard-timeout limit, or native parent/turn ownership changes are needed.
+
+Checks: a real session/supervisor chain with 700 fragments and a blocked progress
+report must deliver the exact completed result within 1 second, without releasing
+the blocked transport. A separate 750 ms hard-timeout/cancellation probe must
+still terminate genuinely unfinished work. Queue tests cover bounded memory, text grouping, isolation and
+cancellation. Existing approval/cancellation/terminal retry and race tests remain
+required. The one-second criterion assumes a responsive terminal endpoint; a
+server outage remains a delivery failure with retained terminal state, not a
+successful zero-latency result. Version rollback restores the previous binary;
+there is no data migration. CI and release/CDN verification precede production
+completion reporting.

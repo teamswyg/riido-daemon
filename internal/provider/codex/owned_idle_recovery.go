@@ -8,6 +8,7 @@ import (
 )
 
 func (d *protocolDriver) BeginIdleRecovery(ctx context.Context, io agentbridge.ProtocolIO) (bool, error) {
+	d.owned.runningConfirmed = false
 	if d.threadID == "" || d.owned.id == "" || d.shared != nil {
 		return false, nil
 	}
@@ -18,22 +19,6 @@ func (d *protocolDriver) BeginIdleRecovery(ctx context.Context, io agentbridge.P
 
 func (d *protocolDriver) OnIdleRecoveryRaw(raw agentbridge.RawEvent) (agentbridge.Result, bool) {
 	kind := rawFrameType(raw.Type)
-	if method, ok := strings.CutPrefix(raw.Type, rawFrameNotificationPrefix); ok && d.idleRecoveryID != 0 {
-		events, _, err := d.notificationEvents(codexMethod(method), raw)
-		if err != nil {
-			return agentbridge.Result{}, false
-		}
-		for _, event := range events {
-			if event.Kind == agentbridge.EventResult {
-				delete(d.pending, d.idleRecoveryID)
-				d.idleRecoveryID = 0
-				result := event.Result
-				result.SessionID = d.threadID
-				return result, true
-			}
-		}
-		return agentbridge.Result{}, false
-	}
 	id, ok := rpcID(raw.Payload)
 	if !ok || d.idleRecoveryID == 0 || id != d.idleRecoveryID || (kind != rawFrameResponse && kind != rawFrameError) {
 		return agentbridge.Result{}, false
@@ -53,6 +38,10 @@ func (d *protocolDriver) OnIdleRecoveryRaw(raw agentbridge.RawEvent) (agentbridg
 		if stringField(turn, "id") != d.owned.id {
 			continue
 		}
+		if stringField(turn, "status") == "inProgress" && intField(turn, "completedAt") == 0 {
+			d.owned.runningConfirmed = true
+			break
+		}
 		if stringField(turn, "status") != "completed" || intField(turn, "completedAt") <= 0 {
 			break
 		}
@@ -64,4 +53,9 @@ func (d *protocolDriver) OnIdleRecoveryRaw(raw agentbridge.RawEvent) (agentbridg
 		break
 	}
 	return agentbridge.Result{}, true
+}
+
+func (d *protocolDriver) EndIdleRecovery() {
+	delete(d.pending, d.idleRecoveryID)
+	d.idleRecoveryID = 0
 }

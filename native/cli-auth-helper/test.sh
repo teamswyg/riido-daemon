@@ -6,6 +6,14 @@ trap 'rm -rf "$fixture_dir"' EXIT
 swiftc -warnings-as-errors -D CLI_AUTH_HELPER_TESTING "$helper_dir"/Sources/*.swift "$helper_dir"/Tests/*.swift -o "$fixture_dir/fixtures"
 "$fixture_dir/fixtures" "$helper_dir/Tests/testdata/installation-proof-v1.json" ${RIIDO_INSTALLATION_PROOF_FIXTURE_OUTPUT:+"$RIIDO_INSTALLATION_PROOF_FIXTURE_OUTPUT"}
 bundle="$($helper_dir/build.sh "$fixture_dir")"
+# The release-only startup probe must reject an unsigned bundle without
+# constructing credential stores or asking for OS presence.
+python3 - "$bundle/Contents/MacOS/riido-cli-auth-helper" <<'PREFLIGHT'
+import subprocess, sys
+probe = subprocess.run([sys.argv[1], '--preflight'], input=b'', capture_output=True, timeout=15)
+assert probe.returncode == 1 and probe.stdout == b'', 'unsigned startup preflight accepted'
+print('PASS: unsigned signing-only startup probe rejects without credential operations')
+PREFLIGHT
 # Session framing: each request line gets its own response while stdin stays open.
 python3 - "$bundle/Contents/MacOS/riido-cli-auth-helper" <<'SESSION'
 import json, subprocess, sys, select

@@ -29,6 +29,7 @@ func (r *sessionRunner) applySemanticActivity(ev agentbridge.Event) bool {
 
 func (r *sessionRunner) startTimers() {
 	if r.cfg.HardTimeout > 0 {
+		r.hardDeadline = time.Now().Add(r.cfg.HardTimeout)
 		r.hardTimer = time.NewTimer(r.cfg.HardTimeout)
 		r.hardC = r.hardTimer.C
 	}
@@ -39,6 +40,7 @@ func (r *sessionRunner) startTimers() {
 }
 
 func (r *sessionRunner) stopTimers() {
+	r.stopIdleRecovery()
 	if r.hardTimer != nil {
 		r.hardTimer.Stop()
 	}

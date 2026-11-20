@@ -8,7 +8,8 @@
     "internal/agentbridge/telemetry_apply.go",
     "internal/agentbridge/host_context_contract.go",
     "internal/agentbridge/task_context_cli_contract.go",
-    "internal/agentbridge/task_context_cli_executable.go"
+    "internal/agentbridge/task_context_cli_executable.go",
+    "internal/provider/codex/context_cli_environment.go"
   ],
   "policy": {
     "provider_placement": "existing native/inline surfaces; task-first fallback remains",
@@ -20,6 +21,7 @@
     "history_reads": "Compact list/search first; up to3 initial threads/concurrent calls; outputs=false/3turns/1500chars when supported; same-request exact-page reuse; returned cursors for older pages; fresh after mutations or account/session changes",
     "freshness": "Unversioned provider JSON/HTML and component snapshots are not proof of current Yjs; conflicting alternate representations have unknown chronology and remain references.",
     "context_cli_executable": "Codex uses the daemon-owned absolute executable from runtime configuration, shell-quoted per host; assignment environment cannot override it. PATH changes in login shells must not select another riido. Existing sandbox policy remains unchanged.",
+    "context_cli_shell_environment": "Daemon-owned Codex start/resume passes only the current run capability/socket/task/workspace through the in-memory shell_environment_policy.set override. Preserve inherited user filters/settings. No capability in argv, prompts, persisted state or diagnostics; incomplete wiring emits no override. Shared-owner queue execution is a separate boundary.",
     "context_cli": "RIID-5900: only capability/socket/task-bearing launches get snapshot CLI rules. Read context get once; follow only explicit mentions and the selected direct relations/hierarchy/children, never a second relation hop. Read captured details/meeting board parts only when present and page through context part using manifest-issued source ID/cursor. Preserve older-snapshot unavailable and storage-budget incomplete states, source versions and status evidence; never switch to live OAuth or expose credentials."
   },
   "verification": {
@@ -31,7 +33,10 @@
       "TestSubmitStartRequestContextCLIContractPlacement",
       "TestCodexContextCLIUsesDaemonExecutable",
       "TestCodexContextCLIQuotedExecutableSurvivesPATHReplacement",
-      "TestContextCLIExecutableWindowsQuoting"
+      "TestContextCLIExecutableWindowsQuoting",
+      "TestThreadContextCLIEnvironmentSurvivesShellPolicy",
+      "TestThreadContextCLIEnvironmentRequiresCompleteEnabledBinding",
+      "TestIntegrationCodexContextCLIReadBinding"
     ],
     "real_provider_calls": false
   },
