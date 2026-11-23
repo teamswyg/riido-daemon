@@ -60,9 +60,16 @@ func nativeSessionInUse(inFlight map[string]*runningTask, taskID, provider, sess
 		return false
 	}
 	for id, task := range inFlight {
-		if id != taskID && task.provider == provider && task.nativeSessionID == sessionID {
+		if id != taskID && task.provider == provider && task.nativeSessionID == sessionID && task.reservesExecution() {
 			return true
 		}
 	}
 	return false
+}
+
+// Report delivery may outlive the local execution. Keep the report for retries,
+// but reserve execution capacity only until terminal local quiescence is proven.
+// Missing or unknown observations remain conservative; a result alone is not proof.
+func (task *runningTask) reservesExecution() bool {
+	return task.terminalResult == nil || !task.terminationKnown || task.terminationProof.Kind != executionproof.QuiescentKind
 }

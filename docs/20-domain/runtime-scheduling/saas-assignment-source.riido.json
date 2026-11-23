@@ -9,6 +9,7 @@
   "evidence_artifact": "saas-assignment-source-evidence",
   "purpose": "Prove the daemon-side SaaS assignment source/reporter contract without claiming control-plane or client presentation ownership.",
   "facts": [
+    {"name": "terminal delivery does not reserve execution capacity", "status": "implemented", "summary": "A terminal result with sealed local-invocations-quiescent proof remains pending for report retries but no longer reserves supervisor native-session occupancy or claim capacity. Active, uncovered, unknown, and pending local work remain reserved. This local proof does not establish termination of remote turns or descendants; provider admission remains authoritative for those boundaries.", "source_checks": ["terminal-session-occupancy-test"]},
     {"name": "retire obsolete assignment reports", "status": "implemented", "summary": "An authenticated events response identifying a rejected transition out of a terminal assignment state cancels the matching local execution and clears its obsolete report and claim scope. This also applies when the cancellation watcher registers after reconciliation. Other errors retain existing handling. Reconciliation is logged separately from a delivered result and cannot authorize a termination receipt.", "source_checks": ["terminal-conflict-test", "terminal-conflict-cancellation-test"]},
     {"name": "active delivery fairness", "status": "implemented", "summary": "Long-poll is restricted to idle waves with no in-flight runs or queued supervisor messages; active execution and terminal delivery retain short polls.", "source_checks": ["active-delivery-poll-test"]},
     {"name": "shared assignment contract", "status": "implemented", "summary": "SaaS adapter consumes assignment DTO/state/event constants from riido-contracts.", "source_checks": ["shared-contract-test", "shared-contract-import"]},
@@ -36,6 +37,7 @@
     {"name": "private server package import", "scope": ["internal/agentbridge/controlplane/saasplane"], "tokens": ["internal/riidoaiserver", "cmd/riido_ai_server"], "reason": "public daemon must not import private control-plane implementation"}
   ],
   "source_checks": [
+    {"name": "terminal-session-occupancy-test", "file": "internal/agentbridge/supervisor/terminal_session_occupancy_test.go", "contains": "TestTerminalReportRetryDoesNotOccupyQuiescentSession"},
     {"name": "terminal-conflict-cancellation-test", "file": "internal/agentbridge/controlplane/saasplane/server_terminal_conflict_test.go", "contains": "TestTerminalConflictCancelsAndRemovesCurrentClaim"},
     {"name": "terminal-conflict-test", "file": "internal/agentbridge/controlplane/saasplane/server_terminal_conflict_test.go", "contains": "TestServerTerminalConflictStopsRepeatedDelivery"},
     {"name": "active-delivery-poll-test", "file": "internal/agentbridge/supervisor/claim_active_delivery_test.go", "contains": "TestSupervisorActiveDeliveryDoesNotWaitForIdlePoll"},
