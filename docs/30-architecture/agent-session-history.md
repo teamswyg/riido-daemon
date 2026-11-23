@@ -35,8 +35,14 @@ with a diagnostic. There is no fallback to a fresh session for a known broken
 binding. Operator archive cleanup remains authoritative: an expired directory
 may be removed and the next resume then reports the missing history.
 
-A native session can have only one supervisor-owned turn at a time, including
-verification and terminal delivery. Bindings survive daemon restart. Older sessions without an index retain the
+A native session can have only one supervisor-owned execution at a time, including
+preparation and verification. After a terminal result and a sealed positive local
+quiescence proof, terminal delivery no longer reserves the session or claim
+capacity. Pending history and result reports retain their original identity and
+continue retrying; releasing local occupancy does not acknowledge their delivery.
+Active, unknown, uncovered, and pending local work remain reserved. Local proof
+does not prove remote or descendant termination, and provider admission checks
+still apply. Bindings survive daemon restart. Older sessions without an index retain the
 legacy workspace selection, with an explicit warning that continuity could not
 be verified. Existing nonempty assignment clones are reused only when resuming
 and their repository grant is confirmed by a binding; an unindexed Git resume
