@@ -30,7 +30,7 @@ func (a *Actor) claimAvailable(
 		runtimeClaimCtx := controlplane.ContextWithClaimLongPoll(claimCtx, longPoll)
 		owned := 0
 		for _, task := range inFlight {
-			if task.runtimeID == status.RuntimeID {
+			if task.runtimeID == status.RuntimeID && task.reservesExecution() {
 				owned++
 			}
 		}
