@@ -3,16 +3,20 @@
   "providers": {
     "claude": [
       {
-        "model_id": "fable",
-        "label": "Fable"
-      },
-      {
         "model_id": "opus",
         "label": "Opus"
       },
       {
         "model_id": "sonnet",
         "label": "Sonnet"
+      },
+      {
+        "model_id": "haiku",
+        "label": "Haiku"
+      },
+      {
+        "model_id": "fable",
+        "label": "Fable"
       },
       {
         "model_id": "claude-fable-5",

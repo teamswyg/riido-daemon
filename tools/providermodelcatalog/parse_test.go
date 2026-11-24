@@ -12,7 +12,7 @@ func TestParseCursorModels(t *testing.T) {
 func TestParseClaudeModels(t *testing.T) {
 	body := "--model <model> use 'fable', 'opus', or 'sonnet' and 'claude-fable-5'.\n  -n, --name"
 	rows := parseClaudeModels(body)
-	if len(rows) != 4 || rows[2].ModelID != "sonnet" {
+	if len(rows) != 5 || rows[2] != (model{ModelID: "haiku", Label: "Haiku"}) {
 		t.Fatalf("rows = %+v", rows)
 	}
 }
