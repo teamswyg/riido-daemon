@@ -6,6 +6,7 @@ import (
 	"errors"
 	"io"
 	"os/exec"
+	"slices"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
@@ -14,9 +15,11 @@ import (
 )
 
 type ModelInfo struct {
-	ModelID   string
-	Label     string
-	IsDefault bool
+	ModelID                string
+	Label                  string
+	IsDefault              bool
+	ReasoningEfforts       []string
+	DefaultReasoningEffort string
 }
 
 // ModelCatalog reads the native catalog without creating a thread or running
@@ -108,7 +111,11 @@ func ModelCatalog(ctx context.Context, env agentbridge.DetectEnv) ([]ModelInfo, 
 				label = id
 			}
 			isDefault, _ := model["isDefault"].(bool)
-			models = append(models, ModelInfo{ModelID: id, Label: label, IsDefault: isDefault})
+			efforts, defaultEffort := modelReasoningEfforts(model)
+			models = append(models, ModelInfo{
+				ModelID: id, Label: label, IsDefault: isDefault,
+				ReasoningEfforts: efforts, DefaultReasoningEffort: defaultEffort,
+			})
 		}
 		cursor = stringField(result, "nextCursor")
 		if cursor == "" {
@@ -116,4 +123,21 @@ func ModelCatalog(ctx context.Context, env agentbridge.DetectEnv) ([]ModelInfo, 
 		}
 	}
 	return nil, errors.New("codex model/list: catalog exceeded page bound")
+}
+
+func modelReasoningEfforts(model map[string]any) ([]string, string) {
+	options, _ := model["supportedReasoningEfforts"].([]any)
+	var efforts []string
+	for _, option := range options {
+		row, _ := option.(map[string]any)
+		effort := stringField(row, "reasoningEffort")
+		if effort != "" && !slices.Contains(efforts, effort) {
+			efforts = append(efforts, effort)
+		}
+	}
+	defaultEffort := stringField(model, "defaultReasoningEffort")
+	if !slices.Contains(efforts, defaultEffort) {
+		defaultEffort = ""
+	}
+	return efforts, defaultEffort
 }

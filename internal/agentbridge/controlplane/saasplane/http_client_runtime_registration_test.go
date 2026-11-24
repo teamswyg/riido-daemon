@@ -2,6 +2,7 @@ package saasplane
 
 import (
 	"context"
+	"slices"
 	"testing"
 	"time"
 
@@ -37,6 +38,10 @@ func TestPlaneRegistersRuntimeSnapshotWithDeviceCredential(t *testing.T) {
 	}
 	assertRuntimeSnapshotIdentity(t, fake.runtimeSnapshots[0], startedAt)
 	assertRuntimeSnapshotRuntime(t, fake.runtimeSnapshots[0].Runtimes)
+	model := fake.runtimeSnapshots[0].Runtimes[0].Models[0]
+	if !slices.Equal(model.ReasoningEfforts, []string{"medium", "high"}) || model.DefaultReasoningEffort != "medium" {
+		t.Fatalf("runtime snapshot did not report model reasoning effort: %+v", model)
+	}
 }
 
 func runtimeSnapshotRegistration() controlplane.RuntimeRegistration {
@@ -46,7 +51,10 @@ func runtimeSnapshotRegistration() controlplane.RuntimeRegistration {
 		Provider:   "codex",
 		DeviceName: "주윤의 MacBook",
 		Models: []controlplane.RuntimeModel{
-			{ModelID: "gpt-5.5", Label: "gpt-5.5", IsDefault: true},
+			{
+				ModelID: "gpt-5.5", Label: "gpt-5.5", IsDefault: true,
+				ReasoningEfforts: []string{"medium", "high"}, DefaultReasoningEffort: "medium",
+			},
 		},
 		Capabilities: map[string]bool{
 			"provider.codex.requires_experimental_opt_in": true,
