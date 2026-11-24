@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/url"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
@@ -15,7 +16,7 @@ func (p *Plane) waitToolApproval(
 	assignment assignmentcontract.Assignment,
 	approvalID string,
 ) (agentbridge.ToolApprovalResolution, error) {
-	consecutiveDeadlines := 0
+	consecutiveWaitFailures := 0
 	for {
 		var out assignmentcontract.ToolApprovalWaitResponse
 		err := p.postJSON(ctx, toolApprovalWaitPath(assignment, approvalID), assignmentcontract.ToolApprovalWaitRequest{
@@ -23,9 +24,9 @@ func (p *Plane) waitToolApproval(
 			WaitMs:       pollWaitMilliseconds(p.cfg.LongPollWait),
 		}, &out)
 		if err != nil {
-			if errors.Is(err, context.DeadlineExceeded) && ctx.Err() == nil && consecutiveDeadlines < jsonRequestMaxAttempts-1 {
-				consecutiveDeadlines++
-				if waitErr := waitJSONRetry(ctx, consecutiveDeadlines); waitErr != nil {
+			if ctx.Err() == nil && consecutiveWaitFailures < jsonRequestMaxAttempts-1 && recoverableToolApprovalWaitError(err) {
+				consecutiveWaitFailures++
+				if waitErr := waitJSONRetry(ctx, consecutiveWaitFailures); waitErr != nil {
 					return agentbridge.ToolApprovalResolution{}, waitErr
 				}
 				continue
@@ -36,8 +37,16 @@ func (p *Plane) waitToolApproval(
 		if err != nil || done {
 			return resolution, err
 		}
-		consecutiveDeadlines = 0
+		consecutiveWaitFailures = 0
 	}
+}
+
+func recoverableToolApprovalWaitError(err error) bool {
+	if errors.Is(err, context.DeadlineExceeded) {
+		return true
+	}
+	var dnsErr *net.DNSError
+	return errors.As(err, &dnsErr) && (dnsErr.IsNotFound || dnsErr.IsTemporary)
 }
 
 func toolApprovalWaitPath(assignment assignmentcontract.Assignment, approvalID string) string {
