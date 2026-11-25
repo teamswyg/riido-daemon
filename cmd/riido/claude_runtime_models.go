@@ -16,42 +16,21 @@ func claudeRuntimeModels() []runtimeactor.RuntimeModel {
 }
 
 func parseClaudeRuntimeModelHelp(body []byte) []runtimeactor.RuntimeModel {
-	section := claudeModelHelpSection(string(body))
-	models := make([]runtimeactor.RuntimeModel, 0)
-	for token := range strings.SplitSeq(section, "'") {
-		model, ok := claudeRuntimeModelAlias(token)
-		if ok {
-			models = append(models, model)
-		}
+	ids := claudeprovider.ModelIDsFromHelp(string(body))
+	models := make([]runtimeactor.RuntimeModel, 0, len(ids))
+	for _, id := range ids {
+		model, _ := runtimeModelRecord(id, claudeRuntimeModelLabel(id), false)
+		models = append(models, model)
 	}
 	return normalizeRuntimeModels(models, "")
-}
-
-func claudeModelHelpSection(help string) string {
-	start := strings.Index(help, "--model <model>")
-	if start < 0 {
-		return ""
-	}
-	section := help[start:]
-	if before, _, ok := strings.Cut(section, "\n  -n, --name"); ok {
-		return before
-	}
-	return section
-}
-
-func claudeRuntimeModelAlias(alias string) (runtimeactor.RuntimeModel, bool) {
-	alias = strings.TrimSpace(alias)
-	if alias != "fable" && alias != "opus" && alias != "sonnet" &&
-		!strings.HasPrefix(alias, "claude-") {
-		return runtimeactor.RuntimeModel{}, false
-	}
-	return runtimeModelRecord(alias, claudeRuntimeModelLabel(alias), false)
 }
 
 func claudeRuntimeModelLabel(alias string) string {
 	parts := strings.Split(alias, "-")
 	for i, part := range parts {
-		parts[i] = strings.ToUpper(part[:1]) + part[1:]
+		if part != "" {
+			parts[i] = strings.ToUpper(part[:1]) + part[1:]
+		}
 	}
 	return strings.Join(parts, " ")
 }

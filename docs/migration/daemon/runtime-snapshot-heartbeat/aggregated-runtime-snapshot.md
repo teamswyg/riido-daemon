@@ -15,6 +15,7 @@ After control-plane applies the stale projection window, the daemon must refresh
 - include daemon process facts in that snapshot: profile, PID, started-at timestamp, and uptime seconds
 - allow daemon app version to be sent as server-side telemetry without changing the client read shape
 - preserve provider model catalog and experimental opt-in facts in heartbeat snapshots
+- RIID-8728: Claude Code catalogs include the Opus, Sonnet, and Haiku aliases in the startup snapshot and after a successful model help probe. The probe adds model IDs advertised by the installed CLI.
 - rate-limit same-tick runtime heartbeat calls so the daemon does not fan out one SaaS snapshot request per runtime
 
 ## This Slice Does Not Change
