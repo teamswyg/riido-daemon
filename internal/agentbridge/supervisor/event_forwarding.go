@@ -27,7 +27,7 @@ func (a *Actor) forwardSession(taskID string, events <-chan agentbridge.Event, r
 	}
 }
 
-func (a *Actor) forwardCancellation(ctx context.Context, taskID string, cancel context.CancelFunc) {
+func (a *Actor) forwardCancellation(ctx context.Context, taskID string, cancel context.CancelCauseFunc) {
 	ch, err := a.cfg.Source.WatchCancellation(ctx, taskID)
 	if err != nil {
 		return
@@ -39,7 +39,7 @@ func (a *Actor) forwardCancellation(ctx context.Context, taskID string, cancel c
 		}
 		// Cancel only this captured claim immediately. A runtime cancellation
 		// addressed by task ID belongs in the mailbox after its claim fence.
-		cancel()
+		cancel(cause)
 		a.cancelCurrentClaim()
 		select {
 		case a.mailbox <- envelope{cancel: &cancelMsg{claimContext: ctx, taskID: taskID, cause: cause}}:
