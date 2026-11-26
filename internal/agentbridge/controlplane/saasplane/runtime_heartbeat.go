@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/url"
+	"sync"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
@@ -21,9 +22,18 @@ func (p *Plane) dynamicHeartbeat(ctx context.Context, hb controlplane.RuntimeHea
 	if err != nil {
 		return err
 	}
-	var leaseErr error
+	var requests sync.WaitGroup
+	leaseErrors := make(chan error, len(assignmentsByAgent))
 	for agentID, assignmentIDs := range assignmentsByAgent {
-		leaseErr = errors.Join(leaseErr, p.postHeartbeatForAgent(ctx, agentID, hb, assignmentIDs))
+		requests.Go(func() {
+			leaseErrors <- p.postHeartbeatForAgent(ctx, agentID, hb, assignmentIDs)
+		})
+	}
+	requests.Wait()
+	close(leaseErrors)
+	var leaseErr error
+	for err := range leaseErrors {
+		leaseErr = errors.Join(leaseErr, err)
 	}
 	return errors.Join(leaseErr, p.refreshRegisteredRuntimeSnapshot(ctx, hb))
 }
