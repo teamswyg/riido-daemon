@@ -2,12 +2,46 @@ package saasplane
 
 import (
 	"context"
+	"errors"
+	"net/http"
 	"testing"
+	"time"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge"
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
 )
+
+func TestPlaneRenewActiveLeaseWhenRuntimeSnapshotFails(t *testing.T) {
+	fake := newFakeAssignmentServer(t)
+	fake.bindings = []assignmentcontract.AgentRuntimeBinding{codexRuntimeBinding("jykim1")}
+	fake.enqueue(queuedHTTPAssignment("asn-1", "dynamic binding task"))
+	ctx := t.Context()
+	plane := newRuntimeBindingPlane(t, fake, nil)
+	const runtimeID = "daemon-1:codex"
+	req, err := plane.ClaimTask(ctx, runtimeID)
+	if err != nil || req == nil {
+		t.Fatalf("ClaimTask = %+v, %v", req, err)
+	}
+	if err := plane.StartTask(ctx, req.ID); err != nil {
+		t.Fatalf("StartTask: %v", err)
+	}
+	if err := plane.RegisterRuntime(ctx, controlplane.RuntimeRegistration{RuntimeID: runtimeID, Provider: "codex"}); err != nil {
+		t.Fatalf("RegisterRuntime: %v", err)
+	}
+	if err := plane.withState(ctx, func(s *planeState) { s.lastRuntimeSnapshotSync = time.Time{} }); err != nil {
+		t.Fatalf("reset runtime snapshot interval: %v", err)
+	}
+	fake.failNext("/v1/daemon/runtime-snapshot", 1, http.StatusBadRequest)
+	err = plane.Heartbeat(ctx, controlplane.RuntimeHeartbeat{RuntimeID: runtimeID, RunningTaskIDs: []string{req.ID}})
+	var status httpStatusError
+	if !errors.As(err, &status) || status.StatusCode != http.StatusBadRequest {
+		t.Fatalf("Heartbeat error = %v, want the snapshot rejection", err)
+	}
+	if len(fake.heartbeats) != 1 || len(fake.heartbeats[0].ActiveAssignmentIDs) != 1 || fake.heartbeats[0].ActiveAssignmentIDs[0] != req.ID {
+		t.Fatalf("snapshot rejection skipped the active lease heartbeat: %+v", fake.heartbeats)
+	}
+}
 
 func TestPlaneClaimsDynamicAgentBinding(t *testing.T) {
 	fake := newFakeAssignmentServer(t)

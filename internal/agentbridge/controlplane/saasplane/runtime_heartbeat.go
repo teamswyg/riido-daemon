@@ -2,6 +2,7 @@ package saasplane
 
 import (
 	"context"
+	"errors"
 	"net/url"
 
 	assignmentcontract "github.com/teamswyg/riido-contracts/assignment"
@@ -16,19 +17,15 @@ func (p *Plane) Heartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat)
 }
 
 func (p *Plane) dynamicHeartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat) error {
-	if err := p.refreshRegisteredRuntimeSnapshot(ctx, hb); err != nil {
-		return err
-	}
 	assignmentsByAgent, err := p.activeAssignmentsForRuntimeHeartbeat(ctx, hb.RuntimeID, hb.RunningTaskIDs)
 	if err != nil {
 		return err
 	}
+	var leaseErr error
 	for agentID, assignmentIDs := range assignmentsByAgent {
-		if err := p.postHeartbeatForAgent(ctx, agentID, hb, assignmentIDs); err != nil {
-			return err
-		}
+		leaseErr = errors.Join(leaseErr, p.postHeartbeatForAgent(ctx, agentID, hb, assignmentIDs))
 	}
-	return nil
+	return errors.Join(leaseErr, p.refreshRegisteredRuntimeSnapshot(ctx, hb))
 }
 
 func (p *Plane) staticHeartbeat(ctx context.Context, hb controlplane.RuntimeHeartbeat) error {
