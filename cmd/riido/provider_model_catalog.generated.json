@@ -4,19 +4,19 @@
     "claude": [
       {
         "model_id": "opus",
-        "label": "Opus"
+        "label": "Opus 4.8"
       },
       {
         "model_id": "sonnet",
-        "label": "Sonnet"
+        "label": "Sonnet 5"
       },
       {
         "model_id": "haiku",
-        "label": "Haiku"
+        "label": "Haiku 4.5"
       },
       {
         "model_id": "fable",
-        "label": "Fable"
+        "label": "Fable 5"
       },
       {
         "model_id": "claude-fable-5",

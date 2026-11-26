@@ -14,7 +14,7 @@ func parseClaudeModels(body string) []model {
 	ids := claude.ModelIDsFromHelp(body)
 	rows := make([]model, 0, len(ids))
 	for _, id := range ids {
-		rows = append(rows, model{ModelID: id, Label: modelLabel(id)})
+		rows = append(rows, model{ModelID: id, Label: claudeModelLabel(id)})
 	}
 	return rows
 }

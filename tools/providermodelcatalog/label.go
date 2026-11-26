@@ -1,14 +1,7 @@
 package main
 
-import "strings"
+import "github.com/teamswyg/riido-daemon/internal/provider/claude"
 
-func modelLabel(modelID string) string {
-	parts := strings.Split(modelID, "-")
-	for i, part := range parts {
-		if part == "" {
-			continue
-		}
-		parts[i] = strings.ToUpper(part[:1]) + part[1:]
-	}
-	return strings.Join(parts, " ")
+func claudeModelLabel(id string) string {
+	return claude.ModelLabel(id)
 }

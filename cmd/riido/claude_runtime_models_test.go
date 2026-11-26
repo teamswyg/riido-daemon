@@ -1,7 +1,6 @@
 package main
 
 import (
-	"slices"
 	"testing"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/runtimeactor"
@@ -15,14 +14,14 @@ func TestParseClaudeRuntimeModelHelpUsesCliAliases(t *testing.T) {
                                         (e.g. 'claude-fable-5').
   -n, --name <name>                     Set a display name`)
 	models := parseClaudeRuntimeModelHelp(body)
-	assertClaudeModelIDs(t, models, []string{"claude-fable-5", "fable", "haiku", "opus", "sonnet"})
+	assertClaudeModels(t, models)
 	if countRuntimeModelDefaults(models) != 0 {
 		t.Fatalf("default model count invalid: %+v", models)
 	}
 }
 
 func TestClaudeRuntimeModelsIncludeBuiltInAliases(t *testing.T) {
-	assertClaudeModelIDs(t, claudeRuntimeModels(), []string{"claude-fable-5", "fable", "haiku", "opus", "sonnet"})
+	assertClaudeModels(t, claudeRuntimeModels())
 }
 
 func TestParseClaudeRuntimeModelHelpRequiresModelOption(t *testing.T) {
@@ -31,13 +30,21 @@ func TestParseClaudeRuntimeModelHelpRequiresModelOption(t *testing.T) {
 	}
 }
 
-func assertClaudeModelIDs(t *testing.T, models []runtimeactor.RuntimeModel, want []string) {
+func assertClaudeModels(t *testing.T, models []runtimeactor.RuntimeModel) {
 	t.Helper()
-	var ids []string
-	for _, model := range models {
-		ids = append(ids, model.ModelID)
+	want := []struct{ id, label string }{
+		{"claude-fable-5", "Claude Fable 5"},
+		{"fable", "Fable 5"},
+		{"haiku", "Haiku 4.5"},
+		{"opus", "Opus 4.8"},
+		{"sonnet", "Sonnet 5"},
 	}
-	if !slices.Equal(ids, want) {
-		t.Fatalf("model IDs = %v, want %v", ids, want)
+	if len(models) != len(want) {
+		t.Fatalf("models = %+v, want %+v", models, want)
+	}
+	for i, model := range models {
+		if model.ModelID != want[i].id || model.Label != want[i].label {
+			t.Errorf("model %d = %q (%q), want %q (%q)", i, model.ModelID, model.Label, want[i].id, want[i].label)
+		}
 	}
 }
