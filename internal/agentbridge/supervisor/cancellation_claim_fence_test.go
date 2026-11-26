@@ -33,13 +33,14 @@ func TestCurrentClaimCancellationStillCancelsPendingPreparation(t *testing.T) {
 }
 
 func TestCancellationWatchCarriesOriginalClaimIntoMailbox(t *testing.T) {
-	claimCtx, cancelClaim := context.WithCancel(t.Context())
-	defer cancelClaim()
+	claimCtx, cancelClaim := context.WithCancelCause(t.Context())
+	defer cancelClaim(nil)
 	source := &cancelSource{cancel: make(chan error, 1)}
 	actor := &Actor{cfg: Config{Source: source}, mailbox: make(chan envelope, 1), stoppedCh: make(chan struct{})}
 	done := make(chan struct{})
 	go func() { defer close(done); actor.forwardCancellation(claimCtx, "same", cancelClaim) }()
-	source.cancel <- errors.New("user cancelled")
+	cause := errors.New("active assignment lease expired")
+	source.cancel <- cause
 	select {
 	case message := <-actor.mailbox:
 		if message.cancel == nil || message.cancel.claimContext != claimCtx {
@@ -47,6 +48,9 @@ func TestCancellationWatchCarriesOriginalClaimIntoMailbox(t *testing.T) {
 		}
 		if claimCtx.Err() == nil {
 			t.Fatal("watch did not promptly cancel its captured claim")
+		}
+		if got := context.Cause(claimCtx); !errors.Is(got, cause) {
+			t.Fatalf("claim cause = %v, want %v before mailbox handling", got, cause)
 		}
 	case <-time.After(time.Second):
 		t.Fatal("cancellation watch did not forward")

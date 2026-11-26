@@ -22,7 +22,7 @@ func (a *Actor) handleTaskCancel(
 
 func (a *Actor) cancelActivatedTask(ctx context.Context, task *runningTask) {
 	if task.cancelCause == nil {
-		task.cancelCause = cancellationCause(task.ctx.Err())
+		task.cancelCause = cancellationCause(context.Cause(task.ctx))
 	}
 	_ = task.runtime.Cancel(ctx, task.taskID, task.cancelCause.Error())
 }

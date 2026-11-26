@@ -28,7 +28,7 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 	if scope == nil {
 		scope = executionproof.NewScope(false, nil)
 	}
-	taskCtx, cancel := context.WithCancel(executionproof.ContextWithScope(ctx, scope))
+	taskCtx, cancel := context.WithCancelCause(executionproof.ContextWithScope(ctx, scope))
 	inFlight[req.ID] = &runningTask{
 		timing:                responseMetrics{claimedAt: time.Now()},
 		taskID:                req.ID,
@@ -39,7 +39,7 @@ func (a *Actor) claimOne(ctx, claimCtx context.Context, rt *runtimeactor.Actor, 
 		ctx:                   taskCtx,
 		report:                report,
 		runtime:               rt,
-		cancel:                cancel,
+		cancel:                func() { cancel(nil) },
 	}
 	if nativeSessionInUse(inFlight, req.ID, string(req.Provider), req.ResumeSessionID) {
 		a.finishTaskWithResult(ctx, inFlight, inFlight[req.ID], agentbridge.Result{Status: agentbridge.ResultBlocked, Error: "native session is already executing another turn", ExecutionContext: &assignment.ExecutionContext{DiagnosticCode: "session_scope_conflict", NextAction: "review_session", VerificationStatus: "not_configured"}})

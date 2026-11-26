@@ -96,6 +96,8 @@ Locally retained claims wait for the original lease-scoped Ready acknowledgement
 
 Cancellation watches preserve the original claim context across asynchronous delivery. They directly cancel only that captured context. The supervisor checks that the same claim still owns an execution ID before routing provider cancellation. A delayed cancellation from an old claim cannot stop or mutate a replacement sharing that ID; current-claim cancellation still interrupts preparation and running sessions. Hermetic obsolete-watch and pending-preparation regressions cover this boundary.
 
+The watch records the control-plane reason in the captured context before publishing its mailbox message. A provider or activation that observes cancellation before that message is processed can use the original reason.
+
 ## Response timing boundary · RIID-5821
 
 The claim-to-terminal metric starts at the accepted claim and includes preparation,
