@@ -11,9 +11,11 @@ func runtimeModels(in []controlplane.RuntimeModel) []RuntimeModelRecord {
 	out := make([]RuntimeModelRecord, 0, len(in))
 	for _, model := range in {
 		out = append(out, RuntimeModelRecord{
-			ModelID:   model.ModelID,
-			Label:     model.Label,
-			IsDefault: model.IsDefault,
+			ModelID:                model.ModelID,
+			Label:                  model.Label,
+			IsDefault:              model.IsDefault,
+			ReasoningEfforts:       model.ReasoningEfforts,
+			DefaultReasoningEffort: model.DefaultReasoningEffort,
 		})
 	}
 	return out

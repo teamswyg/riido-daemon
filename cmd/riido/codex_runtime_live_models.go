@@ -33,7 +33,10 @@ func liveCodexRuntimeModels() []runtimeactor.RuntimeModel {
 		if found {
 			isDefault = model.ModelID == preferred
 		}
-		models = append(models, runtimeactor.RuntimeModel{ModelID: model.ModelID, Label: model.Label, IsDefault: isDefault})
+		models = append(models, runtimeactor.RuntimeModel{
+			ModelID: model.ModelID, Label: model.Label, IsDefault: isDefault,
+			ReasoningEfforts: model.ReasoningEfforts, DefaultReasoningEffort: model.DefaultReasoningEffort,
+		})
 	}
 	return models
 }

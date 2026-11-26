@@ -23,9 +23,11 @@ type AgentStatus struct {
 // control plane. Model IDs are opaque to the daemon except for the local
 // provider config source that reported them.
 type RuntimeModel struct {
-	ModelID   string `json:"model_id"`
-	Label     string `json:"label"`
-	IsDefault bool   `json:"is_default"`
+	ModelID                string   `json:"model_id"`
+	Label                  string   `json:"label"`
+	IsDefault              bool     `json:"is_default"`
+	ReasoningEfforts       []string `json:"reasoning_efforts,omitempty"`
+	DefaultReasoningEffort string   `json:"default_reasoning_effort,omitempty"`
 }
 
 // Status is the synchronous Status(ctx) snapshot.
