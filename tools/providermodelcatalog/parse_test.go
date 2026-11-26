@@ -12,8 +12,20 @@ func TestParseCursorModels(t *testing.T) {
 func TestParseClaudeModels(t *testing.T) {
 	body := "--model <model> use 'fable', 'opus', or 'sonnet' and 'claude-fable-5'.\n  -n, --name"
 	rows := parseClaudeModels(body)
-	if len(rows) != 5 || rows[2] != (model{ModelID: "haiku", Label: "Haiku"}) {
-		t.Fatalf("rows = %+v", rows)
+	want := []model{
+		{ModelID: "opus", Label: "Opus 4.8"},
+		{ModelID: "sonnet", Label: "Sonnet 5"},
+		{ModelID: "haiku", Label: "Haiku 4.5"},
+		{ModelID: "fable", Label: "Fable 5"},
+		{ModelID: "claude-fable-5", Label: "Claude Fable 5"},
+	}
+	if len(rows) != len(want) {
+		t.Fatalf("rows = %+v, want %+v", rows, want)
+	}
+	for i, row := range rows {
+		if row != want[i] {
+			t.Errorf("row %d = %+v, want %+v", i, row, want[i])
+		}
 	}
 }
 
