@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net"
+	"sync"
 	"time"
 
 	"github.com/teamswyg/riido-daemon/internal/agentbridge/controlplane"
@@ -33,23 +34,29 @@ func (a *Actor) refreshRuntimeRegistrations(
 	}
 }
 
-func (a *Actor) reportLiveness(ctx context.Context, runtimes []*runtimeactor.Actor) {
-	for _, rt := range runtimes {
-		requestCtx, cancel := context.WithTimeout(ctx, a.cfg.HeartbeatEvery)
-		status, err := rt.Status(requestCtx)
-		if err == nil {
-			err = a.cfg.Source.Heartbeat(requestCtx, controlplane.RuntimeHeartbeat{RuntimeID: status.RuntimeID, UptimeSeconds: status.UptimeSeconds, DeviceName: status.DeviceName, SlotLimit: status.MaxConcurrent, SlotsInUse: status.RunningSessions, RunningTaskIDs: a.heartbeatTaskIDs(status.RuntimeID, runtimeTaskIDs(status.RunningTasks))})
-		}
-		if err != nil {
-			a.logRuntimeSyncFailure("heartbeat_sync_failed", status.RuntimeID, err)
-		} else {
-			a.runtimeSyncSuccess.Store(status.RuntimeID, time.Now().UTC())
-		}
-		cancel()
+func (a *Actor) reportLiveness(ctx context.Context, rt *runtimeactor.Actor) {
+	requestCtx, cancel := context.WithTimeout(ctx, a.cfg.HeartbeatEvery)
+	defer cancel()
+	status, err := rt.Status(requestCtx)
+	if err == nil {
+		err = a.cfg.Source.Heartbeat(requestCtx, controlplane.RuntimeHeartbeat{RuntimeID: status.RuntimeID, UptimeSeconds: status.UptimeSeconds, DeviceName: status.DeviceName, SlotLimit: status.MaxConcurrent, SlotsInUse: status.RunningSessions, RunningTaskIDs: a.heartbeatTaskIDs(status.RuntimeID, runtimeTaskIDs(status.RunningTasks))})
 	}
+	if err != nil {
+		a.logRuntimeSyncFailure("heartbeat_sync_failed", status.RuntimeID, err)
+		return
+	}
+	a.runtimeSyncSuccess.Store(status.RuntimeID, time.Now().UTC())
 }
 
 func (a *Actor) heartbeatLoop(ctx context.Context, runtimes []*runtimeactor.Actor) {
+	var workers sync.WaitGroup
+	for _, rt := range runtimes {
+		workers.Go(func() { a.runtimeHeartbeatLoop(ctx, rt) })
+	}
+	workers.Wait()
+}
+
+func (a *Actor) runtimeHeartbeatLoop(ctx context.Context, rt *runtimeactor.Actor) {
 	ticker := time.NewTicker(a.cfg.HeartbeatEvery)
 	defer ticker.Stop()
 	for {
@@ -57,7 +64,7 @@ func (a *Actor) heartbeatLoop(ctx context.Context, runtimes []*runtimeactor.Acto
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			a.reportLiveness(ctx, runtimes)
+			a.reportLiveness(ctx, rt)
 		}
 	}
 }

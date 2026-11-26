@@ -16,6 +16,7 @@ Proves the public daemon runtime scheduling contract from executable code refere
 | --- | --- | --- |
 | daemon exposes local task sources by env | cmd/riido owns the local queue and task DB source environment surface. | `daemon-env-task-queue`, `daemon-env-task-db` |
 | supervisor owns runtime pool dispatch | daemon startup wires runtime actors into SupervisorActor and supervisor claims work by runtime id. | `supervisor-runtime-pool`, `supervisor-runtime-claim`, `supervisor-runtime-heartbeat` |
+| supervisor heartbeats run independently per runtime | Each runtime sends its own heartbeat on the configured interval. A slow request for one runtime cannot block another; each runtime has at most one request in flight and shutdown joins the heartbeat loops. | `supervisor-heartbeat-runtime-isolation` |
 | supervisor gates provider start on accepted start report | provider preparation and execution do not begin when StartTask reporting is rejected. | `supervisor-start-report-gate` |
 | supervisor retains terminal evidence until accepted | terminal task results remain in actor state and are retried when CompleteTask reporting is rejected. | `supervisor-terminal-report-retry` |
 | supervisor preserves the reason when cancelling a claim | cancellation from the control plane carries its reason in the captured claim context before mailbox delivery. A delayed cancellation cannot stop a replacement claim. | `supervisor-claim-cancellation-cause`, `supervisor-claim-cancellation-fence` |
