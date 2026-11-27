@@ -8,4 +8,7 @@ type ToolRef struct {
 	Args              map[string]string
 	ProviderRequestID string
 	RequireHuman      bool
+	// ContinueAfterRejection is set only by adapters whose native rejection
+	// response denies this tool without terminating the owned turn.
+	ContinueAfterRejection bool
 }

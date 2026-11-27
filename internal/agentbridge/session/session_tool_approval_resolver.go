@@ -33,7 +33,8 @@ func (r *sessionRunner) resolvePendingApprovalIfAvailable(tool agentbridge.ToolR
 		r.resetIdle()
 		if result.err != nil {
 			r.emit(agentbridge.Event{Kind: agentbridge.EventWarning, Text: "tool approval resolver failed", Err: result.err.Error()})
-			return false
+			r.executeResolvedToolApproval(tool, agentbridge.ToolApprovalResolution{Reason: "tool approval resolver failed: " + result.err.Error()})
+			return true
 		}
 		r.executeResolvedToolApproval(tool, result.resolution)
 		return true
@@ -97,10 +98,16 @@ func (r *sessionRunner) executeResolvedToolApproval(tool agentbridge.ToolRef, re
 	for _, cmdEvent := range commandEvents {
 		r.emit(cmdEvent)
 	}
-	if resolution.Approved && len(commandEvents) == 0 && !r.state.Terminal {
+	delivered := len(commandEvents) == 0 && !r.state.Terminal
+	continued := tool.ContinueAfterRejection && delivered
+	if delivered && (resolution.Approved || continued) {
 		r.applyEvents([]agentbridge.Event{{Kind: agentbridge.EventLifecycle, Phase: agentbridge.StateRunning}}, nil)
 	}
 	if !resolution.Approved {
+		if continued {
+			r.emit(agentbridge.Event{Kind: agentbridge.EventWarning, Text: "tool approval rejected; continuing without this tool", Err: toolApprovalRejectionReason(resolution)})
+			return
+		}
 		r.blockToolUse("tool approval rejected by resolver", toolApprovalRejectionReason(resolution))
 	}
 }

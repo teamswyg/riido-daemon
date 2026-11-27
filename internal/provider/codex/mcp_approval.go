@@ -42,7 +42,7 @@ func (d *protocolDriver) handleMCPApproval(ctx context.Context, raw agentbridge.
 	d.mcpApprovals[id] = toolID
 	return []agentbridge.Event{{
 		Kind: agentbridge.EventToolApprovalNeeded,
-		Tool: agentbridge.ToolRef{ID: toolID, Name: message, Kind: codexMCPApprovalKind, ProviderRequestID: id, RequireHuman: true},
+		Tool: agentbridge.ToolRef{ID: toolID, Name: message, Kind: codexMCPApprovalKind, ProviderRequestID: id, RequireHuman: true, ContinueAfterRejection: true},
 	}}, nil, nil
 }
 

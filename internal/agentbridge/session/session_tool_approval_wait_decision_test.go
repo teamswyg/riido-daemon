@@ -21,7 +21,7 @@ func TestSessionResolverDelayedDecisionRemainsExplicitAndFailClosed(t *testing.T
 	}{
 		{"approve", agentbridge.ToolApprovalResolution{Approved: true}, nil, agentbridge.CommandApproveTool, agentbridge.ResultCompleted, ""},
 		{"deny", agentbridge.ToolApprovalResolution{Reason: "explicit denial"}, nil, agentbridge.CommandRejectTool, agentbridge.ResultBlocked, "explicit denial"},
-		{"resolver error", agentbridge.ToolApprovalResolution{}, errors.New("resolver unavailable"), agentbridge.CommandRejectTool, agentbridge.ResultBlocked, "human approval is unavailable in this run"},
+		{"resolver error", agentbridge.ToolApprovalResolution{}, errors.New("resolver unavailable"), agentbridge.CommandRejectTool, agentbridge.ResultBlocked, "tool approval resolver failed: resolver unavailable"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			synctest.Test(t, func(t *testing.T) {

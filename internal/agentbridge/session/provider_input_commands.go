@@ -36,6 +36,9 @@ func (e commandExecutor) writeApprovalCommand(cmd agentbridge.Command) []agentbr
 		}}
 	}
 	if len(input) == 0 {
+		if cmd.Kind == agentbridge.CommandRejectTool {
+			return []agentbridge.Event{{Kind: agentbridge.EventWarning, Text: "provider rejection command has no input"}}
+		}
 		return nil
 	}
 	if err := e.proc.WriteStdin(input); err != nil {
