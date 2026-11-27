@@ -78,6 +78,21 @@ Return the matching JSON-RPC ID with Codex's `accept`, `decline`, or `cancel`
 action. Unsupported forms and uncorrelated requests are cancelled explicitly.
 Cancellation and existing hard and idle deadlines continue to bound the wait.
 
+### RIID-8811: Deny one MCP tool without cancelling the owned turn
+
+A supported native MCP confirmation advertises `ContinueAfterRejection` because
+its correlated `decline` response rejects that tool while leaving Codex able to
+finish the remaining work. After successfully writing that rejection, resume the
+same running session and publish the rejection reason. Resolver errors and missing
+resolvers also deny the tool; errors retain their original cause instead of being
+reported as unavailable human approval. None of these paths grants permission.
+Cancellation, provider exit and hard-timeout decisions still take precedence.
+Unknown adapters, rejection build/write failures and ordinary policy-blocked tools
+retain terminal blocking. Screenshots are optional in the quality workflow: an
+agent must skip an attachment requiring new access instead of requesting access
+and waiting before finishing the task and saving its body. Native rejection
+continuation does not bypass or remove a pending approval wait.
+
 ## Evidence
 
 Hermetic tests cover two follow-ups across adapter reconstruction, retained
