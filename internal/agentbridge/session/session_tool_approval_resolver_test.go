@@ -106,3 +106,18 @@ func TestSessionResolverDeniedApprovalBlocksProviderCompletion(t *testing.T) {
 	}
 	_ = drainEvents(t, started.sess, time.Second)
 }
+
+func TestSessionMCPKindWithoutRejectionCapabilityStaysBlocked(t *testing.T) {
+	started := startRecordingSession(t, "assignment-1", approvalCommandAdapter(t, "mcp_confirmation", agentbridge.CommandRejectTool), func(cfg *Config) {
+		cfg.ToolApprovalResolver = resolverFunc(func(context.Context, string, agentbridge.ToolRef) (agentbridge.ToolApprovalResolution, error) {
+			return agentbridge.ToolApprovalResolution{Reason: "explicit denial"}, nil
+		})
+	})
+	started.running.EmitStdout([]byte("ASK"))
+	assertRejectionProviderInput(t, started.running)
+	emitDone(started.running)
+	if res := waitResult(t, started.sess, time.Second); res.Status != agentbridge.ResultBlocked || res.Error != "explicit denial" {
+		t.Fatalf("tool kind alone must not allow continuation: %+v", res)
+	}
+	_ = drainEvents(t, started.sess, time.Second)
+}
